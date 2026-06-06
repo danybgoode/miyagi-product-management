@@ -1,0 +1,1 @@
+Spike: Audit overall implementation, coverage and how to use it currently if able to do so. The idea would be to map out product features that could be turned on or off via flagsmith as well as being able to run a/b tests campaigns seamlessly from dashboard ui for non technical users. This is from admin, product owner user persona pov. 

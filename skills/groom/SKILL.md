@@ -1,0 +1,188 @@
+---
+name: groom
+description: >
+  The front door for any new ask — feature, bug, spike, or chore. Use when Daniel
+  has a raw idea in his head (or a note in Roadmap/00-ideas/1. raw) and wants to turn
+  it into shippable, sliced work. Runs orientation → classification → "can we already
+  do this?" → disambiguation → Medusa-first reframe → slicing, lands a Definition-of-
+  Ready scope doc in 2. readyforscope, and on approval scaffolds + commits the epic +
+  sprint docs and emits the per-sprint Claude Code kickoff prompts. Planning only —
+  never writes code.
+---
+
+# Groom — the planning front door (Cowork)
+
+> **Role split this skill assumes:** *Cowork plans, Claude Code builds.* This skill is the
+> Cowork half. It produces and edits **product docs under `Roadmap/`** and **nothing else** —
+> no code, no `tasks/` engineering log (that's Claude Code's lane). The handoff is file-based:
+> this skill writes (and commits) the epic + sprint docs; Claude Code reads them at session start.
+
+> **Be a partner, not a stenographer.** Orient, suggest ideas, pull Daniel back when an ask is
+> bigger/smaller than it looks, and propose the lighter path. Investment in the project beats
+> order-taking. *(This is already how we work — stated here so it survives a fresh session.)*
+
+## When to run me
+Daniel says any of: "let's groom X", "I've got an idea", "new feature/bug/spike/chore", or points at
+a file in `Roadmap/00-ideas/1. raw/`. One ask per run.
+
+---
+
+## Stage 0 — Orient (always, same ritual)
+Read, in order, before doing anything:
+1. `Roadmap/README.md` — the poster (every shipped feature, by domain). **Overlap check lives here.**
+2. `Roadmap/WAYS-OF-WORKING.md` — cadence, Definition of Ready/Done, risk tiers, QA gate.
+3. `Roadmap/LEARNINGS.md` — cross-cutting wisdom (esp. *"Medusa-first re-scopes the epic smaller"*).
+4. The relevant **macro-section README** (01–08) once the domain is known.
+5. Team memory index (`apps/miyagisanchez/memory/MEMORY.md`).
+
+State in one line what you loaded, then proceed.
+
+## Stage 1 — Capture
+Take the raw brain-dump as given (or read it from `1. raw/`). Don't clean it up yet. Mirror it back in
+one sentence: *"You want \<X\> so that \<Y\>. Right?"* — surface your understanding before refining it.
+
+## Stage 2 — Classify
+Pick one. The class decides the downstream path:
+
+| Class | Tell | Path |
+|---|---|---|
+| **Feature** | new buyer/seller/agent capability | scope doc → epic + sprint slicing |
+| **Spike** | "how does X work / should it be A or B" (`SpikeCompraprotegida`, `spikeflagsmith`) | time-boxed investigation brief → **a written decision**, not code. No slicing until the decision lands. |
+| **Bug** | promised behaviour missing/broken | **reproduce → root-cause → fix story + regression spec.** Single story unless it fans out into an epic. Hotfix variant (live money/auth/checkout breakage) → minimal fix, high-risk, Daniel merges. |
+| **Chore** | tooling/infra/docs/deps, no user-facing change | **rationale → single story or small epic.** Usually low-risk; flag if it touches shared surface (`layout.tsx`, `middleware.ts`, deps) — those can break sibling PRs and must be announced. |
+
+> **Bug path detail.** Before proposing a fix, write the **reproduction** (exact steps + where it
+> diverges from the promise) and the **root cause** (read the model/route — many "bugs" are an
+> unbuilt or half-built promise, not a regression). The fix is a normal user story with an
+> acceptance check and a regression spec so it can't silently come back.
+
+## Stage 2.5 — Orientation: can we already do this? *(do this before disambiguating)*
+**Many asks aren't new features or bugs — they're orientation.** Before planning a build, ask: can the
+current setup already deliver this outcome, with **existing features + communication, or a light
+enhancement**, instead of net-new work?
+
+Three buckets — name which one this ask is:
+1. **Already possible today** → no build. Show Daniel *how* (the existing feature + the messaging/positioning
+   that exposes it). *E.g. "restaurant delivery" may already be servable via arranged-delivery + a service
+   listing + the right copy — no new code.*
+2. **Light enhancement** → small story or a copy/config change on top of an existing feature, not an epic.
+3. **Genuinely new** → proceed to full disambiguation + slicing.
+
+Always present bucket 1/2 options *first* when they exist, with the trade-off ("you could ship this as
+positioning today, or build the dedicated flow later"). Pulling Daniel toward the lighter path when it
+exists is the job.
+
+## Stage 3 — Disambiguate (structured Q&A)
+Use the question bank below. **Ask in batches**, only the questions actually open. Resolve ambiguity
+*before* planning. Make the implicit explicit so the slices are right the first time.
+
+> **Research current reality when it matters.** If the ask leans on anything that changes or is recent —
+> a standard (UCP/MCP), a payment-provider capability (Stripe/MercadoPago/SPEI/DiMo), a framework/library
+> behaviour (Next.js, Medusa v2), a Vercel/Clerk limit, or a competitor's pattern — **web-search to confirm
+> the present-day facts** rather than relying on training memory. Cite what you found in the scope doc. Don't
+> plan on a stale assumption.
+
+Core bank (adapt):
+- **Role & job:** buyer, seller, agent, or admin? What job are they hiring it to do?
+- **Outcome & signal:** what's true after this ships that isn't now? How will *Daniel* test it?
+- **Scope boundary:** what's explicitly *in* v1 and *out*? (Write the "out" list — it prevents creep.)
+- **Granularity heuristic:** per-shop vs per-product vs per-listing? (Your `SpikeCompraprotegida`
+  football-pitch case — escrow on reservations, not merch — is exactly this. Always ask it for anything configurable.)
+- **Data model:** does Medusa already model this? If not, is it truly non-commerce (Supabase), or are we missing a primitive?
+- **Agent surface:** per AGENTS rule #3 — how does an AI agent do this over UCP/MCP?
+- **Bilingual & channels:** new strings (es + en)? Behaves on all channels (marketplace / own-domain / subdomain / embed / API)?
+- **Overlap:** does the poster already claim this? Reuse or extend, don't rebuild.
+
+## Stage 4 — Medusa-first reframe (the step that shrinks the epic)
+Before slicing, **read the backend model + route first.** Per LEARNINGS this repeatedly re-scopes work
+smaller (custom-slugs → 1-field backend change; personalized products → zero new tables). Produce the
+epic's **"What already exists (reuse, don't rebuild)"** list — concrete files/routes/primitives. Apply the
+AGENTS five rules (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk
+untouched · bilingual mandatory). If the ask violates a rule, flag it now.
+
+## Stage 5 — Slice (skateboard → car)
+Define the **thinnest end-to-end slice that actually works and ships** — the skateboard — then each
+increment toward the car. Every slice is an independently testable, shippable **user story**:
+> **As a** \<role\>, **I want** \<capability\>, **so that** \<outcome\>. **Acceptance:** \<plain checks Daniel can run\>.
+
+Group stories into **sprints**. For each story **name the QA/smoke stage** (WAYS-OF-WORKING requires it):
+which api spec gets added, and whether a browser smoke is owed (and to whom). Prefer pure-logic specs on
+an extracted `lib/` seam (free coverage).
+
+## Stage 6 — Risk-tier every story
+Tag each **low** (docs/copy, non-commerce UI, additive agent tools behind auth, tests) or **high**
+(payments / checkout / fulfillment / auth / DB migrations / shared infra / money). High → Daniel merges.
+When unsure, high.
+
+## Stage 7 — Scaffold + commit the docs (on Daniel's approval)
+1. Write the **scope doc** to `Roadmap/00-ideas/2. readyforscope/<slug>.md` — the Definition-of-Ready
+   artifact (overview · UX heuristics · acceptance criteria · the reuse list · in/out scope · open risks ·
+   any research citations · the Stage-2.5 bucket). **This is the gate: nothing scaffolds until Daniel approves it.**
+2. On approval, create under the right macro-section:
+   - `<NN-macro>/<epic-slug>/README.md` — epic overview in the house format (Why · context table ·
+     Medusa-first note · **What already exists** · Scope story-table with risk · Deploy order · epic DoD checklist).
+   - `<epic-slug>/sprint-N.md` — the sprint's stories + a **Sprint QA** section + a **Smoke walkthrough placeholder** (Stage 8b).
+3. **Commit it.** `Roadmap/` is tracked in git — commit the scaffold on a planning branch (or directly,
+   docs are low-risk tier) so a fresh worktree/agent inherits the product context:
+   `git add Roadmap/ && git commit -m "plan(<epic-slug>): scaffold epic + sprints"`.
+
+## Stage 8 — Emit the per-sprint Claude Code kickoff prompts
+One per sprint, ready to paste into a fresh Claude Code session:
+
+```
+Read apps/miyagisanchez/AGENTS.md, Roadmap/WAYS-OF-WORKING.md and Roadmap/LEARNINGS.md. Skim team memory.
+Then read Roadmap/<NN-macro>/<epic-slug>/README.md and Roadmap/<NN-macro>/<epic-slug>/sprint-<N>.md.
+
+You're building Sprint <N> of "<epic title>". Enter plan mode, confirm the plan as user stories with me,
+then branch feat/<epic-slug> off latest main and build one story at a time per WAYS-OF-WORKING.
+Reuse before rebuild (see "What already exists"). Add one api spec per testable story; name the QA/smoke
+stage and state any browser smoke owed to me. When the deterministic gate (tsc + build + Playwright api)
+is green, open a draft PR declaring the risk tier — and write the SPRINT SMOKE WALKTHROUGH (below) into
+sprint-<N>.md before you call the sprint done.
+```
+
+For a **spike**, emit instead a short investigation prompt that ends in a written decision in the scope
+doc — no branch, no build.
+
+### Stage 8b — The sprint-end smoke walkthrough (fool-proof, real URLs)
+Every sprint closes with a **step-by-step manual walkthrough Daniel can follow blind**, written into
+`sprint-N.md`. Once deployed, it uses **real production URLs** (preview URLs while pre-merge). Format —
+numbered, one action + one expected result per step, no jargon:
+
+```
+## Sprint <N> — Smoke walkthrough (do these in order)
+Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+
+1. Go to https://miyagisanchez.com/s/<test-shop>/manage/settings
+   → You see the new "<thing>" section.
+2. Click "<button>".
+   → A <result> appears within ~2s.
+3. Open https://<test-shop>.miyagisanchez.com in a private window.
+   → The <feature> renders white-label, no platform chrome.
+4. (money path) Add <item> to cart → checkout as guest → pay with a Stripe test card 4242…
+   → Order confirmation email arrives, branded to the shop; the seller's order screen shows <field>.
+
+If any step fails, note the step number + what you saw — that's the bug report.
+```
+
+Rules: real clickable URLs (not "the settings page"); the exact button/label; the observable result; and
+call out which steps are the **money/auth path** (those are the ones an automated browser smoke can't fully
+cover, so they're owed to Daniel by name).
+
+---
+
+## Guardrails
+- **Planning only.** Never edit code or `tasks/`. Only `Roadmap/` docs.
+- **Reference end-states are inspiration, never signed-off scope.** (Their own guard against doc-drift.)
+- **Orientation before building.** Always check Stage 2.5 — the lightest path that hits the outcome wins.
+- **Every plan names a QA stage and ships a smoke walkthrough.**
+- **Research present-day facts** when the ask leans on anything recent or changing.
+- **One ask per run.** Resist scope-merging two ideas.
+
+## Definition of Ready this skill must hit before scaffolding
+- "As a / I want / so that" clear; acceptance testable by Daniel.
+- Stage-2.5 bucket named (already-possible / light / new).
+- v1 in/out boundary written; research cited where relevant.
+- Reuse list produced (Medusa-first reframe done).
+- Each story risk-tiered; QA stage named; smoke-walkthrough owner identified.
+- Daniel approved the scope doc.

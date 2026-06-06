@@ -1,0 +1,67 @@
+; Domain: miyagisanchez.com
+; Exported (y-m-d hh:mm:ss): 2026-06-05 19:21:56
+;
+; This file is intended for use for informational and archival
+; purposes ONLY and MUST be edited before use on a production
+; DNS server.
+;
+; In particular, you must update the SOA record with the correct
+; authoritative name server and contact e-mail address information,
+; and add the correct NS records for the name servers which will
+; be authoritative for this domain.
+;
+; For further information, please consult the BIND documentation
+; located on the following website:
+;
+; http://www.isc.org/
+;
+; And RFC 1035:
+;
+; http://www.ietf.org/rfc/rfc1035.txt
+;
+; Please note that we do NOT offer technical support for any use
+; of this zone data, the BIND name server, or any other third-
+; party DNS software.
+;
+; Use at your own risk.
+
+
+$ORIGIN miyagisanchez.com.
+
+; SOA Record
+@	3600	 IN 	SOA	ns31.domaincontrol.com.	dns.jomax.net. (
+					2026060500
+					28800
+					7200
+					604800
+					3600
+					) 
+
+; A Record
+@	600	 IN 	A	216.198.79.1
+
+; TXT Record
+@	3600	 IN 	TXT	"google-site-verification=sE6VB7yWsi9iFzstS9q2eLq08to7M2qweJzG45AhLNI"
+dc-fd741b8612._spfm.send	3600	 IN 	TXT	"v=spf1 include:amazonses.com ~all"
+resend._domainkey	3600	 IN 	TXT	"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDS570BrQWVmrgTliJuxOT8CFJl+G8+JORsZjw0jvT3Q5nnFwggAxzZpWAAMLoqTaZvjvRIzdgV/UmBcm4kR5A4QDA65NM3njAzzKXgKrIG5Wvlo0Q/Znto/okip0WMhI71I8ezWf+U3MlZjziPEmLF+LBRNAdy9LJf0XwdNr0wtwIDAQAB"
+send	3600	 IN 	TXT	"v=spf1 include:dc-fd741b8612._spfm.send.miyagisanchez.com ~all"
+_dmarc	3600	 IN 	TXT	"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"
+
+; CNAME Record
+*	3600	 IN 	CNAME	cname.vercel-dns.com.
+accounts	3600	 IN 	CNAME	accounts.clerk.services.
+api	3600	 IN 	CNAME	ghs.googlehosted.com.
+clerk	3600	 IN 	CNAME	frontend-api.clerk.services.
+clk._domainkey	3600	 IN 	CNAME	dkim1.9s0tm9ehm5gw.clerk.services.
+clk2._domainkey	3600	 IN 	CNAME	dkim2.9s0tm9ehm5gw.clerk.services.
+clkmail	3600	 IN 	CNAME	mail.9s0tm9ehm5gw.clerk.services.
+www	3600	 IN 	CNAME	@
+_domainconnect	3600	 IN 	CNAME	_domainconnect.gd.domaincontrol.com.
+
+; NS Record
+@	3600	 IN 	NS	ns31.domaincontrol.com.
+@	3600	 IN 	NS	ns32.domaincontrol.com.
+
+; MX Record
+send	3600	 IN 	MX	10	feedback-smtp.us-east-1.amazonses.com.
+
