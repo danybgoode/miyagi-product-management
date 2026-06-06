@@ -9,7 +9,7 @@
 > **next-session handoff prompt** (bottom of this file) points at the next ⬜ item. Re-order freely as
 > new information lands — this is a living queue, not a contract.
 
-_Last updated: 2026-06-06._
+_Last updated: 2026-06-06 (after grooming #4)._
 
 ## The agreed order (consolidated from the 2026-06-06 backlog dump)
 
@@ -20,7 +20,7 @@ downstream of #3 + #4.
 ### Wave 0 — Enablers (parallelizable; unblock everything)
 - ✅ **#1 · Flagsmith spike** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/spikeflagsmith.md`. Class: spike → written decision. **Next action: Claude Code investigation session** (handoff prompt was emitted at groom time).
 - ✅ **#2 · Unified CI/CD + Git event notifications via Telegram** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/unifiedcdcinotificationsystem.md`. Class: chore/infra epic. Scaffolded under new area `09-platform-infra/cicd-telegram-notifications/` (3 sprints: push both repos · Cloud Run finish · Vercel prod finish). Vercel mechanism = API poll (free tier, no webhooks). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
-- ⬜ **#4 · Design-token / design-system foundation** — foundation. **← next to groom.** Seeds: `2. readyforscope/Themingsystem.md`, `MiyagiSanchezxDesignerN.md`. **Reconcile first** with the already-shipped `08/seasonal-theme-engine` (memory: `seasonal_theme_engine.md`, `project_design_system.md`) — likely *update*, not rebuild. Substrate for #6.
+- ✅ **#4 · Design-token / design-system foundation** — *groomed + signed off 2026-06-06.* Reconcile confirmed it's an **update, not a rebuild**: Design System v2 tokens (`globals.css`) + the seasonal theme engine already ship the bulk; the seeds were largely already-done. Scoped tightly (Daniel) to **foundation hardening + a documented token contract** — palette library + designer submission portal deferred. Scope: `2. readyforscope/design-token-foundation.md`. Class: chore/foundation. Scaffolded under `09-platform-infra/design-token-foundation/` (3 sprints: token contract · tokenize customer-facing surfaces · AA contrast + no-regression guard; all low-risk). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time). Substrate for #6.
 
 ### Wave 1 — Refresh the lens
 - ⬜ **#3a · UX audit refresh** — re-run the 5 audit docs (`2. readyforscope/ux-audit/results/01–05`) against current `main` (personalized products, subdomains, short-links, support widget all postdate them). Planning input that re-scopes #5/#6. (Ignore the older `00-ideas/ux-uiaudit/` set.)
@@ -42,14 +42,15 @@ downstream of #3 + #4.
 
 ```
 We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
-The last groomed item was #2 (Unified CI/CD + Telegram notifications) — signed off + scaffolded
-under Roadmap/09-platform-infra/cicd-telegram-notifications/ (ready for Claude Code build, Sprint 1 first).
+The last groomed item was #4 (Design-token / design-system foundation) — signed off + scaffolded
+under Roadmap/09-platform-infra/design-token-foundation/ (ready for Claude Code build, Sprint 1 first).
 
-Groom the next ⬜ item: #4 · Design-token / design-system foundation.
+Groom the next ⬜ item: #3a · UX audit refresh.
 Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
-(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the scope seeds
-Roadmap/00-ideas/2. readyforscope/Themingsystem.md and MiyagiSanchezxDesignerN.md.
-IMPORTANT (per BUILD-ORDER): reconcile FIRST with the already-shipped 08/seasonal-theme-engine
-(team memory: seasonal_theme_engine.md, project_design_system.md) — this is likely an *update*,
-not a rebuild. Then run /groom on #4 — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
+(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the 5 audit docs
+Roadmap/00-ideas/2. readyforscope/ux-audit/results/01–05 (ignore the older 00-ideas/ux-uiaudit/ set).
+#3a re-runs those audits against current main (personalized products, subdomains, short-links,
+support widget all postdate them) — it's a planning input that re-scopes #3b/#5/#6, likely a spike
+(investigation → written findings), not a build. Then run /groom on #3a — one ask, the normal
+stages — and stop at the scope-doc gate for my sign-off.
 ```
