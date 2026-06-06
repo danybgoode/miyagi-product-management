@@ -19,8 +19,8 @@ downstream of #3 + #4.
 
 ### Wave 0 — Enablers (parallelizable; unblock everything)
 - ✅ **#1 · Flagsmith spike** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/spikeflagsmith.md`. Class: spike → written decision. **Next action: Claude Code investigation session** (handoff prompt was emitted at groom time).
-- ⬜ **#2 · Unified CI/CD + Git event notifications via Telegram** — chore/infra epic. Scope seed: `2. readyforscope/unifiedcdcinotificationsystem.md` (already AC-complete). Standalone, no product coupling, reuses the existing Telegram bot. **← next to groom.**
-- ⬜ **#4 · Design-token / design-system foundation** — foundation. Seeds: `2. readyforscope/Themingsystem.md`, `MiyagiSanchezxDesignerN.md`. **Reconcile first** with the already-shipped `08/seasonal-theme-engine` (memory: `seasonal_theme_engine.md`, `project_design_system.md`) — likely *update*, not rebuild. Substrate for #6.
+- ✅ **#2 · Unified CI/CD + Git event notifications via Telegram** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/unifiedcdcinotificationsystem.md`. Class: chore/infra epic. Scaffolded under new area `09-platform-infra/cicd-telegram-notifications/` (3 sprints: push both repos · Cloud Run finish · Vercel prod finish). Vercel mechanism = API poll (free tier, no webhooks). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
+- ⬜ **#4 · Design-token / design-system foundation** — foundation. **← next to groom.** Seeds: `2. readyforscope/Themingsystem.md`, `MiyagiSanchezxDesignerN.md`. **Reconcile first** with the already-shipped `08/seasonal-theme-engine` (memory: `seasonal_theme_engine.md`, `project_design_system.md`) — likely *update*, not rebuild. Substrate for #6.
 
 ### Wave 1 — Refresh the lens
 - ⬜ **#3a · UX audit refresh** — re-run the 5 audit docs (`2. readyforscope/ux-audit/results/01–05`) against current `main` (personalized products, subdomains, short-links, support widget all postdate them). Planning input that re-scopes #5/#6. (Ignore the older `00-ideas/ux-uiaudit/` set.)
@@ -42,12 +42,14 @@ downstream of #3 + #4.
 
 ```
 We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
-The last groomed item was #1 (Flagsmith spike) — signed off.
+The last groomed item was #2 (Unified CI/CD + Telegram notifications) — signed off + scaffolded
+under Roadmap/09-platform-infra/cicd-telegram-notifications/ (ready for Claude Code build, Sprint 1 first).
 
-Groom the next ⬜ item: #2 · Unified CI/CD + Git event notifications via Telegram.
-Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then the groom skill's Stage 0
-orientation (README.md, WAYS-OF-WORKING.md, LEARNINGS.md), then the scope seed
-Roadmap/00-ideas/2. readyforscope/unifiedcdcinotificationsystem.md and the existing
-Telegram send primitive in the codebase (grep "telegram" under apps/).
-Then run /groom on #2 — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
+Groom the next ⬜ item: #4 · Design-token / design-system foundation.
+Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
+(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the scope seeds
+Roadmap/00-ideas/2. readyforscope/Themingsystem.md and MiyagiSanchezxDesignerN.md.
+IMPORTANT (per BUILD-ORDER): reconcile FIRST with the already-shipped 08/seasonal-theme-engine
+(team memory: seasonal_theme_engine.md, project_design_system.md) — this is likely an *update*,
+not a rebuild. Then run /groom on #4 — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
 ```
