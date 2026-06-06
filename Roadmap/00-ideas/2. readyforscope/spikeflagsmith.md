@@ -1,8 +1,10 @@
 # Spike — Flagsmith as the platform toggle / kill-switch layer
 
 > **Class:** Spike (time-boxed investigation → a **written decision**, no code, no slicing).
-> **Status:** Investigated 2026-06-06 — **decision written (sections 1–6 below), awaiting Daniel's
-> go/no-go sign-off.** Recommendation: **GO** (thin fail-open kill-switch layer on Flagsmith SaaS).
+> **Status:** Investigated + **decided 2026-06-06. GO signed off by Daniel.** Instance located
+> (Flagsmith SaaS, project `miyagisanchezmarketplace`) and credentials staged in `.env.local`.
+> Sections 1–6 below are final. **Next:** build the thin first slice (§6) as a high-risk, Daniel-merged
+> epic — not built in this spike.
 > **Stage-2.5 bucket:** Genuinely new (greenfield integration). Confirmed **zero Flagsmith
 > footprint** in either app — no dependency, SDK, env var, or flag gating. The live instance
 > Daniel referenced runs **outside this monorepo** and is **unconnected** to the apps.
@@ -48,9 +50,9 @@ recommends** (SaaS vs self-host on GCP).
 
 > **TL;DR:** **GO**, as a deliberately thin, **fail-open, admin-only, server-evaluated
 > kill-switch layer on Flagsmith SaaS (free tier)**. Confirmed **zero Flagsmith wiring** in either
-> production app and **no trace in GCP** — the "live instance" Daniel referenced is unconnected (SaaS
-> account or a self-host on a GCP project this session can't reach; **its location/login is the one
-> open item, owed to Daniel**). Two premise corrections: (a) the `flagsmith-nodejs` SDK does **local
+> production app and **no trace in GCP** — the "live instance" Daniel referenced is unconnected.
+> **[RESOLVED 2026-06-06: Flagsmith SaaS, project `miyagisanchezmarketplace` id 39767 — keys validated
+> + staged in `.env.local`; see §1.]** Two premise corrections: (a) the `flagsmith-nodejs` SDK does **local
 > in-process evaluation**, so flag checks add ~0 ms per request and don't burn per-request API quota —
 > the "eval on every request" latency/quota worry is largely moot; (b) **Amplitude and Microsoft
 > Clarity are NOT actually connected** in the codebase (only Sentry is), so the "A/B with results from
@@ -75,12 +77,27 @@ Sibling Vercel projects exist (`despachobonsai-vercel`, `bonsaios-mcp`, `miyagis
 `bonsaileadseek`, `miyagisanchez-scraper`) but none is a Miyagi app, and the Vercel CLI only introspects
 the *linked* project's env, so I could not enumerate theirs from here (not blocking — none is the app).
 
-**Conclusion:** the instance Daniel referenced is **completely decoupled** from both apps. It is almost
-certainly either (a) a **Flagsmith SaaS** org at `app.flagsmith.com`, or (b) a **self-host on the
-separate `despachobonsai` GCP project**, which this session has no access to. **OPEN — owed to Daniel
-(only unclosable-from-CLI item):** confirm the **dashboard URL** (SaaS vs self-host), the
-**organisation / project name**, the **environments** (e.g. `production` / `development`), and **who
-holds seats**. Everything else in this doc is closed from the audit.
+**RESOLVED (Daniel, 2026-06-06) — it's Flagsmith SaaS, now located + access-validated:**
+
+- **Host:** Flagsmith **SaaS** at `https://app.flagsmith.com` (not self-hosted). Confirms §4.
+- **Project:** **`miyagisanchezmarketplace`** (id `39767`, org `30549`). *(A sibling project
+  `bonsai-commerce`, id `38857`, org `29635`, also exists under the same account — a separate
+  ecosystem project; not ours.)*
+- **Environments:** **Production** (client-side key `YWCRELpbn2VJn32ijkan27`) and **Development**
+  (client-side key `UmCgZPX5RCzP7qjHZowE4K`). Both are **empty — no flags defined yet** (the SDK `/flags`
+  call returns `[]`), confirming the **zero-integration** finding from the other side: the instance
+  exists but nothing reads or writes it.
+- **Access:** Daniel's account holds the org; an account-level REST token + a server-side environment
+  key (`ser.…`) + the client-side keys above were provided and **validated live** this session (REST
+  `/projects`, `/environments`, and the SDK `/flags` endpoint all authenticated successfully).
+- **MCP:** Daniel also added a Flagsmith MCP server (`https://app.getgram.ai/mcp/flagsmith-mcp`) to this
+  project's local config — usable for dashboard ops once the session reloads it.
+- **Credentials staged** (2026-06-06, for the recommended first slice — **not yet wired into code**):
+  `FLAGSMITH_ENVIRONMENT_KEY` (server-side), `NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY` (Development
+  client-side), and `FLAGSMITH_ADMIN_API_TOKEN` (REST/tooling) in `apps/miyagisanchez/.env.local`
+  (gitignored — literal keys are kept out of this tracked doc by convention). ⚠️ The staged env keys are
+  the **Development** environment; **Production needs its own server-side key generated before go-live**
+  (Production client-side key is `YWCRELpbn2VJn32ijkan27`).
 
 ## 2. The integration gap + minimal wiring
 
@@ -181,8 +198,9 @@ first-class instead of ad-hoc):**
 first slice above is deliberately scoped to the **checkout-options seam** (not middleware) to keep the
 proving slice low-blast-radius; the middleware/layout flags come in a later slice.
 
-**One open item before/with the build — owed to Daniel:** confirm the Flagsmith dashboard location +
-access (see §1). Everything else is decided.
+**Open item — CLOSED 2026-06-06:** Flagsmith dashboard located + access validated (SaaS, project
+`miyagisanchezmarketplace`; keys staged in `.env.local`; see §1). The only build-time follow-up is to
+generate a **Production server-side env key** before go-live (the staged key is Development).
 
 ---
 
