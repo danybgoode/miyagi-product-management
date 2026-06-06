@@ -61,8 +61,8 @@ expansion.
 
 ## Status
 
-- [ ] US-1 built · commit `____`
-- [ ] tsc + build + Playwright green
-- [ ] Flag created in Flagsmith (Prod + Dev)
-- [ ] PR opened (HIGH risk) · `#__`
-- [ ] Daniel merge + live smoke (steps 2–4)
+- [x] US-1 built · commit `2b1e6a8` (`lib/flags.ts`, `lib/checkout-killswitch.ts`, route wiring, spec)
+- [x] tsc + build + Playwright green (4 api specs); SDK local-eval smoke green vs live Flagsmith
+- [x] Flag `checkout.stripe_enabled` created in Flagsmith (Prod + Dev, default ON)
+- [x] PR opened (HIGH risk) · [#34](https://github.com/danybgoode/miyagisanchezcommerce/pull/34)
+- [ ] **Daniel:** merge + activation (add `FLAGSMITH_ENVIRONMENT_KEY` to Vercel Preview+Prod; **generate prod server key**) + live dashboard smoke (steps 2–4)
