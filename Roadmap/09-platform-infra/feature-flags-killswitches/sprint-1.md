@@ -67,4 +67,8 @@ expansion.
 - [x] Local max-effort review run → 2 findings applied (fast fail-open timeout `requestTimeoutSeconds:2, retries:0`; module-load client to remove init race)
 - [x] **Production server-side key generated** (`miyagi-frontend-prod`) + staged commented in `.env.local`
 - [x] **PR [#34](https://github.com/danybgoode/miyagisanchezcommerce/pull/34) MERGED to `main`** (squash, HIGH-risk, Daniel-authorized)
-- [ ] **Owed to Daniel — activation:** add `FLAGSMITH_ENVIRONMENT_KEY` to Vercel **Preview** (Dev key) + **Production** (the staged prod key); then live dashboard flip smoke (steps 2–4)
+- [x] **Activation done:** `FLAGSMITH_ENVIRONMENT_KEY` set in Vercel **Preview** (Dev key) + **Production** (prod key) via REST API (the CLI plugin dropped values); prod redeployed by Daniel
+- [x] **Live smoke GREEN (Daniel, 2026-06-06):** toggling `checkout.stripe_enabled` OFF/ON in Flagsmith hides/shows the Stripe rail in prod checkout with no deploy ✅
+
+> **Follow-up (finding #1) → Sprint 2:** S1 hides Stripe in the human UI only; agents/UCP + stale
+> in-flight pages still reach the backend. [sprint-2.md](sprint-2.md) enforces the kill server-side.
