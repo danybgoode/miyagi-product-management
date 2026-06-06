@@ -1,7 +1,7 @@
 # Sprint 1 — The kill-switch foundation + first flag
 
-**Epic:** [Feature flags & kill-switches](README.md) · **Status:** 🚧 In progress
-**Risk:** HIGH (checkout-adjacent → Daniel merges).
+**Epic:** [Feature flags & kill-switches](README.md) · **Status:** ✅ Merged to `main` 2026-06-06 (PR #34)
+**Risk:** HIGH (checkout-adjacent → Daniel merged). Code is fail-open, so it's a no-op in prod until activated.
 
 This is the spike's recommended **thin first slice** (spikeflagsmith.md §6): one helper, one flag, one
 seam — proving "flip in the dashboard → behaviour changes in prod with no deploy" — before any taxonomy
@@ -61,8 +61,10 @@ expansion.
 
 ## Status
 
-- [x] US-1 built · commit `2b1e6a8` (`lib/flags.ts`, `lib/checkout-killswitch.ts`, route wiring, spec)
-- [x] tsc + build + Playwright green (4 api specs); SDK local-eval smoke green vs live Flagsmith
-- [x] Flag `checkout.stripe_enabled` created in Flagsmith (Prod + Dev, default ON)
-- [x] PR opened (HIGH risk) · [#34](https://github.com/danybgoode/miyagisanchezcommerce/pull/34)
-- [ ] **Daniel:** merge + activation (add `FLAGSMITH_ENVIRONMENT_KEY` to Vercel Preview+Prod; **generate prod server key**) + live dashboard smoke (steps 2–4)
+- [x] US-1 built · commits `2b1e6a8` + `420c4ad` (review fixes) — `lib/flags.ts`, `lib/checkout-killswitch.ts`, route wiring, spec
+- [x] tsc + build + Playwright green (4 api specs, CI green twice); SDK local-eval smoke green vs live Flagsmith
+- [x] Flag `checkout.stripe_enabled` created in Flagsmith (Prod + Dev, default ON, id 212967)
+- [x] Local max-effort review run → 2 findings applied (fast fail-open timeout `requestTimeoutSeconds:2, retries:0`; module-load client to remove init race)
+- [x] **Production server-side key generated** (`miyagi-frontend-prod`) + staged commented in `.env.local`
+- [x] **PR [#34](https://github.com/danybgoode/miyagisanchezcommerce/pull/34) MERGED to `main`** (squash, HIGH-risk, Daniel-authorized)
+- [ ] **Owed to Daniel — activation:** add `FLAGSMITH_ENVIRONMENT_KEY` to Vercel **Preview** (Dev key) + **Production** (the staged prod key); then live dashboard flip smoke (steps 2–4)
