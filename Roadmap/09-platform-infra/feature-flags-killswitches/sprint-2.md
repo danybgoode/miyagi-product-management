@@ -69,4 +69,5 @@ Stripe checkout — so `start-checkout` still accepts `pp_stripe`. This sprint e
 - [x] US-1 built · `src/lib/flags.ts`, payment-methods opts, checkout-options + start-checkout (422) wiring
 - [x] backend `tsc` + `medusa build` green; `npm run test:unit` → 7 passed (4 new)
 - [x] PR opened (HIGH risk) · [#9](https://github.com/danybgoode/medusa-bonsai-backend/pull/9) *(backend has no CI/preview — gate is local tsc+build+unit)*
-- [ ] **Daniel:** set Cloud Run `FLAGSMITH_ENVIRONMENT_KEY` (prod key) + merge + post-deploy API smoke *(agent offered to provision the secret via gcloud)*
+- [x] **Cloud Run secret provisioned** (agent, 2026-06-06): Secret Manager `FLAGSMITH_ENVIRONMENT_KEY` = prod key; `secretAccessor` granted to runtime SA `medusa-run@`; wired into `medusa-web` (rev `00087-7mj`). Image-only deploys preserve it, so it survives the merge deploy. No-op on the current image until S2 lands.
+- [ ] **Daniel:** merge PR #9 → Cloud Run image deploy (~12 min) activates enforcement → post-deploy API smoke (checkout-options omits stripe; start-checkout 422)
