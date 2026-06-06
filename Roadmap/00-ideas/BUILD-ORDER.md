@@ -9,7 +9,7 @@
 > **next-session handoff prompt** (bottom of this file) points at the next ⬜ item. Re-order freely as
 > new information lands — this is a living queue, not a contract.
 
-_Last updated: 2026-06-06 (after grooming #4)._
+_Last updated: 2026-06-06 (after grooming #3a)._
 
 ## The agreed order (consolidated from the 2026-06-06 backlog dump)
 
@@ -23,7 +23,7 @@ downstream of #3 + #4.
 - ✅ **#4 · Design-token / design-system foundation** — *groomed + signed off 2026-06-06.* Reconcile confirmed it's an **update, not a rebuild**: Design System v2 tokens (`globals.css`) + the seasonal theme engine already ship the bulk; the seeds were largely already-done. Scoped tightly (Daniel) to **foundation hardening + a documented token contract** — palette library + designer submission portal deferred. Scope: `2. readyforscope/design-token-foundation.md`. Class: chore/foundation. Scaffolded under `09-platform-infra/design-token-foundation/` (3 sprints: token contract · tokenize customer-facing surfaces · AA contrast + no-regression guard; all low-risk). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time). Substrate for #6.
 
 ### Wave 1 — Refresh the lens
-- ⬜ **#3a · UX audit refresh** — re-run the 5 audit docs (`2. readyforscope/ux-audit/results/01–05`) against current `main` (personalized products, subdomains, short-links, support widget all postdate them). Planning input that re-scopes #5/#6. (Ignore the older `00-ideas/ux-uiaudit/` set.)
+- ✅ **#3a · UX audit refresh** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/ux-audit-refresh.md`. Class: **spike** (read-only re-audit → written findings + re-scope delta, no build). Scoped (Daniel) to: **all 5 domains weighted** (deep on 02/03/05, light on 01/04), deliverable = **refreshed findings + explicit re-scope deltas** for #3b/#5/#6/#3c that update this file, and **re-check old findings + audit the new surfaces** (personalized products, subdomains, short-links, support widget, custom-domain checkout). Refreshed docs land in `ux-audit/results-refresh-2026-06/` (v1 baseline kept). **Next action: Claude Code spike investigation session** (kickoff prompt in the scope doc) — *do NOT scaffold an epic*; the findings re-scope the waves below.
 
 ### Wave 2 — Highest-value product (driven by the refreshed audit)
 - ⬜ **#3b · Checkout & manual-payment state hardening** — the audit P0s (durable `buyer_reported_paid`, block-ship-before-paid, coupon-total mismatch). Money path, high-risk, biggest trust win.
@@ -40,17 +40,27 @@ downstream of #3 + #4.
 
 ## Next-session handoff prompt (paste into a fresh Cowork session)
 
+> **Sequencing note.** #3a is *groomed + signed off* but the spike itself hasn't *run* yet — and its
+> whole purpose is to re-scope #3b. So the next step is **not** to groom #3b blind; it's to **run the
+> #3a spike investigation first** (Claude Code, read-only, no build), then groom #3b off the refreshed
+> findings. The two prompts below are in order.
+
+**Step 1 — run the #3a spike (Claude Code, read-only investigation, no branch/build):**
+the kickoff prompt lives in `Roadmap/00-ideas/2. readyforscope/ux-audit-refresh.md` (bottom section).
+It produces refreshed findings in `ux-audit/results-refresh-2026-06/01–05` + a re-scope delta that
+edits this file (sharpens the #3b/#5/#6/#3c lines).
+
+**Step 2 — once the spike's findings have landed, groom the next ⬜ item (#3b) in a fresh Cowork session:**
 ```
 We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
-The last groomed item was #4 (Design-token / design-system foundation) — signed off + scaffolded
-under Roadmap/09-platform-infra/design-token-foundation/ (ready for Claude Code build, Sprint 1 first).
+The last groomed item was #3a (UX audit refresh) — a spike, signed off; its investigation has now run
+and the refreshed findings live in Roadmap/00-ideas/2. readyforscope/ux-audit/results-refresh-2026-06/.
 
-Groom the next ⬜ item: #3a · UX audit refresh.
+Groom the next ⬜ item: #3b · Checkout & manual-payment state hardening.
 Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
-(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the 5 audit docs
-Roadmap/00-ideas/2. readyforscope/ux-audit/results/01–05 (ignore the older 00-ideas/ux-uiaudit/ set).
-#3a re-runs those audits against current main (personalized products, subdomains, short-links,
-support widget all postdate them) — it's a planning input that re-scopes #3b/#5/#6, likely a spike
-(investigation → written findings), not a build. Then run /groom on #3a — one ask, the normal
-stages — and stop at the scope-doc gate for my sign-off.
+(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the refreshed audit
+findings (results-refresh-2026-06/02, 03, 05) and the #3a re-scope delta. #3b is the money path:
+durable buyer_reported_paid, block-ship-before-paid, coupon-vs-CTA total mismatch — high-risk,
+Daniel merges. Then run /groom on #3b — one ask, the normal stages — and stop at the scope-doc gate
+for my sign-off.
 ```
