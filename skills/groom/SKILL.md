@@ -171,6 +171,36 @@ cover, so they're owed to Daniel by name).
 
 ---
 
+## Stage 9 — Close the loop: backlog cadence + next-session handoff
+**The backlog keeps growing.** Daniel routinely drops a *batch* of prioritized asks at once. We do **not**
+groom a batch in one session. The cadence is:
+
+1. **Agree a consolidated build order first** (a separate evaluation pass — consolidate overlaps, sequence
+   by dependency/leverage), and **persist it** to `Roadmap/00-ideas/BUILD-ORDER.md` so it survives the session.
+2. **Groom one ask per session**, down that order. (Still *one ask per run* — Stage 0's rule is unchanged.)
+3. **At the end of every groom run, do BOTH:**
+   - Emit the **Claude Code build/investigation handoff** for the *just-groomed* item (Stage 8) — unchanged.
+   - **Tick the item in `BUILD-ORDER.md`** and emit a **next-session Cowork handoff prompt** for the **next ⬜
+     item** in the order. *Do not* offer "want me to groom the next one now?" — the next ask gets its **own
+     fresh session** (keeps each groom cheap + context-clean). The handoff prompt references the docs that
+     already exist (`BUILD-ORDER.md`, the relevant `2. readyforscope/` seed, the orientation files) so the
+     next session re-enters with zero re-derivation. Template:
+
+   ```
+   We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
+   The last groomed item was <#X · name> — <status>.
+
+   Groom the next ⬜ item: <#Y · name>.
+   Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
+   (README.md, WAYS-OF-WORKING.md, LEARNINGS.md), then the scope seed
+   Roadmap/00-ideas/2. readyforscope/<seed>.md and any primitives it names.
+   Then run /groom on <#Y> — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
+   ```
+
+If no `BUILD-ORDER.md` exists yet (a one-off ask, not a batch), skip this stage — just close normally.
+
+---
+
 ## Guardrails
 - **Planning only.** Never edit code or `tasks/`. Only `Roadmap/` docs.
 - **Reference end-states are inspiration, never signed-off scope.** (Their own guard against doc-drift.)
@@ -178,6 +208,8 @@ cover, so they're owed to Daniel by name).
 - **Every plan names a QA stage and ships a smoke walkthrough.**
 - **Research present-day facts** when the ask leans on anything recent or changing.
 - **One ask per run.** Resist scope-merging two ideas.
+- **Batch backlogs → one ask per session.** When Daniel drops many asks, agree + persist a build order
+  (`BUILD-ORDER.md`), then groom them one-per-session; end each run with the next-session handoff (Stage 9).
 
 ## Definition of Ready this skill must hit before scaffolding
 - "As a / I want / so that" clear; acceptance testable by Daniel.
