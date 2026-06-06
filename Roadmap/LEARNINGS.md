@@ -58,6 +58,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ran minutes apart but ours never triggered on `opened`; **close/reopen didn't fix it — an empty-commit
   push (a real `synchronize`) did.** Don't merge on an absent gate: re-trigger, and lean on the local
   gate (tsc + build + specs) + the green Vercel preview as the real signal. *(2026-06-06.)*
+- **`vercel env add` (the Claude vercel plugin) silently stores EMPTY values.** Both stdin-pipe and
+  `--value` created the var but with no value; `vercel env pull` also redacts *all* values to `""` so it
+  can't verify. **Set Vercel env vars via the REST API** (`POST /v10/projects/{id}/env`, `PATCH` doesn't
+  reliably update the value → DELETE+POST) and verify by value **length** (decrypt needs a scoped token).
+  Also: Preview env adds prompt for a git branch — the "all branches" non-interactive path loops. *(2026-06-06, Flagsmith epic.)*
+- **Backend Cloud Run deploy is image-only.** `apps/backend/cloudbuild.yaml` runs `gcloud run deploy
+  --image=… ` only — env vars / secrets / SA / scaling were set once by `infra/gcp/deploy.sh` and Cloud
+  Run **preserves them across deploys**. So you can **provision a new Secret Manager secret + `gcloud run
+  services update --update-secrets` (additive) BEFORE the merge** that needs it, and the merge's
+  image-swap keeps it. Grant `secretAccessor` to the runtime SA `medusa-run@`. *(2026-06-06.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
@@ -137,6 +147,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
+- **A real flag layer now exists — `lib/flags.ts` in BOTH apps (`flagsmith-nodejs`, Flagsmith SaaS).**
+  Adding a kill-switch = create the flag in Flagsmith + one `isEnabled('...')` check at the seam. **Rules
+  baked in:** fail-open (a hardcoded `DEFAULT_FLAGS` + `isEnabled` never throws → feature stays on if
+  Flagsmith is down/absent); build the client at **module load** (no init race / leaked poll timer); set
+  `requestTimeoutSeconds:2, retries:0` (the SDK default is **3 retries × 10 s ≈ 33 s** — fatal on a hot
+  path). Enforce at the **single source of truth** (e.g. `resolveSellerPaymentMethods`) so UI + agents/UCP
+  + checkout are covered at once. The SDK is **not Edge-compatible** → `middleware.ts` flags need a
+  different mechanism (Edge Config). *(2026-06-06, Flagsmith epic — `checkout.stripe_enabled` shipped
+  front+back; rest of taxonomy deferred, cheap to extend on demand.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole

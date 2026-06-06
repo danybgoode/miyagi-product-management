@@ -1,7 +1,7 @@
 # Sprint 2 — Backend enforcement: make the kill-switch a *true* kill
 
-**Epic:** [Feature flags & kill-switches](README.md) · **Status:** 🚧 In progress
-**Risk:** HIGH (live payment path, backend → Cloud Run, no preview → Daniel merges).
+**Epic:** [Feature flags & kill-switches](README.md) · **Status:** ✅ Merged to `main` 2026-06-06 (PR #9; Cloud Run deploy in flight)
+**Risk:** HIGH (live payment path, backend → Cloud Run, no preview → Daniel merged).
 
 Closes **finding #1** from the S1 review: S1 only *hides* Stripe in the human checkout UI. Agents/UCP
 read the backend catalog directly, and a buyer whose page loaded before the toggle can still POST a
@@ -68,6 +68,7 @@ Stripe checkout — so `start-checkout` still accepts `pp_stripe`. This sprint e
 
 - [x] US-1 built · `src/lib/flags.ts`, payment-methods opts, checkout-options + start-checkout (422) wiring
 - [x] backend `tsc` + `medusa build` green; `npm run test:unit` → 7 passed (4 new)
-- [x] PR opened (HIGH risk) · [#9](https://github.com/danybgoode/medusa-bonsai-backend/pull/9) *(backend has no CI/preview — gate is local tsc+build+unit)*
-- [x] **Cloud Run secret provisioned** (agent, 2026-06-06): Secret Manager `FLAGSMITH_ENVIRONMENT_KEY` = prod key; `secretAccessor` granted to runtime SA `medusa-run@`; wired into `medusa-web` (rev `00087-7mj`). Image-only deploys preserve it, so it survives the merge deploy. No-op on the current image until S2 lands.
-- [ ] **Daniel:** merge PR #9 → Cloud Run image deploy (~12 min) activates enforcement → post-deploy API smoke (checkout-options omits stripe; start-checkout 422)
+- [x] PR [#9](https://github.com/danybgoode/medusa-bonsai-backend/pull/9) **MERGED** to `main` (squash, HIGH-risk, Daniel-authorized) *(backend has no CI/preview — gate was local tsc+build+unit)*
+- [x] **Cloud Run secret provisioned** (agent, 2026-06-06): Secret Manager `FLAGSMITH_ENVIRONMENT_KEY` = prod key; `secretAccessor` granted to runtime SA `medusa-run@`; wired into `medusa-web` (rev `00087-7mj`). Image-only deploys preserve it, so it survives the merge deploy.
+- [x] Cloud Build deploy triggered on merge (`c3e54c3d`, ~12 min)
+- [ ] **Owed to Daniel — post-deploy smoke:** once Cloud Run finishes, toggle `checkout.stripe_enabled` OFF → `checkout-options` omits `stripe` + `start-checkout` returns 422 → toggle ON. *(Toggle touches live prod payments → Daniel's to run when convenient.)*

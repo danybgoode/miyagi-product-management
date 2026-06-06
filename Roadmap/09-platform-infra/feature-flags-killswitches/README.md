@@ -1,5 +1,11 @@
 # Epic — Feature flags & kill-switches (Flagsmith)
 
+> **Status: ✅ SHIPPED 2026-06-06** (S1 frontend PR #34 + S2 backend PR #9, both merged). `checkout.stripe_enabled`
+> is a true fail-open kill-switch enforced across UI + agents/UCP + direct checkout. Future taxonomy
+> (other rails, `checkout.global_pause`, `routing.*`, A/B) **deferred by decision** — the foundation is
+> proven and cheap to extend on demand (see [RETROSPECTIVE](RETROSPECTIVE.md)). S2 post-deploy toggle
+> smoke owed to Daniel.
+
 **Macro-section:** 09 · Platform & Infra
 **Class:** Infra / platform tooling (operational control for the founder; gates buyer/seller surfaces but is not itself a product journey).
 **Scope doc / decision:** [`Roadmap/00-ideas/2. readyforscope/spikeflagsmith.md`](../../00-ideas/2.%20readyforscope/spikeflagsmith.md) — spike **investigated + GO signed off 2026-06-06**.
@@ -41,9 +47,10 @@ Rule 5 (bilingual): N/A — a kill-switch **hides** an option; it adds no user-f
 
 ## Scope
 
-| Sprint | Story | What it ships | Risk |
-|---|---|---|---|
-| [S1](sprint-1.md) | US-1 | `flagsmith-nodejs` + `lib/flags.ts` (fail-open, cached local eval) + **one kill-switch `checkout.stripe_enabled`** at the checkout-options proxy seam, proven flip-without-deploy | **HIGH** (checkout-adjacent) |
+| Sprint | Story | What it ships | Risk | Status |
+|---|---|---|---|---|
+| [S1](sprint-1.md) | US-1 | `flagsmith-nodejs` + `lib/flags.ts` (fail-open, local eval) + **`checkout.stripe_enabled`** at the frontend checkout-options proxy, flip-without-deploy | **HIGH** | ✅ Merged (PR #34) + live-smoked |
+| [S2](sprint-2.md) | US-1 | **Backend enforcement** — `src/lib/flags.ts` + gate in `resolveSellerPaymentMethods` (catalog → agents/UCP) + `start-checkout` 422; makes the kill *real* (closes review finding #1) | **HIGH** | ✅ Merged (PR #9); deploy in flight |
 
 **Future sprints (taxonomy from the spike §3 — not yet scoped/approved):** the rest of the checkout-rail
 kill-switches + `checkout.global_pause`; `agent.mcp_write_enabled`, `shipping.envia_enabled`,
@@ -62,9 +69,10 @@ sprint.
 
 ## Definition of Done (epic)
 
-- [ ] S1 merged + smoke-tested (flip in Flagsmith dashboard → Stripe rail disappears with no deploy → flip back); gaps stated.
-- [ ] `sprint-1.md` has its fool-proof smoke walkthrough + status ticked with commit refs.
-- [ ] This `README.md` marked ✅; `RETROSPECTIVE.md` written.
-- [ ] **Poster note:** infra (no `Roadmap/README.md` feature line) — add/flip a one-line entry in `09-platform-infra/README.md` (✅).
-- [ ] Team memory + `LEARNINGS.md` updated (promote the fail-open flag pattern).
-- [ ] Branch deleted; PR merged.
+- [x] S1 merged + **live-smoked green** (flip in Flagsmith → Stripe rail disappears, no deploy → flip back).
+- [x] S2 merged (backend enforcement); Cloud Run deploy in flight + secret provisioned. **Post-deploy toggle smoke owed to Daniel** (gap stated — toggle touches live prod payments).
+- [x] `sprint-1.md` + `sprint-2.md` have fool-proof smoke walkthroughs + status ticked with refs.
+- [x] This `README.md` marked ✅; [`RETROSPECTIVE.md`](RETROSPECTIVE.md) written.
+- [x] **Poster note:** infra (no `Roadmap/README.md` line) — `09-platform-infra/README.md` flipped to ✅.
+- [x] Team memory + `LEARNINGS.md` updated (fail-open flag pattern + tooling gotchas).
+- [x] Branches deleted; both PRs merged.
