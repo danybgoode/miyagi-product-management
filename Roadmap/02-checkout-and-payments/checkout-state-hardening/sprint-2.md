@@ -1,13 +1,14 @@
 # Sprint 2 — Block ship before paid (UI + server)
 
 > Epic: [Checkout & Manual-Payment State Hardening](README.md) · **Risk: HIGH — Daniel merges.**
-> **Status: 🟡 Built — green gate, awaiting Daniel merge.** Goal: a seller physically cannot ship a
-> manual order before confirming payment — enforced in the **API**, with the UI as the courtesy layer.
-> Builds on S1's durable state.
+> **Status: ✅ SHIPPED to prod 2026-06-07** (Daniel-merged). A seller physically cannot ship a manual
+> order before confirming payment — enforced in the **API**, with the UI as the courtesy layer.
 >
-> **PRs (draft, HIGH risk → Daniel merges):** backend `medusa-bonsai-backend#14` ·
-> frontend `miyagisanchezcommerce#38`. **Deploy order:** backend gate first or together; the UI hides
-> the affordance client-side so the lag window is safe. Rebase latest `main` before merge.
+> **Merged (HIGH risk, Daniel green-lit):** backend `medusa-bonsai-backend#14` (`aa1a20f`) merged first
+> → Cloud Run revision `medusa-web-00093-wzb` live, **then** frontend `miyagisanchezcommerce#38`
+> (`8f707e4`) → Vercel prod. Backend-first honoured (waited for the new ship gates to go live before
+> merging the frontend). Post-merge prod api smoke green (128). **Owed to Daniel:** the steps 1–5
+> authed money/auth browser smoke below.
 
 ## Stories
 
