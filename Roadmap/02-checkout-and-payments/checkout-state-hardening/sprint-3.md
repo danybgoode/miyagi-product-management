@@ -1,12 +1,12 @@
 # Sprint 3 — One total + trust polish
 
 > Epic: [Checkout & Manual-Payment State Hardening](README.md) · **Risk: HIGH — Daniel merges.**
-> **Status: 🟡 Built — green gate, awaiting Daniel merge.** Goal: the price never changes between summary
-> and pay button, the buyer sees how they'll pay before committing, a stalled online payment shows
-> recovery (not false success), and refund language is honest. Frontend-only.
+> **Status: ✅ SHIPPED to prod 2026-06-07** (Daniel-merged). The price never changes between summary and
+> pay button, the buyer sees how they'll pay before committing, a stalled online payment shows recovery
+> (not false success), and refund language is honest. Frontend-only.
 >
-> **PR (draft, HIGH risk → Daniel merges):** frontend `miyagisanchezcommerce#39`. No backend change.
-> Rebase latest `main` before merge.
+> **Merged (HIGH risk, Daniel green-lit):** frontend `miyagisanchezcommerce#39` (`481be07`) → Vercel prod.
+> Post-merge prod api smoke green (135). **Owed to Daniel:** the steps 4–5 money/auth browser smoke.
 
 ## Stories
 

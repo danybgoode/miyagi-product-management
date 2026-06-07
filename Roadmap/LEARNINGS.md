@@ -129,6 +129,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   updateProducts(id, data)`. *(2026-06-05 — Personalized Products S1 added `custom_fields` to product
   metadata, which surfaced this latent bug across the seller edit / soft-delete / view-counter routes;
   Cloud Run SQL logs (`select … where … and metadata->'attrs'->>'brand'=…`) were the tell.)*
+- **`normalizeMedusaOrder` curates *top-level* fields — it does NOT pass raw `order.metadata` through.**
+  Client surfaces that read `order.metadata?.X` therefore get `{}` for Medusa orders and silently render
+  nothing. This had dead-ended the manual confirm/report/ship sections on both the buyer and seller order
+  pages. **Read the normalizer's actual output** and surface what you need as an explicit top-level field
+  (the normalizer already does this for `payment_method`, `payment_received`, `fulfillment_state`, etc.);
+  don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
 
 ## Architecture
 - **Medusa-first pays off (AGENTS rule #1).** Model new commerce features on Medusa primitives before
@@ -147,6 +153,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
+- **A server gate must cover every *mutation*, not the route the button names.** "Ship" looked like one
+  action but had **two** backend mutations — the Envía `ship` route AND the `[id]` PATCH that the
+  frontend `ship-manual` proxies to. Gating only the named route leaves a bypass. Find every write that
+  reaches the state you're protecting and gate each (the UI gate is courtesy; the API is the guarantee).
+  *(2026-06-07, checkout-state-hardening S2.)*
+- **A lifecycle/state machine lives best as a pure, next-free `lib/` helper** (derivation + transition
+  guards + copy), mirrored once in the backend normalizer for agents. One source of truth per side, and
+  a pure-logic spec proves invariants for free — e.g. summary ≡ CTA *because both call the one
+  `computeCheckoutTotal`*, and an illegal transition (`pending_payment → processing`) is rejected by the
+  guard. *(2026-06-07, checkout-state-hardening — `lib/manual-payment-state.ts`, `lib/checkout-total.ts`.)*
 - **A real flag layer now exists — `lib/flags.ts` in BOTH apps (`flagsmith-nodejs`, Flagsmith SaaS).**
   Adding a kill-switch = create the flag in Flagsmith + one `isEnabled('...')` check at the seam. **Rules
   baked in:** fail-open (a hardcoded `DEFAULT_FLAGS` + `isEnabled` never throws → feature stays on if

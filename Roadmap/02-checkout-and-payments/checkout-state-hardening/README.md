@@ -2,7 +2,8 @@
 
 > **Macro-section:** [02 · Checkout & Payments](../README.md) · **BUILD-ORDER:** #3b ·
 > **Risk: HIGH — Daniel merges every story** (payments / checkout / fulfillment / money).
-> **Status: 📋 Planned** (scaffolded 2026-06-06). Scope doc:
+> **Status: ✅ COMPLETE — all 3 sprints shipped to prod 2026-06-07.** (S1 BE #13/FE #36, S2 BE #14/FE #38,
+> S3 FE #39.) Money/auth browser smokes owed to Daniel (per-sprint walkthroughs). Scope doc:
 > [`00-ideas/2. readyforscope/checkout-state-hardening.md`](../../00-ideas/2.%20readyforscope/checkout-state-hardening.md).
 > Driven by the #3a refresh: [`results-refresh-2026-06/`](../../00-ideas/2.%20readyforscope/ux-audit/results-refresh-2026-06/)
 > (pinned frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
@@ -63,11 +64,11 @@ across the ~12-min Cloud Run window. S2.2 likewise touches backend `ship` + fron
 land the backend gate first. S3 is mostly frontend. Rebase latest `main` before each PR (parallel agents).
 
 ## Definition of Done (epic close-out checklist)
-- [ ] All 3 sprints' stories merged to `main` + smoke-tested (money-path gaps stated, owed to Daniel).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough with **real production URLs**; money/auth steps flagged as owed to Daniel.
-- [ ] This README marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] **Product poster updated** (`Roadmap/README.md` — 02 line + Recent highlights: durable manual-payment state, ship gating, single total).
-- [ ] Team memory updated (epic memory + `MEMORY.md` index).
-- [ ] **`Roadmap/LEARNINGS.md` updated** — promote durable learnings (e.g. the metadata state-machine pattern; server-gate-not-just-UI).
-- [ ] Feature branch deleted; PRs merged.
+- [x] All 3 sprints' stories merged to `main` + smoke-tested (money-path gaps stated, owed to Daniel).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough with **real production URLs**; money/auth steps flagged as owed to Daniel.
+- [x] This README marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] **Product poster updated** (`Roadmap/README.md` — 02 line + Recent highlights: durable manual-payment state, ship gating, single total).
+- [x] Team memory updated (epic memory + `MEMORY.md` index).
+- [x] **`Roadmap/LEARNINGS.md` updated** — promote durable learnings (the metadata state-machine pattern; curated top-level normalized fields; server-gate-both-mutations).
+- [x] Feature branches deleted; PRs merged.
