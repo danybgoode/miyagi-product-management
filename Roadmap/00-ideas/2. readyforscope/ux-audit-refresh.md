@@ -1,9 +1,11 @@
 # Scope — UX Audit Refresh (BUILD-ORDER #3a)
 
-> **Status: SIGNED OFF (Daniel, 2026-06-06).** Scope approved. **Next action: run the spike** as a
-> read-only Claude Code investigation session (kickoff prompt below) — **do NOT scaffold an epic**;
-> the deliverable is written findings + a re-scope delta. Results landing location confirmed:
-> `ux-audit/results-refresh-2026-06/` (v1 baseline kept intact for diffing).
+> **Status: SIGNED OFF (Daniel, 2026-06-06) — SPIKE RUN + FINDINGS LANDED (2026-06-06).** The
+> read-only re-audit is complete. Deliverable: `ux-audit/results-refresh-2026-06/` (refreshed 01–05
+> + `00-rescope-delta.md`), pinned to `origin/main` frontend `ed447bd` / backend `0980253`, v1
+> baseline kept. Outcome: all three #3b money-path P0s reproduce on `main`; no new P0 jumps the
+> queue; two reuse hooks found. BUILD-ORDER #3a ticked + #3b/#5/#6/#3c lines sharpened. No epic
+> scaffolded (spike → written decision). **Next: groom #3b off the delta.**
 > Groomed 2026-06-06. Class: **Spike** (time-boxed read-only investigation → **written findings +
 > a decision**, no code, no slicing). Stage-2.5 bucket: **this IS the orientation step** — a
 > planning spike whose output re-scopes the waves after it.
