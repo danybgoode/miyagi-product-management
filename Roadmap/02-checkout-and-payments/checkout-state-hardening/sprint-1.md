@@ -1,14 +1,15 @@
 # Sprint 1 — Durable manual-payment state machine (the spine)
 
 > Epic: [Checkout & Manual-Payment State Hardening](README.md) · **Risk: HIGH — Daniel merges.**
-> **Status: 🟡 Built — green gate, awaiting Daniel merge.** Goal: the buyer's "ya pagué" becomes a
+> **Status: ✅ SHIPPED to prod 2026-06-07** (Daniel-merged). Goal met: the buyer's "ya pagué" is a
 > real, persisted, shared state that survives reload and is the single vocabulary both sides (and
 > agents) read.
 >
-> **PRs (draft, HIGH risk → Daniel merges):**
-> backend `medusa-bonsai-backend#13` · frontend `miyagisanchezcommerce#36`.
-> **Deploy order:** merge backend first or together; frontend degrades gracefully across the
-> ~12-min Cloud Run window. Rebase latest `main` before merge (parallel agents).
+> **Merged (HIGH risk, Daniel green-lit):** backend `medusa-bonsai-backend#13` (`5538ab0`) merged
+> first → Cloud Run revision `medusa-web-00092-m4d` live, **then** frontend `miyagisanchezcommerce#36`
+> (`da1409c`) → Vercel prod. Backend-first honoured (waited for the new `report-payment` route to go
+> live before merging the frontend, so the buyer write never hit a missing route).
+> **Owed to Daniel:** the 6-step authed money/auth browser smoke below.
 
 ## Stories
 
