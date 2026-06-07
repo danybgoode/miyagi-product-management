@@ -2,9 +2,9 @@
 
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #5 ·
 > **Risk: HIGH — Daniel merges every story** (rides order / offer / payment dispatch).
-> **Status: 🏗️ In progress** — S1 built (seam + prefs + settings + routing), draft
-> [PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40), gate green, awaiting Daniel
-> merge; S2–S3 planned. Scope doc:
+> **Status: 🏗️ In progress** — S1 ✅ **SHIPPED to prod 2026-06-07**
+> ([PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40), `2557b42`): seam + prefs +
+> settings + routing. S2–S3 planned. Scope doc:
 > [`00-ideas/2. readyforscope/granular-notifications.md`](../../00-ideas/2.%20readyforscope/granular-notifications.md).
 > Groomed off BUILD-ORDER #5 + the #3a refresh
 > ([`results-refresh-2026-06/`](../../00-ideas/2.%20readyforscope/ux-audit/results-refresh-2026-06/),

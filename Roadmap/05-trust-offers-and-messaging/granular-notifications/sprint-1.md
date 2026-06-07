@@ -1,7 +1,7 @@
 # Sprint 1 — Preference model + dispatch seam + settings UI (email/push; Telegram stub)
 
 > Epic: [Granular Multi-Channel Notifications](README.md) · **Risk: HIGH — Daniel merges.**
-> **Status: 🏗️ Built — draft [PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40), gate green, awaiting Daniel merge.** Goal: granular control ships **before** Telegram delivery does — a seller can
+> **Status: ✅ SHIPPED to prod 2026-06-07 — [PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40) merged (`2557b42`, Daniel-authorized). Authed seller browser smoke owed to Daniel.** Goal: granular control ships **before** Telegram delivery does — a seller can
 > turn email/push categories on/off and the dispatch seam respects it, with the data model ready for
 > the Telegram channel that Sprint 2 lights up. **Can build in parallel with #3b.**
 
