@@ -9,7 +9,7 @@
 > **next-session handoff prompt** (bottom of this file) points at the next ⬜ item. Re-order freely as
 > new information lands — this is a living queue, not a contract.
 
-_Last updated: 2026-06-06 (after running the #3a spike + landing its re-scope delta)._
+_Last updated: 2026-06-06 (after grooming + signing off #5 and adding its follow-on #5b)._
 
 ## The agreed order (consolidated from the 2026-06-06 backlog dump)
 
@@ -26,8 +26,9 @@ downstream of #3 + #4.
 - ✅ **#3a · UX audit refresh** — *groomed + signed off 2026-06-06; **spike now RUN, findings landed 2026-06-06**.* Scope: `2. readyforscope/ux-audit-refresh.md`. Class: **spike** (read-only re-audit → written findings + re-scope delta, no build). Deliverable landed in `ux-audit/results-refresh-2026-06/` (v1 baseline kept): refreshed 01–05 + a cross-cutting **`00-rescope-delta.md`**. Pinned to `origin/main` (frontend `ed447bd`, backend `0980253`). **Outcome:** all three #3b money-path P0s reproduce on current `main`; **no new P0 jumps the queue**; two reuse hooks found (a `paymentSettled` predicate already computed; the print flow already persists a `payment_reported` flag) → #3b is cheaper than v1 implied. *(Audit-env note: the working tree was on stale branches 48 commits behind `main` — findings were re-read from `origin/main`.)* No epic scaffolded — the deltas re-scope the waves below.
 
 ### Wave 2 — Highest-value product (driven by the refreshed audit)
-- ⬜ **#3b · Checkout & manual-payment state hardening** — *re-scoped by the #3a spike (see `results-refresh-2026-06/00-rescope-delta.md`).* The three money-path P0s **all reproduce on `main@ed447bd`/`0980253`**: (1) durable `buyer_reported_paid` — `report-payment` is Telegram-only, the flag exists nowhere; (2) block-ship-before-paid — `ShippingSection` gated only on `listing_type`, **both** backend ship routes ungated; (3) coupon-vs-CTA total mismatch — pay button ignores the coupon. **Reuse hooks:** the `paymentSettled` predicate is already computed (wired to refunds — re-point at shipping); the print flow already persists `payment_reported` (mirror for marketplace, Medusa-first, likely zero new tables). **Decision at groom:** refund-language honesty fix → #3b copy-only sub-item vs #3c. **HIGH-risk — Daniel merges.** Money path, biggest trust win. **← NEXT to groom.**
-- ⬜ **#5 · Granular multi-channel notifications (Email + Telegram)** — feature. Reuses the existing Telegram send primitive. Sequences right behind #3b. **Depends on #3b** for the durable `buyer_reported_paid` event — today it's Telegram-only and not persisted, so it can't be a reliable trigger until #3b lands.
+- ✅ **#3b · Checkout & manual-payment state hardening** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/checkout-state-hardening.md`. Class: Feature/epic (money-path hardening). Scaffolded under `02-checkout-and-payments/checkout-state-hardening/` (**3 sprints**: S1 durable manual-payment state machine · S2 block-ship-before-paid UI+server · S3 one coupon-aware total + trust polish). Daniel's calls: **all 02 P1s in v1** (preview-before-placement + async-success recovery), refund-language **copy-only fix in #3b**, 3 sprints. **All stories HIGH-risk — Daniel merges each.** Reuse hooks confirmed: `paymentSettled` predicate (re-point at shipping) + the print `payment_reported` pattern (mirror, Medusa-first). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
+- ✅ **#5 · Granular multi-channel notifications (Email + Telegram)** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/granular-notifications.md`. Class: Feature/epic. **Sellers-first.** Scaffolded under `05-trust-offers-and-messaging/granular-notifications/` (**3 sprints**: S1 dispatch seam + Supabase prefs/link tables + settings grid (email/push; TG stub) · S2 Telegram seller channel — `/start` deep-link + webhook linking, `tgNotify`→`tgSend`, unlink + test · S3 ⛔ blocked-by #3b: wire durable `buyer_reported_paid` → seller across channels + complete Payments group + bilingual polish). Daniel's calls: sellers-first · per-channel + event-group toggles · unify only in-scope events · include `buyer_reported_paid` (blocked-by #3b). **All stories HIGH-risk — Daniel merges.** Reuse confirmed: email (`lib/email.ts`) + push (`lib/notify.ts`) channels already ship; net-new is the Telegram *user* channel + the preference layer; `tgNotify` generalizes to `tgSend`. **Dependency: Sprints 1–2 run in parallel with #3b; Sprint 3 blocked-by #3b.** **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
+- ⬜ **#5b · Buyer Telegram channel + buyer preference center** — feature, **builds on top of #5**. Extends the #5 dispatch seam + Telegram linking + preference center to the **buyer** audience (buyer-side event-groups: order confirmed, payment confirmed, shipped, delivered, offer responses). Pure extension — reuses everything #5 lands (the seam, `tgSend`, the two Supabase tables' shape, the settings-grid pattern). **Depends on #5.** Low net-new surface, but HIGH-risk where it rides money-path events.
 
 ### Wave 3 — Surfaces
 - ⬜ **#6 · Sellers landing page redesign** — sits on the #4 design tokens (redesigning before tokens = rework). **New constraint (from #3a):** make it **channel-aware** — the storefront now renders white-label across subdomain / custom-domain / short-link / embed, so add a **per-channel trust-signal audit** to discovery.
@@ -40,27 +41,37 @@ downstream of #3 + #4.
 
 ## Next-session handoff prompt (paste into a fresh Cowork session)
 
-> **Sequencing note.** #3a is *groomed + signed off* but the spike itself hasn't *run* yet — and its
-> whole purpose is to re-scope #3b. So the next step is **not** to groom #3b blind; it's to **run the
-> #3a spike investigation first** (Claude Code, read-only, no build), then groom #3b off the refreshed
-> findings. The two prompts below are in order.
+> **State.** #3a (spike) is *run + landed*; **#3b and #5 are both *groomed + signed off + scaffolded***
+> (#3b: 3 sprints under `02-checkout-and-payments/checkout-state-hardening/`; #5: 3 sprints under
+> `05-trust-offers-and-messaging/granular-notifications/`; kickoff prompts emitted for both). Threads now
+> open: **(A) BUILD #3b**, **(B) BUILD #5** (Sprints 1–2 parallel with #3b; S3 blocked-by #3b), and
+> **(C) GROOM the next ⬜ item, #5b** (buyer Telegram + buyer preference center) in a fresh Cowork
+> session. All high-risk → Daniel merges each story.
 
-**Step 1 — run the #3a spike (Claude Code, read-only investigation, no branch/build):**
-the kickoff prompt lives in `Roadmap/00-ideas/2. readyforscope/ux-audit-refresh.md` (bottom section).
-It produces refreshed findings in `ux-audit/results-refresh-2026-06/01–05` + a re-scope delta that
-edits this file (sharpens the #3b/#5/#6/#3c lines).
+**Thread A — build #3b (Claude Code):** start Sprint 1 (durable manual-payment state machine). Kickoff
+prompt: read `AGENTS.md` + `WAYS-OF-WORKING.md` + `LEARNINGS.md`, then
+`Roadmap/02-checkout-and-payments/checkout-state-hardening/README.md` + `sprint-1.md`; branch
+`feat/checkout-state-hardening`; build one story at a time; backend-first deploy; Daniel merges.
 
-**Step 2 — once the spike's findings have landed, groom the next ⬜ item (#3b) in a fresh Cowork session:**
+**Thread B — build #5 (Claude Code):** start Sprint 1 (dispatch seam + prefs/link tables + settings
+grid). Kickoff prompt: read `AGENTS.md` + `WAYS-OF-WORKING.md` + `LEARNINGS.md`, then
+`Roadmap/05-trust-offers-and-messaging/granular-notifications/README.md` + `sprint-1.md`; branch
+`feat/granular-notifications`; build one story at a time; Supabase migration first; Daniel merges.
+**Sprints 1–2 run in parallel with #3b; Sprint 3 is blocked-by #3b** (it imports #3b's
+`buyer_reported_paid` from `lib/manual-payment-state.ts`).
+
+**Thread C — groom the next ⬜ item (#5b) in a fresh Cowork session:**
 ```
 We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
-The last groomed item was #3a (UX audit refresh) — a spike, signed off; its investigation has now run
-and the refreshed findings live in Roadmap/00-ideas/2. readyforscope/ux-audit/results-refresh-2026-06/.
+The last groomed item was #5 (Granular multi-channel notifications, Email + Telegram) — signed off +
+scaffolded, sellers-first.
 
-Groom the next ⬜ item: #3b · Checkout & manual-payment state hardening.
+Groom the next ⬜ item: #5b · Buyer Telegram channel + buyer preference center.
 Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
-(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the refreshed audit
-findings (results-refresh-2026-06/02, 03, 05) and the #3a re-scope delta. #3b is the money path:
-durable buyer_reported_paid, block-ship-before-paid, coupon-vs-CTA total mismatch — high-risk,
-Daniel merges. Then run /groom on #3b — one ask, the normal stages — and stop at the scope-doc gate
-for my sign-off.
+(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the #5 scope doc
+(2. readyforscope/granular-notifications.md) and its scaffolded epic
+(05-trust-offers-and-messaging/granular-notifications/README.md + sprint-1..3).
+Key point: #5b is a pure EXTENSION of #5 to the buyer audience — reuse the #5 dispatch seam, tgSend,
+the two Supabase tables' shape, and the settings-grid pattern; don't re-invent them. Depends on #5.
+Then run /groom on #5b — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
 ```
