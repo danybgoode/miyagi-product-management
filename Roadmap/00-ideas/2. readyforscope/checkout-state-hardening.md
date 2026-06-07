@@ -1,8 +1,8 @@
 # Scope — Checkout & Manual-Payment State Hardening (BUILD-ORDER #3b)
 
-> **Status: AWAITING SIGN-OFF (Daniel).** Definition-of-Ready scope doc. **This is the gate —
-> nothing scaffolds until you approve it.** On approval: scaffold the epic + 3 sprint docs under
-> `02-checkout-and-payments/`, commit, and emit the per-sprint Claude Code kickoff prompts.
+> **Status: SIGNED OFF (Daniel, 2026-06-06).** Gate passed. Scaffolded under
+> `02-checkout-and-payments/checkout-state-hardening/` (epic README + sprint-1..3); kickoff prompts
+> emitted. **Next action: Claude Code build, Sprint 1 first.**
 > Groomed 2026-06-06 off the #3a refresh (`ux-audit/results-refresh-2026-06/`, pinned
 > frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
 > **Class: Feature/epic** (money-path *hardening* — most stories are bug-class fixes of a
@@ -120,4 +120,4 @@ Daniel pre-#3c); escrow/Compra Protegida (separate spike).
 - [x] v1 in/out boundary written; Daniel's 3 scope decisions captured.
 - [x] Medusa-first reuse list produced (paymentSettled predicate · print `payment_reported` pattern · confirm-payment route · checkout total seam · normalizeMedusaOrder).
 - [x] Each story risk-tiered (all HIGH); QA stage named per story; browser smokes' owner (Daniel) identified.
-- [ ] **Daniel approves this scope doc** ← the gate. On approval: scaffold `02-checkout-and-payments/checkout-state-hardening/` (epic README + sprint-1..3) + commit + emit 3 kickoff prompts.
+- [x] **Daniel approved this scope doc (2026-06-06)** ← gate passed. Scaffolded `02-checkout-and-payments/checkout-state-hardening/` (epic README + sprint-1..3) + committed + 3 kickoff prompts emitted.
