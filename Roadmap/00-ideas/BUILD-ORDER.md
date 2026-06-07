@@ -9,7 +9,7 @@
 > **next-session handoff prompt** (bottom of this file) points at the next ⬜ item. Re-order freely as
 > new information lands — this is a living queue, not a contract.
 
-_Last updated: 2026-06-06 (after grooming + signing off #5 and adding its follow-on #5b)._
+_Last updated: 2026-06-06 (after grooming + signing off #5b — buyer notifications — with Devoluciones folded into v1)._
 
 ## The agreed order (consolidated from the 2026-06-06 backlog dump)
 
@@ -28,7 +28,7 @@ downstream of #3 + #4.
 ### Wave 2 — Highest-value product (driven by the refreshed audit)
 - ✅ **#3b · Checkout & manual-payment state hardening** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/checkout-state-hardening.md`. Class: Feature/epic (money-path hardening). Scaffolded under `02-checkout-and-payments/checkout-state-hardening/` (**3 sprints**: S1 durable manual-payment state machine · S2 block-ship-before-paid UI+server · S3 one coupon-aware total + trust polish). Daniel's calls: **all 02 P1s in v1** (preview-before-placement + async-success recovery), refund-language **copy-only fix in #3b**, 3 sprints. **All stories HIGH-risk — Daniel merges each.** Reuse hooks confirmed: `paymentSettled` predicate (re-point at shipping) + the print `payment_reported` pattern (mirror, Medusa-first). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
 - ✅ **#5 · Granular multi-channel notifications (Email + Telegram)** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/granular-notifications.md`. Class: Feature/epic. **Sellers-first.** Scaffolded under `05-trust-offers-and-messaging/granular-notifications/` (**3 sprints**: S1 dispatch seam + Supabase prefs/link tables + settings grid (email/push; TG stub) · S2 Telegram seller channel — `/start` deep-link + webhook linking, `tgNotify`→`tgSend`, unlink + test · S3 ⛔ blocked-by #3b: wire durable `buyer_reported_paid` → seller across channels + complete Payments group + bilingual polish). Daniel's calls: sellers-first · per-channel + event-group toggles · unify only in-scope events · include `buyer_reported_paid` (blocked-by #3b). **All stories HIGH-risk — Daniel merges.** Reuse confirmed: email (`lib/email.ts`) + push (`lib/notify.ts`) channels already ship; net-new is the Telegram *user* channel + the preference layer; `tgNotify` generalizes to `tgSend`. **Dependency: Sprints 1–2 run in parallel with #3b; Sprint 3 blocked-by #3b.** **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
-- ⬜ **#5b · Buyer Telegram channel + buyer preference center** — feature, **builds on top of #5**. Extends the #5 dispatch seam + Telegram linking + preference center to the **buyer** audience (buyer-side event-groups: order confirmed, payment confirmed, shipped, delivered, offer responses). Pure extension — reuses everything #5 lands (the seam, `tgSend`, the two Supabase tables' shape, the settings-grid pattern). **Depends on #5.** Low net-new surface, but HIGH-risk where it rides money-path events.
+- ✅ **#5b · Buyer Telegram channel + buyer preference center** — *groomed + signed off 2026-06-06.* Scope: `2. readyforscope/buyer-notifications.md`. Class: Feature/epic — a **pure EXTENSION of #5** to the buyer audience. Scaffolded under `05-trust-offers-and-messaging/buyer-notifications/` (**2 sprints**: S1 buyer prefs + `dispatchToBuyer` seam + `app/account/notificaciones` grid + guest-safe routing · S2 buyer Telegram link/deliver/unlink+test + polish). Daniel's calls: **signed-in buyers only** (prefs/TG are `clerk_user_id`-keyed; guests keep today's emails) · **Compras email mandatory** (forced-on in the resolver) · event-groups **Compras/Envíos/Ofertas/Devoluciones** (Devoluciones folded in at sign-off) · settings at **new `app/account/notificaciones`**. Reuse confirmed: #5's seam + pure resolver, the two Supabase tables (audience-namespaced keys, no new table), `tgSend`, the `/start` linking webhook, the settings-grid component, every buyer email sender, `app/account` shell. **All stories HIGH-risk — Daniel merges.** **Hard dependency: #5** (build after it merges); **#3b is only a soft vocabulary alignment** (buyer money events are already-firing emails). **Next action: Claude Code build, Sprint 1 first** (kickoff prompts emitted at groom time).
 
 ### Wave 3 — Surfaces
 - ⬜ **#6 · Sellers landing page redesign** — sits on the #4 design tokens (redesigning before tokens = rework). **New constraint (from #3a):** make it **channel-aware** — the storefront now renders white-label across subdomain / custom-domain / short-link / embed, so add a **per-channel trust-signal audit** to discovery.
@@ -41,12 +41,13 @@ downstream of #3 + #4.
 
 ## Next-session handoff prompt (paste into a fresh Cowork session)
 
-> **State.** #3a (spike) is *run + landed*; **#3b and #5 are both *groomed + signed off + scaffolded***
-> (#3b: 3 sprints under `02-checkout-and-payments/checkout-state-hardening/`; #5: 3 sprints under
-> `05-trust-offers-and-messaging/granular-notifications/`; kickoff prompts emitted for both). Threads now
-> open: **(A) BUILD #3b**, **(B) BUILD #5** (Sprints 1–2 parallel with #3b; S3 blocked-by #3b), and
-> **(C) GROOM the next ⬜ item, #5b** (buyer Telegram + buyer preference center) in a fresh Cowork
-> session. All high-risk → Daniel merges each story.
+> **State.** #3a (spike) is *run + landed*; **#3b, #5 and #5b are all *groomed + signed off +
+> scaffolded*** (#3b: 3 sprints under `02-checkout-and-payments/checkout-state-hardening/`; #5: 3
+> sprints under `05-trust-offers-and-messaging/granular-notifications/`; #5b: 2 sprints under
+> `05-trust-offers-and-messaging/buyer-notifications/`; kickoff prompts emitted for all three). Threads
+> now open: **(A) BUILD #3b**, **(B) BUILD #5** (S1–2 parallel with #3b; S3 blocked-by #3b), **(C) BUILD
+> #5b** (after #5 merges — it extends #5's seam/tables/`tgSend`/webhook/grid), and **(D) GROOM the next
+> ⬜ item, #6** (sellers landing page redesign) in a fresh Cowork session. All high-risk → Daniel merges.
 
 **Thread A — build #3b (Claude Code):** start Sprint 1 (durable manual-payment state machine). Kickoff
 prompt: read `AGENTS.md` + `WAYS-OF-WORKING.md` + `LEARNINGS.md`, then
@@ -60,18 +61,25 @@ grid). Kickoff prompt: read `AGENTS.md` + `WAYS-OF-WORKING.md` + `LEARNINGS.md`,
 **Sprints 1–2 run in parallel with #3b; Sprint 3 is blocked-by #3b** (it imports #3b's
 `buyer_reported_paid` from `lib/manual-payment-state.ts`).
 
-**Thread C — groom the next ⬜ item (#5b) in a fresh Cowork session:**
+**Thread C — build #5b (Claude Code), AFTER #5 has merged:** start Sprint 1 (buyer seam + prefs grid +
+guest-safe routing). Kickoff prompt: read `AGENTS.md` + `WAYS-OF-WORKING.md` + `LEARNINGS.md`, then
+`Roadmap/05-trust-offers-and-messaging/buyer-notifications/README.md` + `sprint-1.md`; branch
+`feat/buyer-notifications`; build one story at a time; **reuse #5's seam/resolver/tables/`tgSend`/webhook/
+grid — extend, don't rebuild**; Daniel merges. (No #3b gate — buyer money events are already-firing emails.)
+
+**Thread D — groom the next ⬜ item (#6) in a fresh Cowork session:**
 ```
 We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
-The last groomed item was #5 (Granular multi-channel notifications, Email + Telegram) — signed off +
-scaffolded, sellers-first.
+The last groomed item was #5b (buyer Telegram channel + buyer preference center) — signed off +
+scaffolded, signed-in-buyers-only, Devoluciones folded in.
 
-Groom the next ⬜ item: #5b · Buyer Telegram channel + buyer preference center.
+Groom the next ⬜ item: #6 · Sellers landing page redesign.
 Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
-(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the #5 scope doc
-(2. readyforscope/granular-notifications.md) and its scaffolded epic
-(05-trust-offers-and-messaging/granular-notifications/README.md + sprint-1..3).
-Key point: #5b is a pure EXTENSION of #5 to the buyer audience — reuse the #5 dispatch seam, tgSend,
-the two Supabase tables' shape, and the settings-grid pattern; don't re-invent them. Depends on #5.
-Then run /groom on #5b — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
+(Roadmap/README.md, Roadmap/WAYS-OF-WORKING.md, Roadmap/LEARNINGS.md), then the #4 design-token scope
+(2. readyforscope/design-token-foundation.md) and its epic, plus the #3a re-scope delta
+(2. readyforscope/ux-audit/results-refresh-2026-06/00-rescope-delta.md).
+Key points: #6 sits on the #4 design tokens (redesigning before tokens = rework), and the #3a refresh
+added a constraint — make it CHANNEL-AWARE (storefront now renders white-label across subdomain /
+custom-domain / short-link / embed), so include a per-channel trust-signal audit in discovery.
+Then run /groom on #6 — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
 ```
