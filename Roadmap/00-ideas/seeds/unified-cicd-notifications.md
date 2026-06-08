@@ -1,3 +1,16 @@
+---
+title: "Unified CI/CD + Git event notifications (Telegram)"
+slug: unified-cicd-notifications
+status: scaffolded
+area: "09"
+type: chore
+priority: wave-0
+risk: low
+epic: "09-platform-infra/cicd-telegram-notifications"
+build_order: "#2"
+updated: 2026-06-08
+---
+
 # Scope doc — Unified CI/CD + Git event notifications via Telegram
 
 > **Status: APPROVED 2026-06-06** (Daniel signed off; epic location = new `Roadmap/09-platform-infra/` area; Vercel mechanism revised for free tier — see D5).

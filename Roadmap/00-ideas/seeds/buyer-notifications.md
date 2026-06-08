@@ -1,3 +1,16 @@
+---
+title: "Buyer Telegram channel + preference center"
+slug: buyer-notifications
+status: in-progress
+area: "05"
+type: feature
+priority: wave-2
+risk: high
+epic: "05-trust-offers-and-messaging/buyer-notifications"
+build_order: "#5b"
+updated: 2026-06-08
+---
+
 # Scope — Buyer Telegram channel + Buyer preference center (BUILD-ORDER #5b)
 
 > **Status: SIGNED OFF (Daniel, 2026-06-06).** Gate passed. Scaffolded under
@@ -6,7 +19,7 @@
 > v1 as a 4th buyer event-group (was OUT in the draft). **Next action: Claude Code build — Sprint 1
 > first, after #5 has merged** (#5 is the hard dependency). Groomed 2026-06-06 in a fresh Cowork
 > session off BUILD-ORDER #5b, on top of the
-> signed-off #5 (`2. readyforscope/granular-notifications.md` + the scaffolded epic
+> signed-off #5 (`seeds/granular-notifications.md` + the scaffolded epic
 > `05-trust-offers-and-messaging/granular-notifications/`). Pinned to the same baseline as #5
 > (frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
 > **Class: Feature/epic — a pure EXTENSION of #5 to the buyer audience.**

@@ -46,7 +46,7 @@
 - **Transactional emails with the tenant domain** (AC 2.3) — requires `channel` in the main flow's metadata
   (backend).
 - **Asset masking** (AC 1.3) and **Clerk satellite domains** (full AC 2.2) — deferred by design.
-- All of this lives in `Roadmap/00-ideas/2. readyforscope/custom-domain-checkout.md`.
+- All of this lives in `Roadmap/00-ideas/seeds/custom-domain-checkout.md`.
 
 ## Gotchas for the next agent
 - The backend deploys via a **regional Cloud Build in us-east4** (~12 min); the frontend via Vercel on

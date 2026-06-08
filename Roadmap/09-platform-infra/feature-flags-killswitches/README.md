@@ -8,7 +8,7 @@
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Infra / platform tooling (operational control for the founder; gates buyer/seller surfaces but is not itself a product journey).
-**Scope doc / decision:** [`Roadmap/00-ideas/2. readyforscope/spikeflagsmith.md`](../../00-ideas/2.%20readyforscope/spikeflagsmith.md) — spike **investigated + GO signed off 2026-06-06**.
+**Scope doc / decision:** [`Roadmap/00-ideas/seeds/spike-flagsmith.md`](../../00-ideas/seeds/spike-flagsmith.md) — spike **investigated + GO signed off 2026-06-06**.
 
 ## Why
 

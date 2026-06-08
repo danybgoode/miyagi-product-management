@@ -12,7 +12,7 @@ session metadata does **not** carry `channel`; only the legacy routes do) and de
 hop to the platform** that doesn't exist yet (Clerk is platform-domain-only, satellite domains were
 deferred → today checkout from a custom domain is not functional). Stories US-7/US-8 assume a working
 checkout. Daniel's decision: **close the epic at S1+S2** and move this scope to a future epic with explicit
-backend scope: `Roadmap/00-ideas/2. readyforscope/custom-domain-checkout.md`.
+backend scope: `Roadmap/00-ideas/seeds/custom-domain-checkout.md`.
 
 Risk: **HIGH** — adjacent to money/email + auth + backend. Daniel merges.
 

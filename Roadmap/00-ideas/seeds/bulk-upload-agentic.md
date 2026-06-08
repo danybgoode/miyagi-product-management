@@ -1,3 +1,16 @@
+---
+title: "Bulk upload (agentic)"
+slug: bulk-upload-agentic
+status: shipped
+area: "03"
+type: feature
+priority: null
+risk: high
+epic: "03-selling-and-shops/bulk-import-migration"
+build_order: null
+updated: 2026-06-08
+---
+
 Bulk upload:
 By utilizing the open-source Universal Commerce Protocol (UCP) schema format, we are training the tenant's external AI agent to structure data into a globally standard format that makes their shop instantly discoverable by downstream agentic shopping engines.
 

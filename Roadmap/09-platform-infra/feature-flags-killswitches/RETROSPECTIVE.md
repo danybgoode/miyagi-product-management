@@ -5,7 +5,7 @@
 layer**. `checkout.stripe_enabled` is a real kill across the human UI, agents/UCP, and direct checkout.
 
 ## What shipped
-- **Spike → decision** (`spikeflagsmith.md` §1–6): located the live instance (Flagsmith **SaaS**, project
+- **Spike → decision** (`spike-flagsmith.md` §1–6): located the live instance (Flagsmith **SaaS**, project
   `miyagisanchezmarketplace`), corrected two premises (SDK evaluates **locally** ~0 ms; Amplitude/Clarity
   are **not** wired → A/B deferred), recommended SaaS + a thin first slice. GO signed off.
 - **S1 (frontend):** `lib/flags.ts` (`flagsmith-nodejs`, local eval, fail-open `DEFAULT_FLAGS`,

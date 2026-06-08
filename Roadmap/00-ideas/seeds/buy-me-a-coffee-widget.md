@@ -1,3 +1,16 @@
+---
+title: "Buy-me-a-coffee tip widget"
+slug: buy-me-a-coffee-widget
+status: raw
+area: "08"
+type: feature
+priority: null
+risk: low
+epic: null
+build_order: null
+updated: 2026-06-08
+---
+
 ## Context
 
 Marketplace tenants (creators, independent curators, and small merchants) often engage with their audiences outside of the core marketplace site (e.g., blogs, portfolios, personal sites). While they sell products, they also need a lightweight, frictionless way to capture casual financial support, tips, or micro-donations directly within those external environments.

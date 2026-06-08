@@ -1,3 +1,16 @@
+---
+title: "Custom-domain polish"
+slug: custom-domain-polish
+status: shipped
+area: "07"
+type: feature
+priority: null
+risk: low
+epic: "07-agentic-and-federated-commerce/custom-domain-polish"
+build_order: null
+updated: 2026-06-08
+---
+
 ## Context
 
 The plumbing for custom domains already exists, the domain API route, middleware rewriting). This task is about polishing the **seller-facing setup experience** — making it clear, fast, and error-proof. And the infrastructure rock solid and following best practices. The actual storefront UX once the domain is live should covered in its own separate **Own shop experience** task.

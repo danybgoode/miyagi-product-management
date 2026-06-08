@@ -1,3 +1,16 @@
+---
+title: "Designer collaboration portal (deferred from #4)"
+slug: designer-collaboration-portal
+status: raw
+area: "08"
+type: feature
+priority: null
+risk: low
+epic: null
+build_order: null
+updated: 2026-06-08
+---
+
 Epic: Rotating Brand Collaboration & Seasonal Theme Engine
 
 Implementation status - 2026-06-05

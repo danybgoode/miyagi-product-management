@@ -3,7 +3,7 @@
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #5b ·
 > **Risk: HIGH — Daniel merges every story** (rides buyer order / payment / ship / return dispatch).
 > **Status: 📋 Planned** (scaffolded 2026-06-06). Scope doc:
-> [`00-ideas/2. readyforscope/buyer-notifications.md`](../../00-ideas/2.%20readyforscope/buyer-notifications.md).
+> [`00-ideas/seeds/buyer-notifications.md`](../../00-ideas/seeds/buyer-notifications.md).
 > **A pure EXTENSION of [#5 · Granular Multi-Channel Notifications](../granular-notifications/README.md)
 > to the buyer audience.** **Hard dependency: #5** must have merged (the seam, the two Supabase tables,
 > `tgSend`, the `/start` linking webhook, the settings-grid component). **No hard #3b dependency** —

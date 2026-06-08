@@ -1,3 +1,16 @@
+---
+title: "URL / slug bug report"
+slug: url-stuff
+status: raw
+area: "07"
+type: chore
+priority: null
+risk: low
+epic: null
+build_order: null
+updated: 2026-06-08
+---
+
 ## Bug report
 Custom domain feature:
 the added config from when a tenant provides a token is incorrect, it adds a cname instead of an a record, on the ui, it says a record, but the template adds a cname in cloudflare specifically, which should it be?

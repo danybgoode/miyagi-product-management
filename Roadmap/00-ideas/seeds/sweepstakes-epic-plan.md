@@ -1,3 +1,16 @@
+---
+title: "Sweepstakes epic plan (superseded by sweepstakes seed)"
+slug: sweepstakes-epic-plan
+status: archived
+area: "08"
+type: feature
+priority: null
+risk: low
+epic: null
+build_order: null
+updated: 2026-06-08
+---
+
 # Sweepstakes Epic Plan
 
 ## Summary

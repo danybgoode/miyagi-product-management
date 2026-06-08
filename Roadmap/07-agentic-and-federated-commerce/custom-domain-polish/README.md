@@ -11,7 +11,7 @@ every 8 s, and once ready it shows the shop live on two channels. The plumbing (
 `app/api/sell/shop/domain/*`, the domain rewrite in `middleware.ts`) is solid.
 
 This epic **rebuilds nothing** — it polishes the seller's setup experience where it's vague or subtly wrong
-today, per the acceptance list in `Roadmap/00-ideas/2. readyforscope/custom-domain-polish.md`.
+today, per the acceptance list in `Roadmap/00-ideas/seeds/custom-domain-polish.md`.
 
 ## Scope (one sprint)
 

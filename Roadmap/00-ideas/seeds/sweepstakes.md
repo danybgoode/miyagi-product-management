@@ -1,3 +1,16 @@
+---
+title: "Sweepstakes"
+slug: sweepstakes
+status: in-progress
+area: "08"
+type: feature
+priority: null
+risk: low
+epic: "08-growth-and-promotions/sweepstakes"
+build_order: null
+updated: 2026-06-08
+---
+
 Gamifying the marketplace with sweepstakes is a massive lever for tenant growth. It drives viral top-of-funnel traffic, accelerates email list building, and incentivizes immediate purchases.
 
 ## Feature Evaluation & UX Heuristics

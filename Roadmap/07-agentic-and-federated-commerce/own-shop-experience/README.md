@@ -3,7 +3,7 @@
 **Macro-section:** 07 · Agentic & federated commerce
 **Siblings:** [custom-domain-polish](../custom-domain-polish/) (seller setup — ✅ DONE),
 [embeddable-widget](../embeddable-widget/) · **Source of truth:**
-`Roadmap/00-ideas/2. readyforscope/own-shop-experience.md`
+`Roadmap/00-ideas/seeds/own-shop-experience.md`
 
 ## Why
 
@@ -61,7 +61,7 @@ the custom domain — is **shipped to prod**. Sprint 3 (checkout return + domain
 **descoped** to a future epic: it requires **backend** work (propagate `channel`/origin through Medusa's
 new `start-checkout` flow) and depends on the auth/payment "hop" to the platform that isn't built yet
 (Clerk is platform-domain-only). Daniel's decision (2026-06-05). See `RETROSPECTIVE.md` and the future
-epic's idea doc (`Roadmap/00-ideas/2. readyforscope/custom-domain-checkout.md`).
+epic's idea doc (`Roadmap/00-ideas/seeds/custom-domain-checkout.md`).
 
 ## QA / smoke-test
 

@@ -1,9 +1,22 @@
+---
+title: "Checkout & manual-payment state hardening"
+slug: checkout-state-hardening
+status: shipped
+area: "02"
+type: feature
+priority: wave-2
+risk: high
+epic: "02-checkout-and-payments/checkout-state-hardening"
+build_order: "#3b"
+updated: 2026-06-08
+---
+
 # Scope — Checkout & Manual-Payment State Hardening (BUILD-ORDER #3b)
 
 > **Status: SIGNED OFF (Daniel, 2026-06-06).** Gate passed. Scaffolded under
 > `02-checkout-and-payments/checkout-state-hardening/` (epic README + sprint-1..3); kickoff prompts
 > emitted. **Next action: Claude Code build, Sprint 1 first.**
-> Groomed 2026-06-06 off the #3a refresh (`ux-audit/results-refresh-2026-06/`, pinned
+> Groomed 2026-06-06 off the #3a refresh (`audits/results-refresh-2026-06/`, pinned
 > frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
 > **Class: Feature/epic** (money-path *hardening* — most stories are bug-class fixes of a
 > shipped-but-half-built promise, bundled). **Stage-2.5 bucket: genuinely-needs-build** (real

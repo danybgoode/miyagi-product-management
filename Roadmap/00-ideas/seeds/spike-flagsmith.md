@@ -1,3 +1,16 @@
+---
+title: "Spike — Flagsmith toggle / kill-switch layer"
+slug: spike-flagsmith
+status: shipped
+area: "09"
+type: spike
+priority: wave-0
+risk: low
+epic: "09-platform-infra/feature-flags-killswitches"
+build_order: "#1"
+updated: 2026-06-08
+---
+
 # Spike — Flagsmith as the platform toggle / kill-switch layer
 
 > **Class:** Spike (time-boxed investigation → a **written decision**, no code, no slicing).

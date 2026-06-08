@@ -5,9 +5,9 @@
 > **Status: 🏗️ In progress** — S1 ✅ **SHIPPED to prod 2026-06-07**
 > ([PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40), `2557b42`): seam + prefs +
 > settings + routing. S2–S3 planned. Scope doc:
-> [`00-ideas/2. readyforscope/granular-notifications.md`](../../00-ideas/2.%20readyforscope/granular-notifications.md).
+> [`00-ideas/seeds/granular-notifications.md`](../../00-ideas/seeds/granular-notifications.md).
 > Groomed off BUILD-ORDER #5 + the #3a refresh
-> ([`results-refresh-2026-06/`](../../00-ideas/2.%20readyforscope/ux-audit/results-refresh-2026-06/),
+> ([`results-refresh-2026-06/`](../../00-ideas/audits/results-refresh-2026-06/),
 > pinned frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
 > **Depends on #3b** for the durable `buyer_reported_paid` event — Sprint 3 only; **Sprints 1–2 run in
 > parallel with #3b.** Follow-on **#5b** (buyer Telegram + buyer preference center) builds on top of this.

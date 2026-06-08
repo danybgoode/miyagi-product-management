@@ -2,7 +2,7 @@
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / infra (observability for the technical founder; no buyer/seller/agent-facing change).
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/unifiedcdcinotificationsystem.md`](../../00-ideas/2.%20readyforscope/unifiedcdcinotificationsystem.md) — APPROVED 2026-06-06.
+**Scope doc:** [`Roadmap/00-ideas/seeds/unified-cicd-notifications.md`](../../00-ideas/seeds/unified-cicd-notifications.md) — APPROVED 2026-06-06.
 
 ## Why
 

@@ -4,8 +4,8 @@
 > **Risk: HIGH — Daniel merges every story** (payments / checkout / fulfillment / money).
 > **Status: ✅ COMPLETE — all 3 sprints shipped to prod 2026-06-07.** (S1 BE #13/FE #36, S2 BE #14/FE #38,
 > S3 FE #39.) Money/auth browser smokes owed to Daniel (per-sprint walkthroughs). Scope doc:
-> [`00-ideas/2. readyforscope/checkout-state-hardening.md`](../../00-ideas/2.%20readyforscope/checkout-state-hardening.md).
-> Driven by the #3a refresh: [`results-refresh-2026-06/`](../../00-ideas/2.%20readyforscope/ux-audit/results-refresh-2026-06/)
+> [`00-ideas/seeds/checkout-state-hardening.md`](../../00-ideas/seeds/checkout-state-hardening.md).
+> Driven by the #3a refresh: [`results-refresh-2026-06/`](../../00-ideas/audits/results-refresh-2026-06/)
 > (pinned frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
 
 ## Why

@@ -1,3 +1,16 @@
+---
+title: "Granular multi-channel notifications"
+slug: granular-notifications
+status: in-progress
+area: "05"
+type: feature
+priority: wave-2
+risk: high
+epic: "05-trust-offers-and-messaging/granular-notifications"
+build_order: "#5"
+updated: 2026-06-08
+---
+
 # Scope — Granular Multi-Channel Notifications (Email + Telegram) (BUILD-ORDER #5)
 
 > **Status: SIGNED OFF (Daniel, 2026-06-06).** Gate passed. Scaffolded under
@@ -6,7 +19,7 @@
 > blocked-by #3b.** Follow-on **#5b** (buyer Telegram + buyer preference center) added to BUILD-ORDER
 > on top of this.
 > Groomed 2026-06-06 in a fresh Cowork session off BUILD-ORDER #5 + the #3a re-scope delta
-> (`ux-audit/results-refresh-2026-06/00-rescope-delta.md` "#5" section + the `05` refresh), pinned
+> (`audits/results-refresh-2026-06/00-rescope-delta.md` "#5" section + the `05` refresh), pinned
 > frontend `origin/main@ed447bd` / backend `origin/main@0980253`. **Class: Feature/epic.**
 > **Stage-2.5 bucket: genuinely-new — but reuse-heavy** (email + push channels already ship; the
 > net-new is a *Telegram user channel* + a *preference layer*). **Risk: HIGH — Daniel merges** (rides

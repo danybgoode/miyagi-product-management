@@ -1,3 +1,16 @@
+---
+title: "Checkout on the seller's own domain"
+slug: custom-domain-checkout
+status: shipped
+area: "07"
+type: feature
+priority: null
+risk: high
+epic: "07-agentic-and-federated-commerce/custom-domain-checkout"
+build_order: null
+updated: 2026-06-08
+---
+
 # Idea / épico futuro — Checkout en el dominio propio ("Own-Domain Checkout")
 
 > **PROMOVIDO A ÉPICO (2026-06-05).** Alcance aprobado (salto pragmático a la plataforma). Docs

@@ -1,7 +1,7 @@
 # Epic · Bulk Import & Express Migration
 
 > ✅ **EPIC COMPLETE.** Scoped 2026-06-03 from
-> [`00-ideas/2. readyforscope/bulkuploadagentic.md`](../../00-ideas/2.%20readyforscope/bulkuploadagentic.md).
+> [`00-ideas/seeds/bulk-upload-agentic.md`](../../00-ideas/seeds/bulk-upload-agentic.md).
 > **All 4 sprints SHIPPED 2026-06-03** (S1 live-QA passed; S2 Gemini Flash, Story A live-QA'd; S3 all
 > 4 stories shipped; S4 all 4 stories shipped + live-QA'd end-to-end via MCP).
 

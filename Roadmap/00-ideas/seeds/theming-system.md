@@ -1,3 +1,16 @@
+---
+title: "Theming system (superseded by seasonal-theme-engine + design tokens)"
+slug: theming-system
+status: archived
+area: "08"
+type: feature
+priority: null
+risk: low
+epic: null
+build_order: null
+updated: 2026-06-08
+---
+
 Theming system — rotating designer themes
 Full theme engine including:
 

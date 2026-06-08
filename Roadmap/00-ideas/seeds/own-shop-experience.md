@@ -1,3 +1,16 @@
+---
+title: "Own-shop white-label storefront"
+slug: own-shop-experience
+status: shipped
+area: "07"
+type: feature
+priority: wave-3
+risk: low
+epic: "07-agentic-and-federated-commerce/own-shop-experience"
+build_order: "#6"
+updated: 2026-06-08
+---
+
 Epic: Absolute White-Label Storefront Experience ("Own Shop")
 📋 Epic Overview
 As a scaling merchant/tenant,

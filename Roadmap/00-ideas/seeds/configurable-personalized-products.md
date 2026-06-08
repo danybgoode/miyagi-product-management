@@ -1,3 +1,16 @@
+---
+title: "Configurable & personalized products"
+slug: configurable-personalized-products
+status: shipped
+area: "03"
+type: feature
+priority: null
+risk: high
+epic: "03-selling-and-shops/configurable-personalized-products"
+build_order: null
+updated: 2026-06-08
+---
+
 Epic: Configurable & Personalized Products Pipeline
 📋 Epic Overview
 As a merchant,

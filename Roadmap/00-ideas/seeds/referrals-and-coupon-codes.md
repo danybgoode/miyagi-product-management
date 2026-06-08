@@ -1,3 +1,16 @@
+---
+title: "Referrals & coupon codes"
+slug: referrals-and-coupon-codes
+status: shipped
+area: "08"
+type: feature
+priority: null
+risk: low
+epic: "08-growth-and-promotions/referral-program"
+build_order: null
+updated: 2026-06-08
+---
+
 # referrals and coupon codes
 
 AGENT: Claude

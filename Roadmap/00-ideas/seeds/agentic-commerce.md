@@ -1,3 +1,16 @@
+---
+title: "Agentic commerce"
+slug: agentic-commerce
+status: shipped
+area: "07"
+type: feature
+priority: null
+risk: high
+epic: "07-agentic-and-federated-commerce/agent-connection"
+build_order: null
+updated: 2026-06-08
+---
+
 The frontier capability is real: custom-domain routing, merchant domain setup, deterministic checkout options, UCP/MCP endpoints, and automated negotiation all exist in some form. The main UX gap is that the system can let agents and automations act, but it does not yet give humans a durable, reassuring explanation of who acted, under what authority, on which channel, and why.
 
 **Highest-Risk Findings**

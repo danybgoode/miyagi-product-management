@@ -2,10 +2,10 @@
 name: groom
 description: >
   The front door for any new ask — feature, bug, spike, or chore. Use when Daniel
-  has a raw idea in his head (or a note in Roadmap/00-ideas/1. raw) and wants to turn
+  has a raw idea in his head (or a seed in Roadmap/00-ideas/seeds) and wants to turn
   it into shippable, sliced work. Runs orientation → classification → "can we already
   do this?" → disambiguation → Medusa-first reframe → slicing, lands a Definition-of-
-  Ready scope doc in 2. readyforscope, and on approval scaffolds + commits the epic +
+  Ready scope seed in 00-ideas/seeds, and on approval scaffolds + commits the epic +
   sprint docs and emits the per-sprint Claude Code kickoff prompts. Planning only —
   never writes code.
 ---
@@ -23,7 +23,7 @@ description: >
 
 ## When to run me
 Daniel says any of: "let's groom X", "I've got an idea", "new feature/bug/spike/chore", or points at
-a file in `Roadmap/00-ideas/1. raw/`. One ask per run.
+a file in `Roadmap/00-ideas/seeds/`. One ask per run.
 
 ---
 
@@ -38,7 +38,7 @@ Read, in order, before doing anything:
 State in one line what you loaded, then proceed.
 
 ## Stage 1 — Capture
-Take the raw brain-dump as given (or read it from `1. raw/`). Don't clean it up yet. Mirror it back in
+Take the raw brain-dump as given (or read it from `seeds/`). Don't clean it up yet. Mirror it back in
 one sentence: *"You want \<X\> so that \<Y\>. Right?"* — surface your understanding before refining it.
 
 ## Stage 2 — Classify
@@ -47,7 +47,7 @@ Pick one. The class decides the downstream path:
 | Class | Tell | Path |
 |---|---|---|
 | **Feature** | new buyer/seller/agent capability | scope doc → epic + sprint slicing |
-| **Spike** | "how does X work / should it be A or B" (`SpikeCompraprotegida`, `spikeflagsmith`) | time-boxed investigation brief → **a written decision**, not code. No slicing until the decision lands. |
+| **Spike** | "how does X work / should it be A or B" (`spike-compra-protegida`, `spike-flagsmith`) | time-boxed investigation brief → **a written decision**, not code. No slicing until the decision lands. |
 | **Bug** | promised behaviour missing/broken | **reproduce → root-cause → fix story + regression spec.** Single story unless it fans out into an epic. Hotfix variant (live money/auth/checkout breakage) → minimal fix, high-risk, Daniel merges. |
 | **Chore** | tooling/infra/docs/deps, no user-facing change | **rationale → single story or small epic.** Usually low-risk; flag if it touches shared surface (`layout.tsx`, `middleware.ts`, deps) — those can break sibling PRs and must be announced. |
 
@@ -86,7 +86,7 @@ Core bank (adapt):
 - **Role & job:** buyer, seller, agent, or admin? What job are they hiring it to do?
 - **Outcome & signal:** what's true after this ships that isn't now? How will *Daniel* test it?
 - **Scope boundary:** what's explicitly *in* v1 and *out*? (Write the "out" list — it prevents creep.)
-- **Granularity heuristic:** per-shop vs per-product vs per-listing? (Your `SpikeCompraprotegida`
+- **Granularity heuristic:** per-shop vs per-product vs per-listing? (Your `spike-compra-protegida`
   football-pitch case — escrow on reservations, not merch — is exactly this. Always ask it for anything configurable.)
 - **Data model:** does Medusa already model this? If not, is it truly non-commerce (Supabase), or are we missing a primitive?
 - **Agent surface:** per AGENTS rule #3 — how does an AI agent do this over UCP/MCP?
@@ -115,17 +115,27 @@ Tag each **low** (docs/copy, non-commerce UI, additive agent tools behind auth, 
 When unsure, high.
 
 ## Stage 7 — Scaffold + commit the docs (on Daniel's approval)
-1. Write the **scope doc** to `Roadmap/00-ideas/2. readyforscope/<slug>.md` — the Definition-of-Ready
+1. Write the **scope seed** to `Roadmap/00-ideas/seeds/<slug>.md` — the Definition-of-Ready
    artifact (overview · UX heuristics · acceptance criteria · the reuse list · in/out scope · open risks ·
-   any research citations · the Stage-2.5 bucket). **This is the gate: nothing scaffolds until Daniel approves it.**
-2. On approval, create under the right macro-section:
-   - `<NN-macro>/<epic-slug>/README.md` — epic overview in the house format (Why · context table ·
-     Medusa-first note · **What already exists** · Scope story-table with risk · Deploy order · epic DoD checklist).
-   - `<epic-slug>/sprint-N.md` — the sprint's stories + a **Sprint QA** section + a **Smoke walkthrough placeholder** (Stage 8b).
-3. **Commit it.** `Roadmap/` is tracked in git — commit the scaffold so a fresh worktree/agent inherits the
+   any research citations · the Stage-2.5 bucket). It **must start with the seed frontmatter block**
+   (`title · slug · status · area · type · priority · risk · epic · build_order · updated` — see
+   `Roadmap/00-ideas/README.md`); set `status: ready` here. **This is the gate: nothing scaffolds until Daniel approves it.**
+2. On approval, **run the scaffolder** instead of hand-rendering structure:
+   ```
+   node skills/groom/scaffold-epic.mjs --slug <epic-slug> --area <NN> \
+     --macro <NN-macro> --title "<Epic title>" --risk <low|high> \
+     --sprints "S1 title;S2 title;S3 title"
+   ```
+   It creates `Roadmap/<NN-macro>/<epic-slug>/README.md` + `sprint-1..N.md` + a `RETROSPECTIVE.md` stub
+   from `skills/groom/templates/`, and prints the exact path-scoped commit command. Fill the generated
+   files with the real stories / reuse list / QA stages — the script makes the skeleton, you make the content.
+3. **Update the seed:** set its frontmatter `status: scaffolded` and `epic: "<NN-macro>/<epic-slug>"`.
+   **Never move the seed between folders** — frontmatter carries lifecycle (this is what stopped 00-ideas drifting).
+4. **Commit it.** `Roadmap/` is tracked in git — commit the scaffold so a fresh worktree/agent inherits the
    product context. **Commit only your own paths** — never `git add Roadmap/` or `git add -A` (a shared
-   planning worktree races the index → "another git process is running" / index lock):
-   `git add <the files you scaffolded> && git commit -- <those paths> -m "plan(<epic-slug>): scaffold epic + sprints"`.
+   planning worktree races the index → "another git process is running" / index lock). Use the command the
+   scaffolder prints, e.g.:
+   `git add <the files you scaffolded> <the seed> && git commit -- <those paths> -m "plan(<epic-slug>): scaffold epic + sprints"`.
    For parallel planning, run in your own `git worktree`, or let one **scribe** own shared files like
    `BUILD-ORDER.md`. Docs are low-risk tier.
 
@@ -196,7 +206,7 @@ groom a batch in one session. The cadence is:
    - **Tick the item in `BUILD-ORDER.md`** and emit a **next-session Cowork handoff prompt** for the **next ⬜
      item** in the order. *Do not* offer "want me to groom the next one now?" — the next ask gets its **own
      fresh session** (keeps each groom cheap + context-clean). The handoff prompt references the docs that
-     already exist (`BUILD-ORDER.md`, the relevant `2. readyforscope/` seed, the orientation files) so the
+     already exist (`BUILD-ORDER.md`, the relevant `seeds/` seed, the orientation files) so the
      next session re-enters with zero re-derivation. Template:
 
    ```
@@ -206,7 +216,7 @@ groom a batch in one session. The cadence is:
    Groom the next ⬜ item: <#Y · name>.
    Read first, in order: Roadmap/00-ideas/BUILD-ORDER.md, then Stage 0 orientation
    (README.md, WAYS-OF-WORKING.md, LEARNINGS.md), then the scope seed
-   Roadmap/00-ideas/2. readyforscope/<seed>.md and any primitives it names.
+   Roadmap/00-ideas/seeds/<seed>.md and any primitives it names.
    Then run /groom on <#Y> — one ask, the normal stages — and stop at the scope-doc gate for my sign-off.
    ```
 

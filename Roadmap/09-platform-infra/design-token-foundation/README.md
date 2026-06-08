@@ -2,7 +2,7 @@
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / foundation (cross-cutting presentation substrate; no buyer/seller/agent-facing behavior change).
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/design-token-foundation.md`](../../00-ideas/2.%20readyforscope/design-token-foundation.md) — APPROVED 2026-06-06.
+**Scope doc:** [`Roadmap/00-ideas/seeds/design-token-foundation.md`](../../00-ideas/seeds/design-token-foundation.md) — APPROVED 2026-06-06.
 
 ## Why
 

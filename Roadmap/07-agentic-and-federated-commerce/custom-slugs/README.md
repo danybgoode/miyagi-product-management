@@ -24,7 +24,7 @@ This is the cheapest tier of the shop addressing scheme:
 mirrored to Supabase for routing. **Zero new tables.** Old slugs (for the 301) live in the seller's
 `metadata.previous_slugs` (no schema change), mirrored to Supabase for the fast lookup.
 
-Acceptance source: `Roadmap/00-ideas/2. readyforscope/urlStuff.md` ("Custom slugs" section).
+Acceptance source: `Roadmap/00-ideas/seeds/url-stuff.md` ("Custom slugs" section).
 
 ## What already exists (reuse, don't rebuild)
 

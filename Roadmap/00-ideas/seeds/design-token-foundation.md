@@ -1,3 +1,16 @@
+---
+title: "Design-token / design-system foundation"
+slug: design-token-foundation
+status: shipped
+area: "09"
+type: chore
+priority: wave-0
+risk: low
+epic: "09-platform-infra/design-token-foundation"
+build_order: "#4"
+updated: 2026-06-08
+---
+
 # Scope — Design-Token / Design-System Foundation (BUILD-ORDER #4)
 
 > **Status: SCOPE GATE — awaiting Daniel's sign-off.** Nothing scaffolds or commits until approved.
@@ -8,7 +21,7 @@
 *You want a solid, documented design-token foundation — so that the **#6 sellers landing-page
 redesign** builds on stable, semantic tokens instead of re-tokenizing as it goes. Right?*
 
-The two seeds (`Themingsystem.md`, `MiyagiSanchezxDesignerN.md`) describe a full theme engine, but
+The two seeds (`theming-system.md`, `designer-collaboration-portal.md`) describe a full theme engine, but
 that engine **already shipped**. So #4 is not "build the design system" — it's "harden and document
 the foundation that exists, and close the tokenization gaps that would cause rework in #6."
 

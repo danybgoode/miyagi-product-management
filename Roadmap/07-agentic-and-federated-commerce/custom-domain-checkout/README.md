@@ -3,7 +3,7 @@
 **Macro-section:** 07 · Agentic & federated commerce
 **Spin-off of:** [own-shop-experience](../own-shop-experience/) (closed at S1+S2 — white-label *browsing* is
 already in prod; this was its descoped Sprint 3).
-**Original idea:** `Roadmap/00-ideas/2. readyforscope/custom-domain-checkout.md`
+**Original idea:** `Roadmap/00-ideas/seeds/custom-domain-checkout.md`
 
 ## Why
 

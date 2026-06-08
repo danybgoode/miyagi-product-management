@@ -1,7 +1,20 @@
+---
+title: "Spike — UX audit refresh"
+slug: ux-audit-refresh
+status: shipped
+area: "01"
+type: spike
+priority: wave-1
+risk: low
+epic: null
+build_order: "#3a"
+updated: 2026-06-08
+---
+
 # Scope — UX Audit Refresh (BUILD-ORDER #3a)
 
 > **Status: SIGNED OFF (Daniel, 2026-06-06) — SPIKE RUN + FINDINGS LANDED (2026-06-06).** The
-> read-only re-audit is complete. Deliverable: `ux-audit/results-refresh-2026-06/` (refreshed 01–05
+> read-only re-audit is complete. Deliverable: `audits/results-refresh-2026-06/` (refreshed 01–05
 > + `00-rescope-delta.md`), pinned to `origin/main` frontend `ed447bd` / backend `0980253`, v1
 > baseline kept. Outcome: all three #3b money-path P0s reproduce on `main`; no new P0 jumps the
 > queue; two reuse hooks found. BUILD-ORDER #3a ticked + #3b/#5/#6/#3c lines sharpened. No epic
@@ -11,7 +24,7 @@
 > planning spike whose output re-scopes the waves after it.
 
 ## The ask (mirrored back)
-*You want the 5 structural UX audits (`ux-audit/results/01–05`) re-run against current `main` — because
+*You want the 5 structural UX audits (`audits/_legacy/results-v1/01–05`) re-run against current `main` — because
 personalized products, subdomains, short-links, and the support widget all postdate them — so that
 #3b / #5 / #6 are sliced off a current picture instead of a stale one. Right?*
 
@@ -67,7 +80,7 @@ covered — so each is a place a finding may have moved:
   recommendation still hinges on one, **web-search to re-confirm the current guidance** before carrying
   it forward, and refresh the citation.
 - **Diff, don't replace.** Keep the originals as the baseline. Land the refresh as a new sibling set
-  (proposed: `ux-audit/results-refresh-2026-06/01–05.md`) so the before/after is legible and the
+  (proposed: `audits/results-refresh-2026-06/01–05.md`) so the before/after is legible and the
   re-scope deltas can cite "was P0 in v1 → now fixed/changed/still-live."
 
 ## Acceptance — the refreshed findings + decision must answer
@@ -97,10 +110,10 @@ a written re-scope delta for #3b/#5/#6/#3c; a BUILD-ORDER update on sign-off of 
 **Out:** any code, branch, or fix (those are #3b and the downstream epics); slicing #3b/#5/#6 into
 sprints (each gets its own groom run, fed by this); re-auditing domains 06 (Print) / 07 (Agentic) /
 08 (Growth), which the originals never covered and which no current wave depends on; the older
-`00-ideas/ux-uiaudit/` draft set (superseded — ignore).
+`00-ideas/audits/_legacy/ux-uiaudit/` draft set (superseded — ignore).
 
 ## Open risks / questions
-- **Where the refreshed docs land.** Proposed `ux-audit/results-refresh-2026-06/` (keeps the v1 baseline
+- **Where the refreshed docs land.** Proposed `audits/results-refresh-2026-06/` (keeps the v1 baseline
   intact for diffing). Alternative: overwrite `results/` and rely on git history. *Confirm at sign-off.*
 - **Subdomain/custom-domain adds a host dimension the audits never had.** Discovery + trust findings (01/05)
   may now differ by channel (marketplace vs subdomain vs custom domain vs embed). The refresh should note
@@ -114,8 +127,8 @@ sprints (each gets its own groom run, fed by this); re-auditing domains 06 (Prin
 ## Investigation kickoff prompt (spike — paste into a fresh Claude Code session; no branch, no build)
 ```
 Read apps/miyagisanchez/AGENTS.md, Roadmap/WAYS-OF-WORKING.md and Roadmap/LEARNINGS.md. Skim team memory.
-Then read Roadmap/00-ideas/2. readyforscope/ux-audit-refresh.md (this spike's scope) and the 5 baseline
-audits in Roadmap/00-ideas/2. readyforscope/ux-audit/results/01–05.
+Then read Roadmap/00-ideas/seeds/ux-audit-refresh.md (this spike's scope) and the 5 baseline
+audits in Roadmap/00-ideas/audits/_legacy/results-v1/01–05.
 
 This is a SPIKE — a read-only UX architecture re-audit. Do NOT modify code, create branches, or write
 specs. Pin your work to the current main SHA (record it).
@@ -130,7 +143,7 @@ lighter on 01 (discovery) and 04 (shipping):
      present-day guidance and refresh the citation.
 Note per-channel divergence (marketplace vs subdomain vs custom domain vs embed) where it exists.
 
-Write the refreshed findings to Roadmap/00-ideas/2. readyforscope/ux-audit/results-refresh-2026-06/01–05.md
+Write the refreshed findings to Roadmap/00-ideas/audits/results-refresh-2026-06/01–05.md
 (keep the v1 baseline intact). Then write ONE cross-cutting re-scope section answering: what changes for
 #3b (the 3 checkout P0s), #5 (manual-payment trigger events), #6 (landing) and #3c — and propose the
 BUILD-ORDER edits. End in a written go-forward. No code.

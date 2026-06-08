@@ -1,3 +1,16 @@
+---
+title: "Spike — Compra protegida (buyer protection)"
+slug: spike-compra-protegida
+status: ready
+area: "02"
+type: spike
+priority: null
+risk: high
+epic: null
+build_order: null
+updated: 2026-06-08
+---
+
 Spike: Compra protegida feature
 
 How does it currently work, how does it work for buyer and seller at ux/ui level, where do they see it and when. What effects does it have on the purchase itself?
