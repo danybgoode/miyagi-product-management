@@ -1,12 +1,12 @@
 ---
 title: "Agent-readable why-sell / about surface"
 slug: agent-readable-about-surface
-status: ready
+status: scaffolded
 area: "07"
 type: feature
 priority: null
 risk: low
-epic: null
+epic: 07-agentic-and-federated-commerce/agent-readable-about-surface
 build_order: null
 updated: 2026-06-08
 ---
