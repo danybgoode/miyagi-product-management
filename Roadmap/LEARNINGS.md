@@ -40,6 +40,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Risk tier decides who merges** (from WAYS-OF-WORKING): low-risk → the reviewer/agent may merge on
   green CI; anything touching payments / checkout / fulfillment / auth / DB / shared infra / money →
   **Daniel merges**. When unsure, treat as high.
+- **Concurrent planning commits in a shared worktree collide the git index.** App code already gets isolated
+  `git worktree`s (`.worktrees/`) — but *planning/scaffold* commits ran in the shared root worktree, so two
+  sessions' `git add` raced ("another git process is running" / index lock; commits interleaved). Fix, two
+  parts: (1) **path-limited commits** — `git add <your files>` + `git commit -- <those paths>`, never
+  `git add Roadmap/` or `-A`; that alone keeps each commit clean regardless of the shared index. (2) For
+  parallel planning, **give each planning session its own worktree**, or appoint a single **scribe** for
+  shared files (`BUILD-ORDER.md`). The single highest-leverage line is the path-limited commit.
+  *(2026-06-07 — planning sessions collided in the shared root worktree.)*
 
 ## Tooling gotchas
 - **Run the repo binaries directly when `npm`/`npx` chokes.** A sibling worktree that reuses the same
@@ -120,6 +128,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   then run `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npm run test:e2e`. Otherwise catalog/homepage
   tests fail with `fetch failed` / `ECONNREFUSED`, which looks like a regression but is just Medusa
   not running. *(Support Widget epic, 2026-06-05.)*
+- **A raw-color guard keeps a tokenized surface tokenized.** Once components are moved onto semantic
+  CSS tokens, add a pure-logic `api` spec that scans the customer-facing dirs and **fails CI on a
+  newly-introduced raw hex** (allow-list the legit hardcoded contexts: email — clients strip CSS vars
+  — print/PDF, OG image, admin, sandbox). Cheapest way to stop the foundation eroding; coverage
+  accretes for free. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07.)*
+- **Close-out validates the *doc* deliverables shipped, not just the code.** A "docs-only" sprint
+  inside a mostly-code epic is the easy one to skip: #4's S2/S3 code merged (PR #37) but the **S1
+  Roadmap token-contract doc was never written** — it surfaced only at epic close. At DoD, check each
+  sprint's deliverable exists (incl. Roadmap docs), not just that `main` has the code. *(#4, 2026-06-07.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
@@ -172,6 +189,52 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   + checkout are covered at once. The SDK is **not Edge-compatible** → `middleware.ts` flags need a
   different mechanism (Edge Config). *(2026-06-06, Flagsmith epic — `checkout.stripe_enabled` shipped
   front+back; rest of taxonomy deferred, cheap to extend on demand.)*
+- **Extract a fan-out seam once, then project new events onto it.** A fire-and-forget
+  `dispatchToSeller(userId, {group, email?, push?, telegram?})` over a *pure, next-free* preference resolver
+  (`resolvePrefs`/`isChannelEnabled`/`telegramTarget`) made adding the money-path event later one line in the
+  event→group map + one call at the route — every channel + the prefs + the settings UI came for free. Defaults
+  baked into the resolver de-risk a HIGH surface: email/push **default-on** (absent row ⇒ no regression, no
+  backfill), a new realtime channel (Telegram) **opt-in default-off** (no flood). The dispatcher is
+  `server-only`; keep the gating in a next-free sibling so the Playwright `api` runner can unit-test the seam
+  every channel trusts. *(2026-06-07, Granular Notifications — `lib/notifications/{dispatch,preferences}.ts`;
+  `tgNotify`→`tgSend(chatId, …)` with admin default kept every `tg.*` byte-for-byte.)*
+  **The same seam projects onto a second *audience*, not just new events** — a sibling `dispatchToBuyer` reused
+  the resolver/tables/`/start` webhook/grid wholesale because #5 keyed everything by **person, not role**.
+  Make it cheap + migration-free: **audience-namespace the keys** (buyer rows = `buyer.*` `event_group` values
+  in the *same* prefs table → a buyer+seller keeps two independent grids, no new column); a **guest
+  fall-through** (no resolvable user id ⇒ send today's transactional email, skip prefs/push/TG) makes routing
+  money-adjacent mail through the new seam strictly additive (non-regressive); and one shared `telegram_links`
+  row per person drives a **per-audience unlink derived from prefs** (`audienceTelegramInUse` — delete the row
+  only when the *other* audience has no enabled telegram pref), so neither side's disconnect kills the other.
+  The webhook needed **zero** logic change (only audience-neutral copy) because it already bound the chat by
+  `clerk_user_id`. *(2026-06-07, Buyer Notifications #5b — `dispatchToBuyer`, `buyer-messages.ts`.)*
+- **Notify the *recipient*, not the actor — and resolve them from the data, not the session.** A buyer-authed
+  route (`report-payment`) still has to ping the *seller*: resolve the seller from the order itself (Medusa:
+  `GET /store/buyer/me/orders/:id` → embedded `marketplace_shops.clerk_user_id`; legacy: the order-mirror join),
+  best-effort, durable write + admin nudge unaffected if it fails. Corollary: **"complete the lifecycle" ≠
+  "notify on every transition"** — `payment_confirmed`/ship/deliver are *seller-self-triggered*, so notifying the
+  seller of their own click is noise. Wire the genuinely buyer-/system-triggered events (`buyer_reported_paid`,
+  `return_requested`); name the recipient per event as the test. *(2026-06-07, Granular Notifications S3.)*
+  **But check the recipient id is actually *in* the data before assuming a seam can gate.** Buyer
+  notifications gate fine for **offers + legacy orders** (those rows carry `buyer_clerk_user_id`), but for
+  **Medusa orders the buyer's Clerk id is unrecoverable frontend-side** — `normalizeMedusaOrder` returns
+  `buyer_clerk_user_id: null` and `lib/order-mirror.ts` doesn't persist it (and keys the Medusa id in
+  `metadata`, not the row `id`). So seller-triggered ship/deliver/return routes hit the guest fall-through and
+  send email only (no push/TG) for Medusa orders. No regression, but the feature silently doesn't bite on the
+  majority order type until a backend fix. **Grep the normalizer + mirror for the id before scoping a
+  recipient-gated feature** — it may shrink (or re-shape) the sprint. *(2026-06-07, Buyer Notifications #5b.)*
+- **Match the codebase's real i18n reality before writing translations — and don't globalize it.** The
+  **seller portal + notifications are hardcoded es-MX**, so `en` keys *there* are dead code. But the app is **not**
+  English-free: `locales/{es,en}.json` is a **~119-key bilingual dictionary** (`getDictionary()` resolves es+en,
+  15 call sites incl. `app/layout.tsx`) feeding a **bilingual allow-list** — `app/terminos`, the sweepstakes
+  public flow (`app/g/[slug]`, `?lang=en`, per-campaign `*_en/*_es`), and the embed widget toggle. So the rule is
+  **es-MX default + a defined bilingual allow-list** (AGENTS rule #5), NOT "es-MX everywhere / no en.json."
+  *(2026-06-08 — corrected after a drift audit caught an over-generalized rule; the original note below conflated
+  "seller portal is es-MX" with "the site has no English.")*
+  **Grep for the dictionary's actual consumers first.** Keep copy in the language the surface really renders, and
+  make the "bilingual" gate a **copy-completeness** check (every group has non-empty copy; no orphan copy). es-MX
+  copy lives fine in a next-free `lib/` module (`GROUP_COPY` in `preferences.ts`) as the single source the UI
+  *and* the spec read, so it can't drift from what the seam sends. *(2026-06-07.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole
@@ -180,6 +243,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `/compact` after each sprint ships sheds the detail without losing the thread. For a big epic,
   a **fresh session per sprint** caps per-session context — re-orientation is cheap by design.
 - **Read targeted ranges, not whole files**, once you know where you're going.
+- **The two big multi-agent cost sinks are the "communication tax" and the review loop — our process already
+  guards both.** Agentic-dev research (Tokenomics / Co-Saving, 2026): agents re-passing large context is the
+  top hidden cost, and Code Review is the single biggest token stage (~59%) via iterative refine loops. Our
+  countermeasures, already in place: context lives in **durable docs** (pointer-prompts, not content dumps —
+  see `SESSION-KICKOFFS.md`); LLM review is **single-pass on a green deterministic gate** (CI carries the
+  repetitive checking); and this file is itself the human **"shortcut library"** (distilled past successes so
+  the next agent skips rediscovery). The research's headline — an assembly-line SOP beats hierarchical
+  agent-to-agent conversation — is the architecture we already run. *(2026-06-08.)*
 
 ## Adopted-next (not yet wired) — improvements we've agreed on but haven't built
 - *(none open — the browser-smoke layer shipped 2026-06-05; see Build & QA above.)*

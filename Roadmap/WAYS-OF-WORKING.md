@@ -43,7 +43,7 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
    - **Live confirmation can be async + divided** (it's *confirmation*, not the gate): the agent owns API-level smoke (`curl`/Playwright) where it has access; **Daniel owns the browser / real-seller-session smoke** (he's notified when Cloud Run finishes and holds the live sessions/tokens). Exercise real behaviour — a disposable/test shop for anything that mutates data; clean up after (revoke test tokens).
    - **Backend (Cloud Run) has no per-branch preview** — it can only be confirmed *post-merge* against prod. The agent does the API-level prod smoke + a route-deployed probe; Daniel picks up the seller/browser parts. State this split in the PR.
 6. **Push as you go.** Each push updates the preview; the reviewer (and Daniel) can test per story without touching production.
-7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). Trigger the reviewer (`/code-review ultra <PR#>`). When the deterministic gate is green, the review is clean, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Vercel prod; backend → Cloud Build us-east4 → Cloud Run, ~12 min). Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
+7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). Trigger the reviewer (a fresh agent, not the builder — see *Review & merge* below). When the deterministic gate is green, the review is clean, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Vercel prod; backend → Cloud Build us-east4 → Cloud Run, ~12 min). Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
 8. **Continue / close.** Roll into the next story. At **epic close**, do the epic Definition of Done (below) — including updating the product poster.
 
 ## Review & merge — cross-agent
@@ -52,8 +52,14 @@ fresh reviewer re-derives intent from the diff alone and catches what the author
 do this, and they're complementary:
 - **CI (determinism):** GitHub Actions runs `tsc` + `build` + the Playwright suite on every PR (against the preview
   via the bypass token). This is the tireless gate — it never forgets or runs out of tokens. A red CI blocks merge.
-- **Reviewer (judgment):** trigger **`/code-review ultra <PR#>`** (billed cloud multi-agent review) when the PR is
-  ready — it checks correctness, architecture, and the five rules from `AGENTS.md`. No second terminal to babysit.
+- **Reviewer (judgment):** a **fresh reviewer agent** re-derives intent from the diff alone and checks
+  correctness, architecture, and the five rules from `AGENTS.md`. The path is a **repo-local reviewer
+  subagent** — point it at `gh pr diff <PR#>` (+ the changed files) and the five rules; it composes with
+  parallel agents and needs no external service. Keep review a **single pass on a green CI gate** — not an
+  iterative refine loop (that loop is the dominant token cost in multi-agent dev; let the deterministic gate,
+  `tsc` + `build` + Playwright, carry the repetitive checking and have the reviewer read once). **Do not use
+  the `/code-review ultra` cloud command — it is not set up for this repo.** The reviewer must be a different
+  agent than the one that built the PR.
 
 **Every PR declares a risk tier** (in the PR body); that tier decides who may merge:
 - **Low-risk → reviewer may auto-merge** once CI is green and the review is clean: docs/copy, non-commerce UI,
@@ -128,12 +134,35 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   commit feature work straight to `main`, and never force-push a shared branch. Rebase/merge latest `main`
   into a long-running branch before opening the PR. Roll back a bad merge with `git revert` on `main`.
   (Two repos deploy separately — see the deploy topology in memory; branch in each repo you touch.)
+- **Planning commits — own worktree + path-limited.** Planning/scaffold work commits to the monorepo-root
+  repo, and **multiple planning sessions running in the same shared worktree collide the git index** (a bare
+  `git add Roadmap/` stages a sibling agent's in-flight files → "another git process is running" / index lock
+  errors). Two rules remove the contention: (1) **commit only your own paths** — `git add <specific files>`
+  then `git commit -- <those paths>` (never `git add Roadmap/` or `git add -A`); and (2) for parallel planning,
+  **give each planning session its own `git worktree`** (app code already does this via `.worktrees/`; planning
+  must too), or appoint a single **scribe** for shared files like `BUILD-ORDER.md`. Path-limited commits are the
+  single highest-leverage habit — they keep each commit clean regardless of what else is in the shared index.
+- **Model tiers — strong model for the thinking; let execution assembly-line.** The leverage is in getting
+  the *foundation* right — grooming, spikes, plan mode, review — so run those on the strongest model (Opus)
+  with full deep-thinking, and don't rush them. Once the plan and slices are approved, per-story execution is
+  mechanical, so a faster model is fine there; Claude Code's plan-mode largely automates this hand-off, so
+  there's nothing to micromanage mid-session. **Quality-first:** when a story still carries real judgment or
+  money-path risk, keep it on the strong model. This is a default, not a constraint. Planning in Cowork;
+  building in Claude Code.
+- **Docs track code — verified, not generalized.** A canonical rule (the AGENTS five rules, `conventions.md`)
+  must reflect what the code *actually* does, checked against it — **don't globalize a scoped learning** into a
+  site-wide rule ("the seller portal is es-MX" ≠ "the site has no English"; the dictionary + sweepstakes + embed
+  are bilingual). On the product poster (`README.md`), **✅ means enforced in code**, not merely intended —
+  partial/aspirational is 🚧. Run a lightweight **drift audit** periodically (paths · imports · env vars · routes ·
+  key policy claims vs the codebase); it's a strong fit for a Claude Code dynamic-workflow doc-audit.
 - **Never use the Vercel CLI to deploy.** Deploys are git-driven only (push a branch = preview; merge to
   `main` = production). The Vercel CLI would push out-of-band with git history.
 - Commit messages end with the `Co-Authored-By: Claude` trailer.
 - **Language.** Docs are written in **English** — everything under `Roadmap/` (epic READMEs, sprint files,
   retrospectives, the poster, `LEARNINGS.md`), `tasks/`, code comments, and PR descriptions. The **only**
-  exception is user-facing app copy, which is `es-MX` (Spanish, Mexico) to match the live app.
+  exception is user-facing app copy, which is `es-MX` (Spanish, Mexico) to match the live app. The app is
+  **single-locale es-MX, not bilingual** — there is no English locale to maintain; the gate is es-MX
+  copy-completeness (see AGENTS rule #5). A bilingual surface is an explicit, named exception, never the default.
 - Build from existing primitives first (commerce lives in Medusa; non-commerce/editorial data in Supabase).
 - `Roadmap/` **is tracked in git** — in the **monorepo-root repo**, which versions the product /
   orchestration docs (`Roadmap/`, `tasks/`, `skills/`, `infra/`, root configs). The two app repos under
@@ -166,3 +195,5 @@ Claude has authenticated CLI access to the full delivery toolchain and can run t
 | **node / npm** | Type-check (`tsc`), lint (`eslint`), build (`npm run build`), local dev server |
 
 This means a story can go from code → verified → preview-deployed → live-tested on a branch, then merged to production via PR — with verification at each step. Actions that touch live commerce, real money, or paid infrastructure are surfaced to Daniel for a green light before running.
+
+**Dynamic workflows (Claude Code) — available, not required.** Claude Code can fan a task across many parallel subagents with independent verification and adversarial cross-checking (the `ultracode` effort setting, or "create a workflow"). It is **token-heavy**, so it's reserved for two cases: (1) **repo-wide doc↔code drift audits** (its strongest fit — verifying many claims against the codebase in parallel), and (2) an **optional adversarial second review of HIGH-risk money-path PRs**. It is **never a gate and never required**: the deterministic CI gate plus a single-pass reviewer remain the baseline. This is a Claude-Code-specific capability — agents on other tools (CODEX, Antigravity, etc.) achieve the same ends their own way or skip it, and **nothing in this process blocks on it**.

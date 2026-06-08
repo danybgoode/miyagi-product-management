@@ -90,7 +90,7 @@ Core bank (adapt):
   football-pitch case — escrow on reservations, not merch — is exactly this. Always ask it for anything configurable.)
 - **Data model:** does Medusa already model this? If not, is it truly non-commerce (Supabase), or are we missing a primitive?
 - **Agent surface:** per AGENTS rule #3 — how does an AI agent do this over UCP/MCP?
-- **Bilingual & channels:** new strings (es + en)? Behaves on all channels (marketplace / own-domain / subdomain / embed / API)?
+- **Language & channels:** new copy is **es-MX** by default (es/en only on the bilingual allow-list — see AGENTS rule #5)? Behaves on all channels (marketplace / own-domain / subdomain / embed / API)?
 - **Overlap:** does the poster already claim this? Reuse or extend, don't rebuild.
 
 ## Stage 4 — Medusa-first reframe (the step that shrinks the epic)
@@ -98,7 +98,7 @@ Before slicing, **read the backend model + route first.** Per LEARNINGS this rep
 smaller (custom-slugs → 1-field backend change; personalized products → zero new tables). Produce the
 epic's **"What already exists (reuse, don't rebuild)"** list — concrete files/routes/primitives. Apply the
 AGENTS five rules (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk
-untouched · bilingual mandatory). If the ask violates a rule, flag it now.
+untouched · es-MX copy). If the ask violates a rule, flag it now.
 
 ## Stage 5 — Slice (skateboard → car)
 Define the **thinnest end-to-end slice that actually works and ships** — the skateboard — then each
@@ -122,9 +122,12 @@ When unsure, high.
    - `<NN-macro>/<epic-slug>/README.md` — epic overview in the house format (Why · context table ·
      Medusa-first note · **What already exists** · Scope story-table with risk · Deploy order · epic DoD checklist).
    - `<epic-slug>/sprint-N.md` — the sprint's stories + a **Sprint QA** section + a **Smoke walkthrough placeholder** (Stage 8b).
-3. **Commit it.** `Roadmap/` is tracked in git — commit the scaffold on a planning branch (or directly,
-   docs are low-risk tier) so a fresh worktree/agent inherits the product context:
-   `git add Roadmap/ && git commit -m "plan(<epic-slug>): scaffold epic + sprints"`.
+3. **Commit it.** `Roadmap/` is tracked in git — commit the scaffold so a fresh worktree/agent inherits the
+   product context. **Commit only your own paths** — never `git add Roadmap/` or `git add -A` (a shared
+   planning worktree races the index → "another git process is running" / index lock):
+   `git add <the files you scaffolded> && git commit -- <those paths> -m "plan(<epic-slug>): scaffold epic + sprints"`.
+   For parallel planning, run in your own `git worktree`, or let one **scribe** own shared files like
+   `BUILD-ORDER.md`. Docs are low-risk tier.
 
 ## Stage 8 — Emit the per-sprint Claude Code kickoff prompts
 One per sprint, ready to paste into a fresh Claude Code session:
@@ -135,11 +138,21 @@ Then read Roadmap/<NN-macro>/<epic-slug>/README.md and Roadmap/<NN-macro>/<epic-
 
 You're building Sprint <N> of "<epic title>". Enter plan mode, confirm the plan as user stories with me,
 then branch feat/<epic-slug> off latest main and build one story at a time per WAYS-OF-WORKING.
-Reuse before rebuild (see "What already exists"). Add one api spec per testable story; name the QA/smoke
-stage and state any browser smoke owed to me. When the deterministic gate (tsc + build + Playwright api)
-is green, open a draft PR declaring the risk tier — and write the SPRINT SMOKE WALKTHROUGH (below) into
+Reuse before rebuild (see "What already exists"). Commit per story with path-limited adds
+(`git add <your files>` + `git commit -- <those paths>`, never `git add -A` — a shared worktree races the
+index). App copy is es-MX by default (es/en only on the bilingual allow-list — AGENTS rule #5). Add one api spec per testable story; name the
+QA/smoke stage and state any browser smoke owed to me. When the deterministic gate (tsc + build + Playwright
+api) is green, open a draft PR declaring the risk tier — and write the SPRINT SMOKE WALKTHROUGH (below) into
 sprint-<N>.md before you call the sprint done.
 ```
+
+The invariant preamble (line 1 of the prompt — the orientation reads + skim memory) is the same every
+session; it stays in the prompt so a *fresh* Claude Code session re-orients with zero prior context. Keep
+the sprint-specific delta (this epic, this sprint, its reuse list, its risk) as the part that actually varies.
+
+**Model tiers:** run the groom/plan and any spike on the strong model (Opus); the per-sprint build can run on
+a faster model (Sonnet) once the plan is approved — the kickoff already opens in plan mode, so judgment still
+happens up front. (Planning here in Cowork; building in Claude Code.)
 
 For a **spike**, emit instead a short investigation prompt that ends in a written decision in the scope
 doc — no branch, no build.
