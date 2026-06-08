@@ -7,7 +7,7 @@ type: chore
 priority: wave-0
 risk: low
 epic: null
-build_order: process
+build_order: null
 updated: 2026-06-08
 ---
 
@@ -65,3 +65,16 @@ This means **Status is always re-derivable from the docs** — the board never h
 - **Q-N2.** Should **seeds** and **epics** live in **one** database (with a `Grain` filter, as drafted) or **two** linked databases? (Recommend: one + Grain filter — simpler, one board view.)
 - **Q-N3.** Priority as **waves** (drafted) or **P0/P1/P2**? (Keep consistent with #1's Q-A3.)
 - **Q-N4.** Conflict policy — confirm **docs always overwrite board edits** (recommended), vs. preserve a few human-only fields (e.g. a free-text "Notes" column the sync never touches).
+
+---
+
+## BUILT (2026-06-08)
+
+- **Database:** "Marketplace Roadmap" — https://app.notion.com/p/eb68a1fd05f443b184b6b5b3db89f47e
+  (data source `b03c3322-7777-426a-b727-9480ebb2f74b`). Created at workspace level; move it into a teamspace as you like.
+- **Schema:** exactly the signed-off map (Name · Slug · Status · Area · Priority · Type · Risk · Grain · Sprint progress · Build order ID · Doc link · Last synced).
+- **Initial projection:** 32 rows (23 epics + 9 seeds), populated from the repo.
+- **Sync tool:** `scripts/roadmap-to-notion.mjs`.
+  - `node scripts/roadmap-to-notion.mjs --extract` → prints the projected rows as JSON (no Notion needed; the testable core).
+  - `NOTION_TOKEN=… NOTION_DB_ID=eb68a1fd05f443b184b6b5b3db89f47e node scripts/roadmap-to-notion.mjs --sync` → upsert by Slug (docs always win; rows whose slug vanished from docs are set Archived, never hard-deleted).
+- **Run cadence:** on demand; can be wired to a scheduled task once trusted.

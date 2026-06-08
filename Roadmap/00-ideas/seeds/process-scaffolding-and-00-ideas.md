@@ -1,13 +1,13 @@
 ---
 title: Scaffolding automation + 00-ideas reorg
 slug: process-scaffolding-and-00-ideas
-status: in-progress          # raw | ready | queued | scaffolded | in-progress | shipped | archived
-area: "09"             # 09-platform-infra (process/tooling)
+status: in-progress
+area: "09"
 type: chore
 priority: wave-0
 risk: low
-epic: null             # not yet scaffolded
-build_order: process
+epic: null
+build_order: null
 updated: 2026-06-08
 ---
 
