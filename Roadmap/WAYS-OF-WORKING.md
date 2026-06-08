@@ -125,6 +125,7 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   **Read it at session start** (it's in AGENTS.md "Start here"). Fed at every epic close — see the
   epic Definition of Done. The full story of any item stays in its epic `RETROSPECTIVE.md`; this is
   the transferable digest so a retro reaches the *next* agent instead of dying in its folder.
+- **`Roadmap/00-ideas/`** — the idea funnel: `seeds/` (one .md per idea, lifecycle in **frontmatter** — no folder shuffling), `audits/` (UX/UI findings), and `BUILD-ORDER.md` (the grooming queue). See `00-ideas/README.md`. The seed frontmatter is also what the Notion roadmap sync projects from.
 - **`tasks/`** — engineering delivery log: what was built, decisions, commit hashes, runbooks, known limitations.
 - **Team memory** (`~/.claude/.../memory/`) — durable cross-session facts and pointers.
 - **Retrospectives** — one per epic/sprint, alongside the epic.
@@ -160,9 +161,12 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
 - Commit messages end with the `Co-Authored-By: Claude` trailer.
 - **Language.** Docs are written in **English** — everything under `Roadmap/` (epic READMEs, sprint files,
   retrospectives, the poster, `LEARNINGS.md`), `tasks/`, code comments, and PR descriptions. The **only**
-  exception is user-facing app copy, which is `es-MX` (Spanish, Mexico) to match the live app. The app is
-  **single-locale es-MX, not bilingual** — there is no English locale to maintain; the gate is es-MX
-  copy-completeness (see AGENTS rule #5). A bilingual surface is an explicit, named exception, never the default.
+  exception is user-facing app copy, which is `es-MX` (Spanish, Mexico) to match the live app. App copy is
+  **es-MX by default, with a defined bilingual allow-list** — a `locales/{es,en}.json` dictionary (~119 keys)
+  feeds a named set of genuinely bilingual surfaces (`app/terminos`, the sweepstakes public flow, the embed
+  widget). The gate has two parts: **es-MX copy-completeness everywhere** (no orphan/hardcoded strings) and
+  **both `es`+`en` present on the allow-list** (see AGENTS rule #5). Don't make a new surface bilingual by
+  default — extend the allow-list deliberately.
 - Build from existing primitives first (commerce lives in Medusa; non-commerce/editorial data in Supabase).
 - `Roadmap/` **is tracked in git** — in the **monorepo-root repo**, which versions the product /
   orchestration docs (`Roadmap/`, `tasks/`, `skills/`, `infra/`, root configs). The two app repos under
