@@ -1,7 +1,7 @@
 # Sprint 1 — Listing-type taxonomy (filterable)
 
 > Epic: [Discovery Polish](README.md) · **Risk: LOW** (read-only discovery; no shared layout).
-> **Status: 🚧 BUILT — [PR #50](https://github.com/danybgoode/miyagisanchezcommerce/pull/50), awaiting CI-green + review/merge.**
+> **Status: ✅ SHIPPED to prod 2026-06-08** — [PR #50](https://github.com/danybgoode/miyagisanchezcommerce/pull/50) squash-merged (`90986a7`). Gate green (tsc + build + api 244✅); anonymous browser smoke **2/2 vs preview** (the code merged verbatim); **live prod render confirmed** (`/l` serves the type chip rail + a "Servicio" badge).
 > Goal: a buyer can filter listings by type, and cards show which type each listing is. The data was
 > already normalized (`lib/listings.ts:119`); this sprint added the filter plumbing + UI.
 >
