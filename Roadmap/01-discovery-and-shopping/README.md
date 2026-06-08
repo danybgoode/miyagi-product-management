@@ -12,8 +12,12 @@ This is the top of the funnel: a fast, trustworthy browsing experience that work
 - ✅ **AI shopping assistant** — ask for what you want in natural language
 - ✅ **Mobile app feel (PWA)** — installable, with a bottom tab bar and splash screens
 
+## Epics
+- 📋 **[Discovery Polish](discovery-polish/)** — listing-type filtering, mobile filter rebuild, PDP hierarchy (#3c · Epic A). *Planned — scaffolded 2026-06-07.*
+
 ## Backlog / ideas
 - 📋 Personalized recommendations
 - 📋 Saved searches & alerts
+- 📋 Query-type→filter semantic search · embedded AI catalog assistant (#3c deferred tail)
 
 > Epics and sprint/story breakdowns are added here as work in this domain is planned.

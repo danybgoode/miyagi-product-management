@@ -2,9 +2,14 @@
 
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #5 ·
 > **Risk: HIGH — Daniel merges every story** (rides order / offer / payment dispatch).
-> **Status: 🏗️ In progress** — S1 ✅ **SHIPPED to prod 2026-06-07**
-> ([PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40), `2557b42`): seam + prefs +
-> settings + routing. S2–S3 planned. Scope doc:
+> **Status: ✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-07.** S1 ✅ ([PR #40](https://github.com/danybgoode/miyagisanchezcommerce/pull/40),
+> `2557b42`): seam + prefs + settings + routing · S2 ✅ ([PR #41](https://github.com/danybgoode/miyagisanchezcommerce/pull/41),
+> `4ad14a2`): seller Telegram channel — link/unlink/test + delivery (opt-in default-off; the 3 ops steps —
+> migration + `TELEGRAM_WEBHOOK_SECRET` + `setWebhook` — run 2026-06-07, channel **live**) · S3 ✅
+> ([PR #43](https://github.com/danybgoode/miyagisanchezcommerce/pull/43), `c5cf6c7`): money-path event
+> (`buyer_reported_paid` → seller, Pagos) + `return_requested` → seller (Devoluciones) + finalized
+> taxonomy/es-MX copy. **Owed to Daniel: live money + refund smoke** (real buyer/seller sessions + Telegram).
+> Scope doc:
 > [`00-ideas/seeds/granular-notifications.md`](../../00-ideas/seeds/granular-notifications.md).
 > Groomed off BUILD-ORDER #5 + the #3a refresh
 > ([`results-refresh-2026-06/`](../../00-ideas/audits/results-refresh-2026-06/),
@@ -72,11 +77,11 @@ tables ship via the **Supabase CLI**. Confirm whether any in-scope event fires f
 breaks sibling PRs.
 
 ## Definition of Done (epic close-out checklist)
-- [ ] All 3 sprints' stories merged to `main` + smoke-tested (Telegram-link + money-path gaps stated, owed to Daniel).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough with **real production URLs**; Telegram-link / money / auth steps flagged as owed to Daniel.
-- [ ] This README marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] **Product poster updated** (`Roadmap/README.md` — 05 line + Recent highlights: seller Telegram channel + preference center).
-- [ ] Team memory updated (epic memory + `MEMORY.md` index).
-- [ ] **`Roadmap/LEARNINGS.md` updated** — promote durable learnings (the dispatch-seam + preference-resolver pattern; `tgSend` parameterization; Telegram `/start` linking).
-- [ ] Feature branch deleted; PRs merged.
+- [x] All 3 sprints' stories merged to `main` + smoke-tested (Telegram-link + money/refund gaps stated, owed to Daniel).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough with **real production URLs**; Telegram-link / money / auth steps flagged as owed to Daniel.
+- [x] This README marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] **Product poster updated** (`Roadmap/README.md` — 05 line + Recent highlights: seller Telegram channel + preference center + money path).
+- [x] Team memory updated (epic memory + `MEMORY.md` index).
+- [x] **`Roadmap/LEARNINGS.md` updated** — promote durable learnings (the dispatch-seam + preference-resolver pattern; `tgSend` parameterization; Telegram `/start` linking; the buyer-authed seller-resolution + seller-self-triggered scope rule).
+- [x] Feature branch deleted; PRs merged.

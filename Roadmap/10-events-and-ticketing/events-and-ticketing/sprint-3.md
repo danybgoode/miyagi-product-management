@@ -1,0 +1,76 @@
+# Sprint 3 — Attendee-ticket primitive + check-in (the shared spine)
+
+> Epic: [Events & Ticketing](README.md) · **Risk: S3.1 / S3.2 HIGH (Daniel merges) · S3.3 MED.**
+> **Status: 📋 PLANNED — not started.** Goal: every attendee — whether they **bought** admission (S1) or
+> **registered** for free (S2) — gets a **unique, scannable ticket** the seller can **check in once** at
+> the door. This is the genuinely-new primitive the spike identified; it's built **once** and fed by both
+> front doors. **Depends on Sprint 1 + Sprint 2.**
+
+## Stories
+
+### S3.1 — Mint a unique per-attendee ticket token; QR encodes the token
+**As** the platform, **I want** to mint a unique token per attendee at purchase (paid) and at
+registration (free), **so that** every attendee has a unique credential — not the same file for everyone.
+- A pure, next-free **`lib/` helper** (mirror `lib/manual-payment-state.ts`): mint token + redemption
+  state (`issued → redeemed`, with guards rejecting illegal transitions and double-mint). Persist on
+  **order/line-item metadata** for paid tickets (Medusa-first) and on the
+  `marketplace_event_registrations` row for free tickets. **The QR encodes the token**, not a marketing
+  URL (today both QR gens encode a URL). Deliver the ticket (email + the buyer re-download from S1.2 / the
+  RSVP success page from S2.2).
+- **Acceptance:** two buyers of the same event get **different** tokens/QRs; a free registrant gets a
+  token/QR too; re-issuing is idempotent (same attendee → same token). The token is opaque + non-guessable.
+- **QA:** **pure-logic spec** on the token/state helper (unique mint, idempotent re-issue, illegal
+  transition rejected) — free coverage on the `lib/` seam; api spec that a paid order + a free registration
+  each expose a token. **Risk: HIGH** (order/fulfillment metadata + delivery → **Daniel merges**).
+
+### S3.2 — Seller scans a ticket at the door; marked used exactly once
+**As** a seller, **I want** to scan a ticket at the door and have it marked used exactly once, **so that**
+no ticket is reused.
+- A seller-facing **scan/redeem endpoint** that takes a token, marks it redeemed, and returns
+  valid / already-used / not-found. The one-time-use guard must cover **every mutation** that can reach
+  the redeemed state (per LEARNINGS "a server gate covers every mutation", not just the named route).
+  Scope each scan to the seller who owns the event.
+- **Acceptance:** scanning a valid token marks the attendee present and returns OK; scanning the **same**
+  token again returns "already used"; an unknown/forged token returns not-found; a seller can't redeem
+  another seller's event tickets.
+- **QA:** **pure-logic spec** (double-redeem rejected); api spec on the redeem endpoint (valid /
+  already-used / not-found / wrong-seller). **The real door-scan flow is a browser smoke owed to Daniel**
+  (authed seller session). **Risk: HIGH → Daniel merges.**
+
+### S3.3 — Attendance roster / check-in view
+**As** a seller, **I want** a roster showing who's registered and who's checked in, **so that** I can
+manage the door.
+- A seller view listing attendees (paid + free) with their redemption state; live-ish count of
+  checked-in vs total. Reads the S3.1 state — no new model.
+- **Acceptance:** the roster shows every attendee and flips a row to "checked in" after a scan; the count
+  is correct. es-MX.
+- **QA:** api spec on the roster read; anonymous-safe component spec where possible. **Risk: MED.**
+
+## Sprint QA — plan
+- **Deterministic gate (green before merge):** `tsc --noEmit` (both repos) · `next build` · Playwright `api`.
+- **New specs:** pure-logic spec on the ticket-token state machine (unique/idempotent/illegal-transition/
+  double-redeem) — the highest-value free coverage; api specs on token exposure + the redeem endpoint +
+  the roster read.
+- **Deploy order:** S3 writes order metadata + reads S1/S2 surfaces — **merge backend-first or together**;
+  the frontend degrades gracefully (no token yet → no ticket shown) across the Cloud Run window.
+- **Owed to Daniel:** the **authed door-scan money/fulfillment smoke** (scan a real ticket, confirm
+  one-time-use) — an automated browser smoke can't fully cover the seller-session redeem path.
+
+## Sprint 3 — Smoke walkthrough (fill in with real URLs at ship)
+```
+Env: PR Vercel preview (pre-merge) → production https://miyagisanchez.com after merge.
+
+1. (money/auth — owed to Daniel) Buy admission to an event (Sprint 1) AND register a second person for a
+   free event (Sprint 2).  → Each attendee receives a unique QR ticket (the two QRs differ).
+2. As the seller, open the event roster https://miyagisanchez.com/shop/manage/eventos/<id>
+   → Both attendees are listed as registered / not yet checked in.
+3. (auth — owed to Daniel) Scan/enter the first attendee's ticket token at the door view.
+   → It reads valid; the roster flips that attendee to "checked in".
+4. Scan the same ticket again.
+   → It reads "already used" — no second check-in.
+5. Scan a made-up / forged token.
+   → It reads "not found".
+
+Steps 1, 3 are the money/auth/fulfillment path — owed to Daniel by name.
+If any step fails, note the step number + what you saw.
+```

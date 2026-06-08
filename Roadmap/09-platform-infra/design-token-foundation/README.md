@@ -67,14 +67,23 @@ Single repo (frontend). S1 is docs-only (Roadmap, monorepo-root repo). S2/S3 are
 merge. Land S2 as one focused PR after rebasing latest `main` (shared-surface blast radius). No backend,
 so no Cloud Run lag to coordinate.
 
-## Epic Definition of Done
+## Epic Definition of Done — ✅ CLOSED 2026-06-07
 
-- [ ] All three sprints' stories merged to `main`; each `sprint-N.md` ticked with commit refs.
-- [ ] Each sprint has a fool-proof smoke walkthrough (real URLs once deployed); visual-diff steps owed to Daniel are named.
-- [ ] Token contract + locked/unlockable matrix live in Roadmap and cross-linked from this epic.
-- [ ] S2 proves **zero visible change** (before/after sample on key pages).
-- [ ] No-regression guard green in the deterministic gate.
-- [ ] `RETROSPECTIVE.md` written; `LEARNINGS.md` updated with any durable rule.
-- [ ] Product poster (`Roadmap/README.md`) note if any user-visible surface changed (expected: none).
-- [ ] Team memory updated (`project_design_system.md` extended with the contract location).
-- [ ] Feature branch deleted; PR merged.
+- [x] All three sprints' stories merged / delivered; each `sprint-N.md` ticked with refs. *(S2+S3 code
+      in **PR #37** `cc317ef`; S1 token-contract doc written at close-out — see note below.)*
+- [x] Each sprint has a smoke walkthrough; the S2 visual-diff step is named as **owed to Daniel**.
+- [x] **Token contract + locked/unlockable matrix live in Roadmap** — [`token-contract.md`](token-contract.md), cross-linked.
+- [~] S2 **zero visible change** — guard + AA pass; the **before/after screenshot diff is owed to
+      Daniel** (low-stakes; no functional risk). The only open item.
+- [x] No-regression guard green in the deterministic gate (`e2e/design-token-foundation.spec.ts`).
+- [x] `RETROSPECTIVE.md` written; `LEARNINGS.md` updated with the durable rule.
+- [x] Product poster (`Roadmap/README.md`) updated — Recent-highlights entry; no user-visible feature change.
+- [x] Team memory updated (`project_design_system.md` extended with the contract location).
+- [x] **PR #37 merged to `main`.** *(Feature-branch deletion is a repo-housekeeping step for Daniel.)*
+
+> **Close-out note (2026-06-07).** The S2 (tokenization) + S3 (contrast + raw-color guard) **code**
+> shipped in PR #37, but the **S1 Roadmap deliverable** — the documented token contract + locked/
+> unlockable matrix — had not been written. It was authored during this close-out
+> ([`token-contract.md`](token-contract.md)) from the live `globals.css`, so #6 now has the
+> style-by-intent reference it depends on. One genuine gap remains: the human before/after
+> screenshot diff for "zero visible change" (owed to Daniel).

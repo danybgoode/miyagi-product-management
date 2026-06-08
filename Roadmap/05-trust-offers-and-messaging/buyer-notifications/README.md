@@ -2,7 +2,7 @@
 
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #5b ·
 > **Risk: HIGH — Daniel merges every story** (rides buyer order / payment / ship / return dispatch).
-> **Status: 📋 Planned** (scaffolded 2026-06-06). Scope doc:
+> **Status: ✅ COMPLETE — both sprints shipped to `main` 2026-06-07** (S1 [PR #46](https://github.com/danybgoode/miyagisanchezcommerce/pull/46) `7fa9c4e`; S2 [PR #47](https://github.com/danybgoode/miyagisanchezcommerce/pull/47) `60281f1`). 2-sprint epic; deferred money-path work split to a follow-up idea (see DoD). Live Telegram/money/auth smokes owed to Daniel. Scope doc:
 > [`00-ideas/seeds/buyer-notifications.md`](../../00-ideas/seeds/buyer-notifications.md).
 > **A pure EXTENSION of [#5 · Granular Multi-Channel Notifications](../granular-notifications/README.md)
 > to the buyer audience.** **Hard dependency: #5** must have merged (the seam, the two Supabase tables,
@@ -90,11 +90,15 @@ seam, the grid component, `app/account` nav) — shared surface breaks sibling P
 has merged.**
 
 ## Definition of Done (epic close-out checklist)
-- [ ] Both sprints' stories merged to `main` + smoke-tested (Telegram-link + guest/money-path gaps stated, owed to Daniel).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough with **real production URLs**; Telegram-link / money / auth steps flagged as owed to Daniel.
-- [ ] This README marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] **Product poster updated** (`Roadmap/README.md` — 05 line + Recent highlights: buyer Telegram channel + buyer preference center).
-- [ ] Team memory updated (epic memory + `MEMORY.md` index).
-- [ ] **`Roadmap/LEARNINGS.md` updated** — promote durable learnings (re-aiming an audience-agnostic dispatch seam at a second audience; the guest fall-through pattern; dual-audience shared-row semantics).
-- [ ] Feature branch deleted; PRs merged.
+- [x] Both sprints' stories merged to `main` + smoke-tested (deterministic gate + CI green each; Telegram-link + guest/money-path live smokes **stated as owed to Daniel** — below).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough with **real production URLs**; Telegram-link / money / auth steps flagged as owed to Daniel.
+- [x] This README marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] **Product poster updated** (`Roadmap/README.md` — 05 line + Recent highlights: buyer Telegram channel + buyer preference center).
+- [x] Team memory updated (epic memory + `MEMORY.md` index).
+- [x] **`Roadmap/LEARNINGS.md` updated** — promote durable learnings (re-aiming an audience-agnostic dispatch seam at a second audience; the guest fall-through pattern; dual-audience shared-row semantics).
+- [x] Feature branches deleted; PRs merged (#46, #47).
+
+**Owed to Daniel (live smokes — agent can't run these):** authed buyer toggles Envíos/Ofertas/Devoluciones email off → those emails stop on a legacy order; Compras×Email can't be turned off; a guest order still emails; the real Telegram `/start` link → Conectado ✓ + "Enviar prueba" arrives; a shipped legacy order pings Telegram/Push; buyer "Desconectar" preserves the person's seller Telegram. Steps in `sprint-1.md` / `sprint-2.md`.
+
+**Deferred (out of this epic's scope → follow-up):** Compras (order/payment-confirmed) via the Stripe/MP payment webhooks; the Medusa-order buyer-Clerk-id gating fix (so Envíos/Devoluciones gate on Medusa orders, not just legacy); the unlink `{ rowDeleted }` UI polish. Captured in [`00-ideas/seeds/buyer-notifications-money-path.md`](../../00-ideas/seeds/buyer-notifications-money-path.md).

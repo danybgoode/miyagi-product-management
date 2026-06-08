@@ -19,6 +19,13 @@ never by silently charging a seller for a discount on their own sale.
   exclusion of seller storefronts, dashboards, checkout, and embeds. Full lint is still blocked by
   existing app baseline errors outside the epic.
 
+## Planned
+- 📋 **[Seller-Acquisition Landing Pages](seller-acquisition-landing-pages/)** (BUILD-ORDER #6) —
+  greenfield supply-side funnel: an anchor page (`/vende`) + persona pages (World-Cup experiences,
+  local creators) driving into `/sell`. Trust spine: "No nos creas, pregúntale a Claude." Groomed +
+  approved 2026-06-07; scaffolded (3 sprints, two tracks — WC wedge first). First slice of the
+  broader **agent-native GTM** north-star (`../00-ideas/seeds/agent-native-gtm/`).
+
 ## Backlog / ideas
 - 📋 Two-sided referrals (a welcome credit for the invited friend too)
 - 📋 Games / sweepstakes that hand out promo codes (marketplace-wide or seller-specific)

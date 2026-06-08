@@ -22,13 +22,15 @@ updated: 2026-06-08
 
 ## The problem (why 00-ideas drifts)
 
-- `1. raw/` is **empty** — raw ideas land in chat or straight in `readyforscope`, so the inbox is dead.
-- `2. readyforscope/` is a **junk drawer**: ~18 seed docs where **most are spent** (already scaffolded into epics or shipped), mixed with a few live seeds, mixed with **two audit-result trees** (`ux-audit/results/` + `ux-audit/results-refresh-2026-06/`) that aren't seeds at all.
-- `3. done/` has only **3 files** — spent seeds never get retired there.
-- A **duplicate older audit** lives at `00-ideas/ux-uiaudit/`, shadowing the newer `2. readyforscope/ux-audit/`.
-- Filenames are inconsistent (`buymeacoffeewidget.md`, `Themingsystem.md`, `referralsand couponcodes.md`, `urlStuff.md`).
+*(Historical — describes the pre-flatten `1. raw` / `2. readyforscope` / `3. done` layout that this change replaced.)*
 
-**Root cause:** grooming writes a scope doc + scaffolds the epic, but nothing ever *advances or retires* the seed. The folder-stage model (`raw → readyforscope → done`) depends on manual moves that never happen.
+- The raw-idea inbox was **empty** — raw ideas landed in chat or straight in the ready folder, so the inbox was dead.
+- The ready folder was a **junk drawer**: ~18 seed docs where most were spent (already scaffolded or shipped), mixed with a few live seeds, mixed with **two audit-result trees** that aren't seeds at all.
+- The done folder had only **3 files** — spent seeds never got retired there.
+- A **duplicate older audit** shadowed the newer one.
+- Filenames were inconsistent (camelCase, spaces, mixed conventions).
+
+**Root cause:** grooming wrote a scope doc + scaffolded the epic, but nothing ever *advanced or retired* the seed. The numbered-folder model depended on manual moves that never happened — fixed by moving lifecycle into frontmatter.
 
 ---
 
@@ -68,8 +70,8 @@ updated: 2026-06-07
 ### One-time cleanup (executed once, on approval)
 
 1. **Add frontmatter** to every existing seed with its true current status (inventory below).
-2. **Dedupe audits:** move both audit trees out of the idea pipeline into a dedicated `Roadmap/00-ideas/audits/` (reference findings, not seeds); retire the older duplicate `00-ideas/ux-uiaudit/` (keep newest; archive or delete old — your call).
-3. **Archive spent seeds:** the scaffolded/shipped ones move once to `3. done/` (or get `status: shipped` in place — see open question Q-A1).
+2. **Dedupe audits:** move both audit trees out of the idea pipeline into a dedicated `Roadmap/00-ideas/audits/` (reference findings, not seeds); retire the older duplicate `00-ideas/audits/_legacy/ux-uiaudit/` (keep newest; archive or delete old — your call).
+3. **Archive spent seeds:** the scaffolded/shipped ones move once to `seeds/` (or get `status: shipped` in place — see open question Q-A1).
 4. **Normalize filenames** to kebab-case matching `slug`.
 5. **Add a groom rule** (Stage 7/9): on scaffold, set the seed's `status: scaffolded` + `epic:` path — no file move.
 

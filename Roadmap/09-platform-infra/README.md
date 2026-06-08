@@ -12,5 +12,5 @@ Status legend: ✅ Live · 🚧 In progress · 📋 Planned
 | Epic | In one line | Status |
 |---|---|---|
 | [cicd-telegram-notifications](cicd-telegram-notifications/) | Unified CI/CD + git-event notifications into a dedicated Telegram channel (push + prod-deploy finish, both repos) | 📋 Planned (groomed 2026-06-06) |
-| [design-token-foundation](design-token-foundation/) | Harden + document the existing design-token foundation (token contract, locked/unlockable matrix, tokenize customer-facing surfaces, AA contrast + no-regression guard) — substrate for #6 | 📋 Planned (groomed 2026-06-06) |
+| [design-token-foundation](design-token-foundation/) | Harden + document the existing design-token foundation (token contract, locked/unlockable matrix, tokenize customer-facing surfaces, AA contrast + no-regression guard) — substrate for #6 | ✅ Shipped 2026-06-07 (PR #37; closed out — `token-contract.md` written, retro done; screenshot-diff owed to Daniel) |
 | [feature-flags-killswitches](feature-flags-killswitches/) | Flagsmith as the platform's fail-open, admin-only, server-evaluated kill-switch layer — `checkout.stripe_enabled` enforced across UI + agents/UCP + checkout | ✅ Shipped 2026-06-06 (S1 PR #34 + S2 PR #9); further taxonomy deferred by decision |

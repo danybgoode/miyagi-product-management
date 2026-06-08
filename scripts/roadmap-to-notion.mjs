@@ -28,6 +28,7 @@ const AREA_NAMES = {
   '01': '01 Discovery', '02': '02 Checkout & Payments', '03': '03 Selling & Shops',
   '04': '04 Shipping', '05': '05 Trust/Offers/Messaging', '06': '06 Print',
   '07': '07 Agentic/Federated', '08': '08 Growth', '09': '09 Platform-infra',
+  '10': '10 Events & Ticketing',
 };
 const STATUS_LABEL = {
   raw: 'Raw', ready: 'Ready', queued: 'Queued', scaffolded: 'Scaffolded',
