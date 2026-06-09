@@ -1,10 +1,16 @@
 # Neighborhood Pulse — online community feed — Sprint 1: Feed exists, opt-in-gated, and feels alive
 
-**Status:** ✅ implemented in branch · draft PR pending
+**Status:** ✅ merged to `main` · rollout smoke pending after MED migration + seed opt-in
 
 > The skateboard. Backend-first: ship the opt-in flag, then the feed that reads it, then the trending strip and
 > entry points. The feed is **read-only** and starts **empty** by design (deliberate web opt-in) — seed it at
 > launch by opting in a batch of existing approved items.
+
+**Merged PRs:**
+- App: [`miyagisanchezcommerce#55`](https://github.com/danybgoode/miyagisanchezcommerce/pull/55) → merge commit
+  `48e9fc5c567fd4e7f1eac9b909ca9cba6ccfc2d3`.
+- Docs: [`miyagi-product-management#4`](https://github.com/danybgoode/miyagi-product-management/pull/4) → merge
+  commit `fc06621898b5bd666a32e1ad7251bde536caf7da`.
 
 ## Stories
 
@@ -31,8 +37,10 @@ name. Read-only; null-safe (`web_visible ?? false`) so it's a safe no-op during 
 **Acceptance:**
 - `/vecindario` lists only opted-in approved items; it **never** shows `submitted`/`rejected`/not-opted-in items.
 - A card with no photo / no zona still renders cleanly (graceful degrade).
+- A missing submitter name uses the public fallback copy and never falls back to `submitter_email`.
 **Risk:** low.
 **Build:** ✅ app commit `0031877` (`feat(neighborhood-pulse): add public feed`).
+**Review fix:** ✅ app commit `edef05b` (`fix(neighborhood-pulse): avoid public email fallback`).
 
 ### Story 1.3 — Trending-listings strip
 **As a** buyer, **I want** to see what's trending locally without searching, **so that** I discover worth-buying
@@ -72,6 +80,13 @@ in a next-free `lib/` module.
 - ✅ `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3013 npm run test:e2e` → `267 passed`, `4 skipped`
 - ✅ Focused anonymous browser smoke: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3013 ./node_modules/.bin/playwright test --project=browser e2e/neighborhood-pulse.browser.spec.ts`
 - ✅ In-app Browser visual pass on `/vecindario` at desktop + 390px mobile.
+- ✅ Post-review local fix gate:
+  - `./node_modules/.bin/tsc --noEmit`
+  - `npm run build`
+  - `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3013 ./node_modules/.bin/playwright test --project=api e2e/neighborhood-pulse.spec.ts` → `9 passed`, `1 skipped` secret-gated smoke
+- ✅ PR #55 remote gate after `edef05b`: Type-check + build, Playwright vs preview, Vercel, and Vercel Preview
+  Comments all green.
+- ✅ Fresh reviewer re-review passed; PR #55 and docs PR #4 were marked ready and merged on 2026-06-09.
 - Note: local Supabase does **not** yet have `print_social_submissions.web_visible`; `/vecindario` returned 200
   with the empty state, confirming the backend-first deploy-lag fallback. The secret-gated mutating smoke
   (`NEIGHBORHOOD_PULSE_SMOKE_SECRET`) is available but was not run locally.
