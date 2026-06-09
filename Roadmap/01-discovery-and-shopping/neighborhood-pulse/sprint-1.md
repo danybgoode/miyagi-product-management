@@ -1,6 +1,6 @@
 # Neighborhood Pulse — online community feed — Sprint 1: Feed exists, opt-in-gated, and feels alive
 
-**Status:** ⬜ not started
+**Status:** ✅ implemented in branch · draft PR pending
 
 > The skateboard. Backend-first: ship the opt-in flag, then the feed that reads it, then the trending strip and
 > entry points. The feed is **read-only** and starts **empty** by design (deliberate web opt-in) — seed it at
@@ -20,6 +20,7 @@ línea" toggle in the admin social queue, wired through `PATCH /api/admin/print/
   assignment) is unaffected either way.
 **Risk:** MED — the one additive **schema change** (nullable column, non-commerce table). **Daniel merges.**
 *Deploy backend-first, ahead of S1.2.*
+**Build:** ✅ app commit `3d8a03c` (`feat(neighborhood-pulse): add social web opt-in`).
 
 ### Story 1.2 — Public `/vecindario` feed of opted-in approved items
 **As a** buyer, **I want** to open a public neighborhood feed and see what my community is sharing, **so that**
@@ -31,6 +32,7 @@ name. Read-only; null-safe (`web_visible ?? false`) so it's a safe no-op during 
 - `/vecindario` lists only opted-in approved items; it **never** shows `submitted`/`rejected`/not-opted-in items.
 - A card with no photo / no zona still renders cleanly (graceful degrade).
 **Risk:** low.
+**Build:** ✅ app commit `0031877` (`feat(neighborhood-pulse): add public feed`).
 
 ### Story 1.3 — Trending-listings strip
 **As a** buyer, **I want** to see what's trending locally without searching, **so that** I discover worth-buying
@@ -41,6 +43,7 @@ items through neighborhood signal, not just search.
 - The strip shows real listings ordered by the stated signal; with thin/zero signals it falls back to recency
   and never renders empty or errors.
 **Risk:** low.
+**Build:** ✅ app commit `f0c35c5` (`feat(neighborhood-pulse): rank trending listings`).
 
 ### Story 1.4 — Entry points + contribute loop
 **As a** buyer/contributor, **I want** to find the feed and add to it, **so that** the community surface is
@@ -51,6 +54,7 @@ in a next-free `lib/` module.
 **Acceptance:**
 - `/vecindario` is reachable from the marketplace nav; the contribute loop is two clicks each way.
 **Risk:** low.
+**Build:** ✅ app commit `80266dc` (`feat(neighborhood-pulse): add feed entry loop`).
 
 ## Sprint QA
 - **api spec(s):**
@@ -62,8 +66,21 @@ in a next-free `lib/` module.
   the api spec.)
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
+**Pre-merge verification (local, branch `feat/neighborhood-pulse`):**
+- ✅ `./node_modules/.bin/tsc --noEmit`
+- ✅ `npm run build`
+- ✅ `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3013 npm run test:e2e` → `267 passed`, `4 skipped`
+- ✅ Focused anonymous browser smoke: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3013 ./node_modules/.bin/playwright test --project=browser e2e/neighborhood-pulse.browser.spec.ts`
+- ✅ In-app Browser visual pass on `/vecindario` at desktop + 390px mobile.
+- Note: local Supabase does **not** yet have `print_social_submissions.web_visible`; `/vecindario` returned 200
+  with the empty state, confirming the backend-first deploy-lag fallback. The secret-gated mutating smoke
+  (`NEIGHBORHOOD_PULSE_SMOKE_SECRET`) is available but was not run locally.
+
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+
+Pre-merge local smoke used `http://127.0.0.1:3013/vecindario`; replace with the Vercel preview URL in PR review,
+then production after Daniel merges the MED migration story.
 
 1. Open https://miyagisanchez.com/vecindario in a private window (no login).
    → The neighborhood feed page loads. If no items have been opted in yet, you see an empty-but-tidy state
