@@ -2,10 +2,12 @@
 
 > Epic: [Discovery Polish](README.md) · **Risk: LOW–MED** (frontend-only; presentational). Watch for
 > any shared-layout touch.
-> **Status: ✅ BUILT 2026-06-08 — [PR #51](https://github.com/danybgoode/miyagisanchezcommerce/pull/51)
-> (awaiting green CI + reviewer auto-merge; LOW–MED, no shared-layout touch).** Gate green locally
-> (tsc ✅ · next build ✅, `/api/listings/count` registered · `resultCountLabel` api specs 3/3 ✅); the
-> count round-trip + anonymous browser smoke run in CI against the PR preview.
+> **Status: ✅ SHIPPED to prod 2026-06-08 — [PR #51](https://github.com/danybgoode/miyagisanchezcommerce/pull/51)
+> squash-merged (`7fad2cd`).** Full gate green (tsc ✅ · next build ✅, `/api/listings/count` registered ·
+> Playwright `api` incl. the count round-trip vs preview ✅ · `resultCountLabel` 3/3 ✅). Reviewed by a
+> fresh reviewer agent (clean; shared-layout check passed — no `layout.tsx`/`middleware.ts`/`globals.css`)
+> and auto-merged on green CI (LOW–MED, no shared-layout touch). **Owed to Daniel:** a manual phone-width
+> pass on prod (the anonymous smoke walkthrough below).
 > Goal: the mobile filter stops being a dense inline `<select>` stack and becomes a real, apply-gated
 > layer with a live result count (Baymard 2026 guidance, re-confirmed in the 01 refresh).
 >
