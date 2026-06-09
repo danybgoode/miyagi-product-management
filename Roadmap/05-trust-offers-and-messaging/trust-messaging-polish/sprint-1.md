@@ -2,14 +2,14 @@
 
 > **Epic:** [Trust & Messaging Polish](README.md) · **BUILD-ORDER:** #3c · Epic C ·
 > **Risk: MED — no money mutation.** Read-only projection + copy. Reviewer may merge per story on green CI.
-> **Status: 📋 PLANNED.** Build `lib`-first: C.1 → C.2 → C.3.
+> **Status: ✅ BUILT — [PR #64](https://github.com/danybgoode/miyagisanchezcommerce/pull/64) (draft), deterministic gate green.** Built `lib`-first: C.1 `c8b39a8` → C.2 `542cc11` → C.3 `230b512`. tsc + `next build` + Playwright `api` (406 passed) all green. **Note:** `lib/refund-state.ts` (Epic B) is now on `main`, so refund rows are wired for real — null-safe (nothing shows until an actual return request exists). Authed chat-card render owed to Daniel.
 
 The 05 core: turn the chat into a durable shared ledger (projecting #3b's already-durable payment state)
 and make negotiation say whose turn it is, when it expires, and stop lying about the 48h window.
 
 ---
 
-## C.1 — Transaction-ledger projection seam + conversation→order read
+## C.1 — Transaction-ledger projection seam + conversation→order read ✅ `c8b39a8`
 **As a** buyer or seller, **I want** the system to resolve the one order/payment(/refund) state behind a
 conversation, **so that** the chat can show a single durable truth instead of inferring it from scattered
 events.
@@ -33,7 +33,7 @@ state and degrades to offer-only. **Risk: MED · reviewer may merge on green CI.
 
 ---
 
-## C.2 — Render the durable transaction card in chat
+## C.2 — Render the durable transaction card in chat ✅ `542cc11`
 **As a** buyer or seller, **I want** a durable transaction card in the conversation showing the current
 shared state, **so that** I always know where the deal stands without re-reading the thread — and I tap
 through to the order page to act.
@@ -55,7 +55,7 @@ local `@clerk/testing` harness, else **owed to Daniel**); the projection itself 
 
 ---
 
-## C.3 — Haggling turn-owner + deadline + copy fix
+## C.3 — Haggling turn-owner + deadline + copy fix ✅ `230b512`
 **As a** buyer or seller in a negotiation, **I want** to see explicitly whose turn it is and a live
 countdown to the real deadline, **so that** I'm not guessing from which buttons show.
 
@@ -85,16 +85,30 @@ who-acts-next + which deadline); anonymous browser smoke of the offer-card copy 
   read-only; actions are deep-links).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-> _Placeholder — fill with real production URLs once deployed (preview URLs pre-merge). One action + one
-> expected result per step. Flag any authed/money-path step as **owed to Daniel**._
+> One action + one expected result per step. **Prod** = `https://miyagisanchez.com` (post-merge).
+> **Pre-merge preview** (SSO-gated, needs the protection-bypass token):
+> `https://miyagisanchez-git-feat-trust-messag-f77ace-danybgoodes-projects.vercel.app`
+> (latest build for `230b512`: `https://miyagisanchez-dycd35bba-danybgoodes-projects.vercel.app`).
+> Authed/money-path steps are flagged **owed to Daniel** — the chat is Clerk-gated.
 
-1. _(TBD)_ Open a conversation with a paid manual (SPEI) order at `https://miyagisanchez.com/messages/<id>`.
-   → A transaction card shows the current state badge ("Pago reportado — en verificación", etc.) + a "te toca / espera" line. **(authed — owed to Daniel)**
-2. _(TBD)_ Tap "Confirmar pago" on the card.
-   → You're taken to the existing seller order page (deep-link) — no payment action happens inside chat. **(authed — owed to Daniel)**
-3. _(TBD)_ Open an offer-only conversation (no order yet).
-   → The card shows the negotiation state, no order/refund rows (graceful degrade).
-4. _(TBD)_ On a listing PDP, open "Hacer oferta".
-   → The expiry copy says 48 horas consistently (no "menos de 24 h"); a pending offer shows "Esperando al vendedor · Expira en …".
+1. **(authed — owed to Daniel)** Open a conversation backed by a paid manual (SPEI) order:
+   `https://miyagisanchez.com/messages/<conversation-id>`.
+   → Below the listing header a **transaction card** shows the current state badge (e.g. "Pago reportado —
+   en verificación"), a "te toca / espera" line, and a Negociación → Pago → Entrega timeline.
+2. **(authed — owed to Daniel)** On that card, tap the action — "Confirmar pago" (seller) / "Ya hice el pago" (buyer).
+   → You land on the existing order page (`/shop/manage/orders/<id>` seller · `/account/orders/<id>` buyer);
+   **no payment action happens inside the chat** (read-only deep-link).
+3. **(authed — owed to Daniel)** Open an **offer-only** conversation (no order yet).
+   → The card shows the negotiation badge + turn-owner ("Te toca responder" / "Esperando al vendedor") with a
+   live "Expira en …" countdown, and **no Pago/Entrega/Reembolso rows** (graceful degrade).
+4. **(authed — owed to Daniel)** Open a conversation whose order has an open return/refund (Epic B).
+   → A **"Reembolso …" row** appears and the headline switches to the refund state (e.g. "Transferencia
+   pendiente"); a confirmed/none refund shows no false "emitido".
+5. **(agent-runnable / anonymous)** On any listing PDP `https://miyagisanchez.com/l/<listing-id>`, open "Hacer oferta".
+   → The expiry copy reads **"48 horas"** consistently and the footer says "El vendedor tiene 48 horas para
+   responder" — **no "menos de 24 h"**. _(Also gated deterministically by `offer-copy-consistency.spec.ts`.)_
+6. **(authed — owed to Daniel)** As the seller on a received pending offer, look at the offer panel (bottom).
+   → It reads "Te toca responder · Expira en …" against the **48h** `expires_at`; on a counter, the buyer sees
+   "Te toca responder · Expira en …" against the **24h** `counter_expires_at`.
 
 If any step fails, note the step number + what you saw — that's the bug report.
