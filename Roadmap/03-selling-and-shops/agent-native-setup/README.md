@@ -1,6 +1,8 @@
-# Epic: Agent-native setup (Onboarding 0)
+# Epic: Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)
 
 > **Area:** 03-selling-and-shops · **Risk:** high (S2) · **Scope seed:** [`00-ideas/seeds/agent-native-setup.md`](../../00-ideas/seeds/agent-native-setup.md)
+>
+> **Status:** ✅ all 3 sprints shipped to prod. S1 published setup spec ([#60](https://github.com/danybgoode/miyagisanchezcommerce/pull/60) `7ada9f4`); S2 first-run apply ([#61](https://github.com/danybgoode/miyagisanchezcommerce/pull/61) `a592d29`); S3 clerk handoff + loop-close success screen ([#63](https://github.com/danybgoode/miyagisanchezcommerce/pull/63) `d3a1b8e`). See [`RETROSPECTIVE.md`](RETROSPECTIVE.md). Authed/MCP smokes owed to Daniel (per-sprint walkthroughs).
 
 ## Why
 A prospective seller's **own** AI agent should do almost the entire shop setup. The platform's only job
@@ -57,12 +59,12 @@ frontend (Vercel preview per branch). No backend repo change expected (reuses St
 Next routes); if any backend touch appears, merge backend-first and degrade gracefully (LEARNINGS).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
-- [ ] Coordinate with `agent-readable-about-surface`: `/acerca` "how to start" only links steps that are live
+- [x] All sprints merged to `main` + smoke-tested (authed/MCP gaps stated, owed to Daniel)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] Coordinate with `agent-readable-about-surface`: `/acerca` "how to start" only links steps that are live (already satisfied — `/acerca` links only the live generic `/sell`, not `/sell/setup`; `about-content.ts` untouched)

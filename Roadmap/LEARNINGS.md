@@ -119,6 +119,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Products: one `lib/personalization.ts` with sanitise/validate/build/format, covered by 3 specs.)*
 - **Add one spec per browser/API-testable story** — coverage accretes with the work, never as a
   separate project.
+- **A `not.toContain` copy-completeness check can collide with legit copy.** Asserting a clerk prompt had
+  no leftover `'TODO'` failed because Spanish "TODO el texto" (all the text) is legitimate. For
+  placeholder/orphan-string guards, assert only *true* placeholder markers (`PEGA_TU_TOKEN`, `XXX`,
+  `undefined`/`null`), not natural-language words. *(2026-06-09, agent-native setup S3.)*
 - **Two test layers (live).** `api` project (`*.spec.ts`, no browser) is the **blocking gate** — fast,
   in CI on every PR. `browser` project (`*.browser.spec.ts`, Chromium) is **opt-in, NOT in the gate**
   — `npm run test:e2e:browser`, nightly via `browser-smoke.yml`. Use it for *rendered* UI an API call
@@ -261,6 +265,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   seam so every surface renders it identically; keep its assertion phrase **apostrophe-free** ("in their own
   language") so it survives HTML escaping on a page and stays a robust spec target. *(2026-06-09, agent-readable
   about surface — `RELAY_LANGUAGE_DIRECTIVE` in `lib/about-agent.ts`, projected onto 4 surfaces from one source.)*
+  **Reuse the directive *constant*, don't re-paraphrase it** — a second surface (Onboarding 0's shop-clerk
+  operate-prompt) reused `SETUP_LANGUAGE_DIRECTIVE` verbatim, so the mirror rule is byte-identical wherever it
+  appears and one stable phrase covers both specs. *(2026-06-09, agent-native setup S3 — `buildClerkPrompt()`.)*
+- **A handoff/operate prompt that drives tools should name the tools from ONE shared source the prompt AND its
+  spec read.** The shop-clerk prompt renders `SELLER_MCP_TOOLS` (the 8 already-live seller MCP tools) and the
+  api spec loop-asserts every name appears — so the named toolset can never drift from what `/api/ucp/mcp`
+  actually exposes, and "names a tool that doesn't exist" is caught by the gate. *(2026-06-09, agent-native
+  setup S3 — `SELLER_MCP_TOOLS` + `buildClerkPrompt()` in `lib/setup-spec.ts`.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole

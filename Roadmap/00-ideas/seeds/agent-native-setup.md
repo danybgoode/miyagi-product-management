@@ -1,14 +1,14 @@
 ---
 title: "Agent-native setup (Onboarding 0)"
 slug: agent-native-setup
-status: scaffolded
+status: shipped
 area: "03"
 type: feature
 priority: null
 risk: high
 epic: "03-selling-and-shops/agent-native-setup"
 build_order: null
-updated: 2026-06-08
+updated: 2026-06-09
 ---
 
 # Scope — Agent-native setup ("Onboarding 0")
