@@ -1,6 +1,19 @@
 # Agent-native setup (Onboarding 0) — Sprint 1: Published versioned setup spec
 
-**Status:** ⬜ not started · **Risk:** low
+**Status:** 🟦 built — draft [PR #60](https://github.com/danybgoode/miyagisanchezcommerce/pull/60), awaiting review/merge · **Risk:** low
+
+> **Build log (branch `feat/agent-native-setup`):**
+> - Story 1.1 + 1.2 — `9b6b336` — new pure/next-free `lib/setup-spec.ts` composes
+>   `lib/catalog-import.ts` + `lib/settings-import.ts` (no third schema): `validateSetup`
+>   (version-gated, delegates to `validateConfig`/`validateRows`), `buildSetupPrompt`
+>   (es-MX, mirrors the seller's language via `SETUP_LANGUAGE_DIRECTIVE`), `EXAMPLE_SETUP`,
+>   `buildSetupSpec`.
+> - Story 1.3 — `78dc423` — `seller_onboarding` block + capability in `/api/ucp/manifest`;
+>   new public `GET /api/ucp/setup-spec`; `/agent` "set up a shop with your agent" section;
+>   no-auth `get_setup_spec` MCP tool.
+> - Tests — `0da2203` — `e2e/agent-native-setup-spec.spec.ts` (12 api-project tests).
+> - Gate green locally: `tsc` ✅ · `npm run build` ✅ · new spec 12/12 ✅ · `agent-discovery` 4/4 ✅.
+> - Frontend-only; no backend repo change.
 
 > Goal: a seller's agent can read a **published, versioned spec + prompt** and emit ONE combined setup
 > JSON (shop dressing + catalog + config) **before** the user signs up. No first-run apply yet — this
@@ -8,7 +21,7 @@
 
 ## Stories
 
-### Story 1.1 — Compose the one versioned setup spec
+### Story 1.1 — Compose the one versioned setup spec ✅ `9b6b336`
 **As a** prospective seller's agent, **I want** a single versioned setup schema that composes the
 existing catalog + config schemas, **so that** I can emit one file instead of two.
 **Acceptance:**
@@ -22,7 +35,7 @@ existing catalog + config schemas, **so that** I can emit one file instead of tw
 - `miyagi_setup_version` is asserted/handled (unknown version → clear error, not a silent partial parse).
 **Risk:** low
 
-### Story 1.2 — Unified emit prompt that mirrors the seller's language
+### Story 1.2 — Unified emit prompt that mirrors the seller's language ✅ `9b6b336`
 **As a** seller's agent, **I want** one canonical prompt, **so that** I produce a valid combined file
 with copy in the seller's own language.
 **Acceptance:**
@@ -35,7 +48,7 @@ with copy in the seller's own language.
 - es-MX copy-completeness (no orphan strings); the "mirror the seller's language" instruction is present.
 **Risk:** low
 
-### Story 1.3 — Publish the spec agent-fetchably
+### Story 1.3 — Publish the spec agent-fetchably ✅ `78dc423`
 **As an** agent inspecting the site pre-signup, **I want** to discover the setup spec + prompt, **so
 that** I can act without a human handing me anything.
 **Acceptance:**
@@ -57,17 +70,26 @@ that** I can act without a human handing me anything.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+Env: production · https://miyagisanchez.com   (pre-merge: swap in the PR #60 Vercel preview URL)
 
 1. Open https://miyagisanchez.com/api/ucp/manifest
-   → The JSON includes a `seller_onboarding` block describing the setup-JSON flow and pointing at the spec.
-2. Open the public spec surface (e.g. https://miyagisanchez.com/agent — "Para vender / set up a shop"
-   section, or the spec endpoint).
-   → You see the combined setup schema, an example, and the copyable emit prompt.
-3. Paste the emit prompt into Claude/ChatGPT/Gemini with a few sample products in **English** (or any
-   non-Spanish language).
-   → The agent returns one JSON object with `miyagi_setup_version`, `profile`, `config`, `catalog`, and
-     the product copy is in the language you used.
-4. Save that JSON — you'll use it in the Sprint 2 smoke.
+   → The JSON `endpoints` includes a `seller_onboarding` block whose `spec_url` points at
+     `/api/ucp/setup-spec`, lists `mcp_tools: ["get_setup_spec"]`, and `capabilities` includes
+     `"seller_onboarding"`. The block's copy says the guided first-run apply is "coming soon" (not live yet).
+2. Open https://miyagisanchez.com/api/ucp/setup-spec
+   → JSON with `version: "1"`, the combined `shape`, `config_blocks`, `catalog_fields`,
+     `manual_sections`, an `example`, and a `prompt` string (the es-MX emit prompt).
+3. Open https://miyagisanchez.com/agent and find "Para vender — set up a shop with your agent".
+   → You see the combined setup schema, the language directive, a link to `/api/ucp/setup-spec`,
+     the copyable emit prompt, and an example. It points to the existing import pages for applying
+     today and says a one-pass apply is coming soon.
+4. (MCP) POST to https://miyagisanchez.com/api/ucp/mcp a JSON-RPC `tools/call` for `get_setup_spec`
+   (or just `tools/list`).
+   → `tools/list` includes `get_setup_spec`; the call returns the spec JSON (version, prompt, example).
+5. Paste the emit prompt (from step 2 or 3) into Claude/ChatGPT/Gemini with a few sample products in
+   **English** (or any non-Spanish language).
+   → The agent returns one JSON object with `miyagi_setup_version`, `profile`, `config`, `catalog`,
+     and the product copy is in the language you used (the mirror-language directive working).
+6. Save that JSON — you'll use it in the Sprint 2 smoke.
 
 If any step fails, note the step number + what you saw — that's the bug report.
