@@ -2,6 +2,12 @@
 
 > **Area:** 07 · Agentic & Federated Commerce · **Risk:** low · **Scope seed:** [`00-ideas/seeds/agent-readable-about-surface.md`](../../00-ideas/seeds/agent-readable-about-surface.md)
 
+> **✅ EPIC COMPLETE — both sprints shipped to prod 2026-06-09.** S1 PR #57 (`0f71ff5`) — bilingual
+> content source + `/acerca`. S2 PR #59 (`c12c969`) — agent surfaces (manifest `about` block · `/agent`
+> why-sell · `/llms.txt` + robots pointer · MCP `about_miyagi` tool+resource), each carrying the
+> relay-language directive. One pure seam `lib/about-agent.ts` projects the source onto every surface.
+> **Content fill still owed by Daniel:** founder's note + philosophy + final premium pricing replace the stubs.
+
 ## Why
 When a prospective seller asks their own AI *"¿qué es miyagisanchez.com y por qué vendería ahí?"* the
 agent must get a grounded, **supply-side** answer — what Miyagi is, why sell here, how to start, what
@@ -34,10 +40,10 @@ prices are TBD) — no invented claims, no fake prices.
 - `locales/en.json` + `locales/es.json` — bilingual strings (AGENTS rule 5).
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | Content source + /acerca human page (es/en) | low |
-| 2 | Expose to agents — manifest · /agent · llms.txt · MCP | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | Content source + /acerca human page (es/en) | low | ✅ shipped (PR #57, `0f71ff5`) |
+| 2 | Expose to agents — manifest · /agent · llms.txt · MCP | low | ✅ shipped (PR #59, `c12c969`) |
 
 ## Deploy order
 Frontend-only (Vercel); no backend, no migration. **S1 (content source + `/acerca`) → S2 (agent
@@ -46,12 +52,13 @@ green CI unless a story touches shared layout / `robots.ts` / `middleware` (then
 sprint ships independently.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (07 feature map + Recent highlights)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (07 feature map + Recent highlights)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`
 - [ ] **Content fill owed by Daniel:** founder's note + philosophy + final pricing replace the stubs
+- [ ] **Live smoke owed to Daniel:** the end-to-end "ask Claude in another language" relay (sprint-2 steps 6–7)

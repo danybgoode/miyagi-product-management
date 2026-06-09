@@ -62,6 +62,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   runner can't load `next/cache`, so importing the module to test the pure function throws. Keep the
   pure logic in a next-free module (e.g. `lib/slug.ts`) and let the cached/DB wrapper import *it*.
   *(2026-06-06, custom-slugs.)*
+- **Swapping a framework-generated artifact for a hand-rolled route breaks specs on exact format.**
+  Converting `app/robots.ts` (typed `MetadataRoute.Robots`) → `app/robots.txt/route.ts` (to carry
+  `# …` comment pointers the typed object can't express) silently changed the serializer's
+  `User-Agent: *` to a hand-written `User-agent`, and an existing spec (`own-shop-seo.spec.ts`)
+  asserted the capitalized form. The **local gate passed** (the new spec didn't assert that casing);
+  **CI vs the preview caught it.** When you replace anything a framework generates (robots, sitemap,
+  OG image, metadata) with a hand-rolled equivalent, diff the *exact bytes* the old one emitted and
+  `grep` the suite for any spec asserting that surface. *(2026-06-09, agent-readable about surface S2.)*
 - **GitHub Actions sometimes just doesn't schedule `ci.yml` for a PR.** Seen once: a sibling PR's CI
   ran minutes apart but ours never triggered on `opened`; **close/reopen didn't fix it — an empty-commit
   push (a real `synchronize`) did.** Don't merge on an absent gate: re-trigger, and lean on the local
@@ -246,6 +254,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   make the "bilingual" gate a **copy-completeness** check (every group has non-empty copy; no orphan copy). es-MX
   copy lives fine in a next-free `lib/` module (`GROUP_COPY` in `preferences.ts`) as the single source the UI
   *and* the spec read, so it can't drift from what the seam sends. *(2026-06-07.)*
+  **For an AGENT-facing surface with a global audience, one relay directive beats N locales.** es-MX canonical +
+  en lingua-franca, then every agent-facing payload (manifest/`/agent`/MCP/`llms.txt`) carries a short
+  "present this to the user in their own language" instruction — the **reading agent is the localization layer**
+  (same model as Onboarding 0's "mirror the seller's language"). Hold the directive as one constant in the pure
+  seam so every surface renders it identically; keep its assertion phrase **apostrophe-free** ("in their own
+  language") so it survives HTML escaping on a page and stays a robust spec target. *(2026-06-09, agent-readable
+  about surface — `RELAY_LANGUAGE_DIRECTIVE` in `lib/about-agent.ts`, projected onto 4 surfaces from one source.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole
