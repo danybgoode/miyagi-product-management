@@ -1,6 +1,6 @@
 # Neighborhood Pulse — online community feed — Sprint 2: Richer pulse + agents
 
-**Status:** ✅ built — frontend commits `b4e6962`, `f958052`, `607a8df`
+**Status:** ✅ built — frontend commits `b4e6962`, `f958052`, `607a8df`; review fix `6bd96e1`
 
 > Builds on Sprint 1's feed. All LOW-risk, read-only — a merchant spotlight, a neighborhood feel via grouping,
 > and an agent-readable pulse view. No new persistence; reuses `lib/neighborhood-rank.ts` + existing shop/UCP data.
@@ -10,15 +10,15 @@
 ### Story 2.1 — Merchant-spotlight strip
 **As a** buyer, **I want** to see merchants worth knowing, **so that** I build familiarity and confidence in
 local sellers before I transact.
-**Detail:** a "Comercios que destacan" strip ranking shops by recent activity (orders / new listings / views),
+**Detail:** a "Comercios que destacan" strip ranking shops by recent activity (new listings / views / recency),
 reusing shop `description`/`tagline`/origin colonia. Read-only; extend `lib/neighborhood-rank.ts` with a
-shop-ranking branch.
+shop-ranking branch. Order volume is intentionally excluded until a real Medusa-derived aggregate exists.
 **Acceptance:**
 - The strip shows real shops with their tagline + colonia, ordered by the stated signal; tapping a shop opens
   its storefront.
 **Risk:** low.
 **Built:** ✅ `b4e6962` — adds the shop-ranking branch, `/api/neighborhood-pulse/spotlight`, the strip on
-`/vecindario`, and API-project coverage.
+`/vecindario`, and API-project coverage. Review fix keeps raw ranking counters out of public/UCP/MCP responses.
 
 ### Story 2.2 — Colonia/zona presentational grouping
 **As a** buyer, **I want** the feed to read as "my neighborhood", **so that** community items feel local and
@@ -51,8 +51,9 @@ metadata, and API-project coverage.
   - S2.1 → `e2e/neighborhood-pulse.spec.ts`: shop-ranking branch of `lib/neighborhood-rank.ts` (pure-logic) + the spotlight data route.
   - S2.2 → unit spec on the grouping helper (zona buckets + "Tu comunidad" fallback).
   - S2.3 → api spec on the UCP pulse route + manifest accuracy + MCP `get_neighborhood_pulse` call.
-- **browser smoke owed:** **No auth owed to Daniel** — an *anonymous* browser smoke covers the spotlight strip
-  + zona grouping render (no login needed).
+- **browser smoke owed:** **No auth owed to Daniel** — the automated anonymous browser smoke covers `/vecindario`
+  page render + the contribution CTA. Data-dependent spotlight/grouping behavior is covered by the API-project
+  specs above and by the manual smoke walkthrough below because preview/production seeds may legitimately be empty.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
