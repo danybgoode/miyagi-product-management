@@ -1,7 +1,7 @@
 # Sprint 3 — Attendee-ticket primitive + check-in (the shared spine)
 
 > Epic: [Events & Ticketing](README.md) · **Risk: S3.1 / S3.2 HIGH (Daniel merges) · S3.3 MED.**
-> **Status: 📋 PLANNED — not started.** Goal: every attendee — whether they **bought** admission (S1) or
+> **Status: 🚧 BUILT IN DRAFT — Daniel review/merge required for S3.1/S3.2.** Goal: every attendee — whether they **bought** admission (S1) or
 > **registered** for free (S2) — gets a **unique, scannable ticket** the seller can **check in once** at
 > the door. This is the genuinely-new primitive the spike identified; it's built **once** and fed by both
 > front doors. **Depends on Sprint 1 + Sprint 2.**
@@ -49,28 +49,38 @@ manage the door.
 ## Sprint QA — plan
 - **Deterministic gate (green before merge):** `tsc --noEmit` (both repos) · `next build` · Playwright `api`.
 - **New specs:** pure-logic spec on the ticket-token state machine (unique/idempotent/illegal-transition/
-  double-redeem) — the highest-value free coverage; api specs on token exposure + the redeem endpoint +
-  the roster read.
+  double-redeem) — the highest-value free coverage; secret-gated smoke covers token exposure + valid /
+  double / forged / wrong-seller free redemption. Paid redemption is covered by the same shared state
+  primitive and backend metadata mutation gate.
 - **Deploy order:** S3 writes order metadata + reads S1/S2 surfaces — **merge backend-first or together**;
   the frontend degrades gracefully (no token yet → no ticket shown) across the Cloud Run window.
 - **Owed to Daniel:** the **authed door-scan money/fulfillment smoke** (scan a real ticket, confirm
   one-time-use) — an automated browser smoke can't fully cover the seller-session redeem path.
 
-## Sprint 3 — Smoke walkthrough (fill in with real URLs at ship)
+## Sprint 3 — Authed door-scan smoke walkthrough
 ```
-Env: PR Vercel preview (pre-merge) → production https://miyagisanchez.com after merge.
+Tier: HIGH for S3.1/S3.2 money + fulfillment. Daniel merges after this smoke.
+Env: PR Vercel preview first, then production https://miyagisanchez.com after merge.
 
-1. (money/auth — owed to Daniel) Buy admission to an event (Sprint 1) AND register a second person for a
-   free event (Sprint 2).  → Each attendee receives a unique QR ticket (the two QRs differ).
-2. As the seller, open the event roster https://miyagisanchez.com/shop/manage/eventos/<id>
-   → Both attendees are listed as registered / not yet checked in.
-3. (auth — owed to Daniel) Scan/enter the first attendee's ticket token at the door view.
-   → It reads valid; the roster flips that attendee to "checked in".
-4. Scan the same ticket again.
-   → It reads "already used" — no second check-in.
-5. Scan a made-up / forged token.
-   → It reads "not found".
+1. As a buyer, buy admission to a paid event (Sprint 1). Capture the ticket token shown in email or
+   account order details. Confirm the QR image decodes to the raw token, not a URL.
+2. Register a second attendee for a free event (Sprint 2). Capture the token from the RSVP success page
+   or confirmation email. Confirm the paid and free tokens differ.
+3. As the event seller, open the roster at:
+   https://miyagisanchez.com/shop/manage/eventos/<event-id>
+   The paid and free attendees should both appear as issued / not checked in.
+4. Enter or scan the free attendee token in the roster check-in field.
+   Expected: valid; the row flips to checked in and the checked-in count increments by one.
+5. Enter or scan the same free token again.
+   Expected: already used; no second check-in and the count does not increment.
+6. Enter a forged token such as tkt_deadbeef_deadbeef_deadbeef_deadbeef.
+   Expected: not found.
+7. Repeat steps 4-5 with the paid attendee token.
+   Expected: the same one-time-use behavior, persisted back through Medusa order metadata and mirrored
+   into the seller roster.
+8. Sign in as a different seller and try either real token.
+   Expected: not found / not allowed; the other seller cannot redeem this event's tickets.
 
-Steps 1, 3 are the money/auth/fulfillment path — owed to Daniel by name.
-If any step fails, note the step number + what you saw.
+If any step fails, note the step number + what you saw. This smoke is owed to Daniel because it exercises
+the real authenticated seller door path and the money/fulfillment metadata path.
 ```
