@@ -2,11 +2,13 @@
 
 > Epic: [Delivery & Manual-Money Polish](README.md) · **Risk: HIGH — Daniel merges** (fulfillment /
 > order state).
-> **Status: ✅ BUILT 2026-06-09 — both PRs open, awaiting Daniel merge (HIGH).**
-> Backend [PR #17](https://github.com/danybgoode/medusa-bonsai-backend/pull/17) ·
-> Frontend [PR #58](https://github.com/danybgoode/miyagisanchezcommerce/pull/58). **Merge backend
-> first** (frontend reads degrade gracefully). Gate green both repos: `tsc --noEmit` ✓ · `next build`
-> ✓ · Playwright `api` (pickup-appointment pure-logic **19/19** + auth-gate spec).
+> **Status: ✅ SHIPPED 2026-06-09 — both PRs MERGED (backend-first), live in prod.**
+> Backend [PR #17](https://github.com/danybgoode/medusa-bonsai-backend/pull/17) MERGED (`e9f96e2` →
+> Cloud Build `ffcc366c` SUCCESS → Cloud Run live; prod route probe = 400 not 404, route registered) ·
+> Frontend [PR #58](https://github.com/danybgoode/miyagisanchezcommerce/pull/58) MERGED (`d1eb9e4` →
+> Vercel prod). Branches + worktrees cleaned up. Fresh independent reviewer: **APPROVE** (nits-only).
+> Gate green both repos: `tsc --noEmit` ✓ · `next build` ✓ · Playwright `api` (pickup-appointment
+> pure-logic **19/19** + auth-gate spec; all frontend CI checks passed vs preview).
 > Goal: local pickup stops being an external scheduling link and becomes a real appointment — the buyer
 > proposes a date + time window, the seller confirms or reschedules, both sides see the agreed slot.
 > Reuses the existing pickup-spot selection; persists on `order.metadata`. **No slot-inventory engine**
