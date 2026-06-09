@@ -2,18 +2,21 @@
 
 > Epic: [Delivery & Manual-Money Polish](README.md) · **Risk: HIGH — Daniel merges every story**
 > (refunds / money path).
-> **Status: 🟢 BUILT — gate green, awaiting Daniel merge (backend-first).** The refund lifecycle is now
+> **Status: ✅ SHIPPED — both PRs MERGED 2026-06-09; backend live.** Reviewed by a fresh agent
+> (clean — no blockers; 3 frontend NITs fixed). **Backend PR #16 MERGED** (Cloud Build `129c58fc` SUCCESS →
+> Cloud Run live). **Frontend PR #54 MERGED** (`3698fa0`), CI fully green. The refund lifecycle is now
 > durable, two-sided, and honest: off-platform SPEI/cash refunds walk
 > `solicitado → aceptado → transferencia_pendiente → confirmado` (the buyer's "Recibí el reembolso" is the
 > close), while card/escrow refunds (which actually execute) auto-confirm. Extends the existing
 > return-request `order.metadata` model; mirrors #3b's `lib/manual-payment-state.ts` via a new pure
 > `lib/refund-state.ts`. **Branch `feat/delivery-money-polish` (both repos).**
 >
-> **Built commits** — Backend: S1.1 `52d1250` · S1.2 `1ec4b61` · S1.3 `f2c9a2a`.
-> Frontend: S1.1 `9644cdb` · S1.2 `b08ea68` · S1.3 `0e0fde8`.
+> **Built commits** — Backend: S1.1 `52d1250` · S1.2 `1ec4b61` · S1.3 `f2c9a2a` (merged PR #16).
+> Frontend: S1.1 `9644cdb` · S1.2 `b08ea68` · S1.3 `0e0fde8` · review `37e5c3e` · main-merge `4fb1762`
+> (merged PR #54 → `3698fa0`).
 > **Deterministic gate green:** `tsc --noEmit` (both repos) · `next build` ✓ · eslint (0 errors) ·
 > Playwright `api` pure-logic 51 pass (`refund-state.spec.ts` 24 + `manual-payment-state` + `buyer-messages`).
-> **Owed to Daniel:** the authed two-sided money-path browser smoke (steps below) + the merge.
+> **Owed to Daniel:** the authed two-sided money-path browser smoke (steps below).
 
 ## Stories
 
