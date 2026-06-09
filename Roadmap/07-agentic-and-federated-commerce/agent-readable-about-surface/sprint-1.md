@@ -1,9 +1,10 @@
 # Agent-readable why-sell / about surface — Sprint 1: Content source + /acerca human page
 
-**Status:** ✅ built on `feat/agent-readable-about-surface` — S1.1 `8a23dc7`, S1.2 `be36a41`. Gate
-green (tsc + `npm run build` + Playwright `api` 300-pass incl. the new `about-content` spec; the
-`design-token-foundation` raw-color guard stays green; the anonymous `about-acerca` browser smoke
-passes). Awaiting PR → merge.
+**Status:** ✅ SHIPPED 2026-06-09 — [PR #57](https://github.com/danybgoode/miyagisanchezcommerce/pull/57)
+merged to `main` (deploying to Vercel prod). S1.1 `8a23dc7`, S1.2 `be36a41`. Gate green (tsc +
+`npm run build` + Playwright `api` 300-pass incl. the new `about-content` spec; CI "Playwright vs
+preview" + "Type-check + build" both green; the `design-token-foundation` raw-color guard stays green;
+the anonymous `about-acerca` browser smoke passes). Fresh-reviewer pass: **APPROVE, no blockers**.
 
 > Builds the **single bilingual content source** + the human-facing `/acerca` page that renders from
 > it. Sprint 2 renders the same source to the agent surfaces. Reuses #4 tokens + #6 section components.
