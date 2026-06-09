@@ -47,13 +47,6 @@ existing agent surfaces** + one new human page.
 - **Authoring:** ship the surfaces + the **groundable** content now; **stub founder + pricing** with
   clearly-marked placeholders for Daniel to fill (founder's note + philosophy are Daniel-authored;
   domain/subdomain prices are TBD).
-- **Language (added 2026-06-08) — author once, agent relays.** es-MX is the source of truth; we do **not**
-  localize beyond es/en (`/acerca` es+en human allow-list; `/llms.txt` English-primary + es summary).
-  Every **agent-facing** surface (manifest about block, `/agent` why-sell, MCP `about_miyagi`) carries an
-  explicit **"relay to the user in their own language"** directive, so the reading agent covers the long
-  tail of languages — we don't ship a locale per country. (Same model as Onboarding 0's
-  "mirror the seller's language"; see `agent-native-setup` OC-5.) QA on agent surfaces = the directive is
-  present + es-MX copy-completeness, not es/en parity.
 
 ## Architecture spine — author once, render many
 One **structured, bilingual content source** (e.g. `lib/about-content.ts` — no DB, no Medusa) holds

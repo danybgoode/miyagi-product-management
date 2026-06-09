@@ -1,13 +1,16 @@
 # Agent-readable why-sell / about surface — Sprint 1: Content source + /acerca human page
 
-**Status:** ⬜ not started
+**Status:** ✅ built on `feat/agent-readable-about-surface` — S1.1 `8a23dc7`, S1.2 `be36a41`. Gate
+green (tsc + `npm run build` + Playwright `api` 300-pass incl. the new `about-content` spec; the
+`design-token-foundation` raw-color guard stays green; the anonymous `about-acerca` browser smoke
+passes). Awaiting PR → merge.
 
 > Builds the **single bilingual content source** + the human-facing `/acerca` page that renders from
 > it. Sprint 2 renders the same source to the agent surfaces. Reuses #4 tokens + #6 section components.
 
 ## Stories
 
-### Story 1.1 — Structured bilingual content source
+### Story 1.1 — Structured bilingual content source ✅ `8a23dc7`
 **As a** maintainer, **I want** the supply-side/about story in one structured bilingual source, **so
 that** every surface (human + agent) renders from one place without drift.
 **Acceptance:** `lib/about-content.ts` (no DB) exports sections — `what_is` · `why_sell` ·
@@ -17,7 +20,7 @@ Groundable sections written from shipped facts (0% comisión, multi-channel, AI-
 invented founder claims or prices). A pure unit test asserts every section has both locales.
 **Risk:** low.
 
-### Story 1.2 — `/acerca` human page (es/en)
+### Story 1.2 — `/acerca` human page (es/en) ✅ `be36a41`
 **As a** prospective seller (or their agent), **I want** one page that explains what Miyagi is, why
 sell here, how to start, what it costs, and who's behind it, **so that** I can decide and begin.
 **Acceptance:** `/acerca` renders all sections from `lib/about-content.ts` in **es and en** (locale
@@ -28,13 +31,16 @@ with `/vende`; added to `sitemap.xml`; JSON-LD `Organization` present; stubs ren
 **Risk:** low.
 
 ## Sprint QA
-- **api spec(s):** `e2e/about-content.spec.ts` (pure) — every section has `es`+`en`, no empty
-  non-stub sections; `/acerca` returns 200 + contains the why-sell heading + the CTA href; sitemap
-  includes `/acerca`.
-- **browser smoke owed:** no — anonymous (`e2e/about-acerca.browser.spec.ts`: es+en render, CTA
-  navigates to `/sell?from=acerca`). Not owed to Daniel (no auth/money).
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge; the
-  #4 raw-color guard must stay green.
+- **api spec(s) ✅:** `e2e/about-content.spec.ts` (pure) — every section has `es`+`en`, the two stubs
+  are flagged `stub:true` and the five grounded sections are not, the seven ids are covered, CTA →
+  `/sell?from=acerca`. (200/why-sell-heading/sitemap-`/acerca` are asserted by the browser smoke +
+  the local curl smoke below; the sitemap entry is in `app/sitemap.ts`.)
+- **browser smoke owed:** no — anonymous (`e2e/about-acerca.browser.spec.ts` ✅: es+en render, the
+  founder/pricing stubs show the badge, CTA navigates to `/sell?from=acerca`). Not owed to Daniel
+  (no auth/money). Verified locally against `next start` (es+en+sitemap+JSON-LD via curl, both
+  browser tests pass).
+- **deterministic gate ✅:** `tsc --noEmit` clean + `npm run build` passes (`/acerca` route emitted) +
+  Playwright `api` 300-pass; the #4 `design-token-foundation` raw-color guard stays green.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
