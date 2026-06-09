@@ -2,7 +2,11 @@
 
 > **Macro-section:** [02 · Checkout & Payments](../README.md) · **BUILD-ORDER:** #3c · Epic B ·
 > **Risk: HIGH — Daniel merges** (refunds / payments / fulfillment / order state).
-> **Status: 📋 PLANNED — not started.** Groomed + signed off (Daniel, 2026-06-07); scaffolded under
+> **Status: ✅ EPIC COMPLETE 2026-06-09 — all three sprints shipped to prod.** S1 two-sided refund
+> machine (BE #16 → Cloud Run · FE #54 `3698fa0`); S2 pickup propose-and-confirm (BE #17 `e9f96e2` ·
+> FE #58 `d1eb9e4`); S3 CP-first + quote recovery/timeout (FE-only #62 `a149d9e`). Fresh-reviewer APPROVE
+> on each; money/auth browser smokes owed to Daniel (per sprint docs). Groomed + signed off (Daniel,
+> 2026-06-07); scaffolded under
 > `02-checkout-and-payments/`. Scope doc:
 > [`00-ideas/seeds/delivery-money-polish.md`](../../00-ideas/seeds/delivery-money-polish.md).
 > Wave context: [`remaining-audit-polish.md`](../../00-ideas/seeds/remaining-audit-polish.md).
@@ -68,10 +72,10 @@ S1/S2 span **backend** (extend the return-request route + normalizer; persist th
 frontend-only (`lib/envia.ts` + `CheckoutExperience.tsx` live in the frontend app).
 
 ## Epic Definition of Done
-- [ ] All three sprints' stories merged + smoke-tested (money/auth gaps stated; owed to Daniel by name).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed; money/refund steps flagged Daniel-owed).
-- [ ] This README ✅ complete; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated — 02 refund line + 04 pickup line reflect what shipped.
-- [ ] Team memory + `LEARNINGS.md` updated (durable learning — esp. the refund-state mirror of the #3b pattern).
-- [ ] Branch deleted; PR(s) merged. **B.5 arranged-only remains open behind Spike 0.**
+- [x] All three sprints' stories merged + smoke-tested (money/auth gaps stated; owed to Daniel by name).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed; money/refund steps flagged Daniel-owed).
+- [x] This README ✅ complete; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — 02 refund line + 04 pickup/quote line reflect what shipped.
+- [x] Team memory + `LEARNINGS.md` updated (durable learning — the refund-state mirror of #3b, and the proxy-makes-the-named-lib-a-red-herring quote-timeout find).
+- [x] Branch deleted; PR(s) merged. **B.5 arranged-only remains open behind Spike 0.**

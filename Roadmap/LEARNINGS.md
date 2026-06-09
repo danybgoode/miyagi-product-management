@@ -28,8 +28,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **`main` moves under you.** Before opening a PR — and again if it sits open — **merge latest
   `main` into your branch**. Tell-tale: CI's "Playwright vs preview" fails on a spec for a feature
   you never touched → a sibling agent landed something on `main` and your preview predates it.
-  Merge `main`, don't debug your own diff. *(2026-06-05 — a seasonal-theme spec on `main` failed
-  against a preview that lacked the feature.)*
+  Merge `main`, don't debug your own diff. **A re-run alone won't fix it** — the mismatch is
+  *structural* (CI runs the **merged** test set against the **branch-head** preview, which lacks the
+  sibling's feature); only `git merge origin/main` + push (rebuilding the preview) clears it. Confirm with
+  `git ls-tree origin/main -- <failing-spec>` vs `HEAD` — the spec is on main but absent from your branch.
+  *(2026-06-05 seasonal-theme; reconfirmed 2026-06-09 — delivery-money-polish S3 went red on
+  `agent-native-setup-spec.spec.ts` from sibling PR #61; a re-run reproduced it, merging main fixed it.)*
 - **Announce cross-cutting or direct-to-`main` changes**, and prefer a PR even for "engine"
   features. Anything touching shared surface — `layout.tsx`, `middleware.ts`, `globals.css`,
   `package.json`/deps, a new sibling worktree — can break every other open PR. *(2026-06-05 — a
@@ -177,6 +181,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `/api/ucp/catalog` already forwarded it — so the planned "merge backend first" sprint evaporated and the
   whole epic shipped **frontend-only, no Cloud Run deploy**. Grep the route + normalizer for the field
   before scoping a backend story. 2026-06-08.)*
+- **Fix the call the *user* awaits, not the lib the plan named — a proxy makes the named module a red
+  herring.** The plan said "time out `lib/envia.ts quoteShipments`," but tracing importers showed that
+  frontend lib only feeds the *seller* ship route; the *buyer's* quote is a
+  `fetch('/api/checkout/shipping-rates')` that proxies to the backend, which runs its own carrier loop. So
+  the buyer-facing timeout belongs on **that fetch in the component**, not the lib the spec pointed at —
+  timing out `lib/envia.ts` would have shipped a no-op against the actual hang. Before wiring a fix to a
+  file a plan names, `grep -rl` its importers and confirm it's on the path the user actually exercises.
+  *(2026-06-09, delivery-money-polish S3 — quote timeout in `CheckoutExperience`, pure `lib/fetch-timeout.ts`.)*
 - **Trust the provider's own status over reconstructed DNS checks.** Custom-domain verification was
   brittle because it compared live DNS against **hardcoded** Vercel targets (a generic CNAME + a fixed
   apex IP) — both of which drift (Vercel now issues per-project CNAMEs; apex IPs change; Cloudflare

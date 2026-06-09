@@ -2,10 +2,11 @@
 
 > Epic: [Delivery & Manual-Money Polish](README.md) · **Risk: HIGH — Daniel merges** (S3.2/S3.3 touch
 > the checkout delivery/quote path; the whole epic is HIGH-risk).
-> **Status: ✅ BUILT 2026-06-09 — frontend-only, awaiting Daniel merge.** Branch
-> `feat/delivery-money-polish` (`apps/miyagisanchez`). The address form is now visually CP-first, and a
-> slow/failed Envía quote resolves to a selectable coordinated path instead of hanging or dead-ending.
-> Commits: S3.1 `27e4d89` · S3.2 `08ec5cb` · S3.3 `231adf2`.
+> **Status: ✅ SHIPPED 2026-06-09 — frontend-only, MERGED to prod (squash `a149d9e`, PR #62).** The
+> address form is now visually CP-first, and a slow/failed Envía quote resolves to a selectable
+> coordinated path instead of hanging or dead-ending. Fresh-reviewer APPROVE (nits-only); CI green
+> (tsc · build · Playwright `api`). Commits: S3.1 `27e4d89` · S3.2 `08ec5cb` · S3.3 `231adf2`
+> (main-merge `397adbe`). Branch + worktree cleaned up.
 
 ## What reading the code re-scoped (vs the original plan)
 - **The buyer's quote hang is NOT in `lib/envia.ts`.** That frontend lib's `quoteShipments` is only
