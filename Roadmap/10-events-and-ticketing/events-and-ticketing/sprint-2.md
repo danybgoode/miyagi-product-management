@@ -1,7 +1,9 @@
 # Sprint 2 — Free RSVP surface
 
 > Epic: [Events & Ticketing](README.md) · **Risk: LOW** (Supabase non-commerce; no money path).
-> **Status: 🚧 BUILT LOCALLY — migration applied, app PR pending.** Goal: a seller can run a **free** event with a public RSVP page,
+> **Status: ✅ MERGED + DEPLOYED — app PR
+> [#49](https://github.com/danybgoode/miyagisanchezcommerce/pull/49), docs PR
+> [#1](https://github.com/danybgoode/miyagi-product-management/pull/1).** Goal: a seller can run a **free** event with a public RSVP page,
 > and anyone can register with just email-code verification (no marketplace account). Independent of
 > Sprint 1. This forks the sweepstakes **pattern**, not its data model — the unique scannable ticket +
 > door check-in come in Sprint 3.
@@ -64,6 +66,11 @@ If any step fails, note the step number + what you saw.
 ```
 
 ## Verification Notes
+- App merge commit: `8ec0c6162cc3d537d54d2affae61f7e81268f50a`; docs merge commit:
+  `37fa651aef6d3808a5bf1f2d1460948cfd5cdc73`.
+- PR CI passed: Type-check + build, Playwright vs preview, Vercel preview, and Vercel preview comments.
+- Production deploy for `main` completed Ready on 2026-06-08 local time, with aliases
+  `https://miyagisanchez.com`, `https://mschz.org`, and `https://*.miyagisanchez.com`.
 - `npx tsc --noEmit` passed.
 - `npm run build` passed after using the app checkout's ignored `node_modules` symlink in the isolated
   worktree.
