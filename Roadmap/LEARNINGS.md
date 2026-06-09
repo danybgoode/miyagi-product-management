@@ -44,6 +44,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Risk tier decides who merges** (from WAYS-OF-WORKING): low-risk → the reviewer/agent may merge on
   green CI; anything touching payments / checkout / fulfillment / auth / DB / shared infra / money →
   **Daniel merges**. When unsure, treat as high.
+- **A squash-merged sprint branch is a dead end — start the next sprint on a FRESH branch off `main`.** When
+  a sprint PR is **squash**-merged, its branch's individual commits are *not* on `main` (the changes are, as
+  one commit), so continuing that same branch for the next sprint re-introduces a messy duplicate diff and
+  can't be fast-forwarded. Confirm with `git cat-file -e origin/main:<a-file-the-sprint-added>` (changes are
+  on main) and branch the next sprint cleanly: `feat/<epic>-s2` off `origin/main`. *(2026-06-09,
+  trust-messaging-polish S2 — S1's #64 squashed → S2 on `feat/trust-messaging-polish-s2`.)*
 - **Concurrent planning commits in a shared worktree collide the git index.** App code already gets isolated
   `git worktree`s (`.worktrees/`) — but *planning/scaffold* commits ran in the shared root worktree, so two
   sessions' `git add` raced ("another git process is running" / index lock; commits interleaved). Fix, two
@@ -59,6 +65,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   monorepo root. Use `node /…/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json` and
   `/…/node_modules/.bin/{next,playwright}`. New worktrees should use a unique package name or be
   excluded from the root `workspaces` glob. *(2026-06-05.)*
+- **Worktree Tailwind-v4 build needs a local `npm install` — which then forces the worktree-local Playwright
+  binary.** A fresh `git worktree` resolves `next`/`tsc` fine via walk-up to the root `node_modules`, but the
+  Tailwind-v4 **PostCSS** `@import "tailwindcss"` resolve fails (`Can't resolve 'tailwindcss' in app/`) until
+  you `npm install` *inside* the worktree. That install adds a worktree-local `@playwright/test`, so running
+  the **root** `playwright` binary then throws *"two different versions of @playwright/test"* / "No tests
+  found" — switch to the **worktree-local** `node_modules/.bin/playwright`. Its generated `package-lock.json`
+  is untracked; don't commit it. *(2026-06-09, trust-messaging-polish S2.)*
 - **`gh pr merge --delete-branch` fails when a worktree holds `main`.** The merge still succeeds on
   GitHub; only the local branch-delete errors. Verify with `gh pr view <n> --json state`. Don't
   re-run blindly.
@@ -205,6 +218,22 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   payment/fulfillment box on mobile while keeping it below on desktop, with zero shared-layout risk and
   no fragile per-child `order` values. Duplicate DOM is benign when CSS shows only one. *(2026-06-08,
   Discovery Polish S3.)*
+- **Parity-first extraction: pass the foreign interstitial as a SLOT, don't reorder.** Extracting an inline
+  block into a shared component is a no-regression refactor *only* if the DOM stays byte-for-byte — including
+  anything a sibling feature renders *between* its parts. The PDP trust block had S3.2's mobile
+  `SellerTrustCard` sitting between the pills and the methods box; `<TrustSignals>` preserved it with an
+  `interstitial` ReactNode slot (and a `consultCta` slot for the interactive precio-a-consultar), so the
+  component owns the structure while the page keeps placing its own bits. Prove parity with a pure selector
+  spec (which groups show) + an anonymous browser smoke (the box still renders). *(2026-06-09,
+  trust-messaging-polish S2 — `lib/trust-signals.ts` + `<TrustSignals>`.)*
+- **A shared component a parallel epic will consume: nail the prop contract against the REAL type, then hand
+  it off in writing.** The sprint sketch proposed `channel: 'marketplace'|'channel'|'embed'`, but the app
+  already detects a 5-value `ChannelSource` (`lib/channel.ts`) — reuse the real type so the consumer passes
+  `detectChannel()` straight through (no parallel type to sync), and **write the contract + any corrections to
+  the consumer's planned stories into *their* sprint doc** so the parallel grooming session inherits the
+  truth, not the sketch. Decide explicitly what you did NOT extract (here: the settings→props *derivation*
+  stayed inline, so the consumer derives its own inputs) and say so. *(2026-06-09, trust-messaging-polish C.4
+  → cross-channel-trust-parity hand-off.)*
 - **A server gate must cover every *mutation*, not the route the button names.** "Ship" looked like one
   action but had **two** backend mutations — the Envía `ship` route AND the `[id]` PATCH that the
   frontend `ship-manual` proxies to. Gating only the named route leaves a bypass. Find every write that

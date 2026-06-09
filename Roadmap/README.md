@@ -85,9 +85,10 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - 🚧 Delivery-method-aware checkout — arranged delivery + pickup surface manual payment; **arranged-*only* enforcement pending Spike 0** (`onlyCoordinated` is hardcoded off in `checkout-options/route.ts`)
 
 ### 05 · Trust, Offers & Messaging
-- ✅ Make-an-offer / price negotiation
+- ✅ Make-an-offer / price negotiation — the offer card says **whose turn it is** with a **live deadline countdown** (48 h to respond / 24 h on a counter)
 - ✅ Buyer–seller messaging (real-time + push notifications)
-- ✅ Buyer trust signals
+- ✅ Durable in-chat transaction ledger — one shared, read-only card reflects the *current* order/payment(/refund) state (projects #3b + Epic B); actions deep-link out, no in-chat money mutation
+- ✅ Buyer trust signals — one shared **channel-aware `<TrustSignals>` component** (extracted from the PDP, parity-first) + a slim trust capsule at the negotiation entry (verificación · pago protegido · devoluciones, *before* you offer); cross-channel wiring is Epic D
 - ✅ Refunds with assisted handoff
 - ✅ Order visibility for both buyer and seller
 - ✅ Granular multi-channel notifications — per-channel × per-event-group control + a real seller Telegram channel; the money path (buyer reports payment) and returns reach the seller on the channels they choose
@@ -124,6 +125,23 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-06-09 — Trust & Messaging Polish epic complete (#3c · Epic C, 2 sprints).** The #3a re-audit's 05
+  tail was **fragmentation, not absence**, and reading the code re-scoped all of it *smaller*. **S1:** the
+  chat is no longer an action bar that flashes ephemeral pills — a **durable, read-only transaction ledger
+  card** now reflects the *current* order/payment(/refund) state, projecting #3b's payment machine + Epic B's
+  refund machine through one pure `lib/transaction-ledger.ts` (no new table, no in-chat money mutation —
+  actions deep-link out); negotiation now states **whose turn it is with a live deadline countdown**, and the
+  self-contradicting "48 h vs <24 h" copy lie was fixed. **S2:** the strong-on-the-PDP-but-absent-off-platform
+  trust signals became **one shared, channel-aware `<TrustSignals>` component** — extracted parity-first (the
+  marketplace PDP renders byte-for-byte the same via `consultCta`/`interstitial` slots), with a pure selector
+  seam (`lib/trust-signals.ts`) deciding which signals show per channel/variant — and its **slim variant now
+  greets a buyer at the negotiation entry** (verificación · pago protegido · devoluciones) so eligibility is
+  learned *before* an offer, not after. The component's props/variants contract was **handed to Epic D**
+  (cross-channel-trust-parity), which consumes it to reach the white-label/embed renders; `ChannelLayout` was
+  deliberately left untouched (Epic D's slice). MED-or-below throughout — no money mutation — so each story
+  merged on a green gate via a fresh reviewer agent. Authed chat-card + capsule smokes owed to Daniel. See
+  [05 · Trust, Offers & Messaging › Trust & Messaging Polish](05-trust-offers-and-messaging/trust-messaging-polish/).
 
 - **2026-06-09 — Delivery & Manual-Money Polish epic complete (all 3 sprints).** The #3a re-audit's
   delivery + manual-money tail (everything #3b deferred), each gap re-scoped *smaller* by reading the code.

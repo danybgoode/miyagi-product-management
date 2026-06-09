@@ -3,7 +3,11 @@
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #3c · Epic C ·
 > **Risk: MED — no money mutation** (read-only projection + copy + presentational extraction);
 > reviewer may merge per story on green CI.
-> **Status: 📋 PLANNED — not started.** Groomed + signed off (Daniel, 2026-06-07); scaffolded under
+> **Status: ✅ EPIC COMPLETE 2026-06-09 — both sprints shipped to prod.** S1 [PR #64](https://github.com/danybgoode/miyagisanchezcommerce/pull/64)
+> (squash `a53a62e`) · S2 [PR #65](https://github.com/danybgoode/miyagisanchezcommerce/pull/65) (squash `d35bc8c`);
+> both fresh-reviewer APPROVE + merge on green CI; branches/worktrees cleaned. Owed Daniel: authed chat-card
+> render + negotiation-entry capsule smokes (Clerk-gated). See [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
+> Groomed + signed off (Daniel, 2026-06-07); scaffolded under
 > `05-trust-offers-and-messaging/`. Scope doc:
 > [`00-ideas/seeds/trust-messaging-polish.md`](../../00-ideas/seeds/trust-messaging-polish.md).
 > Wave context: [`remaining-audit-polish.md`](../../00-ideas/seeds/remaining-audit-polish.md).
@@ -81,11 +85,12 @@ green CI; **announce C.4** (new shared component) per LEARNINGS.
   parallel 2026-06-07; coordinate the component contract.)*
 
 ## Epic Definition of Done
-- [ ] All S1 + S2 stories merged to `main`; pure-logic + api specs green in CI.
-- [ ] Each sprint has a fool-proof smoke walkthrough in its `sprint-N.md` (real URLs once deployed;
+- [x] All S1 + S2 stories merged to `main`; pure-logic + api specs green in CI. *(S1 PR #64 `a53a62e`; S2 PR #65 `d35bc8c`.)*
+- [x] Each sprint has a fool-proof smoke walkthrough in its `sprint-N.md` (real URLs once deployed;
       authed chat-render steps flagged as **owed to Daniel**).
-- [ ] Ledger verified read-only — no payment/refund mutation path exists in chat (actions deep-link out).
-- [ ] `<TrustSignals>` announced + documented as the shared trust block; Epic D handed the contract.
-- [ ] Epic `README.md` ✅; every `sprint-N.md` ticked with commit refs; `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`, 05) updated; team memory + `LEARNINGS.md` updated.
-- [ ] Feature branch deleted; PR(s) merged.
+- [x] Ledger verified read-only — no payment/refund mutation path exists in chat (actions deep-link out).
+- [x] `<TrustSignals>` announced + documented as the shared trust block; Epic D handed the contract
+      *(`cross-channel-trust-parity/sprint-1.md` "📥 C.4 CONTRACT" block, `f8c4e43`)*.
+- [x] Epic `README.md` ✅; every `sprint-N.md` ticked with commit refs; `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`, 05) updated; team memory + `LEARNINGS.md` updated.
+- [x] Feature branch deleted; PR(s) merged.
