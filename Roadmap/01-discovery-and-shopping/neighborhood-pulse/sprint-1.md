@@ -18,7 +18,7 @@ línea" toggle in the admin social queue, wired through `PATCH /api/admin/print/
 - A freshly `approved` item is **not** web-visible until a moderator toggles it on.
 - Toggling on then off re-hides it from the feed; its print availability (`approved`/`placed`, edition
   assignment) is unaffected either way.
-**Risk:** MED — the one additive **schema change** (nullable column, non-commerce table). **Daniel merges.**
+**Risk:** MED — the one additive **schema change** (`BOOLEAN NOT NULL DEFAULT false`, non-commerce table). **Daniel merges.**
 *Deploy backend-first, ahead of S1.2.*
 **Build:** ✅ app commit `3d8a03c` (`feat(neighborhood-pulse): add social web opt-in`).
 
