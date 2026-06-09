@@ -3,7 +3,7 @@
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) · **BUILD-ORDER:** #3c · Epic A ·
 > **Risk: LOW–MED** (presentational / read-only discovery — no commerce mutation). Reviewer may
 > auto-merge per story on green CI **unless** a story touches shared layout.
-> **Status: 📋 PLANNED — not started.** Scaffolded 2026-06-07 from the #3c groom. Scope doc:
+> **Status: ✅ COMPLETE — all 3 sprints shipped to prod 2026-06-08.** S1 [PR #50](https://github.com/danybgoode/miyagisanchezcommerce/pull/50) (`90986a7`) · S2 [PR #51](https://github.com/danybgoode/miyagisanchezcommerce/pull/51) (`7fad2cd`) · S3 [PR #53](https://github.com/danybgoode/miyagisanchezcommerce/pull/53) (`7d84462`). Each merged by a fresh reviewer agent on green CI (low-risk, no shared-layout touch). Retrospective: [`RETROSPECTIVE.md`](RETROSPECTIVE.md). Scope doc:
 > [`00-ideas/seeds/remaining-audit-polish.md`](../../00-ideas/seeds/remaining-audit-polish.md).
 > Driven by the #3a refresh: [`results-refresh-2026-06/01-discovery-and-shopping.md`](../../00-ideas/audits/results-refresh-2026-06/01-discovery-and-shopping.md)
 > (pinned frontend `origin/main@ed447bd` / backend `origin/main@0980253`).
@@ -52,13 +52,13 @@ reading the same normalized `listing_type` (no divergence). Clerk untouched; Sup
 
 | Sprint | Story | Risk |
 |---|---|---|
-| **S1 · Listing-type taxonomy (filterable)** | S1.1 Forward `listing_type` through `buildQuery` + the backend `/store/listings` query | LOW–MED |
-| | S1.2 Type selector in `SearchBar` (chip/segment, mirror `CategoryChips`) | LOW–MED |
-| | S1.3 Listing cards render a type affordance (badge/label) | LOW |
-| **S2 · Mobile filter rebuild** | S2.1 Full-screen / bottom-sheet filter layer with a sticky "Filtrar y ordenar" trigger | LOW–MED |
-| | S2.2 Deliberate apply + live "Ver X resultados" count (Baymard 2026) | LOW–MED |
-| **S3 · PDP hierarchy** | S3.1 Lead the PDP with a type-specific decision frame (product vs service vs rental vs digital) | LOW–MED |
-| | S3.2 Lift seller trust above payment/fulfillment on mobile | LOW–MED |
+| **S1 ✅ · Listing-type taxonomy (filterable)** | S1.1 Forward `listing_type` through `buildQuery` (+ backend already filtered it — no backend change) | LOW–MED |
+| | S1.2 Type selector in `SearchBar` (chip rail, mirror `CategoryChips`) | LOW–MED |
+| | S1.3 Listing cards render a type affordance (`listingTypeBadge`) | LOW |
+| **S2 ✅ · Mobile filter rebuild** | S2.1 Bottom-sheet filter layer behind a sticky "Filtrar y ordenar" trigger | LOW–MED |
+| | S2.2 Deliberate apply + live "Ver X resultados" count (`resultCountLabel`) | LOW–MED |
+| **S3 ✅ · PDP hierarchy** | S3.1 Lead the PDP with a type-specific decision frame (`listingTypeFrame` → banner) | LOW–MED |
+| | S3.2 Lift seller trust above payment/fulfillment on mobile (`SellerTrustCard`, dual-render) | LOW–MED |
 
 ## Deploy order (two repos, async)
 S1.1 spans backend (`/store/listings` accepts `listing_type`) + frontend (`buildQuery` forwards it).
@@ -66,10 +66,10 @@ S1.1 spans backend (`/store/listings` accepts `listing_type`) + frontend (`build
 ignored server-side) across the ~12-min Cloud Run window. S2/S3 are frontend-only.
 
 ## Epic Definition of Done
-- [ ] All three sprints' stories merged + smoke-tested (gaps stated).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed).
-- [ ] This README ✅ complete; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated — 01 line reflects type filtering + the mobile filter layer.
-- [ ] Team memory + `LEARNINGS.md` updated with any durable learning.
-- [ ] Branch deleted; PR(s) merged.
+- [x] All three sprints' stories merged + smoke-tested (S1 anonymous browser 2/2 + live prod render; S2/S3 anonymous browser smokes; no money/auth path owed).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs).
+- [x] This README ✅ complete; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — 01 line reflects type filtering + the mobile filter layer + PDP hierarchy.
+- [x] Team memory + `LEARNINGS.md` updated with any durable learning.
+- [x] Branch deleted; PR(s) merged.

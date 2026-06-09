@@ -160,7 +160,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   metadata, both flowing natively into the order. Custom-slugs the same: slug was already `unique()` on
   the Medusa seller and `POST` already accepted it, alias history rode `seller.metadata` → 1-field
   backend change, no migration. **Read the backend model + route first — it often re-scopes the epic
-  smaller.**)*
+  smaller.** Discovery Polish #3c is the limit case: a "data → query → UI" type-filter epic where the
+  backend `/store/listings` **already filtered** `listing_type`, the normalizer already emitted it, and
+  `/api/ucp/catalog` already forwarded it — so the planned "merge backend first" sprint evaporated and the
+  whole epic shipped **frontend-only, no Cloud Run deploy**. Grep the route + normalizer for the field
+  before scoping a backend story. 2026-06-08.)*
 - **Trust the provider's own status over reconstructed DNS checks.** Custom-domain verification was
   brittle because it compared live DNS against **hardcoded** Vercel targets (a generic CNAME + a fixed
   apex IP) — both of which drift (Vercel now issues per-project CNAMEs; apex IPs change; Cloudflare
@@ -170,6 +174,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
+- **Reorder a block between mobile and desktop positions with the duplicate-render idiom, not flex
+  `order`.** Build the block once into a `const`, then render it twice — `md:hidden` in the mobile slot
+  and `hidden md:block` in the desktop slot — so exactly one instance is visible per viewport. The PDP
+  already used this for `ctaButtons`; S3.2 reused it to lift the extracted `SellerTrustCard` above the
+  payment/fulfillment box on mobile while keeping it below on desktop, with zero shared-layout risk and
+  no fragile per-child `order` values. Duplicate DOM is benign when CSS shows only one. *(2026-06-08,
+  Discovery Polish S3.)*
 - **A server gate must cover every *mutation*, not the route the button names.** "Ship" looked like one
   action but had **two** backend mutations — the Envía `ship` route AND the `[id]` PATCH that the
   frontend `ship-manual` proxies to. Gating only the named route leaves a bypass. Find every write that
