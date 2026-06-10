@@ -1,9 +1,11 @@
 # Sprint 1 — Wire `<TrustSignals>` across the white-label channels
 
 > **Epic:** [Cross-channel Storefront Trust Parity](README.md) · **BUILD-ORDER:** #3c · Epic D ·
-> **Status: 📋 PLANNED — ⛔ blocked-by Epic C Sprint 2 (C.4).** Do not start until C.4
-> (`<TrustSignals>`) is merged to `main`. Branch: `feat/cross-channel-trust-parity` off latest `main`.
-> **All stories LOW / LOW–MED — reviewer may merge on green CI; D.2 announce + PR first.**
+> **Status: 🚧 BUILT — draft [PR #67](https://github.com/danybgoode/miyagisanchezcommerce/pull/67), awaiting review/merge.**
+> Hard gate cleared (C.4 on `main`, PR #65 `d35bc8c`). Branch `feat/cross-channel-trust-parity` off `main`.
+> Deterministic gate green (tsc + build + Playwright `api` 426-pass incl. new deriver spec).
+> **D.0** `3224579` (pure deriver) · **D.1** `0fba55d` (embed grid) · **D.2** `8d08e0a` (white-label shell
+> + assurance strip) · browser spec `8741a57`. **All LOW / LOW–MED; D.2 ChannelLayout change announced.**
 
 ---
 
@@ -64,7 +66,7 @@ change.
 
 ---
 
-## D.1 — Embed shop-grid trust parity
+## D.1 — Embed shop-grid trust parity ✅ `0fba55d`
 
 > **As a** buyer browsing a shop embedded on a third-party site,
 > **I want** to see the shop's verification badge and payment / returns / pickup signals,
@@ -84,7 +86,14 @@ the slim embed visual density; don't reintroduce platform chrome.
 
 ---
 
-## D.2 — White-label shell trust + subtle platform-assurance strip
+## D.2 — White-label shell trust + subtle platform-assurance strip ✅ `8d08e0a`
+
+> **Built (D.0 enabling commit `3224579`):** new pure `lib/trust-inputs.ts`
+> `deriveShopTrustInputs(metadata, verified)` — the shop-level settings→props deriver D.1 + D.2 share
+> (mirrors `app/s/[slug]/page.tsx`; reuses `returnsWindowLabel()`). `ChannelLayout` gained an optional
+> `trust?: ReactNode` slot rendered as a discreet **"Pago seguro · Compra protegida"** lead line; the
+> custom-domain/subdomain branch (`app/layout.tsx`) + embed shell pass the slim `<TrustSignals>`
+> (verified + returns chips; `paymentProtected` suppressed since the lead line carries that assurance).
 
 > **As a** buyer on a seller's own domain or subdomain,
 > **I want** to see the shop's trust signals plus a discreet "pago seguro · compra protegida" assurance,
@@ -113,27 +122,46 @@ the embed shell; the **live subdomain + custom-domain cosmetic look is owed to D
 ---
 
 ## Sprint QA
-- **Deterministic gate (must be green before merge):** `tsc --noEmit` + `npm run build` + Playwright
-  `api` suite.
-- **Pure-logic coverage lives in C.4** (the trust selector spec) — Epic D adds none; D is wiring.
-- **One new anonymous `*.browser.spec.ts`** asserts `<TrustSignals>` renders on the embed grid + the
-  white-label shell (channel-header-simulated) — no auth, works on the preview.
-- **Owed to Daniel (cosmetic, not a money path):** a real-eyes look at a live subdomain + custom domain
-  confirming the strip reads well and doesn't clash with seller branding.
+- **Deterministic gate (green before merge):** `tsc --noEmit` ✅ + `npm run build` ✅ + Playwright
+  `api` suite ✅ (426 passed / 4 skipped).
+- **Pure-logic coverage:** C.4's selector spec stays the source of truth for *which groups render*;
+  Epic D adds **one** pure spec for the new **settings→props deriver** (`e2e/trust-inputs.spec.ts`,
+  6 cases) — not a duplicate of C.4's `selectTrustSignals` spec.
+- **One new anonymous `e2e/cross-channel-trust.browser.spec.ts`** asserts `<TrustSignals>` renders on the
+  embed grid (D.1 method block) + the white-label shell (D.2 assurance strip). No auth, runs on the
+  preview. **⚠️ It targets `/embed/s/<slug>`, NOT a header-simulated `custom`/`subdomain` request:**
+  middleware **strips spoofed `x-miyagi-*` headers** on platform hosts, so the channel can't be
+  header-faked on the preview; `/embed/*` is tagged white-label by *path* and renders through the **same
+  `ChannelLayout`**, so it exercises D.2 for real.
+- **Browser-spec run status (honest gap):** the spec was **not** run locally — the SSO-gated preview
+  needs the CI-only `VERCEL_AUTOMATION_BYPASS_SECRET`, and the local `npm run dev` can't reach the Medusa
+  backend from this sandbox (catalog/`getShop` fetches time out → empty render). It runs anonymously
+  against the **preview** via CI's nightly `browser-smoke.yml`. The render markup is straightforward
+  server JSX gated on the deriver's output, which is typecheck-clean + unit-covered (`trust-inputs.spec.ts`
+  + C.4's selector spec).
+- **Owed to Daniel (cosmetic, not a money path):** a real-eyes look at a **live subdomain + custom
+  domain** confirming the strip reads well and doesn't clash with seller branding (can't be
+  header-simulated on the preview — see above); plus running the browser spec / embed render against the
+  preview where Medusa is reachable.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-> _Placeholder — the building agent fills this with real preview/prod URLs + the exact shop slug before
-> calling the sprint done (groom Stage 8b). Format: numbered, one action + one expected result per step._
 
-Env: production · https://miyagisanchez.com (or the branch preview URL while testing pre-merge)
+Env: production · `https://miyagisanchez.com` (or the branch preview URL while testing pre-merge).
+Example shop slug below: **`champions-not`** (first live catalog shop). The ✓ Verificado badge in step 1
+appears only for a **verified** shop — use a verified shop with returns + pickup configured to see every
+signal; the payment-method block + assurance strip render for any normally-configured shop.
 
-1. Open `https://miyagisanchez.com/embed/s/<test-shop>` (a verified shop with returns + pickup set).
-   → The grid shows the ✓ Verificado badge + payment/returns/pickup signals.
-2. Open `https://<test-shop>.miyagisanchez.com` in a private window.
-   → The white-label shell shows `<TrustSignals>` + a discreet "Pago seguro · Compra protegida" strip; seller branding intact.
-3. Open the shop's live custom domain (if set) in a private window.
+1. Open `https://miyagisanchez.com/embed/s/champions-not`.
+   → The grid shows the payment / returns / pickup method block (and the ✓ Verificado badge if the shop
+   is verified), plus a discreet "Pago seguro · Compra protegida" strip at the top of the shell.
+2. **[owed to Daniel — live, can't be header-simulated]** Open `https://<verified-shop>.miyagisanchez.com`
+   in a private window.
+   → The white-label shell shows the discreet "Pago seguro · Compra protegida" strip (+ verified / returns
+   chips) above the storefront; seller branding intact; the strip reads as assurance, not Miyagi chrome.
+3. **[owed to Daniel — live]** Open the shop's live custom domain (if set) in a private window.
    → Same as step 2 — strip present, no Miyagi navigation chrome.
-4. Open `https://miyagisanchez.com/s/<test-shop>` (marketplace render).
-   → No change vs today (the platform strip does not appear on the marketplace render).
+4. Open `https://miyagisanchez.com/s/champions-not` (marketplace render).
+   → No change vs today — the platform "Pago seguro · Compra protegida" strip does **not** appear on the
+   marketplace render (it's white-label-only; by construction it lives in `ChannelLayout`).
 
 If any step fails, note the step number + what you saw — that's the bug report.
