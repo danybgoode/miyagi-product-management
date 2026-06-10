@@ -1,6 +1,6 @@
 # Shop Settings refactor — Sprint 3: Extract money/domain/agent sections
 
-**Status:** ✅ BUILT — awaiting Daniel merge (HIGH) · branch `feat/shop-settings-refactor-s3` · PR pending
+**Status:** ✅ BUILT — awaiting Daniel merge (HIGH) · branch `feat/shop-settings-refactor-s3` · [PR #71](https://github.com/danybgoode/miyagisanchezcommerce/pull/71)
 **Risk: HIGH — Daniel merges**
 
 > **Built 2026-06-10.** Three slug-pages extracted (the `[section]` route is per-slug; each bundles
