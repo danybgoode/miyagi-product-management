@@ -1,7 +1,8 @@
-# Epic: PDP interactive image gallery
+# Epic: PDP interactive image gallery ✅ COMPLETE
 
-> **Area:** 01-discovery-and-shopping · **Risk:** LOW (frontend-only PDP UI; reviewer may auto-merge) · **Type:** bug + light enhancement
+> **Area:** 01-discovery-and-shopping · **Risk:** LOW (frontend-only PDP UI) · **Type:** bug + light enhancement
 > **Scope seed:** [`00-ideas/seeds/pdp-image-gallery.md`](../../00-ideas/seeds/pdp-image-gallery.md) · **Signed off:** Daniel, 2026-06-10
+> **Shipped:** 2026-06-10 — single sprint, PR #70 (squash `597b66e`), Daniel-authorized merge.
 
 ## Why
 On a listing page with multiple photos, a buyer **can't move between them** — the thumbnails are
@@ -41,11 +42,11 @@ auto-merge on green CI. It edits the shared `app/l/[id]/page.tsx` — light head
 `discovery-polish` (Epic A also touches PDP hierarchy); whoever lands second merges latest `main` first.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — PR #70 squash `597b66e`; authed phone/desktop smoke owed to Daniel
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`

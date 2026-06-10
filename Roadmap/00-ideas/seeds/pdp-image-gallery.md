@@ -1,14 +1,14 @@
 ---
 title: "PDP interactive image gallery"
 slug: pdp-image-gallery
-status: scaffolded                    # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: shipped                       # raw | ready | queued | scaffolded | in-progress | shipped | archived
 area: "01"                           # Discovery & Shopping (the PDP)
 type: bug                            # broken/missing interactivity + a light zoom enhancement → small 1-sprint epic
 priority: null
 risk: low                            # frontend-only PDP UI; no commerce/auth/money/DB
 epic: "01-discovery-and-shopping/pdp-image-gallery"   # scaffolded 2026-06-10
 build_order: null
-updated: 2026-06-10
+updated: 2026-06-10                   # shipped 2026-06-10 — PR #70 squash 597b66e (single sprint)
 ---
 
 # PDP interactive image gallery

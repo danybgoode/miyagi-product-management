@@ -162,7 +162,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   un-spoofable) and renders through the **same `ChannelLayout`**, so an anonymous smoke on `/embed/s/<slug>`
   exercises the shared shell for real; the live custom-domain/subdomain look stays owed to Daniel. Before
   planning a "simulate channel X" browser test, check whether middleware trusts or strips the header that
-  selects X. *(2026-06-09, cross-channel-trust-parity D.2.)*
+  selects X. **And the path-tagged surface may not cover the page you changed** — `/embed/*` only serves
+  the *shop* page (`/embed/s/[slug]`), not the PDP (`/l/[id]`), so there's no anonymous white-label PDP
+  render at all. The escape hatch is to keep the new client island **channel-agnostic** (pure props, reads
+  no channel header) so it renders byte-identically everywhere and the plain marketplace `/l/[id]` smoke
+  covers it. *(2026-06-09 cross-channel-trust-parity D.2; reconfirmed 2026-06-10 PDP image gallery.)*
 - **Fresh worktrees need local env before e2e means anything.** `git worktree` does not bring ignored
   `.env.local` / `.env` files. For Miyagi local API e2e, copy the app `.env.local` into the frontend
   worktree, copy backend `.env` into the backend worktree, start Next on `3001` and Medusa on `9000`,
@@ -173,7 +177,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   CSS tokens, add a pure-logic `api` spec that scans the customer-facing dirs and **fails CI on a
   newly-introduced raw hex** (allow-list the legit hardcoded contexts: email — clients strip CSS vars
   — print/PDF, OG image, admin, sandbox). Cheapest way to stop the foundation eroding; coverage
-  accretes for free. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07.)*
+  accretes for free. **It bites brand-new client islands too, and only CI catches it:** a fresh `#fff`
+  in a new PDP lightbox passed local tsc/build/its-own-spec but the guard failed in CI — for white-on-dark
+  chrome reuse the existing `var(--fg-inverse)` (resolves to `#ffffff`), the token the surrounding gallery
+  already used. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07; reconfirmed
+  2026-06-10 PDP image gallery.)*
 - **A write whose result nobody checks is a feature that can silently die.** The gem-claim loop broke
   three ways with zero errors surfaced — a 0-row Supabase `UPDATE` (wrong id namespace: Medusa `sel_…`
   vs mirror UUID) "succeeded", an FK-violating upsert's `error` was never read, and the dead path
