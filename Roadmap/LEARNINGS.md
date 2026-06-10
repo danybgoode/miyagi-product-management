@@ -181,7 +181,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   in a new PDP lightbox passed local tsc/build/its-own-spec but the guard failed in CI — for white-on-dark
   chrome reuse the existing `var(--fg-inverse)` (resolves to `#ffffff`), the token the surrounding gallery
   already used. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07; reconfirmed
-  2026-06-10 PDP image gallery.)*
+  2026-06-10 PDP image gallery.)* **The same shape is a general anti-erosion guard, not just for color:**
+  pure offender-finders in a `lib/` module + an `api` spec (real-tree assertion + in-memory negative
+  fixtures) also enforce an **anti-monolith** rule — fail CI if any component in a refactored dir exceeds a
+  line cap, or if a banned filename reappears. Set the cap above the current largest file with headroom
+  (e.g. settings cap 1,200 vs largest section ~1,063 vs the deleted ~4,076-line monolith). *(2026-06-10,
+  Shop Settings refactor S4 — `lib/shop-settings/monolith-guard.ts`, `e2e/shop-settings-no-monolith.spec.ts`.)*
 - **A write whose result nobody checks is a feature that can silently die.** The gem-claim loop broke
   three ways with zero errors surfaced — a 0-row Supabase `UPDATE` (wrong id namespace: Medusa `sel_…`
   vs mirror UUID) "succeeded", an FK-violating upsert's `error` was never read, and the dead path
@@ -213,6 +218,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
 
 ## Architecture
+- **Decompose a monolith behind the seam that already fronts it, keep the old path as a coexisting
+  fallback, then delete it only once it's provably unreachable.** A 4,076-line `'use client'` settings
+  monolith broke into one-component-per-section with **no user-facing change** because the route +
+  save seam (`[section]` route → `PATCH /api/sell/shop`) already existed: each section extracted as an
+  independent slice while the monolith stayed mounted as a fallback for not-yet-moved sections. Two
+  decommission specifics worth reusing: (1) **the only hard coupling at deletion was the monolith's
+  exported *types*** — a `lib/types` module re-exported them; relocating the definitions *into* that seam
+  (which every extracted section already imported) made the delete a no-op for consumers, so **grep who
+  imports the doomed file's types, not just its default export**. (2) **Prove unreachability before
+  deleting** — the route's `isValidSection()` gate + an exhaustive `EXTRACTED` registry set meant the
+  fallback branch was dead code; confirm that, then remove, instead of a big-bang swap. Lock it in with an
+  anti-monolith guard spec (see Build & QA). *(2026-06-10, Shop Settings refactor — PRs #68/#69/#71/#74.)*
 - **Medusa-first pays off (AGENTS rule #1).** Model new commerce features on Medusa primitives before
   reaching for Supabase/custom routes. *(Personalized Products shipped with **zero** new tables and
   near-zero backend change — field definitions on product metadata, buyer payload on line-item
