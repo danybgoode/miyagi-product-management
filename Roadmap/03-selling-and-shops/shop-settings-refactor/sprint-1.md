@@ -1,9 +1,10 @@
 # Shop Settings refactor — Sprint 1: Foundation seam + first extraction
 
-**Status:** 🏗️ BUILT 2026-06-10 — draft [PR #68](https://github.com/danybgoode/miyagisanchezcommerce/pull/68), risk **LOW**, awaiting CI + review.
+**Status:** ✅ SHIPPED 2026-06-10 — [PR #68](https://github.com/danybgoode/miyagisanchezcommerce/pull/68)
+squash-merged to `main` (`12d9548`) → Vercel prod. Risk **LOW**; fresh-reviewer APPROVE on green CI
+(tsc + build + Playwright `api` vs preview), branch deleted.
 Stories: **1.1 ✅** `ff59097` · **1.2 ✅** `78b0e66` · **1.3 ✅** `e2cab1e`.
-Gate green locally: `tsc` ✅ · `next build` ✅ · Playwright `api` `shop-settings-taxonomy.spec.ts` 11/11 ✅.
-Owed to Daniel: the authed Devoluciones **save round-trip** (see walkthrough step 3).
+Owed to Daniel: the authed Devoluciones **save round-trip** on prod (see walkthrough step 3).
 
 > The skateboard: the thinnest end-to-end slice that ships and proves the whole extraction pattern on
 > the safest section. Everything here is behavior-preserving.
