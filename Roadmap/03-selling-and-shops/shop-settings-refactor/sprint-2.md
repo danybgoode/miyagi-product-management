@@ -1,10 +1,12 @@
 # Shop Settings refactor — Sprint 2: Extract low-risk sections
 
-**Status:** 🧪 BUILT 2026-06-10 — draft [PR #69](https://github.com/danybgoode/miyagisanchezcommerce/pull/69)
-on `feat/shop-settings-refactor-s2` (off `main` @ `12d9548`). Risk **LOW**. Deterministic gate green
-locally (`tsc` ✅ · `next build` ✅ · Playwright `api` taxonomy 11/11 ✅); CI re-runs vs the preview.
-Commits: shared primitives `b0dd1a3` · 7 section routes `e936a9a` · characterization spec `5f3cf41`.
-Authed save round-trips owed to Daniel (walkthrough steps 2–4).
+**Status:** ✅ SHIPPED 2026-06-10 — [PR #69](https://github.com/danybgoode/miyagisanchezcommerce/pull/69)
+squash-merged to `main` (`928ed15`) → Vercel prod. Risk **LOW**; fresh-reviewer APPROVE on green CI
+(`tsc` + `next build` + Playwright vs preview), branch deleted.
+Commits (pre-squash): shared primitives `b0dd1a3` · 7 section routes `e936a9a` · characterization spec
+`5f3cf41` · design-token allowlist fix `9bba39b` (fresh reviewer caught the extracted `#1d6f42` literal
+moved out from under the guard's path-pinned allowlist → CI-red; fix added a sibling rule).
+Authed save round-trips owed to Daniel (walkthrough steps 2–5).
 
 > Mechanical, repetitive, assembly-line — the proven S1 pattern applied to the non-money sections.
 > One component + one characterization spec per section, each registered in the dynamic-import map.
