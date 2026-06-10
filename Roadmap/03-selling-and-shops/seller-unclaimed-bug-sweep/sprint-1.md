@@ -14,6 +14,20 @@
 > **Key reuse win:** the existing `SellerTrustCard` already renders contact options +
 > the "Reclamar" claim nudge when `!isClaimed`, and the PDP already dual-renders it —
 > so S1.1 was a one-line predicate fix (`lib/claim.ts isShopClaimed`), no new UI.
+>
+> **Fresh-reviewer pass (different agent) → APPROVE-with-nits, all addressed `e78401b`:**
+> - **[blocker] caught + fixed:** `app/checkout/page.tsx` still keyed its redirect guard
+>   off the OLD `shop.id` predicate — and `/checkout` is **directly URL-reachable** (the
+>   deep-link target of `checkoutHopHref`/`signInHopHref`), so an authed buyer could land
+>   on checkout for an ownerless shop. Repointed to the shared `isShopClaimed`. This is the
+>   load-bearing last-line money-path guard — the PDP just stops *linking* gem shops here.
+> - **[nit] fixed:** folded the two remaining correct-but-inline copies (`lib/ucp/schema.ts`
+>   `toUcpListing`, `app/api/ucp/mcp/route.ts` shop profile) onto `isShopClaimed` — predicate
+>   now has a single source of truth (4 consumers: PDP, offers, checkout-session, **checkout
+>   page**, plus the 2 UCP read surfaces) and can't drift back into the bug.
+> - **[note] owed to Daniel:** `bank_transfer` (SPEI) in `checkout-session` is **not**
+>   claim-gated (pre-existing). Contact-first by nature, but there's no one to confirm a
+>   transfer on an ownerless shop — worth a follow-up decision (not in this frontend sprint).
 
 > Root cause (verified 2026-06-10): the PDP's `isClaimed` (`app/l/[id]/page.tsx:96`) only recognises the
 > legacy `pending:` placeholder, so a gem shop (`clerk_user_id = null`) reads as *claimed* and the whole
