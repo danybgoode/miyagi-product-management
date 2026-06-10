@@ -1,6 +1,19 @@
 # Seller & unclaimed-shop bug sweep — Sprint 1: Unclaimed shops are contact-only
 
-**Status:** ⬜ not started · **Risk:** HIGH (money-path; Daniel merges) · **Repos:** frontend only
+**Status:** ✅ built — draft [PR #73](https://github.com/danybgoode/miyagisanchezcommerce/pull/73), awaiting Daniel merge (HIGH) · **Risk:** HIGH (money-path; Daniel merges) · **Repos:** frontend only
+
+> **Built 2026-06-10** on `feat/seller-unclaimed-bug-sweep` (isolated worktree — a
+> parallel agent yanked the shared frontend worktree to `feat/shop-settings-refactor-s4`
+> mid-build; commits were intact on-branch, recovered via `git worktree add`).
+> Deterministic gate green: `tsc --noEmit` ✓ · `npm run build` ✓ (exit 0) · Playwright
+> `api` `unclaimed-guardrails` ✓ (3 pure `isShopClaimed` cases + anonymous
+> `POST /api/offers` → 401; fixture-gated checkout-session case skips until
+> `MS_TEST_UNCLAIMED_LISTING_ID` is set). Commits: S1.1 `230737e` · S1.2 `bc21ae2` ·
+> S1.3 `ddec65b` · QA `1e7beed`.
+>
+> **Key reuse win:** the existing `SellerTrustCard` already renders contact options +
+> the "Reclamar" claim nudge when `!isClaimed`, and the PDP already dual-renders it —
+> so S1.1 was a one-line predicate fix (`lib/claim.ts isShopClaimed`), no new UI.
 
 > Root cause (verified 2026-06-10): the PDP's `isClaimed` (`app/l/[id]/page.tsx:96`) only recognises the
 > legacy `pending:` placeholder, so a gem shop (`clerk_user_id = null`) reads as *claimed* and the whole
@@ -10,7 +23,7 @@
 
 ## Stories
 
-### Story 1.1 — Unclaimed PDP is contact-only
+### Story 1.1 — Unclaimed PDP is contact-only · ✅ `230737e`
 **As a** buyer viewing a listing from an unclaimed ("Sin reclamar") shop, **I want** to see direct-contact
 options and a "Reclama esta tienda" prompt instead of Buy / Make-offer / Add-to-cart / Bundle, **so that**
 I don't start a transaction the shop can't receive.
@@ -21,7 +34,7 @@ CTAs. Surface WhatsApp/phone/email (when published) + the claim CTA for the uncl
 "Reclama esta tienda" do. A claimed listing is unchanged.
 **Risk:** HIGH.
 
-### Story 1.2 — Offers API rejects unclaimed shops (no silent email)
+### Story 1.2 — Offers API rejects unclaimed shops (no silent email) · ✅ `bc21ae2`
 **As an** agent or buyer, **I want** an offer to an unclaimed shop to be rejected with a clear message,
 **so that** no misleading "offer sent" email goes out and nothing dies silently.
 **Build:** gate `POST /api/offers` on `isShopClaimed` **before** any insert or email; return 4xx with
@@ -30,7 +43,7 @@ es-MX copy ("Esta tienda aún no está reclamada — contáctala directamente").
 claimed shop path unchanged.
 **Risk:** HIGH (money-adjacent).
 
-### Story 1.3 — Cart-add / bundle server-gate
+### Story 1.3 — Cart-add / bundle server-gate · ✅ `ddec65b`
 **As a** buyer, **I want** add-to-cart and bundle against an unclaimed shop blocked server-side too,
 **so that** the browser isn't the only thing stopping it (agents/UCP included).
 **Build:** gate the cart/add path on `isShopClaimed`; regression-lock the already-correct
@@ -38,14 +51,31 @@ claimed shop path unchanged.
 **Acceptance:** cart-add to an unclaimed listing → rejected; `checkout-session` for an unclaimed shop →
 still rejected (locked by spec).
 **Risk:** HIGH.
+**Implementation reality (verified):** there is **no separate frontend `/api/cart` server route** —
+`lib/cart.ts startCheckout` posts to Medusa directly and is only reachable from the PDP buy/bundle
+buttons, which S1.1's gate cascade already hides for unclaimed shops. The agent-reachable server seam is
+`/api/ucp/checkout-session`, which already required `isClaimed` for every payable method and set
+`reason_unavailable`; S1.3 repoints it to the shared `isShopClaimed` (one source of truth) and
+regression-locks it. The Medusa **backend `start-checkout`** hardening is S2/out of this frontend-only
+sprint's scope per the epic deploy plan.
 
 ## Sprint QA
-- **api spec(s):** `e2e/unclaimed-guardrails.spec.ts` — pure-logic on `isShopClaimed` (claimed vs `null`
-  vs `pending:`); `POST /api/offers` unclaimed → 4xx + no side effects, claimed → ok; cart-add +
-  checkout-session unclaimed → rejected.
-- **browser smoke owed:** S1.1 covered by an **anonymous** `browser` smoke (no CTAs render on a known
-  unclaimed listing — no login needed). Live "offer email truly doesn't fire" confirmation = Daniel.
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **api spec ✅ `e2e/unclaimed-guardrails.spec.ts`** (`1e7beed`) — always-on pure-logic lock on
+  `isShopClaimed` (claimed / `null` / `undefined` / `pending:` / empty); `POST /api/offers` anonymous
+  → 401 (the claim gate never turns a clean auth reject into a 500); fixture-gated `checkout-session`
+  case (`MS_TEST_UNCLAIMED_LISTING_ID`) → no claim-dependent payable method + `reason_unavailable`,
+  skips cleanly when the fixture is unset.
+  - *Note:* the api project runs **unauthenticated**, and the offers POST is Clerk-gated, so the authed
+    "unclaimed → 409 + **no** marketplace_offers row + **no** buyer email" path is owed to Daniel (he
+    holds the buyer session + mailbox). The pure `isShopClaimed` lock covers the predicate every seam
+    shares.
+- **browser smoke ✅ (anonymous) `e2e/unclaimed-pdp.browser.spec.ts`** (`1e7beed`) — on a known
+  unclaimed listing: the claim nudge renders but no `Comprar ahora` / `Hacer oferta` / `Arma un paquete`
+  CTAs do. Self-skips if the fixture isn't actually unclaimed (no "Reclamar" nudge). Lights up in
+  nightly/opt-in CI once `MS_TEST_UNCLAIMED_LISTING_ID` is set.
+- **deterministic gate (local, 2026-06-10):** `tsc --noEmit` ✓ · `npm run build` ✓ (exit 0) · Playwright
+  `api` `unclaimed-guardrails` ✓ (4 active / 1 fixture-skipped). CI runs the full `api` suite vs the
+  branch preview (bypass token) — the authoritative pre-merge signal.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the branch preview URL pre-merge)
