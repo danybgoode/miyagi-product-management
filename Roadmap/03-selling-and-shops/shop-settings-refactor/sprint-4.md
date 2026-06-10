@@ -1,27 +1,27 @@
 # Shop Settings refactor — Sprint 4: Decommission + finalize
 
-**Status:** ⬜ not started · **Risk: LOW (shared routing — announce + merge latest `main` first)**
+**Status:** ✅ BUILT — draft [PR #74](https://github.com/danybgoode/miyagisanchezcommerce/pull/74), commit `2e7d293` (branch `feat/shop-settings-refactor-s4` off `main` @ `973f69d`). Gate green (tsc + build + Playwright `api` 20/20 pure specs). Awaiting CI-vs-preview + fresh-reviewer. · **Risk: LOW (shared routing — announced; branched fresh off latest `main`)**
 
 > The car: every section now lives in its own component, so the monolith and its fallback can go, the
 > dual taxonomy collapses to one, and a guard spec stops the file from ever growing back.
 
 ## Stories
 
-### Story 4.1 — Delete the monolith
+### Story 4.1 — Delete the monolith ✅ (`2e7d293`)
 **As a** developer, **I want** `ShopSettings.tsx` and the monolith fallback removed once every section
 has moved, **so that** the 4,200-line file is gone for good.
 **Acceptance:** `ShopSettings.tsx` is deleted; the `[section]` registry no longer imports it; `tsc
 --noEmit` + `npm run build` are green with **zero** remaining references to the old component.
 **Risk:** LOW (touches shared `[section]` routing → **announce**; merge latest `main` first).
 
-### Story 4.2 — Finalize the unified taxonomy
+### Story 4.2 — Finalize the unified taxonomy ✅ (`2e7d293`)
 **As a** developer, **I want** the legacy dual-key map removed so index + route + nav all use the one
 canonical set, **so that** there's a single section vocabulary.
 **Acceptance:** the old key-mapping is deleted; every section card links to a key that resolves; no
 orphan or unmapped keys remain; the index completion logic reads the canonical map.
 **Risk:** LOW
 
-### Story 4.3 — Anti-monolith guard spec
+### Story 4.3 — Anti-monolith guard spec ✅ (`2e7d293`)
 **As a** developer, **I want** a pure-logic spec that fails CI if any single settings component exceeds a
 line threshold (or if `ShopSettings.tsx` reappears), **so that** the foundation can't silently erode back
 into a monolith — the way the raw-color guard keeps the token surface tokenized.
