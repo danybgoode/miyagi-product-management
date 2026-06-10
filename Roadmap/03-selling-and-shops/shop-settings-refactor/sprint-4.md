@@ -1,6 +1,6 @@
 # Shop Settings refactor — Sprint 4: Decommission + finalize
 
-**Status:** ✅ BUILT — draft [PR #74](https://github.com/danybgoode/miyagisanchezcommerce/pull/74), commit `2e7d293` (branch `feat/shop-settings-refactor-s4` off `main` @ `973f69d`). Gate green (tsc + build + Playwright `api` 20/20 pure specs). Awaiting CI-vs-preview + fresh-reviewer. · **Risk: LOW (shared routing — announced; branched fresh off latest `main`)**
+**Status:** ✅ SHIPPED — [PR #74](https://github.com/danybgoode/miyagisanchezcommerce/pull/74) squash-merged `19f2831` (fresh-reviewer APPROVE, auto-merged on green CI; branch deleted). Built on `2e7d293`. CI was green (Type-check + build · Playwright-vs-preview `api` 4m29s · Vercel). Authed money-section smoke owed to Daniel. · **Risk: LOW (shared routing — announced; branched fresh off latest `main`)**
 
 > The car: every section now lives in its own component, so the monolith and its fallback can go, the
 > dual taxonomy collapses to one, and a guard spec stops the file from ever growing back.

@@ -1,14 +1,14 @@
 ---
 title: "Shop Settings refactor — break the monolith"
 slug: shop-settings-refactor
-status: scaffolded
+status: shipped
 area: "03"
 type: chore
 priority: null
 risk: low
 epic: "03-selling-and-shops/shop-settings-refactor"
 build_order: null
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 # Scope — Shop Settings refactor (break the monolith)

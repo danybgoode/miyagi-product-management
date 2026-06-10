@@ -48,18 +48,19 @@ not-yet-extracted sections until Sprint 4 removes it. **S4 touches shared routin
 file → announce + merge latest `main` first** (per `LEARNINGS.md` shared-surface rule). Each frontend
 branch gets a Vercel preview; HIGH-risk S3 is merged by Daniel.
 
-## Status — ✅ ALL 4 SPRINTS BUILT (2026-06-10)
-S1 #68 `12d9548` · S2 #69 `928ed15` · S3 #71 squash `973f69d` (merged) · **S4 PR #74 `2e7d293`
-CI-green + CLEAN, pending merge** (builder ≠ reviewer → fresh-reviewer/Daniel). The 4,076-line
-`ShopSettings.tsx` monolith is deleted, the taxonomy is one canonical map, and an anti-monolith
-guard spec is in the `api` gate. Behavior-preserving — no user-facing change.
+## Status — ✅ EPIC COMPLETE (2026-06-10) — all 4 sprints shipped to prod
+S1 #68 `12d9548` · S2 #69 `928ed15` · S3 #71 squash `973f69d` · **S4 #74 squash `19f2831`**
+(fresh-reviewer APPROVE, auto-merged on green CI). The 4,076-line `ShopSettings.tsx` monolith is
+**deleted**, the taxonomy is one canonical map, and an anti-monolith guard spec is in the `api` gate.
+Behavior-preserving — no user-facing change. **Owed Daniel:** authed browser smoke over all section
+URLs + one money-section (`pagos`) save (local dev can't reach Medusa → human is the live signal).
 
 ## Definition of Done (epic)
-- [x] All sprints built; S1–S3 merged + smoke-tested; **S4 CI-green, merge owed** (gaps stated)
+- [x] All sprints merged to `main` + smoke-tested (authed money-section smoke owed to Daniel)
 - [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [x] Sprint statuses ticked with commit refs (README marked ✅ on S4 merge)
+- [x] This README marked ✅; every sprint status ticked with commit refs
 - [x] `RETROSPECTIVE.md` written
 - [x] Product poster (`Roadmap/README.md`) updated (Recent highlights)
 - [x] Team memory + `MEMORY.md` index updated
 - [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **On S4 merge:** feature branch deleted; seed frontmatter `status: shipped`; flip README ✅
+- [x] Feature branch deleted; seed frontmatter `status: shipped`
