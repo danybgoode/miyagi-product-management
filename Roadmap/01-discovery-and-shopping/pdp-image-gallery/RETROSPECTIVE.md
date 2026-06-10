@@ -36,7 +36,23 @@ A previously-dead PDP gallery now works. Both stories landed in one sprint, one 
 - **Channel-agnostic island.** It reads no channel header (pure `images`/`title`/`overlay`
   props), so it renders identically in every channel without any channel wiring.
 
+## Follow-up fix — the gallery shipped stacked (caught in prod smoke)
+PR #70 rendered the gallery **twice on every viewport** (mobile swipe-track + desktop active image,
+stacked) — both bound the same `active` index, so swiping moved both. Daniel caught it in the prod smoke.
+Root cause: the duplicate-render idiom toggles `display` via `md:hidden`/`hidden md:block` classes, but
+both elements **also set `display` inline** (`MAIN_IMG.display:'block'`, the track's `display:'flex'`), and
+**inline style beats a class** — so neither class ever hid its copy. Fix (PR #72, squash `5d71462`): drive
+show/hide purely from classes (`flex md:hidden` / `hidden md:block`), drop `display` from the shared
+`MAIN_IMG`, re-add it only on non-toggled surfaces. Validated on prod after deploy: the anonymous browser
+smoke passes (incl. a new attached-but-hidden track guard) and a 390px ad-hoc check confirms only the track
+shows on mobile. The thumbnail rail/arrows were unaffected **only because** they carried no inline `display`
+— which is exactly what pointed at the cause. (Why the original spec missed it: it ran Desktop-Chrome and
+asserted the surfaces it expected were *present*, never that the *other* copy was absent — and it skipped in
+CI with no fixture set.)
+
 ## What we learned
+- **Inline `display` silently defeats the `md:hidden`/`hidden md:block` duplicate-render idiom** — see the
+  follow-up fix above; promoted to `LEARNINGS.md`.
 - **The design-token raw-hex guard bites client islands too.** A brand-new `#fff` in the
   lightbox went green locally (tsc/build/own spec) but failed CI's `design-token-foundation`
   guard. For white-on-dark chrome, use `var(--fg-inverse)` (resolves to `#ffffff`) — the token

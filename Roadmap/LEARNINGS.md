@@ -247,7 +247,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   already used this for `ctaButtons`; S3.2 reused it to lift the extracted `SellerTrustCard` above the
   payment/fulfillment box on mobile while keeping it below on desktop, with zero shared-layout risk and
   no fragile per-child `order` values. Duplicate DOM is benign when CSS shows only one. *(2026-06-08,
-  Discovery Polish S3.)*
+  Discovery Polish S3.)* **⚠️ The idiom breaks silently if a toggled element also sets `display`
+  inline** — inline style beats a class, so an inline `display:'flex'`/`'block'` overrides `md:hidden` /
+  `hidden md:block` and **both** copies render, stacked. Drive show/hide **only from the classes**
+  (`flex md:hidden`, `hidden md:block`) and keep `display` out of the inline style on any toggled element
+  (set it only on non-toggled surfaces). A pure CSS-class media-query rule wins at its breakpoint; an
+  inline declaration always wins — so they don't compose. Guard it cheaply: a Desktop-Chrome browser smoke
+  asserting the mobile copy is **attached but hidden** (so exactly one surface shows) catches reintroduction.
+  *(2026-06-10, PDP image gallery — shipped stacked on first pass; the thumbnail rail/arrows were fine only
+  because they had no inline `display`; hotfix PR #72 squash `5d71462`.)*
 - **Parity-first extraction: pass the foreign interstitial as a SLOT, don't reorder.** Extracting an inline
   block into a shared component is a no-regression refactor *only* if the DOM stays byte-for-byte — including
   anything a sibling feature renders *between* its parts. The PDP trust block had S3.2's mobile

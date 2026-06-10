@@ -2,6 +2,7 @@
 
 **Status:** ✅ SHIPPED 2026-06-10 — PR #70 squash `597b66e` (Daniel-authorized merge) · **Risk:** LOW · **Repos:** frontend only
 **Commits:** S1.1 `daaf789` · S1.2 `00e3921` · tests `10d437b` · token fix `d32970c`
+**Hotfix:** PR #72 squash `5d71462` — gallery rendered stacked (inline `display` beat the `md:hidden`/`hidden md:block` classes); fixed + prod-smoke-verified (3 photos, `MS_TEST_GALLERY_LISTING_ID` set).
 
 > Root cause (verified 2026-06-10): the gallery (`app/l/[id]/page.tsx:385-414`) is static server markup —
 > `images.slice(1)` are decorative 64×64 `<img>` thumbnails with no handler/state, and the main image is a
