@@ -1,7 +1,7 @@
 # Sprint 1 — Wire `<TrustSignals>` across the white-label channels
 
 > **Epic:** [Cross-channel Storefront Trust Parity](README.md) · **BUILD-ORDER:** #3c · Epic D ·
-> **Status: 🚧 BUILT — draft [PR #67](https://github.com/danybgoode/miyagisanchezcommerce/pull/67), awaiting review/merge.**
+> **Status: ✅ SHIPPED 2026-06-09 — [PR #67](https://github.com/danybgoode/miyagisanchezcommerce/pull/67) MERGED (squash `e78ae6a`); branch deleted.**
 > Hard gate cleared (C.4 on `main`, PR #65 `d35bc8c`). Branch `feat/cross-channel-trust-parity` off `main`.
 > Deterministic gate green (tsc + build + Playwright `api` 426-pass incl. new deriver spec).
 > **D.0** `3224579` (pure deriver) · **D.1** `0fba55d` (embed grid) · **D.2** `8d08e0a` (white-label shell

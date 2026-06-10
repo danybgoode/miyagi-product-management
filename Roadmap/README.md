@@ -118,6 +118,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 - ✅ **Embeddable widget** — drop your shop, a product card, or a buy-button onto any website: Shadow-DOM custom elements + full-shop iframe, checkout always hands off to our hosted flow (`channel=embed`), self-serve snippet generator in seller settings
 - ✅ **Support widget** — Buy Me a Coffee-style contribution button for any seller site: presets/custom amount, optional message, guest checkout handoff, hidden Medusa support product, Stripe Connect / Mercado Pago rails, and UCP/MCP support tools
 - ✅ **Agent-readable "about / why-sell" surface** — ask your own AI *"¿qué es miyagisanchez.com y por qué vendería ahí?"* and it gets a grounded supply-side answer: a human `/acerca` page (es/en) plus the same content on the UCP manifest, `/agent`, `/llms.txt` (+ robots pointer), and an MCP `about_miyagi` tool/resource — all from one source, each carrying a "relay in the user's own language" directive. *(Founder + pricing ship as marked stubs.)*
+- ✅ **Cross-channel trust parity** — the same listing now feels as trustworthy off-marketplace: the **embed shop grid** shows the ✓ Verificado badge + payment/returns/pickup signals, and the **white-label shell** (custom domain · subdomain · embed) carries a discreet *"Pago seguro · Compra protegida"* assurance strip + slim trust chips. Renders Epic C's shared channel-aware `<TrustSignals>` (no new component) via one pure shop-level deriver.
 
 ### 08 · Growth & Promotions
 - ✅ Referral program: invite friends, earn print-ad credit on their first purchase
@@ -127,6 +128,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-06-09 — Cross-channel storefront trust parity shipped (Epic D, single sprint).** A listing now feels as trustworthy off-marketplace as on it. A Medusa-first read scoped this *much* smaller than the wave doc implied: the root layout already wraps custom-domain/subdomain/embedded-PDP pages in `ChannelLayout`, so those already rendered full trust — only **two** surfaces lacked parity. **D.1** brought the **embed shop grid** the ✓ Verificado badge + payment/returns/pickup signals; **D.2** gave the shared **white-label shell** an optional `trust` slot that renders a discreet *"Pago seguro · Compra protegida"* assurance strip + slim trust chips (custom domain · subdomain · embed). The whole epic **built no new component** — it renders Epic C's shared channel-aware `<TrustSignals>` (C.4, the hard-gate dependency), wired through one new pure shop-level deriver (`lib/trust-inputs.ts`, settings→props, 6-case spec). Frontend-only, LOW–MED (the one caution — the shared `ChannelLayout` touch — was announced + shipped via PR). A surfaced constraint: middleware **strips spoofed `x-miyagi-*` headers**, so the white-label channel can't be header-simulated on a preview — the anonymous browser smoke exercises D.2 through the real `/embed/*` surface (same `ChannelLayout`) instead; the live subdomain/custom-domain cosmetic look is owed to Daniel. See [07 · Agentic & Federated Commerce › Cross-channel Trust Parity](07-agentic-and-federated-commerce/cross-channel-trust-parity/).
 - **2026-06-09 — Gem → Claimable Shop Loop fixed end-to-end (3 sprints, 3 repos).** The Ask-Claude/Mexico-26
   campaign's supply loop (curate a hidden gem → unclaimed shop → magazine QR → free claim) was broken at
   *both* ends, verified against a real prod run: the supply import wrote the legacy Supabase
@@ -155,8 +157,8 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   seam (`lib/trust-signals.ts`) deciding which signals show per channel/variant — and its **slim variant now
   greets a buyer at the negotiation entry** (verificación · pago protegido · devoluciones) so eligibility is
   learned *before* an offer, not after. The component's props/variants contract was **handed to Epic D**
-  (cross-channel-trust-parity), which consumes it to reach the white-label/embed renders; `ChannelLayout` was
-  deliberately left untouched (Epic D's slice). MED-or-below throughout — no money mutation — so each story
+  (cross-channel-trust-parity, now ✅ shipped — it wired the component into the embed grid + white-label shell);
+  `ChannelLayout` was deliberately left untouched here (Epic D's slice). MED-or-below throughout — no money mutation — so each story
   merged on a green gate via a fresh reviewer agent. Authed chat-card + capsule smokes owed to Daniel. See
   [05 · Trust, Offers & Messaging › Trust & Messaging Polish](05-trust-offers-and-messaging/trust-messaging-polish/).
 

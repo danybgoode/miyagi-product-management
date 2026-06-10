@@ -150,7 +150,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   for those first — they need no credentials. *(2026-06-05.)*
 - **State the smoke gap honestly.** The agent owns API/build/Playwright; the **authed browser
   money-path** smoke is owed to Daniel (he holds the sessions). Say so in the PR rather than implying
-  "build passes, therefore done."
+  "build passes, therefore done." Corollary: **don't write a "verified locally" claim you didn't run** —
+  the local dev server can't reach Medusa from the agent sandbox (catalog/`getShop` fetches time out →
+  empty render), and the SSO-gated preview needs the CI-only `VERCEL_AUTOMATION_BYPASS_SECRET`, so the
+  real pre-merge signal is **CI's "Playwright vs preview" (api) going green against the branch preview**,
+  not a local render. *(2026-06-09, cross-channel-trust-parity — caught + corrected a false local-verify note.)*
+- **A white-label/channel render can't be header-simulated in a browser smoke — use the path-tagged
+  surface.** Middleware **strips spoofed `x-miyagi-*` headers on platform hosts** (only middleware may
+  set them), so a Playwright test cannot fake `x-miyagi-channel=custom`/`subdomain` against a preview to
+  exercise the white-label shell. But `/embed/*` is tagged white-label by **path** (`x-miyagi-embed=1`,
+  un-spoofable) and renders through the **same `ChannelLayout`**, so an anonymous smoke on `/embed/s/<slug>`
+  exercises the shared shell for real; the live custom-domain/subdomain look stays owed to Daniel. Before
+  planning a "simulate channel X" browser test, check whether middleware trusts or strips the header that
+  selects X. *(2026-06-09, cross-channel-trust-parity D.2.)*
 - **Fresh worktrees need local env before e2e means anything.** `git worktree` does not bring ignored
   `.env.local` / `.env` files. For Miyagi local API e2e, copy the app `.env.local` into the frontend
   worktree, copy backend `.env` into the backend worktree, start Next on `3001` and Medusa on `9000`,

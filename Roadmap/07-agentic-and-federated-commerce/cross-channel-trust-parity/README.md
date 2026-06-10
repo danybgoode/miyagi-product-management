@@ -3,8 +3,10 @@
 > **Macro-section:** [07 · Agentic & Federated Commerce](../README.md) · **BUILD-ORDER:** #3c · Epic D ·
 > **Risk: LOW–MED — presentational, no money mutation, no new component** (consumes Epic C's
 > `<TrustSignals>`); the one caution is the shared `ChannelLayout` blast radius (announce + PR).
-> **Status: 📋 PLANNED — ⛔ blocked-by Epic C Sprint 2 (C.4).** Groomed + signed off (Daniel,
-> 2026-06-07); scaffolded under `07-agentic-and-federated-commerce/`. Scope doc:
+> **Status: ✅ EPIC COMPLETE — single-sprint, shipped to prod 2026-06-09 (PR [#67](https://github.com/danybgoode/miyagisanchezcommerce/pull/67), squash `e78ae6a`).**
+> Hard gate cleared first (C.4 on `main`, PR #65 `d35bc8c`). D.0 pure deriver + D.1 embed grid + D.2
+> white-label shell/assurance strip; deterministic gate green in CI vs the preview. Groomed + signed off
+> (Daniel, 2026-06-07); scaffolded under `07-agentic-and-federated-commerce/`. Scope doc:
 > [`00-ideas/seeds/cross-channel-trust-parity.md`](../../00-ideas/seeds/cross-channel-trust-parity.md).
 > Wave context: [`remaining-audit-polish.md`](../../00-ideas/seeds/remaining-audit-polish.md).
 > Driven by the #3a refresh ([`results-refresh-2026-06/`](../../00-ideas/audits/results-refresh-2026-06/), 05 net-new + 01).
@@ -76,11 +78,11 @@ to `main`** (D imports `<TrustSignals>`). Build D.1 → D.2; **announce the `Cha
 D.2** and open a PR (don't push straight to `main`). One branch `feat/cross-channel-trust-parity`.
 
 ## Definition of Done (epic)
-- [ ] D.1 + D.2 merged to `main`; deterministic gate green (tsc + build + Playwright `api`).
-- [ ] One anonymous `*.browser.spec.ts` asserts `<TrustSignals>` renders on the embed grid + white-label shell (channel-simulated).
-- [ ] `ChannelLayout` change was **announced** before merge; shipped via PR (not direct-to-`main`).
-- [ ] Sprint 1 has a fool-proof smoke walkthrough (real preview/prod URLs); the live subdomain/custom-domain cosmetic look is flagged **owed to Daniel**.
-- [ ] Epic `README.md` ✅ + `sprint-1.md` ticked with commit refs; `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated — 07 line reflects cross-channel trust parity; Recent-highlights entry added.
-- [ ] Team memory + `LEARNINGS.md` updated with any durable learning.
-- [ ] Branch deleted; PR merged.
+- [x] D.1 + D.2 merged to `main` (PR #67 squash `e78ae6a`); deterministic gate green (tsc + build + Playwright `api`, in CI vs the preview).
+- [x] One anonymous `*.browser.spec.ts` asserts `<TrustSignals>` renders on the embed grid + white-label shell — via the real `/embed/*` surface (middleware strips spoofed channel headers, so `custom`/`subdomain` can't be header-simulated on a preview).
+- [x] `ChannelLayout` change was **announced** before merge; shipped via PR (not direct-to-`main`).
+- [x] Sprint 1 has a fool-proof smoke walkthrough (real prod URLs + example slug); the live subdomain/custom-domain cosmetic look is flagged **owed to Daniel**.
+- [x] Epic `README.md` ✅ + `sprint-1.md` ticked with commit refs; `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — 07 line reflects cross-channel trust parity; Recent-highlights entry added.
+- [x] Team memory + `LEARNINGS.md` updated with any durable learning.
+- [x] Branch deleted; PR merged.
