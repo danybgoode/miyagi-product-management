@@ -162,6 +162,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   newly-introduced raw hex** (allow-list the legit hardcoded contexts: email — clients strip CSS vars
   — print/PDF, OG image, admin, sandbox). Cheapest way to stop the foundation eroding; coverage
   accretes for free. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07.)*
+- **A write whose result nobody checks is a feature that can silently die.** The gem-claim loop broke
+  three ways with zero errors surfaced — a 0-row Supabase `UPDATE` (wrong id namespace: Medusa `sel_…`
+  vs mirror UUID) "succeeded", an FK-violating upsert's `error` was never read, and the dead path
+  reported `ok:true` for weeks. When an id system migrates (legacy table → Medusa), grep every write
+  keyed by that id; and for ownership/money-adjacent writes, check `.error` *and* that rows actually
+  matched. *(Gem → Claim Loop, 2026-06-09.)*
+- **Unknown API routes on PROD return HTTP 200 (the not-found page), not 404.** So a negative-path
+  spec for a *new* endpoint run against prod pre-deploy fails confusingly (expected 401, got 200) —
+  that's "route doesn't exist yet", not a logic bug. CI-vs-preview is the authoritative gate for new
+  routes; don't chase the prod result. *(Gem → Claim Loop, 2026-06-09.)*
 - **Close-out validates the *doc* deliverables shipped, not just the code.** A "docs-only" sprint
   inside a mostly-code epic is the easy one to skip: #4's S2/S3 code merged (PR #37) but the **S1
   Roadmap token-contract doc was never written** — it surfaced only at epic close. At DoD, check each

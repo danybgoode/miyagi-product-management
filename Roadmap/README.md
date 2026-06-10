@@ -76,6 +76,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ Seller AI agent operations — a seller's own agent handles price offers (list / accept / counter / decline) and runs the full listing lifecycle (create / edit / pause / activate) via MCP, scoped + audited
 - ✅ Configurable & personalized products — sellers add custom input fields (short/long text, dropdown) to a listing; buyers personalize in the buy box (live counter, required-field nudge); the input echoes through cart + checkout, lands on the order line item, and shows on the seller's order screen, both confirmation emails, and the UCP catalog for agents
 - ✅ Agent-native setup (Onboarding 0) — a prospective seller's **own** AI agent prepares the whole shop before signup: it reads one published, versioned setup spec and emits a single setup JSON (shop profile + config + catalog); after a ~20-second signup the seller pastes/uploads it on a first-run step and shop + config + catalog are created in one pass, landing on a success report. That screen then hands over a copyable **shop-clerk** operate-prompt (names the live seller MCP tools, mirrors the seller's language, CEO/CMO/COO as working modes) + the "Conecta tu agente" token helper, so the agent keeps running the shop
+- ✅ Gem → claimable shop loop (supply import + claim, fixed end-to-end) — a curated hidden gem imported through `/supply` becomes a **real Medusa-backed unclaimed shop** that renders live at `/s/[slug]` ("Sin reclamar" badge + claim CTA), its listing fully populated (title, description, location, category, type, price, photo) and surfaced in marketplace search; an admin/agent can host listing photos with **no Clerk login** (`POST /api/supply/upload`); and the claim email flow now genuinely transfers the shop (Medusa seller + mirror) to the claimer — magazine-ready: stable shop URL for a QR + auto-minted `mschz.org` short link
 
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
@@ -126,6 +127,22 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-06-09 — Gem → Claimable Shop Loop fixed end-to-end (3 sprints, 3 repos).** The Ask-Claude/Mexico-26
+  campaign's supply loop (curate a hidden gem → unclaimed shop → magazine QR → free claim) was broken at
+  *both* ends, verified against a real prod run: the supply import wrote the legacy Supabase
+  `marketplace_shops`/`marketplace_listings` — now a mirror nothing renders — while `/s/[slug]` and search
+  read **Medusa**, so imported gems 404'd; and claim completion updated the mirror by the *Medusa* seller id
+  (0 rows, success reported) without ever setting `seller.clerk_user_id`, the field that actually drives the
+  "Sin reclamar" badge and `/shop/manage` — so claiming was a silent no-op too. Fix, Medusa-first: unclaimed
+  sellers became real (`clerk_user_id` nullable + secret-gated `POST /internal/sellers`, idempotent on
+  `source_url`); the import hop now creates the Medusa seller + product through the same shared
+  `createSellerProduct()` seam the MCP agent path uses, then mirrors to Supabase (short-code mint, non-fatal);
+  `POST /api/supply/upload` hosts listing photos with **no Clerk login**; and claim runs
+  despachobonsai → `POST /api/claim/complete` (shared-secret) → `POST /internal/sellers/:id/claim`
+  (idempotent / 409), fixing the claims-table FK bookkeeping on the way. **Pulquería Las Duelistas is live at
+  `/s/pulqueria-las-duelistas`** with its facade photo, in search, QR-ready; all 6 end-state criteria verified
+  on prod incl. an API-level claim smoke (fresh → 200, retry → 200, second claimer → 409). Daniel's live
+  email-claim browser smoke owed. See [03 · Selling & Shops › Gem → Claim Loop](03-selling-and-shops/gem-claim-loop/).
 - **2026-06-09 — Trust & Messaging Polish epic complete (#3c · Epic C, 2 sprints).** The #3a re-audit's 05
   tail was **fragmentation, not absence**, and reading the code re-scoped all of it *smaller*. **S1:** the
   chat is no longer an action bar that flashes ephemeral pills — a **durable, read-only transaction ledger
