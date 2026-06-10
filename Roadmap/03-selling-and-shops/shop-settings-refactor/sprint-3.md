@@ -1,7 +1,9 @@
 # Shop Settings refactor — Sprint 3: Extract money/domain/agent sections
 
-**Status:** ✅ BUILT — awaiting Daniel merge (HIGH) · branch `feat/shop-settings-refactor-s3` · [PR #71](https://github.com/danybgoode/miyagisanchezcommerce/pull/71)
+**Status:** ✅ SHIPPED 2026-06-10 — [PR #71](https://github.com/danybgoode/miyagisanchezcommerce/pull/71) squash-merged `973f69d` (Daniel-authorized; fresh-reviewer APPROVE, green CI). Branch deleted.
 **Risk: HIGH — Daniel merges**
+
+> Fresh-reviewer (separate agent) verdict: **APPROVE** — no behavior divergence, secret-strip holds byte-for-byte, MCP `patch_store_configuration` path untouched, all five AGENTS rules satisfied; two cosmetic nits, no action. The live money/domain/token round-trips remain **owed to Daniel** (walkthrough below).
 
 > **Built 2026-06-10.** Three slug-pages extracted (the `[section]` route is per-slug; each bundles
 > several internal `<section>`s): **`pagos`** = proteccion+stripe+mercadopago+spei (S3.1–S3.4),
