@@ -8,8 +8,9 @@
 //   • ADVISORY ONLY — never gates, blocks, or merges. CI + the Claude reviewer + the risk-tier rule decide.
 //
 // Usage:
-//   node scripts/cross-review.mjs <PR#> --agent codex [--repo owner/repo]
+//   node scripts/cross-review.mjs <PR#> --agent codex [--repo owner/repo] [--dry-run]
 //
+// Default posts the findings as a labeled, clearly-advisory PR comment; --dry-run prints instead.
 // `gh` resolves the repo from the current directory; pass --repo to target another (e.g. the app repo).
 // Zero npm deps — Node 18+ (uses global process / child_process).
 
@@ -24,15 +25,21 @@ const PROMPT_PATH = join(__dirname, 'cross-review.prompt.md');
 // label per agent; antigravity is wired in Story 1.3.
 const AGENTS = { codex: 'Codex' };
 
+const BANNER =
+  '> **Advisory only — not a gate, does not authorize merge.** ' +
+  'CI + the Claude reviewer + the risk-tier rule remain authoritative. ' +
+  'This is a single-pass second opinion from a different model family.';
+
 const HELP = `cross-review.mjs — advisory cross-agent second opinion on a PR diff.
 
 Usage:
-  node scripts/cross-review.mjs <PR#> --agent codex [--repo owner/repo]
+  node scripts/cross-review.mjs <PR#> --agent codex [--repo owner/repo] [--dry-run]
 
 Flags:
-  --agent <name>     reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
+  --agent <name>      reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
   --repo  owner/repo  target a specific repo (default: the repo of the current directory)
-  -h, --help         show this help
+  --dry-run           print the comment instead of posting it (alias: --no-comment)
+  -h, --help          show this help
 
 Advisory only — the output never gates, blocks, or authorizes a merge.`;
 
@@ -42,10 +49,11 @@ function die(msg) {
 }
 
 function parseArgs(argv) {
-  const out = { pr: null, agent: 'codex', repo: null, help: false };
+  const out = { pr: null, agent: 'codex', repo: null, dryRun: false, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--help' || a === '-h') out.help = true;
+    else if (a === '--dry-run' || a === '--no-comment') out.dryRun = true;
     else if (a === '--agent') out.agent = argv[++i];
     else if (a.startsWith('--agent=')) out.agent = a.slice('--agent='.length);
     else if (a === '--repo') out.repo = argv[++i];
@@ -104,8 +112,24 @@ function runCodex(prompt, diff) {
   return (r.stdout || '').trim();
 }
 
+function buildComment(agentLabel, findings) {
+  return `### 🔎 Cross-agent review (${agentLabel})\n\n${BANNER}\n\n---\n\n${findings}\n`;
+}
+
+function postComment(pr, repo, body) {
+  const args = ['pr', 'comment', String(pr)];
+  if (repo) args.push('--repo', repo);
+  args.push('--body-file', '-'); // pipe the body on stdin → no shell-escaping pitfalls
+  const r = spawnSync('gh', args, { input: body, encoding: 'utf8' });
+  if (r.status !== 0) {
+    const first = (r.stderr || '').trim().split('\n')[0] || 'unknown error';
+    die(`gh pr comment failed for #${pr}: ${first}`);
+  }
+  return (r.stdout || '').trim(); // gh prints the comment URL
+}
+
 function main() {
-  const { pr, agent, repo, help } = parseArgs(process.argv.slice(2));
+  const { pr, agent, repo, dryRun, help } = parseArgs(process.argv.slice(2));
   if (help) {
     process.stdout.write(HELP + '\n');
     process.exit(0);
@@ -121,7 +145,15 @@ function main() {
   const diff = ghDiff(pr, repo);
   const findings = runCodex(prompt, diff);
   if (!findings) die('codex returned no output.');
-  process.stdout.write(findings + '\n');
+
+  const body = buildComment(AGENTS[agent], findings);
+  if (dryRun) {
+    process.stdout.write(body);
+    process.stderr.write('\n(dry-run — no comment posted)\n');
+  } else {
+    const url = postComment(pr, repo, body);
+    process.stderr.write(`✓ Advisory comment posted${url ? `: ${url}` : ''}\n`);
+  }
 }
 
 main();
