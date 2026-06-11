@@ -75,8 +75,9 @@ Redis is intentionally unset → Medusa uses in-memory cache / event-bus / workf
 scheduled jobs (reconcile-checkouts, sweepstakes-draw) only fire while an instance
 is warm — acceptable on staging.
 
-If STORE/ADMIN/AUTH_CORS still shows localhost only, append the staging URL:
-  STORE_CORS=$URL ADMIN_CORS=$URL AUTH_CORS=http://localhost:3001,$URL \\
+If STORE/ADMIN/AUTH_CORS still shows localhost only, append the staging URL
+(keep localhost so a local frontend can still reach the staging backend):
+  STORE_CORS=http://localhost:3001,$URL ADMIN_CORS=http://localhost:3001,$URL AUTH_CORS=http://localhost:3001,$URL \\
   CLERK_PUBLISHABLE_KEY=<dev pk_test> SKIP_BUILD=1 IMAGE=$IMAGE \\
   bash infra/gcp/deploy-staging.sh
 

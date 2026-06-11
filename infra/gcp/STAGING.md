@@ -103,8 +103,8 @@ staging trigger (already a substitution) and provision that repo.
 
 ## Prod secret rotation procedure (Story 1.2)
 
-`JWT_SECRET` and `COOKIE_SECRET` (prod) have been single-version since the 2026-05-28 GCP migration. Rotate
-them, and on a cadence thereafter.
+`JWT_SECRET` and `COOKIE_SECRET` (prod) were single-version from the 2026-05-28 GCP migration until the first
+rotation on **2026-06-11** (see *Executed* below). Rotate on a cadence thereafter.
 
 > ⚠️ **Rotating `COOKIE_SECRET` invalidates every live session** (all users signed out). Rotate in a
 > **low-traffic window**, coordinated with the owner.
@@ -113,23 +113,29 @@ them, and on a cadence thereafter.
 gcloud config configurations activate bonsai-profile
 PROJECT=miyagisanchezback-497722
 
-# 1. Add a new version to each prod secret (values never echoed).
-printf '%s' "$(openssl rand -hex 32)" | gcloud secrets versions add JWT_SECRET    --project="$PROJECT" --data-file=-
-printf '%s' "$(openssl rand -hex 32)" | gcloud secrets versions add COOKIE_SECRET --project="$PROJECT" --data-file=-
+# 1. Add a new version to each prod secret (values via stdin — never echoed). Capture the version numbers.
+JV=$(printf '%s' "$(openssl rand -hex 32)" | gcloud secrets versions add JWT_SECRET    --project="$PROJECT" --data-file=- --format='value(name)' | sed 's#.*/##')
+CV=$(printf '%s' "$(openssl rand -hex 32)" | gcloud secrets versions add COOKIE_SECRET --project="$PROJECT" --data-file=- --format='value(name)' | sed 's#.*/##')
 
-# 2. Roll the prod service so it picks up :latest of each secret.
-#    Image-only no-op redeploy (fast — no rebuild):
-CUR=$(gcloud run services describe medusa-web --region=us-east4 --format='value(spec.template.spec.containers[0].image)')
-SKIP_BUILD=1 IMAGE="$CUR" CLERK_PUBLISHABLE_KEY='<prod pk_live>' bash infra/gcp/deploy.sh
-#    (deploy.sh binds JWT_SECRET/COOKIE_SECRET=:latest, so the new versions take effect.)
+# 2. Roll the prod service onto the new versions with a TARGETED update — this rolls a new revision that
+#    re-resolves only these two secrets and preserves all other env/secrets.
+#    ⚠️ Do NOT use a full `deploy.sh` re-run to rotate: deploy.sh's --set-env-vars REPLACES the whole env set,
+#    which would drop prod's extra ADMIN_CORS origin (and any other drift Cloud Run preserved). Pin the exact
+#    new version numbers so a new revision is guaranteed (a same-string `:latest` update can no-op):
+gcloud run services update medusa-web --region=us-east4 \
+  --update-secrets="JWT_SECRET=JWT_SECRET:${JV},COOKIE_SECRET=COOKIE_SECRET:${CV}"
 
 # 3. Verify.
-gcloud secrets versions list JWT_SECRET    --project="$PROJECT"   # ≥2 versions, newest enabled
-gcloud secrets versions list COOKIE_SECRET --project="$PROJECT"
+gcloud run services describe medusa-web --region=us-east4 --format='value(status.latestReadyRevisionName)'  # advanced
+gcloud secrets versions list JWT_SECRET --project="$PROJECT"      # ≥2 versions, newest enabled
 curl -s -o /dev/null -w '%{http_code}\n' https://api.miyagisanchez.com/health   # 200
 ```
 
 **Cadence:** rotate `JWT_SECRET` / `COOKIE_SECRET` at least **every 6 months**, and immediately on any
-suspected exposure. Disable (don't destroy) the prior version after confirming the new one is healthy, so a
-fast rollback stays available for a short window. Apply the same procedure to `MEDUSA_INTERNAL_SECRET` if it
-is ever suspected exposed (it gates `/internal/*` and the frontend must be updated in lock-step).
+suspected exposure. **Keep the prior version enabled for a short rollback window** (repin to it + roll a new
+revision to undo); **disable** (don't destroy) it only once the new version is proven — accepting that
+rollback then requires re-enabling it first. Apply the same procedure to `MEDUSA_INTERNAL_SECRET` if it is
+ever suspected exposed (it gates `/internal/*` and the frontend must be updated in lock-step).
+
+**Executed 2026-06-11:** `JWT_SECRET` v1→**v2**, `COOKIE_SECRET` v1→**v2**; prod rolled `medusa-web-00099` →
+**`00100-859`**; `/health` 200; all other env/secrets (incl. the extra `ADMIN_CORS` origin) preserved.

@@ -66,20 +66,29 @@ add_version ENVIA_API_KEY_STAGING         "${STAGING_ENVIA_API_KEY:-envia_stagin
 add_version STRIPE_WEBHOOK_SECRET_STAGING "${STAGING_STRIPE_WEBHOOK_SECRET:-whsec_staging_placeholder}"
 
 say "Populating sourced staging credentials"
-# require SECRET ENVVAR — these are load-bearing; warn loudly if missing so the
-# deploy fails fast rather than booting half-configured.
+# require SECRET ENVVAR — these are load-bearing. If any is unset the script
+# FAILS (exit 1) rather than leaving a shell with no version: a later deploy would
+# otherwise bind an empty/absent secret and boot half-configured.
+MISSING=0
 require() {
   local v="${!2:-}"
   if [ -n "$v" ]; then add_version "$1" "$v"; echo "  ✓ $1 set"; else
-    echo "  ⚠ $1 NOT set ($2 unset) — add before deploy: printf '%s' '<value>' | gcloud secrets versions add $1 --data-file=-"; fi
+    echo "  ✗ $1 NOT set ($2 unset) — export it and re-run, or: printf '%s' '<value>' | gcloud secrets versions add $1 --data-file=-"
+    MISSING=$((MISSING + 1)); fi
 }
 require DATABASE_URL_STAGING      STAGING_DATABASE_URL
 require STRIPE_SECRET_KEY_STAGING STAGING_STRIPE_SECRET_KEY
 require MP_ACCESS_TOKEN_STAGING   STAGING_MP_ACCESS_TOKEN
 require CLERK_SECRET_KEY_STAGING  STAGING_CLERK_SECRET_KEY
 
+if [ "$MISSING" -gt 0 ]; then
+  echo ""
+  echo "✗ $MISSING required staging secret(s) have no value — NOT ready to deploy. Set them and re-run (idempotent)." >&2
+  exit 1
+fi
+
 cat <<EOF
 
-✅ Staging secrets provisioned. Resolve any ⚠ above, then deploy:
+✅ Staging secrets provisioned. Deploy:
      CLERK_PUBLISHABLE_KEY=<dev pk_test> bash infra/gcp/deploy-staging.sh
 EOF

@@ -1,7 +1,7 @@
 # Backend Production Readiness — Sprint 1: Backend staging environment
 
-**Status:** 🏗️ **Story 1.1 LIVE 2026-06-11** (staging stood up + auto-deploy proven) · **Story 1.2 ⬜ pending
-Daniel's timing window** (prod rotation logs out live sessions) · **Risk:** HIGH (Daniel authorizes + merges)
+**Status:** ✅ **BOTH STORIES LIVE 2026-06-11** — Story 1.1 (staging stood up + auto-deploy proven) · Story 1.2
+(prod `JWT_SECRET`/`COOKIE_SECRET` rotated v1→v2, `medusa-web` rolled `00099`→`00100`) · **Risk:** HIGH (Daniel merges)
 
 > **Build:** scripts + runbook on `feat/backend-staging-s1` (PR pending). Live infra (this session):
 > Neon branch `staging` `br-lucky-thunder-aqn9gj6a` (off prod `main` `br-lively-cell-aqp2ivty`, project
@@ -69,10 +69,14 @@ Env: staging · URL `https://medusa-web-staging-oehqqtyoia-uk.a.run.app` · scri
 6. **Neon-branch + staging-secrets read.** Confirmed by (2)+(3) above: `DATABASE_URL` resolves to
    `DATABASE_URL_STAGING` (the Neon branch DSN), and the service boots healthy against it.
 
+**Story 1.2 — prod secret rotation: ✅ DONE 2026-06-11** (Daniel-authorized, confirmed no traffic).
+- Added fresh `JWT_SECRET` v2 + `COOKIE_SECRET` v2 (`openssl rand -hex 32`, values never echoed). Rolled
+  `medusa-web` via a **targeted** `gcloud run services update --update-secrets=…:2` (NOT a `deploy.sh` re-run,
+  which would have clobbered prod's extra `ADMIN_CORS` origin) → revision **`00100-859`**; `/health` 200; all
+  13 secret bindings + `ADMIN_CORS` preserved. Live sessions invalidated as expected (one-time re-auth).
+  Procedure + cadence: [`infra/gcp/STAGING.md`](../../../infra/gcp/STAGING.md#prod-secret-rotation-procedure-story-12).
+
 **Owed to Daniel (he holds prod creds / sessions):**
 - A live eyeball of the staging URL + admin `/app` if desired (cosmetic; `/health` already green).
-- **Story 1.2 — prod `JWT_SECRET`/`COOKIE_SECRET` rotation:** procedure written in
-  [`infra/gcp/STAGING.md`](../../../infra/gcp/STAGING.md#prod-secret-rotation-procedure-story-12); **execution
-  deferred to a low-traffic window you pick** (rotating `COOKIE_SECRET` logs out all live sessions).
 
 If any step is re-run and fails, note the step number + what you saw.

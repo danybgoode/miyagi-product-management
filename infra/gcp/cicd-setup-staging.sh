@@ -38,6 +38,14 @@ EOF
 fi
 echo "▶ Repo resource: $GH_REPO"
 
+# Idempotent: a re-run after partial setup reports the existing trigger instead of
+# failing on the duplicate name.
+if gcloud builds triggers describe "$TRIGGER_NAME" --region="$REGION" >/dev/null 2>&1; then
+  echo "✓ Trigger '$TRIGGER_NAME' already exists in $REGION — nothing to do."
+  echo "  (Delete + re-create to change it: gcloud builds triggers delete $TRIGGER_NAME --region=$REGION)"
+  exit 0
+fi
+
 echo "▶ Creating staging trigger: $TRIGGER_NAME  (^staging\$ → _SERVICE=$SERVICE_STAGING)"
 gcloud builds triggers create github \
   --name="$TRIGGER_NAME" \
