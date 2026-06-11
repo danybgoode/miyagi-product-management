@@ -2,9 +2,11 @@
 
 **Status:** ⬜ not started · **Risk:** LOW–MED (mostly additive; alert wiring touches infra config)
 
-> ⚠️ **Candidate slice — finalized by Sprint 0.** Tooling choices (error tracker, alert channel) come from S0.
-> **Reuse, don't rebuild:** deploy-event notifications are owned by the `cicd-telegram-notifications` epic —
-> this sprint ships/extends it for deploys and adds the *runtime* signals it doesn't cover.
+> ✅ **Finalized by Sprint 0 (2026-06-11).** Audit corrections: **deploy-event notifications are ALREADY LIVE**
+> — `cicd-telegram-build-notifier` is a deployed Cloud Run service (the seed's "not shipped" is stale), so
+> this sprint **verifies/extends** it, doesn't rebuild it. A notification channel **`MiyagiDevopsTele`
+> (Telegram webhook) already exists but no policy uses it** — wire the new alerts to it. Error tracker =
+> **Sentry**. Added delta: **dependency/CVE scanning** in the pipeline (gap #13). See the audit doc.
 
 ## Stories
 
@@ -16,9 +18,10 @@ find out before users do.
 - **Error tracking** captures backend exceptions (e.g. Sentry, or the chosen tool from S0) with a sensible
   alert threshold.
 - **Cloud Run alert policies** exist for 5xx rate, p95 latency, memory, and instance saturation, routing to
-  the same channel.
-- **Deploy events** (push + finish ✅/❌, both repos) are covered by shipping/extending
-  `cicd-telegram-notifications`.
+  the **existing `MiyagiDevopsTele`** channel.
+- **Deploy events** confirmed flowing (the `cicd-telegram-build-notifier` service is already live — verify,
+  don't rebuild; extend if a gap is found).
+- **Dependency/CVE scanning** runs in the build pipeline (gap #13).
 **Risk:** LOW–MED
 
 ## Sprint QA

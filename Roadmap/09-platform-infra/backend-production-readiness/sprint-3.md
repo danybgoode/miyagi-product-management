@@ -2,7 +2,11 @@
 
 **Status:** ⬜ not started · **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
 
-> ⚠️ **Candidate slice — finalized by Sprint 0.** Health-check + migration-rollback specifics come from S0.
+> ✅ **Finalized by Sprint 0 (2026-06-11).** Concrete deltas from the audit: the startup probe is currently a
+> bare **TCP socket on :8080** while **`GET /health` already returns 200** — so the probe upgrade is real and
+> cheap (point startup at HTTP `/health` + add a liveness probe). Plus two security riders folded in (gaps
+> #11/#14): make the **admin-exposure** an explicit decision (`/app` is currently reachable in prod) and
+> confirm **ADMIN_CORS** carries only intended origins. See the audit doc.
 
 ## Stories
 
@@ -17,6 +21,9 @@ deploy is reversible in minutes and a sick instance is recycled automatically.
   failed-startup revisions don't take traffic).
 - A **migration-rollback posture** is written (Medusa migrations are forward-only — the strategy is
   forward-fix / backup-restore, not a one-click down-migration; say so explicitly).
+- **Startup probe switched from TCP:8080 → HTTP `/health`**; a **liveness probe** on `/health` added.
+- **Admin-exposure decision recorded** (keep `/app` + harden, or set `DISABLE_MEDUSA_ADMIN=true`); **ADMIN_CORS**
+  confirmed to list only intended origins.
 **Risk:** HIGH
 
 ## Sprint QA

@@ -2,8 +2,11 @@
 
 **Status:** ⬜ not started · **Risk:** HIGH (Daniel authorizes — new prod-adjacent infra + secrets)
 
-> ⚠️ **Candidate slice — finalized by Sprint 0.** The staging *platform* is decided in S0; this sprint
-> assumes the recommended Cloud Run + Neon-branch path and is rewritten if S0 chooses otherwise.
+> ✅ **Finalized by Sprint 0 (approved 2026-06-11).** Platform decided: **Cloud Run `medusa-web-staging`
+> (min=0) + Neon DB branch**, reject Render — see [`tasks/backend-production-readiness-audit.md`](../../../tasks/backend-production-readiness-audit.md).
+> Two reshape deltas folded in below: **Redis starts OFF** (Medusa in-memory fallback — a documented parity
+> trade-off; add a Memorystore DB-index only if job-queue parity is later needed) and **rotate prod
+> `JWT_SECRET`/`COOKIE_SECRET` in the same motion** (gap #8 — never rotated since 2026-05-28).
 
 ## Stories
 
@@ -17,6 +20,17 @@ environment before merging to `main`.
   **Neon branch** DB — never prod's.
 - A push to the staging branch deploys **only** staging; `main` still deploys only prod.
 - Staging CORS + webhook endpoints point at staging, not prod.
+- Staging runs **without Redis** (no VPC connector / Memorystore needed) — Medusa falls back to in-memory
+  cache/event-bus/workflow; this parity gap is noted in the staging runbook.
+**Risk:** HIGH
+
+### Story 1.2 — Rotate prod `JWT_SECRET` / `COOKIE_SECRET` + document the procedure
+**As the** owner, **I want** the prod session/cookie secrets rotated (they've been single-version since the
+2026-05-28 migration) and a rotation procedure written, **so that** long-lived secrets aren't indefinite.
+**Acceptance:**
+- New `JWT_SECRET` + `COOKIE_SECRET` versions added to Secret Manager (`openssl rand -hex 32`); `medusa-web`
+  picks them up on next deploy; the rotation steps + cadence are written into the runbook.
+- ⚠️ Rotating `COOKIE_SECRET` invalidates live sessions — coordinate timing with Daniel.
 **Risk:** HIGH
 
 ## Sprint QA
