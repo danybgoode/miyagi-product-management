@@ -1,10 +1,52 @@
 # Custom-domain paywall + campaign coupon — Sprint 3: Campaign coupon + agent surface
 
-**Status:** ⬜ not started
+**Status:** 🏗️ BUILT — [PR #82](https://github.com/danybgoode/miyagisanchezcommerce/pull/82) (draft, **HIGH
+risk → Daniel merges**). Deterministic gate green locally (`tsc` ✅ · `next build` ✅ · Playwright `api`
+pure cap-of-100 suite ✅). **Frontend-only — no backend/Cloud Run deploy.** Owed: the coupon-redemption
+browser smoke (money path, **Daniel**) + minting the coupon post-merge.
+
+| Story | Status | Commit |
+|---|---|---|
+| 3.1 — Coupon `miyagisan` comps year 1 (cap 100) + admin mint/track | ✅ built | `f1573da` |
+| 3.2 — No-card year-end lapse (reuse S2.2 via `if_required`) | ✅ built | `f1573da` |
+| 3.3 — Agent (UCP/MCP) entitlement + checkout/coupon tools | ✅ built | `7a8967a` |
+| Carryover nit — webhook `tg.alert` on paid-but-ungated | ✅ built | `34795f7` |
+| api spec (cap-of-100 boundary + MCP/manifest/admin) | ✅ built | `2e8d9f4` |
 
 > Goal: the World-Cup giveaway layer — coupon `miyagisan` comps the first year (capped at 100) and
 > auto-renews at standard after — plus full agent (UCP/MCP) access to the domain subscription. Additive
 > on top of Sprints 1–2.
+
+## What shipped (implementation notes)
+- **Coupon = Stripe-native.** A Stripe **Coupon** (`percent_off:100, duration:once` ⇒ first year free then
+  standard `$499/yr`; `max_redemptions:100`) + **Promotion Code `MIYAGISAN`** on the platform account.
+  Stripe enforces the cap server-side — the 101st redemption is refused. Frontend-only (the webhook +
+  Medusa subscription-activation routes from S2 already flip entitlement; a $0-first-invoice subscription
+  still fires `checkout.session.completed` with `kind=custom_domain`).
+- **Pure/server split** (mirrors the entitlement seam): `lib/domain-coupon.ts` (PURE — matching,
+  `couponRedeemable`/`couponRefusalReason`, `formatRedemptionCount` `n/100`) is the unit-testable cap logic;
+  `lib/domain-coupon-server.ts` (`'server-only'`, Stripe) does idempotent `ensureCampaignCoupon` /
+  `getCampaignCouponStatus` / `resolveCampaignPromotionCode`.
+- **Shared checkout builder** `lib/domain-subscription-checkout.ts` (`startCustomDomainCheckout`) is the ONE
+  path for the plan-price lookup + already-active short-circuit + coupon resolution; used by the buy route
+  AND the MCP tool so they can't drift. Applies the promo via `discounts:[{promotion_code}]` +
+  `payment_method_collection:'if_required'` (S3.2 — $0 first invoice collects no card → existing S2.2 lapse
+  handles year-end with no new code). `canonicalOrigin()` replaces the spoofable Host (S1/S2 review nit).
+- **Admin** (secret-gated `/api/admin/domain-coupon`, GET status / POST mint) + a "Cupón de campaña" card on
+  `/admin/coupons` with the live `n/100` counter + a mint button (runs with prod Stripe creds — the safe
+  mint path). Canal upsell gains a coupon input.
+- **Agent (UCP/MCP):** `get_domain_entitlement` + `start_domain_subscription` (shop-scoped seller tools,
+  `Bearer ms_agent_…`) on `/api/ucp/mcp`; added to `MCP_SELLER_TOOLS` + a `seller_domain_subscription`
+  manifest capability/endpoint so the manifest stays accurate.
+- **Webhook nit:** `handleCustomDomainSubscriptionComplete` now checks the activation POST status and
+  `tg.alert`s on failure (seller paid but not entitled; Stripe won't retry a 200).
+
+## Cutover run order (Daniel — frontend-only, after merge)
+1. **Merge PR #82** (HIGH — Vercel prod deploy; inert until the coupon is minted).
+2. **Mint the coupon:** `POST https://miyagisanchez.com/api/admin/domain-coupon?secret=<ADMIN_SECRET>` →
+   creates the Stripe Coupon + Promotion Code `MIYAGISAN` on **live** Stripe. Idempotent. Confirm with
+   `GET …/api/admin/domain-coupon?secret=…` → `status.redeemed = 0`, `cap = 100`, `active = true`
+   (or just load `/admin/coupons?secret=…` and read the `0/100` card).
 
 ## Stories
 
@@ -46,18 +88,41 @@ Non-blocking nits the reviewer raised on the merged S1/S2 code; fold into this s
 - **browser smoke owed:** **yes, to Daniel** — redeem `miyagisan` end-to-end (coupon → $0 first-year subscription → connect domain), and confirm the admin redemption counter moves. (Money-adjacent — owed to Daniel.)
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
-## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the Vercel preview URL while testing pre-merge)
+## Sprint 3 — Smoke walkthrough (do these in order) — **OWED TO DANIEL (money path)**
+Env: production · https://miyagisanchez.com (after merge + the coupon is minted — cutover step 2). Use a
+disposable seller shop + Stripe in **test mode**. Steps 1–4 are the money path; an automated browser smoke
+can't fully cover them. (Pre-merge: substitute the Vercel preview URL.)
 
-1. As a non-entitled seller, start the domain checkout and enter coupon **`miyagisan`**.
-   → The price shows $0 for year 1 (then $499/yr after); checkout completes without payment.
-2. Back in https://miyagisanchez.com/shop/manage/settings, connect a domain.
-   → The connect form is unlocked (entitlement on via the comped subscription).
-3. Open https://miyagisanchez.com/admin/coupons (admin) and find `miyagisan`.
-   → The redemption counter increased by 1 (e.g. shows n/100).
-4. **(cap)** Simulate / verify the 101st redemption (admin tooling or a seeded count).
-   → The 101st application is refused with a clear "se agotó el cupón" message.
-5. **(agent)** Point a seller agent at the MCP endpoint and ask it to check domain entitlement / start the subscription.
-   → The agent returns the shop's entitlement and can initiate checkout, scoped to that shop only.
+0. **(admin, no auth-session needed)** Mint, then open
+   https://miyagisanchez.com/admin/coupons?secret=<ADMIN_SECRET> and read the "Cupón de campaña — Dominio
+   propio" card.
+   → It shows **0/100** (or the current count), "activo". (If it says "Aún no se ha creado", press
+     **Crear cupón** once.)
+1. As a **non-entitled** seller (no grant, no subscription, flag ON), open
+   https://miyagisanchez.com/shop/manage/settings/canal and type **`miyagisan`** in **"¿Tienes un cupón?"**,
+   then click **Activar dominio propio**.
+   → You're sent to Stripe Checkout showing **$0 due today** for year 1 (the annual plan still reads
+     $499/yr for renewals). No card is required.
+2. **(money path)** Complete the $0 checkout.
+   → You return to `…/settings/canal?domain=activated`; within a few seconds (webhook) the upsell is
+     replaced by the **STEP 1–3 connect form** (entitlement on via the comped subscription).
+3. Connect a real test domain and confirm it goes live white-label.
+   → The shop renders on the custom domain (reuses the existing connect flow, unchanged).
+4. Reload https://miyagisanchez.com/admin/coupons?secret=<ADMIN_SECRET>.
+   → The counter moved by **+1** (e.g. **1/100**).
+5. **(cap)** Verify the 101st refusal without 100 real redemptions: either trust the
+   `e2e/custom-domain-paywall.spec.ts` cap-of-100 boundary (99 ok / 100 refused / 101 refused), or in the
+   Stripe dashboard set the coupon's redeemed count to its max and re-try `miyagisan` at step 1.
+   → The coupon is refused with **"Se agotó el cupón 'miyagisan'…"** and **no checkout is created**.
+6. **(no-card lapse, optional)** For the coupon redeemer from step 2 (no card on file), in Stripe cancel the
+   subscription (fires `customer.subscription.deleted`).
+   → The custom domain disconnects (released from Vercel); the shop stays reachable at
+     `https://<shop>.miyagisanchez.com` + `/s/<slug>`; the Canal upsell shows the **reactivar** prompt. No
+     surprise charge.
+7. **(agent)** Point a seller agent at `https://miyagisanchez.com/api/ucp/mcp` with that shop's
+   `Authorization: Bearer ms_agent_…` token and ask it to **check domain entitlement** and **start the
+   domain subscription with coupon miyagisan**.
+   → `get_domain_entitlement` returns the shop's entitlement + reason; `start_domain_subscription` returns a
+     Stripe checkout URL, scoped to that shop only. A call without a token is refused (Unauthorized).
 
 If any step fails, note the step number + what you saw — that's the bug report.
