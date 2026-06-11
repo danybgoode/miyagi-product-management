@@ -49,9 +49,10 @@ not credentials).
 - **Neon (Medusa Postgres — commerce system of record).** [code] `DATABASE_URL` is a Neon pooled endpoint
   (host carries `-pooler`). [verified w/ Daniel 2026-06-11] Neon is on the **free tier**, which **does
   include branching** (so the staging-via-branch path holds at ~$0). The catch: the **free tier's PITR /
-  history-retention window is short (~24h)** → **RPO ≤ 24h**, and **a restore has never been drilled**. Two
-  free-tier DBs (this + Supabase below) is the durability story's weak point. [owed] exact retention figure +
-  pooled-connection ceiling — a 30-second Neon-console confirm.
+  history-retention window is short** → **a restore has never been drilled**. Two free-tier DBs (this +
+  Supabase below) is the durability story's weak point. **[corrected in S2, 2026-06-11]** the retention
+  figure is **6h, not ~24h** (`history_retention_seconds=21600`, the free-plan ceiling) → **RPO ≤ 6h**;
+  S2 drilled a PITR restore on staging and added Neon to the `pg_dump`→R2 escrow for a ~24h floor.
 - **Supabase (non-commerce: conversations/offers/favorites/supply staging/UCP identities).** [verified]
   Project `bonsaiClerk` (`xljxqymsuyhlnorfrnno`, us-west-2, Postgres 17), org plan = **`free`**. The Supabase
   **Free plan has no daily backups and no PITR.** This data (buyer↔seller conversations, offer/negotiation
@@ -298,8 +299,10 @@ on **staging, never prod**.
 ---
 
 ## Items explicitly owed to Daniel (I lack the access)
-1. ~~**Neon** plan tier~~ — ✅ confirmed free tier w/ branching (2026-06-11). Still owed: exact PITR-retention
-   figure + pooled-connection ceiling (a quick Neon-console confirm; planning assumption = RPO ≤ 24h).
+1. ~~**Neon** plan tier~~ — ✅ confirmed free tier w/ branching (2026-06-11). ~~exact PITR-retention figure~~
+   — ✅ **resolved in S2: the free-tier ceiling is 6h** (`history_retention_seconds=21600`; the API rejects
+   any higher value on this plan), so commerce **RPO ≤ 6h**, not the ≤24h assumed across this doc. Still
+   owed: pooled-connection ceiling.
 2. **Cloudflare R2** — confirm bucket versioning/lifecycle on the images + digital buckets (Dim 2).
 3. The **JWT/COOKIE values** were not read (correctly blocked); rotation recommended on principle.
 

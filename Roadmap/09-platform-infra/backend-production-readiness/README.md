@@ -34,8 +34,8 @@ is a **Neon branch** (not a new database), and deploy-event observability **reus
 | Sprint | Story | Risk |
 |---|---|---|
 | [S0](sprint-0.md) | ✅ **DONE + APPROVED 2026-06-11** — six-dimension findings + prioritized gap list + staging decision ([`tasks/…audit.md`](../../../tasks/backend-production-readiness-audit.md)). No code. | LOW |
-| [S1](sprint-1.md) | Backend staging — `medusa-web-staging` Cloud Run (min=0, Redis-off) + Neon DB branch + staging-branch trigger + isolated secrets **+ rotate prod JWT/COOKIE** | HIGH |
-| [S2](sprint-2.md) | **Backups — highest-value sprint** (both DBs on free tiers): close Supabase zero-backup gap + drill a Neon restore on staging + R2/Secret-Manager posture + runbook | HIGH |
+| [S1](sprint-1.md) | ✅ **LIVE 2026-06-11** (`4d48d91`) — `medusa-web-staging` Cloud Run (min=0, Redis-off) + Neon DB branch + staging-branch trigger + isolated secrets + prod JWT/COOKIE rotated | HIGH |
+| [S2](sprint-2.md) | ✅ **BUILT 2026-06-11** (`feat/backend-prod-readiness-s2`) — Neon PITR restore **drilled on staging**; Supabase+Neon `pg_dump`→R2 escrow pipeline built (`infra/gcp/backups/`); R2/Secret-Manager posture + RPO/RTO runbook (`tasks/backup-and-restore-runbook.md`). Live activation owed to Daniel. | HIGH |
 | [S3](sprint-3.md) | Graceful recovery — rollback runbook + **probe upgrade (TCP→HTTP `/health` + liveness)** + migration-rollback posture **+ admin-exposure decision + ADMIN_CORS check** | HIGH |
 | [S4](sprint-4.md) | Monitoring — uptime check + Cloud Run alert policies → existing `MiyagiDevopsTele` channel + Sentry + CVE scan (deploy-notify **already live** — verify/extend) | LOW–MED |
 
