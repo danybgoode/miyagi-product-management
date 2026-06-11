@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // cross-review.mjs — an ADVISORY cross-agent second opinion on a pull-request diff.
 //
-// Pipes `gh pr diff <PR#>` into a DIFFERENT model family's CLI (Codex) with the shared reviewer prompt
+// Pipes `gh pr diff <PR#>` into a DIFFERENT model family's CLI (Codex or Antigravity) with the shared prompt
 // (scripts/cross-review.prompt.md = the five AGENTS rules + WAYS single-pass discipline) and prints the
 // findings. It is dev tooling, not app code, and it is deliberately:
 //   • SINGLE-PASS — one read, no debate / iterate-to-convergence loop (our #1 token sink, out of scope).
 //   • ADVISORY ONLY — never gates, blocks, or merges. CI + the Claude reviewer + the risk-tier rule decide.
 //
 // Usage:
-//   node scripts/cross-review.mjs <PR#> --agent codex [--repo owner/repo] [--dry-run]
+//   node scripts/cross-review.mjs <PR#> --agent codex|antigravity [--repo owner/repo] [--dry-run]
 //
 // Default posts the findings as a labeled, clearly-advisory PR comment; --dry-run prints instead.
 // `gh` resolves the repo from the current directory; pass --repo to target another (e.g. the app repo).
@@ -22,8 +22,12 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = join(__dirname, 'cross-review.prompt.md');
 
-// label per agent; antigravity is wired in Story 1.3.
-const AGENTS = { codex: 'Codex' };
+// label per agent.
+const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
+
+// Antigravity's headless CLI is new and its flags may shift between releases — pin the known-good
+// version and warn (not fail) on a mismatch so a bump surfaces but doesn't block.
+const AGY_PINNED = '1.0.7';
 
 const BANNER =
   '> **Advisory only — not a gate, does not authorize merge.** ' +
@@ -33,7 +37,7 @@ const BANNER =
 const HELP = `cross-review.mjs — advisory cross-agent second opinion on a PR diff.
 
 Usage:
-  node scripts/cross-review.mjs <PR#> --agent codex [--repo owner/repo] [--dry-run]
+  node scripts/cross-review.mjs <PR#> --agent codex|antigravity [--repo owner/repo] [--dry-run]
 
 Flags:
   --agent <name>      reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
@@ -112,6 +116,33 @@ function runCodex(prompt, diff) {
   return (r.stdout || '').trim();
 }
 
+function checkAgyVersion() {
+  const r = spawnSync('agy', ['--version'], { encoding: 'utf8' });
+  const v = ((r.stdout || '') + (r.stderr || '')).trim().match(/\d+\.\d+\.\d+/);
+  if (v && v[0] !== AGY_PINNED) {
+    process.stderr.write(
+      `⚠ agy ${v[0]} (pinned ${AGY_PINNED}) — flags may have shifted; verify the output.\n`
+    );
+  }
+}
+
+function runAntigravity(prompt, diff) {
+  // agy 1.0.7 has no stdin block and no --output-format json — embed the diff in the prompt, take text.
+  const full = `${prompt}\n\n## PR diff to review\n\n\`\`\`diff\n${diff}\n\`\`\`\n`;
+  const r = spawnSync('agy', ['-p', full], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) {
+    const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
+    die(`agy -p failed: ${last}`);
+  }
+  return (r.stdout || '').trim();
+}
+
+function runReview(agent, prompt, diff) {
+  if (agent === 'codex') return runCodex(prompt, diff);
+  if (agent === 'antigravity') return runAntigravity(prompt, diff);
+  die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
+}
+
 function buildComment(agentLabel, findings) {
   return `### 🔎 Cross-agent review (${agentLabel})\n\n${BANNER}\n\n---\n\n${findings}\n`;
 }
@@ -139,12 +170,17 @@ function main() {
   if (!AGENTS[agent]) die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 
   ensureGh();
-  ensureCmd('codex', 'codex not found — install Codex CLI (https://github.com/openai/codex) and `codex login`.');
+  if (agent === 'codex') {
+    ensureCmd('codex', 'codex not found — install Codex CLI (https://github.com/openai/codex) and `codex login`.');
+  } else if (agent === 'antigravity') {
+    ensureCmd('agy', 'agy not found — install the Antigravity CLI and authenticate it, then retry.');
+    checkAgyVersion();
+  }
 
   const prompt = loadPrompt();
   const diff = ghDiff(pr, repo);
-  const findings = runCodex(prompt, diff);
-  if (!findings) die('codex returned no output.');
+  const findings = runReview(agent, prompt, diff);
+  if (!findings) die(`${AGENTS[agent]} returned no output.`);
 
   const body = buildComment(AGENTS[agent], findings);
   if (dryRun) {
