@@ -35,6 +35,12 @@ agent's shop token; keep the UCP manifest accurate.
 apply `miyagisan`; the action is scoped to that shop only; the manifest lists the new capability.
 **Risk:** high
 
+## Carryover fast-follows (from the S1+S2 review — PR #79, APPROVE-WITH-NITS)
+Non-blocking nits the reviewer raised on the merged S1/S2 code; fold into this sprint's PR (all small):
+- **Webhook alert on paid-but-ungated.** `app/api/webhooks/stripe/route.ts` `handleCustomDomainSubscriptionComplete` fires the Medusa activation POST best-effort inside a `try/catch` that only `console.error`s. If it fails, the seller paid but isn't entitled and Stripe won't retry (handler returns 200). Add a `tg.alert(...)` on that failure so it's caught operationally. **(money-path safety — do this one.)**
+- **Assert canonical origin in the buy route.** `app/api/sell/shop/domain/subscribe/route.ts` builds success/cancel URLs from `NEXT_PUBLIC_SITE_URL ?? https://${req.headers.get('host')}`. Paths are hardcoded (no open redirect), but a spoofed Host on a misconfigured env could send the seller to a wrong origin post-payment. Prefer a fixed canonical origin / assert `NEXT_PUBLIC_SITE_URL` is set. (Inert in prod where it's set.)
+- **(already a 3.3 story)** UCP/MCP agent-reachability of the domain subscription was deliberately deferred to this sprint — see Story 3.3.
+
 ## Sprint QA
 - **api spec(s):** Story 3.1/3.2 → extend `e2e/custom-domain-paywall.spec.ts`: coupon validation, 100% off first interval, the **cap-of-100** boundary (100 ok, 101 refused), and the no-card year-end lapse. Story 3.3 → assert the MCP `about/manifest` lists the capability and the entitlement/checkout tool exists and is shop-scoped.
 - **browser smoke owed:** **yes, to Daniel** — redeem `miyagisan` end-to-end (coupon → $0 first-year subscription → connect domain), and confirm the admin redemption counter moves. (Money-adjacent — owed to Daniel.)
