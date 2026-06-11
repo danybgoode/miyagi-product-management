@@ -1,11 +1,11 @@
 # Navigation & Settings Reorg — Sprint 2: Persistent search + Cuenta hub
 
-**Status:** ✅ BUILT 2026-06-10 — draft [PR #77](https://github.com/danybgoode/miyagisanchezcommerce/pull/77),
-gate green (tsc + build + `api` 5/5), **fresh-reviewer APPROVE-with-nits** (5 rules clean; one nit fixed,
-two left intentional) — awaiting **Daniel's nod on the shared-layout touch** (reviewer doesn't auto-merge it) ·
+**Status:** ✅ SHIPPED 2026-06-11 — [PR #77](https://github.com/danybgoode/miyagisanchezcommerce/pull/77)
+**squash-merged to `main` `a7d6fe8`** (→ Vercel prod). Fresh-reviewer APPROVE-with-nits (5 rules clean),
+CI green (tsc + build + Playwright-vs-preview). Daniel authorized the shared-layout merge. ·
 **Risk:** LOW (announced: touches shared `app/layout.tsx` + `app/globals.css`) ·
-audit §2 + §3 · branch `feat/nav-reorg-s2` off `main` (S1 `dc4c992`) ·
-commits: `55a8fd8` (pure seam + api spec) · `76f9a0b` (UI wiring) · `b35462c` (review nit: hide Tema row where toggle ineligible) ·
+audit §2 + §3 · branch `feat/nav-reorg-s2` off `main` (S1 `dc4c992`), now deleted ·
+commits (pre-squash): `55a8fd8` (pure seam + api spec) · `76f9a0b` (UI wiring) · `b35462c` (review nit: hide Tema row where toggle ineligible) · `cc6a0f5` (fix: keep theme toggle for signed-out users — CI caught the `platform-theme` regression) ·
 files: `app/layout.tsx`, `app/globals.css`, new `app/components/CuentaMenu.tsx`,
 new `lib/account-menu.ts`, `app/components/AIAgentButton.tsx` (+`affordance` variant),
 new `e2e/account-menu.spec.ts` + `e2e/cuenta-search.browser.spec.ts`
