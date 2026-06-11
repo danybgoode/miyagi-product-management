@@ -1,9 +1,25 @@
 # Backend Production Readiness — Sprint 0: Audit (SPIKE)
 
-**Status:** ⬜ not started · **Risk:** LOW (writing only, no code) · **Type:** spike → written decision
+**Status:** ✅ findings landed 2026-06-11 — **awaiting Daniel's review (the gate)** · **Risk:** LOW (writing
+only, no code) · **Type:** spike → written decision
 
 > **This is the gate.** No branch, no build. The deliverable is a written findings doc + a prioritized gap
 > list + the staging-platform decision. Daniel approves it before S1–S4 are finalized and built.
+
+> **📄 Deliverable:** [`tasks/backend-production-readiness-audit.md`](../../../tasks/backend-production-readiness-audit.md)
+> — six-dimension current-state-vs-gap (each fact tagged verified/code/owed), the prioritized gap list
+> (severity × effort), the **staging decision** (Cloud Run staging + Neon branch — reject Render; < $5/mo),
+> and the confirmed/reshaped **S1–S4** slices.
+>
+> **Headline findings:** (1) **Supabase is on the free plan → zero backups** for conversations/offers/supply
+> — the sharpest gap; (2) **zero uptime checks + zero alert policies** (an unused `MiyagiDevopsTele` Telegram
+> channel already exists to wire them to); (3) deploy-notify is **already live** (`cicd-telegram-build-notifier`
+> is deployed — the seed's "not shipped" is stale); (4) the startup probe is **TCP-only** though `/health`
+> returns 200; (5) **Medusa admin is exposed in prod** (`/app` → 200; login gated) — decide keep-vs-disable;
+> (6) `JWT_SECRET`/`COOKIE_SECRET` **never rotated** since the 2026-05-28 migration. All four candidate
+> sprints survive; reshapes fold the homeless security items into S1/S3/S4.
+>
+> **Owed to Daniel (access I don't hold):** Neon plan/PITR-window/conn-ceiling; R2 bucket versioning.
 
 ## Objective
 Assess the Medusa backend's production readiness across **six dimensions**, record current state vs. gap for
