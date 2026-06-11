@@ -33,8 +33,8 @@
 - ✅ **#5b · Buyer Telegram channel + preference center** → `05-trust-offers-and-messaging/buyer-notifications/` (epic complete)
 
 ### Wave 3 — Surfaces
-- 🏗️ **#6 · Seller-acquisition landing pages** → `08-growth-and-promotions/seller-acquisition-landing-pages/` · seed `seeds/seller-acquisition-landing-pages.md`
-  Groomed + scaffolded (4 sprints). S1 creative locked; **S2 World-Cup wedge `/vende/mundial` shipped**. S3 (anchor `/vende` + Creator on #4 tokens) + S4 (more personas + SEO/OG) remain — see the epic for current sprint ticks.
+- ✅ **#6 · Seller-acquisition landing pages** → `08-growth-and-promotions/seller-acquisition-landing-pages/` · seed `seeds/seller-acquisition-landing-pages.md`
+  **Complete — all 4 sprints shipped to prod 2026-06-07** (S1 lock · S2 `/vende/mundial` PR #42 · S3 anchor `/vende` + Creator PR #44 · S4 `/vende/negocios`+`/vende/servicios`+SEO/OG+A/B PR #45). *Doc close-out done 2026-06-10 (had been left 🏗️ despite shipping — see RETROSPECTIVE + LEARNINGS).*
 - 📋 **#3c · Remaining audit polish** — *all sub-items deep-groomed + scaffolded; ready for assignment.* Umbrella seed `seeds/remaining-audit-polish.md`. Build order: **Spike 0 → A → C → D, with B**.
   - 📋 **Spike 0 · Arranged-only delivery policy** (decision) — seed `seeds/spike-arranged-only-delivery.md`. Blocks Epic B's arranged-only slice (B.5) only.
   - 📋 **Epic A · Discovery polish** (01) → `01-discovery-and-shopping/discovery-polish/` (3 sprints)
@@ -54,6 +54,7 @@ Not part of the feature batch; tracked here so it isn't lost.
 - ✅ Groom scaffolder + templates (`skills/groom/scaffold-epic.mjs`, `skills/groom/templates/`).
 - ✅ One-way docs→Notion projection (`scripts/roadmap-to-notion.mjs`; "Marketplace Roadmap" DB) — seed `seeds/notion-roadmap-sync.md`.
 - ✅ Branch reconciliation: `plan/...` grooming merged onto `main` (this update).
+- 📋 **Cross-agent code review** (advisory second-opinion command, Codex/Antigravity) → `09-platform-infra/cross-agent-code-review/` · seed `seeds/cross-agent-code-review.md` · groomed + scaffolded 2026-06-10 · 1 sprint, all LOW — **ready to build**.
 - ⬜ Deferred (not now): full doc↔code audit (verify every epic's ✅ claims against shipped code).
 
 ---
