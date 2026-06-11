@@ -1,6 +1,13 @@
 # Backend Production Readiness — Sprint 1: Backend staging environment
 
-**Status:** ⬜ not started · **Risk:** HIGH (Daniel authorizes — new prod-adjacent infra + secrets)
+**Status:** 🏗️ **Story 1.1 LIVE 2026-06-11** (staging stood up + auto-deploy proven) · **Story 1.2 ⬜ pending
+Daniel's timing window** (prod rotation logs out live sessions) · **Risk:** HIGH (Daniel authorizes + merges)
+
+> **Build:** scripts + runbook on `feat/backend-staging-s1` (PR pending). Live infra (this session):
+> Neon branch `staging` `br-lucky-thunder-aqn9gj6a` (off prod `main` `br-lively-cell-aqp2ivty`, project
+> `shiny-paper-72860331`) · Cloud Run `medusa-web-staging`
+> (`https://medusa-web-staging-oehqqtyoia-uk.a.run.app`, min=0/max=2, no VPC, image `:20260611-002321`) ·
+> 10 `*_STAGING` secrets in `miyagisanchezback-497722` · trigger `backend-staging-deploy` (`f1af149c`, `^staging$`).
 
 > ✅ **Finalized by Sprint 0 (approved 2026-06-11).** Platform decided: **Cloud Run `medusa-web-staging`
 > (min=0) + Neon DB branch**, reject Render — see [`tasks/backend-production-readiness-audit.md`](../../../tasks/backend-production-readiness-audit.md).
@@ -38,11 +45,34 @@ environment before merging to `main`.
 - **browser smoke owed:** yes, to Daniel — confirm the staging URL serves + a staging-branch push deploys only staging (he holds GCP/Neon creds).
 - **deterministic gate:** the backend image still builds (`cloudbuild.yaml`); staging deploy succeeds; prod path unchanged.
 
-## Sprint 1 — Smoke walkthrough (do these in order)
-Env: staging · (staging Cloud Run URL, set in S0/S1)
+## Sprint 1 — Smoke walkthrough (executed 2026-06-11)
+Env: staging · URL `https://medusa-web-staging-oehqqtyoia-uk.a.run.app` · scripts in `infra/gcp/`.
 
-1. `curl https://<staging-url>/health` → 200; the service responds.
-2. Push a trivial commit to the staging branch → only `medusa-web-staging` redeploys (prod `medusa-web` untouched). **[owed to Daniel — GCP creds]**
-3. Confirm staging reads the **Neon branch** DB and **staging** secrets (not prod). **[owed to Daniel — secrets]**
+**Story 1.1 — all green (agent-run CLI/API probes):**
+1. **Neon branch.** `neonctl branches create --name staging --project-id shiny-paper-72860331` →
+   `br-lucky-thunder-aqn9gj6a`, parent = prod `main` `br-lively-cell-aqp2ivty`. Pooled DSN captured
+   (host `ep-damp-hat-aqbntyog-pooler…us-east-1.aws.neon.tech`).
+2. **Isolated secrets.** `provision-staging.sh` → 10 `*_STAGING` secrets created + `medusa-run` accessor;
+   fresh `openssl` JWT/COOKIE/INTERNAL; sourced dev/test creds (Stripe `sk_test`, MP sandbox, Clerk **dev**
+   `sk_test`); `ENVIA_SANDBOX=true`; webhook placeholder. **No `REDIS_URL`** (Redis off). `describe` confirms
+   every container secret resolves to a `*_STAGING` name — never prod's.
+3. **First deploy.** `deploy-staging.sh` → Cloud Build `0ffc35f3` SUCCESS (16m53s) → `medusa-web-staging`
+   revision `00001-b4w`, **min=0 / max=2, no VPC connector** (`describe`: no `minScale`/`vpc-access` annotations).
+   Build log confirms the Redis-off path: `redisUrl not found. A fake redis instance will be used`.
+4. **Health.** `curl …/health` → **HTTP 200** (0.59s).
+5. **Auto-deploy isolation (the key acceptance).** `cicd-setup-staging.sh` → trigger `backend-staging-deploy`
+   (`f1af149c`, `^staging$`, `_SERVICE=medusa-web-staging`). Created the backend `staging` branch at
+   `origin/main` (working tree left on the sibling's branch). That push fired **only**
+   `backend-staging-deploy` (build `3edf057c` SUCCESS) → new staging revision `00002-8mf` (inheriting the
+   `*_STAGING` secrets via image-only deploy); prod trigger `backend-main-deploy` stayed **silent** and prod
+   `medusa-web` stayed at `00099-vv7` — **untouched**.
+6. **Neon-branch + staging-secrets read.** Confirmed by (2)+(3) above: `DATABASE_URL` resolves to
+   `DATABASE_URL_STAGING` (the Neon branch DSN), and the service boots healthy against it.
 
-If any step fails, note the step number + what you saw.
+**Owed to Daniel (he holds prod creds / sessions):**
+- A live eyeball of the staging URL + admin `/app` if desired (cosmetic; `/health` already green).
+- **Story 1.2 — prod `JWT_SECRET`/`COOKIE_SECRET` rotation:** procedure written in
+  [`infra/gcp/STAGING.md`](../../../infra/gcp/STAGING.md#prod-secret-rotation-procedure-story-12); **execution
+  deferred to a low-traffic window you pick** (rotating `COOKIE_SECRET` logs out all live sessions).
+
+If any step is re-run and fails, note the step number + what you saw.
