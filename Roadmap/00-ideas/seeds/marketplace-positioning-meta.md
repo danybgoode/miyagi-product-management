@@ -1,14 +1,14 @@
 ---
 title: "Marketplace positioning — page title, OG tags & social card"
 slug: marketplace-positioning-meta
-status: scaffolded
+status: shipped
 area: "08"
 type: chore
 priority: null
 risk: low
 epic: "08-growth-and-promotions/marketplace-positioning-meta"
 build_order: null
-updated: 2026-06-10
+updated: 2026-06-11
 ---
 
 # Scope — Marketplace positioning (title / description / OG / social card)
@@ -134,6 +134,12 @@ One sprint, three trivial stories:
 > checks above.
 
 ---
-*Awaiting Daniel's approval. On sign-off: scaffold `08-growth-and-promotions/marketplace-positioning-meta/`
-(README + sprint-1), set this seed's `epic:` + `status: scaffolded`, path-scoped commit, emit the
-Claude Code kickoff.*
+*Shipped. Scope, acceptance, QA, and retrospective live under
+`08-growth-and-promotions/marketplace-positioning-meta/`.*
+
+## Shipped
+
+✅ Shipped 2026-06-11 via frontend PR [#83](https://github.com/danybgoode/miyagisanchezcommerce/pull/83)
+(squash `cf0fa8a`). The old "Infraestructura de comercio" positioning is gone from the public
+metadata and OG card; the new copy says Miyagi is a marketplace to buy, sell, and open a shop in
+Mexico.

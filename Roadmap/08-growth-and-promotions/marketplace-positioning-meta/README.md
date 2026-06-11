@@ -1,6 +1,7 @@
 # Epic: Marketplace positioning — title, OG & social card
 
 > **Area:** 08-growth-and-promotions · **Risk:** low · **Type:** chore · **Scope seed:** [`00-ideas/seeds/marketplace-positioning-meta.md`](../../00-ideas/seeds/marketplace-positioning-meta.md)
+> **Status:** ✅ shipped 2026-06-11 · Frontend PR [#83](https://github.com/danybgoode/miyagisanchezcommerce/pull/83) squash `cf0fa8a`
 
 ## Why
 The public-facing metadata — the browser/Google `<title>`, the meta description, the OpenGraph/Twitter
@@ -41,11 +42,11 @@ window. One PR; reviewer may auto-merge on a green gate (low-risk tier). Preview
 branch's Vercel preview; nothing is owed to Daniel (no money/auth path).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`

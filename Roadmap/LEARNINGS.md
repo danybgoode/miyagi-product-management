@@ -166,6 +166,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   assumption is backwards (match both attrs within one `<a …>` instead). Cheapest check: a read-only `curl`
   of the live prod page confirms both that the branch SSR-renders and the exact attribute order — saves a CI
   cycle on a broken regex. *(2026-06-11, nav-reorg S4 — `e2e/nav-entry-points.spec.ts`.)*
+- **For Clerk-wrapped root/page HTTP checks, the HTTPS preview can be more representative than local
+  `next start`.** Local `127.0.0.1` can loop through Clerk's dev-browser handshake because secure cookies
+  never settle over HTTP; don't treat those timeouts as app regressions. Use the Vercel preview CI run with
+  the bypass token as the authoritative pre-merge API gate. *(2026-06-11, marketplace-positioning-meta.)*
 - **A `not.toContain` copy-completeness check can collide with legit copy.** Asserting a clerk prompt had
   no leftover `'TODO'` failed because Spanish "TODO el texto" (all the text) is legitimate. For
   placeholder/orphan-string guards, assert only *true* placeholder markers (`PEGA_TU_TOKEN`, `XXX`,

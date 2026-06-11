@@ -11,6 +11,10 @@ never by silently charging a seller for a discount on their own sale.
 - ✅ **[Referral Program](referral-program/)** — invite friends, earn print-ad credit when they make
   their first purchase. Includes admin/platform-wide coupons (the reward delivery mechanism).
   Sprint 1 shipped & live-QA'd 2026-06-03.
+- ✅ **[Marketplace positioning metadata](marketplace-positioning-meta/)** — public title,
+  description, OpenGraph/Twitter tags, and the generated social card now say Miyagi is a marketplace
+  to buy, sell, and open a shop in Mexico, with the segundamano recognition preserved in the card and
+  keywords. Shipped 2026-06-11.
 
 ## In progress
 - 🚧 **[Seasonal Theme Engine](seasonal-theme-engine/)** - code complete on

@@ -1,6 +1,8 @@
 # Marketplace positioning — Sprint 1: Rewrite public metadata, OG card & add meta spec
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped to `main` 2026-06-11 via frontend PR [#83](https://github.com/danybgoode/miyagisanchezcommerce/pull/83) (squash `cf0fa8a`)
+
+**Build refs:** Story 1.1 `071df4d` · Story 1.2 `db1c403` · Story 1.3 `8dcdcbc` · merge `cf0fa8a`
 
 > All copy is **es-MX** (these surfaces are not on the bilingual allow-list). Final wording below is
 > Daniel's, signed off 2026-06-10.
@@ -19,7 +21,7 @@ instantly understand what it is instead of reading "Infraestructura de comercio.
 - `openGraph.title` + `twitter.title`: `'Miyagi Sánchez — Abre tu tienda, compra y vende'`
 - `openGraph.description` + `twitter.description`: the new description (twitter may trim to ≤200 chars)
 - `appleWebApp.title`: `'Miyagi Sánchez'` *(unchanged)*
-**Acceptance:** view-source of `/` shows the new `<title>`, `meta[name=description]`, `og:title`,
+**Acceptance:** ✅ view-source of `/` shows the new `<title>`, `meta[name=description]`, `og:title`,
 `og:description`, `twitter:title`; no "Infraestructura de comercio" in the head.
 **Risk:** low
 
@@ -30,7 +32,7 @@ marketplace, **so that** the recipient sees what it is at a glance.
 - `alt` (L3): `'Miyagi Sánchez — Abre tu tienda, compra y vende'`
 - tagline (L97): `'Compra y vende de todo en México · Sin comisiones'`
 - pill badges (L102): `['Marketplace', 'Segundamano', 'Tu propia tienda', '0% comisión']`
-**Acceptance:** `GET /opengraph-image` renders the new tagline + pills; no "API agentic" / "Dominio
+**Acceptance:** ✅ `GET /opengraph-image` renders the new tagline + pills; no "API agentic" / "Dominio
 propio" / "Infraestructura".
 **Risk:** low
 
@@ -42,9 +44,9 @@ regression (or a reverted byte) fails CI.
   'text/html' } })` → assert the body **contains** the new title + a distinctive description fragment
   (e.g. `punto de encuentro`) and **does NOT contain** `Infraestructura de comercio`.
 - **Per LEARNINGS (robots/casing, 2026-06-09):** `grep -rn "Infraestructura de comercio"` and any
-  homepage-title/OG assertion across `e2e/` and update/remove stale ones in the same PR. (This groom
-  found none, but re-check against the full checkout — the mounted tree here omitted `e2e/`.)
-**Acceptance:** `npm run test:e2e` green locally and in CI vs the preview.
+  homepage-title/OG assertion across `e2e/` and update/remove stale ones in the same PR. The sweep found and
+  updated the stale platform-theme fallback assertion/tagline.
+**Acceptance:** ✅ `npm run test:e2e` green in CI vs the HTTPS Vercel preview.
 **Risk:** low
 
 ## Sprint QA
@@ -53,9 +55,13 @@ regression (or a reverted byte) fails CI.
   manual card-render check below).
 - **browser smoke owed:** **none to Daniel** — no money/auth/checkout path. Fully agent-smokeable.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **Verified:** local `./node_modules/.bin/tsc --noEmit` ✅, local `npm run build` ✅, GitHub CI
+  `Type-check + build` ✅, GitHub CI `Playwright vs preview` ✅. Local `next start` API checks are not
+  representative for this root surface because Clerk's dev-browser handshake loops on `127.0.0.1`;
+  the HTTPS preview gate is the source of truth.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+Env: production · https://miyagisanchez.com   (or the branch preview URL while testing pre-merge)
 
 1. Open `https://miyagisanchez.com` and use the browser's **View Source** (⌥⌘U).
    → The `<title>` reads **"Miyagi Sánchez — Abre tu tienda, compra y vende"**, and
