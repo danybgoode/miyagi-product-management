@@ -18,7 +18,11 @@
 #     SUPABASE_BACKUP_DSN       read-only Postgres DSN  (needed iff target supabase)
 #     NEON_BACKUP_DSN           read-only Postgres DSN  (needed iff target neon)
 #     R2_BACKUP_BUCKET          destination bucket name
-#     R2_BACKUP_ACCESS_KEY_ID / R2_BACKUP_SECRET_ACCESS_KEY   write-only R2 token
+#     R2_BACKUP_ACCESS_KEY_ID / R2_BACKUP_SECRET_ACCESS_KEY
+#                               R2 token scoped to ONLY this bucket, "Object Read & Write"
+#                               (R2 offers no write-only level; the read half is what lets the
+#                               size verification below work — immutability comes from bucket
+#                               VERSIONING + lifecycle, not the token)
 #     R2_BACKUP_ENDPOINT        https://<accountid>.r2.cloudflarestorage.com
 #   Env (optional):
 #     RETENTION_DAYS            informational only — real expiry is the R2 lifecycle rule (default 30)
@@ -39,7 +43,7 @@ export RCLONE_CONFIG_R2_PROVIDER=Cloudflare
 export RCLONE_CONFIG_R2_ACCESS_KEY_ID="${R2_BACKUP_ACCESS_KEY_ID:?set R2_BACKUP_ACCESS_KEY_ID}"
 export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="${R2_BACKUP_SECRET_ACCESS_KEY:?set R2_BACKUP_SECRET_ACCESS_KEY}"
 export RCLONE_CONFIG_R2_ENDPOINT="${R2_BACKUP_ENDPOINT:?set R2_BACKUP_ENDPOINT}"
-export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true   # a write-only token can't create/list buckets
+export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true   # bucket-scoped token can't create buckets; skip the probe
 
 log()  { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 alert() {

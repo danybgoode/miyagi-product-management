@@ -49,9 +49,15 @@ Env: staging / data consoles
    isolated. Prod was deliberately **not queried** (honoring the "never prod" boundary).
 
 ### Owed to Daniel (live activation — access not held by the build session)
-- **R2:** create the escrow bucket + a write-only/no-delete token + versioning/lifecycle; enable
-  versioning/lifecycle on the existing image + digital buckets.
-- **Supabase + Neon:** create a **read-only** role + DSN on each; drop those + the R2 values into Secret
-  Manager; run `infra/gcp/backups/provision-db-backup.sh`; `gcloud run jobs execute db-backup --wait` and
-  confirm the first objects land in R2; drill one **Supabase** `pg_restore` into a scratch DB.
+- **R2:** create the escrow bucket + a bucket-scoped Object Read & Write token + versioning/lifecycle;
+  enable versioning/lifecycle on the existing image + digital buckets.
+- ~~**Neon** read-only role + DSN~~ — ✅ done in-session (Daniel-authorized 2026-06-11): `backup_ro` on prod
+  (verified read-ok/write-denied), DSN stored as Secret Manager `NEON_BACKUP_DSN` v1.
+- **Supabase:** create the **read-only** role + session-pooler DSN (SQL in `BACKUPS.md`) → `SUPABASE_BACKUP_DSN`.
+- Then: drop the R2 values into Secret Manager; run `infra/gcp/backups/provision-db-backup.sh`;
+  `gcloud run jobs execute db-backup --wait` and confirm the first objects land in R2; drill one
+  **Supabase** `pg_restore` into a scratch DB.
 - Decide later whether 6h Neon PITR warrants Neon Launch ($19/mo, 7-day history) on top of the escrow.
+- **Cross-agent audit (Codex, PR #9):** all 3 findings addressed in-branch — R2 token model corrected
+  (no write-only level exists; bucket-scoped R&W + versioning), Scheduler service-agent
+  `serviceAccountTokenCreator` grant added, escrow `age` pipe fixed.

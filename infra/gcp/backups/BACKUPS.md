@@ -19,8 +19,8 @@ architectural surface smaller:
   (`MiyagiDevopsTele` / `TELEGRAM_CICD_CHAT_ID`) the rest of the backend uses. GitHub cron is also
   best-effort (can be delayed/skipped) and the backend code is a separate repo from these `infra/` scripts.
 
-Immutability + anti-lock-in come from the **destination and format** (R2 + a write-only/no-delete token +
-versioning/lifecycle, and a plain `pg_dump` custom-format dump restorable by any PG17 client) — independent
+Immutability + anti-lock-in come from the **destination and format** (R2 with versioning/lifecycle + a
+bucket-scoped token, and a plain `pg_dump` custom-format dump restorable by any PG17 client) — independent
 of the runner.
 
 ## Topology
@@ -38,7 +38,7 @@ of the runner.
 |---|---|
 | `SUPABASE_BACKUP_DSN` | a **read-only** role DSN on the Supabase DB (`postgresql://backup_ro:…@db.<ref>.supabase.co:5432/postgres`) |
 | `NEON_BACKUP_DSN` | a **read-only** role DSN on the Neon prod branch (`…?sslmode=require`) |
-| `R2_BACKUP_ACCESS_KEY_ID` / `R2_BACKUP_SECRET_ACCESS_KEY` | a **write-only / no-delete** R2 API token (least privilege; can't read or delete escrow) |
+| `R2_BACKUP_ACCESS_KEY_ID` / `R2_BACKUP_SECRET_ACCESS_KEY` | an R2 API token scoped to **only the escrow bucket**, permission **Object Read & Write** (R2 has no write-only level; the read half powers the job's upload verification — escrow immutability comes from **versioning + lifecycle**, under which even a delete/overwrite leaves a recoverable prior version) |
 | `R2_BACKUP_ENDPOINT` | `https://<accountid>.r2.cloudflarestorage.com` |
 | `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CICD_CHAT_ID` | reused (already exist) for failure alerts |
 
@@ -47,7 +47,9 @@ of the runner.
 ## Stand it up (owed to Daniel — needs R2 + Supabase access I don't hold)
 ```bash
 # 0. (Cloudflare) Create bucket `miyagi-db-escrow`; enable VERSIONING; add a LIFECYCLE rule
-#    (e.g. expire after 30 days). Create a WRITE-ONLY (Object Write, no read/delete) API token.
+#    (e.g. expire after 30 days). Create an API token scoped to ONLY this bucket with
+#    permission "Object Read & Write" (R2's least object-level grant; versioning is the
+#    immutability guarantee — a delete/overwrite still leaves a recoverable prior version).
 # 1. (Supabase + Neon) Create a read-only role on each DB:
 #       CREATE ROLE backup_ro LOGIN PASSWORD '…';
 #       GRANT pg_read_all_data TO backup_ro;     -- PG14+; else GRANT SELECT on schemas

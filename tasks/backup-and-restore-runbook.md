@@ -75,10 +75,12 @@ branches are copy-on-write isolated and the command named the staging branch by 
 - **Target posture (Daniel to apply + confirm in the Cloudflare dashboard):**
   - Enable **object versioning** on both buckets (recover overwritten/deleted objects).
   - Add a **lifecycle rule** (e.g. expire noncurrent versions after N days) to cap cost.
-  - For the **new escrow bucket** (`miyagi-db-escrow`): versioning **on** + a write-only/no-delete token +
-    a lifecycle expiry (e.g. 30d) ⇒ approximated immutability.
+  - For the **new escrow bucket** (`miyagi-db-escrow`): versioning **on** + an API token scoped to **only
+    this bucket** ("Object Read & Write" — R2's least object-level grant; there is no write-only level) +
+    a lifecycle expiry (e.g. 30d).
   - **Honesty note:** R2 does not yet offer a full S3 **Object Lock / WORM** retention equivalent, so
-    "immutable" here = versioning + a credential that cannot delete + lifecycle, not hardware WORM.
+    "immutable" here = versioning (a delete/overwrite leaves a recoverable prior version) + a
+    bucket-scoped credential + lifecycle, not hardware WORM.
 - **Restore:** object store — recover a prior object version from the dashboard/API; no DB-style restore.
 
 ---
@@ -100,7 +102,7 @@ branches are copy-on-write isolated and the command named the staging branch by 
     gcloud secrets versions access latest --secret="$s" --project="$PROJECT" > "$OUT/$s.txt"
   done
   # Encrypt the bundle with a key held OUTSIDE GCP, then delete the plaintext:
-  age -r <age-public-key> -o "$OUT.tar.age" <(tar -cf - "$OUT")    # or: gpg -e -r <you>
+  tar -cf - "$OUT" | age -r <age-public-key> -o "$OUT.tar.age"    # or: … | gpg -e -r <you> -o "$OUT.tar.gpg"
   rm -rf "$OUT"
   # Store $OUT.tar.age in an offline/separate-account vault (NOT this GCP project).
   ```

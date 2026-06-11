@@ -91,9 +91,16 @@ gcloud run jobs "$JOB_ACTION" "$JOB" \
 
 say "Daily Cloud Scheduler $SCHED_JOB ($CRON UTC) → runs the job"
 # Scheduler invokes the Run Admin :run endpoint with an OAuth token from the same
-# least-priv SA (granted run.invoker on the job).
+# least-priv SA (granted run.invoker on the job). Scheduler's own service agent must
+# also be able to MINT tokens for that SA — usually auto-granted when the API is
+# enabled, but ensure it explicitly so a scheduled run can't fail where a manual
+# `gcloud run jobs execute` succeeds.
 gcloud run jobs add-iam-policy-binding "$JOB" --region="$REGION" \
   --member="serviceAccount:${BACKUP_SA_EMAIL}" --role="roles/run.invoker" >/dev/null
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+gcloud iam service-accounts add-iam-policy-binding "$BACKUP_SA_EMAIL" \
+  --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudscheduler.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountTokenCreator" >/dev/null
 RUN_URI="https://${REGION}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${PROJECT_ID}/jobs/${JOB}:run"
 SCHED_ACTION=create; gcloud scheduler jobs describe "$SCHED_JOB" --location="$REGION" >/dev/null 2>&1 && SCHED_ACTION=update
 gcloud scheduler jobs "$SCHED_ACTION" http "$SCHED_JOB" --location="$REGION" \
