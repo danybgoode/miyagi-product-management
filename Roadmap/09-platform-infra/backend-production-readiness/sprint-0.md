@@ -1,7 +1,7 @@
 # Backend Production Readiness — Sprint 0: Audit (SPIKE)
 
-**Status:** ✅ findings landed 2026-06-11 — **awaiting Daniel's review (the gate)** · **Risk:** LOW (writing
-only, no code) · **Type:** spike → written decision
+**Status:** ✅ **DONE — findings approved by Daniel 2026-06-11 (gate passed; staging call confirmed).** S1–S4
+are now signed-off scope. · **Risk:** LOW (writing only, no code) · **Type:** spike → written decision
 
 > **This is the gate.** No branch, no build. The deliverable is a written findings doc + a prioritized gap
 > list + the staging-platform decision. Daniel approves it before S1–S4 are finalized and built.

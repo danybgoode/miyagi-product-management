@@ -33,13 +33,14 @@ is a **Neon branch** (not a new database), and deploy-event observability **reus
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| [S0](sprint-0.md) | **Audit spike (the gate)** — six-dimension findings + prioritized gap list + staging-platform decision. No code. | LOW |
-| [S1](sprint-1.md) | *(candidate)* Backend staging environment — `medusa-web-staging` Cloud Run + Neon DB branch + staging-branch trigger | HIGH |
-| [S2](sprint-2.md) | *(candidate)* Backups verified + executed restore drill + runbook (Neon · Supabase · R2 · Secret Manager) | HIGH |
-| [S3](sprint-3.md) | *(candidate)* Graceful recovery — rollback runbook + health checks + migration-rollback posture | HIGH |
-| [S4](sprint-4.md) | *(candidate)* Monitoring & alerting — uptime + error tracking + Cloud Run alert policies (+ ship/extend deploy-notify epic) | LOW–MED |
+| [S0](sprint-0.md) | ✅ **DONE + APPROVED 2026-06-11** — six-dimension findings + prioritized gap list + staging decision ([`tasks/…audit.md`](../../../tasks/backend-production-readiness-audit.md)). No code. | LOW |
+| [S1](sprint-1.md) | Backend staging — `medusa-web-staging` Cloud Run (min=0, Redis-off) + Neon DB branch + staging-branch trigger + isolated secrets **+ rotate prod JWT/COOKIE** | HIGH |
+| [S2](sprint-2.md) | **Backups — highest-value sprint** (both DBs on free tiers): close Supabase zero-backup gap + drill a Neon restore on staging + R2/Secret-Manager posture + runbook | HIGH |
+| [S3](sprint-3.md) | Graceful recovery — rollback runbook + **probe upgrade (TCP→HTTP `/health` + liveness)** + migration-rollback posture **+ admin-exposure decision + ADMIN_CORS check** | HIGH |
+| [S4](sprint-4.md) | Monitoring — uptime check + Cloud Run alert policies → existing `MiyagiDevopsTele` channel + Sentry + CVE scan (deploy-notify **already live** — verify/extend) | LOW–MED |
 
-> **S1–S4 are candidate slices. They are finalized or reshaped by Sprint 0's findings before any build.**
+> **S0 approved 2026-06-11 — S1–S4 above are now the finalized, signed-off hardening backlog** (reshaped from
+> the candidates per the findings doc). Deploy order: S1 → (S2 ∥ S3) → S4. Each HIGH-risk; Daniel authorizes + merges.
 
 ## Deploy order
 **S0 (spike) first — it is the gate.** Then **S1 → S2/S3 (may parallel) → S4**, each independently shippable.

@@ -47,10 +47,11 @@ not credentials).
 
 **Current state**
 - **Neon (Medusa Postgres — commerce system of record).** [code] `DATABASE_URL` is a Neon pooled endpoint
-  (host carries `-pooler`). [unverified — owed] Plan tier + PITR/restore-window length are **not confirmable
-  from my access** (no Neon API/CLI token; the connection string is correctly access-blocked). Neon provides
-  PITR within a plan-dependent history-retention window, but the **actual window and whether a restore has
-  ever been executed are unknown** → Daniel verifies in the Neon console.
+  (host carries `-pooler`). [verified w/ Daniel 2026-06-11] Neon is on the **free tier**, which **does
+  include branching** (so the staging-via-branch path holds at ~$0). The catch: the **free tier's PITR /
+  history-retention window is short (~24h)** → **RPO ≤ 24h**, and **a restore has never been drilled**. Two
+  free-tier DBs (this + Supabase below) is the durability story's weak point. [owed] exact retention figure +
+  pooled-connection ceiling — a 30-second Neon-console confirm.
 - **Supabase (non-commerce: conversations/offers/favorites/supply staging/UCP identities).** [verified]
   Project `bonsaiClerk` (`xljxqymsuyhlnorfrnno`, us-west-2, Postgres 17), org plan = **`free`**. The Supabase
   **Free plan has no daily backups and no PITR.** This data (buyer↔seller conversations, offer/negotiation
@@ -61,11 +62,15 @@ not credentials).
 - **Secret Manager.** [verified] 16 secrets present. No documented export/escrow or rotation procedure.
 
 **Gap**
-- **Supabase free-plan = zero backups** is the sharpest durability gap — real marketplace data with no
-  recovery path. Severity-high.
-- Neon PITR window + R2 versioning are **unknown, not confirmed-good** — they must be *verified*, then a
-  **restore must actually be drilled** (a restore that's never been run is a theory).
+- **Both databases are on free tiers with weak/no recovery** — this is the sharpest durability gap.
+  Supabase free = **zero backups** (conversations/offers/favorites/supply unrecoverable); Neon free =
+  **~24h PITR only** (commerce RPO ≤ 24h) and **never drilled**. A restore that's never been run is a theory.
+- R2 versioning still **unknown, not confirmed-good** → verify, then it informs the drill scope.
 - No Secret Manager export/escrow: losing the project = losing the keys to Stripe/MP/Clerk/DB at once.
+
+> **S2 is the highest-value sprint of the epic** — and its cheapest lever may be a **paid-tier upgrade** on
+> one or both DBs (Supabase Pro = 7-day daily backups + PITR add-on; Neon paid = longer history retention),
+> which buys real RPO without writing a backup pipeline. Weigh upgrade-cost vs. self-hosted `pg_dump` in S2.
 
 **Recommendation** → confirms candidate **S2**, but **reshape it** to make the Supabase backup gap a
 first-class item (not a footnote) and to gate the drill on first verifying the Neon/R2 facts. See gap list.
@@ -199,7 +204,7 @@ Effort: **E1** ≲ half-day · **E2** ~1 day · **E3** multi-day.
 |---|-----|-----|--------|----------|
 | 1 | **Supabase free-plan = no backups** for conversations/offers/favorites/supply | S1 | E1 (upgrade plan) / E2 (drill) | **S2** |
 | 2 | **No uptime check + no alert policies** — outages/5xx/OOM invisible | S1 | E2 | **S4** |
-| 3 | **Neon PITR window unverified + restore never drilled** | S1 | E2 (verify+drill) | **S2** |
+| 3 | **Neon free tier = ~24h PITR only + restore never drilled** (RPO ≤ 24h) | S1 | E2 (drill) | **S2** |
 | 4 | **No staging** — every change rehearsed in prod | S2 | E2 | **S1** |
 | 5 | **Startup probe is TCP-only, no liveness probe** (`/health` exists, unused) | S2 | E1 | **S3** |
 | 6 | **No rollback runbook** (revision repin vs `git revert`) | S2 | E1 | **S3** |
@@ -293,10 +298,13 @@ on **staging, never prod**.
 ---
 
 ## Items explicitly owed to Daniel (I lack the access)
-1. **Neon** console — confirm plan tier + PITR/restore-window length + pooled-connection ceiling (Dim 2, 6).
+1. ~~**Neon** plan tier~~ — ✅ confirmed free tier w/ branching (2026-06-11). Still owed: exact PITR-retention
+   figure + pooled-connection ceiling (a quick Neon-console confirm; planning assumption = RPO ≤ 24h).
 2. **Cloudflare R2** — confirm bucket versioning/lifecycle on the images + digital buckets (Dim 2).
 3. The **JWT/COOKIE values** were not read (correctly blocked); rotation recommended on principle.
 
-## The gate
-Per the epic, **Sprint 0 is the gate**: this doc + the gap list + the staging decision are reviewed by Daniel.
-His approval is what unlocks S1. Nothing infra changes until then.
+## The gate — ✅ APPROVED by Daniel 2026-06-11
+This doc + the gap list + the **staging decision (Cloud Run staging + Neon branch — confirmed right)** are
+approved. The four candidate sprints (with the reshapes above) are now the signed-off hardening backlog.
+**S2 (backups) is the highest-value sprint** given both DBs sit on free tiers. Each sprint remains HIGH-risk
+— Daniel authorizes + merges, drills run on staging never prod.
