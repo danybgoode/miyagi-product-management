@@ -1,10 +1,12 @@
 # Navigation & Settings Reorg — Sprint 3: Seller-mode shell
 
-**Status:** ✅ BUILT 2026-06-10 — branch `feat/nav-reorg-s3` (fresh off `origin/main 1c1923c`; the old
+**Status:** ✅ SHIPPED 2026-06-10 — PR [#80](https://github.com/danybgoode/miyagisanchezcommerce/pull/80)
+squash-merged to `main` (`d6b0a6b`); branch deleted. Built on `feat/nav-reorg-s3` (fresh off `1c1923c`; the old
 `feat/nav-reorg` was a squash-merge dead-end after S1 #75 / S2 #77). S3.2 `ccb28b8` · S3.1 `84be20c`.
-**PR [#80](https://github.com/danybgoode/miyagisanchezcommerce/pull/80) open — awaiting Daniel merge (HIGH).**
-Latest `main` merged in (`21bf64f`, picked up #73 `daf6300`) so CI's merged test set matches the preview.
-Gate green locally: `tsc` ✅ · `next build` ✅ · `e2e/seller-mode.spec.ts` 11/11 ✅. · **Risk:** HIGH (alters the global app-shell suppression gate —
+Daniel-authorized merge on green (HIGH). Gate green: `tsc` ✅ · `next build` ✅ · `e2e/seller-mode.spec.ts`
+11/11 ✅ · CI Playwright-vs-preview ✅; fresh-reviewer **APPROVE** (no blockers). Latest `main` merged in
+pre-PR (`21bf64f`, picked up #73 `daf6300`). **Owed to Daniel:** authed seller browser smoke (steps 1/4/5
+below). · **Risk:** HIGH (alters the global app-shell suppression gate —
 **Daniel merges**) · audit §4 · files: `app/layout.tsx`, new `app/shop/manage/layout.tsx`, new
 `app/shop/manage/SellerNav.tsx`, pure `lib/seller-mode.ts` + `lib/seller-nav.ts`, `e2e/seller-mode.spec.ts`
 
