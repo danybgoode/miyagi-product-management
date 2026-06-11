@@ -2,12 +2,15 @@
 
 > **Area:** 07-agentic-and-federated-commerce · **Risk:** high · **Scope seed:** [`00-ideas/seeds/custom-domain-paywall.md`](../../00-ideas/seeds/custom-domain-paywall.md)
 
-> **Status (2026-06-11): Sprints 1 + 2 SHIPPED & LIVE.** The paywall is enforced in prod —
-> connecting a custom domain now requires entitlement (grandfather/comp grant or an active $499 MXN/yr
-> custom-domain subscription) behind `domain.paywall_enabled` (ON). Subdomain + free slug stay free.
-> **Sprint 3 (campaign coupon `miyagisan` + UCP/MCP agent surface) is NOT started** — a fresh session
-> picks it up; until then there is no free-first-year path (straight $499/yr). See sprint-3.md + its
-> "Carryover fast-follows".
+> **Status (2026-06-11): ✅ EPIC COMPLETE — all 3 sprints merged to `main`.** Connecting a custom domain
+> is the platform's first paid SKU ($499 MXN/yr, platform-side Stripe) behind `domain.paywall_enabled`
+> (ON); existing holders grandfathered free forever; subdomain + free slug stay free. **S1+S2 LIVE
+> 2026-06-11** (FE #79 `f0b524a` · BE #20 `0f68fbe`). **S3 merged 2026-06-11** ([PR #82](https://github.com/danybgoode/miyagisanchezcommerce/pull/82)
+> squash `4bc0e4a`, frontend-only): campaign coupon `miyagisan` comps year 1 (Stripe Coupon+PromoCode,
+> capped at 100 — the 101st refused), admin mint/track (`n/100`), graceful no-card year-end lapse
+> (reuses S2.2), and shop-scoped UCP/MCP entitlement + checkout/coupon tools. **Owed Daniel (post-merge):**
+> mint the coupon (`POST /api/admin/domain-coupon?secret=…`) + the money-path browser smoke. See
+> `RETROSPECTIVE.md` + each `sprint-N.md`.
 
 ## Why
 Today any authenticated seller can connect a custom domain for free — there is no paid SKU on a
@@ -52,11 +55,11 @@ so the gate + grandfathering can land and be verified before any seller is charg
 additive on top. HIGH stories → **Daniel merges**. Each frontend PR gets a Vercel preview.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (note: subdomain stays free; custom domain now paid SKU)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] All sprints merged to `main` + smoke-tested (gaps stated — live money smokes owed to Daniel)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (subdomain stays free; custom domain = paid SKU + free-year coupon)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`

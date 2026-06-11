@@ -1,14 +1,14 @@
 ---
 title: "Custom-domain paywall + campaign coupon"
 slug: custom-domain-paywall
-status: scaffolded
+status: shipped
 area: "07"
 type: feature
 priority: null
 risk: high
 epic: "07-agentic-and-federated-commerce/custom-domain-paywall"
 build_order: null
-updated: 2026-06-10
+updated: 2026-06-11
 ---
 
 # Scope — Custom-Domain Paywall + Campaign Coupon

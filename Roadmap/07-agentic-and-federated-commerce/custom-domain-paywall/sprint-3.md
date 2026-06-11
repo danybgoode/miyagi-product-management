@@ -1,9 +1,10 @@
 # Custom-domain paywall + campaign coupon — Sprint 3: Campaign coupon + agent surface
 
-**Status:** 🏗️ BUILT — [PR #82](https://github.com/danybgoode/miyagisanchezcommerce/pull/82) (draft, **HIGH
-risk → Daniel merges**). Deterministic gate green locally (`tsc` ✅ · `next build` ✅ · Playwright `api`
-pure cap-of-100 suite ✅). **Frontend-only — no backend/Cloud Run deploy.** Owed: the coupon-redemption
-browser smoke (money path, **Daniel**) + minting the coupon post-merge.
+**Status:** ✅ SHIPPED 2026-06-11 — [PR #82](https://github.com/danybgoode/miyagisanchezcommerce/pull/82)
+squash-merged to `main` (`4bc0e4a`). Deterministic gate green (CI: `tsc`+`build` ✅ · Playwright vs preview
+✅). Fresh-agent review **APPROVE-WITH-NITS** (nit #1 es-MX copy folded in). **Frontend-only — no
+backend/Cloud Run deploy.** **Owed Daniel (post-merge):** mint the coupon (`POST
+/api/admin/domain-coupon?secret=…`) + the money-path browser smoke (redeem `miyagisan`).
 
 | Story | Status | Commit |
 |---|---|---|

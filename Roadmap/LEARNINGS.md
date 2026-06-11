@@ -118,6 +118,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Run **preserves them across deploys**. So you can **provision a new Secret Manager secret + `gcloud run
   services update --update-secrets` (additive) BEFORE the merge** that needs it, and the merge's
   image-swap keeps it. Grant `secretAccessor` to the runtime SA `medusa-run@`. *(2026-06-06.)*
+- **Stripe Node SDK v22 reshaped promotion-code params under a `promotion:{type:'coupon',coupon}` hash** —
+  both the `PromotionCode` object read (`pc.promotion.coupon`) and `promotionCodes.create` (no top-level
+  `coupon` in the typed params). `tsc` catches the old top-level shape immediately. Give the coupon + promo
+  code **deterministic ids/codes** so find-or-create (an admin "mint" button / seed) is idempotent — no
+  duplicate on a repeated press. *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
@@ -217,7 +222,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   vs mirror UUID) "succeeded", an FK-violating upsert's `error` was never read, and the dead path
   reported `ok:true` for weeks. When an id system migrates (legacy table → Medusa), grep every write
   keyed by that id; and for ownership/money-adjacent writes, check `.error` *and* that rows actually
-  matched. *(Gem → Claim Loop, 2026-06-09.)*
+  matched. *(Gem → Claim Loop, 2026-06-09.)* **Corollary — a best-effort `fetch` POST must check `res.ok`,
+  not just sit in a try/catch:** a non-2xx response doesn't throw, so a failed write never reaches the
+  `catch` that would alert. The custom-domain webhook's Medusa-activation POST silently swallowed failures
+  (seller PAID but isn't entitled, and Stripe won't retry a handler that returns 200) until an explicit
+  `if (!res.ok) throw` routed it to a `tg.alert`. Add the status check on any best-effort money-path call.
+  *(2026-06-11, custom-domain-paywall S3.)*
 - **Unknown API routes on PROD return HTTP 200 (the not-found page), not 404.** So a negative-path
   spec for a *new* endpoint run against prod pre-deploy fails confusingly (expected 401, got 200) —
   that's "route doesn't exist yet", not a logic bug. CI-vs-preview is the authoritative gate for new
@@ -432,6 +442,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   api spec loop-asserts every name appears — so the named toolset can never drift from what `/api/ucp/mcp`
   actually exposes, and "names a tool that doesn't exist" is caught by the gate. *(2026-06-09, agent-native
   setup S3 — `SELLER_MCP_TOOLS` + `buildClerkPrompt()` in `lib/setup-spec.ts`.)*
+- **One shared server builder for a checkout the UI AND an agent both start — AGENTS rule #3 becomes reuse,
+  not a parallel implementation.** The custom-domain buy route (seller portal) and the `start_domain_subscription`
+  MCP tool both call one `startCustomDomainCheckout({shopId, sellerClerkId, couponCode, …})`, so the
+  plan-price lookup, the already-active short-circuit, and the coupon resolution/refusal can't drift between
+  the two entry points. Make the agent surface a ~30-line handler over the shared seam (resolve the shop from
+  its `ms_agent_` token, then call the builder), not a re-derivation. *(2026-06-11, custom-domain-paywall S3.)*
+- **A 100%-off-first-period coupon is a real "gift" only with `payment_method_collection:'if_required'`** —
+  Stripe then collects NO card on the $0 first invoice, so the *existing* cancel→lapse path covers the
+  no-card renewal end with **zero new lapse code** (the "free year" sprint was mostly "pick the flag + reuse
+  the prior lapse"). Apply `if_required` **only on the discounted path** so the full-price checkout still
+  collects a card (keep the non-coupon path byte-identical). And **Stripe's own `max_redemptions` is the
+  authoritative cap** — a campaign coupon capped at N refuses the (N+1)th server-side even under a race; a
+  pure app-side pre-check (`timesRedeemed < max`) is only for a clean message, never the guarantee.
+  *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`, `lib/domain-coupon.ts` pure + Stripe server seam.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole
