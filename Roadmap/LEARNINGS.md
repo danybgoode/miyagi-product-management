@@ -136,6 +136,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Products: one `lib/personalization.ts` with sanitise/validate/build/format, covered by 3 specs.)*
 - **Add one spec per browser/API-testable story** — coverage accretes with the work, never as a
   separate project.
+- **An `api` spec can assert *signed-out* chrome from raw SSR HTML — Clerk `<Show when="signed-out">` /
+  `<SignedOut>` render server-side — so an anonymous `request.get('/', {headers:{Accept:'text/html'}})` sees
+  the logged-out CTAs/links directly (no browser needed). But verify the *rendered attribute order* against
+  the live page before any href-adjacency regex:** Next renders an `<a>`'s `href` **last**
+  (`<a class=… href="/x">text`), so `href="/x"[^>]*>\s*text` is robust while an `href…data-testid` adjacency
+  assumption is backwards (match both attrs within one `<a …>` instead). Cheapest check: a read-only `curl`
+  of the live prod page confirms both that the branch SSR-renders and the exact attribute order — saves a CI
+  cycle on a broken regex. *(2026-06-11, nav-reorg S4 — `e2e/nav-entry-points.spec.ts`.)*
 - **A `not.toContain` copy-completeness check can collide with legit copy.** Asserting a clerk prompt had
   no leftover `'TODO'` failed because Spanish "TODO el texto" (all the text) is legitimate. For
   placeholder/orphan-string guards, assert only *true* placeholder markers (`PEGA_TU_TOKEN`, `XXX`,

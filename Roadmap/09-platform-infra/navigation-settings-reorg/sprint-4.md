@@ -1,7 +1,8 @@
 # Navigation & Settings Reorg — Sprint 4: Naming + one-agent-entry cleanup
 
-**Status:** ✅ BUILT — draft [PR #81](https://github.com/danybgoode/miyagisanchezcommerce/pull/81)
-(`feat/nav-reorg-s4`), awaiting green CI + review · **Risk:** LOW · audit §5 (comunidad merge **deferred**) ·
+**Status:** ✅ SHIPPED 2026-06-11 — [PR #81](https://github.com/danybgoode/miyagisanchezcommerce/pull/81)
+squash-merged to `main` (`8e12782`); fresh-reviewer APPROVE, CI green; branch deleted ·
+**Risk:** LOW · audit §5 (comunidad merge **deferred**) ·
 files: `app/layout.tsx`, home feed (`app/page.tsx`), `e2e/nav-entry-points.spec.ts` + `.browser.spec.ts`
 
 > **Note:** the `/comunidad → /vecindario` content merge is **out of scope** (separate ask — it migrates live

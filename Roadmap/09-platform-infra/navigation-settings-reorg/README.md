@@ -3,7 +3,8 @@
 > **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/nav-reorg` ·
 > **Risk: LOW overall, with one HIGH sprint** (S3 alters the global app-shell suppression gate).
 > Reviewer may auto-merge LOW stories on green CI **unless** they touch shared layout; **S3 → Daniel merges.**
-> **Status: 📋 SCAFFOLDED — not started.** Scope doc:
+> **Status: ✅ EPIC COMPLETE — all 4 sprints shipped to prod 2026-06-11 + closed out.**
+> S1 #75 `dc4c992` · S2 #77 `a7d6fe8` · S3 #80 `d6b0a6b` · S4 #81 `8e12782`. Scope doc:
 > [`00-ideas/seeds/navigation-settings-reorg.md`](../../00-ideas/seeds/navigation-settings-reorg.md).
 > Source: nav + settings audit (Miyagi Sánchez). es-MX default.
 
@@ -68,11 +69,11 @@ Frontend-only; each sprint independently shippable. **S1 → S2 → S3 → S4.**
 announce the cross-cutting touch** before opening each PR (LEARNINGS: shared-surface changes break sibling PRs).
 
 ## Definition of Done (epic)
-- [ ] All four sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs); PWA-standalone + seller-session steps flagged **owed to Daniel**
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated — 01 (PWA app experience) + Recent highlights; seller-mode line under 03
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] All four sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs); PWA-standalone + seller-session steps flagged **owed to Daniel**
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated — 01 (PWA app experience) + Recent highlights; seller-mode line under 03
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`

@@ -1,7 +1,7 @@
 # Navigation & Settings Reorg — Sprint 1: PWA bottom bar
 
-**Status:** ✅ BUILT 2026-06-10 — draft [PR #75](https://github.com/danybgoode/miyagisanchezcommerce/pull/75)
-(`a91ed8a`), risk LOW, awaiting reviewer + merge · **Risk:** LOW · audit §1 ·
+**Status:** ✅ SHIPPED — [PR #75](https://github.com/danybgoode/miyagisanchezcommerce/pull/75)
+squash-merged to `main` (`dc4c992`); branch deleted · **Risk:** LOW · audit §1 ·
 files: `app/components/MobileTabBar.tsx`, new pure `lib/tabbar-visibility.ts`,
 `e2e/tabbar-visibility.spec.ts` (api), `e2e/tabbar.browser.spec.ts` (browser).
 

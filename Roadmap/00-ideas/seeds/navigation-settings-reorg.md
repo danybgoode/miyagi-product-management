@@ -1,14 +1,14 @@
 ---
 title: "Navigation & Settings Reorg"
 slug: navigation-settings-reorg
-status: scaffolded                  # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: shipped                     # raw | ready | queued | scaffolded | in-progress | shipped | archived
 area: "09"                          # 09-platform-infra (the app-shell / chrome lives here)
 type: epic
 priority: null
 risk: high                          # one sprint touches the global app-shell suppression gate
 epic: "09-platform-infra/navigation-settings-reorg"
 build_order: null
-updated: 2026-06-10
+updated: 2026-06-11
 ---
 
 # Navigation & Settings Reorg — scope (Definition of Ready)
