@@ -1,19 +1,19 @@
 ---
 title: "Seller & unclaimed-shop bug sweep"
 slug: seller-unclaimed-bug-sweep
-status: scaffolded                    # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: shipped                       # raw | ready | queued | scaffolded | in-progress | shipped | archived
 area: "03"                           # primary home: Selling & Shops (S1 also touches 05 offers / 02 checkout)
 type: epic                           # a bug cluster that fans out into a 3-sprint epic
 priority: null
 risk: high                           # S1 + S2 are HIGH (offer/checkout money-path + Medusa product lifecycle / Cloud Run); S3 is LOW
-epic: "03-selling-and-shops/seller-unclaimed-bug-sweep"   # scaffolded 2026-06-10
+epic: "03-selling-and-shops/seller-unclaimed-bug-sweep"   # scaffolded 2026-06-10; ✅ all 3 sprints shipped 2026-06-10 (S1 #73 · S3 #76 · S2 BE #19 + FE #78)
 build_order: null
 updated: 2026-06-10
 ---
 
 # Seller & unclaimed-shop bug sweep
 
-**Status: awaiting Daniel approval — no code yet. Planning only (Cowork); Claude Code builds.**
+**Status: ✅ SHIPPED 2026-06-10 — all 3 sprints live in prod** (S1 [#73](https://github.com/danybgoode/miyagisanchezcommerce/pull/73) · S3 [#76](https://github.com/danybgoode/miyagisanchezcommerce/pull/76) · S2 BE [#19](https://github.com/danybgoode/medusa-bonsai-backend/pull/19) + FE [#78](https://github.com/danybgoode/miyagisanchezcommerce/pull/78)). See the epic `RETROSPECTIVE.md`.**
 
 A consolidated sweep of five reported defects, grouped by surface + risk into one epic, three
 independently-shippable sprints. All root causes below were **verified against the code on 2026-06-10**,

@@ -1,6 +1,6 @@
 # Seller & unclaimed-shop bug sweep — Sprint 3: shop/manage UI polish
 
-**Status:** ✅ BUILT 2026-06-10 — [PR #76](https://github.com/danybgoode/miyagisanchezcommerce/pull/76), CI pending · **Risk:** LOW (frontend CSS/tokens; reviewer may auto-merge on green CI) · **Repos:** frontend only
+**Status:** ✅ SHIPPED 2026-06-10 — [PR #76](https://github.com/danybgoode/miyagisanchezcommerce/pull/76) merged `af002c4` → Vercel prod (reviewer auto-merge on green CI) · **Risk:** LOW (frontend CSS/tokens) · **Repos:** frontend only
 
 > **Commits (branch `feat/seller-unclaimed-bug-sweep-s3` off main `dc4c992`):** `d26a654` (S3.1+S3.2 UI
 > fixes) · `848815a` (regression guard + browser smoke). Gate green locally: `tsc` ✓ · `build` ✓ ·

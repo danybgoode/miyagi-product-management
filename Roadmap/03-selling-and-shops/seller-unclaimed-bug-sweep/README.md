@@ -1,7 +1,14 @@
-# Epic: Seller & unclaimed-shop bug sweep
+# Epic: Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10
 
-> **Area:** 03-selling-and-shops · **Risk:** HIGH overall (S1 + S2 are HIGH — Daniel merges; S3 is LOW) · **Type:** bug (cluster → epic)
+> **Area:** 03-selling-and-shops · **Risk:** HIGH overall (S1 + S2 are HIGH — Daniel merged; S3 is LOW) · **Type:** bug (cluster → epic)
 > **Scope seed:** [`00-ideas/seeds/seller-unclaimed-bug-sweep.md`](../../00-ideas/seeds/seller-unclaimed-bug-sweep.md) · **Signed off:** Daniel, 2026-06-10
+>
+> **✅ All 3 sprints shipped to prod (build order S1 → S3 → S2):** S1 unclaimed-shops-contact-only
+> ([#73](https://github.com/danybgoode/miyagisanchezcommerce/pull/73) `daf6300`) · S3 manage UI fixes
+> ([#76](https://github.com/danybgoode/miyagisanchezcommerce/pull/76) `af002c4`) · S2 delete-actually-deletes
+> (BE [#19](https://github.com/danybgoode/medusa-bonsai-backend/pull/19) `dd5f207` → Cloud Run `medusa-web-00098`;
+> FE [#78](https://github.com/danybgoode/miyagisanchezcommerce/pull/78) `1c1923c`). Owed to Daniel: the authed
+> money-/lifecycle-path browser smokes (per-sprint, listed in each `sprint-N.md`).
 
 ## Why
 Five reported defects, fixed so the product keeps its promises. **Unclaimed (gem-imported) shops are
@@ -57,12 +64,12 @@ es-MX copy with a copy-completeness gate.
 - **Recommended order: S1 → S3 → S2** (guardrail live first; S3 is a fast LOW win; S2 is the heaviest,
   cross-repo, last with full attention). Each frontend branch gets a Vercel preview.
 
-## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+## Definition of Done (epic) — ✅ complete
+- [x] All sprints merged to `main` + smoke-tested (authed money-/lifecycle smokes owed to Daniel, stated per sprint)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branches deleted (all repos); seed frontmatter `status: shipped`

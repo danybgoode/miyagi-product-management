@@ -201,6 +201,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   inside a mostly-code epic is the easy one to skip: #4's S2/S3 code merged (PR #37) but the **S1
   Roadmap token-contract doc was never written** — it surfaced only at epic close. At DoD, check each
   sprint's deliverable exists (incl. Roadmap docs), not just that `main` has the code. *(#4, 2026-06-07.)*
+- **The epic close-out is a distinct step from merging the last PR — skip it and the docs silently lie.**
+  #6 (seller-acquisition landing pages) shipped all 4 sprints to prod 2026-06-07 (PRs #42/#44/#45, refs
+  recorded *in the sprint files*), but the epic README still read "S3 ⬜ / S4 ⬜", had no RETROSPECTIVE, no
+  poster line, and showed 🏗️ in `BUILD-ORDER.md`. The drift was invisible until a *later* groom (nav-reorg)
+  hit `/vende` and had to spend a gate validating whether #6 was unfinished or merely undocumented (it was the
+  latter — the code was all there). Close the epic in the **same session the last sprint merges**: tick the
+  README + sprints with refs, write the RETROSPECTIVE, update the poster + `BUILD-ORDER.md` + seed frontmatter.
+  A merged build with stale docs taxes the next groom. *(2026-06-10, #6 doc close-out during nav-reorg groom.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
@@ -210,6 +218,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   updateProducts(id, data)`. *(2026-06-05 — Personalized Products S1 added `custom_fields` to product
   metadata, which surfaced this latent bug across the seller edit / soft-delete / view-counter routes;
   Cloud Run SQL logs (`select … where … and metadata->'attrs'->>'brand'=…`) were the tell.)*
+  **For delete, reach for the native primitive, not a status hack.** "Delete a listing" had been implemented
+  as `updateProducts(id, {status:'draft', metadata:{deleted:true}})` — a *draft*, not a delete — which both
+  flirted with the selector trap and left three surfaces disagreeing (Medusa draft "Borrador" / mirror
+  `'deleted'` / edit-guard 404). `productService.softDeleteProducts([id])` (explicit id **array**, unambiguous)
+  sets `deleted_at` → the product drops out of every list/PDP query that reads the `product` entity (remoteQuery
+  excludes soft-deletes by default) while the row is kept so past order line-items still resolve. Prefer the
+  module's native delete/soft-delete over a status field whenever "gone" is the intent. *(2026-06-10, seller bug sweep S2.)*
 - **`normalizeMedusaOrder` curates *top-level* fields — it does NOT pass raw `order.metadata` through.**
   Client surfaces that read `order.metadata?.X` therefore get `{}` for Medusa orders and silently render
   nothing. This had dead-ended the manual confirm/report/ship sections on both the buyer and seller order
@@ -299,6 +314,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   a pure-logic spec proves invariants for free — e.g. summary ≡ CTA *because both call the one
   `computeCheckoutTotal`*, and an illegal transition (`pending_payment → processing`) is rejected by the
   guard. *(2026-06-07, checkout-state-hardening — `lib/manual-payment-state.ts`, `lib/checkout-total.ts`.)*
+- **A mirror-resync silently un-sets soft state the source-of-truth doesn't yet reflect — filter the excluded
+  set before BOTH render AND resync.** A page that re-syncs a Supabase mirror *from* Medusa on every load
+  (`syncSupabaseListingMirror` writes `status: listing.status`) will **clobber** any soft state the mirror holds
+  that Medusa doesn't carry — here a just-deleted listing whose mirror row says `'deleted'` got flipped back to
+  `'draft'` the moment Medusa still returned it as a draft (deploy-lag window), resurrecting it in the edit guard.
+  The fix wasn't only to hide it from the grid: a pure `filterOutDeleted(list, deletedIdSet)` had to run **before
+  the resync loop too**, or the next reload undoes the delete. When a backend change makes the source-of-truth
+  drop a row, audit every place that writes the mirror *back* from that source, not just the read. Bonus: this is
+  exactly what makes the frontend deploy-lag-safe (empty set once the backend omits the row → no-op).
+  *(2026-06-10, seller bug sweep S2 — `lib/listing-lifecycle.ts`, `app/shop/manage/page.tsx`.)*
 - **A real flag layer now exists — `lib/flags.ts` in BOTH apps (`flagsmith-nodejs`, Flagsmith SaaS).**
   Adding a kill-switch = create the flag in Flagsmith + one `isEnabled('...')` check at the seam. **Rules
   baked in:** fail-open (a hardcoded `DEFAULT_FLAGS` + `isEnabled` never throws → feature stays on if

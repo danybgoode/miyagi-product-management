@@ -1,6 +1,6 @@
 # Seller & unclaimed-shop bug sweep — Sprint 1: Unclaimed shops are contact-only
 
-**Status:** ✅ built — draft [PR #73](https://github.com/danybgoode/miyagisanchezcommerce/pull/73), awaiting Daniel merge (HIGH) · **Risk:** HIGH (money-path; Daniel merges) · **Repos:** frontend only
+**Status:** ✅ SHIPPED 2026-06-10 — [PR #73](https://github.com/danybgoode/miyagisanchezcommerce/pull/73) squash-merged `daf6300` → Vercel prod (Daniel green-light) · **Risk:** HIGH (money-path; Daniel merged) · **Repos:** frontend only
 
 > **Built 2026-06-10** on `feat/seller-unclaimed-bug-sweep` (isolated worktree — a
 > parallel agent yanked the shared frontend worktree to `feat/shop-settings-refactor-s4`

@@ -1,9 +1,10 @@
 # Seller & unclaimed-shop bug sweep — Sprint 2: Delete actually deletes
 
-**Status:** 🏗️ BUILT 2026-06-10 — awaiting Daniel merge (HIGH) · **Repos:** backend first, then frontend
-> PRs: **BE [#19](https://github.com/danybgoode/medusa-bonsai-backend/pull/19)** (`dd5f207`) → merge first (Cloud Run ~12 min, no preview) ·
-> **FE [#78](https://github.com/danybgoode/miyagisanchezcommerce/pull/78)** (`f1e26fe`) → after. Local gate green both repos
-> (BE `tsc`; FE `tsc` + `next build` + `listing-delete.spec.ts` 6/6). **Announced** (shared product lifecycle).
+**Status:** ✅ SHIPPED 2026-06-10 — backend-first, both merged (Daniel green-light) · **Repos:** backend first, then frontend
+> PRs: **BE [#19](https://github.com/danybgoode/medusa-bonsai-backend/pull/19)** (`dd5f207`) merged → Cloud Build us-east4 SUCCESS → Cloud Run
+> **`medusa-web-00098-s84`** live (route probe: `DELETE …/products/:id` no-auth → **401** ✓) · **FE [#78](https://github.com/danybgoode/miyagisanchezcommerce/pull/78)**
+> (`f1e26fe`) squash-merged `1c1923c` → Vercel prod. Gate green both repos (BE `tsc`; FE `tsc` + `next build` +
+> `listing-delete.spec.ts` 6/6 + CI Playwright-vs-preview ✓). Fresh-reviewer **APPROVE-with-nits** (no blockers). **Announced.**
 
 > Root cause (verified 2026-06-10): the backend `DELETE /store/sellers/me/products/:id`
 > (`apps/backend/.../products/[id]/route.ts:44`) is *"unpublish (draft)"* —
