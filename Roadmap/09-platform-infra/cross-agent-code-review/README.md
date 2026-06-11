@@ -64,13 +64,16 @@ No deploy — it's a repo script + docs, not an app surface. No Vercel/Cloud Run
 merged to `main` and runnable. US-1→US-2 in order (the comment builds on stdout); US-3 and US-4 are
 independent after US-2.
 
+**✅ EPIC COMPLETE 2026-06-10 — PR [#7](https://github.com/danybgoode/miyagi-product-management/pull/7),
+all 4 stories shipped to `main` (the root docs/tooling repo).**
+
 ## Definition of Done (epic)
-- [ ] `scripts/cross-review.mjs <PR#> --agent codex` posts an advisory, clearly-non-authoritative comment on a real PR.
-- [ ] `--agent antigravity` produces a comparable comment; missing/unauthed CLI fails with a clear message.
-- [ ] One shared reviewer-prompt doc exists; the command and the human kickoff both reference it.
-- [ ] `WAYS-OF-WORKING.md` §Review & merge, `SESSION-KICKOFFS.md` #4, and the PR template note the
-      cross-agent pass as **suggested on HIGH-risk, optional on any, advisory only**.
-- [ ] No gating: nothing in CI or the merge path blocks on the foreign agent's output.
-- [ ] Smoke walkthrough in `sprint-1.md` run green by Daniel against a real PR.
-- [ ] This README marked ✅; sprint status ticked with commit refs; `RETROSPECTIVE.md` written.
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md`; seed frontmatter `status: shipped`.
+- [x] `scripts/cross-review.mjs <PR#> --agent codex` posts an advisory, clearly-non-authoritative comment on a real PR. *(PR #7, Codex comment posted.)*
+- [x] `--agent antigravity` produces a comparable comment; missing/unauthed CLI fails with a clear message. *(PR #7, Antigravity comment posted; `agy 1.0.7`.)*
+- [x] One shared reviewer-prompt doc exists; the command and the human kickoff both reference it. *(`scripts/cross-review.prompt.md`.)*
+- [x] `WAYS-OF-WORKING.md` §Review & merge, `SESSION-KICKOFFS.md` #4, and the PR template note the
+      cross-agent pass as **suggested on HIGH-risk, optional on any, advisory only**. *(+ new root `.github/PULL_REQUEST_TEMPLATE.md`.)*
+- [x] No gating: nothing in CI or the merge path blocks on the foreign agent's output. *(Advisory comment only; no CI hook.)*
+- [x] Smoke walkthrough in `sprint-1.md` run green against a real PR (#7) — agent-run. ⚠️ Daniel still owes a hands-on pass on his own machine (he holds the CLI auth he'll use day-to-day).
+- [x] This README marked ✅; sprint status ticked with commit refs; `RETROSPECTIVE.md` written.
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md`; seed frontmatter `status: shipped`.

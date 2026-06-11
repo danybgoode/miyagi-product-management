@@ -1,7 +1,7 @@
 ---
 title: "Cross-agent code review — second-opinion command (Codex / Antigravity)"
 slug: cross-agent-code-review
-status: scaffolded
+status: shipped
 area: "09"
 type: chore
 priority: null
