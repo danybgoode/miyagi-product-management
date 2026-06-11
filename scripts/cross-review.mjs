@@ -52,15 +52,20 @@ function die(msg) {
   process.exit(1);
 }
 
+function need(val, flag) {
+  if (val === undefined || val.startsWith('-')) die(`${flag} requires a value`);
+  return val;
+}
+
 function parseArgs(argv) {
   const out = { pr: null, agent: 'codex', repo: null, dryRun: false, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--help' || a === '-h') out.help = true;
     else if (a === '--dry-run' || a === '--no-comment') out.dryRun = true;
-    else if (a === '--agent') out.agent = argv[++i];
+    else if (a === '--agent') out.agent = need(argv[++i], '--agent');
     else if (a.startsWith('--agent=')) out.agent = a.slice('--agent='.length);
-    else if (a === '--repo') out.repo = argv[++i];
+    else if (a === '--repo') out.repo = need(argv[++i], '--repo');
     else if (a.startsWith('--repo=')) out.repo = a.slice('--repo='.length);
     else if (!a.startsWith('-') && out.pr === null) out.pr = a;
     else die(`unknown argument '${a}' (try --help)`);
@@ -126,9 +131,19 @@ function checkAgyVersion() {
   }
 }
 
+// agy 1.0.7 has no stdin input, so the prompt+diff ride in a single argv string. Guard well under the
+// OS limit (macOS ARG_MAX is 1 MB incl. env) so a huge PR fails clearly instead of an opaque E2BIG.
+const AGY_ARG_LIMIT = 256 * 1024;
+
 function runAntigravity(prompt, diff) {
   // agy 1.0.7 has no stdin block and no --output-format json — embed the diff in the prompt, take text.
   const full = `${prompt}\n\n## PR diff to review\n\n\`\`\`diff\n${diff}\n\`\`\`\n`;
+  if (Buffer.byteLength(full, 'utf8') > AGY_ARG_LIMIT) {
+    die(
+      `diff too large for antigravity (${Math.round(Buffer.byteLength(full) / 1024)} KB > ` +
+        `${AGY_ARG_LIMIT / 1024} KB; agy has no stdin input) — use --agent codex for this PR.`
+    );
+  }
   const r = spawnSync('agy', ['-p', full], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) {
     const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
