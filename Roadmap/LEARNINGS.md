@@ -248,6 +248,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   latter — the code was all there). Close the epic in the **same session the last sprint merges**: tick the
   README + sprints with refs, write the RETROSPECTIVE, update the poster + `BUILD-ORDER.md` + seed frontmatter.
   A merged build with stale docs taxes the next groom. *(2026-06-10, #6 doc close-out during nav-reorg groom.)*
+- **The cross-agent advisory review (`scripts/cross-review.mjs --agent codex`) earns its keep as a cheap
+  pre-merge second opinion — run it on a GREEN PR, treat it as advisory, apply the should-fixes, ignore the
+  noise.** First real use (PR #8, backend-staging — shell/infra, not app code): one `codex exec` single pass
+  found **no blocking** items but three legit should-fixes (a script that warned-and-exit-0 instead of
+  failing on a missing required secret; an inconsistent CORS example; a non-idempotent trigger create) plus
+  two nits — all worth fixing, none a false block. Operating notes that held: it's **advisory-only** (never
+  gates — CI + the risk-tier rule still decide), **single-pass** (no iterate-to-converge loop, our #1 token
+  sink), and **codex is the default** because it takes the diff on **stdin** (handles large PRs), whereas
+  `agy` has no stdin and a ~256 KB argv cap. Cheapest insertion point: right after the deterministic gate is
+  green and before you ask for the merge. *(2026-06-11, backend-staging S1 — first run of the cross-agent
+  flow on a real PR; complements the build-time CLI-driving note under Tooling gotchas.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
