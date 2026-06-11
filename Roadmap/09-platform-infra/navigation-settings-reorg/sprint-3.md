@@ -1,7 +1,12 @@
 # Navigation & Settings Reorg — Sprint 3: Seller-mode shell
 
-**Status:** ⬜ not started · **Risk:** HIGH (alters the global app-shell suppression gate — **Daniel merges**) ·
-audit §4 · files: `app/layout.tsx`, new `app/shop/manage/layout.tsx`, new `app/shop/manage/SellerNav.tsx`
+**Status:** ✅ BUILT 2026-06-10 — branch `feat/nav-reorg-s3` (fresh off `origin/main 1c1923c`; the old
+`feat/nav-reorg` was a squash-merge dead-end after S1 #75 / S2 #77). S3.2 `ccb28b8` · S3.1 `84be20c`.
+**PR [#80](https://github.com/danybgoode/miyagisanchezcommerce/pull/80) open — awaiting Daniel merge (HIGH).**
+Latest `main` merged in (`21bf64f`, picked up #73 `daf6300`) so CI's merged test set matches the preview.
+Gate green locally: `tsc` ✅ · `next build` ✅ · `e2e/seller-mode.spec.ts` 11/11 ✅. · **Risk:** HIGH (alters the global app-shell suppression gate —
+**Daniel merges**) · audit §4 · files: `app/layout.tsx`, new `app/shop/manage/layout.tsx`, new
+`app/shop/manage/SellerNav.tsx`, pure `lib/seller-mode.ts` + `lib/seller-nav.ts`, `e2e/seller-mode.spec.ts`
 
 > **Why HIGH:** S3.1 changes the predicate in `app/layout.tsx` that decides whether platform chrome renders,
 > so a mistake regresses the header/footer/tab-bar on **every** page. Treat as shared-infra; merge latest
