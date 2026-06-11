@@ -2,6 +2,13 @@
 
 > **Area:** 07-agentic-and-federated-commerce · **Risk:** high · **Scope seed:** [`00-ideas/seeds/custom-domain-paywall.md`](../../00-ideas/seeds/custom-domain-paywall.md)
 
+> **Status (2026-06-11): Sprints 1 + 2 SHIPPED & LIVE.** The paywall is enforced in prod —
+> connecting a custom domain now requires entitlement (grandfather/comp grant or an active $499 MXN/yr
+> custom-domain subscription) behind `domain.paywall_enabled` (ON). Subdomain + free slug stay free.
+> **Sprint 3 (campaign coupon `miyagisan` + UCP/MCP agent surface) is NOT started** — a fresh session
+> picks it up; until then there is no free-first-year path (straight $499/yr). See sprint-3.md + its
+> "Carryover fast-follows".
+
 ## Why
 Today any authenticated seller can connect a custom domain for free — there is no paid SKU on a
 0%-commission marketplace. This epic turns the custom domain into the platform's first real **premium

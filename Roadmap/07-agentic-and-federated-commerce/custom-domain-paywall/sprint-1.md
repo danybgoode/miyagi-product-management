@@ -1,7 +1,6 @@
 # Custom-domain paywall + campaign coupon — Sprint 1: Gate + entitlement (grandfather + flag)
 
-**Status:** 🏗️ BUILT 2026-06-10 — draft [PR #79](https://github.com/danybgoode/miyagisanchezcommerce/pull/79) (frontend), CI-green gate, **awaiting Daniel merge (HIGH risk)**.
-Ships behind `domain.paywall_enabled` (default **off** ⇒ inert until the backfill runs + the flag flips).
+**Status:** ✅ SHIPPED 2026-06-11 — [PR #79](https://github.com/danybgoode/miyagisanchezcommerce/pull/79) squash-merged to `main` (`f0b524a`, bundled with S2). Grandfather backfill ran against prod (**no-op — 0 custom-domain shops**); `domain.paywall_enabled` **created in Flagsmith + flipped ON in Production** — the paywall is LIVE. Auth boundary + prod health re-confirmed post-flip (homepage 200, anon domain POST 401).
 
 | Story | Status | Commit |
 |---|---|---|

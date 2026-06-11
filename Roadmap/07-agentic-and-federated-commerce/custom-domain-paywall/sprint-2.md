@@ -1,9 +1,6 @@
 # Custom-domain paywall + campaign coupon — Sprint 2: Paid checkout + lapse (Stripe)
 
-**Status:** 🏗️ BUILT 2026-06-10 — stacked on `feat/custom-domain-paywall` (on top of the
-unmerged S1, PR #79). Backend PR (medusa-bonsai-backend) + frontend update to PR #79. CI-green
-deterministic gate (tsc + build + Playwright `api`). **Awaiting Daniel merge (HIGH — money/webhooks).**
-Inert until the cutover seed runs + `domain.paywall_enabled` is flipped on.
+**Status:** ✅ SHIPPED 2026-06-11 — FE in [PR #79](https://github.com/danybgoode/miyagisanchezcommerce/pull/79) (`f0b524a`); BE [PR #20](https://github.com/danybgoode/medusa-bonsai-backend/pull/20) squash-merged (`0f68fbe` → Cloud Run `medusa-web-00099-vv7`). **Cutover ran:** `seed-custom-domain-plan.mjs` against prod (live Stripe) created product `prod_UgMibWnIXFSHwE` + annual price `price_1TgzzPL2vn3I7zOLn2SvBbIx` ($499 MXN/yr) → Medusa plan `subplan_01KTTE4MXNSSC9THBNZ1R079FY`; then `domain.paywall_enabled` flipped ON. The paid path is LIVE. Fresh-agent review: APPROVE-WITH-NITS (carryovers recorded in sprint-3).
 
 | Story | Status | Commit |
 |---|---|---|

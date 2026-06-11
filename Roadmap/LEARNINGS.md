@@ -44,6 +44,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Risk tier decides who merges** (from WAYS-OF-WORKING): low-risk → the reviewer/agent may merge on
   green CI; anything touching payments / checkout / fulfillment / auth / DB / shared infra / money →
   **Daniel merges**. When unsure, treat as high.
+- **When your branch is BEHIND `main`, the two-dot `git diff main..HEAD` lies — read the three-dot.**
+  Two-dot compares tips directly, so it folds in the *inverse* of every commit `main` gained since you
+  branched (a sibling epic's new files show up as "deletions" in your diff — alarming and wrong). Review
+  with **three-dot `git diff main...HEAD`** (merge-base→HEAD = only your changes), and **merge `origin/main`
+  into the branch before merging the PR** so the merged tree is what actually ships. *(2026-06-11,
+  custom-domain-paywall — nav-reorg #80/#81 landed mid-flight; two-dot showed nav files "deleted".)*
+- **Shipping a flag-gated paid feature has a load-bearing run-order: code merge → deploy → seed → flip
+  flag — and seed prod money infra with the REAL creds, not local `.env`.** The fail-open flag (default off)
+  lets the FE+BE merge dark with zero risk; *then* activate deliberately. Backend (Cloud Run, ~12 min, no
+  preview) merges + **finishes deploying** before the seed script (which calls its new internal route);
+  confirm the live revision actually rolled (`gcloud run services describe … latestReadyRevisionName`) — a
+  `SUCCESS` build is not yet a live revision. The seed/activation must use **prod** creds from **Secret
+  Manager** (`gcloud secrets versions access`) + the Cloud Run URL — the app's local `.env.local`/`.env` are
+  **dev-scoped** (`localhost:9000`, `sk_test_…`), so running with them silently provisions a test-mode plan
+  against localhost. Capture secrets into shell vars in the *same* command (shell state doesn't persist) and
+  never echo them (a `${KEY:0:7}` mode-prefix is enough to confirm `sk_live`). *(2026-06-11,
+  custom-domain-paywall — seed-custom-domain-plan.mjs against prod live Stripe.)*
 - **A squash-merged sprint branch is a dead end — start the next sprint on a FRESH branch off `main`.** When
   a sprint PR is **squash**-merged, its branch's individual commits are *not* on `main` (the changes are, as
   one commit), so continuing that same branch for the next sprint re-introduces a messy duplicate diff and
@@ -316,7 +333,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   action but had **two** backend mutations — the Envía `ship` route AND the `[id]` PATCH that the
   frontend `ship-manual` proxies to. Gating only the named route leaves a bypass. Find every write that
   reaches the state you're protecting and gate each (the UI gate is courtesy; the API is the guarantee).
-  *(2026-06-07, checkout-state-hardening S2.)*
+  *(2026-06-07, checkout-state-hardening S2.)* **Corollary — gate the writes that REACH the protected
+  state, not every write that touches it.** The custom-domain paywall gates the four *connect/provision*
+  mutations (POST domain, POST cloudflare, OAuth start+callback) but deliberately leaves **DELETE
+  (removal) ungated**: removal moves *away* from the gated "has a connected domain" state, so gating it
+  adds no protection and would trap a lapsed seller's escape hatch. Enumerate mutations by *which direction*
+  they move the protected state. *(2026-06-11, custom-domain-paywall S1.)*
 - **A lifecycle/state machine lives best as a pure, next-free `lib/` helper** (derivation + transition
   guards + copy), mirrored once in the backend normalizer for agents. One source of truth per side, and
   a pure-logic spec proves invariants for free — e.g. summary ≡ CTA *because both call the one
@@ -341,6 +363,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   + checkout are covered at once. The SDK is **not Edge-compatible** → `middleware.ts` flags need a
   different mechanism (Edge Config). *(2026-06-06, Flagsmith epic — `checkout.stripe_enabled` shipped
   front+back; rest of taxonomy deferred, cheap to extend on demand.)*
+  **Two flag polarities — pick the fail-open DEFAULT to match.** A **kill-switch** defaults `true` (feature
+  stays on if Flagsmith is down; disabling is the deliberate act). An **enablement** flag (e.g.
+  `domain.paywall_enabled`) defaults `false` ⇒ **ungated** (a flag outage can never trap users behind a new
+  gate; enabling is the deliberate act). Comment the polarity in `DEFAULT_FLAGS`. **And a flag defined in
+  code is invisible until you CREATE it in Flagsmith** — absent ⇒ every read returns the code default, so
+  there's nothing to toggle in the dashboard until you add it (create it disabled in every environment, then
+  flip when ready). *(2026-06-11, custom-domain-paywall — the flag existed in code for days but Daniel "didn't
+  see it" in either environment until it was created via the Flagsmith API.)*
 - **Extract a fan-out seam once, then project new events onto it.** A fire-and-forget
   `dispatchToSeller(userId, {group, email?, push?, telegram?})` over a *pure, next-free* preference resolver
   (`resolvePrefs`/`isChannelEnabled`/`telegramTarget`) made adding the money-path event later one line in the
