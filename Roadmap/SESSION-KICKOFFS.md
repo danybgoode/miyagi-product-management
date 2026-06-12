@@ -56,6 +56,8 @@ Review PR #<N> as a fresh reviewer — you did NOT build it. Run gh pr diff <N> 
 SINGLE PASS on a green CI gate — no iterative refine loop. Check correctness + the five AGENTS rules
 (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk untouched · es-MX copy).
 Do not use /code-review ultra. Post findings; <LOW: auto-merge on green CI / HIGH: hand to Daniel>.
+Optional (suggested on HIGH): a different-model-family second opinion —
+node scripts/cross-review.mjs <N> --agent codex|antigravity (advisory only, single-pass, never gates).
 ```
 
 ## 5 · Strategy / process work — Cowork (strong model)

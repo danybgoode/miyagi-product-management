@@ -1,6 +1,10 @@
 # Cross-agent code review — Sprint 1: Thin second-opinion command (Codex + Antigravity)
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped 2026-06-10 — PR [#7](https://github.com/danybgoode/miyagi-product-management/pull/7)
+(S1.1 `1dab2c7` · S1.2 `3a3b83a` · S1.3 `db5fb57` · S1.4 `7b44538` · hardening `d091da7`). Smoke walkthrough
+run green against PR #7 (Codex + Antigravity advisory comments posted). **Note:** Antigravity ships as
+`agy 1.0.7`, which has **no `--output-format json`** flag (the AC below assumed one) — the command uses
+`agy -p` text output, pins 1.0.7, and warns on a version mismatch. AC updated in Story 1.3 accordingly.
 
 > Dev tooling, not app code: this sprint touches `scripts/` + `Roadmap/` docs only — **no** `apps/*`,
 > commerce, money, auth, DB, i18n, Vercel, or Cloud Run. The app deterministic gate (tsc/build/Playwright)
@@ -34,8 +38,9 @@ opinion in one command before deciding anything.
 **As a** developer, **I want** `--agent antigravity` to do the same via Antigravity's headless mode,
 **so that** I can A/B which model's review I trust on the same diff.
 **Acceptance:**
-- `--agent antigravity` runs `agy -p "<shared prompt>" --output-format json` with the diff as context and
-  posts a comparable comment labeled `🔎 Cross-agent review (Antigravity)`.
+- `--agent antigravity` runs `agy -p "<shared prompt + diff>"` (text — `agy 1.0.7` has **no**
+  `--output-format json`; the diff is embedded in the prompt, agy has no stdin block) and posts a
+  comparable comment labeled `🔎 Cross-agent review (Antigravity)`.
 - Unknown `--agent` value, or missing/unauthed `agy`, fails with a clear message naming the fix.
 - `agy` version is checked/pinned; an unexpected version warns (flags are new and may shift).
 **Risk:** low

@@ -60,6 +60,13 @@ do this, and they're complementary:
   `tsc` + `build` + Playwright, carry the repetitive checking and have the reviewer read once). **Do not use
   the `/code-review ultra` cloud command — it is not set up for this repo.** The reviewer must be a different
   agent than the one that built the PR.
+- **Cross-agent second opinion (optional, advisory):** `node scripts/cross-review.mjs <PR#> --agent
+  codex|antigravity` pipes the PR diff into a **different model family's** CLI (Codex or Antigravity) for one
+  pass and posts the findings as a clearly-labeled PR comment. It exists only to surface another family's
+  blind spots. **Suggested on HIGH-risk PRs, optional on any, advisory only** — it never gates, blocks, or
+  authorizes a merge (CI + the Claude reviewer + the risk-tier rule below stay the sole sources of truth),
+  and it is **single-pass** (no debate loop). It reads the same shared prompt the human reviewer does
+  (`scripts/cross-review.prompt.md` — the five `AGENTS.md` rules + this single-pass discipline).
 
 **Every PR declares a risk tier** (in the PR body); that tier decides who may merge:
 - **Low-risk → reviewer may auto-merge** once CI is green and the review is clean: docs/copy, non-commerce UI,

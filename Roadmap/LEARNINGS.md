@@ -143,6 +143,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `coupon` in the typed params). `tsc` catches the old top-level shape immediately. Give the coupon + promo
   code **deterministic ids/codes** so find-or-create (an admin "mint" button / seed) is idempotent — no
   duplicate on a repeated press. *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`.)*
+- **Driving a young foreign CLI (`codex`, `agy`): run `<cli> --help` first, pin the version, degrade — never
+  build against a documented flag from memory.** The cross-agent-review sprint AC assumed `agy --output-format
+  json`; `agy 1.0.7` has **no such flag** — reality is `agy -p "<prompt+diff>"`, plain text, **no stdin path**.
+  By contrast `codex exec "<prompt>"` appends **stdin** as a `<stdin>` block, so you *pipe* the diff to codex
+  but must *embed* it in agy's argv — which is why an argv-size guard (E2BIG above ~256 KB) is needed for agy
+  only. Pin the known-good version and **warn (not fail)** on a mismatch so a bump surfaces without blocking.
+  `scripts/cross-review.mjs` is the reference: a script that runs a non-Anthropic reviewer must `--version`-check
+  + branch its context-passing per CLI, and the smoke is "run it against a real PR and read the comment."
+  *(2026-06-10, cross-agent-code-review S1 — also: a `git commit -- <paths> -m "msg"` fails because everything
+  after `--` is a pathspec; put `-m` before `--`.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
