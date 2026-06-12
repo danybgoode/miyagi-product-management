@@ -44,9 +44,14 @@ esac
 echo "▶ Provisioning monitoring for $SERVICE (target=$TARGET, host=$UPTIME_HOST)"
 
 # Resolve the notification channel id by display name (don't hardcode the numeric id).
-CHANNEL="$(gcloud beta monitoring channels list "${P[@]}" \
-  --filter="displayName='${CHANNEL_DISPLAY}'" --format='value(name)' | head -n1)"
-[ -n "$CHANNEL" ] || { echo "✗ notification channel '${CHANNEL_DISPLAY}' not found" >&2; exit 1; }
+# Require EXACTLY ONE match — refuse to silently guess if the name is duplicated
+# (bash-3.2-portable: count non-empty lines with grep -c, no mapfile).
+_CH_LIST="$(gcloud beta monitoring channels list "${P[@]}" \
+  --filter="displayName='${CHANNEL_DISPLAY}'" --format='value(name)')"
+_CH_COUNT="$(printf '%s\n' "$_CH_LIST" | grep -c .)"
+[ "$_CH_COUNT" -ge 1 ] || { echo "✗ notification channel '${CHANNEL_DISPLAY}' not found" >&2; exit 1; }
+[ "$_CH_COUNT" -eq 1 ] || { echo "✗ $_CH_COUNT channels named '${CHANNEL_DISPLAY}' — refusing to guess; dedupe or set CHANNEL_DISPLAY" >&2; exit 1; }
+CHANNEL="$(printf '%s\n' "$_CH_LIST" | head -n1)"
 echo "▶ channel: $CHANNEL"
 
 PFX="[${SERVICE}]"
