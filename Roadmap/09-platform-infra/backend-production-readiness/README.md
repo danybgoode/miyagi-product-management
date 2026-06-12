@@ -37,10 +37,13 @@ is a **Neon branch** (not a new database), and deploy-event observability **reus
 | [S1](sprint-1.md) | ✅ **LIVE 2026-06-11** (`4d48d91`) — `medusa-web-staging` Cloud Run (min=0, Redis-off) + Neon DB branch + staging-branch trigger + isolated secrets + prod JWT/COOKIE rotated | HIGH |
 | [S2](sprint-2.md) | ✅ **BUILT 2026-06-11** (`feat/backend-prod-readiness-s2`) — Neon PITR restore **drilled on staging**; Supabase+Neon `pg_dump`→R2 escrow pipeline built (`infra/gcp/backups/`); R2/Secret-Manager posture + RPO/RTO runbook (`tasks/backup-and-restore-runbook.md`). Live activation owed to Daniel. | HIGH |
 | [S3](sprint-3.md) | ✅ **LIVE ON PROD 2026-06-12** (PR #12, squash `0c9015a`) — recovery runbook (`tasks/backend-recovery-runbook.md`) + **probe upgrade TCP→HTTP `/health` + liveness** (`deploy.sh`/`deploy-staging.sh`, **applied to prod rev `…00101`**) + forward-only migration posture + **admin-exposure: KEEP `/app` + harden** + ADMIN_CORS confirmed (`deploy.sh` default bug fixed). **Staging drill executed** (repin ~9 s; startup-probe gate rejects a bad revision). Residual: optional liveness-hang confirm + ADMIN_CORS tighten + secret-list-drift reconcile. | HIGH |
-| [S4](sprint-4.md) | Monitoring — uptime check + Cloud Run alert policies → existing `MiyagiDevopsTele` channel + Sentry + CVE scan (deploy-notify **already live** — verify/extend) **+ S3 fast-follow: static drift guard for the probe/CORS hardening invariants (Story 4.2)** | LOW–MED |
+| [S4](sprint-4.md) | ✅ **BUILT + STAGING-REHEARSED 2026-06-12** (`feat/backend-prod-readiness`; root `27d202d`/`c6d6582` + backend `d3273d9`) — `provision-monitoring.sh` (uptime + 5 Cloud Run alert policies + ERROR-log alert → `MiyagiDevopsTele`; **GCP Error Reporting**, not Sentry) rehearsed end-to-end on staging then torn down; deploy-notify verified ACTIVE; **Dependabot** CVE scan (backend repo). **Story 4.2:** `deploy.sh`↔live reconcile (9 env+13 secrets) + `node:test` drift guard in CI (green→red→green). **Owed Daniel:** merge 2 PRs + `TARGET=prod` provision + live alert confirm. | LOW–MED |
 
 > **S0 approved 2026-06-11 — S1–S4 above are now the finalized, signed-off hardening backlog** (reshaped from
 > the candidates per the findings doc). Deploy order: S1 → (S2 ∥ S3) → S4. Each HIGH-risk; Daniel authorizes + merges.
+>
+> **✅ ALL FIVE SPRINTS BUILT 2026-06-12.** S0–S3 shipped (S1 live, S3 live on prod); S4 built + staging-rehearsed.
+> Epic-complete pending Daniel: merge the two S4 PRs (root + backend) + run the prod monitoring provision.
 
 ## Deploy order
 **S0 (spike) first — it is the gate.** Then **S1 → S2/S3 (may parallel) → S4**, each independently shippable.
@@ -56,11 +59,11 @@ force a rollback, trip an alert) are **owed to Daniel**, who holds prod creds. T
 review of the findings doc.
 
 ## Definition of Done (epic)
-- [ ] Sprint 0 findings doc + gap list + staging decision written and **approved by Daniel**; S1–S4 finalized from it.
-- [ ] All built sprints merged to `main` + smoke-confirmed by Daniel (gaps stated); the runbooks exist and were rehearsed on staging.
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real commands/URLs); status ticked with commit/infra refs.
-- [ ] This README marked ✅; `RETROSPECTIVE.md` written.
-- [ ] **Poster note:** infra epic — no `Roadmap/README.md` feature line; add a ✅ line to `09-platform-infra/README.md` instead.
-- [ ] Team memory + `MEMORY.md` index updated (staging topology · backup RPO/RTO · rollback runbook · alert channels).
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] Branches deleted; seed frontmatter `status: shipped`.
+- [x] Sprint 0 findings doc + gap list + staging decision written and **approved by Daniel**; S1–S4 finalized from it.
+- [~] All built sprints merged to `main` + smoke-confirmed by Daniel (gaps stated); the runbooks exist and were rehearsed on staging. *(S0–S3 merged; **S4 two PRs pending Daniel merge** + prod provision run.)*
+- [x] Each `sprint-N.md` has its smoke walkthrough (real commands/URLs); status ticked with commit/infra refs.
+- [x] This README marked ✅; `RETROSPECTIVE.md` written.
+- [x] **Poster note:** infra epic — no `Roadmap/README.md` feature line; ✅ line added to `09-platform-infra/README.md`.
+- [x] Team memory + `MEMORY.md` index updated (staging topology · backup RPO/RTO · rollback runbook · alert channels).
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
+- [~] Branches deleted; seed frontmatter `status: shipped`. *(on merge — seed → `in-progress` until the S4 PRs land + prod provision runs.)*

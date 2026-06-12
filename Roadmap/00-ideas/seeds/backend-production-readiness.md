@@ -1,14 +1,14 @@
 ---
 title: "Backend Production Readiness — audit + hardening"
 slug: backend-production-readiness
-status: scaffolded                  # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: in-progress                 # raw | ready | queued | scaffolded | in-progress | shipped | archived — all 5 sprints BUILT 2026-06-12; → shipped on S4 PR merge + prod monitoring provision (owed Daniel)
 area: "09"                          # 09-platform-infra (engineering-facing, no product-poster line)
 type: epic                          # audit spike (Sprint 0) → hardening sprints
 priority: null
 risk: high                          # touches shared infra / secrets / prod Cloud Run + DB
 epic: "09-platform-infra/backend-production-readiness"   # scaffolded 2026-06-10
 build_order: null                   # new ask; the original #1–#7 batch is fully groomed
-updated: 2026-06-10
+updated: 2026-06-12
 ---
 
 # Backend Production Readiness — scope (Definition of Ready)

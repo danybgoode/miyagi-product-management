@@ -118,6 +118,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Run **preserves them across deploys**. So you can **provision a new Secret Manager secret + `gcloud run
   services update --update-secrets` (additive) BEFORE the merge** that needs it, and the merge's
   image-swap keeps it. Grant `secretAccessor` to the runtime SA `medusa-run@`. *(2026-06-06.)*
+  **Corollary — image-only deploys make the full deploy *script* silently DRIFT from live.** Because CI never
+  re-applies the full config, the script accumulates gaps: a secret added live-only via `services update` is
+  missing from the script's `--set-secrets` (which **replaces**, so a full run would **drop** it), and a var
+  bound as a `secret` that live actually carries as a **plain env** (with no secret shell) makes a full run
+  **ERROR** ("secret not found"). Reconcile against `gcloud run services describe` (compare the env-name set +
+  secret-name set) and **lock parity with a static guard**. *(2026-06-12, backend-prod-readiness S4 — `deploy.sh`
+  was missing 3 live secrets + bound `ENVIA_SANDBOX` as a non-existent secret; `infra/gcp/test/deploy-invariants.test.js`.)*
+- **Provision GCP monitoring as an idempotent script, rehearsed on staging; a `node:test` config-guard is
+  infra's deterministic gate.** Stand up uptime checks + Cloud Run alert policies via a create-if-absent-by-
+  displayName script (`infra/gcp/provision-monitoring.sh`, `TARGET=staging|prod` → the existing
+  `MiyagiDevopsTele` channel) and **rehearse on staging then tear down** (staging min=0 flaps an uptime check).
+  The rehearsal surfaces CLI-shape bugs for free — concretes it caught: alert **threshold conditions support
+  only `COMPARISON_LT`/`GT`** (no GE/LE → "active ≥ max" = `GT max-1`); a **log-based (`conditionMatchedLog`)
+  alert needs an `alertStrategy.notificationRateLimit`**; build policy JSON via `python3`/a file, **never a
+  shell heredoc** (filter strings carry quotes that break inline JSON); pass `--project` per call (a global
+  `gcloud config set project` trips an org `environment`-tag warning). Infra isn't Playwright-gated, so the
+  deterministic gate is a **pure `node:test` asserting the deploy scripts vs the live config** — same
+  anti-erosion shape as the raw-color/monolith guards; monorepo-root needed its **first `.github/workflows/`**
+  to host it. **Error tracking went GCP-native** (Error Reporting auto-groups `severity>=ERROR` Cloud Run logs)
+  **over adding `@sentry` to the live service — zero new dependency.** *(2026-06-12, backend-prod-readiness S4.)*
 - **Stripe Node SDK v22 reshaped promotion-code params under a `promotion:{type:'coupon',coupon}` hash** —
   both the `PromotionCode` object read (`pc.promotion.coupon`) and `promotionCodes.create` (no top-level
   `coupon` in the typed params). `tsc` catches the old top-level shape immediately. Give the coupon + promo

@@ -1,12 +1,19 @@
 # Backend Production Readiness — Sprint 4: Monitoring & alerting
 
-**Status:** ⬜ not started · **Risk:** LOW–MED (mostly additive; alert wiring touches infra config)
+**Status:** ✅ **BUILT + STAGING-REHEARSED 2026-06-12** (`feat/backend-prod-readiness` — monorepo-root
+`miyagi-product-management` commits `27d202d` 4.2 · `c6d6582` 4.1; backend `medusa-bonsai-backend` `d3273d9`
+4.3). Monitoring provisioner rehearsed end-to-end on `medusa-web-staging` (7 resources created + channel-bound +
+idempotent re-run, **then torn down**); drift guard green in CI (green→red→green smoke). **Owed to Daniel:**
+merge both PRs (HIGH tier) + `provision-monitoring.sh TARGET=prod` + live alert-delivery confirm. · **Risk:**
+LOW–MED (mostly additive; alert wiring touches infra config)
 
 > ✅ **Finalized by Sprint 0 (2026-06-11).** Audit corrections: **deploy-event notifications are ALREADY LIVE**
 > — `cicd-telegram-build-notifier` is a deployed Cloud Run service (the seed's "not shipped" is stale), so
 > this sprint **verifies/extends** it, doesn't rebuild it. A notification channel **`MiyagiDevopsTele`
 > (Telegram webhook) already exists but no policy uses it** — wire the new alerts to it. Error tracker =
-> **Sentry**. Added delta: **dependency/CVE scanning** in the pipeline (gap #13). See the audit doc.
+> **GCP Error Reporting** (chosen at build over Sentry — native to the Cloud Run project, captures stderr
+> stack traces, **zero new dependency / no backend-app code change** on the live service; frontend keeps its
+> own Sentry). Added delta: **dependency/CVE scanning** = **Dependabot** (gap #13). See the audit doc.
 
 ## Stories
 
@@ -61,9 +68,10 @@ Build & QA`): a pure offender-finder + an assertion test, fails CI on regression
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: prod monitoring + alert channel
 
-1. Trip the uptime check (or simulate downtime) → a downtime alert arrives in the channel within the configured window. **[owed to Daniel]**
-2. Force a backend error → it appears in the error tracker and (if over threshold) alerts. **[owed to Daniel]**
-3. Push to `main` (or the chosen test path) → the deploy push + finish ✅/❌ ping arrives (via `cicd-telegram-notifications`). **[owed to Daniel]**
-4. **(Story 4.2 drift guard)** Run the guard on the current tree → green. Then locally revert one invariant in `infra/gcp/deploy.sh` (e.g. swap the startup probe back to `tcpSocket`) → the guard **fails**; restore → green. *(agent self-verifiable — no creds needed.)*
+1. After `provision-monitoring.sh TARGET=prod`: trip the uptime check (or simulate downtime) → a downtime alert arrives in `MiyagiDevopsTele` within the configured window. **[owed to Daniel — prod creds]**
+2. Force a backend error (prod) → it appears in Error Reporting and (over threshold) the "backend errors (logs)" alert fires to the channel. **[owed to Daniel — prod creds]**
+3. Push to `main` → the deploy push + finish ✅/❌ ping arrives (via `cicd-telegram-build-notifier`, verified ACTIVE 2026-06-12). **[owed to Daniel — prod creds]**
+4. ✅ **(Story 4.2 drift guard) — EXECUTED 2026-06-12.** `node --test infra/gcp/test/*.test.js` → 12/12 green; reverted the startup probe to `tcpSocket` → guard **failed** (2 conditions: HTTP-probe + prod↔staging sync); restored → green. *(agent self-verifiable — no creds.)*
+5. ✅ **(Story 4.1 provisioner) — REHEARSED ON STAGING 2026-06-12.** `TARGET=staging bash infra/gcp/provision-monitoring.sh` → uptime check + 6 alert policies created, all bound to `MiyagiDevopsTele`; a second run was fully idempotent (all "exists"); then **torn down** (staging min=0 would flap the uptime check). The rehearsal drove three CLI-shape fixes now baked into the script. *(agent executed on staging — prod run owed to Daniel.)*
 
 If any step fails, note the step number + what you saw.
