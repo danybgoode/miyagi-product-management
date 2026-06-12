@@ -4,6 +4,10 @@ Reviewable scripts to stand up the Medusa backend on **Cloud Run (us-east4)**, c
 with Neon (AWS us-east-1). Nothing here runs automatically — read, set the variables, then run.
 
 Target: see [`tasks/gcp-migration.md`](../../tasks/gcp-migration.md).
+Recovery / rollback / health-probe / admin-exposure posture: see
+[`tasks/backend-recovery-runbook.md`](../../tasks/backend-recovery-runbook.md) (Backend Production
+Readiness S3). Admin-exposure decision: **KEEP `/app` + harden** (`DISABLE_MEDUSA_ADMIN` unset);
+`deploy.sh`'s `ADMIN_CORS` default includes `api.miyagisanchez.com` (the admin's own origin).
 
 ## Billing — resolved
 

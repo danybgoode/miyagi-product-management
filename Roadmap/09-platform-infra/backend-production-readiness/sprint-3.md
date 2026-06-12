@@ -1,6 +1,9 @@
 # Backend Production Readiness — Sprint 3: Graceful recovery & health
 
-**Status:** ⬜ not started · **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
+**Status:** 🏗️ **BUILT 2026-06-12** (`feat/backend-prod-readiness-s3`) — recovery runbook + HTTP `/health`
+startup/liveness probes (`deploy.sh` + `deploy-staging.sh`) + forward-only migration posture + admin-exposure
+decision (KEEP `/app` + harden) + ADMIN_CORS confirmed (and a `deploy.sh` default bug fixed). **Live staging
+rollback rehearsal + prod re-deploy owed to Daniel.** · **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
 
 > ✅ **Finalized by Sprint 0 (2026-06-11).** Concrete deltas from the audit: the startup probe is currently a
 > bare **TCP socket on :8080** while **`GET /health` already returns 200** — so the probe upgrade is real and
@@ -15,16 +18,26 @@
 startup/liveness health checks on the service, and a written migration-rollback posture, **so that** a bad
 deploy is reversible in minutes and a sick instance is recycled automatically.
 **Acceptance:**
-- A **rollback runbook** covers: roll Cloud Run to the prior revision; `git revert` on `main`; when to use
-  which; expected time-to-recover. A rollback is **rehearsed on staging**.
-- **Startup + liveness health checks** are configured on the Cloud Run service (sick instances restart;
-  failed-startup revisions don't take traffic).
-- A **migration-rollback posture** is written (Medusa migrations are forward-only — the strategy is
-  forward-fix / backup-restore, not a one-click down-migration; say so explicitly).
-- **Startup probe switched from TCP:8080 → HTTP `/health`**; a **liveness probe** on `/health` added.
-- **Admin-exposure decision recorded** (keep `/app` + harden, or set `DISABLE_MEDUSA_ADMIN=true`); **ADMIN_CORS**
-  confirmed to list only intended origins.
+- ✅ A **rollback runbook** covers: roll Cloud Run to the prior revision; `git revert` on `main`; when to use
+  which; expected time-to-recover — [`tasks/backend-recovery-runbook.md`](../../../tasks/backend-recovery-runbook.md)
+  (decision table + §1 repin + §2 revert). A rollback **rehearsed on staging — owed to Daniel** (§6 / smoke #2–3).
+- ✅ **Startup + liveness health checks** configured in `deploy.sh` + `deploy-staging.sh` (failed-startup
+  revisions denied traffic; hung instances auto-recycled). **Applies to live prod on next deploy — owed to Daniel.**
+- ✅ A **migration-rollback posture** is written (forward-only → forward-fix / backup-restore; a repin can't
+  fix a bad migration — runbook §3).
+- ✅ **Startup probe switched TCP:8080 → HTTP `/health`** + a **liveness probe** on `/health` added (both scripts,
+  `failureThreshold`-budgeted; bash-syntax-checked; gcloud `--startup-probe`/`--liveness-probe` flags).
+- ✅ **Admin-exposure decision recorded: KEEP `/app` + harden** (runbook §5 + `infra/gcp/README.md`); **ADMIN_CORS**
+  confirmed against live config — `api.miyagisanchez.com` is the intended admin origin, and a **`deploy.sh`
+  default bug was found + fixed** (it omitted that origin → a re-run would have broken the admin UI).
 **Risk:** HIGH
+
+**Built (commit refs added on merge):**
+- `tasks/backend-recovery-runbook.md` (NEW) · `infra/gcp/deploy.sh` + `deploy-staging.sh` (probes + ADMIN_CORS default) · `infra/gcp/README.md` (pointer).
+
+**Owed to Daniel (live, prod creds):** apply the probe + ADMIN_CORS-default fixes to live `medusa-web` (next prod
+deploy); run the staging rollback rehearsal (smoke #2–3); decide whether to drop the two vestigial storefront
+origins from ADMIN_CORS (runbook §5).
 
 ## Sprint QA
 - **api spec(s):** none (infra). A health-probe `curl` + a rehearsed staging rollback are the verification.

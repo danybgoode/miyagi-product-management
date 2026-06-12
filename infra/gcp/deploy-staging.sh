@@ -50,6 +50,9 @@ else
 fi
 
 echo "▶ Deploying $SERVICE_WEB (min=0, Redis-OFF, no VPC connector)…"
+# Health probes mirror prod deploy.sh exactly (Backend Production Readiness S3):
+# HTTP GET /health startup + liveness, so staging is the place to rehearse probe
+# behaviour (a broken revision is denied traffic; a hung instance is recycled).
 # MEDUSA_BACKEND_URL is intentionally unset → the admin bundle defaults to
 # same-origin ("/"), avoiding a chicken-and-egg with the not-yet-known URL.
 gcloud run deploy "$SERVICE_WEB" \
@@ -61,6 +64,8 @@ gcloud run deploy "$SERVICE_WEB" \
   --cpu=1 \
   --memory=1Gi \
   --port=8080 \
+  --startup-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=10,failureThreshold=24" \
+  --liveness-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=30,failureThreshold=3" \
   --allow-unauthenticated \
   --set-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID}" \
   --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,JWT_SECRET=JWT_SECRET_STAGING:latest,COOKIE_SECRET=COOKIE_SECRET_STAGING:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY_STAGING:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET_STAGING:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN_STAGING:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY_STAGING:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET_STAGING:latest,ENVIA_API_KEY=ENVIA_API_KEY_STAGING:latest,ENVIA_SANDBOX=ENVIA_SANDBOX_STAGING:latest"
