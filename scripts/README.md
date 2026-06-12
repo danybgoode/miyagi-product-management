@@ -39,6 +39,58 @@ In review · Shipped · Archived`; Grain options `Epic · Sprint · Seed`; an **
 `NOTION_TOKEN` is a Notion internal-integration token with access to the database (share the DB with
 the integration). Zero npm deps — Node 18+ (uses global `fetch`).
 
+**Scheduled:** `.github/workflows/notion-sync.yml` runs `--sync` nightly (08:00 UTC ≈ 02:00 CDMX) +
+on `workflow_dispatch`. It needs the `NOTION_TOKEN` repo secret (`gh secret set NOTION_TOKEN`);
+`NOTION_DB_ID` is optional (the Marketplace Roadmap id above is the workflow default).
+
+## vercel-env.mjs — set + verify Vercel env vars via the REST API
+
+Sets/verifies env vars on the `miyagisanchez` Vercel project **via the REST API, never the CLI** —
+`vercel env add` silently stores EMPTY values, and `vercel env pull` redacts everything so it can't
+verify either (LEARNINGS → Tooling gotchas). Update = DELETE then POST (PATCH is unreliable); verify
+reads the value back through the single-entry endpoint (the only one that decrypts) and confirms by
+**value length**, so the secret is never echoed.
+
+```bash
+# Set (default: all three targets; --env repeatable/comma-separated):
+VERCEL_API_TOKEN=… VERCEL_PROJECT_ID=… \
+  node scripts/vercel-env.mjs set MY_KEY "the-value" --env production,preview
+
+# Verify — round-trips the stored length (fails loudly on an empty value):
+node scripts/vercel-env.mjs verify MY_KEY
+
+# Remove (optionally scoped by --env):
+node scripts/vercel-env.mjs delete MY_KEY
+```
+
+**Env:** `VERCEL_API_TOKEN` + `VERCEL_PROJECT_ID` required; `VERCEL_TEAM_ID` optional (tokens are
+team-aware — a team-owned project needs `?teamId=`). Zero npm deps — Node 18+ (global `fetch`).
+
+## flags.mjs — manage Flagsmith flags via the Admin API
+
+Convenience tool over the Flagsmith Admin API (SaaS project `miyagisanchezmarketplace`, id 39767) —
+it does **not** auto-flag epics or gate anything. It exists because a flag defined only in code
+(`lib/flags.ts DEFAULT_FLAGS`) is **invisible in the dashboard until created via the API**
+(LEARNINGS, custom-domain-paywall). `create` makes the flag at **project level**, so it appears in
+**every environment** immediately and is toggleable in the dashboard from minute one.
+
+```bash
+node scripts/flags.mjs list                                  # features × environments grid
+node scripts/flags.mjs create my.kill_switch --on            # kill-switch ⇒ default ON (fail-open)
+node scripts/flags.mjs create my.new_gate --off              # enablement ⇒ default OFF (never traps users)
+node scripts/flags.mjs flip my.new_gate --on --env Production  # --env omitted ⇒ flips ALL envs
+node scripts/flags.mjs delete my.new_gate
+```
+
+**Polarity rule (baked into `--help` + the create output):** a **kill-switch** defaults **ON**
+(disabling is the deliberate act); an **enablement** flag defaults **OFF** (a flag outage can never
+trap users behind a new gate). Mirror the default in `lib/flags.ts DEFAULT_FLAGS` with a polarity
+comment. Both project environments use **v2 feature versioning**, so `flip` writes via the
+create-version → patch → publish flow (handled automatically; legacy envs get a direct PATCH).
+
+**Env:** `FLAGSMITH_ADMIN_API_TOKEN` required (staged in `apps/miyagisanchez/.env.local`);
+`FLAGSMITH_PROJECT_ID` optional (default `39767`). Zero npm deps — Node 18+ (global `fetch`).
+
 ## cross-review.mjs — advisory cross-agent second opinion on a PR
 
 Pipes a PR diff into a **different model family's** CLI (Codex or Antigravity) for one pass and posts the

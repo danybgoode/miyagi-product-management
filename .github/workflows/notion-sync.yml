@@ -1,0 +1,37 @@
+# Nightly Roadmap → Notion projection (scripts/roadmap-to-notion.mjs --sync).
+# Docs are the only source of truth; the Notion board is a rebuilt projection, so a
+# scheduled re-sync keeps it from lagging merged work (board edits are overwritten).
+#
+# Secrets: NOTION_TOKEN (required — `gh secret set NOTION_TOKEN`, a Notion internal-
+# integration token with access to the database). NOTION_DB_ID is optional; the
+# Marketplace Roadmap database id is the default (it is an id, not a secret).
+#
+# Zero dependencies — the script is plain Node 18+ (global fetch), no install step.
+name: notion-sync
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # nightly, 08:00 UTC ≈ 02:00 CDMX
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check NOTION_TOKEN secret is set
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          if [ -z "$NOTION_TOKEN" ]; then
+            echo "::error::NOTION_TOKEN repo secret is not set — run: gh secret set NOTION_TOKEN (Notion internal-integration token shared with the Marketplace Roadmap DB)."
+            exit 1
+          fi
+      - name: Sync Roadmap to Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ secrets.NOTION_DB_ID || 'eb68a1fd05f443b184b6b5b3db89f47e' }}
+        run: node scripts/roadmap-to-notion.mjs --sync
