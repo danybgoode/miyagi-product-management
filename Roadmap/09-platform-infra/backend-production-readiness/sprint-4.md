@@ -41,11 +41,13 @@ Build & QA`): a pure offender-finder + an assertion test, fails CI on regression
   and fails** if any invariant is missing: startup probe is HTTP `/health` (not `tcpSocket`); a liveness
   probe on `/health` exists; `ADMIN_CORS` default includes `https://api.miyagisanchez.com` (the admin's own
   origin — the S3 default-bug fix); both deploy scripts stay in sync on the probe flags.
-- **Secret-list drift (found during S3 prod apply, 2026-06-12):** assert `deploy.sh`'s `--set-secrets` list
-  matches the live `medusa-web` secret bindings — live currently has 3 extra (`FLAGSMITH_ENVIRONMENT_KEY`,
-  `MP_CLIENT_ID`, `MP_CLIENT_SECRET`) that the script omits, so a *full* `deploy.sh` re-run would drop them
-  (because `--set-secrets` replaces). **Reconcile the script first** (add the three), then the guard keeps it
-  from drifting again. See `tasks/backend-recovery-runbook.md` §5 ⚠️.
+- **`deploy.sh` ↔ live config drift (found during S3 prod apply, 2026-06-12):** the prod script has drifted
+  from live `medusa-web` and a full `deploy.sh` run would **error**. Two parts: (a) `--set-secrets` omits 3
+  live secrets (`FLAGSMITH_ENVIRONMENT_KEY`, `MP_CLIENT_ID`, `MP_CLIENT_SECRET`) → would be dropped; (b)
+  `ENVIA_SANDBOX` is bound as a non-existent **secret** but is a **plain env var** live → would fail "secret
+  not found". **First reconcile** the script to live (move `ENVIA_SANDBOX` to `--set-env-vars` with its live
+  value; add the 3 secrets), rehearsed on staging; **then** the guard asserts full env+secret parity (script
+  `--set-env-vars`/`--set-secrets` ≡ live) so it can't drift again. See `tasks/backend-recovery-runbook.md` §5 ⚠️.
 - The guard runs in CI where these files live (confirm the monorepo repo has an Actions workflow; if not,
   add a minimal one or wire it into the existing notifier test job) and is green on the current tree.
 - A one-line pointer from `tasks/backend-recovery-runbook.md` (§4) to the guard so the link is discoverable.

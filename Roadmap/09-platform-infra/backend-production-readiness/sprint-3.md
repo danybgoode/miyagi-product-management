@@ -54,6 +54,6 @@ Env: staging Cloud Run — **✅ EXECUTED 2026-06-12** (results in `tasks/backen
 2. ✅ Repin staging traffic to the prior revision per the runbook → switched in **~9 s**, `/health` 200, restored to latest. *(Agent executed on staging — was owed to Daniel; done.)*
 3. ✅ **Startup check blocks a bad revision:** a deliberately-broken revision (bad startup path) was **rejected, took 0% traffic**, prior kept serving, health 200 throughout. ⏳ The liveness-recycle-of-a-hung-instance half is a **residual** (can't be forced without an app hang; probe verified attached) — optional, owed to Daniel.
 
-**✅ Probes applied to live prod 2026-06-12** (`medusa-web` rev `…00101`, health 200). **Residual (owed/optional to Daniel):** the optional liveness-hang confirmation; the ADMIN_CORS tightening decision; reconcile the 3-secret `deploy.sh` drift before any full prod `deploy.sh` re-run (runbook §5 ⚠️).
+**✅ Probes applied to live prod 2026-06-12** (`medusa-web` rev `…00101`, health 200). **Residual (owed/optional to Daniel):** the optional liveness-hang confirmation; the ADMIN_CORS tightening decision; reconcile the `deploy.sh`↔live drift (3 missing secrets + `ENVIA_SANDBOX` secret→plain — a full prod `deploy.sh` currently errors) before any full re-run (runbook §5 ⚠️, scoped into Story 4.2).
 
 If any step fails, note the step number + what you saw.

@@ -162,14 +162,24 @@ gcloud run services describe medusa-web --region=us-east4 \
   `STORE_CORS`); likely vestigial. **Owed decision (Daniel):** tighten ADMIN_CORS to just
   `https://api.miyagisanchez.com`, or leave as-is. Left in place for now (low-risk, no behaviour change).
 
-> **⚠️ Related drift finding (2026-06-12, out of S3 scope — flagged for follow-up).** Live `medusa-web` has
-> **3 secret bindings that `deploy.sh`'s `--set-secrets` list omits**: `FLAGSMITH_ENVIRONMENT_KEY`,
-> `MP_CLIENT_ID`, `MP_CLIENT_SECRET` (added later by the Flagsmith / MercadoPago work, preserved by image-only
-> CI deploys). Because `--set-secrets` **replaces**, a *full* `deploy.sh` re-run would **drop them** and break
-> Flagsmith + MP — the same class of latent footgun as the ADMIN_CORS default. The S3 prod probe change used a
-> targeted `services update` (preserves secrets) specifically to avoid this. **Fix owed:** add the three to
-> `deploy.sh`'s `--set-secrets`, and extend the Story 4.2 drift guard to assert the script's secret list
-> matches live. Do **not** run a full `deploy.sh` against prod until the list is reconciled.
+> **⚠️ Config-drift finding — `deploy.sh` ↔ live `medusa-web` (2026-06-12, out of S3 scope — flagged;
+> independently confirmed by the antigravity cross-review).** A full `deploy.sh` re-run against prod is
+> **currently unsafe — and would in fact error.** Because CI is image-only it never re-applies the full
+> config, so the script has silently drifted from live in three ways:
+>   1. **Missing secrets** — live binds `FLAGSMITH_ENVIRONMENT_KEY`, `MP_CLIENT_ID`, `MP_CLIENT_SECRET` (added
+>      by the Flagsmith / MercadoPago work); the script's `--set-secrets` omits all three. `--set-secrets`
+>      **replaces**, so a full run would **drop them** → Flagsmith + MP break.
+>   2. **`ENVIA_SANDBOX` wrong source** — the script binds it as a **secret** (`ENVIA_SANDBOX=ENVIA_SANDBOX:latest`),
+>      but live carries it as a **plain env var**, and **no `ENVIA_SANDBOX` secret shell exists** (only
+>      `ENVIA_SANDBOX_STAGING`). A full `deploy.sh` would therefore **fail** ("secret not found").
+>   3. **Net:** live = **9 plain env + 13 secrets**; script = **8 plain + 11 secrets**.
+> The S3 prod probe change deliberately used a **targeted `services update`** (preserves env/secrets) to avoid
+> all of this. **Do NOT run a full `deploy.sh` against prod until reconciled.** This is a real reconciliation
+> (read the live `ENVIA_SANDBOX` value → move it to `--set-env-vars`; add the 3 secrets), best **rehearsed on
+> staging** — scoped into **Story 4.2** (reconcile the script to live, then guard it from drifting again). A
+> partial fix (just adding the 3 secrets) would leave the script still broken by #2, so it is intentionally
+> **not** half-fixed in S3. *(`deploy-staging.sh` is unaffected: the 3 secrets have no `_STAGING` shells —
+> staging intentionally runs without them, Flagsmith fails open — and it binds `ENVIA_SANDBOX_STAGING`, which exists.)*
 
 ---
 
@@ -215,5 +225,5 @@ gcloud run services update medusa-web-staging --region=$REGION \
 - **(optional) Liveness-recycle confirmation** (§6 step 3b) — observe an actual restart by injecting a `/health`
   hang on a staging instance. Lower value: the probe is verified attached and the startup gate is proven.
 - **ADMIN_CORS tightening decision** (§5) — drop the two storefront origins or keep.
-- **Secret-list drift** (§5 ⚠️) — reconcile `deploy.sh`'s `--set-secrets` with the 3 extra live secrets before
-  any full `deploy.sh` re-run; fold into Story 4.2's drift guard.
+- **`deploy.sh` ↔ live drift** (§5 ⚠️) — reconcile before any full `deploy.sh` re-run (3 missing secrets +
+  `ENVIA_SANDBOX` secret→plain); a full run currently errors. Scoped into Story 4.2.
