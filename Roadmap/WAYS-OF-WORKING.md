@@ -44,7 +44,7 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
    - **Backend (Cloud Run) has no per-branch preview** — it can only be confirmed *post-merge* against prod. The agent does the API-level prod smoke + a route-deployed probe; Daniel picks up the seller/browser parts. State this split in the PR.
 6. **Push as you go.** Each push updates the preview; the reviewer (and Daniel) can test per story without touching production.
 7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). Trigger the reviewer (a fresh agent, not the builder — see *Review & merge* below). When the deterministic gate is green, the review is clean, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Vercel prod; backend → Cloud Build us-east4 → Cloud Run, ~12 min). Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
-8. **Continue / close.** Roll into the next story. At **epic close**, do the epic Definition of Done (below) — including updating the product poster.
+8. **Continue / close.** Roll into the next story. At **sprint close**, emit the sprint-wrap terminal summary (`SESSION-KICKOFFS.md` §7) — a thin pointer to the sprint doc + what's owed/next, never a re-summary. At **epic close**, do the epic Definition of Done (below) — including updating the product poster.
 
 ## Review & merge — cross-agent
 With multiple agents running in parallel, the agent that **builds** a PR is not the one that **approves** it — a

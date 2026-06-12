@@ -18,6 +18,23 @@ dev — the "communication tax" of re-passing large context (see the research no
 - `<N>` — sprint number
 - `<risk>` — **LOW** (reviewer may auto-merge on green CI) / **HIGH** (Daniel merges)
 
+## Command shorthands
+A small, fixed vocabulary so the *instruction* half of a message is unambiguous — each verb just **points**
+at a numbered kickoff/action below (same thin-pointer principle; vendor-neutral). Pleasantries are fine and
+cost nothing — the leverage is the defined verb, not trimming "great work."
+
+| Say this | Expands to |
+|---|---|
+| **Groom: \<ask\>** | §1 — groom a raw ask |
+| **Build S\<N\> of \<epic\>** | §2 — build a sprint |
+| **Spike \<name\>** | §3 — run a spike |
+| **Review PR #\<N\>** | §4 — fresh-reviewer single pass |
+| **Cross-review PR #\<N\> [codex\|antigravity]** | §4 advisory line — `node scripts/cross-review.mjs` (never gates) |
+| **Wrap S\<N\>** | tick the sprint doc status + emit the §7 sprint-wrap terminal summary |
+| **Close epic \<slug\>** | §6 — full epic Definition of Done |
+| **Clear to merge — LOW** / **Daniel-merge** | the risk-tier gate: reviewer auto-merges on green CI / Daniel merges |
+| **Next** | proceed to the next story/sprint per the current `sprint-N.md` |
+
 ---
 
 ## 1 · Groom a raw ask — Cowork (strong model)
@@ -74,6 +91,20 @@ Close epic <epic-slug> per WAYS Definition of Done (epic): all sprints merged + 
 each sprint-N.md has its smoke walkthrough · README ✅ · RETROSPECTIVE.md written · product poster
 (Roadmap/README.md) updated · team memory + MEMORY.md index updated · promote durable learnings into
 LEARNINGS.md (dedupe — sharpen, don't append near-duplicates) · branch deleted.
+```
+
+## 7 · Sprint-wrap terminal summary — what an agent prints when a sprint lands
+The on-screen handoff when a sprint wraps (triggered by the **"Wrap S\<N\>"** shorthand). This is the
+*terminal* message, **not** a doc — the durable record is the `sprint-N.md` (+ `RETROSPECTIVE.md` at epic
+close). Keep it a **thin pointer + the delta Daniel must act on**; do **not** re-narrate what the doc already
+holds (that re-summary is the only "double work" here — the fix is to point, not repeat).
+```
+✅ S<N> "<epic>" wrapped — <one line: what shipped>
+Merged:  PR #<N> (<commit>) · risk <LOW|HIGH>
+Gate:    tsc + build + Playwright green (CI <run id/link>)
+Owed to you (can't self-smoke): <money/auth/browser steps by name — or "none">
+Next:    <next story/sprint — or DECISION needed from you>
+Detail:  Roadmap/<NN-macro>/<epic>/sprint-<N>.md   ← source of truth, not repeated here
 ```
 
 ---
