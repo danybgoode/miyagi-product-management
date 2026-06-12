@@ -30,8 +30,10 @@ not a deploy — it's instant and reversible.
 
 ## 1 · Fast path — Cloud Run revision repin
 
-Cloud Run keeps prior revisions (live today: `…00094`–`00100`). Traffic normally rides `latestRevision`, so a
-bad deploy auto-takes 100% traffic. Repin moves 100% to a **named prior good revision** in seconds.
+Cloud Run keeps prior revisions (observed 2026-06-12: `…00094`–`00100`, current live at 100%). Traffic
+normally rides `latestRevision`, so a bad deploy auto-takes 100% traffic. Repin moves 100% to a **named prior
+good revision** in seconds. *(Revision names below are illustrative — always run step 1 to read the current
+list; don't copy a stale name.)*
 
 ```bash
 gcloud config configurations activate bonsai-profile        # leroytramafat@gmail.com
@@ -109,7 +111,7 @@ traffic could hit a still-booting or wedged instance. S3 upgraded both probes to
 | **startup** | `httpGet /health`, period 10s × failureThreshold 24 = **≤240s** to become ready | A revision that never serves a healthy `/health` is marked failed and **denied traffic** — the prior revision keeps serving. Budget matches the old 240s TCP window. |
 | **liveness** | `httpGet /health`, period 30s × failureThreshold 3 (≈90s) | A hung-but-listening instance failing `/health` is **auto-restarted**. Generous on purpose so transient blips don't kill healthy instances. |
 
-- `/health` is unauthenticated (probe sends no creds) — verified 200 anon.
+- `/health` is unauthenticated (probe sends no creds) — observed 200 anon 2026-06-12 (S0 audit + S3).
 - **The probe change reaches prod only on the next prod deploy** (`deploy.sh` re-run / next `main` build).
   Until then the live `medusa-web` still has the old TCP startup probe. *(Live prod re-deploy owed to Daniel
   — see "Owed to Daniel".)*
@@ -124,25 +126,27 @@ traffic could hit a still-booting or wedged instance. S3 upgraded both probes to
 ## 5 · Admin exposure + ADMIN_CORS (S3 security riders)
 
 **Admin exposure — decision: KEEP `/app` + harden (2026-06-12, Daniel).** The Medusa admin SPA is served by
-`medusa-web` at `/app` and is reachable in prod (`GET /app → 200`). Login is gated (`POST
-/auth/user/emailpass → 401` to anon), so this is an *intentional posture*, not an open door. `medusa-config.ts`
+`medusa-web` at `/app` and is reachable in prod (`GET /app → 200`, observed 2026-06-12). Login is gated
+(`POST /auth/user/emailpass → 401` to anon, observed 2026-06-12), so this is an *intentional posture*, not an
+open door. `medusa-config.ts`
 serves it unless `DISABLE_MEDUSA_ADMIN==='true'` (unset). **Conscious choice:** keep the hosted admin (it's
 used); hardening = strong admin credentials + treat the admin origin as sensitive; a bastion / IP-allowlist
 is the future tightening lever if the auth surface ever needs shrinking. To disable instead: set
 `DISABLE_MEDUSA_ADMIN=true` in `deploy.sh` env and redeploy.
 
-**ADMIN_CORS — confirmed + corrected (2026-06-12).** Live `medusa-web` `ADMIN_CORS` =
+**ADMIN_CORS — confirmed + corrected.** Live `medusa-web` `ADMIN_CORS` (observed 2026-06-12) =
 `https://miyagisanchez.com, https://www.miyagisanchez.com, https://api.miyagisanchez.com`.
 
-- `https://api.miyagisanchez.com` is **required and intended** — it's the admin's own serving origin, so the
-  admin SPA's same-origin XHR to `/admin/*` needs it. This is the "extra origin" the S0 audit flagged; it is
-  **correct**, given KEEP-`/app`.
-- **Bug found + fixed:** `deploy.sh`'s `ADMIN_CORS` *default* previously **omitted** `api.miyagisanchez.com`,
-  so a re-run would have silently dropped it from live ADMIN_CORS and **broken the admin UI**. S3 corrected
-  the default to include it. *(verified by reading live config; fix is in the deploy script, applies on next
-  prod deploy.)*
-- The two storefront origins (`miyagisanchez.com`, `www`) are **not needed by the admin API** (the storefront
-  uses `STORE_CORS`); they're vestigial but harmless. **Owed decision (Daniel):** tighten ADMIN_CORS to just
+- `https://api.miyagisanchez.com` is the admin's own serving origin (`/app`) and part of the **working** live
+  config — the "extra origin" the S0 audit flagged. *Mechanism note:* same-origin requests don't strictly
+  need CORS, but Medusa still validates the `Origin` header against `adminCors`, so **the live list is the
+  source of truth to preserve** — don't reason about it purely from CORS theory.
+- **Drift bug found + fixed:** `deploy.sh`'s `ADMIN_CORS` *default* **omitted** `api.miyagisanchez.com`.
+  Because the deploy uses `--set-env-vars` (replace, not merge), a re-run would reset live ADMIN_CORS to the
+  default — **dropping that origin** and diverging from the known-good live config (risking rejected admin
+  requests). S3 corrected the default to match live. *(applies on the next prod deploy.)*
+- The two storefront origins (`miyagisanchez.com`, `www`) aren't used by the admin path (the storefront uses
+  `STORE_CORS`); likely vestigial. **Owed decision (Daniel):** tighten ADMIN_CORS to just
   `https://api.miyagisanchez.com`, or leave as-is. Left in place for now (low-risk, no behaviour change).
 
 ---

@@ -50,9 +50,10 @@ else
 fi
 
 echo "▶ Deploying $SERVICE_WEB (min=0, Redis-OFF, no VPC connector)…"
-# Health probes mirror prod deploy.sh exactly (Backend Production Readiness S3):
-# HTTP GET /health startup + liveness, so staging is the place to rehearse probe
-# behaviour (a broken revision is denied traffic; a hung instance is recycled).
+# Health probes — the probe flags here match prod deploy.sh (Backend Production Readiness
+# S3): HTTP GET /health startup + liveness. (Other runtime posture intentionally differs —
+# Redis-off, no MEDUSA_BACKEND_URL, min=0.) Staging is the place to rehearse probe behaviour
+# (a broken revision is denied traffic; a hung instance is recycled).
 # MEDUSA_BACKEND_URL is intentionally unset → the admin bundle defaults to
 # same-origin ("/"), avoiding a chicken-and-egg with the not-yet-known URL.
 gcloud run deploy "$SERVICE_WEB" \

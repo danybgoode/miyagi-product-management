@@ -19,13 +19,15 @@ IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/backend:${TAG}
 
 # Public, non-secret config:
 STORE_CORS="${STORE_CORS:-https://miyagisanchez.com,https://www.miyagisanchez.com}"
-# ADMIN_CORS MUST include the admin's own serving origin (api.miyagisanchez.com),
-# where the Medusa admin SPA (/app) is served and makes same-origin XHR to /admin/*.
-# Backend Production Readiness S3 fixed this default — it previously omitted the api
-# origin, so a re-run silently dropped it from live ADMIN_CORS and broke the admin UI.
-# The two storefront origins are vestigial (storefront uses STORE_CORS); kept for now,
-# flagged to Daniel for a tightening decision. Admin-exposure posture: KEEP /app + harden
-# (see tasks/backend-recovery-runbook.md → Admin exposure).
+# ADMIN_CORS lists the origins Medusa accepts admin-dashboard requests from. Live medusa-web
+# includes api.miyagisanchez.com (the admin SPA's own serving origin, /app). This default
+# previously OMITTED it — and because the deploy uses --set-env-vars (replace, not merge), a
+# re-run would reset live ADMIN_CORS to the default and DROP that origin, diverging from the
+# known-good live config. S3 corrected the default to match live. (Same-origin requests don't
+# strictly need CORS, but Medusa still validates the Origin header against adminCors — so the
+# live list, not CORS theory, is the source of truth.) The two storefront origins are likely
+# vestigial (storefront uses STORE_CORS); kept for now, flagged to Daniel for a tightening
+# decision. Admin-exposure posture: KEEP /app + harden (see tasks/backend-recovery-runbook.md).
 ADMIN_CORS="${ADMIN_CORS:-https://miyagisanchez.com,https://www.miyagisanchez.com,https://api.miyagisanchez.com}"
 AUTH_CORS="${AUTH_CORS:-https://miyagisanchez.com,https://www.miyagisanchez.com}"
 CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY:?set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY value (publishable, not secret)}"
