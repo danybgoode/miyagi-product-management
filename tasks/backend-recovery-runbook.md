@@ -112,10 +112,15 @@ traffic could hit a still-booting or wedged instance. S3 upgraded both probes to
 | **liveness** | `httpGet /health`, period 30s × failureThreshold 3 (≈90s) | A hung-but-listening instance failing `/health` is **auto-restarted**. Generous on purpose so transient blips don't kill healthy instances. |
 
 - `/health` is unauthenticated (probe sends no creds) — observed 200 anon 2026-06-12 (S0 audit + S3).
+- **Flag shape verified.** The `--startup-probe`/`--liveness-probe` KEY=VALUE form (dotted keys, e.g.
+  `httpGet.port=8080,timeoutSeconds=10`) is confirmed by `gcloud run deploy --help` on the installed SDK
+  (`Google Cloud SDK 555.0.0`). The **live parse + apply** is verified by the **staging deploy** (the S3
+  rollback rehearsal re-runs `deploy-staging.sh` with these exact flags) — see §6. Staging is deliberately
+  the first place these flags hit a real `gcloud run deploy`, so a prod deploy never meets them untested.
 - **The probe change reaches prod only on the next prod deploy** (`deploy.sh` re-run / next `main` build).
   Until then the live `medusa-web` still has the old TCP startup probe. *(Live prod re-deploy owed to Daniel
   — see "Owed to Daniel".)*
-- Verify after deploy:
+- Verify the applied probes (after any deploy):
   ```bash
   gcloud run services describe medusa-web --region=us-east4 \
     --format='yaml(spec.template.spec.containers[0].startupProbe, spec.template.spec.containers[0].livenessProbe)'
@@ -135,7 +140,13 @@ is the future tightening lever if the auth surface ever needs shrinking. To disa
 `DISABLE_MEDUSA_ADMIN=true` in `deploy.sh` env and redeploy.
 
 **ADMIN_CORS — confirmed + corrected.** Live `medusa-web` `ADMIN_CORS` (observed 2026-06-12) =
-`https://miyagisanchez.com, https://www.miyagisanchez.com, https://api.miyagisanchez.com`.
+`https://miyagisanchez.com, https://www.miyagisanchez.com, https://api.miyagisanchez.com`. Read via:
+```bash
+gcloud run services describe medusa-web --region=us-east4 \
+  --format='json(spec.template.spec.containers[0].env)'   # then read the ADMIN_CORS entry
+# Probe state (the pre-S3 TCP socket) was read from the same describe under
+#   spec.template.spec.containers[0].startupProbe   → tcpSocket.port: 8080 (no livenessProbe).
+```
 
 - `https://api.miyagisanchez.com` is the admin's own serving origin (`/app`) and part of the **working** live
   config — the "extra origin" the S0 audit flagged. *Mechanism note:* same-origin requests don't strictly
