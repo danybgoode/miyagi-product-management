@@ -1,6 +1,6 @@
 # Homepage Polish — Dirección B — Sprint 1: Icon language migration
 
-**Status:** ⬜ not started · **Risk:** LOW *(touches shared `lib/types.ts` + renderers — announce per LEARNINGS)*
+**Status:** 🏗️ built — draft PR [#84](https://github.com/danybgoode/miyagisanchezcommerce/pull/84), commit `54a01bd` · **Risk:** LOW *(touches shared `lib/types.ts` + renderers — announced in the PR per LEARNINGS)*
 
 > Ship first, independently. Establishes the single Iconoir language the rest of the epic assumes.
 
@@ -26,15 +26,17 @@ the marketplace feels coherent and modern instead of an emoji grab-bag.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com  (or the branch preview URL while pre-merge)
+Env: pre-merge → the PR's Vercel **preview** URL (see PR #84 checks); post-merge → production · https://miyagisanchez.com
 
-1. Open https://miyagisanchez.com
-   → The category row shows line icons (car, home, smartphone…), **no emoji** anywhere.
-2. Open https://miyagisanchez.com/l
-   → Category filters show the same Iconoir glyphs; no 🚗/🏠/📱 remain.
-3. Find any listing from a verified shop on the home grid.
-   → The verified mark is the `iconoir-badge-check` icon, not a "✓" text glyph.
+1. Open the homepage (`/`).
+   → The category chip row shows line icons (grid for "Todo", car, home, smartphone…), **no emoji** anywhere.
+2. Open the listings page (`/l`).
+   → The category **chip rail** shows the same Iconoir glyphs (no 🚗/🏠/📱 remain). Open the **"Filtrar y ordenar"** sheet → the *Categoría* `<select>` lists plain category labels with **no emoji prefix** (a native dropdown can't render an icon font — by design, the emoji is dropped, not replaced with a glyph).
+3. Find any listing from a **verified** shop on the home grid (and open that shop's page `/s/[slug]`).
+   → The verified mark is the `iconoir-badge-check` icon next to the shop name, not a "✓" text glyph — on the grid card, the shop page header ("✓ Verificado" pill → badge-check + "Verificado"), and the PDP seller card.
 4. Toggle dark mode and calm mode (header).
-   → Icons render correctly in both; no missing-glyph boxes, no hardcoded colors.
+   → Icons render correctly in both; no missing-glyph boxes (e.g. `mascotas` shows the provisional `fish`), no hardcoded colors.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Owed to Daniel:** none — anonymous/presentational, no money/auth path. The `e2e/home-icons.spec.ts` api spec (CI vs preview) covers the homepage SSR.
