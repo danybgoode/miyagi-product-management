@@ -1,8 +1,9 @@
 # Backend Production Readiness — Sprint 2: Backups verified + restore drill
 
-**Status:** ✅ **BUILT 2026-06-11** — Neon restore **drill executed** on staging (PITR proven); Supabase+Neon
-`pg_dump`→R2 escrow pipeline **built** (live activation owed to Daniel); R2 + Secret-Manager posture +
-RPO/RTO runbook written. · **Risk:** HIGH (data; drill ran against staging, never prod). · Daniel merges.
+**Status:** ✅ **COMPLETE — PIPELINE LIVE 2026-06-12, both restore drills executed.** Built 2026-06-11
+(PR #9 `8d8d311`); activated 2026-06-12 (PR #10 `c010bf8`): daily `pg_dump`→R2 escrow live for Supabase+Neon
+(first dumps verified by read-back), Neon PITR drill on staging ✅, **Supabase escrow→scratch restore drill ✅**
+(exact match vs live). Nothing owed. · **Risk:** HIGH (data; drills on staging/scratch, never prod).
 
 > **Build:** branch `feat/backend-prod-readiness-s2`. Artifacts: `tasks/backup-and-restore-runbook.md`
 > (RPO/RTO per store + the executed Neon drill log) · `infra/gcp/backups/` (`db-backup.sh`, `Dockerfile`,
@@ -63,7 +64,9 @@ Env: staging / data consoles
   verified in R2** (see runbook for sizes).
 
 ### Still owed to Daniel
-- Drill one **Supabase** `pg_restore` from the R2 escrow into a scratch DB (closes the last untested path).
+- ~~Drill one **Supabase** `pg_restore` from the R2 escrow~~ — ✅ **EXECUTED 2026-06-12** (Daniel-authorized):
+  R2 dump → Docker PG17 scratch → exact row-count + known-record match vs live (drill log in the runbook).
+  **Every S2 restore path is now rehearsed; nothing remains owed on this sprint.**
 - Optional: a lock rule on `miyagicommerce` for digital goods; revisit Neon Launch ($19/mo) if 6h PITR
   proves too loose.
 - **Cross-agent audit (Codex, PR #9):** all 3 findings addressed in-branch — R2 token model corrected

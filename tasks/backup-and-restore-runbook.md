@@ -15,7 +15,7 @@
 | **Secret Manager** | Stripe/MP/Clerk/DB/JWT… (16 secrets) | versioned by GCP **+ encrypted offline escrow** | — (change-driven) | minutes | escrow procedure documented |
 
 RPO = max data loss window; RTO = time to restore service. Figures are **targets**; the Neon PITR figure is
-the live free-tier maximum (see below), the daily job is **live** (cron 09:00 UTC; first run verified 2026-06-12 — supabase 185,242 B + neon 179,760 B, read back from R2, gzip-clean, `PGDMP` magic); the Supabase restore drill remains owed to Daniel.
+the live free-tier maximum (see below), the daily job is **live** (cron 09:00 UTC; first run verified 2026-06-12 — supabase 185,242 B + neon 179,760 B, read back from R2, gzip-clean, `PGDMP` magic); the Supabase restore drill was **executed 2026-06-12** (see §2) — every store's restore path is now rehearsed.
 
 ---
 
@@ -63,7 +63,27 @@ branches are copy-on-write isolated and the command named the staging branch by 
   --no-privileges --clean --if-exists` into a **scratch/staging** DB first; selective table restore via
   `pg_restore --data-only --table=<t>`. PG17 client. RTO minutes–<1h.
 - **Status:** **LIVE 2026-06-12** — `backup_ro` (with `BYPASSRLS`; without it the 6 RLS tables dumped EMPTY)
-  over the IPv4 session pooler; first dump verified in R2. **A Supabase restore drill remains owed to Daniel.**
+  over the IPv4 session pooler; first dump verified in R2.
+
+### ✅ Supabase restore drill — EXECUTED from the R2 escrow (2026-06-12, Daniel-authorized)
+Proved the full escrow→restore path into a scratch DB (local Docker `postgres:17-alpine` — PG17
+client+server, fully isolated; no cloud resources, prod untouched).
+1. **Fetch:** `wrangler r2 object get "miyagi-db-escrow/supabase/2026/06/12/supabase-…dump.gz" --file … --remote`
+   (185,242 B → 504,504 B unpacked).
+2. **Scratch server:** `docker run -d --name sb-drill -p 127.0.0.1:54329:5432 postgres:17-alpine`; create
+   `scratch_drill` DB; **pre-create the Supabase platform roles** (`anon`, `authenticated`, `service_role`, …
+   as `NOLOGIN`) so RLS-policy restores don't error.
+3. **Restore:** `pg_restore --no-owner --no-privileges --clean --if-exists` (PG17 binary). Exit 1 with
+   **5 ignorable platform errors** — 3× the Supabase-managed `supabase_vault` extension (absent in vanilla
+   Postgres; we store nothing in vault) + 2× RLS policies naming `authenticated` (cosmetic in a scratch
+   verify; the role exists in real Supabase). **No data errors.**
+4. **Verify — exact match against the live DB on every metric:** 49 public tables; rows
+   `convs=3 · conv_events=7 · offers=3 · favs=3 · supply_batches=8 · supply_items=44`; known record
+   (conversation `5a61dce0-…cb497`, 2026-05-29) present in both.
+5. **Teardown:** container + image + dump deleted.
+- **Gotchas for the next operator:** `docker exec` needs **`-i`** for heredoc stdin (without it psql
+  silently runs nothing); expect ~5 platform errors as above — count them, don't fear them; a *real*
+  recovery restores into a Supabase project (roles/extensions present), where they vanish.
 
 ---
 
