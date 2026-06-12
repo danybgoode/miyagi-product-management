@@ -229,13 +229,48 @@ gcloud run services update medusa-web-staging --region=$REGION \
 
 ---
 
+## 7 · Monitoring & alerting (S4, Story 4.1)
+
+Before S4 the backend had **zero proactive observability** (audit gaps #2/#7): no uptime check, no alert
+policies, no error alerting — outages/5xx/OOM were invisible until a user reported them. The
+[`MiyagiDevopsTele`](../infra/gcp/provision-monitoring.sh) notification channel existed but **no policy used
+it**. S4 wires it up as code.
+
+**Provisioner:** [`infra/gcp/provision-monitoring.sh`](../infra/gcp/provision-monitoring.sh) — idempotent,
+`TARGET=staging|prod`, resolves the channel by display name, and create-if-absent stands up:
+
+| Resource | Signal | Threshold (conservative; tune live) |
+|---|---|---|
+| **Uptime check** | HTTPS `GET /health` (prod = `api.miyagisanchez.com`, staging = run.app host) | period 5m, timeout 10s |
+| **Uptime-failure** alert | `/health` not passing | fraction-true < 1 over 5m |
+| **5xx rate** alert | `request_count` `response_code_class=5xx` | > 0.05/s over 5m |
+| **p95 latency** alert | `request_latencies` p95 | > 2000 ms over 5m |
+| **Memory** alert | `container/memory/utilizations` p99 | > 90% over 5m |
+| **Instance saturation** alert | `container/instance_count` state=active | ≥ max-instances over 5m |
+| **Backend errors** alert | Cloud Run logs `severity>=ERROR` (Error Reporting auto-groups these) | matched-log, rate-limited 1/h |
+
+All policies route to `MiyagiDevopsTele`. **Deploy events** already ship via the `cicd-telegram-build-notifier`
+Cloud Function (verified `ACTIVE` 2026-06-12 — not rebuilt). Run:
+```bash
+TARGET=staging bash infra/gcp/provision-monitoring.sh   # rehearse first
+TARGET=prod    bash infra/gcp/provision-monitoring.sh   # owed to Daniel
+# verify:
+gcloud monitoring uptime list-configs --project=miyagisanchezback-497722 --format='value(displayName)'
+gcloud alpha monitoring policies list --project=miyagisanchezback-497722 --format='value(displayName)'
+```
+**Dependency/CVE scanning** (gap #13) ships as Dependabot in the backend repo (`.github/dependabot.yml`).
+
+---
+
 ## Owed to Daniel (live / prod creds)
 - ✅ **DONE 2026-06-12 — HTTP `/health` startup + liveness probes APPLIED to live prod** (`medusa-web`,
   revision `…00101`, targeted `services update`; health 200; preserved across image-only CI deploys). ADMIN_CORS
   on prod was already correct (3 origins incl. the admin origin) — no live CORS change needed; the `deploy.sh`
   default fix lands with this PR's merge.
+- **(S4) Run `provision-monitoring.sh TARGET=prod`** + confirm a real downtime/5xx/error alert **arrives in the
+  Telegram channel** (holds the GCP/channel creds). Agent rehearsed `TARGET=staging`.
 - **(optional) Liveness-recycle confirmation** (§6 step 3b) — observe an actual restart by injecting a `/health`
   hang on a staging instance. Lower value: the probe is verified attached and the startup gate is proven.
 - **ADMIN_CORS tightening decision** (§5) — drop the two storefront origins or keep.
-- **`deploy.sh` ↔ live drift** (§5 ⚠️) — reconcile before any full `deploy.sh` re-run (3 missing secrets +
-  `ENVIA_SANDBOX` secret→plain); a full run currently errors. Scoped into Story 4.2.
+- ✅ **`deploy.sh` ↔ live drift RECONCILED (§5, S4 Story 4.2)** — 9 plain env + 13 secrets ≡ live, guarded; a
+  full `deploy.sh` re-run is safe again (still a Daniel-authorized op — it resets the full env/secret/CORS set).
