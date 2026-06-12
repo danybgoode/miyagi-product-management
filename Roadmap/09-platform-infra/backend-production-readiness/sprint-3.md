@@ -25,7 +25,7 @@ deploy is reversible in minutes and a sick instance is recycled automatically.
   which; expected time-to-recover — [`tasks/backend-recovery-runbook.md`](../../../tasks/backend-recovery-runbook.md)
   (decision table + §1 repin + §2 revert). A rollback **rehearsed on staging — owed to Daniel** (§6 / smoke #2–3).
 - ✅ **Startup + liveness health checks** configured in `deploy.sh` + `deploy-staging.sh` (failed-startup
-  revisions denied traffic; hung instances auto-recycled). **Applies to live prod on next deploy — owed to Daniel.**
+  revisions denied traffic; hung instances auto-recycled). **✅ Applied to live prod 2026-06-12** (rev `…00101`).
 - ✅ A **migration-rollback posture** is written (forward-only → forward-fix / backup-restore; a repin can't
   fix a bad migration — runbook §3).
 - ✅ **Startup probe switched TCP:8080 → HTTP `/health`** + a **liveness probe** on `/health` added (both scripts,
@@ -35,12 +35,10 @@ deploy is reversible in minutes and a sick instance is recycled automatically.
   default bug was found + fixed** (it omitted that origin → a re-run would have broken the admin UI).
 **Risk:** HIGH
 
-**Built (commit refs added on merge):**
+**Merged to `main` 2026-06-12 via PR #12 (squash `0c9015a`).** Files:
 - `tasks/backend-recovery-runbook.md` (NEW) · `infra/gcp/deploy.sh` + `deploy-staging.sh` (probes + ADMIN_CORS default) · `infra/gcp/README.md` (pointer).
 
-**Owed to Daniel (live, prod creds):** apply the probe + ADMIN_CORS-default fixes to live `medusa-web` (next prod
-deploy); run the staging rollback rehearsal (smoke #2–3); decide whether to drop the two vestigial storefront
-origins from ADMIN_CORS (runbook §5).
+**✅ Done by agent:** probes applied to live `medusa-web` (rev `…00101`); staging rollback drill executed (repin + startup-probe gate). **Residual (owed/optional to Daniel):** optional liveness-hang confirmation; ADMIN_CORS-tightening decision; the `deploy.sh`↔live drift reconcile before any full prod `deploy.sh` re-run (runbook §5 ⚠️, → Story 4.2).
 
 ## Sprint QA
 - **api spec(s):** none (infra). A health-probe `curl` + a rehearsed staging rollback are the verification.
