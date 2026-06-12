@@ -82,6 +82,7 @@ function parseArgs(argv) {
     else pos.push(a);
   }
   [out.cmd, out.name] = pos;
+  if (pos.length > 2) die(`unexpected extra argument '${pos[2]}' (try --help)`);
   return out;
 }
 

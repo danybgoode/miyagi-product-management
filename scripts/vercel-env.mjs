@@ -65,6 +65,10 @@ function parseArgs(argv) {
     else pos.push(a);
   }
   [out.cmd, out.key, out.value] = pos;
+  const arity = { set: 3, verify: 2, delete: 2 };
+  if (out.cmd && arity[out.cmd] !== undefined && pos.length > arity[out.cmd]) {
+    die(`unexpected extra argument '${pos[arity[out.cmd]]}' for ${out.cmd} (try --help)`);
+  }
   for (const e of out.envs) {
     if (!TARGETS.includes(e)) die(`invalid --env '${e}' — use ${TARGETS.join('|')}`);
   }
@@ -110,6 +114,32 @@ function entriesForKey(envs, key) {
   return envs.filter((e) => e.key === key);
 }
 
+const targetsOf = (e) => (Array.isArray(e.target) ? e.target : [e.target]);
+
+// Remove `targets` from an existing entry without dropping the rest of its coverage: an entry
+// spanning [production,preview,development] hit by `--env preview` must keep production+development.
+// Vercel has no per-target detach, so the remainder is re-created with the entry's decrypted value;
+// if that value can't be read back, abort BEFORE deleting rather than silently shrink coverage.
+async function removeTargets(projectId, entry, targets) {
+  const remaining = targetsOf(entry).filter((t) => !targets.includes(t));
+  if (remaining.length) {
+    const full = await getDecrypted(projectId, entry.id);
+    if (!full.decrypted || typeof full.value !== 'string') {
+      die(
+        `${entry.key} also covers [${remaining.join(',')}] and its value can't be decrypted to preserve ` +
+          `them — re-run against all of [${targetsOf(entry).join(',')}] instead.`
+      );
+    }
+    await api('DELETE', `/v9/projects/${projectId}/env/${entry.id}`);
+    await api('POST', `/v10/projects/${projectId}/env`, {
+      body: { key: entry.key, value: full.value, type: entry.type || 'encrypted', target: remaining },
+    });
+    process.stderr.write(`  kept ${entry.key} [${remaining.join(',')}] (re-created with its existing value)\n`);
+  } else {
+    await api('DELETE', `/v9/projects/${projectId}/env/${entry.id}`);
+  }
+}
+
 function fmtEntry(e, len) {
   const targets = (Array.isArray(e.target) ? e.target : [e.target]).join(',');
   const updated = e.updatedAt ? new Date(e.updatedAt).toISOString() : '?';
@@ -123,13 +153,12 @@ async function cmdSet(projectId, key, value, envs) {
   const targets = envs.length ? envs : [...TARGETS];
 
   // Update = DELETE existing entries whose targets overlap, then POST fresh (PATCH is unreliable).
+  // Partial overlap keeps its non-target coverage (see removeTargets).
   const existing = entriesForKey(await listEnvs(projectId), key);
-  const overlapping = existing.filter((e) =>
-    (Array.isArray(e.target) ? e.target : [e.target]).some((t) => targets.includes(t))
-  );
+  const overlapping = existing.filter((e) => targetsOf(e).some((t) => targets.includes(t)));
   for (const e of overlapping) {
-    await api('DELETE', `/v9/projects/${projectId}/env/${e.id}`);
-    process.stderr.write(`  deleted existing ${key} [${(Array.isArray(e.target) ? e.target : [e.target]).join(',')}]\n`);
+    await removeTargets(projectId, e, targets);
+    process.stderr.write(`  removed existing ${key} [${targetsOf(e).filter((t) => targets.includes(t)).join(',')}]\n`);
   }
 
   await api('POST', `/v10/projects/${projectId}/env`, {
@@ -169,13 +198,13 @@ async function cmdDelete(projectId, key, envs) {
   if (!key) die('delete requires <KEY>.');
   const entries = entriesForKey(await listEnvs(projectId), key);
   if (!entries.length) die(`${key} is not set on project ${projectId} — nothing to delete.`);
-  const targets = envs.length ? envs : null;
+  const targets = envs.length ? envs : [...TARGETS];
   let n = 0;
   for (const e of entries) {
-    const eTargets = Array.isArray(e.target) ? e.target : [e.target];
-    if (targets && !eTargets.some((t) => targets.includes(t))) continue;
-    await api('DELETE', `/v9/projects/${projectId}/env/${e.id}`);
-    process.stderr.write(`✓ deleted ${key} [${eTargets.join(',')}]\n`);
+    const hit = targetsOf(e).filter((t) => targets.includes(t));
+    if (!hit.length) continue;
+    await removeTargets(projectId, e, targets);
+    process.stderr.write(`✓ deleted ${key} [${hit.join(',')}]\n`);
     n++;
   }
   if (!n) die(`${key} exists but no entry covers [${targets.join(',')}].`);
