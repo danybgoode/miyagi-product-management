@@ -62,6 +62,31 @@ node scripts/vercel-env.mjs delete MY_KEY
 **Env:** `VERCEL_API_TOKEN` + `VERCEL_PROJECT_ID` required; `VERCEL_TEAM_ID` optional (tokens are
 team-aware — a team-owned project needs `?teamId=`). Zero npm deps — Node 18+ (global `fetch`).
 
+## flags.mjs — manage Flagsmith flags via the Admin API
+
+Convenience tool over the Flagsmith Admin API (SaaS project `miyagisanchezmarketplace`, id 39767) —
+it does **not** auto-flag epics or gate anything. It exists because a flag defined only in code
+(`lib/flags.ts DEFAULT_FLAGS`) is **invisible in the dashboard until created via the API**
+(LEARNINGS, custom-domain-paywall). `create` makes the flag at **project level**, so it appears in
+**every environment** immediately and is toggleable in the dashboard from minute one.
+
+```bash
+node scripts/flags.mjs list                                  # features × environments grid
+node scripts/flags.mjs create my.kill_switch --on            # kill-switch ⇒ default ON (fail-open)
+node scripts/flags.mjs create my.new_gate --off              # enablement ⇒ default OFF (never traps users)
+node scripts/flags.mjs flip my.new_gate --on --env Production  # --env omitted ⇒ flips ALL envs
+node scripts/flags.mjs delete my.new_gate
+```
+
+**Polarity rule (baked into `--help` + the create output):** a **kill-switch** defaults **ON**
+(disabling is the deliberate act); an **enablement** flag defaults **OFF** (a flag outage can never
+trap users behind a new gate). Mirror the default in `lib/flags.ts DEFAULT_FLAGS` with a polarity
+comment. Both project environments use **v2 feature versioning**, so `flip` writes via the
+create-version → patch → publish flow (handled automatically; legacy envs get a direct PATCH).
+
+**Env:** `FLAGSMITH_ADMIN_API_TOKEN` required (staged in `apps/miyagisanchez/.env.local`);
+`FLAGSMITH_PROJECT_ID` optional (default `39767`). Zero npm deps — Node 18+ (global `fetch`).
+
 ## cross-review.mjs — advisory cross-agent second opinion on a PR
 
 Pipes a PR diff into a **different model family's** CLI (Codex or Antigravity) for one pass and posts the
