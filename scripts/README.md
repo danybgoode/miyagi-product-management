@@ -19,10 +19,22 @@ NOTION_TOKEN=secret_xxx NOTION_DB_ID=eb68a1fd05f443b184b6b5b3db89f47e \
   node scripts/roadmap-to-notion.mjs --sync
 ```
 
-**Rows:** one per epic folder under `Roadmap/<NN-macro>/<slug>/`, plus one per seed in
-`Roadmap/00-ideas/seeds/` whose frontmatter `epic:` is null (the un-scaffolded funnel). Status is
-derived docs-first (RETROSPECTIVE/poster ✅ → Shipped; ticked sprint stories → In progress; epic dir
-→ Scaffolded; else the seed's frontmatter status).
+**Rows — three grains (full funnel):**
+- **Epic** — one per epic folder under `Roadmap/<NN-macro>/<slug>/` (has a `README.md`).
+- **Sprint** — one per `sprint-N.md` inside an epic, linked to its Epic via the **Epic** relation property.
+- **Seed** — one per seed in `Roadmap/00-ideas/seeds/` whose frontmatter `epic:` is null (un-scaffolded funnel).
+
+**Status (re-derived docs-first every run):**
+- **Sprint** — reads the sprint's `**Status:**` line first (controlled vocab: ⬜ Planned · 🏗 In progress ·
+  🟦 In review · ✅ Shipped), else falls back to counting story ✅ ticks. *Tip: the "Wrap S\<n>" step
+  (`Roadmap/SESSION-KICKOFFS.md` §7) should set that line — it keeps this projection trivially reliable.*
+- **Epic** — rolled up from its sprints (all Shipped ⇒ Shipped · any active ⇒ In progress · all Planned ⇒
+  Scaffolded), corroborated by a **dated** `RETROSPECTIVE.md` ship-marker for closed epics.
+- **Seed** — its frontmatter `status`.
+
+**Notion schema this expects:** Status options `Raw · Ready · Queued · Planned · Scaffolded · In progress ·
+In review · Shipped · Archived`; Grain options `Epic · Sprint · Seed`; an **Epic** relation property
+(Sprint → Epic, self-relation). Add these once before the first sprint-grain `--sync`.
 
 `NOTION_TOKEN` is a Notion internal-integration token with access to the database (share the DB with
 the integration). Zero npm deps — Node 18+ (uses global `fetch`).
