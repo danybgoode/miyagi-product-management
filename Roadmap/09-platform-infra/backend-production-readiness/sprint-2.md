@@ -48,16 +48,24 @@ Env: staging / data consoles
 3. ✅ Prod untouched **by construction** — the restore named only `staging`; Neon branches are copy-on-write
    isolated. Prod was deliberately **not queried** (honoring the "never prod" boundary).
 
-### Owed to Daniel (live activation — access not held by the build session)
-- **R2:** create the escrow bucket + a bucket-scoped Object Read & Write token + versioning/lifecycle;
-  enable versioning/lifecycle on the existing image + digital buckets.
-- ~~**Neon** read-only role + DSN~~ — ✅ done in-session (Daniel-authorized 2026-06-11): `backup_ro` on prod
-  (verified read-ok/write-denied), DSN stored as Secret Manager `NEON_BACKUP_DSN` v1.
-- **Supabase:** create the **read-only** role + session-pooler DSN (SQL in `BACKUPS.md`) → `SUPABASE_BACKUP_DSN`.
-- Then: drop the R2 values into Secret Manager; run `infra/gcp/backups/provision-db-backup.sh`;
-  `gcloud run jobs execute db-backup --wait` and confirm the first objects land in R2; drill one
-  **Supabase** `pg_restore` into a scratch DB.
-- Decide later whether 6h Neon PITR warrants Neon Launch ($19/mo, 7-day history) on top of the escrow.
+### ✅ ACTIVATED 2026-06-12 (in-session, Daniel-authorized step by step)
+- **Neon:** `backup_ro` on prod (read-ok/write-denied verified) → `NEON_BACKUP_DSN` v1. *(2026-06-11)*
+- **Supabase:** `backup_ro` via the Supabase MCP (password passed as a SCRAM verifier — no plaintext in any
+  artifact) **+ `BYPASSRLS`** (Daniel-authorized; without it the 6 RLS tables dumped EMPTY — verified 3
+  convs/offers/favs visible after) → session-pooler DSN (IPv4; direct `db.*` host is IPv6-only) as
+  `SUPABASE_BACKUP_DSN` v1.
+- **R2 (via wrangler OAuth + Chrome-driven dashboard):** bucket `miyagi-db-escrow` + lock `worm-30d` +
+  lifecycle `expire-after-35d` + bucket-scoped Object R&W token → 4 `R2_BACKUP_*` secrets.
+  **Fact fix: R2 has NO versioning — bucket LOCK (WORM) is the immutability primitive** (stronger).
+- **Pipeline:** `provision-db-backup.sh` run (after fixing a real bug: `BACKUP_TARGETS=supabase,neon`'s
+  comma broke `--set-env-vars` — needs gcloud `^|^` delimiter syntax, patched); Cloud Run Job `db-backup` +
+  Scheduler `db-backup-daily` (09:00 UTC) + IAM grants live; **first execution ran green and both dumps
+  verified in R2** (see runbook for sizes).
+
+### Still owed to Daniel
+- Drill one **Supabase** `pg_restore` from the R2 escrow into a scratch DB (closes the last untested path).
+- Optional: a lock rule on `miyagicommerce` for digital goods; revisit Neon Launch ($19/mo) if 6h PITR
+  proves too loose.
 - **Cross-agent audit (Codex, PR #9):** all 3 findings addressed in-branch — R2 token model corrected
   (no write-only level exists; bucket-scoped R&W + versioning), Scheduler service-agent
   `serviceAccountTokenCreator` grant added, escrow `age` pipe fixed.

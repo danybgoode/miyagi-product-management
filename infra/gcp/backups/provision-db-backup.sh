@@ -8,7 +8,7 @@
 # *shells* are always created so they can be populated later if a value is absent.
 #
 # Prereqs you (Daniel) own first — see infra/gcp/backups/BACKUPS.md:
-#   • An R2 bucket + a WRITE-ONLY (no-delete) R2 API token  → R2_* values below
+#   • An R2 bucket (lock+lifecycle) + a bucket-scoped Object R&W API token → R2_* values below
 #   • A read-only Postgres role on each DB                  → *_BACKUP_DSN values below
 #
 # Run:
@@ -80,7 +80,10 @@ gcloud builds submit infra/gcp/backups --tag "$IMAGE"
 
 say "Creating/updating Cloud Run Job $JOB"
 SECRET_FLAGS="SUPABASE_BACKUP_DSN=SUPABASE_BACKUP_DSN:latest,NEON_BACKUP_DSN=NEON_BACKUP_DSN:latest,R2_BACKUP_ACCESS_KEY_ID=R2_BACKUP_ACCESS_KEY_ID:latest,R2_BACKUP_SECRET_ACCESS_KEY=R2_BACKUP_SECRET_ACCESS_KEY:latest,R2_BACKUP_ENDPOINT=R2_BACKUP_ENDPOINT:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CICD_CHAT_ID=TELEGRAM_CICD_CHAT_ID:latest"
-ENV_FLAGS="BACKUP_TARGETS=${BACKUP_TARGETS},R2_BACKUP_BUCKET=${R2_BUCKET},RETENTION_DAYS=${RETENTION_DAYS}"
+# BACKUP_TARGETS itself contains a comma ("supabase,neon"), so use gcloud's
+# custom-delimiter syntax (^|^ -> "|" separates the k=v pairs) or the comma is
+# parsed as a dict separator and job create fails with "Bad syntax for dict arg".
+ENV_FLAGS="^|^BACKUP_TARGETS=${BACKUP_TARGETS}|R2_BACKUP_BUCKET=${R2_BUCKET}|RETENTION_DAYS=${RETENTION_DAYS}"
 JOB_ACTION=create; gcloud run jobs describe "$JOB" --region="$REGION" >/dev/null 2>&1 && JOB_ACTION=update
 gcloud run jobs "$JOB_ACTION" "$JOB" \
   --image="$IMAGE" --region="$REGION" \
