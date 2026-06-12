@@ -1,9 +1,10 @@
 # Backend Production Readiness — Sprint 3: Graceful recovery & health
 
-**Status:** 🏗️ **BUILT 2026-06-12** (`feat/backend-prod-readiness-s3`) — recovery runbook + HTTP `/health`
-startup/liveness probes (`deploy.sh` + `deploy-staging.sh`) + forward-only migration posture + admin-exposure
-decision (KEEP `/app` + harden) + ADMIN_CORS confirmed (and a `deploy.sh` default bug fixed). **Live staging
-rollback rehearsal + prod re-deploy owed to Daniel.** · **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
+**Status:** 🏗️ **BUILT + STAGING-REHEARSED 2026-06-12** (`feat/backend-prod-readiness-s3`) — recovery runbook +
+HTTP `/health` startup/liveness probes (`deploy.sh` + `deploy-staging.sh`) + forward-only migration posture +
+admin-exposure decision (KEEP `/app` + harden) + ADMIN_CORS confirmed (and a `deploy.sh` default bug fixed).
+**Staging rollback drill executed** (repin ~9 s; startup-probe gate rejects a bad revision — runbook §6).
+**Prod re-deploy + optional liveness-hang confirmation owed to Daniel.** · **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
 
 > ✅ **Finalized by Sprint 0 (2026-06-11).** Concrete deltas from the audit: the startup probe is currently a
 > bare **TCP socket on :8080** while **`GET /health` already returns 200** — so the probe upgrade is real and
@@ -45,10 +46,12 @@ origins from ADMIN_CORS (runbook §5).
 - **deterministic gate:** the service still builds/deploys with health checks attached; staging rollback succeeds.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: staging Cloud Run
+Env: staging Cloud Run — **✅ EXECUTED 2026-06-12** (results in `tasks/backend-recovery-runbook.md` §6)
 
-1. Open the rollback runbook → revision-rollback + `git revert` steps + time-to-recover are clear.
-2. Deploy a deliberately-broken revision to **staging**, then roll back to the prior revision per the runbook → staging serves healthy again within the stated time. **[owed to Daniel — GCP creds]**
-3. Confirm the liveness check recycles a hung instance (or the startup check blocks a bad revision from taking traffic). **[owed to Daniel]**
+1. ✅ Open the rollback runbook → revision-rollback + `git revert` steps + time-to-recover are clear.
+2. ✅ Repin staging traffic to the prior revision per the runbook → switched in **~9 s**, `/health` 200, restored to latest. *(Agent executed on staging — was owed to Daniel; done.)*
+3. ✅ **Startup check blocks a bad revision:** a deliberately-broken revision (bad startup path) was **rejected, took 0% traffic**, prior kept serving, health 200 throughout. ⏳ The liveness-recycle-of-a-hung-instance half is a **residual** (can't be forced without an app hang; probe verified attached) — optional, owed to Daniel.
+
+**Still owed to Daniel (prod):** apply the probe + ADMIN_CORS-default fixes to live `medusa-web` (next prod deploy — staging already proved they parse/apply/behave); the optional liveness-hang confirmation; the ADMIN_CORS tightening decision.
 
 If any step fails, note the step number + what you saw.

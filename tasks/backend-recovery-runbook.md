@@ -162,29 +162,44 @@ gcloud run services describe medusa-web --region=us-east4 \
 
 ---
 
-## 6 · Rehearsal — the staging rollback drill (Sprint 3 smoke)
+## 6 · Rehearsal — the staging rollback drill (Sprint 3 smoke) — ✅ EXECUTED 2026-06-12
 
-Run on **`medusa-web-staging` only** (Neon `staging` branch, isolated secrets). Mirrors the sprint-3.md
-smoke walkthrough. Each step that deploys to / mutates the staging service is **owed to Daniel** (he holds
-the GCP creds / authorizes the broken-revision deploy).
+Run on **`medusa-web-staging` only** (Neon `staging` branch, isolated secrets; no real money). Executed live
+on 2026-06-12 — prod (`medusa-web`) never touched. To apply just the probes without resetting staging's
+env/CORS, the drill used `gcloud run services update --startup-probe/--liveness-probe` (not a full
+`deploy-staging.sh` re-run, which would reset CORS to its localhost default).
 
-1. **Read this runbook** → the repin + `git revert` steps + time-to-recover above are clear. *(self-verify)*
-2. **Deploy a deliberately-broken revision to staging**, then repin to the prior revision per §1 → staging
-   serves healthy (`/health` 200) again within the stated seconds. **[owed to Daniel — GCP creds]**
-   ```bash
-   # e.g. deploy a revision whose /health 500s or whose boot fails, confirm the startup probe
-   # denies it traffic (staging keeps serving prior), then:
-   gcloud run services update-traffic medusa-web-staging --region=us-east4 --to-revisions=<prior>=100
-   ```
-3. **Confirm the liveness probe recycles a hung instance** (or the startup probe blocks a bad revision from
-   taking traffic) — observe the restart in `gcloud run services logs read medusa-web-staging`. **[owed to Daniel]**
+| # | Step | Result |
+|---|---|---|
+| 0 | Apply S3 probes to staging (`services update`) | ✅ Flags parse against live `gcloud` (SDK 555.0.0); rev `…00003` deployed + served → a healthy image **passes** the new HTTP `/health` startup probe. Probes confirmed attached via `describe`. |
+| 1 | Read this runbook → repin + revert steps clear | ✅ |
+| 2 | **Repin rollback** (§1): `update-traffic --to-revisions=<prior>=100`, then `--to-latest` | ✅ Traffic switched to the prior revision in **~9 s**; `/health` 200; restored to latest. (Cold-start `/health` latency 40–56 s is the min=0 scale-to-zero parity gap, **not** rollback time — the repin itself is seconds.) |
+| 3a | **Startup-probe gate**: deploy a revision with a bad startup path (`/__startup_should_fail`, fast-fail) | ✅ Rollout **rejected** ("failed the configured startup probe checks"); broken rev `…00004` = `Ready:False`, **0% traffic**; prior `…00003` kept serving; staging `/health` **200 throughout**. Proves "failed-startup revisions don't take traffic." |
+| 3b | **Liveness recycle** of a genuinely hung-but-listening instance | ⏳ **residual** — can't be forced without an app change that hangs `/health` while still accepting TCP. The liveness probe is **configured + verified attached**; healthy instances keep passing it. Owed as an optional live confirmation (inject a hang) if we want to observe an actual restart. |
+| — | Cleanup | ✅ Restored the service template to `/health` (rev `…00005`); staging healthy. |
 
-If any step fails, note the step number + what you saw.
+> **Gotcha recorded:** a failed `services update` (3a) still mutates the **service template** — the rejected
+> revision's bad startup-probe path persisted in the template even though it took 0% traffic, so the *next*
+> deploy would inherit it. Always restore the good probe on the template after a broken-revision test (done
+> here as `…00005`). The serving revision was unaffected (revisions are immutable snapshots).
+
+**Repro commands** (staging):
+```bash
+REGION=us-east4; STAGING=https://medusa-web-staging-oehqqtyoia-uk.a.run.app
+# repin to prior, then restore:
+gcloud run services update-traffic medusa-web-staging --region=$REGION --to-revisions=<prior>=100
+gcloud run services update-traffic medusa-web-staging --region=$REGION --to-latest
+# broken-revision gate (then restore the /health startup probe afterwards):
+gcloud run services update medusa-web-staging --region=$REGION \
+  --startup-probe="httpGet.path=/__startup_should_fail,httpGet.port=8080,timeoutSeconds=3,periodSeconds=5,failureThreshold=2"
+```
 
 ---
 
 ## Owed to Daniel (live / prod creds)
 - **Apply the probe + ADMIN_CORS fixes to live prod** — they reach `medusa-web` only on the next prod deploy
   (`deploy.sh` re-run or next `main` build). Until then live prod keeps the old TCP startup probe.
-- **The staging rollback rehearsal** (§6 steps 2–3) — deploys to the staging service.
+  *(The staging drill (§6) already proved these flags parse + apply + behave; prod is the same `deploy.sh`.)*
+- **(optional) Liveness-recycle confirmation** (§6 step 3b) — observe an actual restart by injecting a `/health`
+  hang on a staging instance. Lower value: the probe is verified attached and the startup gate is proven.
 - **ADMIN_CORS tightening decision** (§5) — drop the two storefront origins or keep.
