@@ -127,6 +127,10 @@ traffic could hit a still-booting or wedged instance. S3 upgraded both probes to
   gcloud run services describe medusa-web --region=us-east4 \
     --format='yaml(spec.template.spec.containers[0].startupProbe, spec.template.spec.containers[0].livenessProbe)'
   ```
+- **Drift guard (S4, Story 4.2).** These probe invariants (HTTP `/health` startup + liveness, prod↔staging
+  flag sync, `ADMIN_CORS` admin origin, and full env/secret parity vs live) are locked in by a pure
+  `node:test` — [`infra/gcp/test/deploy-invariants.test.js`](../infra/gcp/test/deploy-invariants.test.js),
+  run in CI by `.github/workflows/infra-guard.yml`. A future edit that erodes any of them fails the gate.
 
 ---
 
@@ -162,9 +166,17 @@ gcloud run services describe medusa-web --region=us-east4 \
   `STORE_CORS`); likely vestigial. **Owed decision (Daniel):** tighten ADMIN_CORS to just
   `https://api.miyagisanchez.com`, or leave as-is. Left in place for now (low-risk, no behaviour change).
 
-> **⚠️ Config-drift finding — `deploy.sh` ↔ live `medusa-web` (2026-06-12, out of S3 scope — flagged;
-> independently confirmed by the antigravity cross-review).** A full `deploy.sh` re-run against prod is
-> **currently unsafe — and would in fact error.** Because CI is image-only it never re-applies the full
+> **✅ RECONCILED 2026-06-12 (S4, Story 4.2).** `deploy.sh` now matches live `medusa-web` (**9 plain env +
+> 13 secrets**): `ENVIA_SANDBOX` moved to `--set-env-vars` (`false`); `MP_CLIENT_ID`, `MP_CLIENT_SECRET`,
+> `FLAGSMITH_ENVIRONMENT_KEY` added to `--set-secrets`. The drift guard
+> (`infra/gcp/test/deploy-invariants.test.js`) now asserts full parity vs live, so this can't recur. The
+> reconcile apply-path was rehearsed on staging via `deploy-staging.sh SKIP_BUILD=1` (no "secret not found").
+> A full prod `deploy.sh` re-run is therefore safe again — but stays a **Daniel-authorized** op (it resets the
+> full env/secret/CORS set). The historical finding is kept below for context.
+>
+> **⚠️ Config-drift finding (HISTORICAL — `deploy.sh` ↔ live `medusa-web`, 2026-06-12, out of S3 scope — flagged;
+> independently confirmed by the antigravity cross-review).** A full `deploy.sh` re-run against prod was
+> **then unsafe — and would in fact error.** Because CI is image-only it never re-applies the full
 > config, so the script has silently drifted from live in three ways:
 >   1. **Missing secrets** — live binds `FLAGSMITH_ENVIRONMENT_KEY`, `MP_CLIENT_ID`, `MP_CLIENT_SECRET` (added
 >      by the Flagsmith / MercadoPago work); the script's `--set-secrets` omits all three. `--set-secrets`

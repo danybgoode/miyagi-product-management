@@ -50,6 +50,18 @@ echo "▶ Deploying $SERVICE_WEB…"
 #             the revision is marked failed and is denied traffic.
 #   liveness: 3 × 30s of failed /health (~90s) recycles a hung-but-listening instance;
 #             generous on purpose so transient blips don't kill healthy instances.
+#
+# Env/secret parity (Backend Production Readiness S4, Story 4.2 — reconcile to live
+# medusa-web, see tasks/backend-recovery-runbook.md §5). Because CI is image-only it
+# never re-applies the full config, so this script had silently drifted from live and a
+# full re-run would ERROR. Reconciled 2026-06-12 against the live describe:
+#   • ENVIA_SANDBOX is a PLAIN env var live ('false') — it was wrongly bound as a
+#     secret here (and no ENVIA_SANDBOX secret shell exists → a full run failed
+#     "secret not found"). Moved to --set-env-vars.
+#   • Added the 3 secrets live binds that the script omitted (would have been DROPPED
+#     by --set-secrets' replace semantics): MP_CLIENT_ID, MP_CLIENT_SECRET,
+#     FLAGSMITH_ENVIRONMENT_KEY.
+# Net: 9 plain env + 13 secrets ≡ live. The drift guard (infra/gcp/test/) locks this in.
 gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
@@ -64,8 +76,8 @@ gcloud run deploy "$SERVICE_WEB" \
   --startup-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=10,failureThreshold=24" \
   --liveness-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=30,failureThreshold=3" \
   --allow-unauthenticated \
-  --set-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@MEDUSA_BACKEND_URL=${BACKEND_URL}@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID:-sc_01KSK1J0V81P4EPY9G0JAPX353}" \
-  --set-secrets="DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET:latest,ENVIA_API_KEY=ENVIA_API_KEY:latest,ENVIA_SANDBOX=ENVIA_SANDBOX:latest"
+  --set-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@MEDUSA_BACKEND_URL=${BACKEND_URL}@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID:-sc_01KSK1J0V81P4EPY9G0JAPX353}@ENVIA_SANDBOX=${ENVIA_SANDBOX:-false}" \
+  --set-secrets="DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET:latest,ENVIA_API_KEY=ENVIA_API_KEY:latest,MP_CLIENT_ID=MP_CLIENT_ID:latest,MP_CLIENT_SECRET=MP_CLIENT_SECRET:latest,FLAGSMITH_ENVIRONMENT_KEY=FLAGSMITH_ENVIRONMENT_KEY:latest"
 
 echo "▶ Service URL:"
 gcloud run services describe "$SERVICE_WEB" --region="$REGION" --format='value(status.url)'
