@@ -9,14 +9,13 @@
 ## RPO / RTO at a glance
 | Store | What's in it | Backup mechanism | **RPO** | **RTO** | Status after S2 |
 |---|---|---|---|---|---|
-| **Neon** | Medusa products/orders/customers/carts/payments | PITR (free-tier history) **+ daily `pg_dump`→R2** | **≤6h** (PITR) · ≤24h (escrow floor) | minutes (branch restore) / minutes (escrow `pg_restore`) | retention at free **ceiling 6h**; **restore drilled** on staging ✅; escrow pipeline built (activation owed) |
-| **Supabase** | conversations, offers, favorites, supply, UCP ids | **daily `pg_dump`→R2** (was: zero backups) | ≤24h | minutes–<1h (`pg_restore`) | pipeline **built**; activation owed to Daniel |
-| **R2** | product images, digital goods | bucket **versioning + lifecycle** | n/a (object store; per-object) | per-object | posture documented; live config owed |
+| **Neon** | Medusa products/orders/customers/carts/payments | PITR (free-tier history) **+ daily `pg_dump`→R2** | **≤6h** (PITR) · ≤24h (escrow floor) | minutes (branch restore) / minutes (escrow `pg_restore`) | retention at free **ceiling 6h**; **restore drilled** on staging ✅; escrow **LIVE** (first dump verified 2026-06-12) |
+| **Supabase** | conversations, offers, favorites, supply, UCP ids | **daily `pg_dump`→R2** (was: zero backups) | ≤24h | minutes–<1h (`pg_restore`) | escrow **LIVE** (first dump verified 2026-06-12); restore drill owed |
+| **R2** | product images, digital goods | escrow bucket: **lock (WORM 30d) + lifecycle** (R2 has no versioning) | n/a (object store; per-object) | per-object | escrow bucket configured ✅; app bucket lock optional |
 | **Secret Manager** | Stripe/MP/Clerk/DB/JWT… (16 secrets) | versioned by GCP **+ encrypted offline escrow** | — (change-driven) | minutes | escrow procedure documented |
 
 RPO = max data loss window; RTO = time to restore service. Figures are **targets**; the Neon PITR figure is
-the live free-tier maximum (see below), the escrow figures firm up once the daily job is live + a Supabase
-restore is drilled (owed to Daniel).
+the live free-tier maximum (see below), the daily job is **live** (cron 09:00 UTC; first run verified 2026-06-12 — supabase 185,242 B + neon 179,760 B, read back from R2, gzip-clean, `PGDMP` magic); the Supabase restore drill remains owed to Daniel.
 
 ---
 
@@ -63,25 +62,28 @@ branches are copy-on-write isolated and the command named the staging branch by 
 - **Restore:** pull the dated `supabase-<ts>.dump.gz` from R2 → `gunzip` → `pg_restore --no-owner
   --no-privileges --clean --if-exists` into a **scratch/staging** DB first; selective table restore via
   `pg_restore --data-only --table=<t>`. PG17 client. RTO minutes–<1h.
-- **Status:** pipeline built; **first live backup + a Supabase restore drill owed to Daniel** (needs the R2
-  bucket/token + a Supabase read-only DSN).
+- **Status:** **LIVE 2026-06-12** — `backup_ro` (with `BYPASSRLS`; without it the 6 RLS tables dumped EMPTY)
+  over the IPv4 session pooler; first dump verified in R2. **A Supabase restore drill remains owed to Daniel.**
 
 ---
 
 ## 3 · Cloudflare R2 (images + digital goods)
-- **Buckets** (via `apps/miyagisanchez/lib/r2.ts` + `R2_DIGITAL_*`): a public images bucket + a private
-  digital-goods bucket. **[owed — no Cloudflare access from the build session]** versioning/lifecycle/durability
-  are **not confirmed**.
-- **Target posture (Daniel to apply + confirm in the Cloudflare dashboard):**
-  - Enable **object versioning** on both buckets (recover overwritten/deleted objects).
-  - Add a **lifecycle rule** (e.g. expire noncurrent versions after N days) to cap cost.
-  - For the **new escrow bucket** (`miyagi-db-escrow`): versioning **on** + an API token scoped to **only
-    this bucket** ("Object Read & Write" — R2's least object-level grant; there is no write-only level) +
-    a lifecycle expiry (e.g. 30d).
-  - **Honesty note:** R2 does not yet offer a full S3 **Object Lock / WORM** retention equivalent, so
-    "immutable" here = versioning (a delete/overwrite leaves a recoverable prior version) + a
-    bucket-scoped credential + lifecycle, not hardware WORM.
-- **Restore:** object store — recover a prior object version from the dashboard/API; no DB-style restore.
+- **⚠️ Fact correction (verified live via wrangler, 2026-06-12): R2 has NO object versioning.** The
+  original posture assumed S3-style versioning; R2's real immutability primitive is the **bucket lock**
+  (a WORM retention rule — objects cannot be deleted or overwritten until the retention age passes), which
+  is *stronger* than versioning.
+- **Live config (applied via wrangler OAuth, account `f64b1f7d…`, 2026-06-12):**
+  - **Escrow bucket `miyagi-db-escrow`:** created · lock rule `worm-30d` (30-day WORM retention) ·
+    lifecycle rule `expire-after-35d` (auto-expire after the lock window) · API token
+    `miyagi-db-escrow-backup` scoped to **only this bucket**, **Object Read & Write** (R2's least
+    object-level grant; no write-only level exists), TTL forever → Secret Manager
+    `R2_BACKUP_ACCESS_KEY_ID`/`R2_BACKUP_SECRET_ACCESS_KEY` v1. Net: even the backup credential itself
+    cannot destroy escrow younger than 30 days.
+  - **App bucket `miyagicommerce`** (the account's only other bucket — images + digital goods):
+    **no lock/lifecycle** — a delete there is permanent. Optional follow-up for Daniel: a lock rule for
+    the digital-goods prefix (paid files aren't re-uploadable the way images are).
+- **Restore:** object store — objects under lock are recoverable by definition (undeletable); no DB-style
+  restore. For `miyagicommerce`, restore = re-upload (no versioning to recover from).
 
 ---
 
