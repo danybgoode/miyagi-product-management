@@ -1,11 +1,12 @@
 # Backend Production Readiness — Sprint 4: Monitoring & alerting
 
-**Status:** ✅ **BUILT + STAGING-REHEARSED 2026-06-12** (`feat/backend-prod-readiness` — monorepo-root
-`miyagi-product-management` commits `27d202d` 4.2 · `c6d6582` 4.1; backend `medusa-bonsai-backend` `d3273d9`
-4.3). Monitoring provisioner rehearsed end-to-end on `medusa-web-staging` (7 resources created + channel-bound +
-idempotent re-run, **then torn down**); drift guard green in CI (green→red→green smoke). **Owed to Daniel:**
-merge both PRs (HIGH tier) + `provision-monitoring.sh TARGET=prod` + live alert-delivery confirm. · **Risk:**
-LOW–MED (mostly additive; alert wiring touches infra config)
+**Status:** ✅ **SHIPPED 2026-06-12** — squash-merged: root `miyagi-product-management` **#13 `d50d0b4`**
+(Stories 4.1/4.2 + docs) + backend `medusa-bonsai-backend` **#21 `8be6ab6`** (Story 4.3 Dependabot).
+Provisioner rehearsed end-to-end on staging then torn down; **prod monitoring PROVISIONED LIVE** (uptime + 6
+alert policies all enabled+channel-bound, `/health` 200, synthetic delivery alert fired+deleted); drift guard
+green in CI (green→red→green). Cross-reviewed (codex + antigravity) → all findings resolved (re-review clean).
+**Residual (Daniel):** confirm alerts land in the Telegram channel (agent can't see it). · **Risk:** LOW–MED
+(mostly additive; alert wiring touches infra config)
 
 > ✅ **Finalized by Sprint 0 (2026-06-11).** Audit corrections: **deploy-event notifications are ALREADY LIVE**
 > — `cicd-telegram-build-notifier` is a deployed Cloud Run service (the seed's "not shipped" is stale), so

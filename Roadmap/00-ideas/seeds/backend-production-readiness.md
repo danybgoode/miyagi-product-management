@@ -1,7 +1,7 @@
 ---
 title: "Backend Production Readiness — audit + hardening"
 slug: backend-production-readiness
-status: in-progress                 # raw | ready | queued | scaffolded | in-progress | shipped | archived — all 5 sprints BUILT 2026-06-12; → shipped on S4 PR merge + prod monitoring provision (owed Daniel)
+status: shipped                     # raw | ready | queued | scaffolded | in-progress | shipped | archived — all 5 sprints SHIPPED 2026-06-12 (S4 PRs root#13 `d50d0b4` + backend#21 `8be6ab6`); prod monitoring provisioned live
 area: "09"                          # 09-platform-infra (engineering-facing, no product-poster line)
 type: epic                          # audit spike (Sprint 0) → hardening sprints
 priority: null
