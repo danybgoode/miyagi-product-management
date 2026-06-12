@@ -72,6 +72,12 @@ Env: prod monitoring + alert channel
 2. Force a backend error (prod) → it appears in Error Reporting and (over threshold) the "backend errors (logs)" alert fires to the channel. **[owed to Daniel — prod creds]**
 3. Push to `main` → the deploy push + finish ✅/❌ ping arrives (via `cicd-telegram-build-notifier`, verified ACTIVE 2026-06-12). **[owed to Daniel — prod creds]**
 4. ✅ **(Story 4.2 drift guard) — EXECUTED 2026-06-12.** `node --test infra/gcp/test/*.test.js` → 12/12 green; reverted the startup probe to `tcpSocket` → guard **failed** (2 conditions: HTTP-probe + prod↔staging sync); restored → green. *(agent self-verifiable — no creds.)*
-5. ✅ **(Story 4.1 provisioner) — REHEARSED ON STAGING 2026-06-12.** `TARGET=staging bash infra/gcp/provision-monitoring.sh` → uptime check + 6 alert policies created, all bound to `MiyagiDevopsTele`; a second run was fully idempotent (all "exists"); then **torn down** (staging min=0 would flap the uptime check). The rehearsal drove three CLI-shape fixes now baked into the script. *(agent executed on staging — prod run owed to Daniel.)*
+5. ✅ **(Story 4.1 provisioner) — REHEARSED ON STAGING + PROVISIONED ON PROD 2026-06-12.** `TARGET=staging` →
+   uptime + 6 policies created/channel-bound, idempotent re-run, then **torn down**. After cross-review (codex +
+   antigravity) hardening, `TARGET=prod` provisioned the live uptime check (`api.miyagisanchez.com/health`,
+   validate-ssl) + all 6 alert policies, **all enabled + bound to `MiyagiDevopsTele`**; prod `/health` 200. A
+   **synthetic always-firing policy was fired once then deleted** to exercise delivery. **Residual (Daniel):**
+   confirm the synthetic/real alert actually lands in the Telegram channel (agent can't see it). *(steps 1–3
+   above are now wired and live — they become Daniel's receipt eyeball, not net-new work.)*
 
 If any step fails, note the step number + what you saw.

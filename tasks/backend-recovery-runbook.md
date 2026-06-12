@@ -267,8 +267,12 @@ gcloud alpha monitoring policies list --project=miyagisanchezback-497722 --forma
   revision `…00101`, targeted `services update`; health 200; preserved across image-only CI deploys). ADMIN_CORS
   on prod was already correct (3 origins incl. the admin origin) — no live CORS change needed; the `deploy.sh`
   default fix lands with this PR's merge.
-- **(S4) Run `provision-monitoring.sh TARGET=prod`** + confirm a real downtime/5xx/error alert **arrives in the
-  Telegram channel** (holds the GCP/channel creds). Agent rehearsed `TARGET=staging`.
+- ✅ **(S4) DONE 2026-06-12 — prod monitoring PROVISIONED + LIVE.** `provision-monitoring.sh TARGET=prod`
+  created the uptime check (`api.miyagisanchez.com/health`, validate-ssl) + all 6 alert policies, **all enabled
+  + bound to `MiyagiDevopsTele`**; prod `/health` 200. A **synthetic always-firing policy was fired once** to
+  exercise channel delivery, then deleted. **Residual eyeball (Daniel):** confirm the synthetic alert (and
+  future real alerts) actually **land in the Telegram channel** — agent can't see the channel. The provisioner
+  was cross-reviewed (codex + antigravity) + rehearsed on staging first.
 - **(optional) Liveness-recycle confirmation** (§6 step 3b) — observe an actual restart by injecting a `/health`
   hang on a staging instance. Lower value: the probe is verified attached and the startup gate is proven.
 - **ADMIN_CORS tightening decision** (§5) — drop the two storefront origins or keep.
