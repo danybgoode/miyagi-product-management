@@ -59,6 +59,31 @@ function secretNames(src) {
   )
 }
 
+// Full CONTAINER → BACKING-SECRET map (strip the :version). Container names alone
+// don't catch a wrong *backing* (e.g. a prod container bound to a `_STAGING` secret),
+// so the parity tests below also assert the backing-secret naming convention.
+function secretMap(src) {
+  const m = {}
+  for (const t of flagValue(src, 'set-secrets').split(',').filter(Boolean)) {
+    const [container, rhs] = [t.split('=')[0], t.slice(t.indexOf('=') + 1)]
+    m[container] = rhs.replace(/:[^:]*$/, '') // drop ":latest" / ":2"
+  }
+  return m
+}
+
+// Raw NAME=VALUE map from --set-env-vars (for asserting plain-env *values*, e.g.
+// ENVIA_SANDBOX must be the literal `false` default, not flipped to a secret/true).
+function envMap(src) {
+  let v = flagValue(src, 'set-env-vars')
+  const delim = v.match(/^\^(.)\^/)
+  v = v.slice(delim[0].length)
+  const m = {}
+  for (const t of v.split(delim[1]).filter(Boolean)) {
+    m[t.split('=')[0]] = t.slice(t.indexOf('=') + 1)
+  }
+  return m
+}
+
 const eq = (a, b) => assert.deepEqual([...a].sort(), [...b].sort())
 
 // --- live manifests (source of truth: `gcloud run services describe`, 2026-06-12) ---
@@ -142,4 +167,24 @@ test('deploy.sh binds the 3 secrets the §5 drift was missing', () => {
   for (const s of ['MP_CLIENT_ID', 'MP_CLIENT_SECRET', 'FLAGSMITH_ENVIRONMENT_KEY']) {
     assert.ok(secretNames(prodSrc).has(s), `deploy.sh must bind ${s} (dropped before S4 reconcile)`)
   }
+})
+
+// Backing-secret convention (catches a container bound to the WRONG secret — e.g. a
+// prod container pointed at a `_STAGING` secret, which container-name parity alone misses).
+test('deploy.sh secrets back onto same-named secrets (no _STAGING leak into prod)', () => {
+  for (const [container, backing] of Object.entries(secretMap(prodSrc))) {
+    assert.equal(backing, container, `prod ${container} must back onto secret "${container}", not "${backing}"`)
+  }
+})
+test('deploy-staging.sh secrets back onto *_STAGING secrets', () => {
+  for (const [container, backing] of Object.entries(secretMap(stagingSrc))) {
+    assert.equal(backing, `${container}_STAGING`, `staging ${container} must back onto "${container}_STAGING", not "${backing}"`)
+  }
+})
+
+// ENVIA_SANDBOX must stay a plain env pinned to the `false` default on prod (the §5 crux —
+// container-name parity wouldn't catch it being flipped to `true` or to a secret).
+test('deploy.sh ENVIA_SANDBOX env value is the false default', () => {
+  assert.equal(envMap(prodSrc).ENVIA_SANDBOX, '${ENVIA_SANDBOX:-false}',
+    'prod ENVIA_SANDBOX must be the plain-env `${ENVIA_SANDBOX:-false}` default')
 })

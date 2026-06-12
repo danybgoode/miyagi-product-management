@@ -51,20 +51,35 @@ echo "▶ channel: $CHANNEL"
 
 PFX="[${SERVICE}]"
 # Plain (un-escaped) filter fragment; python json.dumps escapes the quotes for us.
-RES_FILTER="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"${SERVICE}\""
+# Scoped to the region too, so a same-named service in another region can't mix signals.
+RES_FILTER="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"${SERVICE}\" AND resource.labels.location=\"${REGION}\""
 
 # --- helpers ---------------------------------------------------------------
+# Alert policies are GA (`gcloud monitoring policies`); use it over `alpha` (alpha can
+# be org-blocked / breaking). Notification channels are still beta-only.
 policy_id() {  # $1 = displayName → policy name or empty
-  gcloud alpha monitoring policies list "${P[@]}" \
+  gcloud monitoring policies list "${P[@]}" \
     --filter="displayName=\"$1\"" --format='value(name)' 2>/dev/null | head -n1
 }
 
 apply_policy() {  # $1 = displayName ; full policy JSON (sans channels) on stdin
-  local name="$1"
-  if [ -n "$(policy_id "$name")" ]; then echo "  = exists: $name"; return 0; fi
-  local f; f="$(mktemp)"; cat > "$f"
-  gcloud alpha monitoring policies create "${P[@]}" \
-    --policy-from-file="$f" --notification-channels="$CHANNEL" >/dev/null
+  local name existing f; name="$1"
+  existing="$(policy_id "$name")"
+  if [ -n "$existing" ]; then
+    # Idempotent + self-healing: guarantee the channel is wired even on a policy that
+    # predates this run (a partial earlier run / a manually-created policy could
+    # otherwise sit UNWIRED while we exit green). --add-notification-channels is a
+    # no-op if already present. NOTE: thresholds are NOT reconciled on exists — to
+    # change one, delete the policy and re-run.
+    gcloud monitoring policies update "$existing" "${P[@]}" \
+      --add-notification-channels="$CHANNEL" >/dev/null
+    echo "  = exists (channel ensured): $name"; return 0
+  fi
+  f="$(mktemp)"; cat > "$f"
+  if ! gcloud monitoring policies create "${P[@]}" \
+        --policy-from-file="$f" --notification-channels="$CHANNEL" >/dev/null; then
+    rm -f "$f"; echo "  ✗ failed to create: $name" >&2; return 1
+  fi
   rm -f "$f"; echo "  + created: $name"
 }
 
@@ -114,6 +129,7 @@ else
     --resource-type=uptime-url \
     --resource-labels=host="$UPTIME_HOST",project_id="$PROJECT_ID" \
     --protocol=https --path=/health --port=443 \
+    --validate-ssl=true \
     --period=5 --timeout=10 >/dev/null
   echo "  + created: uptime $UPTIME_NAME"
 fi
@@ -132,15 +148,17 @@ apply_policy "${PFX} 5xx error rate" < <(threshold_json \
   "${RES_FILTER} AND metric.type=\"run.googleapis.com/request_count\" AND metric.labels.response_code_class=\"5xx\"" \
   "ALIGN_RATE" "REDUCE_SUM" "COMPARISON_GT" "0.05")
 
+# Reduce across series with MAX (worst instance/revision), not MEAN — a single slow or
+# memory-pressured instance must not be averaged away by healthy ones.
 apply_policy "${PFX} p95 latency" < <(threshold_json \
   "${PFX} p95 latency" "p95 request latency > 2000ms (5m)" \
   "${RES_FILTER} AND metric.type=\"run.googleapis.com/request_latencies\"" \
-  "ALIGN_PERCENTILE_95" "REDUCE_MEAN" "COMPARISON_GT" "2000")
+  "ALIGN_PERCENTILE_95" "REDUCE_MAX" "COMPARISON_GT" "2000")
 
 apply_policy "${PFX} memory utilization" < <(threshold_json \
   "${PFX} memory utilization" "container memory p99 > 90% (5m)" \
   "${RES_FILTER} AND metric.type=\"run.googleapis.com/container/memory/utilizations\"" \
-  "ALIGN_PERCENTILE_99" "REDUCE_MEAN" "COMPARISON_GT" "0.9")
+  "ALIGN_PERCENTILE_99" "REDUCE_MAX" "COMPARISON_GT" "0.9")
 
 # Monitoring threshold conditions support only COMPARISON_LT/GT, so "active >= max"
 # is expressed as GT (max-1) — integer instance counts make this exact.
@@ -156,4 +174,4 @@ apply_policy "${PFX} backend errors (logs)" < <(matched_log_json \
 
 echo "▶ Done. Verify:"
 echo "    gcloud monitoring uptime list-configs ${P[*]} --format='value(displayName)'"
-echo "    gcloud alpha monitoring policies list ${P[*]} --filter='displayName~\"$SERVICE\"' --format='value(displayName)'"
+echo "    gcloud monitoring policies list ${P[*]} --filter='displayName~\"$SERVICE\"' --format='value(displayName)'"
