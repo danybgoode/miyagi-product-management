@@ -39,6 +39,29 @@ In review · Shipped · Archived`; Grain options `Epic · Sprint · Seed`; an **
 `NOTION_TOKEN` is a Notion internal-integration token with access to the database (share the DB with
 the integration). Zero npm deps — Node 18+ (uses global `fetch`).
 
+## vercel-env.mjs — set + verify Vercel env vars via the REST API
+
+Sets/verifies env vars on the `miyagisanchez` Vercel project **via the REST API, never the CLI** —
+`vercel env add` silently stores EMPTY values, and `vercel env pull` redacts everything so it can't
+verify either (LEARNINGS → Tooling gotchas). Update = DELETE then POST (PATCH is unreliable); verify
+reads the value back through the single-entry endpoint (the only one that decrypts) and confirms by
+**value length**, so the secret is never echoed.
+
+```bash
+# Set (default: all three targets; --env repeatable/comma-separated):
+VERCEL_API_TOKEN=… VERCEL_PROJECT_ID=… \
+  node scripts/vercel-env.mjs set MY_KEY "the-value" --env production,preview
+
+# Verify — round-trips the stored length (fails loudly on an empty value):
+node scripts/vercel-env.mjs verify MY_KEY
+
+# Remove (optionally scoped by --env):
+node scripts/vercel-env.mjs delete MY_KEY
+```
+
+**Env:** `VERCEL_API_TOKEN` + `VERCEL_PROJECT_ID` required; `VERCEL_TEAM_ID` optional (tokens are
+team-aware — a team-owned project needs `?teamId=`). Zero npm deps — Node 18+ (global `fetch`).
+
 ## cross-review.mjs — advisory cross-agent second opinion on a PR
 
 Pipes a PR diff into a **different model family's** CLI (Codex or Antigravity) for one pass and posts the
