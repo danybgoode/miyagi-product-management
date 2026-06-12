@@ -5,6 +5,14 @@
 > then two build tracks. **Scope doc (approved 2026-06-07):**
 > `../../00-ideas/seeds/seller-acquisition-landing-pages.md`.
 > **North-star context (raw):** `../../00-ideas/seeds/agent-native-gtm/`.
+>
+> **Status: ✅ COMPLETE — all 4 sprints shipped to prod 2026-06-07.** S1 strategy lock ✅ · S2 WC wedge
+> `/vende/mundial` ✅ [PR #42](https://github.com/danybgoode/miyagisanchezcommerce/pull/42) (`fd0f2df`) ·
+> S3 anchor `/vende` + section system + Creator `/vende/creadores` ✅ [PR #44](https://github.com/danybgoode/miyagisanchezcommerce/pull/44) (`ea1ae07`) ·
+> S4 `/vende/negocios` + `/vende/servicios` + SEO/OG + A/B ✅ [PR #45](https://github.com/danybgoode/miyagisanchezcommerce/pull/45) (`cfe04ef`).
+> Retrospective: [`RETROSPECTIVE.md`](RETROSPECTIVE.md). *(Doc close-out done 2026-06-10 — the build
+> shipped 2026-06-07 but the epic README/poster/retro were never updated; reconciled during the
+> Navigation & Settings Reorg groom.)*
 
 ## Why
 There is **no** seller-recruitment landing page today — only the conversion *destination*
@@ -46,8 +54,8 @@ table), Clerk untouched (public/anonymous pages), copy **es-MX**. Build pages **
 |---|---|---|---|---|
 | **1 — Strategy & creative lock** | US-1 personas + positioning + IA + per-persona es-MX copy + metrics/attribution + per-track token call | — | low (docs) | **Cowork + Daniel sign-off** |
 | **2 — WC wedge** ✅ | US-2 lean WC Experience/Service page at `/vende/mundial`, existing tokens, CTA → `/sell?type=service`, Clarity + UTM — merged in frontend PR #42 (`fd0f2df`) | **A (first)** | low | Claude Code |
-| **3 — Anchor + Creator system** ⬜ next (**#4 merged → unblocked**) | US-3 reusable section system (on #4 tokens) · US-4 anchor `/vende` + persona router · US-5 Creator page `/vende/creadores` | **B** | low | Claude Code |
-| **4 — More personas + SEO/OG + A/B** ⬜ planned | US-6 `/vende/negocios` (local/print merchant) · US-7 `/vende/servicios` · US-8 per-persona SEO/OG · US-9 A/B hooks | **B** (after S3) | low | Claude Code |
+| **3 — Anchor + Creator system** ✅ (PR #44 · `ea1ae07`) | US-3 reusable section system (on #4 tokens) · US-4 anchor `/vende` + persona router · US-5 Creator page `/vende/creadores` | **B** | low | Claude Code |
+| **4 — More personas + SEO/OG + A/B** ✅ (PR #45 · `cfe04ef`) | US-6 `/vende/negocios` (local/print merchant) · US-7 `/vende/servicios` · US-8 per-persona SEO/OG · US-9 A/B hooks | **B** (after S3) | low | Claude Code |
 
 ## Deploy order
 Frontend-only (Vercel). No backend, no migration. **Build order: Sprint 1 (lock ✅) → Sprint 2 (Track A
@@ -57,11 +65,10 @@ sprint. All low-risk → reviewer may auto-merge on green CI, **except** any sto
 `middleware.ts`/shared layout (then announce + treat as higher-care).
 
 ## Epic Definition of Done
-- [ ] All in-scope sprints' stories merged to `main` and smoke-tested (gaps stated).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed).
-- [ ] This `README.md` marked ✅; every `sprint-N.md` ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] **Product poster updated** (`Roadmap/README.md`) — add the recruitment-funnel capability + a
-      Recent-highlights entry.
-- [ ] Team memory updated; `Roadmap/LEARNINGS.md` fed any durable learning.
-- [ ] Branch deleted; PR(s) merged.
+- [x] All in-scope sprints' stories merged to `main` and smoke-tested (gaps stated).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed).
+- [x] This `README.md` marked ✅; every `sprint-N.md` ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written. *(2026-06-10 close-out.)*
+- [x] **Product poster updated** (`Roadmap/README.md`) — recruitment-funnel capability + Recent-highlights entry. *(2026-06-10.)*
+- [x] Team memory updated; `Roadmap/LEARNINGS.md` fed any durable learning. *(2026-06-10 — doc-drift learning promoted.)*
+- [x] Branch deleted; PR(s) merged. *(PRs #42/#44/#45 merged 2026-06-07.)*

@@ -1,14 +1,14 @@
 ---
 title: "Seller-acquisition landing pages"
 slug: seller-acquisition-landing-pages
-status: in-progress
+status: shipped
 area: "08"
 type: feature
 priority: wave-3
 risk: low
 epic: "08-growth-and-promotions/seller-acquisition-landing-pages"
 build_order: "#6"
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 # Scope — Seller-Acquisition Landing Pages (BUILD-ORDER #6)
