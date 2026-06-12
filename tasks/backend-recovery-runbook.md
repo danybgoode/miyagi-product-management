@@ -117,9 +117,11 @@ traffic could hit a still-booting or wedged instance. S3 upgraded both probes to
   (`Google Cloud SDK 555.0.0`). The **live parse + apply** is verified by the **staging deploy** (the S3
   rollback rehearsal re-runs `deploy-staging.sh` with these exact flags) — see §6. Staging is deliberately
   the first place these flags hit a real `gcloud run deploy`, so a prod deploy never meets them untested.
-- **The probe change reaches prod only on the next prod deploy** (`deploy.sh` re-run / next `main` build).
-  Until then the live `medusa-web` still has the old TCP startup probe. *(Live prod re-deploy owed to Daniel
-  — see "Owed to Daniel".)*
+- **✅ APPLIED TO LIVE PROD 2026-06-12** via `gcloud run services update medusa-web --startup-probe=…
+  --liveness-probe=…` (targeted — preserves env/secrets/VPC; revision `medusa-web-00101-4w5` passed the new
+  HTTP `/health` startup probe and serves 100%). The CI deploy path (`cloudbuild.yaml`) is **image-only**, so
+  this probe config is **preserved across every push-to-`main`**. It would only revert on a *full* `deploy.sh`
+  re-run — which now also carries the HTTP probes (this PR), so a full re-run keeps them too.
 - Verify the applied probes (after any deploy):
   ```bash
   gcloud run services describe medusa-web --region=us-east4 \
@@ -160,6 +162,15 @@ gcloud run services describe medusa-web --region=us-east4 \
   `STORE_CORS`); likely vestigial. **Owed decision (Daniel):** tighten ADMIN_CORS to just
   `https://api.miyagisanchez.com`, or leave as-is. Left in place for now (low-risk, no behaviour change).
 
+> **⚠️ Related drift finding (2026-06-12, out of S3 scope — flagged for follow-up).** Live `medusa-web` has
+> **3 secret bindings that `deploy.sh`'s `--set-secrets` list omits**: `FLAGSMITH_ENVIRONMENT_KEY`,
+> `MP_CLIENT_ID`, `MP_CLIENT_SECRET` (added later by the Flagsmith / MercadoPago work, preserved by image-only
+> CI deploys). Because `--set-secrets` **replaces**, a *full* `deploy.sh` re-run would **drop them** and break
+> Flagsmith + MP — the same class of latent footgun as the ADMIN_CORS default. The S3 prod probe change used a
+> targeted `services update` (preserves secrets) specifically to avoid this. **Fix owed:** add the three to
+> `deploy.sh`'s `--set-secrets`, and extend the Story 4.2 drift guard to assert the script's secret list
+> matches live. Do **not** run a full `deploy.sh` against prod until the list is reconciled.
+
 ---
 
 ## 6 · Rehearsal — the staging rollback drill (Sprint 3 smoke) — ✅ EXECUTED 2026-06-12
@@ -197,9 +208,12 @@ gcloud run services update medusa-web-staging --region=$REGION \
 ---
 
 ## Owed to Daniel (live / prod creds)
-- **Apply the probe + ADMIN_CORS fixes to live prod** — they reach `medusa-web` only on the next prod deploy
-  (`deploy.sh` re-run or next `main` build). Until then live prod keeps the old TCP startup probe.
-  *(The staging drill (§6) already proved these flags parse + apply + behave; prod is the same `deploy.sh`.)*
+- ✅ **DONE 2026-06-12 — HTTP `/health` startup + liveness probes APPLIED to live prod** (`medusa-web`,
+  revision `…00101`, targeted `services update`; health 200; preserved across image-only CI deploys). ADMIN_CORS
+  on prod was already correct (3 origins incl. the admin origin) — no live CORS change needed; the `deploy.sh`
+  default fix lands with this PR's merge.
 - **(optional) Liveness-recycle confirmation** (§6 step 3b) — observe an actual restart by injecting a `/health`
   hang on a staging instance. Lower value: the probe is verified attached and the startup gate is proven.
 - **ADMIN_CORS tightening decision** (§5) — drop the two storefront origins or keep.
+- **Secret-list drift** (§5 ⚠️) — reconcile `deploy.sh`'s `--set-secrets` with the 3 extra live secrets before
+  any full `deploy.sh` re-run; fold into Story 4.2's drift guard.

@@ -1,10 +1,12 @@
 # Backend Production Readiness — Sprint 3: Graceful recovery & health
 
-**Status:** 🏗️ **BUILT + STAGING-REHEARSED 2026-06-12** (`feat/backend-prod-readiness-s3`) — recovery runbook +
+**Status:** ✅ **LIVE ON PROD 2026-06-12** (`feat/backend-prod-readiness-s3`, PR #12) — recovery runbook +
 HTTP `/health` startup/liveness probes (`deploy.sh` + `deploy-staging.sh`) + forward-only migration posture +
 admin-exposure decision (KEEP `/app` + harden) + ADMIN_CORS confirmed (and a `deploy.sh` default bug fixed).
 **Staging rollback drill executed** (repin ~9 s; startup-probe gate rejects a bad revision — runbook §6).
-**Prod re-deploy + optional liveness-hang confirmation owed to Daniel.** · **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
+**Probes APPLIED to live `medusa-web`** (rev `…00101`, health 200, preserved across image-only CI). Residual:
+optional liveness-hang confirmation + ADMIN_CORS-tightening + secret-list-drift reconcile (all owed/optional).
+· **Risk:** HIGH (touches prod Cloud Run config; rehearsed on staging first)
 
 > ✅ **Finalized by Sprint 0 (2026-06-11).** Concrete deltas from the audit: the startup probe is currently a
 > bare **TCP socket on :8080** while **`GET /health` already returns 200** — so the probe upgrade is real and
@@ -52,6 +54,6 @@ Env: staging Cloud Run — **✅ EXECUTED 2026-06-12** (results in `tasks/backen
 2. ✅ Repin staging traffic to the prior revision per the runbook → switched in **~9 s**, `/health` 200, restored to latest. *(Agent executed on staging — was owed to Daniel; done.)*
 3. ✅ **Startup check blocks a bad revision:** a deliberately-broken revision (bad startup path) was **rejected, took 0% traffic**, prior kept serving, health 200 throughout. ⏳ The liveness-recycle-of-a-hung-instance half is a **residual** (can't be forced without an app hang; probe verified attached) — optional, owed to Daniel.
 
-**Still owed to Daniel (prod):** apply the probe + ADMIN_CORS-default fixes to live `medusa-web` (next prod deploy — staging already proved they parse/apply/behave); the optional liveness-hang confirmation; the ADMIN_CORS tightening decision.
+**✅ Probes applied to live prod 2026-06-12** (`medusa-web` rev `…00101`, health 200). **Residual (owed/optional to Daniel):** the optional liveness-hang confirmation; the ADMIN_CORS tightening decision; reconcile the 3-secret `deploy.sh` drift before any full prod `deploy.sh` re-run (runbook §5 ⚠️).
 
 If any step fails, note the step number + what you saw.
