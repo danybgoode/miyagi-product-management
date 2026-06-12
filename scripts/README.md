@@ -39,6 +39,10 @@ In review · Shipped · Archived`; Grain options `Epic · Sprint · Seed`; an **
 `NOTION_TOKEN` is a Notion internal-integration token with access to the database (share the DB with
 the integration). Zero npm deps — Node 18+ (uses global `fetch`).
 
+**Scheduled:** `.github/workflows/notion-sync.yml` runs `--sync` nightly (08:00 UTC ≈ 02:00 CDMX) +
+on `workflow_dispatch`. It needs the `NOTION_TOKEN` repo secret (`gh secret set NOTION_TOKEN`);
+`NOTION_DB_ID` is optional (the Marketplace Roadmap id above is the workflow default).
+
 ## vercel-env.mjs — set + verify Vercel env vars via the REST API
 
 Sets/verifies env vars on the `miyagisanchez` Vercel project **via the REST API, never the CLI** —
