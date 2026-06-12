@@ -49,6 +49,13 @@ yarn-error.log*
 apps/
 .worktrees/
 
+# Local Claude Code settings (never history)
+.claude/settings.local.json
+
+# Staging / reference asset drops (binaries; not repo history)
+gems/
+references/design_handoff_mexico26_trifold/
+
 # macOS system files
 .DS_Store
 .DS_Store?
