@@ -1,0 +1,77 @@
+# In-flight overlay for the Roadmap → Notion projection (the "PR is open" signal).
+# Sibling to notion-sync.yml, which is the docs-truth full rebuild on push-to-main. This workflow does
+# NOT rebuild the board — it PATCHes only the epic row(s) a PR actually touches, so the board shows an
+# epic as "In review" while its PR is open, then hands back to notion-sync.yml on merge.
+#
+# Why scoped (not --sync): --sync is a full rebuild keyed by slug. Running it from a feature branch would
+# overwrite every OTHER epic's row with one branch's worldview, and parallel branches would clobber each
+# other. So we derive the epic slug(s) from the PR's changed Roadmap/<NN>/<epic>/ paths and call the
+# script's scoped --pr mode, which writes ONLY the Lifecycle + PR link overlay (never docs-derived Status).
+#
+# Lifecycle:
+#   • opened / synchronize / reopened → set Lifecycle="In review" + PR link on the touched epic's row(s).
+#   • closed (merged OR not)          → --clear the overlay. On merge, the push to main triggers
+#                                       notion-sync.yml, which re-derives Status from the merged docs.
+#
+# Requires the SAME NOTION_TOKEN secret as notion-sync.yml, plus two NEW Notion properties on the
+# Marketplace Roadmap DB — Lifecycle (Select) and "PR link" (URL). Notion rejects a PATCH to an unknown
+# property, so this stays red until Daniel adds them (by design — see scripts/roadmap-to-notion.inflight.md).
+# Zero dependencies — plain Node 22 (global fetch); gh is preinstalled on the runner.
+name: notion-pr-sync
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'Roadmap/**'
+
+# One run per PR; a rapid push burst cancels the older in-flight run (the latest PR state always wins).
+concurrency:
+  group: notion-pr-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  inflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check NOTION_TOKEN secret is set
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          if [ -z "$NOTION_TOKEN" ]; then
+            echo "::error::NOTION_TOKEN repo secret is not set — run: gh secret set NOTION_TOKEN (the same Notion internal-integration token notion-sync.yml uses)."
+            exit 1
+          fi
+      - name: Patch in-flight overlay for the touched epic(s)
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ secrets.NOTION_DB_ID || 'eb68a1fd05f443b184b6b5b3db89f47e' }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          # Epic slug = the <epic> dir under Roadmap/<NN-macro>/<epic>/ for every changed file.
+          # gh api works on closed/merged PRs too (no reliance on the branch still existing).
+          slugs=$(gh api --paginate "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" --jq '.[].filename' \
+            | sed -nE 's#^Roadmap/[0-9]{2}-[^/]+/([^/]+)/.*#\1#p' | sort -u | paste -sd, -)
+          if [ -z "$slugs" ]; then
+            echo "No epic-scoped Roadmap/** changes in this PR — nothing to overlay."
+            exit 0
+          fi
+          echo "Touched epic slug(s): $slugs"
+          if [ "$PR_ACTION" = "closed" ]; then
+            # merged → notion-sync.yml takes over via the push to main; unmerged → just revert. Both clear.
+            node scripts/roadmap-to-notion.mjs --pr "$slugs" --clear
+          else
+            node scripts/roadmap-to-notion.mjs --pr "$slugs" --status "In review" --link "$PR_URL"
+          fi

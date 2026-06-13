@@ -254,7 +254,10 @@ function buildRows() {
   return rows;
 }
 
-const mode = process.argv.includes('--sync') ? 'sync' : 'extract';
+const args = process.argv.slice(2);
+const hasFlag = (f) => args.includes(f);
+const flagVal = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : null; };
+const mode = hasFlag('--sync') ? 'sync' : hasFlag('--pr') ? 'pr' : 'extract';
 const rows = buildRows();
 
 if (mode === 'extract') {
@@ -265,7 +268,8 @@ if (mode === 'extract') {
 // --- sync mode: upsert into Notion by slug (docs always win) ---
 const TOKEN = process.env.NOTION_TOKEN;
 const DB = process.env.NOTION_DB_ID;
-if (!TOKEN || !DB) { console.error('sync: set NOTION_TOKEN and NOTION_DB_ID'); process.exit(1); }
+const needsNotion = mode === 'sync' || (mode === 'pr' && !hasFlag('--dry'));
+if (needsNotion && (!TOKEN || !DB)) { console.error('set NOTION_TOKEN and NOTION_DB_ID'); process.exit(1); }
 const NV = '2022-06-28';
 const api = (path, init = {}) => fetch(`https://api.notion.com/v1${path}`, {
   ...init,
@@ -291,6 +295,59 @@ function props(row, epicId) {
   };
   if (row.grain === 'Sprint') p.Epic = { relation: epicId ? [{ id: epicId }] : [] };
   return p;
+}
+
+// --- in-flight (PR) mode: scope-limited PATCH of ONLY the named epic's row(s). -------------------
+// Used by the pull_request workflow so an open PR shows its epic as "In review" WITHOUT running the
+// full --sync rebuild from a feature branch (which would clobber every other epic's row with one
+// branch's worldview). This adds NO new rebuild path: it reuses api()/sel() and writes ONLY the two
+// overlay properties below, never the docs-derived Status (the one-way docs → Status contract stays
+// intact). Scoped by slug, so parallel PRs on different epics never touch the same row.
+//   node roadmap-to-notion.mjs --pr <epic-slug>[,<slug2>] --status "In review" --link <pr-url>
+//   node roadmap-to-notion.mjs --pr <epic-slug> --clear     # PR closed/merged → drop the overlay
+//   add --dry to preview the targeted rows from the projection without touching Notion (smoke-safe).
+if (mode === 'pr') {
+  const PR_PROP = 'Lifecycle';     // a NEW Notion Select, separate from docs-derived Status (Daniel ratifies)
+  const PR_LINK_PROP = 'PR link';  // a NEW Notion URL property                            (Daniel ratifies)
+  const prSlugs = [...new Set(
+    args.flatMap((a, i) => (a === '--pr' && args[i + 1] ? args[i + 1].split(',') : []))
+        .map((s) => s.trim()).filter(Boolean),
+  )];
+  if (!prSlugs.length) { console.error('--pr: pass at least one epic slug'); process.exit(1); }
+  const status = flagVal('--status');
+  const link = flagVal('--link');
+  const clearing = hasFlag('--clear') || !status;
+  const overlay = {
+    [PR_PROP]: sel(clearing ? null : status),
+    [PR_LINK_PROP]: { url: clearing ? null : (link || null) },
+  };
+  const isTarget = (slug) => prSlugs.some((s) => slug === s || slug.startsWith(`${s}--`)); // epic + its sprints
+
+  if (hasFlag('--dry')) {
+    const hits = rows.filter((r) => isTarget(r.slug));
+    console.log(JSON.stringify({
+      mode: clearing ? 'clear' : 'set', slugs: prSlugs, overlay,
+      would_patch: hits.map((r) => ({ slug: r.slug, grain: r.grain, name: r.name })),
+    }, null, 2));
+    if (!hits.length) console.error(`--pr --dry: no projected rows match ${prSlugs.join(', ')}`);
+    process.exit(0);
+  }
+
+  // live: query the DB but keep ONLY the matching slugs, then PATCH each. (read is harmless; ~one page.)
+  const targets = new Map();
+  let prCursor;
+  do {
+    const page = await api(`/databases/${DB}/query`, { method: 'POST', body: JSON.stringify(prCursor ? { start_cursor: prCursor } : {}) });
+    for (const p of page.results) {
+      const slug = p.properties?.Slug?.rich_text?.[0]?.plain_text;
+      if (slug && isTarget(slug)) targets.set(slug, p.id);
+    }
+    prCursor = page.has_more ? page.next_cursor : null;
+  } while (prCursor);
+
+  for (const [, id] of targets) await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: overlay }) });
+  console.log(`pr-sync done — ${clearing ? 'cleared overlay' : `set ${PR_PROP}="${status}"`} on ${targets.size} row(s) for ${prSlugs.join(', ')}`);
+  process.exit(0);
 }
 
 // 1. Snapshot existing rows by slug
