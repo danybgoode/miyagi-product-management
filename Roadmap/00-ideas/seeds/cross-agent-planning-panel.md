@@ -1,7 +1,7 @@
 ---
 title: "Cross-agent planning panel — single-pass advisory second opinions on plans (architecture / strategy)"
 slug: cross-agent-planning-panel
-status: scaffolded
+status: shipped
 area: "09"
 type: chore
 priority: null
