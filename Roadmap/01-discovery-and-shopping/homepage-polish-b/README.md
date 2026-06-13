@@ -3,7 +3,7 @@
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) · **Risk: LOW overall** (presentational,
 > read-only discovery) with **one HIGH story** (S4.4 Supabase migration → Daniel merges) and two
 > shared-surface stories to announce (S1.1 `lib/types.ts`, S3.2 `layout.tsx`).
-> **Status: 🏗️ IN PROGRESS — S1 ✅ shipped (PR #84 `14fd880`); S2 ✅ merged (PR #85 `6774203`); S3 ✅ merged (PR #86 `b472cfb`); S4 pending.** Signed off by Daniel 2026-06-12. Scope doc / gate:
+> **Status: 🏗️ IN PROGRESS — S1 ✅ shipped (PR #84 `14fd880`); S2 ✅ merged (PR #85 `6774203`); S3 ✅ merged (PR #86 `b472cfb`); S4 🏗️ built — draft PR #87 (`feat/homepage-polish-b`), LOW risk, authed smokes owed to Daniel. S4.4 (`price_cents_at_save`) found already live → re-scoped, no migration.** Signed off by Daniel 2026-06-12. Scope doc / gate:
 > [`00-ideas/seeds/homepage-polish-b.md`](../../00-ideas/seeds/homepage-polish-b.md). Visual source of
 > truth: `handoff/mockups-directions.html` (Dirección B). Spec: `handoff/HANDOFF.md`. Reasoning:
 > `handoff/audit.html`. Validated against app **`origin/main`** (working tree is on a stale `feat/inventory`).
@@ -63,10 +63,10 @@ the bilingual allow-list (rule #5). The new read helpers must read the same norm
 | | S3.2 Header — "Vende" pill (→`/vende`) + in-search `iconoir-sparks` agent affordance (reuse `AIAgentButton`; new `search` variant, `type="button"`) | LOW *(shared `layout.tsx`)* |
 | | S3.3 Terminal CTA + footer visible on mobile (site-wide, + `Términos`) + empty-marketplace CTAs | LOW |
 | | S3.4 Vecindario **live strip** — real approved pulse items via `getNeighborhoodPulseItems`; kept `vecindario-feed-entry`; banner = empty fallback | LOW |
-| **S4 · Signed-in modules** | S4.1 "Retoma donde te quedaste" rail (newest 3 favorites; **no badge**) | LOW |
-| | S4.2 Pending-offer alert (buyer pending + seller-side; render nothing when not actionable; max 2) | LOW |
-| | S4.3 Seller snapshot (swap seller block when user has a shop; reuse `getShop`) | LOW |
-| | S4.4 `price_cents_at_save` column + backfill-on-next-favorite (data only; badge deferred) | **HIGH** *(DB migration → Daniel merges)* |
+| **S4 · Signed-in modules** 🏗️ *(draft PR #87)* | S4.1 "Retoma donde te quedaste" rail (newest 3 favorites; **no badge**) ✅ `lib/home-favorites.ts` | LOW |
+| | S4.2 Pending-offer alert (buyer pending + seller-side; render nothing when not actionable; max 2) ✅ next-free `lib/home-offer-alert.ts` + pure spec | LOW |
+| | S4.3 Seller snapshot (swap seller block when user has a shop) ✅ Supabase-mirror shop lookup + `getShopListings` views | LOW |
+| | S4.4 `price_cents_at_save` column + backfill-on-next-favorite (data only; badge deferred) ✅ **already live — re-scoped, no migration** | ~~HIGH~~ → none |
 
 ## Deploy order
 S1–S3 are **frontend-only** (Vercel preview per branch). S4.1–S4.3 are frontend-only and must **degrade

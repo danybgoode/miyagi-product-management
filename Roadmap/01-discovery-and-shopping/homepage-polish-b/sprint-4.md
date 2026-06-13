@@ -1,9 +1,18 @@
 # Homepage Polish — Dirección B — Sprint 4: Signed-in modules
 
-**Status:** ⬜ not started · **Risk:** LOW except **S4.4 HIGH** (Supabase migration → Daniel merges)
+**Status:** 🏗️ built — **draft PR [#87](https://github.com/danybgoode/miyagisanchezcommerce/pull/87)**
+(`feat/homepage-polish-b`). S4.1 ✅ · S4.2 ✅ · S4.3 ✅ · **S4.4 ✅ already live (re-scoped — no
+migration).** · **Risk: LOW** (no HIGH story → no Daniel-merge gate). Authed browser smokes owed to Daniel.
 
 > Recognise the returning user: a continuation rail, an actionable offer alert, and a seller snapshot — the
-> ribbon is gone. The price-drop badge is deferred; this sprint lands the column so it starts accruing data.
+> ribbon is gone. The price-drop badge is deferred (the column already exists, see S4.4).
+>
+> **S4.4 re-scope (verified 2026-06-12):** `price_cents_at_save` was already shipped in the original
+> `20260525000000_favorites_conversations.sql` — the column exists live on `marketplace_favorites`
+> (`integer`, nullable), `POST /api/favorites` already writes it (`price_cents_at_save:
+> listing?.price_cents ?? null`), and all existing rows are populated (0 nulls). So there was **no
+> migration to write and nothing for Daniel to merge** — S4.4 collapsed to verify-and-document and the
+> sprint shipped frontend-only, LOW-risk.
 
 ## Stories
 
@@ -32,23 +41,28 @@ actionable. Max 2 cards.**
 recruit card (`¿Vendes algo?` → `/vende`).
 **Risk:** LOW.
 
-### Story 4.4 — `price_cents_at_save` column + backfill (data only) — HIGH
+### Story 4.4 — `price_cents_at_save` column + backfill (data only) — ✅ ALREADY LIVE (re-scoped)
 **As a** future buyer, **I want** the price at the moment I favorited stored, **so that** a price-drop badge
 can light up later without a backfill scramble.
-**Acceptance:** add `price_cents_at_save` to `marketplace_favorites` (Supabase migration in
-`apps/miyagisanchez/supabase/`; additive, non-commerce table = allowed). Populate it on the next favorite
-write. **No UI/badge change this story** — data only. The rail (S4.1) must keep working whether or not the
-column has values.
-**Risk:** **HIGH** (DB migration) → **Daniel merges.**
+**Acceptance (already met before this sprint):** `price_cents_at_save` exists on `marketplace_favorites`
+and is populated on every favorite write. **No UI/badge change** — data only; the rail (S4.1) works whether
+or not the column has values.
+**Status:** ✅ **shipped in the original `20260525000000_favorites_conversations.sql`.** Verified live
+2026-06-12: column present (`integer`, nullable); `POST /api/favorites` writes
+`price_cents_at_save: listing?.price_cents ?? null`; all existing rows populated (3/3, 0 nulls). The
+account favorites page already renders a price-drop badge from it.
+**Risk:** ~~HIGH (DB migration)~~ → **none.** No migration authored, nothing for Daniel to merge.
 
 ## Sprint QA
-- **api spec(s):** pure-logic spec on the offer-alert "is actionable / max 2" derivation and the seller-vs-buyer
-  branch; rail join shape. Migration verified applied (column exists; new favorite writes it).
+- **api spec(s):** ✅ `e2e/home-offer-alert.spec.ts` — pure-logic spec on the offer-alert "is-actionable /
+  max 2 / soonest-first" derivation + the seller-vs-buyer copy branch + deep-link fallback (9 tests, green).
+  S4.4 column verified live (exists; `POST /api/favorites` writes it; rows populated).
 - **browser smoke owed:** **yes, to Daniel** (authed) — retoma rail renders first when signed-in; offer alert
   appears only with a real pending offer; seller snapshot shows for a shop account. These need a signed-in
   session, so they're owed to Daniel (the authed `MS_TEST_*` browser smoke can cover the rail/alert render
   once fixtures exist).
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **deterministic gate:** `tsc --noEmit` ✅ + `next build` ✅ + Playwright `api` pure specs ✅ locally; the
+  network-backed `api` suite runs in CI vs the branch preview (the authoritative pre-merge gate).
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (signed-in — **owed to Daniel**, holds the sessions)
@@ -59,7 +73,8 @@ Env: production · https://miyagisanchez.com  (signed-in — **owed to Daniel**,
    → A "Tu oferta de $X sigue pendiente" alert (max 2) with a `Ver` link to the offer thread. With no pending offer, no alert renders. *(auth path — Daniel)*
 3. Sign in as a seller account with a shop.
    → The seller block is the "Tu tienda esta semana" snapshot (visitas · ofertas), not the recruit card. *(auth path — Daniel)*
-4. (DB) After favoriting a new item, check `marketplace_favorites`.
-   → The new row has a non-null `price_cents_at_save`. *(migration check — Daniel merges S4.4)*
+4. (DB, S4.4 — already live) After favoriting a new item, check `marketplace_favorites`.
+   → The new row has a non-null `price_cents_at_save`. *(No migration this sprint — the column + write
+   already shipped; verified live 2026-06-12: 3/3 rows populated. This step just confirms it keeps working.)*
 
 If any step fails, note the step number + what you saw — that's the bug report.
