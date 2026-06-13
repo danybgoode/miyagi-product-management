@@ -17,6 +17,7 @@ This is the top of the funnel: a fast, trustworthy browsing experience that work
 - ✅ **[Homepage Polish — Dirección B](homepage-polish-b/)** — homepage chrome, community modules, and signed-in modules. *Shipped 2026-06-12 (4 sprints).*
 - ✅ **[PDP image gallery](pdp-image-gallery/)** — interactive product-detail image gallery (lightbox, thumbnail rail). *Shipped 2026-06-10 (PR #70).*
 - 🚧 **[Neighborhood Pulse](neighborhood-pulse/)** — online community feed (`/vecindario`), v1 of the Neighborhood Commerce Layer. *In progress — S1 merged to `main` (PR #55); rollout (migration + opt-in seed) + S2 still pending.*
+- 🚧 **[PDP redesign — "decide, then act"](pdp-redesign/)** — reorder the product page by buyer intent (fix the bar bug, specs+description up, one primary CTA, trust by price), confidence/liveness signals, a structured-attributes/specs primitive, and per-type blocks for all 9 listing types. *Scaffolded 2026-06-13 — 5 sprints + 1 carved HIGH story (#6 login wall, Daniel-gated).*
 
 ## Backlog / ideas
 - 📋 Personalized recommendations
