@@ -3,7 +3,7 @@
 Goal: supporters can enter with verified email, and completed purchases can
 award extra tickets idempotently.
 
-Status: 🚧 implemented on branch (`652d2bf`, `881d287`, `e07349b`), preview/manual QA pending.
+**Status:** ✅ SHIPPED 2026-06-04 — merged to `main` (`652d2bf`, `881d287`, `e07349b`). Live giveaway smoke owed (see RETROSPECTIVE).
 
 Risk tier: **High** — purchase-bonus hooks touch live Stripe/MercadoPago webhook,
 checkout reconciliation, and direct-payment confirmation paths. Daniel merge

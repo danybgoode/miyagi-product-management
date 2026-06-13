@@ -3,7 +3,7 @@
 Goal: tenants can create a sweepstakes campaign, pass the compliance gate, and
 share a public URL/QR without any purchase-bonus or draw automation yet.
 
-Status: 🚧 implemented on branch (`652d2bf`), preview/manual QA pending.
+**Status:** ✅ SHIPPED 2026-06-04 — merged to `main` (`652d2bf`). Live giveaway smoke owed (see RETROSPECTIVE).
 
 Risk tier: **Medium** — tenant/public campaign surfaces and legal guardrails, no
 money-path hooks.

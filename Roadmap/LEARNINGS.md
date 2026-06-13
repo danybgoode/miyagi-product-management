@@ -360,6 +360,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
+- **An authoritative, money-adjacent scheduled action belongs in the BACKEND scheduled job (internal auth +
+  idempotency), not a Vercel/edge cron.** "Pick the sweepstakes winner once" started on a one-minute Vercel
+  cron and was moved onto a Medusa scheduled job on Cloud Run with internal auth — a public/edge cron is the
+  wrong trust boundary for a fair, once-only draw, and an idempotency guard makes a repeated trigger a no-op.
+  Same shape as any "run this exactly once, server-side" job (draws, reconciliation, payouts). *(2026-06-04,
+  sweepstakes S3 — frontend `bb02f93` + backend `50e3af8`.)*
 - **A presentation-layer theme/skin must reuse the SAME channel/route signals the layout already uses to
   drop chrome — never invent a parallel scope list, and apply a persisted theme BEFORE first paint.** The
   seasonal `platform-theme` engine excludes white-label / embed / custom-domain / checkout / dashboard

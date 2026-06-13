@@ -1,8 +1,10 @@
 # Epic · Sweepstakes
 
-> 🚧 **Implemented on `feat/sweepstakes`; preview/live QA pending.** Builds the tenant-run giveaway loop:
+> **✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-04** (both repos; see
+> [RETROSPECTIVE.md](RETROSPECTIVE.md) and Implementation refs below). Builds the tenant-run giveaway loop:
 > create a compliant campaign, share a focused public entry page, verify entries,
 > award purchase bonus tickets, draw a winner automatically, and notify participants.
+> **Live giveaway smoke owed to Daniel** (create→verify→purchase-bonus→draw→notify on a real campaign).
 
 **For tenants who want a viral growth loop.** A tenant creates a campaign with a
 prize, dates, entry mechanics, legal/permit details, and bilingual public copy.

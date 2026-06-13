@@ -3,7 +3,7 @@
 Goal: campaigns close automatically, draw one winning ticket fairly, and let the
 tenant follow up with winners and non-winners.
 
-Status: 🚧 implemented on branch (`652d2bf`, `d477356`, `e07349b`, frontend `bb02f93`, backend `50e3af8`), preview/manual QA pending.
+**Status:** ✅ SHIPPED 2026-06-04 — merged to `main` (`652d2bf`, `d477356`, `e07349b`, frontend `bb02f93`, backend `50e3af8`). Live draw/notify smoke owed (see RETROSPECTIVE).
 
 Risk tier: **Medium** — cron, notifications, and seller dashboard actions. If a
 change alters checkout or coupon redemption behavior, treat that PR as High.
