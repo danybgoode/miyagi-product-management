@@ -75,6 +75,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   parallel planning, **give each planning session its own worktree**, or appoint a single **scribe** for
   shared files (`BUILD-ORDER.md`). The single highest-leverage line is the path-limited commit.
   *(2026-06-07 — planning sessions collided in the shared root worktree.)*
+- **Cowork planning sandbox: the mounted `.git` blocks `unlink` on lock files, and GitHub egress is
+  proxied-off — `rename` aside to commit, and the human pushes.** Committing from the Cowork desktop
+  sandbox, every git index op (`add`/`commit`) leaves a stale `.git/index.lock` (+ `HEAD.lock` /
+  `next-index-*.lock`) because the mount returns **EPERM on `unlink`** — so `rm` can't clear them and the
+  next op dies with `File exists` / "another git process is running". **`rename` is allowed** (git's own
+  commit renames lockfile→target fine), so clear them by moving aside before each commit:
+  `for L in .git/*.lock; do [ -e "$L" ] && mv "$L" "$L.stale.$RANDOM"; done` (the harmless
+  `unable to unlink … tmp_obj`/lock warnings during commit can be ignored — the commit still lands).
+  Separately, **`git push`/`fetch` to GitHub 403 through the sandbox proxy** — planning commits land
+  locally on the mounted repo on `main`, and the **human pushes from their own terminal**
+  (`git push origin main`); the agent can't push or fetch itself. *(2026-06-12, doc-drift reconciliation.)*
 
 ## Tooling gotchas
 - **Run the repo binaries directly when `npm`/`npx` chokes.** A sibling worktree that reuses the same
