@@ -1,5 +1,10 @@
 # Epic — Cross-agent planning panel (single-pass advisory second opinions on plans)
 
+**Status:** ✅ **COMPLETE — Sprint 1 (the whole v1) shipped 2026-06-13, PR #15.** `scripts/cross-panel.mjs`
+is merged and runnable: two architecture lenses (purist/pragmatist), a pair-run combined block with a
+contradiction-synthesis, the shared CLI plumbing in `scripts/lib/cross-agent-cli.mjs`, and the `groom`
+trigger model + `Panel:` verb wiring. Advisory, single-pass, print-only, never a gate.
+
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / planning-process tooling (Cowork track). No buyer/seller/agent-facing change.
 **Scope doc:** [`Roadmap/00-ideas/seeds/cross-agent-planning-panel.md`](../../00-ideas/seeds/cross-agent-planning-panel.md) — APPROVED 2026-06-13.
@@ -76,15 +81,22 @@ script merged to `main` and runnable. US-1→US-2→US-3 in order (each builds o
 independent after US-1.
 
 ## Definition of Done (epic)
-- [ ] `node scripts/cross-panel.mjs <scope-doc> --agent codex --lens architect-purist` prints a coherent,
-      clearly-advisory critique that names a checkable claim, against a real recent scope doc.
-- [ ] `--lens architect-pragmatist` produces a distinct, useful perspective; lenses live in one shared
+- [x] `node scripts/cross-panel.mjs <scope-doc> --agent codex --lens architect-purist` prints a coherent,
+      clearly-advisory critique that names a checkable claim, against a real recent scope doc. *(Smoked vs the
+      epic seed doc.)*
+- [x] `--lens architect-pragmatist` produces a distinct, useful perspective; lenses live in one shared
       `cross-panel.prompt.md`; a bad/missing CLI or lens fails with a clear message.
-- [ ] Running the pair prints one combined "🔎 Cross-agent planning panel" block with the advisory banner,
-      flagging any genuine contradiction for Daniel.
-- [ ] `skills/groom/SKILL.md` surfaces the panel per the trigger model (Stage 2 spike / Stage 4
+- [x] Running the pair prints one combined "🔎 Cross-agent planning panel" block with the advisory banner,
+      flagging any genuine contradiction for Daniel. *(Synthesis surfaced one real contradiction in the smoke.)*
+- [x] `skills/groom/SKILL.md` surfaces the panel per the trigger model (Stage 2 spike / Stage 4
       architecture fork = mandatory offer; on-demand otherwise) and `SESSION-KICKOFFS.md` has the `Panel:` verb.
-- [ ] No gating: nothing blocks on the panel; Daniel's scope-doc approval stays the only gate.
-- [ ] Smoke walkthrough in `sprint-1.md` run green against a real scope doc.
-- [ ] This README marked ✅; sprint status ticked with commit refs; `RETROSPECTIVE.md` written.
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md`; seed frontmatter `status: shipped`.
+- [x] No gating: nothing blocks on the panel; Daniel's scope-doc approval stays the only gate.
+- [x] Smoke walkthrough in `sprint-1.md` run green against a real scope doc.
+- [x] This README marked ✅; sprint status ticked with commit refs; `RETROSPECTIVE.md` written.
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md`; seed frontmatter `status: shipped`.
+
+## Shipped
+Sprint 1 (the whole v1) — PR #15, all 4 stories LOW: S1.1 `ef29869` skateboard + shared-module extraction ·
+S1.2 `75c821b` pragmatist lens · S1.3 `05aa539` pair + synthesis + `--dry-run` · S1.4 `9cf62ae` groom/kickoff
+wiring · `5dc8116` moved the shared plumbing to `scripts/lib/`. See [`sprint-1.md`](sprint-1.md) for the
+smoke walkthrough and [`RETROSPECTIVE.md`](RETROSPECTIVE.md) for what we learned.

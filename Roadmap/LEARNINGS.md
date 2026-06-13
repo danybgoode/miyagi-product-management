@@ -164,6 +164,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   + branch its context-passing per CLI, and the smoke is "run it against a real PR and read the comment."
   *(2026-06-10, cross-agent-code-review S1 — also: a `git commit -- <paths> -m "msg"` fails because everything
   after `--` is a pathspec; put `-m` before `--`.)*
+  **A SECOND single-purpose cross-agent script shares the rail, doesn't fork it.** The planning panel
+  (`scripts/cross-panel.mjs` — second opinion on a *plan* instead of a PR) reused ~90% of cross-review by
+  extracting the family-agnostic plumbing into one module (`scripts/lib/cross-agent-cli.mjs`: presence/version
+  checks, `runCodex`/`runAntigravity` + the agy argv size-cap, the `\n---` prompt-body loader) and keeping each
+  script's *framing* (PR diff vs plan doc) and *output* (post a comment vs print a panel) local. Add an
+  `opts.soft` mode on the runners so a **non-essential** pass degrades to a stderr note instead of `die()`-ing
+  (the panel's contradiction-synthesis uses it). Don't import cross-review.mjs directly — it runs `main()` at
+  module load; extract to a sibling lib both import. After `git mv`-ing a module, grep stale path refs in
+  **header comments + docs**, not just the imports. *(2026-06-13, cross-agent-planning-panel S1.)*
+  **To "surface contradictions" between two single-pass critiques, one constrained synthesis pass beats both
+  side-by-side and a debate loop.** Print the critiques verbatim, then a single pass that lists *only*
+  opposite-action contradictions (else one "complementary" line) — the tool does the flagging, but it stays
+  single-pass (no back-and-forth, the #1 token sink). Keep it *soft* so a failed synthesis still prints the
+  lenses. *(2026-06-13, cross-agent-planning-panel S1 — `## SYNTHESIS` in `cross-panel.prompt.md`.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop

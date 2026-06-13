@@ -1,8 +1,9 @@
 # Cross-agent planning panel — Sprint 1: Thin advisory panel command (architecture lenses)
 
-**Status:** 🟦 In review — built 2026-06-13 on `feat/cross-agent-planning-panel`. All 4 stories ✅
-(S1.1 `ef29869` · S1.2 `75c821b` · S1.3 `05aa539` · S1.4 `9cf62ae`). Smoke run green against the epic seed
-doc (codex). Risk LOW → reviewer may auto-merge on green review.
+**Status:** ✅ Shipped 2026-06-13 — PR #15 (LOW). All 4 stories ✅ (S1.1 `ef29869` · S1.2 `75c821b` ·
+S1.3 `05aa539` · S1.4 `9cf62ae`; `5dc8116` moved the shared plumbing to `scripts/lib/`). Smoke run green
+against the epic seed doc (codex) — both lenses distinct + checkable claims; pair synthesis surfaced one real
+contradiction.
 
 > Planning/dev tooling, not app code: this sprint touches `scripts/` + `skills/groom/` + `Roadmap/` docs
 > only — **no** `apps/*`, commerce, money, auth, DB, i18n, Vercel, or Cloud Run. The app deterministic
