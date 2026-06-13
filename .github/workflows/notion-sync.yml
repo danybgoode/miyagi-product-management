@@ -1,6 +1,17 @@
-# Nightly Roadmap → Notion projection (scripts/roadmap-to-notion.mjs --sync).
+# Roadmap → Notion projection (scripts/roadmap-to-notion.mjs --sync).
 # Docs are the only source of truth; the Notion board is a rebuilt projection, so a
-# scheduled re-sync keeps it from lagging merged work (board edits are overwritten).
+# re-sync keeps it from lagging merged work (board edits are overwritten).
+#
+# Triggers (in order of how it normally fires):
+#   • push to main touching the projection's inputs (Roadmap/** or the script) — the
+#     real "state changed" signal: the board reflects a doc merge within ~a minute.
+#   • nightly cron — a drift safety-net (catches anything a push trigger missed).
+#   • workflow_dispatch — manual on-demand run (GitHub Actions "Run workflow" button,
+#     `gh workflow run notion-sync.yml`, or the API) to force a resync without a doc
+#     change — e.g. after the board was edited by hand, or to re-sync after setting
+#     the NOTION_TOKEN secret.
+# concurrency coalesces rapid merges: the sync is a full idempotent rebuild, so
+# cancelling an in-flight run for the newest commit is always correct.
 #
 # Secrets: NOTION_TOKEN (required — `gh secret set NOTION_TOKEN`, a Notion internal-
 # integration token with access to the database). NOTION_DB_ID is optional; the
@@ -10,9 +21,18 @@
 name: notion-sync
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'Roadmap/**'
+      - 'scripts/roadmap-to-notion.mjs'
   schedule:
-    - cron: '0 8 * * *' # nightly, 08:00 UTC ≈ 02:00 CDMX
-  workflow_dispatch:
+    - cron: '0 8 * * *' # nightly, 08:00 UTC ≈ 02:00 CDMX — drift safety-net
+  workflow_dispatch:     # manual on-demand resync
+
+concurrency:
+  group: notion-sync
+  cancel-in-progress: true
 
 jobs:
   sync:
