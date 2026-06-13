@@ -1,10 +1,16 @@
 # Epic: Neighborhood Pulse — online community feed
 
-> **🚧 IN PROGRESS — not shipped.** S1 code is **merged to `main`** (PR #55, `48e9fc5`; `/vecindario`,
-> `lib/neighborhood-*`), but **rollout is pending** — the MED migration (S1.1) + the seed/opt-in step
-> haven't been run, so the feed isn't live-rolled-out — and **S2 (ranking/feed enrichment) is built but not
-> yet merged** (its commits aren't on `origin/main`). Do **not** mark this shipped until the rollout is done
-> and S2 lands. **What remains:** run the S1.1 migration + opt-in seed, smoke the live feed, merge S2.
+> **🚧 IN PROGRESS — S1 live, S2 unmerged.** S1 code is **merged to `main` and live on prod** (PR #55,
+> `48e9fc5`; `/vecindario` returns 200, `lib/neighborhood-*`), and the **S1.1 MED migration is already
+> applied** — `print_social_submissions.web_visible BOOLEAN NOT NULL DEFAULT false` exists on live Supabase
+> (verified 2026-06-13) and the admin "Mostrar en línea" opt-in toggle is live in the print queue. **The feed
+> is live-but-empty by design:** 0 items are opted in (`web_visible = true` count = 0), and only 1 approved
+> community submission exists today. So the remaining "rollout" is an **operational opt-in** (a moderator flips
+> "Mostrar en línea" on approved items) — **not a pending deploy**. **S2 (spotlight + zona grouping + UCP/MCP
+> pulse) is built but NOT merged** — its commits live only on `feat/neighborhood-pulse` (prod
+> `/api/ucp/neighborhood-pulse` → 404), and the branch is ~3 days behind `main`. Do **not** mark this epic ✅
+> until S2 lands and the feed is smoked with real opted-in content. **What remains:** opt a batch of approved
+> items in + smoke the live feed; refresh the S2 branch off `main`, re-gate, and merge S2.
 
 > **Area:** 01-discovery-and-shopping · **Risk:** low (one MED migration story, S1.1) · **Scope seed:** [`00-ideas/seeds/neighborhood-pulse.md`](../../00-ideas/seeds/neighborhood-pulse.md)
 

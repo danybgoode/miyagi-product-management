@@ -1,6 +1,6 @@
 # Neighborhood Pulse — online community feed — Sprint 1: Feed exists, opt-in-gated, and feels alive
 
-**Status:** ✅ merged to `main` · rollout smoke pending after MED migration + seed opt-in
+**Status:** ✅ merged to `main` + live on prod · S1.1 MED migration applied (live Supabase has `web_visible`) · feed live-but-empty pending an operational opt-in seed
 
 > The skateboard. Backend-first: ship the opt-in flag, then the feed that reads it, then the trending strip and
 > entry points. The feed is **read-only** and starts **empty** by design (deliberate web opt-in) — seed it at
@@ -14,7 +14,7 @@
 
 ## Stories
 
-### Story 1.1 — Moderator web opt-in flag (`web_visible`, default OFF)
+### Story 1.1 — Moderator web opt-in flag (`web_visible`, default OFF) ✅
 **As a** moderator, **I want** to deliberately opt an approved contribution into the online feed, **so that**
 approving an item for print never auto-publishes it to the web and I control what neighbors see online.
 **Detail:** additive `web_visible` boolean (default **false**) on `print_social_submissions`; a "Mostrar en
@@ -28,7 +28,7 @@ línea" toggle in the admin social queue, wired through `PATCH /api/admin/print/
 *Deploy backend-first, ahead of S1.2.*
 **Build:** ✅ app commit `3d8a03c` (`feat(neighborhood-pulse): add social web opt-in`).
 
-### Story 1.2 — Public `/vecindario` feed of opted-in approved items
+### Story 1.2 — Public `/vecindario` feed of opted-in approved items ✅
 **As a** buyer, **I want** to open a public neighborhood feed and see what my community is sharing, **so that**
 the marketplace feels alive and local even when I'm not actively shopping.
 **Detail:** new public route `/vecindario` rendering `print_social_submissions` where `web_visible = true` AND
@@ -42,7 +42,7 @@ name. Read-only; null-safe (`web_visible ?? false`) so it's a safe no-op during 
 **Build:** ✅ app commit `0031877` (`feat(neighborhood-pulse): add public feed`).
 **Review fix:** ✅ app commit `edef05b` (`fix(neighborhood-pulse): avoid public email fallback`).
 
-### Story 1.3 — Trending-listings strip
+### Story 1.3 — Trending-listings strip ✅
 **As a** buyer, **I want** to see what's trending locally without searching, **so that** I discover worth-buying
 items through neighborhood signal, not just search.
 **Detail:** a "Tendencias" strip on `/vecindario` ranking **existing** listings via a pure
@@ -53,7 +53,7 @@ items through neighborhood signal, not just search.
 **Risk:** low.
 **Build:** ✅ app commit `f0c35c5` (`feat(neighborhood-pulse): rank trending listings`).
 
-### Story 1.4 — Entry points + contribute loop
+### Story 1.4 — Entry points + contribute loop ✅
 **As a** buyer/contributor, **I want** to find the feed and add to it, **so that** the community surface is
 discoverable and the contribute loop is obvious.
 **Detail:** link `/vecindario` from discovery nav + the mobile tab/menu; a "Comparte con tu colonia" CTA on the
