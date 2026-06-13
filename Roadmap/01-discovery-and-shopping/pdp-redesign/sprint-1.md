@@ -1,7 +1,7 @@
 # Sprint 1 — Base PDP: fix the bug, reorder by intent, one primary action
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW** (frontend reorder/polish; **touches the shared buy bar** —
-> announced; behind the `pdp_redesign` kill-switch). **Status: ✅ built — PR [#88](https://github.com/danybgoode/miyagisanchezcommerce/pull/88) (draft), deterministic gate green; authed pending-offer smoke owed to Daniel.**
+> announced; behind the `pdp_redesign` kill-switch). **Status: ✅ MERGED to `main` 2026-06-13 — PR [#88](https://github.com/danybgoode/miyagisanchezcommerce/pull/88) squash `a12c7af` (deployed to prod). Both reviews clean (fresh Claude reviewer + Codex advisory, no blocking). `pdp_redesign` flag created ENABLED in both Flagsmith envs (Prod 92069 · Dev 92070, feature 215314). Authed pending-offer smoke owed to Daniel.**
 > Goal: the standard physical-product PDP resolves *identify → trust → cost → act* in order, the reported
 > bar/padding bug is gone, and there is one clear primary action. Both auth states.
 >
