@@ -59,6 +59,15 @@ Not part of the feature batch; tracked here so it isn't lost.
 
 ---
 
+## New asks (groomed post-batch)
+- 📋 **PWA Liquid-Glass Nav Polish** → `09-platform-infra/pwa-liquid-glass-nav-polish/` · seed
+  `seeds/pwa-liquid-glass-nav-polish.md` · groomed + scaffolded 2026-06-13 · 2 sprints (compressible to 1),
+  all LOW — **ready to build**. Frontend-only PWA bottom-bar restyle + bottom-sheet search; **knowingly
+  reverses two nav-reorg decisions** (detached search + Favoritos-as-tab) → epic close must reconcile the
+  nav-reorg docs + poster.
+
+---
+
 ## Next actions
 
 **Builds — Claude Code (work the docs on `main`):**
