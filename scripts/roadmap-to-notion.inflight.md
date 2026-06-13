@@ -1,8 +1,10 @@
 # In-flight visibility for the Roadmap → Notion projection — design note
 
 _Companion to `scripts/roadmap-to-notion.mjs` and `.github/workflows/notion-pr-sync.yml`._
-_Status: decisions below are proposed; **Daniel ratifies the two new Notion properties before the live
-workflow is wired** (the script's `--dry` path needs no schema change and is safe to run now)._
+_Status: ratified + live. The two new Notion properties (`Lifecycle`, `PR link`) were added to the
+Marketplace Roadmap DB on 2026-06-13 and validated end-to-end against a real epic row (set "In review"
+→ read back → `--clear` → read back; docs-derived `Status` stayed untouched throughout). The only step
+left to activate the live hook is pushing `notion-pr-sync.yml` to `main`._
 
 ## The problem
 
@@ -86,16 +88,20 @@ is inherent to the sandbox and not something an in-flight hook should paper over
   `NOTION_TOKEN` secret-guard and adds **per-PR concurrency** (`notion-pr-sync-<pr-number>`) so rapid
   `synchronize` pushes coalesce.
 
-## Before the live workflow runs (Daniel)
+## Activation checklist
 
-1. Add the two properties to the **Marketplace Roadmap** DB: **`Lifecycle`** (Select, option `In review`) and
-   **`PR link`** (URL). Notion rejects a PATCH to an unknown property, so the live workflow stays red until
-   these exist — by design.
-2. `NOTION_TOKEN` is already the secret `notion-sync.yml` uses; no new secret needed.
+1. ~~Add **`Lifecycle`** (Select, option `In review`) and **`PR link`** (URL) to the **Marketplace Roadmap**
+   DB.~~ **Done 2026-06-13.** Notion rejects a PATCH to an unknown property, so this had to land first.
+2. `NOTION_TOKEN` is already the secret `notion-sync.yml` uses — no new secret needed. Confirm that token's
+   Notion integration has access to the Marketplace Roadmap DB (it does, since `notion-sync.yml` writes it).
+3. **Push `notion-pr-sync.yml` to `main`** — until then the hook is dormant. (Sandbox can't push; the human does.)
 
-## Smoke (done, no live writes)
+## Validation (done)
 
-`node scripts/roadmap-to-notion.mjs --extract` → unchanged (161 rows). `--pr … --dry` for set / clear /
-multi-slug / unknown-slug all target the right rows and emit the right payload. The live board was **not**
-touched — it's a projection, so any blind board write gets overwritten; preview with `--dry`, then let Daniel
-reconcile the schema.
+- **Script (`--dry`, no token):** `--extract` unchanged (161 rows); `--pr … --dry` for set / clear /
+  multi-slug / unknown-slug all targeted the right rows (epic + its `--s*` sprints) and emitted the right
+  payload shape.
+- **Live board (via the Notion connector — same API + property JSON the script PATCHes):** on the real
+  `discovery-polish` epic + its S1 sprint, set `Lifecycle="In review"` + `PR link`, read back (both set;
+  `Status` stayed `Shipped` — the overlay is decoupled from docs-derived Status), then `--clear` and read
+  back (both empty; `Status` still `Shipped`). The board was returned to its clean projected state.
