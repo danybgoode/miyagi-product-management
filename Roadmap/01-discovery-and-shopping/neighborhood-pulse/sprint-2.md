@@ -1,13 +1,15 @@
 # Neighborhood Pulse — online community feed — Sprint 2: Richer pulse + agents
 
-**Status:** ✅ built — frontend commits `b4e6962`, `f958052`, `607a8df`; review fix `6bd96e1`
+**Status:** ✅ shipped — merged via [PR #56](https://github.com/danybgoode/miyagisanchezcommerce/pull/56),
+squash `ee4de8b` (2026-06-13). Build commits `b4e6962`/`f958052`/`607a8df` + review fix `6bd96e1`; branch
+refreshed off `main` (`04647c1`, one trivial import conflict) + codex cross-review should-fix/nits `1dd7917`.
 
 > Builds on Sprint 1's feed. All LOW-risk, read-only — a merchant spotlight, a neighborhood feel via grouping,
 > and an agent-readable pulse view. No new persistence; reuses `lib/neighborhood-rank.ts` + existing shop/UCP data.
 
 ## Stories
 
-### Story 2.1 — Merchant-spotlight strip
+### Story 2.1 — Merchant-spotlight strip ✅
 **As a** buyer, **I want** to see merchants worth knowing, **so that** I build familiarity and confidence in
 local sellers before I transact.
 **Detail:** a "Comercios que destacan" strip ranking shops by recent activity (new listings / views / recency),
@@ -20,7 +22,7 @@ shop-ranking branch. Order volume is intentionally excluded until a real Medusa-
 **Built:** ✅ `b4e6962` — adds the shop-ranking branch, `/api/neighborhood-pulse/spotlight`, the strip on
 `/vecindario`, and API-project coverage. Review fix keeps raw ranking counters out of public/UCP/MCP responses.
 
-### Story 2.2 — Colonia/zona presentational grouping
+### Story 2.2 — Colonia/zona presentational grouping ✅
 **As a** buyer, **I want** the feed to read as "my neighborhood", **so that** community items feel local and
 organized rather than a flat stream.
 **Detail:** visually group/label feed items by colonia/zona — **presentational only, no filtering engine**
@@ -33,7 +35,7 @@ under a neutral "Tu comunidad" group.
 **Built:** ✅ `f958052` — adds the presentational grouping helper + grouped `/vecindario` render and
 API-project coverage.
 
-### Story 2.3 — Read-only UCP/MCP pulse view (agent surface)
+### Story 2.3 — Read-only UCP/MCP pulse view (agent surface) ✅
 **As an** AI shopping agent, **I want** to read the neighborhood pulse, **so that** agents see trending + the
 community signal the same way buyers do (AGENTS rule #3).
 **Detail:** expose the feed (opted-in community items + trending listings) as a **read-only** view on the

@@ -1,16 +1,18 @@
 # Epic: Neighborhood Pulse — online community feed
 
-> **🚧 IN PROGRESS — S1 live, S2 unmerged.** S1 code is **merged to `main` and live on prod** (PR #55,
-> `48e9fc5`; `/vecindario` returns 200, `lib/neighborhood-*`), and the **S1.1 MED migration is already
-> applied** — `print_social_submissions.web_visible BOOLEAN NOT NULL DEFAULT false` exists on live Supabase
-> (verified 2026-06-13) and the admin "Mostrar en línea" opt-in toggle is live in the print queue. **The feed
-> is live-but-empty by design:** 0 items are opted in (`web_visible = true` count = 0), and only 1 approved
-> community submission exists today. So the remaining "rollout" is an **operational opt-in** (a moderator flips
-> "Mostrar en línea" on approved items) — **not a pending deploy**. **S2 (spotlight + zona grouping + UCP/MCP
-> pulse) is built but NOT merged** — its commits live only on `feat/neighborhood-pulse` (prod
-> `/api/ucp/neighborhood-pulse` → 404), and the branch is ~3 days behind `main`. Do **not** mark this epic ✅
-> until S2 lands and the feed is smoked with real opted-in content. **What remains:** opt a batch of approved
-> items in + smoke the live feed; refresh the S2 branch off `main`, re-gate, and merge S2.
+> **✅ CODE COMPLETE — both sprints shipped to prod 2026-06-13.** S1 (feed + opt-in flag + trending strip +
+> entry loop) merged via PR #55 `48e9fc5`; **S2 (merchant spotlight + zona grouping + read-only UCP/MCP pulse)
+> merged via PR #56, squash `ee4de8b`.** The **S1.1 MED migration is applied** —
+> `print_social_submissions.web_visible BOOLEAN NOT NULL DEFAULT false` exists on live Supabase and the admin
+> "Mostrar en línea" opt-in toggle is live. `/vecindario` returns 200; the S2 agent surface is live
+> (`GET /api/ucp/neighborhood-pulse` + MCP `get_neighborhood_pulse` + manifest/capabilities). S2 was refreshed
+> off `main` (one trivial import conflict) and passed a codex cross-review (no blocking; should-fix + nits
+> applied in `1dd7917`).
+>
+> **One residual, owed to Daniel (operational, not code):** the feed is **live-but-empty by design** — 0 items
+> are opted in and only 1 approved community submission exists today. Lighting it up is an **operational
+> opt-in** (approve items + flip "Mostrar en línea") plus the real-content live smoke — content-dependent, his
+> call (seed now vs. wait for more submissions). No deploy or code work remains.
 
 > **Area:** 01-discovery-and-shopping · **Risk:** low (one MED migration story, S1.1) · **Scope seed:** [`00-ideas/seeds/neighborhood-pulse.md`](../../00-ideas/seeds/neighborhood-pulse.md)
 
@@ -60,11 +62,13 @@ in — seed a batch at launch. S1.2–S2.3 are LOW-risk frontend/read work with 
 latest `main` before opening the PR.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (01 · Discovery feature line + Recent highlights)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [x] All sprints merged to `main` (S1 #55 `48e9fc5` · S2 #56 `ee4de8b`) — **smoke gap stated:** live feed
+      smoke with real opted-in content is owed (feed empty by design until a moderator opts items in)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅ (code-complete); every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (01 · Discovery feature line + Recent highlights)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; seed frontmatter `status: shipped`
+- [ ] **Owed to Daniel (operational):** opt a batch of approved items in (`web_visible`) + live-feed smoke

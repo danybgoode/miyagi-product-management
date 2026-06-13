@@ -299,7 +299,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   sink), and **codex is the default** because it takes the diff on **stdin** (handles large PRs), whereas
   `agy` has no stdin and a ~256 KB argv cap. Cheapest insertion point: right after the deterministic gate is
   green and before you ask for the merge. *(2026-06-11, backend-staging S1 — first run of the cross-agent
-  flow on a real PR; complements the build-time CLI-driving note under Tooling gotchas.)*
+  flow on a real PR; complements the build-time CLI-driving note under Tooling gotchas.)* **Decline (with a
+  written reason) any should-fix that would diverge from an established cross-cutting convention if fixed in
+  isolation — that's "noise," not a fix.** On neighborhood-pulse S2, codex flagged the agent `baseUrl` being
+  built from the `Host` header; but that's the convention across the *whole* UCP surface (`manifest`, `mcp`,
+  `checkout-session`), so patching only the new route creates inconsistency for no security gain (read-only
+  link gen, not a boundary) — record it as a possible cross-cutting follow-up instead. Apply the genuine
+  should-fixes (there: a NaN-safe limit clamp) + cheap nits, and put the decline + rationale in the fix commit
+  so the next reviewer sees it was considered. *(2026-06-13, neighborhood-pulse S2.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
@@ -353,7 +360,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   and a live `SELECT` showed every row populated) collapsed the whole HIGH story to verify-and-document — no
   migration, no Daniel-merge gate, the sprint shipped frontend-only LOW. For any additive-column/backfill
   story, `git show` the table's migration + grep the write route, and confirm against the live DB before
-  treating it as unbuilt. *(2026-06-12, homepage-polish-b S4.4.)*
+  treating it as unbuilt. *(2026-06-12, homepage-polish-b S4.4.)* **The mirror failure mode: a doc that calls a
+  migration "rollout pending" when it's already applied.** Neighborhood-pulse's README said the S1.1 MED
+  migration + opt-in seed "hadn't been run"; one live-Supabase check showed `web_visible` already present
+  (`NOT NULL DEFAULT false`) and the admin toggle live — so the only real residual was an *operational opt-in*,
+  not a deploy. Audit the live schema (supabase MCP `execute_sql` on `information_schema.columns`) before
+  believing *or re-opening* work a doc calls pending; a "🚧 rollout pending" line drifts as easily as a "✅
+  done" one. *(2026-06-13, neighborhood-pulse audit.)*
 - **Fix the call the *user* awaits, not the lib the plan named — a proxy makes the named module a red
   herring.** The plan said "time out `lib/envia.ts quoteShipments`," but tracing importers showed that
   frontend lib only feeds the *seller* ship route; the *buyer's* quote is a

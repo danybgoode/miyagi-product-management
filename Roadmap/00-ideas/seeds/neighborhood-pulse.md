@@ -1,14 +1,14 @@
 ---
 title: "Neighborhood Pulse — online community feed (v1 of the Neighborhood Commerce Layer)"
 slug: neighborhood-pulse
-status: in-progress
+status: shipped
 area: "01"
 type: feature
 priority: null
 risk: low
 epic: "01-discovery-and-shopping/neighborhood-pulse"
 build_order: null
-updated: 2026-06-12
+updated: 2026-06-13
 ---
 
 # Scope — Neighborhood Pulse (online community feed) · v1
