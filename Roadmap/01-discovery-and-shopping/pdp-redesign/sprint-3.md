@@ -1,9 +1,18 @@
 # Sprint 3 — Structured attributes primitive + scannable specs table
 
-> Epic: [PDP redesign](README.md) · **Risk: MED–HIGH** (backend; HIGH only if a custom module + migration is
-> chosen over metadata). **Backend deploys first** (Cloud Run, ~12 min, no preview). **Daniel merges the backend
-> PR.** **Status: 🚧 planned.** Goal: give listings a structured, per-category set of specs (talla, material,
-> etc.) and render them as a scannable table on the PDP (finding #7).
+> Epic: [PDP redesign](README.md) · **Risk: LOW–MED (re-scoped to FRONTEND-ONLY).** Goal: give listings a
+> structured, per-category set of specs (talla, material, etc.) and render them as a scannable table on the PDP
+> (finding #7).
+> **Status: 🚧 BUILT 2026-06-13 — PR [#90](https://github.com/danybgoode/miyagisanchezcommerce/pull/90), CI pending.**
+>
+> **Plan-mode finding (re-scope):** the structured-attribute *primitive* S3.1 set out to build **already exists
+> end-to-end** — Medusa rounds a generic `metadata.attrs` bag through create/update/read, and **seller capture is
+> already wired** (`app/sell/AttrsSection.tsx`, used by the create wizard + edit form, read back via the Store API).
+> So this sprint is **frontend-only: no migration, no custom module, no backend change, no backend-first deploy,
+> no Daniel-merge gate.** Autos/inmuebles keep their existing filter keys; capture writes the `attrs.*` keys.
+> What was actually built: extracted the capture schema into a shared single source (`lib/listing-attributes.ts`),
+> drift-proofed `AttrsSection` to render from it, added labeled `specs[]` to the UCP read, and built the PDP
+> specs table (`app/l/[id]/SpecsTable.tsx`, redesign-gated, fills the S1.2 `pdp-specs-slot` anchor).
 
 ## Pre-build decision (plan mode — don't assume)
 Medusa v2 has **no native typed custom-attributes**. Two paths:
