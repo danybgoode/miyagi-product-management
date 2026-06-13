@@ -11,12 +11,12 @@
 // Usage:
 //   node scripts/cross-panel.mjs <scope-doc> --agent codex|antigravity --lens architect-purist [--dry-run]
 //
-// CLI plumbing is shared with cross-review.mjs via scripts/cross-agent-cli.mjs. Zero npm deps — Node 18+.
+// CLI plumbing is shared with cross-review.mjs via scripts/lib/cross-agent-cli.mjs. Zero npm deps — Node 18+.
 
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { AGENTS, die, need, ensureCmd, checkAgyVersion, loadPromptBody, runCodex, runAntigravity } from './cross-agent-cli.mjs';
+import { AGENTS, die, need, ensureCmd, checkAgyVersion, loadPromptBody, runCodex, runAntigravity } from './lib/cross-agent-cli.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = join(__dirname, 'cross-panel.prompt.md');

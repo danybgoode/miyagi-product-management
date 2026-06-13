@@ -102,7 +102,7 @@ takes ~1 min. **Nothing here gates and the script never edits `<doc>`** — it o
    line, no stack trace. (Likewise `--agent gpt` and a missing doc path each fail with one clean line.)
 6. `node scripts/cross-review.mjs --help` and `node scripts/cross-review.mjs` (no PR#)
    → Unchanged after the shared-helper extraction: help prints; the no-arg run says
-   `✗ missing <PR#>…`. (Regression check — both scripts now share `scripts/cross-agent-cli.mjs`.)
+   `✗ missing <PR#>…`. (Regression check — both scripts now share `scripts/lib/cross-agent-cli.mjs`.)
 7. Open `Roadmap/SESSION-KICKOFFS.md` and `skills/groom/SKILL.md`
    → The `Panel:` verb is in the command-shorthands table; groom Stage 2 (Spike) and Stage 4 (architecture
    fork) describe **surfacing** the panel as a required one-line offer — advisory, never auto-run, never a gate.

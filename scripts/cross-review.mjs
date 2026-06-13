@@ -12,7 +12,7 @@
 //
 // Default posts the findings as a labeled, clearly-advisory PR comment; --dry-run prints instead.
 // `gh` resolves the repo from the current directory; pass --repo to target another (e.g. the app repo).
-// Zero npm deps — Node 18+. CLI plumbing is shared with cross-panel.mjs via scripts/cross-agent-cli.mjs.
+// Zero npm deps — Node 18+. CLI plumbing is shared with cross-panel.mjs via scripts/lib/cross-agent-cli.mjs.
 
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -27,7 +27,7 @@ import {
   loadPromptBody,
   runCodex,
   runAntigravity,
-} from './cross-agent-cli.mjs';
+} from './lib/cross-agent-cli.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = join(__dirname, 'cross-review.prompt.md');
