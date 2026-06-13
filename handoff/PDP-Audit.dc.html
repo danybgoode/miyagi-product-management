@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir@7.10.1/css/iconoir.css">
+<style>
+  body { margin: 0; }
+  .ms-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  [class^="iconoir-"], [class*=" iconoir-"] { line-height: 1; vertical-align: middle; }
+  .ph-img { background-image: repeating-linear-gradient(45deg, #efefea 0 11px, #e6e6e0 11px 22px); }
+</style>
+</helmet>
+
+<div style="font-family:'Space Grotesk',system-ui,sans-serif; background:#e5e5e0; color:#1a1a18; --bg:#f9f9f7; --surface:#fff; --sunk:#f0f0ec; --border:#e2e2de; --fg:#1a1a18; --muted:#6b6b67; --subtle:#a4a49d; --accent:#1d6f42; --accent-hover:#185a36; --accent-soft:#eef4f0; --accent-ink:#114128; --energy:#b04341; --energy-soft:#fbeeed; --promo:#95590c; --promo-soft:#fbf2e2; --info:#1e3a5f; --info-soft:#ecf0f6; --success:#1d6f42; --success-soft:#eef4f0; --warning:#95590c; --warning-soft:#fbf2e2; --danger:#b04341; --danger-soft:#fbeeed; min-height:100vh; padding:0 0 80px;">
+
+  <!-- ════════════════ MASTHEAD ════════════════ -->
+  <div style="max-width:1360px; margin:0 auto; padding:56px 40px 8px;">
+    <div class="ms-mono" style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); font-weight:500; margin-bottom:14px;">Miyagi Sánchez · Página de producto (PDP)</div>
+    <h1 style="font-size:46px; font-weight:600; letter-spacing:-0.03em; line-height:1.04; margin:0 0 16px; max-width:880px;">Auditoría UX/UI &amp; rediseño de la PDP — mobile-first</h1>
+    <p style="font-size:18px; line-height:1.55; color:var(--muted); max-width:720px; margin:0;">Recorrido de arriba hacia abajo: arquitectura de información, intención del comprador, arco emocional y heurísticas. Punto de partida: la PDP real (<span class="ms-mono" style="font-size:14px;">/l/[id]</span>), tokens del design system vivo, y los patrones de Vinted · Gumtree · Etsy.</p>
+
+    <!-- lens cards -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:32px;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px;">
+        <i class="iconoir-priority-high" style="font-size:22px; color:var(--accent);"></i>
+        <p style="font-weight:700; font-size:15px; margin:12px 0 6px;">Jobs-to-be-done</p>
+        <p style="font-size:13px; line-height:1.5; color:var(--muted); margin:0;">¿Es el artículo correcto? → ¿Confío en quien vende? → ¿Cuánto cuesta y cómo llega? → ¿Cómo actúo?</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px;">
+        <i class="iconoir-heart" style="font-size:22px; color:var(--energy);"></i>
+        <p style="font-weight:700; font-size:15px; margin:12px 0 6px;">Arco emocional</p>
+        <p style="font-size:13px; line-height:1.5; color:var(--muted); margin:0;">Deseo (foto) → duda (¿me estafan?) → tranquilidad (protección) → decisión. La PDP debe resolver la duda <em>antes</em> de pedir la compra.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px;">
+        <i class="iconoir-medal" style="font-size:22px; color:var(--promo);"></i>
+        <p style="font-weight:700; font-size:15px; margin:12px 0 6px;">Heurísticas</p>
+        <p style="font-size:13px; line-height:1.5; color:var(--muted); margin:0;">Nielsen + leyes de UX. Cada hallazgo se ancla a una heurística y a un dolor reportado en marketplaces P2P.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px;">
+        <i class="iconoir-check-circle" style="font-size:22px; color:var(--info);"></i>
+        <p style="font-weight:700; font-size:15px; margin:12px 0 6px;">Qué conservamos</p>
+        <p style="font-size:13px; line-height:1.5; color:var(--muted); margin:0;">Tokens, voz es-MX, galería interactiva, <span class="ms-mono" style="font-size:12px;">&lt;TrustSignals&gt;</span> y <span class="ms-mono" style="font-size:12px;">&lt;SellerTrustCard&gt;</span>. Reordenamos, no reescribimos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SECTION 01 — CURRENT ════════════════ -->
+  <div style="max-width:1360px; margin:0 auto; padding:56px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span class="ms-mono" style="font-size:13px; color:var(--energy); font-weight:500;">01</span>
+      <h2 style="font-size:30px; font-weight:600; letter-spacing:-0.02em; margin:0;">Auditoría — estado actual</h2>
+    </div>
+    <p style="font-size:16px; color:var(--muted); max-width:680px; margin:0 0 36px;">La PDP actual. Funciona y se ve bien, pero el orden hace que el comprador resuelva «¿es el artículo correcto?» al final. Los pines marcan los 7 hallazgos.</p>
+
+    <div style="display:grid; grid-template-columns:430px 1fr; gap:48px; align-items:start;">
+
+      <!-- ░░░ CURRENT PHONE ░░░ -->
+      <div style="position:sticky; top:24px; justify-self:center;">
+        <div style="width:390px; background:#111; border-radius:46px; padding:10px; box-shadow:0 30px 60px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:37px; overflow:hidden; position:relative;">
+            <!-- status bar -->
+            <div style="height:46px; display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:relative;">
+              <span style="font-size:14px; font-weight:600;">9:41</span>
+              <div style="position:absolute; left:50%; top:9px; transform:translateX(-50%); width:104px; height:26px; background:#111; border-radius:14px;"></div>
+              <div style="display:flex; gap:6px; align-items:center; color:#1a1a18;"><i class="iconoir-signal" style="font-size:15px;"></i><i class="iconoir-wifi" style="font-size:15px;"></i><i class="iconoir-battery-full" style="font-size:17px;"></i></div>
+            </div>
+
+            <!-- gallery -->
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:11px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:4px 8px; border-radius:6px;">FOTO DE PRODUCTO 1</span>
+              <!-- favorite only -->
+              <div style="position:absolute; top:12px; right:12px; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:18px; color:var(--fg);"></i></div>
+              <div style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.45); border-radius:999px; padding:4px 10px; display:flex; align-items:center; gap:4px;"><i class="iconoir-eye" style="font-size:12px; color:#fff;"></i><span style="font-size:11px; color:#fff;">214</span></div>
+              <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:#fff;"></span><span style="width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.5);"></span><span style="width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.5);"></span></div>
+              <!-- pin 1 -->
+              <div style="position:absolute; top:10px; left:10px; width:26px; height:26px; border-radius:50%; background:var(--energy); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3);">1</div>
+            </div>
+
+            <div style="padding:16px;">
+              <!-- breadcrumb -->
+              <div style="font-size:12px; color:var(--subtle); margin-bottom:12px;">Inicio › Anuncios › Ropa</div>
+              <h3 style="font-size:20px; font-weight:700; line-height:1.3; margin:0 0 4px;">Chamarra de mezclilla Levi's vintage</h3>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                <span style="font-size:12px; font-weight:500; background:var(--sunk); color:var(--muted); border-radius:999px; padding:3px 10px;">Muy bueno</span>
+                <span style="font-size:12px; color:var(--subtle); white-space:nowrap;">Hace 3 h</span>
+                <span style="font-size:12px; color:var(--subtle);"><i class="iconoir-map-pin" style="font-size:11px;"></i> CDMX</span>
+              </div>
+              <!-- price + pin 2 -->
+              <div style="position:relative; margin-bottom:16px;">
+                <p style="font-weight:800; font-size:28px; line-height:1; margin:0;">$480</p>
+                <div style="position:absolute; top:-4px; right:-4px; width:26px; height:26px; border-radius:50%; background:var(--energy); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</div>
+              </div>
+              <!-- order pills -->
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">
+                <span style="font-size:12px; background:var(--sunk); color:var(--muted); border-radius:999px; padding:4px 10px;"><i class="iconoir-box" style="font-size:11px;"></i> Lista en 1–3 días</span>
+                <span style="font-size:12px; background:var(--success-soft); color:var(--success); border-radius:999px; padding:4px 10px;"><i class="iconoir-undo" style="font-size:11px;"></i> Devoluciones: 14 días</span>
+              </div>
+              <!-- seller trust card + pin 3 -->
+              <div style="position:relative; background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; margin-bottom:16px;">
+                <div style="position:absolute; top:-8px; right:-8px; width:26px; height:26px; border-radius:50%; background:var(--energy); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:2;">3</div>
+                <div style="display:flex; align-items:center; gap:12px; padding:14px 16px;">
+                  <div style="width:44px; height:44px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center;"><i class="iconoir-shop" style="font-size:20px; color:var(--accent);"></i></div>
+                  <div style="flex:1;"><span style="font-size:15px; font-weight:600;"><i class="iconoir-verified-badge" style="color:var(--accent);"></i> Vintage MX</span><p style="font-size:12px; color:var(--muted); margin:1px 0 0;"><i class="iconoir-map-pin" style="font-size:11px;"></i> CDMX</p></div>
+                  <i class="iconoir-nav-arrow-right" style="font-size:16px; color:var(--subtle);"></i>
+                </div>
+                <div style="border-top:1px solid var(--border); padding:10px 16px;"><div style="background:#25D366; color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:14px; font-weight:600;"><i class="iconoir-whatsapp"></i> Contactar por WhatsApp</div></div>
+              </div>
+              <!-- methods box -->
+              <div style="border:1px solid var(--border); border-radius:18px; padding:14px; margin-bottom:16px;">
+                <p style="font-size:12px; font-weight:700; margin:0 0 8px;">Métodos disponibles</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                  <div style="display:flex; gap:8px; align-items:center; padding:8px 10px; border-radius:12px; background:var(--sunk);"><i class="iconoir-credit-card" style="font-size:15px; color:var(--accent);"></i><div><p style="font-size:12px; font-weight:700; margin:0;">Mercado Pago</p><p style="font-size:11px; color:var(--muted); margin:0;">Tarjeta, OXXO</p></div></div>
+                  <div style="display:flex; gap:8px; align-items:center; padding:8px 10px; border-radius:12px; background:var(--sunk);"><i class="iconoir-bank" style="font-size:15px; color:var(--accent);"></i><div><p style="font-size:12px; font-weight:700; margin:0;">SPEI</p><p style="font-size:11px; color:var(--muted); margin:0;">Transferencia</p></div></div>
+                </div>
+                <p style="font-size:12px; font-weight:700; margin:0 0 8px;">Entrega y disponibilidad</p>
+                <div style="display:grid; grid-template-columns:1fr; gap:8px;">
+                  <div style="display:flex; gap:8px; align-items:center; padding:8px 10px; border-radius:12px; background:var(--sunk);"><i class="iconoir-shop" style="font-size:15px; color:var(--accent);"></i><div><p style="font-size:12px; font-weight:700; margin:0;">Recolección local</p><p style="font-size:11px; color:var(--muted); margin:0;">Roma Norte</p></div></div>
+                </div>
+              </div>
+              <!-- description WAY down + pin 4 -->
+              <div style="position:relative; margin-bottom:18px;">
+                <div style="position:absolute; top:-6px; right:-6px; width:26px; height:26px; border-radius:50%; background:var(--energy); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;">4</div>
+                <h4 style="font-weight:600; font-size:15px; margin:0 0 8px;">Descripción</h4>
+                <p style="font-size:14px; color:var(--fg); line-height:1.6; margin:0;">Chamarra Levi's original de los 90, talla M. Mezclilla pesada, sin roturas ni manchas. Usada pocas veces. Color azul medio con desgaste natural en puños…</p>
+              </div>
+              <!-- tags -->
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                <span style="font-size:12px; border:1px solid var(--border); border-radius:999px; padding:4px 12px;">levis</span>
+                <span style="font-size:12px; border:1px solid var(--border); border-radius:999px; padding:4px 12px;">vintage</span>
+                <span style="font-size:12px; border:1px solid var(--border); border-radius:999px; padding:4px 12px;">mezclilla</span>
+              </div>
+            </div>
+
+            <!-- sticky bar (overlapping) + pins 5,6 -->
+            <div style="position:relative; margin-top:-58px;">
+              <div style="position:relative; background:rgba(255,255,255,0.92); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:12px 16px 22px;">
+                <div style="position:absolute; top:-12px; left:8px; width:26px; height:26px; border-radius:50%; background:var(--energy); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:2;">5</div>
+                <div style="position:absolute; top:-12px; left:42px; width:26px; height:26px; border-radius:50%; background:var(--energy); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:2;">6</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="background:var(--fg); color:#fff; border-radius:12px; padding:13px; text-align:center; font-size:14px; font-weight:600;">Inicia sesión para comprar</div>
+                  <div style="border:1.5px solid var(--border); color:var(--fg); border-radius:12px; padding:13px; text-align:center; font-size:14px; font-weight:600;">Hacer oferta</div>
+                  <div style="border:1.5px solid var(--border); color:var(--fg); border-radius:12px; padding:13px; text-align:center; font-size:14px; font-weight:600;"><i class="iconoir-chat-bubble"></i> Preguntar al vendedor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ░░░ CALLOUT LIST ░░░ -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- 1 -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">1</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">Galería sin retorno, sin compartir, sin contador</p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">Es una ruta inmersiva (la chrome se oculta al hacer scroll) pero no hay botón «atrás», ni «compartir» — comportamiento clave de crecimiento P2P («mándaselo a alguien») — ni contador «1/6» para saber cuántas fotos hay.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Control y libertad · Visibilidad de estado</span>
+          </div>
+        </div>
+        <!-- 2 -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">2</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">El precio no resuelve la duda emocional</p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">Junto al precio no hay señal de «compra protegida» ni pista de envío. La tranquilidad (lo que desbloquea la decisión) está enterrada en una grilla de métodos más abajo. Vinted la pone <em>debajo del precio</em>.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Confianza en el punto de decisión</span>
+          </div>
+        </div>
+        <!-- 3 -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">3</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">La tarjeta de vendedor + métodos empujan el detalle</p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">El JTBD #1 («¿es el artículo correcto?») se responde de último. La identidad del vendedor y la grilla de pagos ocupan la mitad superior antes de cualquier especificación o descripción.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Arquitectura de información ↔ intención</span>
+          </div>
+        </div>
+        <!-- 4 -->
+        <div style="background:var(--surface); border:1.5px solid var(--energy); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">4</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">La descripción está hasta el fondo — y la barra fija la tapa <span style="color:var(--energy);">(el bug que reportaste)</span></p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">La descripción va después de vendedor, métodos y paquete. La barra inferior es <em>fija con altura variable</em> (banners de oferta + 3 botones) pero la página reserva un <span class="ms-mono" style="font-size:12px;">padding</span> fijo de 120px → la barra encima del contenido tapa descripción y tags.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Causa raíz: padding fijo vs barra variable</span>
+          </div>
+        </div>
+        <!-- 5 -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">5</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">Tres botones de ancho completo, sin acción primaria clara</p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">Comprar, Hacer oferta y Preguntar compiten al mismo peso visual. Eso engorda la barra (causa del solapamiento) y diluye la jerarquía. Vinted: dos acciones, una primaria.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Estética y minimalismo · Jerarquía</span>
+          </div>
+        </div>
+        <!-- 6 -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">6</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">«Inicia sesión para comprar» = muro antes del valor</p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">El usuario sin sesión ve un muro en la acción principal. Vinted muestra «Comprar» a todos y difiere el login al checkout. Pedir login antes de mostrar intención eleva el rebote.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Reducir fricción · Diferir autenticación</span>
+          </div>
+        </div>
+        <!-- 7 -->
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <span style="flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--energy); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;">7</span>
+          <div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 4px;">Faltan señales de liveness, reputación y especificaciones</p>
+            <p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0 0 8px;">No hay «responde en ~1 h», calificación del vendedor, «X personas lo guardaron», ni una tabla de specs escaneable (talla, marca…). Son justo las señales de confianza/FOMO de Vinted y Gumtree.</p>
+            <span class="ms-mono" style="font-size:11px; color:var(--energy); background:var(--energy-soft); padding:3px 8px; border-radius:6px;">Confianza social · Prueba · Reconocimiento</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SECTION 02 — REDESIGN SIGNED-OUT ════════════════ -->
+  <div style="max-width:1360px; margin:0 auto; padding:64px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span class="ms-mono" style="font-size:13px; color:var(--accent); font-weight:500;">02</span>
+      <h2 style="font-size:30px; font-weight:600; letter-spacing:-0.02em; margin:0;">Rediseño — comprador sin sesión</h2>
+    </div>
+    <p style="font-size:16px; color:var(--muted); max-width:680px; margin:0 0 36px;">Reordenado por intención: <strong>identificar → confiar → entender costo/entrega → actuar</strong>. La descripción sube; la barra se vuelve robusta y de dos acciones.</p>
+
+    <div style="display:grid; grid-template-columns:430px 1fr; gap:48px; align-items:start;">
+
+      <!-- ░░░ REDESIGN PHONE ░░░ -->
+      <div style="justify-self:center;">
+        <div style="width:390px; background:#111; border-radius:46px; padding:10px; box-shadow:0 30px 60px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:37px; overflow:hidden; position:relative;">
+            <!-- status bar -->
+            <div style="height:46px; display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:relative;">
+              <span style="font-size:14px; font-weight:600;">9:41</span>
+              <div style="position:absolute; left:50%; top:9px; transform:translateX(-50%); width:104px; height:26px; background:#111; border-radius:14px;"></div>
+              <div style="display:flex; gap:6px; align-items:center;"><i class="iconoir-signal" style="font-size:15px;"></i><i class="iconoir-wifi" style="font-size:15px;"></i><i class="iconoir-battery-full" style="font-size:17px;"></i></div>
+            </div>
+
+            <!-- gallery w/ back, share, counter -->
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:11px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:4px 8px; border-radius:6px;">FOTO DE PRODUCTO 1</span>
+              <div style="position:absolute; top:12px; left:12px; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,0.1);"><i class="iconoir-arrow-left" style="font-size:18px; color:var(--fg);"></i></div>
+              <div style="position:absolute; top:12px; right:12px; display:flex; gap:8px;">
+                <div style="width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:17px; color:var(--fg);"></i></div>
+                <div style="width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.9); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:18px; color:var(--fg);"></i></div>
+              </div>
+              <div style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.5); border-radius:999px; padding:4px 11px; font-size:11px; color:#fff; font-weight:600;">1 / 6</div>
+              <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:5px;"><span style="width:6px; height:6px; border-radius:50%; background:#fff;"></span><span style="width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.5);"></span><span style="width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.5);"></span></div>
+            </div>
+
+            <div style="padding:16px;">
+              <!-- title + price grouped + protection -->
+              <h3 style="font-size:20px; font-weight:700; line-height:1.3; margin:0 0 6px;">Chamarra de mezclilla Levi's vintage</h3>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                <span style="font-size:12px; font-weight:500; background:var(--sunk); color:var(--muted); border-radius:999px; padding:3px 10px; white-space:nowrap;">Muy bueno · Talla M</span>
+                <span style="font-size:12px; color:var(--subtle); white-space:nowrap;"><i class="iconoir-map-pin" style="font-size:11px;"></i> CDMX · hace 3 h</span>
+              </div>
+              <div style="display:flex; align-items:flex-end; gap:10px; margin-bottom:4px;">
+                <p style="font-weight:800; font-size:30px; line-height:1; margin:0;">$480</p>
+                <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-flex; align-items:center; gap:3px; padding-bottom:3px;"><i class="iconoir-shield-check" style="font-size:14px;"></i> Compra protegida</span>
+              </div>
+              <p style="font-size:12px; color:var(--muted); margin:0 0 12px;">+ envío calculado al pagar · o recolección gratis en Roma Norte</p>
+
+              <!-- trust capsule slim -->
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">
+                <span style="font-size:12px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 11px; display:inline-flex; align-items:center; gap:4px;"><i class="iconoir-verified-badge" style="font-size:12px;"></i> Vendedor verificado</span>
+                <span style="font-size:12px; background:var(--sunk); color:var(--muted); border-radius:999px; padding:5px 11px; display:inline-flex; align-items:center; gap:4px;"><i class="iconoir-flash" style="font-size:12px;"></i> Responde en ~1 h</span>
+                <span style="font-size:12px; background:var(--success-soft); color:var(--success); border-radius:999px; padding:5px 11px; display:inline-flex; align-items:center; gap:4px;"><i class="iconoir-undo" style="font-size:12px;"></i> Devoluciones 14 días</span>
+              </div>
+
+              <!-- spec strip -->
+              <div style="border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:18px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                  <div style="padding:11px 14px; border-bottom:1px solid var(--border); border-right:1px solid var(--border);"><p style="font-size:11px; color:var(--subtle); margin:0;">Condición</p><p style="font-size:13px; font-weight:600; margin:2px 0 0;">Muy bueno</p></div>
+                  <div style="padding:11px 14px; border-bottom:1px solid var(--border);"><p style="font-size:11px; color:var(--subtle); margin:0;">Talla</p><p style="font-size:13px; font-weight:600; margin:2px 0 0;">M</p></div>
+                  <div style="padding:11px 14px; border-right:1px solid var(--border);"><p style="font-size:11px; color:var(--subtle); margin:0;">Marca</p><p style="font-size:13px; font-weight:600; margin:2px 0 0;">Levi's</p></div>
+                  <div style="padding:11px 14px;"><p style="font-size:11px; color:var(--subtle); margin:0;">Categoría</p><p style="font-size:13px; font-weight:600; margin:2px 0 0;">Ropa</p></div>
+                </div>
+              </div>
+
+              <!-- DESCRIPTION moved up -->
+              <div style="margin-bottom:18px;">
+                <h4 style="font-weight:600; font-size:15px; margin:0 0 8px;">Descripción</h4>
+                <p style="font-size:14px; color:var(--fg); line-height:1.6; margin:0;">Chamarra Levi's original de los 90, talla M. Mezclilla pesada, sin roturas ni manchas. Usada pocas veces. Color azul medio con desgaste natural en puños…</p>
+                <button style="margin-top:8px; background:none; border:none; padding:0; color:var(--accent); font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;">Ver más <i class="iconoir-nav-arrow-down" style="font-size:14px;"></i></button>
+              </div>
+
+              <!-- payment + delivery compact -->
+              <div style="border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:18px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;"><i class="iconoir-credit-card" style="font-size:16px; color:var(--accent);"></i><p style="font-size:13px; font-weight:600; margin:0;">Pago</p><p style="font-size:12px; color:var(--muted); margin:0;">· Mercado Pago, tarjeta, SPEI</p></div>
+                <div style="height:1px; background:var(--border); margin:0 0 10px;"></div>
+                <div style="display:flex; align-items:center; gap:8px;"><i class="iconoir-delivery-truck" style="font-size:16px; color:var(--accent);"></i><p style="font-size:13px; font-weight:600; margin:0;">Entrega</p><p style="font-size:12px; color:var(--muted); margin:0;">· Envío nacional o recolección</p></div>
+              </div>
+
+              <!-- seller card w/ rating, response -->
+              <div style="border:1px solid var(--border); border-radius:18px; overflow:hidden; margin-bottom:18px;">
+                <div style="display:flex; align-items:center; gap:12px; padding:14px 16px;">
+                  <div style="width:46px; height:46px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center;"><i class="iconoir-shop" style="font-size:20px; color:var(--accent);"></i></div>
+                  <div style="flex:1;">
+                    <span style="font-size:15px; font-weight:600;"><i class="iconoir-verified-badge" style="color:var(--accent);"></i> Vintage MX</span>
+                    <p style="font-size:12px; color:var(--muted); margin:2px 0 0; display:flex; align-items:center; gap:6px;"><span style="color:var(--promo);"><i class="iconoir-star-solid" style="font-size:11px;"></i> 4.9</span><span>· 172 ventas</span><span>· CDMX</span></p>
+                  </div>
+                  <i class="iconoir-nav-arrow-right" style="font-size:16px; color:var(--subtle);"></i>
+                </div>
+                <div style="border-top:1px solid var(--border); padding:11px 16px; display:flex; gap:8px;">
+                  <div style="flex:1; border:1.5px solid var(--border); border-radius:999px; padding:9px; text-align:center; font-size:13px; font-weight:600;"><i class="iconoir-user-plus" style="font-size:14px;"></i> Seguir</div>
+                  <div style="flex:1; border:1.5px solid var(--border); border-radius:999px; padding:9px; text-align:center; font-size:13px; font-weight:600;">Ver tienda</div>
+                </div>
+              </div>
+
+              <!-- more from seller -->
+              <div style="margin-bottom:18px;">
+                <p style="font-size:13px; font-weight:700; margin:0 0 10px;">Más de Vintage MX · arma un paquete y ahorra</p>
+                <div style="display:flex; gap:10px; overflow:hidden;">
+                  <div style="flex-shrink:0; width:108px;"><div class="ph-img" style="width:108px; height:108px; border-radius:12px; margin-bottom:6px;"></div><p style="font-size:12px; font-weight:600; margin:0;">$320</p></div>
+                  <div style="flex-shrink:0; width:108px;"><div class="ph-img" style="width:108px; height:108px; border-radius:12px; margin-bottom:6px;"></div><p style="font-size:12px; font-weight:600; margin:0;">$540</p></div>
+                  <div style="flex-shrink:0; width:108px;"><div class="ph-img" style="width:108px; height:108px; border-radius:12px; margin-bottom:6px;"></div><p style="font-size:12px; font-weight:600; margin:0;">$210</p></div>
+                </div>
+              </div>
+
+              <!-- tags -->
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <span style="font-size:12px; border:1px solid var(--border); border-radius:999px; padding:4px 12px;">levis</span>
+                <span style="font-size:12px; border:1px solid var(--border); border-radius:999px; padding:4px 12px;">vintage</span>
+                <span style="font-size:12px; border:1px solid var(--border); border-radius:999px; padding:4px 12px;">mezclilla</span>
+              </div>
+            </div>
+
+            <!-- spacer = real bar height -->
+            <div style="height:86px;"></div>
+            <!-- robust 2-action sticky bar -->
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:10px 16px 14px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <div><p style="font-size:11px; color:var(--subtle); margin:0; line-height:1;">Precio</p><p style="font-size:18px; font-weight:800; margin:2px 0 0; line-height:1;">$480</p></div>
+                <button style="background:none; border:none; color:var(--accent); font-size:13px; font-weight:600; font-family:inherit; display:inline-flex; align-items:center; gap:4px; cursor:pointer;"><i class="iconoir-chat-bubble"></i> Preguntar</button>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1; border:1.5px solid var(--accent); color:var(--accent); border-radius:999px; padding:13px; text-align:center; font-size:14px; font-weight:700;">Hacer oferta</div>
+                <div style="flex:1.4; background:var(--accent); color:#fff; border-radius:999px; padding:13px; text-align:center; font-size:14px; font-weight:700;">Comprar ahora</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ░░░ ANNOTATIONS ░░░ -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="background:var(--accent-soft); border:1px solid #cfe3d6; border-radius:16px; padding:18px 20px;">
+          <p style="font-weight:700; font-size:15px; margin:0 0 4px; color:var(--accent-ink);"><i class="iconoir-sort" style="color:var(--accent);"></i> Nuevo orden de información</p>
+          <p style="font-size:13.5px; line-height:1.6; color:#2c4a39; margin:0;">Galería → <strong>título + precio + protección</strong> → cápsula de confianza → <strong>specs</strong> → <strong>descripción</strong> → pago/entrega → vendedor → paquete → tags. El comprador identifica y confía antes de que se le pida comprar.</p>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <i class="iconoir-undo" style="font-size:22px; color:var(--accent); flex-shrink:0;"></i>
+          <div><p style="font-weight:700; font-size:15px; margin:0 0 4px;">Descripción y specs suben (corrige #3, #4)</p><p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0;">Tabla de specs escaneable estilo Vinted + descripción justo después, con «Ver más» plegable para no empujar el resto.</p></div>
+        </div>
+        <div style="background:var(--surface); border:1.5px solid var(--accent); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <i class="iconoir-fit-width" style="font-size:22px; color:var(--accent); flex-shrink:0;"></i>
+          <div><p style="font-weight:700; font-size:15px; margin:0 0 4px;">Barra robusta de dos acciones (corrige #4, #5)</p><p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0;">Un <em>spacer</em> que iguala la altura real de la barra elimina el solapamiento. Primaria «Comprar» pesa más; «Hacer oferta» secundaria; «Preguntar» como enlace ligero. Resumen de precio anclado + safe-area.</p></div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <i class="iconoir-shield-check" style="font-size:22px; color:var(--accent); flex-shrink:0;"></i>
+          <div><p style="font-weight:700; font-size:15px; margin:0 0 4px;">Confianza en el punto de decisión (corrige #2, #7)</p><p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0;">«Compra protegida» junto al precio; cápsula con verificación, tiempo de respuesta y devoluciones; calificación + nº de ventas en la tarjeta de vendedor.</p></div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <i class="iconoir-undo-action" style="font-size:22px; color:var(--accent); flex-shrink:0;"></i>
+          <div><p style="font-weight:700; font-size:15px; margin:0 0 4px;">Galería con retorno + compartir + contador (corrige #1)</p><p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0;">Atrás (vidrio) arriba-izquierda, compartir + favorito arriba-derecha, contador «1/6». Habilita el «mándaselo a alguien» que mueve tráfico P2P.</p></div>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 20px; display:flex; gap:14px;">
+          <i class="iconoir-log-in" style="font-size:22px; color:var(--accent); flex-shrink:0;"></i>
+          <div><p style="font-weight:700; font-size:15px; margin:0 0 4px;">«Comprar» para todos (corrige #6)</p><p style="font-size:13.5px; line-height:1.55; color:var(--muted); margin:0;">Sin sesión, la primaria sigue diciendo «Comprar ahora»; el login se difiere al checkout (<span class="ms-mono" style="font-size:12px;">signInHopHref</span> ya existe). Sin muro = menos rebote.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SECTION 03 — SIGNED-IN STATES ════════════════ -->
+  <div style="max-width:1360px; margin:0 auto; padding:64px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span class="ms-mono" style="font-size:13px; color:var(--accent); font-weight:500;">03</span>
+      <h2 style="font-size:30px; font-weight:600; letter-spacing:-0.02em; margin:0;">Rediseño — comprador con sesión</h2>
+    </div>
+    <p style="font-size:16px; color:var(--muted); max-width:680px; margin:0 0 36px;">La negociación es el corazón de un marketplace P2P. Los estados de oferta viven en la barra inferior con jerarquía clara y cuenta regresiva — sin banners apilados que engorden la barra.</p>
+
+    <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+      <!-- STATE A: offer pending -->
+      <div style="flex:1; min-width:300px;">
+        <p style="font-size:13px; font-weight:700; margin:0 0 12px; color:var(--warning);"><i class="iconoir-clock"></i> Oferta pendiente</p>
+        <div style="width:330px; background:#111; border-radius:40px; padding:8px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4);">
+          <div style="background:var(--bg); border-radius:32px; overflow:hidden;">
+            <div class="ph-img" style="width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;"><span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO 1</span></div>
+            <div style="padding:14px;">
+              <h3 style="font-size:17px; font-weight:700; margin:0 0 6px;">Chamarra Levi's vintage</h3>
+              <p style="font-weight:800; font-size:24px; margin:0 0 14px;">$480</p>
+              <p style="font-size:13px; color:var(--muted); margin:0;">Mezclilla pesada, talla M, sin roturas…</p>
+            </div>
+            <div style="background:var(--warning-soft); border-top:1px solid #ecdcb8; padding:12px 14px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <div><p style="font-size:12px; font-weight:700; color:var(--warning); margin:0;">Tu oferta: $420</p><p style="font-size:11px; color:#7a4e00; margin:2px 0 0;">Esperando al vendedor</p></div>
+                <span class="ms-mono" style="font-size:12px; font-weight:600; color:var(--warning); background:#fff; border:1px solid #ecdcb8; padding:4px 9px; border-radius:8px;">1d 04h</span>
+              </div>
+              <div style="background:var(--fg); color:#fff; border-radius:999px; padding:12px; text-align:center; font-size:13px; font-weight:700;"><i class="iconoir-chat-bubble"></i> Ver conversación</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE B: counter -->
+      <div style="flex:1; min-width:300px;">
+        <p style="font-size:13px; font-weight:700; margin:0 0 12px; color:var(--info);"><i class="iconoir-refresh-double"></i> Contraoferta del vendedor</p>
+        <div style="width:330px; background:#111; border-radius:40px; padding:8px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4);">
+          <div style="background:var(--bg); border-radius:32px; overflow:hidden;">
+            <div class="ph-img" style="width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;"><span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO 1</span></div>
+            <div style="padding:14px;">
+              <h3 style="font-size:17px; font-weight:700; margin:0 0 6px;">Chamarra Levi's vintage</h3>
+              <p style="font-weight:800; font-size:24px; margin:0 0 14px;">$480</p>
+              <p style="font-size:13px; color:var(--muted); margin:0;">Mezclilla pesada, talla M, sin roturas…</p>
+            </div>
+            <div style="background:var(--info-soft); border-top:1px solid #cdd8e8; padding:12px 14px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <div><p style="font-size:11px; color:#3a4a63; margin:0;">El vendedor propone</p><p style="font-size:20px; font-weight:800; color:var(--info); margin:2px 0 0; line-height:1;">$450</p></div>
+                <span class="ms-mono" style="font-size:12px; font-weight:600; color:var(--info); background:#fff; border:1px solid #cdd8e8; padding:4px 9px; border-radius:8px;">23h 50m</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1; border:1.5px solid var(--info); color:var(--info); border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700;">Contraofertar</div>
+                <div style="flex:1; background:var(--info); color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700;">Aceptar $450</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE C: agreed price -->
+      <div style="flex:1; min-width:300px;">
+        <p style="font-size:13px; font-weight:700; margin:0 0 12px; color:var(--success);"><i class="iconoir-check-circle"></i> Precio acordado · favorito</p>
+        <div style="width:330px; background:#111; border-radius:40px; padding:8px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4);">
+          <div style="background:var(--bg); border-radius:32px; overflow:hidden;">
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO 1</span>
+              <div style="position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart-solid" style="font-size:16px; color:var(--energy);"></i></div>
+            </div>
+            <div style="padding:14px;">
+              <h3 style="font-size:17px; font-weight:700; margin:0 0 6px;">Chamarra Levi's vintage</h3>
+              <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:14px;"><p style="font-weight:800; font-size:24px; margin:0; color:var(--success);">$440</p><p style="font-size:13px; color:var(--muted); margin:0; text-decoration:line-through;">$480</p></div>
+              <p style="font-size:13px; color:var(--muted); margin:0;">Mezclilla pesada, talla M, sin roturas…</p>
+            </div>
+            <div style="background:var(--success-soft); border-top:1px solid #cfe3d6; padding:12px 14px;">
+              <p style="font-size:12px; font-weight:700; color:var(--success); margin:0 0 8px;"><i class="iconoir-check-circle"></i> Precio acordado — válido por 24 h</p>
+              <div style="background:var(--accent); color:#fff; border-radius:999px; padding:13px; text-align:center; font-size:14px; font-weight:700;">Comprar ahora · $440</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px 22px; margin-top:28px; display:flex; gap:14px; align-items:flex-start; max-width:760px;">
+      <i class="iconoir-timer" style="font-size:22px; color:var(--accent); flex-shrink:0; margin-top:2px;"></i>
+      <p style="font-size:14px; line-height:1.6; color:var(--muted); margin:0;">Cada estado de oferta <strong>reemplaza</strong> la barra de compra en lugar de apilarse encima (causa del bug #4). La cuenta regresiva responde «¿de quién es el turno y cuánto tiempo queda?» — la pregunta #1 que reportan los usuarios al negociar — sin abrir la conversación.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════ SECTION 04 — FINDINGS ════════════════ -->
+  <div style="max-width:1360px; margin:0 auto; padding:64px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span class="ms-mono" style="font-size:13px; color:var(--accent); font-weight:500;">04</span>
+      <h2 style="font-size:30px; font-weight:600; letter-spacing:-0.02em; margin:0;">Hallazgos priorizados</h2>
+    </div>
+    <p style="font-size:16px; color:var(--muted); max-width:680px; margin:0 0 32px;">Ordenados por impacto × esfuerzo. Todo se apoya en componentes que ya existen — es reordenar y pulir, no reconstruir.</p>
+
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden;">
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; background:var(--sunk); padding:14px 20px; font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">
+        <span>#</span><span>Hallazgo</span><span>Heurística / JTBD</span><span>Severidad</span><span>Esfuerzo</span>
+      </div>
+      <!-- rows -->
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">4</span>
+        <span style="font-size:14px; font-weight:600;">Descripción enterrada + barra fija que la tapa</span>
+        <span style="font-size:12.5px; color:var(--muted);">Visibilidad de estado · «¿es el correcto?»</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--danger-soft); color:var(--danger); padding:4px 10px; border-radius:999px;">Alta</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--success-soft); color:var(--success); padding:4px 10px; border-radius:999px;">Bajo</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">3</span>
+        <span style="font-size:14px; font-weight:600;">Orden de IA invierte la intención del comprador</span>
+        <span style="font-size:12.5px; color:var(--muted);">AI ↔ intención · jerarquía</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--danger-soft); color:var(--danger); padding:4px 10px; border-radius:999px;">Alta</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--warning-soft); color:#7a4e00; padding:4px 10px; border-radius:999px;">Medio</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">2</span>
+        <span style="font-size:14px; font-weight:600;">Confianza («protegida») lejos del precio</span>
+        <span style="font-size:12.5px; color:var(--muted);">Confianza en decisión · emoción</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--warning-soft); color:#7a4e00; padding:4px 10px; border-radius:999px;">Media</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--success-soft); color:var(--success); padding:4px 10px; border-radius:999px;">Bajo</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">6</span>
+        <span style="font-size:14px; font-weight:600;">«Inicia sesión para comprar» = muro</span>
+        <span style="font-size:12.5px; color:var(--muted);">Reducir fricción · diferir auth</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--warning-soft); color:#7a4e00; padding:4px 10px; border-radius:999px;">Media</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--success-soft); color:var(--success); padding:4px 10px; border-radius:999px;">Bajo</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">5</span>
+        <span style="font-size:14px; font-weight:600;">3 botones de igual peso, sin primaria clara</span>
+        <span style="font-size:12.5px; color:var(--muted);">Minimalismo · jerarquía</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--warning-soft); color:#7a4e00; padding:4px 10px; border-radius:999px;">Media</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--success-soft); color:var(--success); padding:4px 10px; border-radius:999px;">Bajo</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">7</span>
+        <span style="font-size:14px; font-weight:600;">Faltan reputación, liveness y specs</span>
+        <span style="font-size:12.5px; color:var(--muted);">Prueba social · FOMO · reconocimiento</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--warning-soft); color:#7a4e00; padding:4px 10px; border-radius:999px;">Media</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--warning-soft); color:#7a4e00; padding:4px 10px; border-radius:999px;">Medio</span></span>
+      </div>
+      <div style="display:grid; grid-template-columns:40px 1fr 200px 110px 110px; gap:0; padding:16px 20px; border-top:1px solid var(--border); align-items:center;">
+        <span style="font-weight:700; color:var(--energy);">1</span>
+        <span style="font-size:14px; font-weight:600;">Galería sin atrás / compartir / contador</span>
+        <span style="font-size:12.5px; color:var(--muted);">Control y libertad · crecimiento</span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--sunk); color:var(--muted); padding:4px 10px; border-radius:999px;">Baja</span></span>
+        <span><span style="font-size:11px; font-weight:700; background:var(--success-soft); color:var(--success); padding:4px 10px; border-radius:999px;">Bajo</span></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════ SECTION 05 — PRODUCT TYPES ════════════════ -->
+  <div style="max-width:1360px; margin:0 auto; padding:72px 40px 0;">
+    <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:8px;">
+      <span class="ms-mono" style="font-size:13px; color:var(--accent); font-weight:500;">05</span>
+      <h2 style="font-size:30px; font-weight:600; letter-spacing:-0.02em; margin:0;">El sistema por tipo de producto</h2>
+    </div>
+    <p style="font-size:16px; color:var(--muted); max-width:760px; margin:0 0 14px;">El mismo esqueleto rediseñado, adaptado por tipo. Solo cambia el <strong>bloque del tipo</strong> (lo que el comprador necesita para decidir) y la <strong>acción primaria</strong>. Lean Vinted → Gumtree: rápido y de baja fricción, pero práctico. Meta: conversión (agendar · reservar · comprar · suscribirse).</p>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:40px;">
+      <span style="font-size:12px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 12px;"><i class="iconoir-calendar" style="font-size:12px;"></i> Servicios</span>
+      <span style="font-size:12px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 12px;"><i class="iconoir-key-alt" style="font-size:12px;"></i> Rentas</span>
+      <span style="font-size:12px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 12px;"><i class="iconoir-download" style="font-size:12px;"></i> Digital</span>
+      <span style="font-size:12px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 12px;"><i class="iconoir-refresh-double" style="font-size:12px;"></i> Suscripciones</span>
+      <span style="font-size:12px; background:var(--warning-soft); color:#7a4e00; border-radius:999px; padding:5px 12px;"><i class="iconoir-shop" style="font-size:12px;"></i> Sin reclamar</span>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: SERVICIOS ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:56px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;"><i class="iconoir-calendar" style="font-size:20px; color:var(--accent);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Servicios</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Agendar cita</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">No es una caja: el comprador necesita saber <strong>qué incluye</strong>, la <strong>modalidad</strong> y <strong>cuándo hay lugar</strong>. La galería de horarios reemplaza la grilla de pagos como bloque protagonista.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <!-- PHONE -->
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO DEL SERVICIO</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+              <div style="position:absolute; bottom:11px; right:11px; background:rgba(0,0,0,0.5); border-radius:999px; padding:3px 9px; font-size:10px; color:#fff; font-weight:600;">1 / 4</div>
+            </div>
+            <div style="padding:15px;">
+              <!-- type frame -->
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--accent-soft); border-radius:12px; margin-bottom:12px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--accent);"></i><div><p style="font-size:12.5px; font-weight:700; color:var(--accent); margin:0;">Servicio</p><p style="font-size:11.5px; color:var(--muted); margin:0;">Agenda una cita con el vendedor</p></div></div>
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 6px;">Sesión de fotografía de producto</h3>
+              <div style="display:flex; align-items:flex-end; gap:9px; margin-bottom:3px;"><p style="font-weight:800; font-size:26px; line-height:1; margin:0;">$1,200</p><span style="font-size:12px; color:var(--muted); padding-bottom:3px;">/ sesión</span></div>
+              <p style="font-size:12px; color:var(--accent); font-weight:600; margin:0 0 12px;"><i class="iconoir-shield-check" style="font-size:13px;"></i> Pago protegido · reagenda gratis</p>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">
+                <span style="font-size:11.5px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 10px;"><i class="iconoir-verified-badge" style="font-size:11px;"></i> Verificado</span>
+                <span style="font-size:11.5px; background:var(--sunk); color:var(--muted); border-radius:999px; padding:5px 10px;"><i class="iconoir-flash" style="font-size:11px;"></i> Responde ~1 h</span>
+              </div>
+              <!-- incluye -->
+              <p style="font-size:13px; font-weight:700; margin:0 0 8px;">Qué incluye</p>
+              <div style="display:grid; gap:7px; margin-bottom:16px;">
+                <div style="display:flex; gap:8px; align-items:center;"><i class="iconoir-check" style="font-size:14px; color:var(--accent);"></i><span style="font-size:13px;">20 fotos editadas en alta resolución</span></div>
+                <div style="display:flex; gap:8px; align-items:center;"><i class="iconoir-check" style="font-size:14px; color:var(--accent);"></i><span style="font-size:13px;">2 horas de sesión · 1 cambio de set</span></div>
+                <div style="display:flex; gap:8px; align-items:center;"><i class="iconoir-check" style="font-size:14px; color:var(--accent);"></i><span style="font-size:13px;">Entrega en 48 h</span></div>
+              </div>
+              <!-- modalidad -->
+              <div style="display:flex; gap:6px; margin-bottom:16px;"><span style="font-size:12px; border:1.5px solid var(--accent); color:var(--accent); border-radius:999px; padding:5px 12px; font-weight:600;">En estudio</span><span style="font-size:12px; border:1px solid var(--border); color:var(--muted); border-radius:999px; padding:5px 12px;">A domicilio</span></div>
+              <!-- próximas fechas -->
+              <p style="font-size:13px; font-weight:700; margin:0 0 8px;">Próximas fechas</p>
+              <div style="display:flex; gap:7px; margin-bottom:6px;">
+                <div style="flex:1; border:1px solid var(--border); border-radius:10px; padding:8px 4px; text-align:center;"><p style="font-size:10px; color:var(--subtle); margin:0;">HOY</p><p style="font-size:13px; font-weight:700; margin:2px 0 0;">4:00</p></div>
+                <div style="flex:1; border:1.5px solid var(--accent); background:var(--accent-soft); border-radius:10px; padding:8px 4px; text-align:center;"><p style="font-size:10px; color:var(--accent); margin:0;">VIE 14</p><p style="font-size:13px; font-weight:700; color:var(--accent-ink); margin:2px 0 0;">1:00</p></div>
+                <div style="flex:1; border:1px solid var(--border); border-radius:10px; padding:8px 4px; text-align:center;"><p style="font-size:10px; color:var(--subtle); margin:0;">SÁB 15</p><p style="font-size:13px; font-weight:700; margin:2px 0 0;">11:00</p></div>
+              </div>
+            </div>
+            <div style="height:74px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:9px 15px 13px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;"><div><p style="font-size:10px; color:var(--subtle); margin:0;">Desde</p><p style="font-size:16px; font-weight:800; margin:1px 0 0;">$1,200</p></div><button style="background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; font-family:inherit; cursor:pointer;"><i class="iconoir-chat-bubble"></i> Preguntar</button></div>
+              <div style="background:var(--accent); color:#fff; border-radius:999px; padding:12px; text-align:center; font-size:14px; font-weight:700;">Agendar cita</div>
+            </div>
+          </div>
+        </div>
+        <!-- DETAILS -->
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Galería de horarios</strong> con próximas fechas tocables — el comprador agenda sin abrir un calendario aparte (usa el <span class="ms-mono" style="font-size:12px;">booking_url</span> de Cal.com que ya existe).</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-list" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">«Qué incluye» + modalidad</strong> sustituyen la tabla de specs — responde la duda real de un servicio.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-fit-width" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">Sin «Hacer oferta»: una sola primaria <strong style="color:var(--fg);">Agendar</strong>; «Preguntar» como enlace ligero.</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · cita elegida</p>
+          <div style="max-width:330px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 14px; box-shadow:var(--shadow-1, 0 1px 2px rgba(26,26,24,0.06));">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><div><p style="font-size:11px; color:var(--subtle); margin:0;">Cita seleccionada</p><p style="font-size:14px; font-weight:700; margin:1px 0 0;">Vie 14 jun · 1:00 pm</p></div><span style="font-size:11px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:4px 9px; font-weight:600;">En estudio</span></div>
+            <div style="background:var(--accent); color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700;">Confirmar y pagar · $1,200</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: RENTAS ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:56px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;"><i class="iconoir-key-alt" style="font-size:20px; color:var(--accent);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Rentas</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Ver disponibilidad</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">Las dudas que matan la conversión son <strong>fechas</strong> y <strong>depósito</strong>. Ambas suben al frente: selector de fechas como bloque protagonista y depósito transparente junto al precio.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO DEL ARTÍCULO</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+              <div style="position:absolute; bottom:11px; right:11px; background:rgba(0,0,0,0.5); border-radius:999px; padding:3px 9px; font-size:10px; color:#fff; font-weight:600;">1 / 5</div>
+            </div>
+            <div style="padding:15px;">
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--accent-soft); border-radius:12px; margin-bottom:12px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--accent);"></i><div><p style="font-size:12.5px; font-weight:700; color:var(--accent); margin:0;">Renta</p><p style="font-size:11.5px; color:var(--muted); margin:0;">Elige tus fechas para ver el total</p></div></div>
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 6px;">Proyector 4K + pantalla 100"</h3>
+              <div style="display:flex; align-items:flex-end; gap:9px; margin-bottom:3px;"><p style="font-weight:800; font-size:26px; line-height:1; margin:0;">$450</p><span style="font-size:12px; color:var(--muted); padding-bottom:3px;">/ día</span></div>
+              <p style="font-size:12px; color:var(--muted); margin:0 0 12px;"><i class="iconoir-shield-check" style="font-size:13px; color:var(--accent);"></i> <span style="color:var(--accent); font-weight:600;">Pago protegido</span> · depósito $1,000 reembolsable</p>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">
+                <span style="font-size:11.5px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:5px 10px;"><i class="iconoir-verified-badge" style="font-size:11px;"></i> Verificado</span>
+                <span style="font-size:11.5px; background:var(--success-soft); color:var(--success); border-radius:999px; padding:5px 10px;"><i class="iconoir-undo" style="font-size:11px;"></i> Depósito reembolsable</span>
+              </div>
+              <!-- date picker -->
+              <div style="border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                  <div style="padding:10px 14px; border-right:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">ENTRADA</p><p style="font-size:13px; font-weight:700; margin:2px 0 0;">14 jun</p></div>
+                  <div style="padding:10px 14px;"><p style="font-size:10px; color:var(--subtle); margin:0;">SALIDA</p><p style="font-size:13px; font-weight:700; margin:2px 0 0;">17 jun</p></div>
+                </div>
+                <div style="border-top:1px solid var(--border); padding:9px 14px; background:var(--sunk); font-size:11.5px; color:var(--muted);"><i class="iconoir-check-circle" style="font-size:12px; color:var(--success);"></i> Disponible · 3 días</div>
+              </div>
+              <p style="font-size:13px; font-weight:700; margin:0 0 8px;">Incluye</p>
+              <div style="display:grid; gap:7px; margin-bottom:6px;">
+                <div style="display:flex; gap:8px; align-items:center;"><i class="iconoir-check" style="font-size:14px; color:var(--accent);"></i><span style="font-size:13px;">Cables HDMI + control + estuche</span></div>
+                <div style="display:flex; gap:8px; align-items:center;"><i class="iconoir-check" style="font-size:14px; color:var(--accent);"></i><span style="font-size:13px;">Entrega y recolección en Roma Norte</span></div>
+              </div>
+            </div>
+            <div style="height:78px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:9px 15px 13px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;"><div><p style="font-size:10px; color:var(--subtle); margin:0;">3 días · $450/día</p><p style="font-size:16px; font-weight:800; margin:1px 0 0;">$1,350 <span style="font-size:11px; color:var(--muted); font-weight:500;">+ depósito</span></p></div><button style="background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; font-family:inherit; cursor:pointer;"><i class="iconoir-chat-bubble"></i> Preguntar</button></div>
+              <div style="background:var(--accent); color:#fff; border-radius:999px; padding:12px; text-align:center; font-size:14px; font-weight:700;">Reservar estas fechas</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Selector entrada/salida</strong> con disponibilidad en vivo y total recalculado — sin sorpresas al pagar.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-wallet" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Depósito transparente</strong> junto al precio y en el total de la barra — la duda #1 de una renta, resuelta antes de reservar.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-calculator" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">La barra muestra <strong style="color:var(--fg);">total × días + depósito</strong>, no solo el precio unitario.</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · fechas elegidas</p>
+          <div style="max-width:330px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 14px; box-shadow:0 1px 2px rgba(26,26,24,0.06);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><div><p style="font-size:11px; color:var(--subtle); margin:0;">14 → 17 jun · 3 días</p><p style="font-size:15px; font-weight:800; margin:1px 0 0;">$1,350 <span style="font-size:11px; color:var(--muted); font-weight:500;">+ $1,000 dep.</span></p></div><span style="font-size:11px; background:var(--success-soft); color:var(--success); border-radius:999px; padding:4px 9px; font-weight:600;">Disponible</span></div>
+            <div style="background:var(--accent); color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700;">Reservar · $2,350 total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: DIGITAL ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:56px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;"><i class="iconoir-download" style="font-size:20px; color:var(--agent, #1e3a5f);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Digital</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap;">Acción: Comprar al instante</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">Sin envío ni condición física. La promesa que convierte es <strong>«lo recibes al instante»</strong>; las dudas son <strong>formato, compatibilidad y qué incluye</strong>. Nada de barra de oferta.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">PORTADA / PREVIEW</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+              <div style="position:absolute; bottom:11px; right:11px; background:rgba(0,0,0,0.5); border-radius:999px; padding:3px 9px; font-size:10px; color:#fff; font-weight:600;">1 / 3</div>
+            </div>
+            <div style="padding:15px;">
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 6px;">Preset Lightroom · Tonos Cálidos MX</h3>
+              <div style="display:flex; align-items:flex-end; gap:9px; margin-bottom:3px;"><p style="font-weight:800; font-size:26px; line-height:1; margin:0;">$120</p></div>
+              <p style="font-size:12px; color:var(--accent); font-weight:600; margin:0 0 12px;"><i class="iconoir-shield-check" style="font-size:13px;"></i> Pago seguro · acceso de por vida</p>
+              <!-- instant delivery banner -->
+              <div style="display:flex; align-items:center; gap:10px; background:var(--info-soft); border-radius:12px; padding:11px 12px; margin-bottom:16px;"><i class="iconoir-flash" style="font-size:20px; color:var(--info);"></i><div><p style="font-size:13px; font-weight:700; color:var(--info); margin:0; white-space:nowrap;">Entrega al instante</p><p style="font-size:11.5px; color:#3a4a63; margin:1px 0 0;">tonos-calidos.zip · 24 MB · al pagar</p></div></div>
+              <!-- specs -->
+              <div style="border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                  <div style="padding:10px 13px; border-bottom:1px solid var(--border); border-right:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">Formato</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">.xmp · .dng</p></div>
+                  <div style="padding:10px 13px; border-bottom:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">Incluye</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">12 presets</p></div>
+                  <div style="padding:10px 13px; border-right:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">Compatible</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">LR móvil + PC</p></div>
+                  <div style="padding:10px 13px;"><p style="font-size:10px; color:var(--subtle); margin:0;">Licencia</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">Uso personal</p></div>
+                </div>
+              </div>
+              <h4 style="font-weight:600; font-size:14px; margin:0 0 7px;">Descripción</h4>
+              <p style="font-size:13px; color:var(--fg); line-height:1.6; margin:0 0 6px;">12 presets inspirados en la luz cálida del centro de México. Un toque y tus fotos quedan listas…</p>
+            </div>
+            <div style="height:62px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:11px 15px 14px;">
+              <div style="background:var(--accent); color:#fff; border-radius:999px; padding:13px; text-align:center; font-size:14px; font-weight:700;"><i class="iconoir-download"></i> Comprar ahora · $120</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-flash" style="font-size:17px; color:var(--info); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Banner de entrega instantánea</strong> arriba (no enterrado): la promesa que convierte, con nombre y peso del archivo.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-multiple-pages" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">Specs reinterpretadas: <strong style="color:var(--fg);">formato · compatibilidad · qué incluye · licencia</strong> en vez de talla/condición.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-cancel" style="font-size:17px; color:var(--muted); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">Sin envío, sin devoluciones físicas, sin «Hacer oferta». Barra de <strong style="color:var(--fg);">una sola acción</strong>.</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · ya comprado</p>
+          <div style="max-width:330px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 14px; box-shadow:0 1px 2px rgba(26,26,24,0.06);">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:9px;"><i class="iconoir-check-circle-solid" style="font-size:18px; color:var(--success);"></i><div><p style="font-size:13px; font-weight:700; margin:0;">Comprado el 13 jun</p><p style="font-size:11px; color:var(--muted); margin:1px 0 0;">tonos-calidos.zip · 24 MB</p></div></div>
+            <div style="background:var(--info); color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700;"><i class="iconoir-download"></i> Descargar archivo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: SUSCRIPCIONES ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:56px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;"><i class="iconoir-refresh-double" style="font-size:20px; color:var(--accent);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Suscripciones</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Suscribirse</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">Decisión de planes, no de objeto. El protagonista son los <strong>tiers comparables</strong> con un plan recomendado, el <strong>interval toggle</strong> mensual/anual y la tranquilidad de <strong>«cancela cuando quieras»</strong>.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">BANNER DEL CLUB</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div>
+            </div>
+            <div style="padding:15px;">
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--accent-soft); border-radius:12px; margin-bottom:12px;"><i class="iconoir-refresh-double" style="font-size:17px; color:var(--accent);"></i><div><p style="font-size:12.5px; font-weight:700; color:var(--accent); margin:0;">Suscripción</p><p style="font-size:11.5px; color:var(--muted); margin:0;">Elige un plan · cancela cuando quieras</p></div></div>
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 10px;">Club de Tostado · café de especialidad</h3>
+              <!-- interval toggle -->
+              <div style="display:flex; background:var(--sunk); border-radius:999px; padding:3px; margin-bottom:14px;">
+                <div style="flex:1; background:var(--surface); border-radius:999px; padding:7px; text-align:center; font-size:12.5px; font-weight:700; box-shadow:0 1px 2px rgba(0,0,0,0.06);">Mensual</div>
+                <div style="flex:1; padding:7px; text-align:center; font-size:12.5px; font-weight:600; color:var(--muted);">Anual <span style="font-size:10px; color:var(--accent);">−15%</span></div>
+              </div>
+              <!-- tier cards -->
+              <div style="display:grid; gap:9px;">
+                <div style="border:1px solid var(--border); border-radius:14px; padding:13px;">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;"><p style="font-size:14px; font-weight:700; margin:0;">Básico</p><p style="font-size:16px; font-weight:800; margin:0;">$149<span style="font-size:11px; color:var(--muted); font-weight:500;">/mes</span></p></div>
+                  <p style="font-size:12px; color:var(--muted); margin:0;">250 g de café al mes · envío incluido</p>
+                </div>
+                <div style="border:2px solid var(--accent); border-radius:14px; padding:13px; position:relative; background:var(--accent-soft);">
+                  <span style="position:absolute; top:-9px; left:13px; font-size:10px; font-weight:700; background:var(--accent); color:#fff; padding:3px 9px; border-radius:999px; white-space:nowrap;">MÁS POPULAR</span>
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; margin:4px 0 6px;"><p style="font-size:14px; font-weight:700; margin:0;">Pro</p><p style="font-size:16px; font-weight:800; margin:0; color:var(--accent-ink);">$249<span style="font-size:11px; color:var(--muted); font-weight:500;">/mes</span></p></div>
+                  <div style="display:grid; gap:4px;"><span style="font-size:12px; color:#2c4a39;"><i class="iconoir-check" style="font-size:12px; color:var(--accent);"></i> 500 g · 2 orígenes</span><span style="font-size:12px; color:#2c4a39;"><i class="iconoir-check" style="font-size:12px; color:var(--accent);"></i> Molido a tu gusto</span><span style="font-size:12px; color:#2c4a39;"><i class="iconoir-check" style="font-size:12px; color:var(--accent);"></i> Catas en línea</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="height:62px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:11px 15px 14px;">
+              <div style="background:var(--accent); color:#fff; border-radius:999px; padding:13px; text-align:center; font-size:14px; font-weight:700;">Suscribirse a Pro · $249/mes</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-credit-cards" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Tiers comparables</strong> con un plan <strong style="color:var(--fg);">«Más popular»</strong> resaltado — guía la elección y sube el ticket promedio.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-switch-on" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Toggle mensual/anual</strong> con el ahorro anual visible — empuja al plan de mayor compromiso.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-cancel" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">La barra refleja el <strong style="color:var(--fg);">plan elegido</strong>; «cancela cuando quieras» quita el miedo al recurrente.</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · ya suscrito</p>
+          <div style="max-width:330px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 14px; box-shadow:0 1px 2px rgba(26,26,24,0.06);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;"><div style="display:flex; align-items:center; gap:8px;"><i class="iconoir-check-circle-solid" style="font-size:18px; color:var(--success);"></i><div><p style="font-size:13px; font-weight:700; margin:0;">Tu plan: Pro</p><p style="font-size:11px; color:var(--muted); margin:1px 0 0;">Próximo cobro: 13 jul · $249</p></div></div><span style="font-size:11px; background:var(--success-soft); color:var(--success); border-radius:999px; padding:4px 9px; font-weight:600;">Activo</span></div>
+            <div style="border:1.5px solid var(--border); color:var(--fg); border-radius:999px; padding:10px; text-align:center; font-size:13px; font-weight:700;">Gestionar suscripción</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: SIN RECLAMAR ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--warning); padding-top:24px; margin-bottom:8px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;"><i class="iconoir-shop" style="font-size:20px; color:var(--warning);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Sin reclamar · solo contacto</h3><span style="font-size:12px; background:var(--warning-soft); color:#7a4e00; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Contactar</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">Tienda importada/scrapeada sin dueño: el código suprime Comprar/Oferta/Carrito. Aquí el lean es <strong>Gumtree</strong> — honesto y centrado en el contacto. La transparencia («aún no reclamada», fuente del anuncio) <em>es</em> la señal de confianza.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO DEL ANUNCIO</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+              <div style="position:absolute; bottom:11px; right:11px; background:rgba(0,0,0,0.5); border-radius:999px; padding:3px 9px; font-size:10px; color:#fff; font-weight:600;">1 / 2</div>
+            </div>
+            <div style="padding:15px;">
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 6px;">Bicicleta de montaña Trek Marlin 5</h3>
+              <div style="display:flex; align-items:flex-end; gap:9px; margin-bottom:10px;"><p style="font-weight:800; font-size:26px; line-height:1; margin:0;">$3,500</p></div>
+              <!-- unclaimed notice -->
+              <div style="display:flex; align-items:flex-start; gap:9px; background:var(--warning-soft); border:1px solid #ecdcb8; border-radius:12px; padding:11px 12px; margin-bottom:14px;"><i class="iconoir-info-circle" style="font-size:17px; color:var(--warning); flex-shrink:0; margin-top:1px;"></i><div><p style="font-size:12.5px; font-weight:700; color:#7a4e00; margin:0;">Tienda aún no reclamada</p><p style="font-size:11.5px; color:#7a4e00; margin:2px 0 0; line-height:1.45;">Coordina pago y entrega directamente con el vendedor. La compra protegida aplica al reclamarse.</p></div></div>
+              <!-- contact buttons (primary path) -->
+              <div style="display:grid; gap:8px; margin-bottom:14px;">
+                <div style="background:#25D366; color:#fff; border-radius:999px; padding:12px; text-align:center; font-size:14px; font-weight:700;"><i class="iconoir-chat-bubble"></i> Contactar por WhatsApp</div>
+                <div style="display:flex; gap:8px;"><div style="flex:1; border:1.5px solid var(--border); border-radius:999px; padding:10px; text-align:center; font-size:13px; font-weight:600;"><i class="iconoir-phone" style="font-size:14px;"></i> Llamar</div><div style="flex:1; border:1.5px solid var(--border); border-radius:999px; padding:10px; text-align:center; font-size:13px; font-weight:600;"><i class="iconoir-mail" style="font-size:14px;"></i> Email</div></div>
+              </div>
+              <h4 style="font-weight:600; font-size:14px; margin:0 0 7px;">Descripción</h4>
+              <p style="font-size:13px; color:var(--fg); line-height:1.6; margin:0 0 12px;">Rodada 29, talla M, frenos de disco. Poco uso, bien cuidada. Entrega en Coyoacán…</p>
+              <!-- source + claim -->
+              <a style="font-size:12px; color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:5px; margin-bottom:10px;">Visto en Facebook Marketplace <i class="iconoir-arrow-up-right" style="font-size:11px;"></i></a>
+              <div style="background:var(--sunk); border-radius:12px; padding:11px 12px;"><p style="font-size:12px; color:var(--accent); font-weight:600; margin:0;"><i class="iconoir-shop"></i> ¿Es tuya esta tienda? Recláma gratis →</p></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-info-circle" style="font-size:17px; color:var(--warning); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Aviso honesto arriba</strong>: sin Comprar/Oferta/Carrito (gating del código). Decir «aún no reclamada» genera más confianza que ocultarlo.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-chat-bubble" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Contacto como acción primaria</strong> (WhatsApp · llamar · email), sin barra de compra — patrón clasificados/Gumtree.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-link" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Fuente del anuncio</strong> + nudge «Reclama gratis» convierten al vendedor real (loop de oferta).</p></div>
+          </div>
+          <div style="max-width:430px; background:var(--accent-soft); border:1px solid #cfe3d6; border-radius:16px; padding:16px 18px;">
+            <p style="font-weight:700; font-size:14px; margin:0 0 4px; color:var(--accent-ink);"><i class="iconoir-arrow-up-right" style="color:var(--accent);"></i> El upgrade al reclamar</p>
+            <p style="font-size:13.5px; line-height:1.55; color:#2c4a39; margin:0;">Al reclamar la tienda, esta misma PDP «despierta»: aparecen precio comprable, Comprar/Oferta, métodos y compra protegida — el mismo esqueleto de la sección 02. La PDP sin reclamar es el gancho de adquisición de oferta.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: AUTOS ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:56px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;"><i class="iconoir-car" style="font-size:20px; color:var(--accent);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Autos</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Agendar prueba de manejo</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">Compra de alto monto y alta ansiedad de fraude. La verificación <strong>REPUVE</strong> (¿robado? ¿con reporte?) es la señal de confianza #1 — sube al frente, justo bajo el precio. Specs de vehículo reemplazan talla/condición.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO DEL AUTO</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+              <div style="position:absolute; bottom:11px; right:11px; background:rgba(0,0,0,0.5); border-radius:999px; padding:3px 9px; font-size:10px; color:#fff; font-weight:600;">1 / 12</div>
+            </div>
+            <div style="padding:15px;">
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--accent-soft); border-radius:12px; margin-bottom:12px;"><i class="iconoir-car" style="font-size:17px; color:var(--accent);"></i><div><p style="font-size:12.5px; font-weight:700; color:var(--accent); margin:0;">Auto</p><p style="font-size:11.5px; color:var(--muted); margin:0;">Agenda una prueba de manejo</p></div></div>
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 6px;">Honda Civic Turbo 2019</h3>
+              <div style="display:flex; align-items:flex-end; gap:9px; margin-bottom:3px;"><p style="font-weight:800; font-size:26px; line-height:1; margin:0;">$285,000</p></div>
+              <p style="font-size:12px; color:var(--muted); margin:0 0 12px;"><i class="iconoir-map-pin" style="font-size:12px;"></i> CDMX · 68,000 km · precio negociable</p>
+              <!-- REPUVE trust banner -->
+              <div style="display:flex; align-items:center; gap:10px; background:var(--success-soft); border:1px solid #cfe3d6; border-radius:12px; padding:11px 12px; margin-bottom:14px;"><i class="iconoir-shield-check" style="font-size:22px; color:var(--success);"></i><div><p style="font-size:13px; font-weight:700; color:var(--success); margin:0;">Sin reporte de robo · REPUVE</p><p class="ms-mono" style="font-size:11px; color:#2c4a39; margin:1px 0 0;">Folio MX-93f0a · verificado 12 jun</p></div></div>
+              <!-- vehicle specs -->
+              <div style="border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                  <div style="padding:10px 13px; border-bottom:1px solid var(--border); border-right:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">Año</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">2019</p></div>
+                  <div style="padding:10px 13px; border-bottom:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">Kilometraje</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">68,000 km</p></div>
+                  <div style="padding:10px 13px; border-right:1px solid var(--border);"><p style="font-size:10px; color:var(--subtle); margin:0;">Transmisión</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">Automática</p></div>
+                  <div style="padding:10px 13px;"><p style="font-size:10px; color:var(--subtle); margin:0;">Combustible</p><p style="font-size:12.5px; font-weight:600; margin:2px 0 0;">Gasolina</p></div>
+                </div>
+              </div>
+              <h4 style="font-weight:600; font-size:14px; margin:0 0 7px;">Descripción</h4>
+              <p style="font-size:13px; color:var(--fg); line-height:1.6; margin:0 0 6px;">Único dueño, servicios de agencia al día, llantas nuevas. Factura original y tenencias pagadas…</p>
+            </div>
+            <div style="height:118px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:9px 15px 13px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;"><div><p style="font-size:10px; color:var(--subtle); margin:0;">Precio</p><p style="font-size:16px; font-weight:800; margin:1px 0 0;">$285,000</p></div><button style="background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; font-family:inherit; cursor:pointer;"><i class="iconoir-chat-bubble"></i> Preguntar</button></div>
+              <div style="display:flex; gap:8px; margin-bottom:7px;"><div style="flex:1; border:1.5px solid var(--accent); color:var(--accent); border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700;">Hacer oferta</div><div style="flex:1.3; background:var(--accent); color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:13px; font-weight:700; white-space:nowrap;">Agendar prueba</div></div>
+              <div style="background:#25D366; color:#fff; border-radius:999px; padding:10px; text-align:center; font-size:13px; font-weight:700;"><i class="iconoir-chat-bubble"></i> Contactar por WhatsApp</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-shield-check" style="font-size:17px; color:var(--success); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Verificación REPUVE arriba</strong> (verde = sin reporte, rojo = con reporte, con folio) — ya está en el código <span class="ms-mono" style="font-size:12px;">listing.metadata.repuve</span>; aquí gana jerarquía como ancla de confianza.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-car" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Specs de vehículo</strong> (año · km · transmisión · combustible) en vez de talla/condición.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">Barra de alto monto: <strong style="color:var(--fg);">Agendar prueba</strong> como primaria, oferta secundaria, y WhatsApp directo (compra grande = más diálogo).</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · prueba agendada</p>
+          <div style="max-width:330px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 14px; box-shadow:0 1px 2px rgba(26,26,24,0.06);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><div><p style="font-size:11px; color:var(--subtle); margin:0;">Prueba de manejo</p><p style="font-size:14px; font-weight:700; margin:1px 0 0;">Sáb 15 jun · 11:00 am</p></div><span style="font-size:11px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:4px 9px; font-weight:600;">Confirmada</span></div>
+            <div style="border:1.5px solid var(--border); color:var(--fg); border-radius:999px; padding:10px; text-align:center; font-size:13px; font-weight:700;"><i class="iconoir-map-pin" style="font-size:13px;"></i> Ver punto de encuentro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: INMUEBLES ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:56px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;"><i class="iconoir-home-simple" style="font-size:20px; color:var(--accent);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Inmuebles</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Agendar visita</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">La decisión gira en torno a <strong>distribución</strong> y <strong>ubicación</strong>. Specs de propiedad (rec · baños · m² · estac.) y un mapa de zona aproximada suben al frente; la acción es <strong>agendar visita</strong>.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">FOTO DEL INMUEBLE</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+              <div style="position:absolute; bottom:11px; right:11px; background:rgba(0,0,0,0.5); border-radius:999px; padding:3px 9px; font-size:10px; color:#fff; font-weight:600;">1 / 18</div>
+            </div>
+            <div style="padding:15px;">
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--accent-soft); border-radius:12px; margin-bottom:12px;"><i class="iconoir-home-simple" style="font-size:17px; color:var(--accent);"></i><div><p style="font-size:12.5px; font-weight:700; color:var(--accent); margin:0;">Inmueble</p><p style="font-size:11.5px; color:var(--muted); margin:0;">Agenda una visita</p></div></div>
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 6px;">Departamento en Roma Norte</h3>
+              <div style="display:flex; align-items:flex-end; gap:9px; margin-bottom:3px;"><p style="font-weight:800; font-size:26px; line-height:1; margin:0;">$4,200,000</p></div>
+              <p style="font-size:12px; color:var(--muted); margin:0 0 12px;"><i class="iconoir-map-pin" style="font-size:12px;"></i> Roma Norte, CDMX · venta</p>
+              <!-- property specs -->
+              <div style="display:flex; gap:7px; margin-bottom:14px;">
+                <div style="flex:1; border:1px solid var(--border); border-radius:11px; padding:9px 4px; text-align:center;"><i class="iconoir-bed-ready" style="font-size:15px; color:var(--accent);"></i><p style="font-size:13px; font-weight:700; margin:3px 0 0;">2</p><p style="font-size:9.5px; color:var(--subtle); margin:0;">REC</p></div>
+                <div style="flex:1; border:1px solid var(--border); border-radius:11px; padding:9px 4px; text-align:center;"><i class="iconoir-bathroom" style="font-size:15px; color:var(--accent);"></i><p style="font-size:13px; font-weight:700; margin:3px 0 0;">2</p><p style="font-size:9.5px; color:var(--subtle); margin:0;">BAÑOS</p></div>
+                <div style="flex:1; border:1px solid var(--border); border-radius:11px; padding:9px 4px; text-align:center;"><i class="iconoir-ruler-combine" style="font-size:15px; color:var(--accent);"></i><p style="font-size:13px; font-weight:700; margin:3px 0 0;">85</p><p style="font-size:9.5px; color:var(--subtle); margin:0;">M²</p></div>
+                <div style="flex:1; border:1px solid var(--border); border-radius:11px; padding:9px 4px; text-align:center;"><i class="iconoir-car" style="font-size:15px; color:var(--accent);"></i><p style="font-size:13px; font-weight:700; margin:3px 0 0;">1</p><p style="font-size:9.5px; color:var(--subtle); margin:0;">ESTAC.</p></div>
+              </div>
+              <!-- zone map -->
+              <p style="font-size:13px; font-weight:700; margin:0 0 8px;">Ubicación</p>
+              <div class="ph-img" style="position:relative; width:100%; height:120px; border-radius:12px; overflow:hidden; margin-bottom:6px; display:flex; align-items:center; justify-content:center;">
+                <div style="position:absolute; width:64px; height:64px; border-radius:50%; background:rgba(29,111,66,0.16); display:flex; align-items:center; justify-content:center;"><i class="iconoir-map-pin" style="font-size:24px; color:var(--accent);"></i></div>
+                <span class="ms-mono" style="position:absolute; bottom:8px; left:8px; font-size:9px; color:#7a7a72; background:rgba(255,255,255,0.8); padding:2px 6px; border-radius:4px;">ZONA APROX · ROMA NORTE</span>
+              </div>
+            </div>
+            <div style="height:104px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:9px 15px 13px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;"><div><p style="font-size:10px; color:var(--subtle); margin:0;">Venta</p><p style="font-size:16px; font-weight:800; margin:1px 0 0;">$4,200,000</p></div><button style="background:none; border:none; color:var(--accent); font-size:12px; font-weight:600; font-family:inherit; cursor:pointer;"><i class="iconoir-chat-bubble"></i> Preguntar</button></div>
+              <div style="display:flex; gap:8px;"><div style="flex:1; border:1.5px solid var(--accent); color:var(--accent); border-radius:999px; padding:12px; text-align:center; font-size:13px; font-weight:700;">Contactar</div><div style="flex:1.4; background:var(--accent); color:#fff; border-radius:999px; padding:12px; text-align:center; font-size:13px; font-weight:700;">Agendar visita</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-home-simple" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Specs de propiedad como íconos</strong> (rec · baños · m² · estac.) — lo primero que escanea quien busca casa.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-map-pin" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Mapa de zona aproximada</strong> — ubicación es el factor #1; no la dirección exacta hasta agendar (privacidad/seguridad).</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">Acción primaria <strong style="color:var(--fg);">Agendar visita</strong>; contacto directo secundario (decisión larga, lead-led).</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · visita agendada</p>
+          <div style="max-width:330px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:11px 14px; box-shadow:0 1px 2px rgba(26,26,24,0.06);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;"><div><p style="font-size:11px; color:var(--subtle); margin:0;">Visita</p><p style="font-size:14px; font-weight:700; margin:1px 0 0;">Dom 16 jun · 1:00 pm</p></div><span style="font-size:11px; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:4px 9px; font-weight:600;">Confirmada</span></div>
+            <div style="border:1.5px solid var(--border); color:var(--fg); border-radius:999px; padding:10px; text-align:center; font-size:13px; font-weight:700;"><i class="iconoir-map-pin" style="font-size:13px;"></i> Ver dirección exacta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░░░░░ TYPE: EVENTOS / BOLETOS ░░░░░░░░ -->
+    <div style="border-top:2px solid var(--fg); padding-top:24px; margin-bottom:8px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;"><i class="iconoir-ticket" style="font-size:20px; color:var(--accent);"></i><h3 style="font-size:22px; font-weight:600; margin:0;">Eventos / boletos</h3><span style="font-size:12px; background:var(--fg); color:#fff; border-radius:999px; padding:4px 11px; font-weight:600; white-space:nowrap; flex-shrink:0;">Acción: Comprar boleto</span></div>
+      <p style="font-size:14.5px; color:var(--muted); max-width:720px; margin:0 0 24px;">Lo que decide es <strong>fecha · lugar · disponibilidad</strong>. El bloque de evento lidera (ya existe en <span class="ms-mono" style="font-size:12px;">readEventDetails</span>), con escasez de aforo y, con sesión, el <strong>boleto escaneable</strong> con QR para la puerta.</p>
+      <div style="display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="width:340px; flex-shrink:0; background:#111; border-radius:42px; padding:9px; box-shadow:0 24px 50px -22px rgba(26,26,24,0.4), 0 0 0 1px rgba(0,0,0,0.4);">
+          <div style="background:var(--bg); border-radius:34px; overflow:hidden; position:relative;">
+            <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:relative;"><span style="font-size:13px; font-weight:600;">9:41</span><div style="position:absolute; left:50%; top:8px; transform:translateX(-50%); width:92px; height:23px; background:#111; border-radius:13px;"></div><div style="display:flex; gap:5px;"><i class="iconoir-signal" style="font-size:13px;"></i><i class="iconoir-wifi" style="font-size:13px;"></i><i class="iconoir-battery-full" style="font-size:15px;"></i></div></div>
+            <div class="ph-img" style="position:relative; width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;">
+              <span class="ms-mono" style="font-size:10px; color:#9a9a92; background:rgba(255,255,255,0.7); padding:3px 7px; border-radius:5px;">CARTEL DEL EVENTO</span>
+              <div style="position:absolute; top:11px; left:11px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-arrow-left" style="font-size:16px;"></i></div>
+              <div style="position:absolute; top:11px; right:11px; display:flex; gap:7px;"><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-share-android" style="font-size:15px;"></i></div><div style="width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center;"><i class="iconoir-heart" style="font-size:16px;"></i></div></div>
+            </div>
+            <div style="padding:15px;">
+              <h3 style="font-size:18px; font-weight:700; line-height:1.3; margin:0 0 10px;">Noche de Lucha Libre</h3>
+              <!-- event details card -->
+              <div style="background:var(--info-soft); border:1px solid #cdd8e8; border-radius:14px; padding:13px; margin-bottom:14px;">
+                <div style="display:flex; gap:10px; align-items:flex-start;"><i class="iconoir-calendar" style="font-size:18px; color:var(--info); margin-top:1px;"></i><div><p style="font-size:14px; font-weight:800; color:var(--fg); margin:0;">Vie 20 jun · 8:00 pm</p><p style="font-size:13px; color:var(--fg); margin:4px 0 0;">Arena México</p><p style="font-size:12px; color:var(--muted); margin:1px 0 0;">Dr. Lavista 189, Doctores, CDMX</p></div></div>
+              </div>
+              <!-- scarcity -->
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:14px;"><i class="iconoir-group" style="font-size:13px; color:var(--energy);"></i><span style="font-size:12px; color:var(--energy); font-weight:600;">Quedan 240 lugares de 16,000</span></div>
+              <!-- ticket tiers -->
+              <p style="font-size:13px; font-weight:700; margin:0 0 8px;">Elige tu boleto</p>
+              <div style="display:grid; gap:8px; margin-bottom:6px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--accent); background:var(--accent-soft); border-radius:12px; padding:11px 13px;"><div><p style="font-size:13.5px; font-weight:700; margin:0;">General</p><p style="font-size:11px; color:var(--muted); margin:1px 0 0;">Acceso a gradas</p></div><p style="font-size:15px; font-weight:800; color:var(--accent-ink); margin:0;">$350</p></div>
+                <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid var(--border); border-radius:12px; padding:11px 13px;"><div><p style="font-size:13.5px; font-weight:700; margin:0;">Ringside</p><p style="font-size:11px; color:var(--muted); margin:1px 0 0;">Primeras filas</p></div><p style="font-size:15px; font-weight:800; margin:0;">$1,200</p></div>
+              </div>
+            </div>
+            <div style="height:86px;"></div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); padding:9px 15px 13px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;"><span style="font-size:12px; color:var(--muted);">Cantidad</span><div style="display:flex; align-items:center; gap:12px;"><div style="width:28px; height:28px; border-radius:50%; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--muted);">−</div><span style="font-size:15px; font-weight:700;">2</span><div style="width:28px; height:28px; border-radius:50%; border:1.5px solid var(--accent); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:16px;">+</div></div></div>
+              <div style="background:var(--accent); color:#fff; border-radius:999px; padding:13px; text-align:center; font-size:14px; font-weight:700;">Comprar 2 boletos · $700</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:300px; padding-top:8px;">
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 12px;">Qué cambia para este tipo</p>
+          <div style="display:grid; gap:12px; margin-bottom:28px;">
+            <div style="display:flex; gap:10px;"><i class="iconoir-calendar" style="font-size:17px; color:var(--info); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Bloque de evento lidera</strong> (fecha · hora · lugar · dirección) — sustituye specs; ya viene de <span class="ms-mono" style="font-size:12px;">readEventDetails</span>.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-group" style="font-size:17px; color:var(--energy); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;"><strong style="color:var(--fg);">Aforo como escasez</strong> («quedan 240») + <strong style="color:var(--fg);">selector de cantidad</strong> y tiers de boleto en la barra.</p></div>
+            <div style="display:flex; gap:10px;"><i class="iconoir-qr-code" style="font-size:17px; color:var(--accent); flex-shrink:0;"></i><p style="font-size:14px; line-height:1.5; color:var(--muted); margin:0;">Con sesión, el <strong style="color:var(--fg);">boleto escaneable por asistente</strong> con QR (token redimible una vez en la puerta) — ya existe en el backend de ticketing.</p></div>
+          </div>
+          <p style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--subtle); margin:0 0 10px;">Con sesión · boleto comprado</p>
+          <div style="max-width:300px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 1px 2px rgba(26,26,24,0.06); text-align:center;">
+            <p style="font-size:12px; font-weight:700; color:var(--success); margin:0 0 10px;"><i class="iconoir-check-circle"></i> Boleto confirmado</p>
+            <div style="width:128px; height:128px; margin:0 auto 10px; border-radius:12px; background:conic-gradient(#1a1a18 25%, #fff 0 50%, #1a1a18 0 75%, #fff 0) 0 0/16px 16px, #fff; border:1px solid var(--border);"></div>
+            <p class="ms-mono" style="font-size:12px; font-weight:600; margin:0;">Boleto #A-4821 · General</p>
+            <p style="font-size:11px; color:var(--muted); margin:3px 0 0;">Muéstralo en la puerta · se escanea una vez</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- next -->
+    <div style="margin-top:48px; background:var(--fg); color:#fff; border-radius:20px; padding:28px 32px;">
+      <p class="ms-mono" style="font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:#9bbfa8; margin:0 0 10px;">Cobertura completa</p>
+      <p style="font-size:18px; line-height:1.55; margin:0 0 14px; max-width:820px;">Los 9 tipos de listing están cubiertos, sin sesión y con sesión: <strong>producto físico</strong> (02–03) · servicios · rentas · digital · suscripciones · <strong>autos</strong> · <strong>inmuebles</strong> · <strong>eventos/boletos</strong> · sin reclamar. Un solo esqueleto, un bloque por tipo.</p>
+      <p style="font-size:15px; line-height:1.55; margin:0; max-width:820px; color:#cfe0d6;">Pendientes opcionales: <strong style="color:#fff;">estados PWA</strong> (instalado · sin conexión · safe-area · share-target) y el <strong style="color:#fff;">desktop de 2 columnas</strong>. </span>.</p>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:2400}}"></script>
+</body>
+</html>
