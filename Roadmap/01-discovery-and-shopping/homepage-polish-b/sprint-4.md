@@ -1,8 +1,9 @@
 # Homepage Polish — Dirección B — Sprint 4: Signed-in modules
 
-**Status:** 🏗️ built — **draft PR [#87](https://github.com/danybgoode/miyagisanchezcommerce/pull/87)**
-(`feat/homepage-polish-b`). S4.1 ✅ · S4.2 ✅ · S4.3 ✅ · **S4.4 ✅ already live (re-scoped — no
-migration).** · **Risk: LOW** (no HIGH story → no Daniel-merge gate). Authed browser smokes owed to Daniel.
+**Status:** ✅ **MERGED — PR [#87](https://github.com/danybgoode/miyagisanchezcommerce/pull/87) squash `009204b`**
+(CI green; cross-review codex clean — applied a perspective-qualified offer-alert React key). S4.1 ✅ · S4.2 ✅ ·
+S4.3 ✅ · **S4.4 ✅ already live (re-scoped — no migration).** · **Risk: LOW** (no HIGH story → no Daniel-merge
+gate). Authed browser smokes owed to Daniel.
 
 > Recognise the returning user: a continuation rail, an actionable offer alert, and a seller snapshot — the
 > ribbon is gone. The price-drop badge is deferred (the column already exists, see S4.4).

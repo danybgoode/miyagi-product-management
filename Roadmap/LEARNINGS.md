@@ -335,7 +335,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   backend `/store/listings` **already filtered** `listing_type`, the normalizer already emitted it, and
   `/api/ucp/catalog` already forwarded it — so the planned "merge backend first" sprint evaporated and the
   whole epic shipped **frontend-only, no Cloud Run deploy**. Grep the route + normalizer for the field
-  before scoping a backend story. 2026-06-08.)*
+  before scoping a backend story. 2026-06-08.)* **Corollary — a planned HIGH-risk *migration* story may
+  already be shipped; check the live schema + write path before authoring it.** Homepage-polish-b S4.4 was
+  scoped as "add `price_cents_at_save` to `marketplace_favorites` (DB migration → Daniel merges)"; a
+  five-minute check (the column was in the original table migration, `POST /api/favorites` already wrote it,
+  and a live `SELECT` showed every row populated) collapsed the whole HIGH story to verify-and-document — no
+  migration, no Daniel-merge gate, the sprint shipped frontend-only LOW. For any additive-column/backfill
+  story, `git show` the table's migration + grep the write route, and confirm against the live DB before
+  treating it as unbuilt. *(2026-06-12, homepage-polish-b S4.4.)*
 - **Fix the call the *user* awaits, not the lib the plan named — a proxy makes the named module a red
   herring.** The plan said "time out `lib/envia.ts quoteShipments`," but tracing importers showed that
   frontend lib only feeds the *seller* ship route; the *buyer's* quote is a

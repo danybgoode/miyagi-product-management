@@ -1,14 +1,14 @@
 ---
 title: "Homepage Polish — Dirección B «Catálogo limpio»"
 slug: homepage-polish-b
-status: scaffolded
+status: shipped
 area: "01"
 type: feature
 priority: null
 risk: low
 epic: "01-discovery-and-shopping/homepage-polish-b"
 build_order: null
-updated: 2026-06-12
+updated: 2026-06-13
 ---
 
 # Scope — Homepage Polish, Dirección B «Catálogo limpio» (domain 01)
