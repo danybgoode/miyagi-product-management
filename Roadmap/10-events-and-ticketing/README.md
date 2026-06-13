@@ -11,7 +11,9 @@ largely servable today; the new capability is the *ticket* — a credential that
 can be validated once at the door.
 
 ## Current features
-- *(none shipped yet — this domain is new as of 2026-06-07; see the epic below)*
+- ✅ **Paid event admission** — sell admission as a listing with event date/venue/aforo; buyers re-download their ticket/confirmation.
+- ✅ **Free RSVP page** (`/e/[slug]`) — register for a free event with email-code verification, no marketplace account.
+- ✅ **Per-attendee scannable ticket + door check-in** — a unique token + QR, redeemed once at the door, with an attendance roster. *(Shipped 2026-06-08; authed door-scan live smoke owed to Daniel.)*
 
 What's **already servable today without this domain** (positioning, not a feature here): a seller can
 sell event admission as a `service` or `digital` listing through the real checkout, cap seats with
@@ -19,9 +21,10 @@ inventory (aforo), and — for appointment-style events — attach Cal.com sched
 that from "a listing that happens to be an event" into first-class event + ticketing support.
 
 ## Epics
-- **[Events & Ticketing](events-and-ticketing/)** — 📋 *planned, scaffolded 2026-06-07* — paid admission
-  made real (event attrs + buyer re-download) · a free RSVP surface · the shared attendee-ticket
-  primitive + door check-in. Scope/decision: [`../00-ideas/seeds/spike-ticket-event-management.md`](../00-ideas/seeds/spike-ticket-event-management.md).
+- **[Events & Ticketing](events-and-ticketing/)** — ✅ *Shipped 2026-06-08 (all 3 sprints)* — paid admission
+  made real (event attrs + buyer re-download, PR #48) · a free RSVP surface (`/e/[slug]`, PR #49) · the shared
+  attendee-ticket primitive + door check-in + roster (PR #52). Authed door-scan live smoke owed to Daniel.
+  Scope/decision: [`../00-ideas/seeds/spike-ticket-event-management.md`](../00-ideas/seeds/spike-ticket-event-management.md).
 
 ## Backlog / ideas (deferred from the #7 spike)
 - 📋 Multi-tier / multi-session tickets (Medusa variants + a multi-variant purchase UI)

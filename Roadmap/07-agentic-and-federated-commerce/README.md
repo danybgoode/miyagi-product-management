@@ -25,6 +25,18 @@ A seller's catalog lives once and surfaces through many independent storefronts.
   buy-button onto any external site via a `<script>` (hybrid Shadow-DOM elements + full-shop iframe), with
   checkout handed off to our hosted flow (`channel=embed`) and a self-serve snippet generator in seller
   settings. *(SHIPPED 2026-06-04 — all 3 sprints; built the channel claimed in docs but never served.)*
+- [custom-domain-checkout/](custom-domain-checkout/) ✅ **Checkout on the custom domain** — buying from a
+  seller's own domain works end-to-end: the buyer hops to the platform for session + payment, returns to the
+  domain, the sale is attributed `custom_domain`, and order emails carry the tenant brand. *(SHIPPED
+  2026-06-05 — all 3 sprints, PRs #12/#13/#14; live custom-domain smoke owed to Daniel.)*
+- [agent-readable-about-surface/](agent-readable-about-surface/) ✅ **Agent-readable why-sell / about
+  surface** — every machine surface (`/api/ucp/manifest`, `/agent`, `/llms.txt`, MCP `about_miyagi`) answers
+  supply-side (what Miyagi is · why sell · how to start · cost), each carrying a relay-language directive.
+  *(SHIPPED 2026-06-09 — both sprints; founder/pricing content fill owed by Daniel.)*
+
+  *(This domain has more shipped epics not enumerated here — custom-slugs, subdomains, short-links,
+  own-shop-experience, custom-domain-polish/-paywall, support-widget, cross-channel-trust-parity; the
+  product poster `Roadmap/README.md` is the at-a-glance index.)*
 
 ## Backlog / ideas
 - ✅ Richer seller agent capabilities — manage listings / respond to offers via MCP (beyond config).

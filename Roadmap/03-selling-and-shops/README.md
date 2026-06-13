@@ -17,12 +17,12 @@ The bar is "open a shop in minutes." Sellers get a real storefront, simple listi
 - ✅ **[Seller Coupon Codes](promotions/)** — create & manage discount codes for your shop (powers
   the World Cup "Sube tus promos" campaign). Sprint 1 shipped: create/manage + checkout redemption
   + usage stats.
-- 🚧 **[Bulk Import & Express Migration](bulk-import-migration/)** — *Trae tu tienda completa en
+- ✅ **[Bulk Import & Express Migration](bulk-import-migration/)** — *Trae tu tienda completa en
   minutos.* Bring a whole catalog and shop config from another platform via the seller's own AI
   agent (UCP files), on-site paste-to-AI parsing, declarative "Storefront-as-Code", and live MCP
-  config tools. **Sprints 1 & 2 SHIPPED & live-QA'd 2026-06-03** — S1 (file upload → validate →
-  staging → idempotent upsert → R2 images) and S2 (on-site "Pega y publica": paste → Gemini Flash
-  extraction → inline-editable staging → import). Sprints 3–4 (Storefront-as-Code, MCP config) planned.
+  config tools. **Shipped 2026-06-03 — all 4 sprints / 17 stories live.** S1 (file upload → validate →
+  staging → idempotent upsert → R2 images) · S2 (on-site "Pega y publica": paste → Gemini Flash
+  extraction → inline-editable staging → import) · S3 (Storefront-as-Code) · S4 (live MCP config tools).
 
 ## Backlog / ideas
 - 📋 Richer seller analytics

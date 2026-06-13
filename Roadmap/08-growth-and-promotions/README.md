@@ -15,20 +15,16 @@ never by silently charging a seller for a discount on their own sale.
   description, OpenGraph/Twitter tags, and the generated social card now say Miyagi is a marketplace
   to buy, sell, and open a shop in Mexico, with the segundamano recognition preserved in the card and
   keywords. Shipped 2026-06-11.
-
-## In progress
-- 🚧 **[Seasonal Theme Engine](seasonal-theme-engine/)** - code complete on
-  `feat/seasonal-theme-engine`; rotating platform-level brand
-  collaborations with a safe manifest, persisted visitor toggle, contrast guardrails, and strict
-  exclusion of seller storefronts, dashboards, checkout, and embeds. Full lint is still blocked by
-  existing app baseline errors outside the epic.
-
-## Planned
-- 📋 **[Seller-Acquisition Landing Pages](seller-acquisition-landing-pages/)** (BUILD-ORDER #6) —
+- ✅ **[Seasonal Theme Engine](seasonal-theme-engine/)** — rotating platform-level brand collaborations
+  with a safe manifest, persisted visitor toggle, contrast guardrails, and strict exclusion of seller
+  storefronts, dashboards, checkout, and embeds. Shipped 2026-06-05 (all 3 sprints; live as `platform-theme`).
+- ✅ **[Sweepstakes](sweepstakes/)** — tenant-run giveaway loop: compliant campaign + public entry page
+  (`/g/[slug]`) + email-code verified entries + purchase-bonus tickets + automated backend draw + winner/
+  consolation notifications. Shipped 2026-06-04 (all 3 sprints, both repos; live giveaway smoke owed to Daniel).
+- ✅ **[Seller-Acquisition Landing Pages](seller-acquisition-landing-pages/)** (BUILD-ORDER #6) —
   greenfield supply-side funnel: an anchor page (`/vende`) + persona pages (World-Cup experiences,
-  local creators) driving into `/sell`. Trust spine: "No nos creas, pregúntale a Claude." Groomed +
-  approved 2026-06-07; scaffolded (3 sprints, two tracks — WC wedge first). First slice of the
-  broader **agent-native GTM** north-star (`../00-ideas/seeds/agent-native-gtm/`).
+  local creators) driving into `/sell`. Trust spine: "No nos creas, pregúntale a Claude." Shipped
+  2026-06-07 (all 4 sprints, PRs #42/#44/#45). First slice of the broader **agent-native GTM** north-star.
 
 ## Backlog / ideas
 - 📋 Two-sided referrals (a welcome credit for the invited friend too)

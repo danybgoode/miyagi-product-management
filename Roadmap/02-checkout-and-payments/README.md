@@ -13,7 +13,7 @@ Money flows directly to the seller's own accounts; the platform takes no commiss
 
 ## Epics
 - ✅ **[Checkout & Manual-Payment State Hardening](checkout-state-hardening/)** — durable manual-payment state, ship-gating, one coupon-aware total (#3b · complete 2026-06-07).
-- 📋 **[Delivery & Manual-Money Polish](delivery-money-polish/)** — two-sided off-platform refund machine, pickup propose-and-confirm appointment, CP-first reorder, quote recovery/timeout (#3c · Epic B). *Planned — scaffolded 2026-06-07. B.5 arranged-only deferred behind Spike 0.*
+- ✅ **[Delivery & Manual-Money Polish](delivery-money-polish/)** — two-sided off-platform refund machine, pickup propose-and-confirm appointment, CP-first reorder, quote recovery/timeout (#3c · Epic B). *Shipped 2026-06-09 (3 sprints to prod; HIGH-risk refunds/payments/fulfillment).*
 
 ## Backlog / ideas
 - 📋 **Buyer protection / escrow ("Compra Protegida")** — hold funds until the buyer confirms
