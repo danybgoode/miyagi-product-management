@@ -8,6 +8,8 @@
 > Sprint 1. This forks the sweepstakes **pattern**, not its data model — the unique scannable ticket +
 > door check-in come in Sprint 3.
 
+**Status:** ✅ SHIPPED 2026-06-08 — app PR #49 (`8ec0c61`) + docs PR #1. S2.1 + S2.2 merged.
+
 ## Stories
 
 ### S2.1 — Seller creates a free event + RSVP page

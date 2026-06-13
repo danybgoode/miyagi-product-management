@@ -7,6 +7,8 @@
 > *when & where* it is and caps seats, and a buyer can re-fetch their ticket later. This is the cheap,
 > independent slice — it ships without S2/S3. No new `listing_type`, no new commerce table.
 
+**Status:** ✅ SHIPPED 2026-06-08 — PR #48 (`f0df5ba`, Daniel-authorized). S1.1 + S1.2 both merged.
+
 ## Stories
 
 ### S1.1 — Event date/time/venue/aforo on a listing

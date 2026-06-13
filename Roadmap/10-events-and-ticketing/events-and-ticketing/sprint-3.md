@@ -1,10 +1,14 @@
 # Sprint 3 — Attendee-ticket primitive + check-in (the shared spine)
 
 > Epic: [Events & Ticketing](README.md) · **Risk: S3.1 / S3.2 HIGH (Daniel merges) · S3.3 MED.**
-> **Status: 🚧 BUILT IN DRAFT — Daniel review/merge required for S3.1/S3.2.** Goal: every attendee — whether they **bought** admission (S1) or
+> Goal: every attendee — whether they **bought** admission (S1) or
 > **registered** for free (S2) — gets a **unique, scannable ticket** the seller can **check in once** at
 > the door. This is the genuinely-new primitive the spike identified; it's built **once** and fed by both
 > front doors. **Depends on Sprint 1 + Sprint 2.**
+
+**Status:** ✅ SHIPPED 2026-06-08 — PR #52 (`72d3cfe`, Daniel-merged) + ticket primitive `fe8c5e8`. S3.1
+(per-attendee token + QR) · S3.2 (door scan, redeem-once) · S3.3 (roster) all on `main`. **Owed to
+Daniel:** the authed door-scan money/fulfillment live smoke (scan a real ticket; confirm redeem-once).
 
 ## Stories
 

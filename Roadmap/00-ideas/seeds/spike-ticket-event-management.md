@@ -1,14 +1,14 @@
 ---
 title: "Ticket & event management"
 slug: spike-ticket-event-management
-status: in-progress
+status: shipped
 area: "10"
 type: epic
 priority: wave-4
 risk: high
 epic: "10-events-and-ticketing/events-and-ticketing"
 build_order: "#7"
-updated: 2026-06-08
+updated: 2026-06-12
 ---
 
 # Spike — Ticket & event management (BUILD-ORDER #7)

@@ -437,6 +437,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   a pure-logic spec proves invariants for free — e.g. summary ≡ CTA *because both call the one
   `computeCheckoutTotal`*, and an illegal transition (`pending_payment → processing`) is rejected by the
   guard. *(2026-06-07, checkout-state-hardening — `lib/manual-payment-state.ts`, `lib/checkout-total.ts`.)*
+  **A one-time redemption (door check-in / single-use ticket) is the same shape:** a pure
+  `lib/` token+redemption state machine makes double-redeem an illegal transition (free pure-logic
+  coverage), and the server gates **every** mutation that reaches the redeemed state (scan route *and* any
+  sibling write), not just the named scan route — the UI gate is courtesy. *(2026-06-08, events-and-ticketing
+  S3 — `lib/event-ticket-state.ts`.)*
 - **A mirror-resync silently un-sets soft state the source-of-truth doesn't yet reflect — filter the excluded
   set before BOTH render AND resync.** A page that re-syncs a Supabase mirror *from* Medusa on every load
   (`syncSupabaseListingMirror` writes `status: listing.status`) will **clobber** any soft state the mirror holds

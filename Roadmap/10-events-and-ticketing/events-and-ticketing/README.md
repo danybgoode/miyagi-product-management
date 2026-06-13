@@ -3,11 +3,15 @@
 > **Macro-section:** [10 · Events & Ticketing](../README.md) · **BUILD-ORDER:** #7 ·
 > **Risk: MIXED** — S1.1 / S2.* LOW, S3.3 MED, **S1.2 / S3.1 / S3.2 HIGH → Daniel merges**
 > (delivery of a paid artifact, money/fulfillment-state, door redemption).
-> **Status: 🚧 IN PROGRESS — Sprint 1 shipped to prod 2026-06-08 via
-> [miyagisanchezcommerce#48](https://github.com/danybgoode/miyagisanchezcommerce/pull/48)
-> (`f0df5ba`, Daniel-authorized).** Scaffolded 2026-06-07 from the #7 spike (run, decision landed,
-> **amended by Daniel to an epic**). Scope + decision + amendment:
+> **Status: ✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-08.** S1 paid admission
+> ([#48](https://github.com/danybgoode/miyagisanchezcommerce/pull/48) `f0df5ba`, Daniel-authorized) ·
+> S2 free RSVP ([#49](https://github.com/danybgoode/miyagisanchezcommerce/pull/49) `8ec0c61`) ·
+> S3 shared attendee-ticket primitive + door check-in + roster
+> ([#52](https://github.com/danybgoode/miyagisanchezcommerce/pull/52) `72d3cfe`, Daniel-merged +
+> `fe8c5e8`). See [RETROSPECTIVE.md](RETROSPECTIVE.md). Scaffolded 2026-06-07 from the #7 spike (run,
+> decision landed, **amended by Daniel to an epic**). Scope + decision + amendment:
 > [`00-ideas/seeds/spike-ticket-event-management.md`](../../00-ideas/seeds/spike-ticket-event-management.md).
+> **Owed to Daniel:** the authed door-scan money/fulfillment live smoke (scan a real ticket, redeem-once).
 
 ## Why
 The #7 spike confirmed that **selling event admission is already-servable** (a `service`/`digital`
@@ -72,11 +76,11 @@ path (see `LEARNINGS.md` i18n).
 |---|---|---|
 | **S1 · Paid admission, made real** | ✅ S1.1 Event date/time/venue/aforo attrs on a listing (metadata; PDP + UCP surface) | LOW |
 | | ✅ S1.2 Buyer can re-download their ticket/confirmation (build the TODO'd buyer gate) | **HIGH** |
-| **S2 · Free RSVP surface** | S2.1 Seller creates a free event + RSVP page (`marketplace_events`, `/e/[slug]`) | LOW |
-| | S2.2 Attendee registers with email-code verification (no account) + confirmation | LOW |
-| **S3 · Attendee-ticket primitive + check-in** | S3.1 Mint a unique per-attendee token (paid + free); QR encodes the token | **HIGH** |
-| | S3.2 Seller scans a ticket at the door; marked used exactly once (every-mutation gate) | **HIGH** |
-| | S3.3 Attendance roster / check-in view | MED |
+| **S2 · Free RSVP surface** | ✅ S2.1 Seller creates a free event + RSVP page (`marketplace_events`, `/e/[slug]`) | LOW |
+| | ✅ S2.2 Attendee registers with email-code verification (no account) + confirmation | LOW |
+| **S3 · Attendee-ticket primitive + check-in** | ✅ S3.1 Mint a unique per-attendee token (paid + free); QR encodes the token | **HIGH** |
+| | ✅ S3.2 Seller scans a ticket at the door; marked used exactly once (every-mutation gate) | **HIGH** |
+| | ✅ S3.3 Attendance roster / check-in view | MED |
 
 ## Deploy order (two repos, async)
 **S1 → S2 → S3.** S1 is the cheap, independent win (S1.1 is metadata-only; S1.2 is a frontend/API gate
@@ -85,12 +89,10 @@ S3 depends on S1 + S2 (it tokenizes both the paid order and the free registratio
 metadata, **merge backend-first or together** and degrade gracefully across the ~12-min Cloud Run window.
 
 ## Epic Definition of Done
-- [ ] All three sprints' stories merged + smoke-tested (gaps stated).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed); money/auth
-      and the door-scan steps flagged **owed to Daniel**.
-- [ ] This README ✅ complete; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated — add the **10 · Events & Ticketing** domain line +
-      a Recent-highlights entry.
-- [ ] Team memory + `LEARNINGS.md` updated with any durable learning (esp. the ticket-token state machine).
-- [ ] Branch(es) deleted; PR(s) merged.
+- [x] All three sprints' stories merged 2026-06-08 (S1 #48 · S2 #49 · S3 #52). **Door-scan money/fulfillment live smoke owed to Daniel** (stated).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough; money/auth + door-scan steps flagged **owed to Daniel**.
+- [x] This README ✅ complete; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — **10 · Events & Ticketing** domain line + Recent-highlights entry (see STEP 4 poster sweep).
+- [x] `LEARNINGS.md` updated (ticket-token redeem-once state machine — reuse of the manual-payment-state pattern). *(Team memory lives outside this repo; left for Daniel/next session.)*
+- [x] Branch(es) deleted; PR(s) merged.
