@@ -1,10 +1,11 @@
 # Sprint 2 — Confidence, liveness & gallery growth
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW** (frontend; reuses existing components + `marketplace_favorites`).
-> **Status: ✅ BUILT 2026-06-13 — branch `feat/pdp-redesign-s2`, PR pending (LOW).**
-> S2.1 `cc53928` · S2.2 `e31faaa` · S2.3 `8ef2b9f`. Gate: tsc + `next build` + new pure `api` specs green
-> locally; full `api` suite runs CI-vs-preview. Goal: add the trust/reputation/liveness signals the audit's
-> finding #7 calls for, and finish finding #1 (the gallery's missing back / share / counter).
+> **Status: ✅ MERGED 2026-06-13 — PR #89 squash `cd7ade0` (LOW, merged on green CI + clean codex cross-review).**
+> S2.1 `cc53928` · S2.2 `e31faaa` · S2.3 `8ef2b9f` (+ `736a9b5` cross-review fixes). Gate: tsc + `next build` +
+> Playwright `api` all green CI-vs-preview. Codex advisory: 2 should-fixes applied (share copy-fallback +
+> copied-timer cleanup), 1 declined (false-positive counter `1/0`). Goal: add the trust/reputation/liveness
+> signals the audit's finding #7 calls for, and finish finding #1 (the gallery's missing back / share / counter).
 >
 > **VALIDATE-FIRST outcome (S2.1):** no live source for a **seller rating/reseñas** or a **response-time**
 > metric (no reviews table, no `rating`/`response_time` field). The only **ventas** track-record source is the
