@@ -1,6 +1,8 @@
 # Homepage Polish — Dirección B — Sprint 1: Icon language migration
 
-**Status:** 🏗️ built — draft PR [#84](https://github.com/danybgoode/miyagisanchezcommerce/pull/84), commit `54a01bd` · **Risk:** LOW *(touches shared `lib/types.ts` + renderers — announced in the PR per LEARNINGS)*
+**Status:** ✅ COMPLETE — merged to `main` 2026-06-12, PR [#84](https://github.com/danybgoode/miyagisanchezcommerce/pull/84) squash `14fd880` · **Risk:** LOW *(touched shared `lib/types.ts` + renderers — announced in the PR per LEARNINGS)*
+
+> **QA:** deterministic gate green (tsc + build + Playwright `api` **vs preview**, incl. `e2e/home-icons.spec.ts` SSR). Cross-agent review (codex) clean — no blocking/should-fix, one nit applied (Iconoir-name guard now allows digits, commit `830f661`). No Daniel smoke owed (anonymous/presentational).
 
 > Ship first, independently. Establishes the single Iconoir language the rest of the epic assumes.
 
