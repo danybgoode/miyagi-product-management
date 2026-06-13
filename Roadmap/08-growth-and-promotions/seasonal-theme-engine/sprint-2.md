@@ -2,7 +2,7 @@
 
 Goal: expose theme switching to visitors while keeping merchant and operational surfaces untouched.
 
-Status: implemented 2026-06-05 on `feat/seasonal-theme-engine`.
+**Status:** ✅ SHIPPED 2026-06-05 — merged to `main` (commit `b979976`, as `platform-theme`).
 
 Risk tier: Low - public platform UI only; no checkout, payment, auth, or seller data changes.
 

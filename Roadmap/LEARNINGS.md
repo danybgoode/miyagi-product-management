@@ -360,6 +360,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
+- **A presentation-layer theme/skin must reuse the SAME channel/route signals the layout already uses to
+  drop chrome — never invent a parallel scope list, and apply a persisted theme BEFORE first paint.** The
+  seasonal `platform-theme` engine excludes white-label / embed / custom-domain / checkout / dashboard
+  surfaces by reusing `app/layout.tsx`'s existing channel detection (a second allow-list would silently
+  drift and leak the theme into the white-label shell). And it applies the saved preference via an inline
+  pre-paint bootstrap with a validated manifest + Core fallback — reading it in a React effect flashes Core
+  first; an invalid/expired manifest degrades to Core safely. *(2026-06-05, seasonal-theme-engine —
+  `lib/platform-theme.ts`, `PlatformThemeScript`.)*
 - **Reorder a block between mobile and desktop positions with the duplicate-render idiom, not flex
   `order`.** Build the block once into a `const`, then render it twice — `md:hidden` in the mobile slot
   and `hidden md:block` in the desktop slot — so exactly one instance is visible per viewport. The PDP

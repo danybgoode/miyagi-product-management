@@ -2,7 +2,7 @@
 
 Goal: make the collaboration feel intentional without layout shifts, heavy assets, or behavior changes.
 
-Status: implemented with QA notes 2026-06-05 on `feat/seasonal-theme-engine`.
+**Status:** ✅ SHIPPED 2026-06-05 — merged to `main` (commit `b979976`, as `platform-theme`). Live browser click-through smoke owed (see RETROSPECTIVE).
 
 Risk tier: Low - decorative/platform presentation layer only.
 

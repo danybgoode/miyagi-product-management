@@ -1,6 +1,11 @@
 # Epic - Seasonal Theme Engine
 
-> Code complete on `feat/seasonal-theme-engine` with QA notes. Builds a safe rotating brand-collaboration layer for the main Miyagi Sanchez platform experience.
+> **✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-05** (merged to `main` as commit `b979976`,
+> "feat: add seasonal platform theme engine"; the feature is named **`platform-theme`** in code:
+> `lib/platform-theme.ts`, `app/api/platform-theme/route.ts`, `app/components/PlatformTheme*`, covered by
+> `e2e/platform-theme.spec.ts`). See [RETROSPECTIVE.md](RETROSPECTIVE.md). Builds a safe rotating
+> brand-collaboration layer for the main Miyagi Sanchez platform experience. **Live browser click-through
+> smoke owed** (the e2e + DOM/geometry smoke passed; full Playwright browser run pending binaries/preview).
 
 **For visitors and buyers on the main marketplace.** A visitor can switch between the core platform look and the active seasonal designer collaboration without losing layout stability, readability, or performance.
 

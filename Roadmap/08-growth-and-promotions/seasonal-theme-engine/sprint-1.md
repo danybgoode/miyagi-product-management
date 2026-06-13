@@ -2,7 +2,7 @@
 
 Goal: create the safe theme foundation before any visible toggle ships.
 
-Status: implemented 2026-06-05 on `feat/seasonal-theme-engine`.
+**Status:** ✅ SHIPPED 2026-06-05 — merged to `main` (commit `b979976`, as `platform-theme`).
 
 Risk tier: Low - presentation-layer platform theming only; no commerce, checkout, auth, payments, or database migrations.
 
