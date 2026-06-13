@@ -66,9 +66,19 @@ export function loadPromptBody(path) {
   return body;
 }
 
+// `opts.soft` makes a runner return null (with a stderr warning) instead of die()-ing on failure — used
+// for non-essential passes (e.g. cross-panel's contradiction synthesis) that should degrade, not abort.
+function fail(soft, msg) {
+  if (soft) {
+    process.stderr.write(`⚠ ${msg}\n`);
+    return null;
+  }
+  die(msg);
+}
+
 // codex exec: the prompt rides as an argv string, the context is piped on stdin (codex appends it as a
 // <stdin> block). The caller passes the already-composed prompt and the raw context text.
-export function runCodex(prompt, stdin) {
+export function runCodex(prompt, stdin, opts = {}) {
   const r = spawnSync('codex', ['exec', prompt], {
     input: stdin,
     encoding: 'utf8',
@@ -76,7 +86,7 @@ export function runCodex(prompt, stdin) {
   });
   if (r.status !== 0) {
     const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
-    die(`codex exec failed: ${last}`);
+    return fail(opts.soft, `codex exec failed: ${last}`);
   }
   return (r.stdout || '').trim();
 }
@@ -84,9 +94,10 @@ export function runCodex(prompt, stdin) {
 // agy -p: agy 1.0.7 has no stdin block and no --output-format json — the caller must embed the context in
 // `fullArgv` (prompt + framed context), and we enforce the argv size cap here so an oversized input fails
 // with a clear message rather than an opaque E2BIG.
-export function runAntigravity(fullArgv) {
+export function runAntigravity(fullArgv, opts = {}) {
   if (Buffer.byteLength(fullArgv, 'utf8') > AGY_ARG_LIMIT) {
-    die(
+    return fail(
+      opts.soft,
       `input too large for antigravity (${Math.round(Buffer.byteLength(fullArgv) / 1024)} KB > ` +
         `${AGY_ARG_LIMIT / 1024} KB; agy has no stdin input) — use --agent codex instead.`
     );
@@ -94,7 +105,7 @@ export function runAntigravity(fullArgv) {
   const r = spawnSync('agy', ['-p', fullArgv], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) {
     const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
-    die(`agy -p failed: ${last}`);
+    return fail(opts.soft, `agy -p failed: ${last}`);
   }
   return (r.stdout || '').trim();
 }

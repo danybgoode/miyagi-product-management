@@ -29,15 +29,19 @@ Usage:
 
 Flags:
   --agent <name>   reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
-  --lens  <name>   architecture lens: ${lenses.join('|')} (default: architect-purist)
-  --dry-run        print the composed prompt that WOULD be sent, without invoking the CLI
+  --lens  <name>   architecture lens: ${lenses.join('|')}|both (default: both)
+  --dry-run        print the composed prompt(s) that WOULD be sent, without invoking the CLI
   -h, --help       show this help
+
+The pair (--lens both, the default) runs each lens single-pass on the chosen --agent, then prints one
+combined advisory block with a contradiction-synthesis. For model-family diversity, run twice with a
+different --agent. A single --lens <name> is the quick one-lens look.
 
 Advisory only — single-pass, print-only, never gates. Your scope-doc approval decides.`;
 }
 
 function parseArgs(argv) {
-  const out = { doc: null, agent: 'codex', lens: 'architect-purist', dryRun: false, help: false };
+  const out = { doc: null, agent: 'codex', lens: 'both', dryRun: false, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--help' || a === '-h') out.help = true;
@@ -52,29 +56,31 @@ function parseArgs(argv) {
   return out;
 }
 
-// Parse the prompt library into { preamble, lenses: {name: sectionText} }. The shared preamble is
-// everything before the first `## LENS:` heading; each lens runs to the next `## ` heading or EOF.
+// Slice the section starting at `from` (a `## ` heading) up to the next `## ` heading or EOF.
+function sliceSection(body, from) {
+  const rest = body.slice(from + 2);
+  const nextRel = rest.search(/^##[ \t]+/m);
+  const to = nextRel === -1 ? body.length : from + 2 + nextRel;
+  return body.slice(from, to).trim();
+}
+
+// Parse the prompt library into { preamble, lenses: {name: sectionText}, synthesis }. The shared preamble is
+// everything before the first `## LENS:` heading; each lens / the `## SYNTHESIS` section runs to the next
+// `## ` heading or EOF.
 function parsePromptLibrary(body) {
-  const headingRe = /^##[ \t]+/m;
   const lensRe = /^##[ \t]+LENS:[ \t]*(\S+)[ \t]*$/gm;
   const firstLens = body.search(/^##[ \t]+LENS:/m);
   if (firstLens === -1) die(`no '## LENS:' sections found in ${PROMPT_PATH}`);
   const preamble = body.slice(0, firstLens).trim();
 
-  // Collect each lens heading's start, then slice to the next top-level `## ` heading.
-  const starts = [];
-  let m;
-  while ((m = lensRe.exec(body)) !== null) starts.push({ name: m[1], at: m.index });
   const lenses = {};
-  for (let i = 0; i < starts.length; i++) {
-    const from = starts[i].at;
-    // find the next `## ` heading after this lens's own heading line
-    const rest = body.slice(from + 2);
-    const nextRel = rest.search(headingRe);
-    const to = nextRel === -1 ? body.length : from + 2 + nextRel;
-    lenses[starts[i].name] = body.slice(from, to).trim();
-  }
-  return { preamble, lenses };
+  let m;
+  while ((m = lensRe.exec(body)) !== null) lenses[m[1]] = sliceSection(body, m.index);
+
+  const synthAt = body.search(/^##[ \t]+SYNTHESIS[ \t]*$/m);
+  const synthesis = synthAt === -1 ? null : sliceSection(body, synthAt);
+
+  return { preamble, lenses, synthesis };
 }
 
 function readDoc(path) {
@@ -85,18 +91,22 @@ function readDoc(path) {
   return text;
 }
 
+const BANNER =
+  "> **Advisory only — not a gate.** CI/QA don't apply to planning; your scope-doc approval decides. " +
+  'Single-pass second opinion from a different model family.';
+
 // Compose the full prompt for one lens: shared preamble + the lens section.
 function composeLensPrompt(preamble, lensSection) {
   return `${preamble}\n\n${lensSection}\n`;
 }
 
-// Run one lens against the doc through the selected agent, single pass. Returns the critique text.
-function runLens(agent, prompt, docPath, docText) {
-  if (agent === 'codex') return runCodex(prompt, `## Plan to review (${docPath})\n\n${docText}`);
-  if (agent === 'antigravity') {
-    const full = `${prompt}\n\n## Plan to review (${docPath})\n\n${docText}\n`;
-    return runAntigravity(full);
-  }
+// Run a single-pass prompt + context block through the selected agent. codex takes the context on stdin;
+// agy 1.0.7 has no stdin, so the context rides embedded in the argv string (size-capped in the helper).
+// opts.soft → return null instead of die()-ing on CLI failure (used by the non-essential synthesis pass).
+function runWithAgent(agent, prompt, contextLabel, contextText, opts = {}) {
+  const block = `## ${contextLabel}\n\n${contextText}`;
+  if (agent === 'codex') return runCodex(prompt, block, opts);
+  if (agent === 'antigravity') return runAntigravity(`${prompt}\n\n${block}\n`, opts);
   die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 }
 
@@ -109,9 +119,16 @@ function ensureAgentCli(agent) {
   }
 }
 
+// Run the contradiction-synthesis over the lens critiques (soft — degrades to a note instead of dying).
+function runSynthesis(agent, synthesisSection, results) {
+  if (!synthesisSection) return null;
+  const critiques = results.map((r) => `### ${r.name} critique\n\n${r.findings}`).join('\n\n');
+  return runWithAgent(agent, synthesisSection, 'Two critiques to compare', critiques, { soft: true });
+}
+
 function main() {
   const body = loadPromptBody(PROMPT_PATH);
-  const { preamble, lenses } = parsePromptLibrary(body);
+  const { preamble, lenses, synthesis } = parsePromptLibrary(body);
   const lensNames = Object.keys(lenses);
 
   const { doc, agent, lens, dryRun, help } = parseArgs(process.argv.slice(2));
@@ -119,31 +136,58 @@ function main() {
     process.stdout.write(helpText(lensNames) + '\n');
     process.exit(0);
   }
-  if (doc === null) die('missing <scope-doc>. Usage: node scripts/cross-panel.mjs <scope-doc> --lens architect-purist');
+  if (doc === null) die('missing <scope-doc>. Usage: node scripts/cross-panel.mjs <scope-doc> --lens both');
   if (!AGENTS[agent]) die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
-  if (!lenses[lens]) die(`unknown --lens '${lens}'; use ${lensNames.join('|')}`);
+  if (lens !== 'both' && !lenses[lens]) die(`unknown --lens '${lens}'; use ${lensNames.join('|')}|both`);
 
+  const lensesToRun = lens === 'both' ? lensNames : [lens];
   const docText = readDoc(doc);
-  const prompt = composeLensPrompt(preamble, lenses[lens]);
+  const contextLabel = `Plan to review (${doc})`;
 
   if (dryRun) {
-    process.stdout.write(`# --dry-run: composed prompt for lens '${lens}' (agent: ${agent})\n\n`);
-    process.stdout.write(prompt + '\n');
-    process.stdout.write(`## Plan to review (${doc})\n\n${docText}\n`);
+    for (const name of lensesToRun) {
+      process.stdout.write(`# --dry-run: composed prompt for lens '${name}' (agent: ${agent})\n\n`);
+      process.stdout.write(composeLensPrompt(preamble, lenses[name]) + '\n');
+      process.stdout.write(`## ${contextLabel}\n\n${docText}\n\n`);
+    }
+    if (lensesToRun.length > 1) {
+      process.stdout.write(`# --dry-run: a contradiction-synthesis pass would then run over the ${lensesToRun.length} critiques.\n`);
+    }
     process.stderr.write('\n(dry-run — no CLI invoked)\n');
     process.exit(0);
   }
 
   ensureAgentCli(agent);
-  const findings = runLens(agent, prompt, doc, docText);
-  if (!findings) die(`${AGENTS[agent]} returned no output.`);
 
-  process.stdout.write(`### 🔎 Cross-agent planning panel — ${lens} (${AGENTS[agent]})\n\n`);
-  process.stdout.write(
-    '> **Advisory only — not a gate.** CI/QA don\'t apply to planning; your scope-doc approval decides. ' +
-      'Single-pass second opinion from a different model family.\n\n---\n\n'
-  );
-  process.stdout.write(findings + '\n');
+  const results = [];
+  for (const name of lensesToRun) {
+    const findings = runWithAgent(agent, composeLensPrompt(preamble, lenses[name]), contextLabel, docText);
+    if (!findings) die(`${AGENTS[agent]} returned no output for lens '${name}'.`);
+    results.push({ name, findings });
+  }
+
+  // Single lens → a single labeled block. The pair → one combined panel + a contradiction-synthesis.
+  if (results.length === 1) {
+    const { name, findings } = results[0];
+    process.stdout.write(`### 🔎 Cross-agent planning panel — ${name} (${AGENTS[agent]})\n\n`);
+    process.stdout.write(`${BANNER}\n\n---\n\n${findings}\n`);
+    return;
+  }
+
+  process.stdout.write(`### 🔎 Cross-agent planning panel\n\n${BANNER}\n\n---\n`);
+  for (const { name, findings } of results) {
+    process.stdout.write(`\n## ${name} (${AGENTS[agent]})\n\n${findings}\n`);
+  }
+
+  const contradictions = runSynthesis(agent, synthesis, results);
+  process.stdout.write('\n## Contradictions to adjudicate\n\n');
+  if (contradictions) {
+    process.stdout.write(contradictions + '\n');
+  } else {
+    process.stdout.write(
+      '_(Synthesis pass unavailable — compare the lens critiques above; no contradiction list was produced.)_\n'
+    );
+  }
 }
 
 main();

@@ -99,3 +99,19 @@ Do not reward thinness that *violates a rule* (defer to the purist there) — bu
 sprint, or primitive the outcome doesn't strictly need for v1.
 Remember the **Checkable claim** line is mandatory — name the existing feature/flow/route to *try* that
 would confirm (or kill) your "already achievable / lighter path exists" assumption.
+
+## SYNTHESIS
+You are given two single-pass architecture critiques of the **same plan** — one from the Medusa-purist lens,
+one from the ship-it pragmatist lens (provided as context). Your only job is to surface where they
+**genuinely contradict** so Daniel has the one thing to adjudicate.
+
+Do **this only**, in a single pass:
+- List ONLY *specific* contradictions — where the two lenses recommend **opposite actions on the same
+  decision** (e.g. one says "extract the shared helper now", the other says "defer it — over-build for v1").
+  For each, give: the decision in one phrase · what purist wants · what pragmatist wants · the single
+  question for Daniel to decide.
+- Do **not** summarize the critiques, re-list their individual findings, agreements, or nits. No back-and-
+  forth, no attempt to resolve the disagreement yourself — surface it, don't settle it.
+- If they do **not** contradict on any specific decision, output exactly one line:
+  `Complementary — no direct contradictions; the lenses don't conflict on a specific decision.`
+Be terse. This is advisory only and does not gate anything.
