@@ -28,4 +28,7 @@
 - [ ] Product poster (`Roadmap/README.md`) updated
 - [ ] Team memory + `MEMORY.md` index updated
 - [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [ ] **Kill-switch (only if one was planned at grooming — Stage 6b):** the flag slice shipped + the flag
+      exists in Flagsmith / Edge Config with the stated polarity. *Verify-only — not a new gate; whether a
+      high-risk epic needs one is decided at grooming, not here.*
 - [ ] Feature branch deleted; seed frontmatter `status: shipped`

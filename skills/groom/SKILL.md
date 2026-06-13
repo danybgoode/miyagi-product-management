@@ -114,6 +114,36 @@ Tag each **low** (docs/copy, non-commerce UI, additive agent tools behind auth, 
 (payments / checkout / fulfillment / auth / DB migrations / shared infra / money). High → Daniel merges.
 When unsure, high.
 
+### Stage 6b — Kill-switch decision for `risk: high` (recommend, don't auto-inject)
+A high-risk epic should ship behind a kill-switch — but that's **decided here at grooming**, sliced as
+real work, **not** discovered as a checkbox at epic close. For any `risk: high` epic, answer one
+question and **write the answer in the scope seed** (the answer is mandatory; the flag itself is not):
+
+> *Is there a runtime seam a kill-switch can gate?*
+
+- **Yes →** *recommend* a kill-switch **story** (Daniel evaluates it at the scope-doc gate — never
+  auto-injected). Name four things:
+  1. **Flag** — `<domain>.<feature>_enabled`, extending `lib/flags.ts` `DEFAULT_FLAGS` (the taxonomy
+     lives in code, not in docs). Same shape as shipped `checkout.stripe_enabled` / `domain.paywall_enabled`.
+  2. **Polarity** (pick the fail-open default to match intent):
+     - **Kill-switch** (ship live, instantly killable) → default **`true`**, **create it ENABLED in
+       every env** (switch *armed*; disabling is the deliberate kill).
+     - **Enablement / dark-launch** (merge dark, activate deliberately — esp. money infra that must be
+       **seeded first**) → default **`false`**, **create it DISABLED in every env**, flip on when ready.
+     - A flag is **invisible until created in Flagsmith** — the story must say "create it in every env."
+  3. **Seam** — the single source of truth to gate (e.g. `resolveSellerPaymentMethods`) so UI + agents/UCP
+     + checkout are covered by one `isEnabled('…')` check.
+  4. **Mechanism** — **Flagsmith** for node/server seams; **Edge Config** for `middleware.ts`/Edge seams
+     (the Flagsmith SDK is **not** Edge-compatible — LEARNINGS). Edge Config is the heavier lift; naming it
+     here lets Daniel weigh server-side-gate vs carve-out.
+- **No →** write the **one-line carve-out reason** (e.g. *DB migration — can't sit behind a runtime flag;
+  reversible expand/contract instead*; *gate is the auth provider*; *no new runtime seam*).
+
+The epic Definition of Done then only **verifies** the planned slice shipped + the flag exists — it does
+**not** introduce the policy as a new build-time gate. This composes with the merge rule unchanged: the
+kill-switch story rides the same `HIGH ⇒ Daniel merges`. See the ADR
+`Roadmap/00-ideas/seeds/kill-switch-at-grooming.md`.
+
 ## Stage 7 — Scaffold + commit the docs (on Daniel's approval)
 1. Write the **scope seed** to `Roadmap/00-ideas/seeds/<slug>.md` — the Definition-of-Ready
    artifact (overview · UX heuristics · acceptance criteria · the reuse list · in/out scope · open risks ·
@@ -240,4 +270,6 @@ If no `BUILD-ORDER.md` exists yet (a one-off ask, not a batch), skip this stage 
 - v1 in/out boundary written; research cited where relevant.
 - Reuse list produced (Medusa-first reframe done).
 - Each story risk-tiered; QA stage named; smoke-walkthrough owner identified.
+- **For a `risk: high` epic: the kill-switch decision is recorded** (Stage 6b) — either a recommended
+  flag story (flag · polarity · seam · mechanism) or a one-line carve-out reason.
 - Daniel approved the scope doc.
