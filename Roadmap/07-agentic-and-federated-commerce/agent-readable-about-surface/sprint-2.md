@@ -1,6 +1,6 @@
 # Agent-readable why-sell / about surface — Sprint 2: Expose to agents — manifest · /agent · llms.txt · MCP
 
-**Status:** ✅ built — all 4 stories on `feat/agent-readable-about-surface`; gate green (tsc + build + `api` spec + #4 guard). Awaiting CI + auto-merge (low-risk).
+**Status:** ✅ SHIPPED 2026-06-09 — [PR #59](https://github.com/danybgoode/miyagisanchezcommerce/pull/59) (`c12c969`) merged to `main`. All 4 stories; gate green (tsc + build + `api` spec + #4 guard).
 
 **Commits:** S2.1 `23c1204` · S2.2 `5974123` · S2.3 `9bc0bae` · S2.4 `12275e6` · QA spec `4b7100a`.
 One pure seam — `lib/about-agent.ts` — projects the S1 source onto every surface and holds the shared `RELAY_LANGUAGE_DIRECTIVE`.
