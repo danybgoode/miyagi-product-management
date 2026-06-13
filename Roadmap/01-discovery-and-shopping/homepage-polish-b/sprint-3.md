@@ -1,6 +1,7 @@
 # Homepage Polish — Dirección B — Sprint 3: Chrome & community
 
-**Status:** 🏗️ built — **draft PR [#86](https://github.com/danybgoode/miyagisanchezcommerce/pull/86)**, branch `feat/homepage-polish-b` off `origin/main` (`6774203`, S2). tsc + build green; Playwright `api` runs in CI vs the branch preview. · **Risk:** LOW *(S3.2 + the footer touch shared `layout.tsx` — announced per LEARNINGS)*
+**Status:** ✅ **MERGED — PR [#86](https://github.com/danybgoode/miyagisanchezcommerce/pull/86) squash `b472cfb`** (2026-06-13). CI green (tsc + build + Playwright `api` vs preview); cross-agent (codex) review caught a blocking `type="button"` bug on the in-form search sparks → fixed (`4998201`) before merge. Branch deleted; worktree pruned. · **Risk:** LOW *(S3.2 + the footer touched shared `layout.tsx` — announced per LEARNINGS)*
+> **Owed Daniel:** the light anonymous browser smoke below (Vende pill · search sparks · ribbon · mobile footer/CTA · live Vecindario strip). No money/auth step.
 
 > The framing around the merchandise: orientation ribbon, seller-recruit CTAs, mobile footer, and the
 > Vecindario live strip.
