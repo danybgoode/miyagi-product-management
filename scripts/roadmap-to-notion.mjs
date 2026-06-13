@@ -159,9 +159,14 @@ function epicShippedByRetro(epicPath) {
   const f = join(epicPath, 'RETROSPECTIVE.md');
   if (!existsSync(f)) return false;
   const t = readFileSync(f, 'utf8');
-  return /(shipped|closed|complete|live|launched)[^\n]{0,60}20\d\d-\d\d-\d\d/i.test(t)
-      || /20\d\d-\d\d-\d\d[^\n]{0,60}(shipped|closed|complete|live|launched)/i.test(t)
-      || /all\s+\d+\s+sprints?\s+shipped/i.test(t);
+  // A retrospective is written at epic CLOSE (the epic DoD) and carries a real date; the scaffold STUB
+  // only has a literal `_Closed: <date>_` placeholder (no real date). So a real ISO date anywhere in the
+  // retro ⇒ the epic was closed/shipped. This avoids false-firing on un-built scaffolds.
+  // NOTE: do NOT anchor with \b on either side. The scaffold renders the close date markdown-italicised
+  // as `_Closed: 2026-06-09_`, and `_` is a word character, so a trailing \b fails immediately after the
+  // date and a real underscore-wrapped close-date would be missed (this regressed agent-readable-about-
+  // surface Shipped→In progress). A bare date pattern matches it; the literal `<date>` stub has no digits.
+  return /20\d\d-\d\d-\d\d/.test(t);
 }
 
 function deriveEpicStatus(sprints, retroShipped) {
