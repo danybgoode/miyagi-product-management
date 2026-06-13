@@ -1,14 +1,14 @@
 ---
 title: "Unified CI/CD + Git event notifications (Telegram)"
 slug: unified-cicd-notifications
-status: scaffolded
+status: shipped
 area: "09"
 type: chore
 priority: wave-0
 risk: low
 epic: "09-platform-infra/cicd-telegram-notifications"
 build_order: "#2"
-updated: 2026-06-08
+updated: 2026-06-12
 ---
 
 # Scope doc — Unified CI/CD + Git event notifications via Telegram

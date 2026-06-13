@@ -3,6 +3,11 @@
 Establishes the dedicated CI/CD channel, the shared HTML message style, and the secret wiring — the
 foundation S2/S3 build on. GitHub Actions only; no app/commerce code.
 
+**Status:** ✅ SHIPPED 2026-06-06 — `.github/workflows/notify-telegram.yml` merged to `main` in **both**
+repos (frontend + `medusa-bonsai-backend`). **Owed to Daniel (operational):** create the dedicated CI/CD
+channel + capture `TELEGRAM_CICD_CHAT_ID`, and the live push test — the workflows skip cleanly until those
+secrets exist.
+
 ---
 
 ## Step 0 — Dedicated CI/CD channel + secrets (Daniel + agent)

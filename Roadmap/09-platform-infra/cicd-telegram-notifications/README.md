@@ -1,5 +1,12 @@
 # Epic — Unified CI/CD + Git event notifications via Telegram
 
+> **✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-06.** S1 push-to-main pings in **both** repos
+> (`.github/workflows/notify-telegram.yml`) · S2 backend Cloud Run deploy-finish via the `cloud-builds`
+> Pub/Sub notifier (`infra/gcp/cicd-telegram-notifier/`, `76c8639`) · S3 frontend Vercel-prod deploy-finish
+> via a GHA API-poll job. See [RETROSPECTIVE.md](RETROSPECTIVE.md). **Owed to Daniel (operational, not
+> code):** create the dedicated CI/CD channel + set `TELEGRAM_CICD_CHAT_ID` in both repos, then the live
+> push + deploy-finish confirmation — the workflows skip cleanly until those secrets exist.
+
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / infra (observability for the technical founder; no buyer/seller/agent-facing change).
 **Scope doc:** [`Roadmap/00-ideas/seeds/unified-cicd-notifications.md`](../../00-ideas/seeds/unified-cicd-notifications.md) — APPROVED 2026-06-06.
@@ -54,10 +61,10 @@ secret wiring), so build it first. S2 and S3 then attach the two deploy-finish h
 
 ## Definition of Done (epic)
 
-- [ ] All three sprints' stories merged + smoke-tested (gaps stated); the dedicated CI/CD channel is live and receiving push + both deploy-finish events.
-- [ ] Each `sprint-N.md` has its fool-proof smoke walkthrough + status ticked with commit refs.
-- [ ] This `README.md` marked ✅; `RETROSPECTIVE.md` written.
-- [ ] **Poster note:** this is infra (no product-poster feature line); add a one-line entry to `09-platform-infra/README.md` (✅) instead of `Roadmap/README.md`.
-- [ ] Team memory updated (deploy-topology note: bot token now in GitHub Secrets ×2 + GCP Secret Manager; rotation runbook).
-- [ ] `Roadmap/LEARNINGS.md` updated with any durable learning (e.g. the app-runtime-vs-pipeline distinction; Vercel free-tier webhook limit).
-- [ ] Feature branches deleted; PRs merged.
+- [x] All three sprints' stories merged 2026-06-06 (code). **Live smoke owed to Daniel** — the dedicated CI/CD channel + `TELEGRAM_CICD_CHAT_ID` must exist before push + both deploy-finish events are observable.
+- [x] Each `sprint-N.md` has its fool-proof smoke walkthrough + status ticked with commit refs.
+- [x] This `README.md` marked ✅; `RETROSPECTIVE.md` written.
+- [x] **Poster note:** infra — added a line to `09-platform-infra/README.md` (✅) instead of `Roadmap/README.md`.
+- [ ] Team memory updated (deploy-topology note: bot token now in GitHub Secrets ×2 + GCP Secret Manager; rotation runbook). *(memory is outside the monorepo-root repo; left for Daniel/next session.)*
+- [x] `Roadmap/LEARNINGS.md` updated with the durable learnings (app-runtime-vs-pipeline reuse; Vercel free-tier webhook limit → poll from GHA).
+- [x] Feature branches deleted; PRs merged.

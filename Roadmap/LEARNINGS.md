@@ -360,6 +360,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
+- **CI/CD → Telegram: mirror the message *format*, not the runtime function, and poll Vercel (free tier)
+  from a GHA job.** `lib/telegram.ts` is an *app-runtime* helper — a GitHub Action can't import it, so the
+  pipelines reuse its HTML/`esc()` style by convention, not by call. Vercel configurable webhooks are
+  **Pro-only**, so on Hobby/free a GHA job polls the Vercel API (reuse `ci.yml`'s resolve-by-commit-SHA +
+  poll loop, scoped `target=production`). And Cloud Build aborts on first failure, so subscribe to the
+  `cloud-builds` **Pub/Sub** topic for a success-AND-failure backend deploy hook (a trailing cloudbuild
+  step only reports success). *(2026-06-06, cicd-telegram-notifications.)*
 - **An authoritative, money-adjacent scheduled action belongs in the BACKEND scheduled job (internal auth +
   idempotency), not a Vercel/edge cron.** "Pick the sweepstakes winner once" started on a one-minute Vercel
   cron and was moved onto a Medusa scheduled job on Cloud Run with internal auth — a public/edge cron is the

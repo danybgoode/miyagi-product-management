@@ -4,6 +4,10 @@ The backend's ~12-min Cloud Build → Cloud Run cycle has no preview; this gives
 outcome in Telegram. Cloud Build stops on first failure, so a trailing YAML step can't catch failures —
 we subscribe to the `cloud-builds` Pub/Sub topic, the clean success-*and*-failure hook.
 
+**Status:** ✅ SHIPPED 2026-06-06 — backend Cloud Build → Cloud Run deploy-finish notifier merged to
+`main` (`infra/gcp/cicd-telegram-notifier/` + `deploy-cicd-telegram-notifier.sh`, commit `76c8639`).
+Live deploy-finish ping confirmation owed to Daniel (shares the CI/CD channel from S1).
+
 ---
 
 ## Step 0 — GCP secret + Pub/Sub plumbing (agent, Daniel authorizes)

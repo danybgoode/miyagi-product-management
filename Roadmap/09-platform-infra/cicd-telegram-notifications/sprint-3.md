@@ -4,6 +4,9 @@ Mirrors S2 for the frontend. On Vercel **Hobby/free**, configurable webhooks are
 poll the Vercel API from a GitHub Actions job — reusing the exact resolve-by-commit-SHA + poll loop that
 `ci.yml` already runs for previews, scoped to `target=production`.
 
+**Status:** ✅ SHIPPED 2026-06-06 — frontend Vercel-prod deploy-finish poll job merged to `main` (in the
+`notify-telegram.yml` workflow). Live deploy-finish ping confirmation owed to Daniel (CI/CD channel from S1).
+
 ---
 
 ## US-1 — Vercel prod deploy-finished ping
