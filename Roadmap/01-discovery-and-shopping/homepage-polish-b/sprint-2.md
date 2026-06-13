@@ -1,6 +1,6 @@
 # Homepage Polish — Dirección B — Sprint 2: Signed-out merchandising core
 
-**Status:** 🏗️ BUILT — draft PR [#85](https://github.com/danybgoode/miyagisanchezcommerce/pull/85) (`2a38f93`), gate green, pending review/merge · **Risk:** LOW (read-only Medusa reads; frontend-only)
+**Status:** ✅ MERGED to `main` — PR [#85](https://github.com/danybgoode/miyagisanchezcommerce/pull/85) squash `6774203` (2026-06-12). Cross-agent review (codex) clean — one should-fix applied (`ad09f83`, shared `now`), nit a no-op. CI green (tsc+build + Playwright api vs preview). · **Risk:** LOW (read-only Medusa reads; frontend-only)
 
 > The heart of the signed-out page: something worth buying, above the fold, with price as the loudest element.
 

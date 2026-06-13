@@ -3,7 +3,7 @@
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) · **Risk: LOW overall** (presentational,
 > read-only discovery) with **one HIGH story** (S4.4 Supabase migration → Daniel merges) and two
 > shared-surface stories to announce (S1.1 `lib/types.ts`, S3.2 `layout.tsx`).
-> **Status: 🏗️ IN PROGRESS — S1 ✅ shipped (PR #84 `14fd880`); S2 🏗️ built (draft PR #85 `2a38f93`, gate green); S3–S4 pending.** Signed off by Daniel 2026-06-12. Scope doc / gate:
+> **Status: 🏗️ IN PROGRESS — S1 ✅ shipped (PR #84 `14fd880`); S2 ✅ merged (PR #85 `6774203`); S3–S4 pending.** Signed off by Daniel 2026-06-12. Scope doc / gate:
 > [`00-ideas/seeds/homepage-polish-b.md`](../../00-ideas/seeds/homepage-polish-b.md). Visual source of
 > truth: `handoff/mockups-directions.html` (Dirección B). Spec: `handoff/HANDOFF.md`. Reasoning:
 > `handoff/audit.html`. Validated against app **`origin/main`** (working tree is on a stale `feat/inventory`).
@@ -57,7 +57,7 @@ the bilingual allow-list (rule #5). The new read helpers must read the same norm
 | Sprint | Story | Risk |
 |---|---|---|
 | **S1 · Icon language migration** ✅ *(PR #84 `14fd880`)* | S1.1 `CATEGORIES` emoji → Iconoir + renderers; ✓ glyphs → `iconoir-badge-check`; buyer-surface emoji swept (homepage+discovery scope) | LOW *(shared `lib/types.ts` — announced)* |
-| **S2 · Signed-out merchandising core** 🏗️ *(PR #85 `2a38f93`, gate green, pending merge)* | S2.1 Curated "Selección" — `getCuratedListings`/`getFeaturedListing` + curation rule + featured card + 4-grid hierarchy (price loudest) + <48h timestamp gating | LOW |
+| **S2 · Signed-out merchandising core** ✅ *(PR #85 `6774203`)* | S2.1 Curated "Selección" — `getCuratedListings`/`getFeaturedListing` + curation rule + featured card + 4-grid hierarchy (price loudest) + <48h timestamp gating | LOW |
 | | S2.2 Categorías with life — `getCategoryCounts` (~5-min cache) + list module, only categories ≥1 active listing | LOW |
 | **S3 · Chrome & community** | S3.1 Value-prop ribbon (signed-out only) → "Cómo funciona" `/acerca` | LOW |
 | | S3.2 Header — "Vende" pill (→`/vende`) + in-search `iconoir-sparks` agent affordance (reuse `AIAgentButton`) | LOW *(shared `layout.tsx` — announce)* |
