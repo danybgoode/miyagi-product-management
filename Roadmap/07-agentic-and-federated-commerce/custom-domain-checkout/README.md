@@ -24,8 +24,8 @@ satellite domains — 100% native checkout — remain a possible future improvem
 | Sprint | Delivery | Risk | Status |
 |---|---|---|---|
 | [1](./sprint-1.md) | The checkout "hop": buying from a custom domain becomes **functional** | MEDIUM (frontend only) | ✅ MERGED — PR #12 (`dfcb723`) |
-| [2](./sprint-2.md) | Return to the domain after payment + channel attribution | HIGH (payment backend + Cloud Run) | 🚧 PRs open — FE `#13` + BE `#3` (CI green) |
-| [3](./sprint-3.md) | Emails with the tenant domain + channel badge on orders | HIGH (email/money) | 📋 planned |
+| [2](./sprint-2.md) | Return to the domain after payment + channel attribution | HIGH (payment backend + Cloud Run) | ✅ MERGED — FE #13 + BE #3 |
+| [3](./sprint-3.md) | Emails with the tenant domain + channel badge on orders | HIGH (email/money) | ✅ MERGED — PR #14 (`a99b4bd`) |
 
 ## Status
 

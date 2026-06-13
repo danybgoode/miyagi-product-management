@@ -351,6 +351,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   timing out `lib/envia.ts` would have shipped a no-op against the actual hang. Before wiring a fix to a
   file a plan names, `grep -rl` its importers and confirm it's on the path the user actually exercises.
   *(2026-06-09, delivery-money-polish S3 — quote timeout in `CheckoutExperience`, pure `lib/fetch-timeout.ts`.)*
+- **For a cross-origin redirect built from order/cart data, the backend STORES the origin and the frontend
+  VALIDATES it against the verified-domain set before redirecting — never have the backend construct the
+  `success_url`.** The custom-domain checkout "hop" round-trips the buyer through the platform for
+  session+payment, then back to the seller's domain; putting `success_url` construction in the backend was
+  both an open-redirect risk and impossible (the backend can't read the Supabase verified-domain set). The
+  fix: backend only stores `origin_domain` + `channel` in cart→order metadata (sanitized, no redirect built);
+  the platform success page validates with `isVerifiedCustomDomain` (anti-open-redirect) + an `onChannel`
+  anti-loop check, then redirects. Same guard is non-negotiable at any point that builds a link to the domain
+  from order metadata (incl. branded emails). *(2026-06-05, custom-domain-checkout — `lib/checkout-hop.ts`,
+  `isVerifiedCustomDomain`.)*
 - **Trust the provider's own status over reconstructed DNS checks.** Custom-domain verification was
   brittle because it compared live DNS against **hardcoded** Vercel targets (a generic CNAME + a fixed
   apex IP) — both of which drift (Vercel now issues per-project CNAMEs; apex IPs change; Cloudflare

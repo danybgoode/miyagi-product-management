@@ -3,11 +3,10 @@
 Goal: a purchase started on a custom domain **returns** to the domain on completion, and the sale is tagged
 `custom_domain` end-to-end. Touches the payment backend.
 
-Status: ✅ shipped · 🚧 in progress · 📋 planned. **🚧 CODE COMPLETE — 2 PRs open:
-backend `medusa-bonsai-backend#3` (`7c9e32b`) + frontend `miyagisanchezcommerce#13` (`d88e613`).
-Gate: tsc + build GREEN in both repos; frontend CI GREEN. HIGH risk → Daniel merges.
-US-3 = data only (the visible badge moved to S3). Pending: Daniel's live smoke with a verified domain
-(not testable on preview: Supabase stubbed + backend has no preview).**
+**Status:** ✅ SHIPPED 2026-06-05 — merged to `main`: backend PR #3 + frontend PR #13. Gate GREEN in both
+repos; frontend CI GREEN. HIGH risk (Daniel-merged). US-3 = data only (the visible badge moved to S3).
+**Owed to Daniel:** live smoke with a verified domain (not testable on preview: Supabase stubbed + backend
+has no preview).
 
 Risk: **HIGH** — touches the live payment flow + backend deploy (Cloud Run us-east4, ~12 min). Daniel
 merges. **Mandatory security review (open-redirect).**

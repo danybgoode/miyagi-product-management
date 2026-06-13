@@ -3,9 +3,9 @@
 Goal: when an order originates on the `custom_domain` channel, the buyer's emails carry the brand and the
 "back to the shop" link of the **tenant's domain**, not `miyagisanchez.com`.
 
-Status: ✅ shipped · 🚧 in progress · 📋 planned. **🚧 CODE COMPLETE — PR `miyagisanchezcommerce#14`
-(`570ff47`), CI GREEN (tsc + build + Playwright). HIGH risk → Daniel merges. Pending: Daniel's live smoke
-(real email + badge on a custom-domain order).**
+**Status:** ✅ SHIPPED 2026-06-05 — merged to `main` via PR #14 (`a99b4bd`). CI GREEN (tsc + build +
+Playwright). HIGH risk (Daniel-merged). **Owed to Daniel:** live smoke (real email + badge on a
+custom-domain order).
 
 Risk: **HIGH** — email/money-adjacent. Daniel merges.
 

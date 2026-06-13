@@ -4,9 +4,9 @@ Goal: a buyer on the seller's custom domain can **start and complete a purchase*
 platform-only, the buy button takes them to `miyagisanchez.com` for session + payment (the product travels
 in the URL). Frontend only, no changes to the payment logic.
 
-Status: ✅ shipped · 🚧 in progress · 📋 planned. **🚧 CODE COMPLETE — US-1 + US-1b built and committed
-(`436a46a`), deterministic gate GREEN (tsc + build + pure URL spec). PR open, MEDIUM risk. Pending:
-Daniel's smoke of the rendered hop on a real verified domain.**
+**Status:** ✅ SHIPPED 2026-06-04 — merged to `main` via PR #12 (`dfcb723`). US-1 + US-1b; deterministic
+gate GREEN (tsc + build + pure URL spec). MEDIUM risk. **Owed to Daniel:** live smoke of the rendered hop
+on a real verified domain.
 
 Risk: **MEDIUM** — frontend only (routing the buyer to the platform's existing checkout; no changes to the
 payment logic).

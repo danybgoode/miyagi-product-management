@@ -1,7 +1,11 @@
 # Retrospective — Checkout on the custom domain (custom-domain-checkout)
 
-**Scope:** S1+S2 shipped to prod; S3 with a green PR awaiting Daniel's merge (on merge → epic COMPLETE).
-**Base decision:** pragmatic hop to the platform (no Clerk satellite domains).
+_Closed: 2026-06-05_
+
+**Scope:** all 3 sprints shipped to prod — S1 PR #12 (`dfcb723`, 2026-06-04), S2 FE #13 + BE #3, S3 PR #14
+(`a99b4bd`, 2026-06-05). Buying from a custom domain works end-to-end (subject to Daniel's live smoke with a
+verified domain — none exists in the system today). **Base decision:** pragmatic hop to the platform (no
+Clerk satellite domains).
 
 ## What shipped
 
