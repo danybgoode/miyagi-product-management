@@ -56,6 +56,14 @@ Pick one. The class decides the downstream path:
 > unbuilt or half-built promise, not a regression). The fix is a normal user story with an
 > acceptance check and a regression spec so it can't silently come back.
 
+> **Cross-agent planning panel — surface it on a Spike.** When the class is **Spike** (an "A vs B" /
+> "how should this work" call), you **must surface** a one-line offer to run the advisory planning panel
+> *before* the decision lands — a different model family's architecture second opinion on the brief:
+> `node scripts/cross-panel.mjs <brief> --lens both --agent codex` (run again with `--agent antigravity`
+> for family diversity). It's **single-pass, print-only, advisory — it never gates and never writes the
+> doc**; Daniel's decision/scope-doc approval remains the only gate. *Surface = a required offer, not an
+> auto-run* (cost-safe, matches `cross-review`). See the full trigger model at Stage 4.
+
 ## Stage 2.5 — Orientation: can we already do this? *(do this before disambiguating)*
 **Many asks aren't new features or bugs — they're orientation.** Before planning a build, ask: can the
 current setup already deliver this outcome, with **existing features + communication, or a light
@@ -99,6 +107,21 @@ smaller (custom-slugs → 1-field backend change; personalized products → zero
 epic's **"What already exists (reuse, don't rebuild)"** list — concrete files/routes/primitives. Apply the
 AGENTS five rules (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk
 untouched · es-MX copy). If the ask violates a rule, flag it now.
+
+> **Cross-agent planning panel — the trigger model (advisory, never a gate).** This is where the expensive
+> *architecture forks* surface — and where the panel earns its keep. **You must surface a one-line offer to
+> run the panel** whenever the reframe hits a fork worth a second model family's eyes:
+> - a **new Medusa module vs Supabase table vs custom Next route** decision (a Rule 1/2 call),
+> - a **new primitive** (new table, new public route contract, a new id namespace),
+> - an **AGENTS-rule tension** you had to reason about, or
+> - any **expensive-to-reverse** choice (migration shape, schema, channel/auth boundary).
+>
+> Routine work (clear reuse, no fork) is **on-demand only** — runnable via the `Panel:` verb
+> (`Roadmap/SESSION-KICKOFFS.md`) but not offered. The panel is **never auto-run** (surface = a required
+> *offer*, cost-safe) and **never a gate**: it prints a single-pass, different-family critique
+> (`node scripts/cross-panel.mjs <doc> --lens both --agent codex|antigravity`) that ends in a *checkable
+> claim*; it does not edit the doc. Daniel's scope-doc approval (Stage 7) stays the only gate — the panel is
+> a step *before* it, not a new one.
 
 ## Stage 5 — Slice (skateboard → car)
 Define the **thinnest end-to-end slice that actually works and ships** — the skateboard — then each

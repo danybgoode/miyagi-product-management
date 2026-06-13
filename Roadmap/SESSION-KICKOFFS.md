@@ -30,6 +30,7 @@ cost nothing — the leverage is the defined verb, not trimming "great work."
 | **Spike \<name\>** | §3 — run a spike |
 | **Review PR #\<N\>** | §4 — fresh-reviewer single pass |
 | **Cross-review PR #\<N\> [codex\|antigravity]** | §4 advisory line — `node scripts/cross-review.mjs` (never gates) |
+| **Panel: \<scope-doc \| ask\>** | advisory second opinion on a *plan* — `node scripts/cross-panel.mjs <doc> --lens both --agent codex\|antigravity` (single-pass, print-only, never gates; surfaced at groom Stage 2/4) |
 | **Wrap S\<N\>** | tick the sprint doc status + emit the §7 sprint-wrap terminal summary |
 | **Close epic \<slug\>** | §6 — full epic Definition of Done |
 | **Clear to merge — LOW** / **Daniel-merge** | the risk-tier gate: reviewer auto-merges on green CI / Daniel merges |
