@@ -1,6 +1,6 @@
 # Homepage Polish — Dirección B — Sprint 3: Chrome & community
 
-**Status:** ⬜ not started · **Risk:** LOW *(S3.2 touches shared `layout.tsx` — announce per LEARNINGS)*
+**Status:** 🏗️ built — **draft PR [#86](https://github.com/danybgoode/miyagisanchezcommerce/pull/86)**, branch `feat/homepage-polish-b` off `origin/main` (`6774203`, S2). tsc + build green; Playwright `api` runs in CI vs the branch preview. · **Risk:** LOW *(S3.2 + the footer touch shared `layout.tsx` — announced per LEARNINGS)*
 
 > The framing around the merchandise: orientation ribbon, seller-recruit CTAs, mobile footer, and the
 > Vecindario live strip.
@@ -48,15 +48,28 @@ vecindario →` → `/vecindario`. **Keep `data-testid="vecindario-feed-entry"`.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com  (or the branch preview URL while pre-merge)
+Env: the branch preview URL while pre-merge · after merge, production · https://miyagisanchez.com
+(All steps are anonymous — no money/auth. This is the light browser smoke owed.)
 
-1. Open https://miyagisanchez.com signed-out.
-   → A slim ribbon shows under the header; "Cómo funciona" goes to https://miyagisanchez.com/acerca.
-2. On mobile width, look at the header.
-   → A labeled "Vende" pill (→ `/vende`) and a sparks icon at the right of the search bar (opens the AI agent).
-3. Scroll to the bottom on a mobile browser (not the PWA).
-   → Footer links (Anuncios · Vecindario · Vende gratis · Agent API · Términos) + terminal CTA are visible.
-4. Find the Vecindario section.
-   → 1–2 real pulse items render with submitter · colonia · time; "Ver vecindario →" → `/vecindario`.
+1. Open the home page **signed-out**.
+   → A slim ribbon sits under the header ("Compra y vende en México — gratis, protegido y con
+   ofertas."); the "Cómo funciona →" link goes to `/acerca`.
+2. Sign in (any account) and reload the home page.
+   → The ribbon is **gone** (it's signed-out-only). The S4 signed-in modules are a later sprint.
+3. Signed-out, at **mobile width**, look at the header.
+   → The sell affordance is a labeled **"Vende"** pill (→ `/vende`), not a bare ⊕ icon; a small
+   **sparks** icon sits at the right edge of the search input. Tap it → the same agent sheet the
+   desktop "Agente IA" button opens ("Compra con tu agente IA").
+4. Scroll to the bottom on a **mobile browser** (not the PWA).
+   → The footer link row is **visible on mobile** (Anuncios · Vecindario · Vende gratis · Crear
+   cuenta · Agent API · **Términos**); "Términos" → `/terminos`. Just above it, the signed-out
+   terminal CTA shows **"Crear cuenta"** (→ `/sign-up`) + **"Seguir explorando"** (→ `/l`).
+5. Find the **Vecindario** section near the top of the feed.
+   → If the community feed has approved/web-visible items: 1–2 **real** pulse cards render with a
+   type badge, a 2-line snippet, and a `submitter · colonia · time` line; "Ver vecindario →" →
+   `/vecindario`. If the feed is empty: the original Vecindario banner shows instead (still →
+   `/vecindario`). Either way the entry is reachable.
+6. *(Empty-marketplace only — skip if listings exist)* With no listings, the empty state shows
+   **"Publica lo primero"** (→ `/vende`) + **"Pasea por el vecindario"** (→ `/vecindario`).
 
 If any step fails, note the step number + what you saw — that's the bug report.
