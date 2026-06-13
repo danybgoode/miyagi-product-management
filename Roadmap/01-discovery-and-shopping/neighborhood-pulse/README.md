@@ -1,5 +1,11 @@
 # Epic: Neighborhood Pulse — online community feed
 
+> **🚧 IN PROGRESS — not shipped.** S1 code is **merged to `main`** (PR #55, `48e9fc5`; `/vecindario`,
+> `lib/neighborhood-*`), but **rollout is pending** — the MED migration (S1.1) + the seed/opt-in step
+> haven't been run, so the feed isn't live-rolled-out — and **S2 (ranking/feed enrichment) is built but not
+> yet merged** (its commits aren't on `origin/main`). Do **not** mark this shipped until the rollout is done
+> and S2 lands. **What remains:** run the S1.1 migration + opt-in seed, smoke the live feed, merge S2.
+
 > **Area:** 01-discovery-and-shopping · **Risk:** low (one MED migration story, S1.1) · **Scope seed:** [`00-ideas/seeds/neighborhood-pulse.md`](../../00-ideas/seeds/neighborhood-pulse.md)
 
 ## Why
