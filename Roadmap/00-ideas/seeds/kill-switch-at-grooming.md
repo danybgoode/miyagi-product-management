@@ -13,9 +13,8 @@ updated: 2026-06-13
 
 # ADR — A kill-switch is a *planned, sliced* unit of work, not a close-time checkbox
 
-> **Status: awaiting Daniel's ratification in-session.** Docs-only. This note + the `groom`
-> SKILL.md / template edits below are committed; the **WAYS-OF-WORKING wording (Part 6) is NOT
-> merged** until Daniel approves the final shape. Low-risk tier (docs).
+> **Status: ratified 2026-06-13.** Docs-only, low-risk tier. The `groom` SKILL.md / template edits
+> and the WAYS-OF-WORKING DoD-epic line (Part 6) are merged. Decision is live.
 
 ## Context
 A doc-drift session proposed a new WAYS-OF-WORKING **Definition-of-Done (epic)** line —

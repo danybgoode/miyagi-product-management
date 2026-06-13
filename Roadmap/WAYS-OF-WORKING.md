@@ -74,7 +74,9 @@ do this, and they're complementary:
 - **High-risk → always a Daniel merge** (a human green-light, never an autonomous ship): anything touching
   **payments / checkout / fulfillment / auth / DB migrations / shared infra / money**. This preserves the
   live-commerce guardrail — an agent never deploys real-money paths to production on its own.
-When unsure which tier, treat it as high-risk.
+When unsure which tier, treat it as high-risk. High-risk epics are also *planned behind a kill-switch*
+at grooming (the flag is decided + sliced there, verified at epic DoD — not a new gate); see
+`skills/groom` Stage 6b.
 
 ## Definition of Ready (a story can start)
 - The "as a / I want / so that" is clear and the acceptance check is testable.
@@ -106,6 +108,11 @@ When the last story of an epic is merged, the epic is not "done" until ALL of th
 - [ ] **`Roadmap/LEARNINGS.md` updated** — promote any durable, generalizable learning from the
       `RETROSPECTIVE.md` into the right section (one-liner + *why* + date/source). Dedupe — sharpen
       the existing line, don't append a near-duplicate. This is how a retro reaches the next agent.
+- [ ] **Kill-switch (if one was planned at grooming):** the flag slice shipped and the flag exists in
+      Flagsmith (or Edge Config, for Edge seams) with the polarity the scope doc stated (kill-switch ⇒
+      default `true`, created **enabled**; enablement ⇒ default `false`, created **disabled**). This
+      **verifies** planned work — it is **not** a new build-time gate. Whether a high-risk epic needs a
+      kill-switch is decided at **grooming** (`skills/groom` Stage 6b), not discovered here.
 - [ ] Feature branch deleted; PR merged.
 
 ## Automated QA — where we are
