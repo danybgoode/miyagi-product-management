@@ -3,7 +3,11 @@
 > Epic: [PDP redesign](README.md) · **Risk: LOW–MED (re-scoped to FRONTEND-ONLY).** Goal: give listings a
 > structured, per-category set of specs (talla, material, etc.) and render them as a scannable table on the PDP
 > (finding #7).
-> **Status: 🚧 BUILT 2026-06-13 — PR [#90](https://github.com/danybgoode/miyagisanchezcommerce/pull/90), CI pending.**
+> **Status: ✅ MERGED 2026-06-13 — PR [#90](https://github.com/danybgoode/miyagisanchezcommerce/pull/90) squash `8b91658`.**
+> Green CI (type-check+build · Playwright vs preview · Vercel) + cross-agent code review (codex + self) clean.
+> Review fixes folded in: (1) [codex] `listingSpecs` now mirrors `AttrsSection`'s selection by BOTH category AND
+> listing type — a `service` listing outside `servicios` (e.g. a `cursos` class) keeps its modality/duration/
+> experience specs; (2) [self] number grouping is opt-in (`group`) so a year renders `2020`, not `2,020`.
 >
 > **Plan-mode finding (re-scope):** the structured-attribute *primitive* S3.1 set out to build **already exists
 > end-to-end** — Medusa rounds a generic `metadata.attrs` bag through create/update/read, and **seller capture is
