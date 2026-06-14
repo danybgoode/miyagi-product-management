@@ -1,12 +1,21 @@
 # Sprint 4 — Per-type blocks A: services · rentals · digital · subscriptions
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW–MED** (frontend reorder on existing per-type primitives; rental
-> pricing math is the one place to spec carefully). **Status: ✅ BUILT — PR
-> [#91](https://github.com/danybgoode/miyagisanchezcommerce/pull/91) (`feat/pdp-redesign-s4`), gate green
-> (tsc + build + Playwright `api` 623✓); frontend-only, no backend deploy. Awaiting review/merge + Daniel's authed
-> smokes.** All deltas gated on the `pdp_redesign` kill-switch. Goal: for each of these four types, the PDP leads
-> with the block that decides the purchase and a single type-appropriate primary action — reusing the primitives
-> that already exist. Each ships its signed-out **and** signed-in (completed) state.
+> pricing math is the one place to spec carefully). **Status: ✅ MERGED — PR
+> [#91](https://github.com/danybgoode/miyagisanchezcommerce/pull/91) squash `6a52ad2` (off `feat/pdp-redesign-s4`),
+> CI green (tsc + build + Playwright `api`) + clean cross-agent review (fresh Claude reviewer findings all applied;
+> Antigravity advisory no-blocking); frontend-only, no backend deploy. Deployed to Vercel prod.** All deltas gated
+> on the `pdp_redesign` kill-switch. **Owed to Daniel: the four authed signed-in completed-state smokes (money/
+> booking paths) — see the walkthrough step 5.** Goal: for each of these four types, the PDP leads with the block
+> that decides the purchase and a single type-appropriate primary action — reusing the primitives that already
+> exist. Each ships its signed-out **and** signed-in (completed) state.
+>
+> **Post-review fixes folded in (PR #91):** rental "Reservar" routes to seller coordination (the generic /checkout
+> only charges one unit of `price_cents` and ignores the date range + deposit), figure labeled **"Total estimado"**;
+> the S4.4 mensual/anual toggle is gated on `pdp_redesign`; rentals expose `rental: { rate_period, deposit_cents }`
+> in the UCP read (rule #3) so agents don't quote the per-period rate as the full price; date-picker `today` is
+> Mexico-City-local. **Follow-up (cross-cutting, not this sprint):** normalize protocol-less seller `booking_url`s
+> (used unguarded across the codebase); backend rental line-item pricing so a rental can be charged online for real.
 
 ## Stories
 
