@@ -1,7 +1,7 @@
 ---
 title: "Repo hygiene — branch cleanup + build-order/status reconciliation"
 slug: repo-hygiene-and-build-order
-status: ready                       # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: shipped                     # raw | ready | queued | scaffolded | in-progress | shipped | archived
 area: "09"                          # 09-platform-infra (process/tooling)
 type: chore
 priority: null

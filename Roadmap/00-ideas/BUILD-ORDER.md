@@ -64,16 +64,15 @@
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
 
-## ⬜ Funnel — seeds not yet scaffolded (8)
+## ⬜ Funnel — seeds not yet scaffolded (7)
 
 - [Buyer notifications — money-path addendum](seeds/buyer-notifications-money-path.md) — Ready · Feature · Wave 2
 - [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Ready · Spike · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Kill-switch flag decided at grooming, not at epic close](seeds/kill-switch-at-grooming.md) — Ready · Chore
-- [Repo hygiene — branch cleanup + build-order/status reconciliation](seeds/repo-hygiene-and-build-order.md) — Ready · Chore
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 45 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 45 · seeds in funnel: 7 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
