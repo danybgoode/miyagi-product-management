@@ -1,3 +1,8 @@
+---
+status: in-progress
+slug: pdp-redesign
+---
+
 # Epic — PDP redesign: "decide, then act"
 
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) ·

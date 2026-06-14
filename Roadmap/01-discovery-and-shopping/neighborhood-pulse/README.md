@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: neighborhood-pulse
+---
+
 # Epic: Neighborhood Pulse — online community feed
 
 > **✅ CODE COMPLETE — both sprints shipped to prod 2026-06-13.** S1 (feed + opt-in flag + trending strip +

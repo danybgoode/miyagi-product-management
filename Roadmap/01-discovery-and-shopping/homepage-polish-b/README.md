@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: homepage-polish-b
+---
+
 # Epic: Homepage Polish — Dirección B «Catálogo limpio»
 
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) · **Risk: LOW overall** (presentational,

@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: cross-agent-code-review
+---
+
 # Epic — Cross-agent code review (second-opinion command)
 
 **Macro-section:** 09 · Platform & Infra

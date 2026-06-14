@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: backend-production-readiness
+---
+
 # Epic: Backend Production Readiness — audit + hardening
 
 > **Area:** 09-platform-infra · **Risk:** HIGH (shared infra / secrets / prod Cloud Run + DB)

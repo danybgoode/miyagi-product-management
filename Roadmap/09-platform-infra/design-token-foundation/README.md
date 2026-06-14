@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: design-token-foundation
+---
+
 # Epic — Design-Token / Design-System Foundation
 
 **Macro-section:** 09 · Platform & Infra

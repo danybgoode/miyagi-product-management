@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: referral-program
+---
+
 # Epic · Referral Program
 
 > ✅ **Sprint 1 shipped & live (2026-06-03), full live QA passed.** See

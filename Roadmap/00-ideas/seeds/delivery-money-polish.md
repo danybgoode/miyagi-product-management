@@ -1,7 +1,7 @@
 ---
 title: "Delivery & manual-money polish (#3c Epic B)"
 slug: delivery-money-polish
-status: scaffolded
+status: shipped
 area: "02"
 type: feature
 priority: wave-3

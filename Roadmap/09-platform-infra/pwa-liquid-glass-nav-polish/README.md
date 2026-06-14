@@ -1,3 +1,8 @@
+---
+status: scaffolded
+slug: pwa-liquid-glass-nav-polish
+---
+
 # Epic — PWA Liquid-Glass Nav Polish
 
 > **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/pwa-glass-nav` ·

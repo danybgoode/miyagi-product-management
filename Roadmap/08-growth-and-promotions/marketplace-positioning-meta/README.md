@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: marketplace-positioning-meta
+---
+
 # Epic: Marketplace positioning — title, OG & social card
 
 > **Area:** 08-growth-and-promotions · **Risk:** low · **Type:** chore · **Scope seed:** [`00-ideas/seeds/marketplace-positioning-meta.md`](../../00-ideas/seeds/marketplace-positioning-meta.md)

@@ -1,7 +1,7 @@
 ---
 title: "Cross-channel storefront trust parity (#3c Epic D)"
 slug: cross-channel-trust-parity
-status: scaffolded
+status: shipped
 area: "07"
 type: feature
 priority: wave-3

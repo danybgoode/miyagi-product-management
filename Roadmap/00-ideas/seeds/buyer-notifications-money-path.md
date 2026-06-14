@@ -1,14 +1,14 @@
 ---
 title: "Buyer notifications — money-path addendum"
 slug: buyer-notifications-money-path
-status: shipped
+status: ready
 area: "05"
 type: feature
 priority: wave-2
 risk: high
-epic: "05-trust-offers-and-messaging/buyer-notifications"
+epic: null
 build_order: "#5b"
-updated: 2026-06-08
+updated: 2026-06-14
 ---
 
 # Idea — Buyer notifications: money-path + Medusa-order gating (follow-up to #5b)

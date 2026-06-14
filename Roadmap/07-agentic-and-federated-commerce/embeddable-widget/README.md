@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: embeddable-widget
+---
+
 # Epic · Embeddable Widget
 
 > ✅ **COMPLETE — shipped 2026-06-04 (all 3 sprints).** S1 foundations + S2 surfaces + S3 snippet

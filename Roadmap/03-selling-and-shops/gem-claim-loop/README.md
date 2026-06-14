@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: gem-claim-loop
+---
+
 # Epic · Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)
 
 > Scoped 2026-06-09 from [`00-ideas/2. readyforscope/gem-claim-loop-fix.md`](../../00-ideas/2.%20readyforscope/gem-claim-loop-fix.md)

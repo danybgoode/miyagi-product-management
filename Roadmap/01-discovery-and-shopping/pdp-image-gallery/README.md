@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: pdp-image-gallery
+---
+
 # Epic: PDP interactive image gallery ✅ COMPLETE
 
 > **Area:** 01-discovery-and-shopping · **Risk:** LOW (frontend-only PDP UI) · **Type:** bug + light enhancement

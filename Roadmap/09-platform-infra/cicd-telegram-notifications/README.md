@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: cicd-telegram-notifications
+---
+
 # Epic — Unified CI/CD + Git event notifications via Telegram
 
 > **✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-06.** S1 push-to-main pings in **both** repos

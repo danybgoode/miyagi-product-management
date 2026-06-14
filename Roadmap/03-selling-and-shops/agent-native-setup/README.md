@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: agent-native-setup
+---
+
 # Epic: Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)
 
 > **Area:** 03-selling-and-shops · **Risk:** high (S2) · **Scope seed:** [`00-ideas/seeds/agent-native-setup.md`](../../00-ideas/seeds/agent-native-setup.md)

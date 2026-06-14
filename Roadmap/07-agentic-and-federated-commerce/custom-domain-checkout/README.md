@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: custom-domain-checkout
+---
+
 # Epic — Checkout on the custom domain (custom-domain-checkout)
 
 **Macro-section:** 07 · Agentic & federated commerce

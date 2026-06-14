@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: agent-connection
+---
+
 # Epic · Agent Connection & Discoverability
 
 > ✅ **SHIPPED + live-QA'd 2026-06-03.** All 3 sprints live.

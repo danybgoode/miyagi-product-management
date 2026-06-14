@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: agent-readable-about-surface
+---
+
 # Epic: Agent-readable why-sell / about surface
 
 > **Area:** 07 · Agentic & Federated Commerce · **Risk:** low · **Scope seed:** [`00-ideas/seeds/agent-readable-about-surface.md`](../../00-ideas/seeds/agent-readable-about-surface.md)

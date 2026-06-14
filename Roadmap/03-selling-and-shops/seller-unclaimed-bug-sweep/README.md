@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: seller-unclaimed-bug-sweep
+---
+
 # Epic: Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10
 
 > **Area:** 03-selling-and-shops · **Risk:** HIGH overall (S1 + S2 are HIGH — Daniel merged; S3 is LOW) · **Type:** bug (cluster → epic)

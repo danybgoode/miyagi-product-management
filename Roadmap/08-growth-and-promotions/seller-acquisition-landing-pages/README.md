@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: seller-acquisition-landing-pages
+---
+
 # Seller-Acquisition Landing Pages (BUILD-ORDER #6)
 
 > **Epic — greenfield, supply-side growth.** Top-of-funnel landing pages that recruit new sellers and

@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: events-and-ticketing
+---
+
 # Epic — Events & Ticketing
 
 > **Macro-section:** [10 · Events & Ticketing](../README.md) · **BUILD-ORDER:** #7 ·

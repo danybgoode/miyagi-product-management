@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: cross-channel-trust-parity
+---
+
 # Epic — Cross-channel Storefront Trust Parity
 
 > **Macro-section:** [07 · Agentic & Federated Commerce](../README.md) · **BUILD-ORDER:** #3c · Epic D ·

@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: promotions
+---
+
 # Epic · Seller Coupon Codes
 
 **For sellers who want to run promotions.** Let a seller create discount codes for their shop, so

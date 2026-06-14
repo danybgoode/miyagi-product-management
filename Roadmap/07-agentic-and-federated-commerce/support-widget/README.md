@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: support-widget
+---
+
 # Epic - Support Widget
 
 > Status: ✅ shipped to production. PRs: frontend

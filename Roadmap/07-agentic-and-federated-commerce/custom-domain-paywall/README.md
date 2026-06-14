@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: custom-domain-paywall
+---
+
 # Epic: Custom-domain paywall + campaign coupon
 
 > **Area:** 07-agentic-and-federated-commerce · **Risk:** high · **Scope seed:** [`00-ideas/seeds/custom-domain-paywall.md`](../../00-ideas/seeds/custom-domain-paywall.md)

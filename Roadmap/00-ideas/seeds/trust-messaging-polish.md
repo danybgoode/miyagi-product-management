@@ -1,7 +1,7 @@
 ---
 title: "Trust & messaging polish (#3c Epic C)"
 slug: trust-messaging-polish
-status: scaffolded
+status: shipped
 area: "05"
 type: feature
 priority: wave-3

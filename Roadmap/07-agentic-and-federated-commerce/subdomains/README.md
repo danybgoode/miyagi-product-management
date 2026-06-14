@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: subdomains
+---
+
 # Epic — Multi-tenant subdomains (`yourshop.miyagisanchez.com`)
 
 **Macro-section:** 07 · Agentic & federated commerce

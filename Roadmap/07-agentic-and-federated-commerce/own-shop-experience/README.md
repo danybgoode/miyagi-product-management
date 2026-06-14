@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: own-shop-experience
+---
+
 # Epic — Own channel: full shop experience (own-shop-experience)
 
 **Macro-section:** 07 · Agentic & federated commerce

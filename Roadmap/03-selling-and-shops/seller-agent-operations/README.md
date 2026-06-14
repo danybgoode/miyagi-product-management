@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: seller-agent-operations
+---
+
 # Epic · Seller Agent Operations
 
 > ✅ **EPIC COMPLETE.** Sprints 1–2 SHIPPED + live-QA'd 2026-06-03; **Sprint 3 SHIPPED + live-QA'd

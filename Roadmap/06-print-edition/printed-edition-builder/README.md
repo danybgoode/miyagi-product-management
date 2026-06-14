@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: printed-edition-builder
+---
+
 # Epic · Printed-Edition Builder ("Maqueta")
 
 **Status:** ✅ Shipped & live — 2026-06-03 · Delivered across 2 sprints (7 user stories)

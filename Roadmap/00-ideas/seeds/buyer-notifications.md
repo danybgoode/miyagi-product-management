@@ -1,7 +1,7 @@
 ---
 title: "Buyer Telegram channel + preference center"
 slug: buyer-notifications
-status: in-progress
+status: shipped
 area: "05"
 type: feature
 priority: wave-2

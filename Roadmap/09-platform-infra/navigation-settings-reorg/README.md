@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: navigation-settings-reorg
+---
+
 # Epic — Navigation & Settings Reorg
 
 > **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/nav-reorg` ·

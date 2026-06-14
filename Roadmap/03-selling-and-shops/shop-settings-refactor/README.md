@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: shop-settings-refactor
+---
+
 # Epic: Shop Settings refactor
 
 > **Area:** 03-selling-and-shops · **Risk:** LOW overall (S3 is HIGH — Daniel merges) · **Type:** chore (behavior-preserving)

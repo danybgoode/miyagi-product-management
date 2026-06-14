@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: checkout-state-hardening
+---
+
 # Epic — Checkout & Manual-Payment State Hardening
 
 > **Macro-section:** [02 · Checkout & Payments](../README.md) · **BUILD-ORDER:** #3b ·

@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: granular-notifications
+---
+
 # Epic — Granular Multi-Channel Notifications (Email + Telegram)
 
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #5 ·

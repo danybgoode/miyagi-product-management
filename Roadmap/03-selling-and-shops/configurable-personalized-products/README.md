@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: configurable-personalized-products
+---
+
 # Epic — Configurable & Personalized Products
 
 *Vende productos personalizados sin idas y vueltas.*

@@ -1,7 +1,7 @@
 ---
 title: "Granular multi-channel notifications"
 slug: granular-notifications
-status: in-progress
+status: shipped
 area: "05"
 type: feature
 priority: wave-2

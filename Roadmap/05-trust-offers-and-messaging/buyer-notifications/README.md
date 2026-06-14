@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: buyer-notifications
+---
+
 # Epic — Buyer Telegram channel + Buyer preference center
 
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #5b ·

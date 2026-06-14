@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: bulk-import-migration
+---
+
 # Epic · Bulk Import & Express Migration
 
 > ✅ **EPIC COMPLETE.** Scoped 2026-06-03 from

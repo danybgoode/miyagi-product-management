@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: delivery-money-polish
+---
+
 # Epic — Delivery & Manual-Money Polish
 
 > **Macro-section:** [02 · Checkout & Payments](../README.md) · **BUILD-ORDER:** #3c · Epic B ·

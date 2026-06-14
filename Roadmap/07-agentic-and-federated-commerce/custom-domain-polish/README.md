@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: custom-domain-polish
+---
+
 # Epic — Own channel: custom-domain polish (custom-domain-polish)
 
 **Macro-section:** 07 · Agentic & federated commerce

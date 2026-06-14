@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: sweepstakes
+---
+
 # Epic · Sweepstakes
 
 > **✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-04** (both repos; see

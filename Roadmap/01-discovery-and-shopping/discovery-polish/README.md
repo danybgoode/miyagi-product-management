@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: discovery-polish
+---
+
 # Epic — Discovery Polish
 
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) · **BUILD-ORDER:** #3c · Epic A ·

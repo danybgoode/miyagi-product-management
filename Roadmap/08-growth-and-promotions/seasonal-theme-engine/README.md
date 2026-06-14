@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: seasonal-theme-engine
+---
+
 # Epic - Seasonal Theme Engine
 
 > **✅ EPIC COMPLETE — all 3 sprints shipped to prod 2026-06-05** (merged to `main` as commit `b979976`,

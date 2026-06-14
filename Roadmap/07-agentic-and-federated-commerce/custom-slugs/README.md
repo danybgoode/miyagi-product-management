@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: custom-slugs
+---
+
 # Epic — Pretty URL: customizable shop slug (custom-slugs)
 
 **Macro-section:** 07 · Agentic & federated commerce

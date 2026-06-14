@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: trust-messaging-polish
+---
+
 # Epic — Trust & Messaging Polish
 
 > **Macro-section:** [05 · Trust, Offers & Messaging](../README.md) · **BUILD-ORDER:** #3c · Epic C ·

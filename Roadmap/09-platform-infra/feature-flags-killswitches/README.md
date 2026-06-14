@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: feature-flags-killswitches
+---
+
 # Epic — Feature flags & kill-switches (Flagsmith)
 
 > **Status: ✅ SHIPPED 2026-06-06** (S1 frontend PR #34 + S2 backend PR #9, both merged). `checkout.stripe_enabled`

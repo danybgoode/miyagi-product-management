@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: short-links
+---
+
 # Epic — Short links (`mschz.org/shop` and `mschz.org/product`)
 
 **Macro-section:** 07 · Agentic & federated commerce

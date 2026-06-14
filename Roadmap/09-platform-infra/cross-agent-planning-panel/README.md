@@ -1,3 +1,8 @@
+---
+status: shipped
+slug: cross-agent-planning-panel
+---
+
 # Epic — Cross-agent planning panel (single-pass advisory second opinions on plans)
 
 **Status:** ✅ **COMPLETE — Sprint 1 (the whole v1) shipped 2026-06-13, PR #15.** `scripts/cross-panel.mjs`
