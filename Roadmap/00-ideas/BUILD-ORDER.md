@@ -10,9 +10,10 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (2)
 
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 11/18 stories
+- [Vercel function & Fluid-CPU cost reduction](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 1/5 stories · risk: Low · Wave 1
 
 ## 📋 Ready to build (scaffolded, not started) (1)
 
@@ -64,9 +65,8 @@
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
 
-## ⬜ Funnel — seeds not yet scaffolded (8)
+## ⬜ Funnel — seeds not yet scaffolded (7)
 
-- [Vercel function-invocation & Fluid-CPU cost reduction](seeds/vercel-function-cost-reduction.md) — Ready · Chore · Wave 1
 - [Buyer notifications — money-path addendum](seeds/buyer-notifications-money-path.md) — Ready · Feature · Wave 2
 - [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Ready · Spike · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
@@ -76,4 +76,4 @@
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 45 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 46 · seeds in funnel: 7 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

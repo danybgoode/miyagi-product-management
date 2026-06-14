@@ -1,12 +1,12 @@
 ---
 title: "Vercel function-invocation & Fluid-CPU cost reduction"
 slug: vercel-function-cost-reduction
-status: ready
+status: in-progress
 area: "09"
 type: chore
 priority: wave-1
 risk: low
-epic: null
+epic: "09-platform-infra/vercel-function-cost-reduction"
 build_order: null
 updated: 2026-06-14
 ---
