@@ -12,11 +12,12 @@
 
 ## 🏗️ Building now (2)
 
-- [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 11/18 stories
-- [Vercel function & Fluid-CPU cost reduction](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 2/5 stories · risk: Low · Wave 1
+- [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 15/18 stories
+- [Vercel function & Fluid-CPU cost reduction](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 4/5 stories · risk: Low · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (2)
 
+- [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 0/8 stories
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 
 ## ✅ Shipped (43)
@@ -76,4 +77,4 @@
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 46 · seeds in funnel: 7 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 47 · seeds in funnel: 7 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
