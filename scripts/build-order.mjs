@@ -11,14 +11,13 @@
 // the in-repo board a derived view that cannot drift.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(__dirname, '..');
 const OUT = join(REPO, 'Roadmap', '00-ideas', 'BUILD-ORDER.md');
-const SEEDS = join(REPO, 'Roadmap', '00-ideas', 'seeds');
 const EXTRACTOR = join(__dirname, 'roadmap-to-notion.mjs');
 
 function extract() {
@@ -26,35 +25,10 @@ function extract() {
   return JSON.parse(json);
 }
 
-// Seed frontmatter is the declared SSOT (00-ideas/README). Read it directly so epic status comes
-// from frontmatter — NOT from the extractor's brittle prose-parse of sprint docs.
-function parseFrontmatter(md) {
-  if (!md.startsWith('---')) return {};
-  const end = md.indexOf('\n---', 3);
-  if (end === -1) return {};
-  const fm = {};
-  for (const line of md.slice(3, end).split('\n')) {
-    const m = line.match(/^(\w+):\s*(.*)$/);
-    if (!m) continue;
-    let v = m[2];
-    if (v[0] === '"' || v[0] === "'") { const q = v[0], e = v.indexOf(q, 1); v = e > 0 ? v.slice(1, e) : v.slice(1); }
-    else { const h = v.search(/\s#/); if (h >= 0) v = v.slice(0, h); v = v.trim(); if (v === 'null' || v === '') v = null; }
-    fm[m[1]] = v;
-  }
-  return fm;
-}
-// Map epic-folder-slug → { status, priority } from seed frontmatter (the SSOT).
-function seedStatusByEpic() {
-  const map = {};
-  if (!existsSync(SEEDS)) return map;
-  for (const f of readdirSync(SEEDS).filter((f) => f.endsWith('.md'))) {
-    const fm = parseFrontmatter(readFileSync(join(SEEDS, f), 'utf8'));
-    if (fm.epic) map[fm.epic.split('/').pop()] = { status: fm.status, priority: fm.priority };
-  }
-  return map;
-}
-// Frontmatter status vocab → board bucket.
-const FM_TO_BUCKET = { shipped: 'Shipped', 'in-progress': 'In progress', scaffolded: 'Scaffolded', queued: 'Scaffolded', ready: 'Funnel', raw: 'Funnel', archived: 'Archived' };
+// SSOT = each epic README's frontmatter `status:` field (00-ideas/README). The extractor resolves it
+// into r.status (frontmatter-authoritative, prose/retro fallback) and also emits r.status_derived (the
+// fallback derivation) so this board can flag an advisory drift when the two disagree. No seed read
+// here — a scaffolded epic's seed is funnel-only; the epic README owns its status.
 
 // Epic status → bucket. Sprints are folded into their epic via sprint_progress; seeds are the funnel.
 const EPIC_BUCKETS = [
@@ -80,17 +54,13 @@ function render(rows) {
   const seeds = rows.filter((r) => r.grain === 'Seed');
   const now = new Date().toISOString().slice(0, 10);
 
-  // Prefer seed-frontmatter status (SSOT); record drift vs the extractor's prose-derived status.
-  const fmMap = seedStatusByEpic();
+  // Epic status is authoritative from the README frontmatter (the extractor resolved it into e.status).
+  // Advisory drift = the prose/retro derivation (e.status_derived) disagreeing with that authoritative
+  // status — usually a close-out that forgot to set `status:`, or a stale README. Non-gating signal.
   const drift = [];
   for (const e of epics) {
-    const fm = fmMap[e.slug];
-    e._derived = e.status;            // what prose-parsing said
-    e._seeded = !!fm;
-    if (fm && fm.status) {
-      const bucket = FM_TO_BUCKET[fm.status] || e.status;
-      if (bucket !== 'Funnel' && bucket !== 'Archived') e.status = bucket;
-      if (e._derived !== e.status) drift.push({ name: e.name, frontmatter: fm.status, derived: e._derived });
+    if (e.status_derived && e.status_derived !== e.status) {
+      drift.push({ name: e.name, frontmatter: e.status, derived: e.status_derived });
     }
   }
   render._drift = drift;
@@ -98,15 +68,15 @@ function render(rows) {
   const out = [];
   out.push('<!-- GENERATED FILE — do not edit by hand.');
   out.push('     Regenerate:  node scripts/build-order.mjs');
-  out.push('     Source of truth: seed frontmatter (status/priority/epic) + epic & sprint status lines,');
-  out.push('     via the same projection the Notion sync reads (scripts/roadmap-to-notion.mjs --extract). -->');
+  out.push('     Status SSOT: each epic README\'s frontmatter `status:` field (set at epic close). Funnel');
+  out.push('     ordering: seed frontmatter (priority). Both projected via scripts/roadmap-to-notion.mjs --extract. -->');
   out.push('');
   out.push('# Build order — generated status board');
   out.push('');
-  out.push(`> **Generated ${now} from frontmatter — do not hand-edit.** To change what this shows, edit the`);
-  out.push('> seed/epic/sprint docs (status lives there), then run `node scripts/build-order.mjs`.');
-  out.push('> Status & ordering single-source-of-truth = **seed frontmatter**; this board and the Notion');
-  out.push('> "Marketplace Roadmap" DB are both *derived views* of it.');
+  out.push(`> **Generated ${now} — do not hand-edit.** Epic status SSOT = the epic \`README.md\` frontmatter`);
+  out.push('> `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the');
+  out.push('> funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"');
+  out.push('> DB are both *derived views* — never hand-edit the board.');
   out.push('');
 
   for (const b of EPIC_BUCKETS) {
@@ -129,13 +99,13 @@ function render(rows) {
   out.push('');
 
   if (drift.length) {
-    out.push(`## ⚠️ Status drift — frontmatter vs prose-derived (${drift.length})`);
+    out.push(`## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (${drift.length})`);
     out.push('');
-    out.push('These epics’ seed-frontmatter status disagrees with what the extractor derives from the sprint');
-    out.push('docs. The board trusts **frontmatter**; the mismatch means one side is stale. Reconcile against');
-    out.push('live code (see the cleanup handoff), then both this board and the Notion projection go correct.');
+    out.push('These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro');
+    out.push('derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out');
+    out.push('forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.');
     out.push('');
-    out.push('| Epic | frontmatter (used) | prose-derived |');
+    out.push('| Epic | frontmatter (used) | sprint/retro-derived |');
     out.push('|---|---|---|');
     for (const d of drift) out.push(`| ${d.name} | ${d.frontmatter} | ${d.derived} |`);
     out.push('');

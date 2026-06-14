@@ -12,17 +12,22 @@
 //   • Seed   — one row per seed in 00-ideas/seeds/ whose frontmatter epic == null (un-scaffolded funnel)
 //
 // Status derivation (docs win, re-derived every run):
-//   SPRINT: read its `**Status:**` line (controlled vocab below) → else count story ticks.
+//   EPIC: the AUTHORITATIVE source is the epic README's frontmatter `status:` field
+//     (shipped|in-progress|scaffolded|archived), set at epic close. Sprint/retro derivation is kept
+//     ONLY as a fallback when the frontmatter field is absent, and is also emitted as `status_derived`
+//     so the board can flag an advisory drift (frontmatter vs derived) when a close-out forgets to set it.
+//   SPRINT: read its `Status:` line (controlled vocab below) → else count story ticks.
 //     Planned (none started) · In progress (some stories ✅) · In review (all ✅, not yet closed out /
 //     "built — awaiting review/draft PR") · Shipped (✅ merged/shipped, or all ✅ + smoke walkthrough written).
-//   EPIC: rolled up from its sprints — all Shipped ⇒ Shipped · any active ⇒ In progress · all Planned ⇒ Scaffolded.
-//   SEED: its frontmatter status (raw|ready|queued|archived).
+//   EPIC fallback: rolled up from its sprints — all Shipped ⇒ Shipped · any active ⇒ In progress · all Planned ⇒ Scaffolded.
+//   SEED: its frontmatter status (raw|ready|queued|archived). A seed with `epic:` set is funnel-only —
+//     its status is NOT read for epic status (the epic README frontmatter owns that).
 //
 // NOTE on the sprint `**Status:**` line: the "Wrap S<n>" step (SESSION-KICKOFFS §7) should set it to one of
 //   ⬜ Planned · 🏗 In progress · 🟦 In review · ✅ Shipped — that keeps this projection trivially reliable.
 //   Legacy freeform lines are still mapped best-effort below.
 
-import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync, writeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -102,8 +107,12 @@ function epicTitle(epicPath, slug) {
   return slug;
 }
 
-// --- story counting: tolerant of the real heading drift (### S1.1 / ### Story 1.1 / ### US-1) ---
-const STORY_RE = /^###\s+(?:Story\s+\d+|S\d+(?:\.\d+)?(?:\s*\([^)]*\))?|US-\d+)\b/i;
+// --- story counting: tolerant of the real heading drift. Stories appear at BOTH `## US-1` (level-2,
+// e.g. support-widget) and `### S1.1` (level-3), as `Story 1.1` / `S1` / `US-1`, and the #3c B/C/D
+// epics label them by epic-letter (`## C.1`, `### B1.1`, `## D.2`). Matching only `### S/US/Story`
+// silently undercounted ~22 epics to "0 stories" (status then leaned on the retro-floor by luck). The
+// letter form requires a `.digit` (`[A-Z]\d*\.\d+`) so it can't false-fire on `## QA` / `## Stories`. ---
+const STORY_RE = /^#{2,3}\s+(?:Story\s+\d+|S\d+(?:\.\d+)?(?:\s*\([^)]*\))?|US-\d+|[A-Z]\d*\.\d+)\b/i;
 function countStories(body) {
   let total = 0, done = 0;
   for (const line of body.split('\n')) {
@@ -112,10 +121,11 @@ function countStories(body) {
   return { total, done };
 }
 
-// --- sprint status: the `**Status:**` line first, then story ticks ---
+// --- sprint status: the `Status:` line first, then story ticks. Accept both `**Status:**` (bold) and a
+// plain `Status:` line — real sprint files use both (e.g. support-widget writes `Status: ✅ shipped`). ---
 function deriveSprintStatus(body) {
   const hasSmoke = /Smoke walkthrough \(do these|—\s*Smoke walkthrough/i.test(body);
-  const m = body.match(/^\*\*Status:\*\*\s*(.+)$/mi);
+  const m = body.match(/^(?:\*\*)?Status:(?:\*\*)?\s*(.+)$/mi);
   const line = (m ? m[1] : '').trim();
   const s = line.toLowerCase();
   if (line) {
@@ -176,6 +186,14 @@ function deriveEpicStatus(sprints, retroShipped) {
   return 'Scaffolded'; // scaffolded-only / all Planned
 }
 
+// AUTHORITATIVE epic status: the README frontmatter `status:` field (set at epic close). Returns the
+// board bucket, or null when the README has no frontmatter status (→ caller falls back to derivation).
+const EPIC_FM_TO_BUCKET = { shipped: 'Shipped', 'in-progress': 'In progress', scaffolded: 'Scaffolded', queued: 'Scaffolded', archived: 'Archived' };
+function epicFrontmatterStatus(epicPath) {
+  const fm = parseFrontmatter(readFileSync(join(epicPath, 'README.md'), 'utf8'));
+  return fm.status ? (EPIC_FM_TO_BUCKET[fm.status] || null) : null;
+}
+
 function buildRows() {
   const seeds = readSeeds();
   const seedByEpic = new Map();
@@ -188,7 +206,8 @@ function buildRows() {
     const seed = seedByEpic.get(epicKey) || {};
     const sprints = epicSprints(e.path);
     const retroShipped = epicShippedByRetro(e.path);
-    const status = deriveEpicStatus(sprints, retroShipped);
+    const statusDerived = deriveEpicStatus(sprints, retroShipped);   // prose/retro fallback + drift signal
+    const status = epicFrontmatterStatus(e.path) || statusDerived;   // README frontmatter is authoritative
     const totStories = sprints.reduce((a, s) => a + s.total, 0);
     const doneStories = sprints.reduce((a, s) => a + s.done, 0);
     const area = AREA_NAMES[e.area] || e.area;
@@ -201,6 +220,7 @@ function buildRows() {
       slug: e.slug,
       grain: 'Epic',
       status,
+      status_derived: statusDerived,   // prose/retro derivation — for the advisory drift check on the board
       area,
       priority,
       type: TYPE_LABEL[seed.type] || 'Epic',
@@ -213,10 +233,11 @@ function buildRows() {
 
     // Sprint rows (one per sprint-N.md), related to the Epic by slug
     for (const sp of sprints) {
-      // A closed epic (dated retro) whose older sprint files lack tick-markers: floor Planned → Shipped
-      // so the Sprint board doesn't show a Shipped epic full of "Planned" sprints. Real in-flight signals
-      // (In progress / In review) are preserved.
-      const sprintStatus = retroShipped && sp.status === 'Planned' ? 'Shipped' : sp.status;
+      // A shipped epic whose older sprint files lack tick-markers: floor Planned → Shipped so the Sprint
+      // board doesn't show a Shipped epic full of "Planned" sprints. Keyed off the AUTHORITATIVE epic
+      // status (frontmatter), so a frontmatter-shipped epic floors too — not just a dated-retro one. Real
+      // in-flight signals (In progress / In review) are preserved.
+      const sprintStatus = status === 'Shipped' && sp.status === 'Planned' ? 'Shipped' : sp.status;
       rows.push({
         name: `${epicTitle(e.path, e.slug)} — S${sp.n}: ${sp.title}`,
         slug: `${e.slug}--s${sp.n}`,
@@ -261,7 +282,10 @@ const mode = hasFlag('--sync') ? 'sync' : hasFlag('--pr') ? 'pr' : 'extract';
 const rows = buildRows();
 
 if (mode === 'extract') {
-  console.log(JSON.stringify(rows, null, 2));
+  // writeSync to fd 1 is synchronous on a PIPE too — `console.log` then `process.exit(0)` truncates
+  // piped stdout (the async write hasn't flushed when exit fires), which crashed build-order.mjs's
+  // execFileSync with "Unexpected end of JSON input". Synchronous write guarantees the full payload.
+  writeSync(1, JSON.stringify(rows, null, 2) + '\n');
   process.exit(0);
 }
 
