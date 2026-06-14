@@ -48,12 +48,12 @@ updated: 2026-06-08
 | `shipped` | epic done (epic ✅ + RETROSPECTIVE; poster ✅) |
 | `archived` | dropped or superseded |
 
-### Who owns `status` (frontmatter vs. epic signals)
+### Who owns `status` (seed vs. epic-README frontmatter)
 
-To avoid two sources of truth fighting:
+One field is authoritative at each stage — they never both drive the board:
 
-- **Before an epic exists** (`epic: null`) → the seed's `status` (`raw`/`ready`/`queued`) is authoritative; you set it by hand or `groom` sets it.
-- **Once `epic:` is set** → the epic's own signals are authoritative for the build stages: poster ✅ / `RETROSPECTIVE.md` ⇒ `shipped`; some sprint stories ticked ⇒ `in-progress`; otherwise ⇒ `scaffolded`. The Notion sync re-derives this each run, so a slightly stale `status:` on a scaffolded seed self-corrects.
+- **Before an epic exists** (`epic: null`) → the **seed's** `status` (`raw`/`ready`/`queued`) is authoritative; you set it by hand or `groom` sets it. This is what the BUILD-ORDER **funnel** shows.
+- **Once `epic:` is set** → the **epic README's frontmatter `status:` is the SSOT** (set at epic close: `scaffolded` → `in-progress` → `shipped`). The seed is now **funnel-only** — its `status:` is no longer read for the board, so it can't drift it. Both `scripts/build-order.mjs` and the Notion sync read the epic README frontmatter (falling back to sprint/retro derivation only if the field is absent, and flagging an advisory drift when the two disagree). **`BUILD-ORDER.md` is a generated view — never hand-edit it; change the README `status:` and run `node scripts/build-order.mjs`.**
 
 ## How seeds flow (no file moves)
 

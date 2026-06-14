@@ -139,7 +139,7 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   **Read it at session start** (it's in AGENTS.md "Start here"). Fed at every epic close — see the
   epic Definition of Done. The full story of any item stays in its epic `RETROSPECTIVE.md`; this is
   the transferable digest so a retro reaches the *next* agent instead of dying in its folder.
-- **`Roadmap/00-ideas/`** — the idea funnel: `seeds/` (one .md per idea, lifecycle in **frontmatter** — no folder shuffling), `audits/` (UX/UI findings), and `BUILD-ORDER.md` (the grooming queue). See `00-ideas/README.md`. The seed frontmatter is also what the Notion roadmap sync projects from.
+- **`Roadmap/00-ideas/`** — the idea funnel: `seeds/` (one .md per idea, lifecycle in **frontmatter** — no folder shuffling), `audits/` (UX/UI findings), and `BUILD-ORDER.md` — a **generated** status board (`node scripts/build-order.mjs`, CI-guarded), **never hand-edited**. See `00-ideas/README.md`. **Status SSOT = each epic README's frontmatter `status:`** (seed frontmatter owns only the un-scaffolded funnel); `BUILD-ORDER.md` **and** the Notion roadmap are both *derived views* of it — regenerated, not maintained. CI (`build-order-guard.yml`) fails if the board is stale; for a local pre-commit catch, opt in with `git config core.hooksPath .githooks`.
 - **`tasks/`** — engineering delivery log: what was built, decisions, commit hashes, runbooks, known limitations.
 - **Team memory** (`~/.claude/.../memory/`) — durable cross-session facts and pointers.
 - **Retrospectives** — one per epic/sprint, alongside the epic.

@@ -89,9 +89,10 @@ the changed files for me to review + commit).
 ## 6 · Close an epic — Claude Code / Cowork
 ```
 Close epic <epic-slug> per WAYS Definition of Done (epic): all sprints merged + smoke-tested (gaps stated) ·
-each sprint-N.md has its smoke walkthrough · README ✅ · RETROSPECTIVE.md written · product poster
-(Roadmap/README.md) updated · team memory + MEMORY.md index updated · promote durable learnings into
-LEARNINGS.md (dedupe — sharpen, don't append near-duplicates) · branch deleted.
+each sprint-N.md has its smoke walkthrough · README ✅ AND its frontmatter `status: shipped` (the SSOT) ·
+regenerate the board (`node scripts/build-order.mjs` — never hand-edit BUILD-ORDER.md) · RETROSPECTIVE.md
+written · product poster (Roadmap/README.md) updated · team memory + MEMORY.md index updated · promote
+durable learnings into LEARNINGS.md (dedupe — sharpen, don't append near-duplicates) · branch deleted.
 ```
 
 ## 7 · Sprint-wrap terminal summary — what an agent prints when a sprint lands

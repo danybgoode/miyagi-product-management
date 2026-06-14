@@ -182,7 +182,9 @@ kill-switch story rides the same `HIGH ⇒ Daniel merges`. See the ADR
    It creates `Roadmap/<NN-macro>/<epic-slug>/README.md` + `sprint-1..N.md` + a `RETROSPECTIVE.md` stub
    from `skills/groom/templates/`, and prints the exact path-scoped commit command. Fill the generated
    files with the real stories / reuse list / QA stages — the script makes the skeleton, you make the content.
-3. **Update the seed:** set its frontmatter `status: scaffolded` and `epic: "<NN-macro>/<epic-slug>"`.
+3. **Update the seed:** set its frontmatter `epic: "<NN-macro>/<epic-slug>"` (and `status: scaffolded` for
+   tidiness). **Once `epic:` is set the seed is funnel-only** — the **epic README frontmatter `status:`** (the
+   scaffolder writes it `scaffolded`) is now the authoritative status, advanced to `shipped` at epic close.
    **Never move the seed between folders** — frontmatter carries lifecycle (this is what stopped 00-ideas drifting).
 4. **Commit it.** `Roadmap/` is tracked in git — commit the scaffold so a fresh worktree/agent inherits the
    product context. **Commit only your own paths** — never `git add Roadmap/` or `git add -A` (a shared
@@ -252,15 +254,18 @@ cover, so they're owed to Daniel by name).
 groom a batch in one session. The cadence is:
 
 1. **Agree a consolidated build order first** (a separate evaluation pass — consolidate overlaps, sequence
-   by dependency/leverage), and **persist it** to `Roadmap/00-ideas/BUILD-ORDER.md` so it survives the session.
+   by dependency/leverage), and **persist it in the seed frontmatter** (`priority` / `build_order` on each
+   seed) — that's the SSOT the board sorts by. `BUILD-ORDER.md` is **generated** from it
+   (`node scripts/build-order.mjs`); never hand-edit the board.
 2. **Groom one ask per session**, down that order. (Still *one ask per run* — Stage 0's rule is unchanged.)
 3. **At the end of every groom run, do BOTH:**
    - Emit the **Claude Code build/investigation handoff** for the *just-groomed* item (Stage 8) — unchanged.
-   - **Tick the item in `BUILD-ORDER.md`** and emit a **next-session Cowork handoff prompt** for the **next ⬜
-     item** in the order. *Do not* offer "want me to groom the next one now?" — the next ask gets its **own
-     fresh session** (keeps each groom cheap + context-clean). The handoff prompt references the docs that
-     already exist (`BUILD-ORDER.md`, the relevant `seeds/` seed, the orientation files) so the
-     next session re-enters with zero re-derivation. Template:
+   - **Regenerate the board** (`node scripts/build-order.mjs`) so the just-groomed item moves bucket from the
+     frontmatter change — never hand-tick it — and emit a **next-session Cowork handoff prompt** for the
+     **next ⬜ item** in the order. *Do not* offer "want me to groom the next one now?" — the next ask gets its
+     **own fresh session** (keeps each groom cheap + context-clean). The handoff prompt references the docs that
+     already exist (`BUILD-ORDER.md` as a generated read-only view, the relevant `seeds/` seed, the orientation
+     files) so the next session re-enters with zero re-derivation. Template:
 
    ```
    We're working the agreed build order in Roadmap/00-ideas/BUILD-ORDER.md.
