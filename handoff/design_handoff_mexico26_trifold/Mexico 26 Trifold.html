@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>México 26 — Trifold · Miyagi Sánchez</title>
+<template id="__bundler_thumbnail" data-bg-color="#1d6f42">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#1d6f42" />
+    <g transform="skewX(-9)" transform-origin="600 400">
+      <text x="640" y="380" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="150" fill="#f4f1e8" text-anchor="middle" letter-spacing="2">MÉXICO</text>
+      <text x="640" y="560" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="230" fill="#b04341" text-anchor="middle">26</text>
+    </g>
+  </svg>
+</template>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bruno+Ace&family=Monoton&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================ TOKENS */
+:root{
+  --paper:#f4f1e8;        /* warm newsprint */
+  --paper-2:#ece5d4;
+  --ink:#16160f;
+  --selva:#1d6f42;
+  --selva-ink:#114128;
+  --selva-deep:#061a0f;
+  --selva-soft:#dfe9df;
+  --hibisco:#b04341;      /* the one hot accent */
+  --hibisco-deep:#8b3331;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --sans:'Space Grotesk',system-ui,sans-serif;
+  --punk:'Anton','Space Grotesk',system-ui,sans-serif;
+  --serif:'PT Serif',Georgia,'Times New Roman',serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{
+  background:#3a3a36;
+  font-family:var(--sans);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================ SCREEN CHROME */
+.workspace{
+  min-height:100vh;
+  padding:40px 24px 90px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+.masthead{
+  width:100%;max-width:1056px;color:#d9d6cc;
+  display:flex;justify-content:space-between;align-items:flex-end;
+  gap:24px;flex-wrap:wrap;border-bottom:1px solid #555;padding-bottom:14px;margin-bottom:8px;
+}
+.masthead h1{
+  font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.14em;
+  text-transform:uppercase;margin:0;color:#fff;
+}
+.masthead p{font-family:var(--mono);font-size:11px;letter-spacing:.04em;margin:4px 0 0;color:#9c998f;max-width:520px;line-height:1.5;}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#b6b3a8;text-transform:uppercase;}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:11px;height:11px;display:inline-block;border-radius:2px;}
+
+.sheet-label{
+  width:1056px;max-width:100%;color:#cfccc2;font-family:var(--mono);
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  display:flex;align-items:center;gap:12px;margin-top:18px;
+}
+.sheet-label b{color:#fff;font-weight:700;}
+.sheet-label .rule{flex:1;height:1px;background:#555;}
+
+/* ============================================================ SHEET */
+.sheet{
+  width:1056px;height:816px;       /* 11in x 8.5in @96dpi */
+  background:var(--paper);
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.6);
+  overflow:hidden;
+  flex:none;
+}
+/* paper grain + global halftone wash */
+.sheet::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(rgba(22,22,15,.045) 1px, transparent 1.4px);
+  background-size:5px 5px;
+  mix-blend-mode:multiply;opacity:.6;
+}
+.sheet::after{
+  content:"";position:absolute;inset:0;z-index:60;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(22,22,15,.18);
+}
+.panel{
+  position:relative;z-index:1;
+  padding:40px 34px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.panel + .panel{border-left:1px dashed rgba(22,22,15,.28);}
+
+/* fold tick markers — screen only */
+.fold-tick{
+  position:absolute;top:0;width:0;height:100%;z-index:50;pointer-events:none;
+}
+.fold-tick::before,.fold-tick::after{
+  content:"▽";position:absolute;left:50%;transform:translateX(-50%);
+  font-size:11px;color:rgba(22,22,15,.4);
+}
+.fold-tick::before{top:-2px;}
+.fold-tick::after{bottom:-4px;content:"△";}
+.fold-1{left:33.333%;}
+.fold-2{left:66.666%;}
+
+/* panel role caption — screen only, sits over trim */
+.role{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  z-index:55;font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--selva);
+  background:rgba(244,241,232,.85);padding:2px 8px;border:1px solid var(--selva);
+  border-radius:99px;white-space:nowrap;
+}
+
+/* ============================================================ SHARED PUNK ELEMENTS */
+.eyebrow{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--selva);margin:0;
+}
+.eyebrow.red{color:var(--hibisco);}
+.kicker-bar{
+  display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;padding:5px 9px;align-self:flex-start;
+}
+.kicker-bar.green{background:var(--selva);}
+.kicker-bar.red{background:var(--hibisco);}
+
+.headline{
+  font-family:var(--punk);font-weight:400;line-height:.9;
+  text-transform:uppercase;letter-spacing:.005em;margin:0;color:var(--ink);
+}
+.script{
+  font-family:var(--sans);font-style:italic;font-weight:500;color:var(--selva-ink);
+  letter-spacing:-.01em;
+}
+.body{font-size:13.5px;line-height:1.5;color:var(--ink);margin:0;}
+.body.sm{font-size:12px;line-height:1.46;}
+.mono-note{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:#5d5b4f;line-height:1.5;}
+
+.rule-thick{height:5px;background:var(--ink);border:none;margin:0;}
+.rule-green{height:3px;background:var(--selva);border:none;margin:0;}
+.rule-dot{height:0;border:none;border-top:2px dotted var(--ink);margin:0;}
+
+/* misregistration / overprint headline */
+.overprint{position:relative;display:inline-block;}
+.overprint::before{
+  content:attr(data-ghost);position:absolute;left:2px;top:1.5px;
+  color:var(--hibisco);opacity:.85;z-index:-1;mix-blend-mode:multiply;
+}
+
+/* halftone burst sticker */
+.sticker{
+  position:absolute;width:104px;height:104px;border-radius:50%;
+  background:var(--hibisco);color:var(--paper);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;transform:rotate(-11deg);
+  box-shadow:0 6px 0 rgba(22,22,15,.18);
+  border:2px solid var(--ink);
+}
+.sticker .big{font-family:var(--punk);font-size:30px;line-height:.82;white-space:nowrap;letter-spacing:.01em;}
+.sticker .sm{font-family:var(--mono);font-size:7.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-top:3px;white-space:nowrap;}
+
+/* ============================================================ PHOTO WELL (placeholder) */
+.photo{
+  position:relative;background:var(--selva-deep);overflow:hidden;
+  border:2px solid var(--ink);
+  display:flex;align-items:flex-end;
+}
+.photo::before{ /* duotone halftone dots */
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(var(--selva) 30%, transparent 31%);
+  background-size:9px 9px;background-position:0 0;opacity:.55;
+}
+.photo::after{ /* diagonal hatch */
+  content:"";position:absolute;inset:0;
+  background-image:repeating-linear-gradient(45deg, rgba(244,241,232,.10) 0 2px, transparent 2px 11px);
+}
+.photo .tag{
+  position:relative;z-index:2;margin:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.05em;
+  color:var(--paper);background:rgba(22,22,15,.72);
+  padding:5px 8px;line-height:1.45;border-left:3px solid var(--hibisco);
+}
+.photo .tag b{color:#fff;letter-spacing:.1em;}
+.photo .corner{
+  position:absolute;top:6px;right:6px;z-index:2;
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--paper);
+  border:1px solid rgba(244,241,232,.5);padding:2px 5px;text-transform:uppercase;
+}
+
+/* ============================================================ QR (placeholder) */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.qr{
+  background:#fff;border:2px solid var(--ink);padding:6px;position:relative;
+}
+.qr svg{display:block;}
+.qr .ph{
+  position:absolute;top:-8px;right:-8px;
+  font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.1em;
+  background:var(--hibisco);color:#fff;padding:2px 5px;transform:rotate(6deg);
+  border:1px solid var(--ink);text-transform:uppercase;
+}
+.qr-cap{font-family:var(--mono);font-size:8.5px;letter-spacing:.02em;color:var(--ink);text-align:center;line-height:1.35;}
+.qr-cap b{color:var(--selva);}
+
+/* ============================================================ EDITABLE PLACEHOLDER BLOCK */
+.editable{
+  border:1.5px dashed var(--hibisco);background:rgba(176,67,65,.05);
+  padding:11px 12px;position:relative;
+}
+.editable .flag{
+  position:absolute;top:-9px;left:9px;background:var(--hibisco);color:#fff;
+  font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;padding:2px 6px;
+}
+.editable .placeholder-copy{color:#6c5350;font-style:italic;font-size:12px;line-height:1.5;}
+
+/* ============================================================ FRONT COVER (A) */
+.cover{background:var(--paper);justify-content:space-between;padding-top:34px;}
+.cover-top{display:flex;flex-direction:column;gap:10px;position:relative;z-index:2;}
+.cover-hero{position:relative;z-index:2;margin-top:10px;}
+.cover-hero .m{
+  font-family:'Monoton';font-size:50px;line-height:1;display:block;width:max-content;
+  text-transform:uppercase;letter-spacing:.01em;color:var(--selva);
+  transform:skewX(-9deg);transform-origin:left bottom;
+}
+.cover-hero .num{
+  font-family:'Monoton';font-size:96px;line-height:.86;display:block;width:max-content;margin-top:12px;
+  letter-spacing:.01em;color:var(--hibisco);
+  transform:skewX(-9deg);transform-origin:left bottom;
+}
+.cover-hero .joyas{
+  font-family:var(--sans);font-style:italic;font-weight:600;font-size:30px;
+  color:var(--ink);margin-top:6px;letter-spacing:-.01em;
+}
+.cover-sub{
+  font-family:var(--punk);font-size:33px;line-height:.9;color:var(--ink);
+  text-transform:uppercase;margin-top:15px;position:relative;z-index:2;max-width:280px;letter-spacing:.005em;
+}
+.cover-sub .hot{color:var(--selva);}
+.cover-foot{position:relative;z-index:2;display:flex;flex-direction:column;gap:9px;}
+.logo-lockup{display:flex;align-items:center;gap:8px;}
+.logo-mark{
+  width:30px;height:30px;border-radius:7px;flex:none;
+  background:linear-gradient(135deg,var(--selva) 0 49%,var(--paper) 49% 51%,var(--ink) 51% 100%);
+  box-shadow:0 0 0 1px var(--ink);
+}
+.logo-word{font-family:var(--sans);font-weight:700;font-size:18px;letter-spacing:-.01em;color:var(--ink);}
+.logo-word .dot{color:var(--selva);}
+.cover-halftone{
+  position:absolute;right:-40px;bottom:-30px;width:300px;height:300px;z-index:1;pointer-events:none;
+  background-image:radial-gradient(var(--selva) 32%, transparent 33%);
+  background-size:14px 14px;
+  -webkit-mask-image:radial-gradient(circle at 70% 70%, #000 38%, transparent 62%);
+  mask-image:radial-gradient(circle at 70% 70%, #000 38%, transparent 62%);
+  opacity:.35;
+}
+
+/* ============================================================ MANIFESTO (B) */
+.man-title{font-size:38px;margin-top:8px;}
+.credo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
+.credo li{display:flex;gap:9px;align-items:baseline;font-size:12.5px;line-height:1.4;}
+.credo .n{font-family:var(--mono);font-weight:700;font-size:11px;color:var(--hibisco);flex:none;}
+.pull{
+  font-family:var(--punk);font-size:42px;line-height:.92;color:var(--hibisco);
+  text-transform:uppercase;margin:0;
+}
+.big-zero{
+  font-family:var(--punk);font-size:120px;line-height:.74;color:var(--selva);
+  display:flex;align-items:baseline;gap:4px;
+}
+.big-zero small{font-family:var(--sans);font-weight:700;font-size:17px;color:var(--ink);line-height:1.1;text-transform:uppercase;letter-spacing:-.01em;}
+
+/* ============================================================ BACK COVER (F) */
+.back{justify-content:space-between;}
+.homage{
+  border:2px solid var(--ink);position:relative;padding:13px 13px 12px;
+  background:var(--selva-soft);
+}
+.homage .crest{
+  position:absolute;top:10px;right:11px;width:26px;height:26px;border:2px solid var(--selva-ink);
+  display:flex;align-items:center;justify-content:center;
+  background:repeating-linear-gradient(45deg,var(--selva-ink) 0 3px,transparent 3px 6px);
+}
+.homage h4{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--selva-ink);margin:0 30px 7px 0;}
+.colophon{font-family:var(--mono);font-size:8px;letter-spacing:.03em;color:#6b6859;line-height:1.55;}
+
+/* ============================================================ GEMS (C) */
+.gems-head{display:flex;flex-direction:column;gap:5px;}
+.gems-title{font-size:24px;}
+.gem-list{display:flex;flex-direction:column;margin-top:5px;}
+.gem{
+  display:grid;grid-template-columns:1fr 50px;gap:9px;
+  padding:4px 0;border-top:2px dotted var(--ink);align-items:start;
+}
+.gem:last-child{border-bottom:2px dotted var(--ink);}
+.gem .cat{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--paper);background:var(--selva);padding:2px 5px;align-self:start;display:inline-block;}
+.gem .cat.red{background:var(--hibisco);}
+.gem .cat.ink{background:var(--ink);}
+.gem .nm{font-family:var(--sans);font-weight:700;font-size:14px;line-height:1.02;margin:4px 0 0;letter-spacing:-.01em;}
+.gem .hood{font-family:var(--mono);font-size:8px;letter-spacing:.05em;color:var(--hibisco-deep);text-transform:uppercase;margin-top:1px;}
+.gem .line{font-size:10.5px;line-height:1.28;color:var(--ink);margin-top:2px;}
+.gem .gq{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.gem .gq .slug{font-family:var(--mono);font-size:6.5px;letter-spacing:0;color:var(--selva);text-align:center;line-height:1.1;}
+
+/* ============================================================ FEATURED ARTIST (D) */
+.art-fill{flex:1;display:flex;flex-direction:column;}
+.bio{margin-top:auto;}
+
+/* ============================================================ CLAUDIO (E) */
+.prompt-box{
+  background:var(--ink);color:var(--paper);padding:13px 13px 12px;position:relative;border:2px solid var(--ink);
+}
+.prompt-box .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:#88d7a5;margin-bottom:7px;display:flex;justify-content:space-between;}
+.prompt-box .txt{font-family:var(--mono);font-size:13px;line-height:1.45;color:#fff;}
+.prompt-box .copy{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:#88d7a5;padding:2px 6px;}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+.steps li{display:flex;gap:8px;align-items:baseline;font-size:12px;line-height:1.35;}
+.steps .n{font-family:var(--punk);font-size:18px;color:var(--hibisco);line-height:.8;flex:none;width:20px;}
+.aside-red{
+  font-family:var(--sans);font-style:italic;font-weight:600;font-size:13px;line-height:1.32;
+  color:var(--hibisco);border-left:3px solid var(--hibisco);padding-left:9px;
+}
+
+/* ============================================================ NEWSPRINT ARTICLE */
+.art-banner{
+  display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper);
+  padding:4px 9px;align-self:flex-start;
+}
+.art-banner .woodcut{
+  width:20px;height:13px;flex:none;
+  background:repeating-linear-gradient(90deg,var(--paper) 0 1.5px, transparent 1.5px 3.5px);
+  -webkit-mask:radial-gradient(ellipse 60% 100% at 50% 118%, #000 60%, transparent 62%);
+  mask:radial-gradient(ellipse 60% 100% at 50% 118%, #000 60%, transparent 62%);
+}
+.art-banner .lbl{font-family:var(--serif);font-style:italic;font-weight:700;font-size:12.5px;letter-spacing:.01em;white-space:nowrap;}
+.art-headline{
+  font-family:var(--punk);font-weight:400;text-transform:uppercase;
+  line-height:.85;letter-spacing:.006em;color:var(--ink);margin:8px 0 4px;
+}
+.byline{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--hibisco-deep);margin:0;}
+.byline b{color:var(--ink);}
+.art-photo{
+  position:relative;background:var(--ink);overflow:hidden;border:1.5px solid var(--ink);
+}
+.art-photo .img{
+  position:absolute;inset:0;background-color:#c7c3b6;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(22,22,15,.42) 0 1px, transparent 1px 3px),
+    radial-gradient(rgba(22,22,15,.55) 32%, transparent 34%);
+  background-size:auto, 6px 6px;
+}
+.art-photo .cap{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  background:rgba(22,22,15,.8);color:var(--paper);
+  font-family:var(--serif);font-style:italic;font-size:8px;line-height:1.3;padding:3px 5px;
+}
+.art-photo .ph-tag{
+  position:absolute;top:5px;left:5px;z-index:2;font-family:var(--mono);font-size:6.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--paper);
+  padding:2px 5px;border:1px solid var(--ink);
+}
+.art-body{
+  font-family:var(--serif);font-size:10.5px;line-height:1.46;text-align:justify;
+  hyphens:auto;-webkit-hyphens:auto;color:var(--ink);margin:0;
+}
+.art-body + .art-body{margin-top:5px;text-indent:12px;}
+.art-body.lead::first-letter{
+  font-family:var(--punk);font-size:33px;line-height:.66;float:left;
+  margin:4px 5px 0 0;color:var(--selva);
+}
+.art-rule{height:3px;background:var(--ink);border:none;margin:8px 0;}
+.art-rule.thin{height:1px;}
+.sidebar-box{
+  border:2px solid var(--ink);padding:9px 11px;background:var(--paper-2);
+}
+.sidebar-box h5{font-family:var(--punk);font-size:17px;text-transform:uppercase;margin:0 0 6px;line-height:.88;}
+.mini-credo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+.mini-credo li{display:flex;gap:7px;font-family:var(--serif);font-size:10.5px;line-height:1.25;}
+.mini-credo .n{font-family:var(--mono);font-weight:700;font-size:9px;color:var(--hibisco);flex:none;}
+
+/* ============================================================ PRINT */
+@media print{
+  @page{size:11in 8.5in;margin:0;}
+  body{background:#fff;}
+  .workspace{padding:0;gap:0;}
+  .masthead,.legend,.sheet-label,.fold-tick,.role{display:none !important;}
+  .sheet{box-shadow:none;width:11in;height:8.5in;page-break-after:always;break-after:page;}
+  .sheet:last-of-type{page-break-after:auto;break-after:auto;}
+  .panel + .panel{border-left:none;}
+}
+</style>
+</head>
+<body>
+<div class="workspace">
+
+  <div class="masthead">
+    <div>
+      <h1>México 26 — Las Joyas Escondidas</h1>
+      <p>Tríptico (trifold) · Carta horizontal 11×8.5&quot; · doble cara · Miyagi Sánchez. Imposición plegada: el tríptico se arma doblando el panel derecho hacia adentro y el izquierdo encima.</p>
+    </div>
+    <div class="legend">
+      <span><i style="background:#1d6f42;"></i>Selva</span>
+      <span><i style="background:#b04341;"></i>Jamaica</span>
+      <span><i style="background:#16160f;"></i>Tinta</span>
+      <span><i style="background:#b04341;border-style:dashed;border:1px dashed #fff;"></i>Placeholder editable</span>
+    </div>
+  </div>
+
+  <!-- ============================ SHEET 1 — EXTERIOR ============================ -->
+  <div class="sheet-label"><b>Hoja 1 · Exterior</b><span>— la cara que ves al cerrar el tríptico</span><span class="rule"></span><span>doblez interior · contraportada · portada</span></div>
+
+  <div class="sheet" id="sheet-ext">
+    <div class="fold-tick fold-1"></div>
+    <div class="fold-tick fold-2"></div>
+
+    <!-- PANEL B · Solapa interior — Guest article + manifesto sidebar + ¿tf is Bezos? -->
+    <section class="panel" data-screen-label="Pieza invitada" style="padding-top:30px;padding-bottom:26px;">
+      <div class="role">Solapa interior</div>
+
+      <!-- GUEST AUTHOR ARTICLE — centerpiece -->
+      <div class="art-banner"><span class="woodcut"></span><span class="lbl">Pieza invitada</span></div>
+      <h2 class="art-headline" style="font-size:29px;">［ Titular del<br />autor<br />invitado ］</h2>
+      <p class="byline">Por <b>［ Autor invitado ］</b> · especial para México 26</p>
+      <hr class="art-rule" />
+
+      <div class="art-photo" style="width:122px;height:90px;float:right;margin:1px 0 6px 9px;">
+        <div class="img"></div>
+        <span class="ph-tag">Foto · placeholder</span>
+        <span class="cap">［ pie de foto editable ］</span>
+      </div>
+
+      <p class="art-body lead">［ Aquí va la crónica del autor invitado: la ciudad vista en clave Mundial, en tono callejero y rebelde. La banqueta como cancha, el tianguis como tribuna, el mezcal como himno. Reemplaza este texto. ］</p>
+      <p class="art-body">［ Segundo párrafo de relleno —mantén el ritmo. La foto de arriba es un placeholder editable; una imagen por pieza. ］</p>
+
+      <hr class="art-rule thin" style="margin:9px 0;" />
+
+      <!-- manifesto, shrunk to a sidebar box -->
+      <div class="sidebar-box">
+        <h5>¿Por qué miyagisanchez?</h5>
+        <ul class="mini-credo">
+          <li><span class="n">01</span><span>0% comisión, siempre.</span></li>
+          <li><span class="n">02</span><span>Sin intermediarios.</span></li>
+          <li><span class="n">03</span><span>Tu IA arma tu tienda —gratis.</span></li>
+        </ul>
+      </div>
+
+      <!-- bottom headline -->
+      <div style="margin-top:auto;padding-top:14px;">
+        <hr class="rule-thick" style="margin-bottom:10px;" />
+        <p class="pull" style="font-size:40px;">¿tf is<br />Bezos?</p>
+        <p class="art-body" style="font-style:italic;margin:8px 0 10px;">No confíes en nosotros. Pregúntale a tu propia IA: «¿qué es miyagisanchez.com?»</p>
+        <div style="display:flex;gap:11px;align-items:center;">
+          <div class="qr" data-qr="bezos" data-size="small"></div>
+          <p class="qr-cap" style="text-align:left;line-height:1.45;"><b>miyagisanchez.com</b><br />@miyagisanchez · #ÚneteALaRev</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL F · Back cover -->
+    <section class="panel back" data-screen-label="Contraportada" style="padding-top:30px;padding-bottom:26px;">
+      <div class="role">Contraportada</div>
+
+      <!-- Founder note as a newspaper article -->
+      <div class="art-banner"><span class="woodcut"></span><span class="lbl">Carta del fundador</span></div>
+      <h2 class="art-headline" style="font-size:26px;">［ Titular de<br />la carta ］</h2>
+      <p class="byline">Por <b>Daniel</b> · fundador · Miyagi Sánchez</p>
+      <hr class="art-rule" />
+
+      <div class="art-photo" style="width:100px;height:116px;float:left;margin:1px 9px 5px 0;">
+        <div class="img"></div>
+        <span class="ph-tag">Retrato</span>
+        <span class="cap">［ Daniel ］</span>
+      </div>
+      <p class="art-body lead">［ Daniel — escribe aquí la nota del fundador. 4–6 líneas: por qué existe Miyagi Sánchez, para quién, y la invitación a reclamar tu tienda. Esta nota también alimenta la página «acerca». ］</p>
+      <p class="art-body">［ Cierra con la invitación: tu comunidad es tuya, no de un algoritmo. ］</p>
+
+      <div class="homage" style="margin:11px 0 0;">
+        <div class="crest"></div>
+        <h4>Homenaje — U. of Aberdeen · Scotland &rsquo;26</h4>
+        <p class="art-body" style="font-size:10px;" contenteditable="false">Para la afición que viajó desde el frío del Mar del Norte hasta la altura: bienvenidos. Aquí no hay fiesta sin ustedes. <i>&mdash; edita esta línea.</i></p>
+        <p class="mono-note" style="margin-top:6px;">［ Texto editable · verificar referencias antes de imprimir ］</p>
+      </div>
+
+      <div style="display:flex;gap:13px;align-items:center;margin-top:auto;padding-top:13px;">
+        <div class="qr-wrap">
+          <div class="qr" data-qr="mx26-mag" data-size="big"><span class="ph">QR ▸ demo</span></div>
+        </div>
+        <div>
+          <p class="eyebrow red" style="margin-bottom:4px;">Lee la edición digital</p>
+          <p class="headline" style="font-size:21px;line-height:.92;">La revista<br />completa</p>
+          <p class="qr-cap" style="text-align:left;margin-top:6px;"><b>miyagisanchez.com/mx26</b></p>
+        </div>
+      </div>
+      <p class="colophon" style="margin-top:10px;">México 26 · Edición №01 · Jun–Jul 2026 · Documento cultural · Distribución gratuita · CDMX · Hecho en comunidad, 0 comisión.</p>
+    </section>
+
+    <!-- PANEL A · Front cover -->
+    <section class="panel cover" data-screen-label="Portada">
+      <div class="role">Portada</div>
+      <div class="cover-halftone"></div>
+      <div class="cover-top">
+        <span class="kicker-bar green">Documento cultural · CDMX · Mundial &rsquo;26</span>
+        <p class="mono-note" style="letter-spacing:.1em;">№ 01 — JUN ▸ JUL 2026 · GRATIS</p>
+      </div>
+
+      <div class="cover-hero">
+        <div class="m">México</div>
+        <div class="num">26</div>
+      </div>
+
+      <div class="cover-sub">Mafufadas muy <span class="hot">sácale punta.</span></div>
+
+      <div class="cover-foot">
+        <hr class="rule-green" />
+        <div class="logo-lockup">
+          <span class="logo-mark"></span>
+          <span class="logo-word">miyagisanchez<span class="dot">•</span></span>
+        </div>
+        <p class="mono-note">Una guía para los que vienen al Mundial — y para los locales que la sostienen.</p>
+      </div>
+
+      <div class="sticker" style="right:22px;top:300px;">
+        <span class="big">0 IA</span>
+        <span class="sm">hecha pa&rsquo; tu IA</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ SHEET 2 — INTERIOR ============================ -->
+  <div class="sheet-label"><b>Hoja 2 · Interior</b><span>— el desplegado completo al abrir</span><span class="rule"></span><span>joyas · diseñador invitado · pregúntale a Claudio</span></div>
+
+  <div class="sheet" id="sheet-int">
+    <div class="fold-tick fold-1"></div>
+    <div class="fold-tick fold-2"></div>
+
+    <!-- PANEL C · Gems grid -->
+    <section class="panel" data-screen-label="Joyas escondidas" style="padding-top:22px;padding-bottom:20px;">
+      <div class="role">Interior · izq</div>
+      <div class="gems-head">
+        <span class="kicker-bar">La guía</span>
+        <h2 class="headline gems-title">Las joyas<br />escondidas</h2>
+        <p class="script" style="font-size:14px;">Lo que no sale en TripAdvisor.</p>
+      </div>
+
+      <div class="gem-list">
+        <article class="gem">
+          <div>
+            <span class="cat">Comida</span>
+            <h4 class="nm">Mercado de Medellín</h4>
+            <div class="hood">Roma Sur</div>
+            <p class="line">Cocinas de medio continente en un pasillo: ceviche, pupusas, café de olla.</p>
+          </div>
+          <div class="gq"><div class="qr" data-qr="medellin" data-size="mini"></div><span class="slug">/s/medellin</span></div>
+        </article>
+
+        <article class="gem">
+          <div>
+            <span class="cat red">Lucha</span>
+            <h4 class="nm">Arena México</h4>
+            <div class="hood">Doctores</div>
+            <p class="line">Máscaras, vuelos y cerveza tibia. Martes, viernes y domingos.</p>
+          </div>
+          <div class="gq"><div class="qr" data-qr="arena" data-size="mini"></div><span class="slug">/s/arena</span></div>
+        </article>
+
+        <article class="gem">
+          <div>
+            <span class="cat ink">Arte</span>
+            <h4 class="nm">Tianguis del Chopo</h4>
+            <div class="hood">Buenavista</div>
+            <p class="line">El bazar contracultural de los sábados: vinilo, fanzines y mosh.</p>
+          </div>
+          <div class="gq"><div class="qr" data-qr="chopo" data-size="mini"></div><span class="slug">/s/chopo</span></div>
+        </article>
+
+        <article class="gem">
+          <div>
+            <span class="cat">Mercado</span>
+            <h4 class="nm">Mercado de San Juan</h4>
+            <div class="hood">Centro</div>
+            <p class="line">Lo exótico y lo gourmet bajo un techo. Para paladares sin miedo.</p>
+          </div>
+          <div class="gq"><div class="qr" data-qr="sanjuan" data-size="mini"></div><span class="slug">/s/sanjuan</span></div>
+        </article>
+
+        <article class="gem">
+          <div>
+            <span class="cat red">Tour</span>
+            <h4 class="nm">Taco, mezcal y lucha</h4>
+            <div class="hood">San Rafael</div>
+            <p class="line">Ruta nocturna guiada por quien sí sabe. Boletos sin intermediarios.</p>
+          </div>
+          <div class="gq"><div class="qr" data-qr="ruta" data-size="mini"></div><span class="slug">/s/ruta</span></div>
+        </article>
+
+        <article class="gem">
+          <div>
+            <span class="cat ink">Colección</span>
+            <h4 class="nm">Rockshop · Comic&rsquo;s</h4>
+            <div class="hood">Metro Hidalgo</div>
+            <p class="line">Vinilos, comics y rarezas de culto. Del Chopo al mundo.</p>
+          </div>
+          <div class="gq"><div class="qr" data-qr="rockshop" data-size="mini"></div><span class="slug">/s/rockshop</span></div>
+        </article>
+      </div>
+
+      <p class="mono-note" style="margin-top:7px;">Escanea cada joya → su tienda ya está armada. El local la reclama gratis, 0% comisión.</p>
+    </section>
+
+    <!-- PANEL D · Featured artist -->
+    <section class="panel art-fill" data-screen-label="Diseñador invitado">
+      <div class="role">Interior · centro</div>
+      <span class="kicker-bar green">Diseñador invitado</span>
+      <h2 class="headline" style="font-size:30px;margin:8px 0 3px;">Cada partido<br />de México,<br />un diseñador.</h2>
+      <p class="script" style="font-size:13px;margin-bottom:11px;">La portada cambia con la selección.</p>
+
+      <div class="photo" style="flex:1;min-height:230px;">
+        <span class="corner">Arte invitado</span>
+        <span class="tag"><b>［ TAKEOVER ］</b><br />Arte del diseñador invitado — full bleed. Drop por partido de México.</span>
+      </div>
+
+      <div class="bio" style="margin-top:13px;">
+        <div class="editable">
+          <span class="flag">Placeholder · por anunciar</span>
+          <p class="placeholder-copy" style="margin:0;">［ Diseñador invitado — TBD. Nombre, una línea de bio y su @. Edición rota cada partido de México. ］</p>
+        </div>
+        <div style="display:flex;gap:11px;align-items:center;margin-top:11px;">
+          <div class="qr" data-qr="artista" data-size="small"></div>
+          <div>
+            <p class="qr-cap" style="text-align:left;"><b>miyagisanchez.com/artista</b></p>
+            <p class="mono-note" style="margin-top:4px;">Merch en edición limitada · drop por partido.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL E · Pregúntale a Claudio -->
+    <section class="panel" data-screen-label="Pregúntale a Claudio">
+      <div class="role">Interior · der</div>
+      <span class="kicker-bar">La columna vertebral</span>
+      <h2 class="headline" style="font-size:31px;margin:8px 0 4px;">Pregúntale<br />a Claudio<br /><span style="color:var(--selva);">sobre Miyagi.</span></h2>
+      <p class="aside-red" style="margin:10px 0 13px;">No confíes en nosotros. Confía en tu propia IA.</p>
+
+      <div class="prompt-box">
+        <div class="lbl"><span>Copia y pega ▾</span><span class="copy">prompt</span></div>
+        <p class="txt">«¿Qué es miyagisanchez.com y por qué me convendría vender ahí?»</p>
+      </div>
+
+      <ol class="steps" style="margin-top:14px;">
+        <li><span class="n">1</span><span>Copia el prompt de arriba.</span></li>
+        <li><span class="n">2</span><span>Pégalo en tu IA de cabecera.</span></li>
+        <li><span class="n">3</span><span>Que ella te diga la verdad —sin que te vendamos nada.</span></li>
+      </ol>
+
+      <hr class="rule-dot" style="margin:14px 0;" />
+      <p class="body sm" style="font-style:italic;">«La única reseña sin trampa: la que te da tu propio asistente.»</p>
+
+      <p class="pull" style="font-size:30px;margin:18px 0 0;">Esta es la vez<br />que tu IA le<br />baja el negocio<br />a Bezos.</p>
+
+      <div style="margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:7px;padding-top:16px;">
+        <div class="qr" data-qr="about" data-size="big"></div>
+        <p class="qr-cap"><b>miyagisanchez.com</b> · escanea, pregunta, decide.</p>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<script>
+/* ---- deterministic faux-QR generator (placeholder, clearly fake) ---- */
+function rng(seed){
+  let h=2166136261>>>0;
+  for(let i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  return function(){h+=0x6D2B79F5;let t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
+}
+function buildQR(el){
+  const seed=el.getAttribute('data-qr')||'x';
+  const size=el.getAttribute('data-size')||'small';
+  const px={mini:40,small:64,big:92}[size];
+  const N=21;
+  const rand=rng(seed);
+  const cell=px/N;
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width',px);svg.setAttribute('height',px);
+  svg.setAttribute('viewBox','0 0 '+px+' '+px);
+  // finder pattern positions
+  const finders=[[0,0],[N-7,0],[0,N-7]];
+  function isFinder(x,y){
+    for(const [fx,fy] of finders){
+      if(x>=fx&&x<fx+7&&y>=fy&&y<fy+7) return true;
+      if(x>=fx-1&&x<fx+8&&y>=fy-1&&y<fy+8) return 'quiet';
+    }
+    return false;
+  }
+  for(let y=0;y<N;y++){
+    for(let x=0;x<N;x++){
+      const f=isFinder(x,y);
+      if(f==='quiet') continue;
+      let on=false;
+      if(f===true){
+        const lx=x-(x>=N-7?N-7:0), ly=y-(y>=N-7?N-7:0);
+        on=(lx===0||lx===6||ly===0||ly===6)||(lx>=2&&lx<=4&&ly>=2&&ly<=4);
+      } else {
+        on=rand()>0.52;
+      }
+      if(on){
+        const r=document.createElementNS(ns,'rect');
+        r.setAttribute('x',(x*cell).toFixed(2));
+        r.setAttribute('y',(y*cell).toFixed(2));
+        r.setAttribute('width',(cell+0.4).toFixed(2));
+        r.setAttribute('height',(cell+0.4).toFixed(2));
+        r.setAttribute('fill','#16160f');
+        svg.appendChild(r);
+      }
+    }
+  }
+  el.appendChild(svg);
+}
+document.querySelectorAll('.qr[data-qr]').forEach(buildQR);
+
+/* ---- screen-fit scaling for the two sheets ---- */
+function fit(){
+  const sheets=document.querySelectorAll('.sheet');
+  const avail=Math.min(window.innerWidth-48,1056);
+  const scale=avail/1056;
+  sheets.forEach(s=>{
+    s.style.transform='scale('+scale+')';
+    s.style.transformOrigin='top left';
+    s.style.marginBottom=(816*scale-816)+'px';
+    s.style.marginRight=(1056*scale-1056)+'px';
+  });
+}
+window.addEventListener('resize',fit);
+fit();
+</script>
+</body>
+</html>
