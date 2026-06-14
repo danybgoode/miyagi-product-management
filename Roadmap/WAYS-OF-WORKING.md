@@ -50,8 +50,15 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
 With multiple agents running in parallel, the agent that **builds** a PR is not the one that **approves** it — a
 fresh reviewer re-derives intent from the diff alone and catches what the author's context-bias hides. Two layers
 do this, and they're complementary:
-- **CI (determinism):** GitHub Actions runs `tsc` + `build` + the Playwright suite on every PR (against the preview
-  via the bypass token). This is the tireless gate — it never forgets or runs out of tokens. A red CI blocks merge.
+- **CI (determinism):** GitHub Actions runs a deterministic gate on every PR in **both repos** — the tireless
+  gate that never forgets or runs out of tokens; a red CI blocks merge.
+  - **Frontend** (`apps/miyagisanchez`): `tsc` + `next build` + the Playwright suite against the PR's Vercel
+    preview (via the protection-bypass token).
+  - **Backend** (`apps/backend`): `medusa build` (which also generates the `.medusa/types` that `tsc` needs) →
+    `tsc --noEmit` → `npm run test:unit` (`ci.yml`, on `pull_request`). The backend has **no per-branch preview** (it deploys
+    post-merge to Cloud Run), so there is **no Playwright/e2e step** — that's correct, not a gap; DB-bound
+    integration tests are out of the gate (they need Postgres). *Operational: this check must be added to the
+    backend repo's required-status-checks (branch protection) to actually block a red merge — owed to Daniel.*
 - **Reviewer (judgment):** a **fresh reviewer agent** re-derives intent from the diff alone and checks
   correctness, architecture, and the five rules from `AGENTS.md`. The path is a **repo-local reviewer
   subagent** — point it at `gh pr diff <PR#>` (+ the changed files) and the five rules; it composes with

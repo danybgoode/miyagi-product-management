@@ -1,6 +1,16 @@
 # Dev-tooling reliability — Sprint 1: Backend CI gate
 
-**Status:** 📋 scaffolded — not started.
+**Status:** 🏗️ built on `chore/dev-tooling-reliability` (backend repo) — local gate green, draft PR open, awaiting CI smoke + the required-status-check toggle (Daniel).
+
+## Resolved decisions
+- **Open question 2 — `tsc` is kept, ordered after `build`.** On a fresh checkout `tsc --noEmit` needs
+  `.medusa/types/*` (link/module declarations the `tsconfig` `include`s), which `medusa build` generates;
+  `medusa build` itself is swc-based and does **not** type-check. So the gate runs **`medusa build` → `tsc --noEmit` → `test:unit`** — build first (generates the types + proves compile), then tsc as the real type gate. Verified locally: build clean, `tsc --noEmit` exits 0, `test:unit` 3 suites/13 tests green. No `tsc`-noisy fallback needed.
+- **No env block / no service container.** `medusa build` falls back to a fake redis and never connects to a
+  DB at build time (no `DATABASE_URL`/`REDIS_URL` required), and the unit specs are DB-free — so the workflow
+  needs no secrets, no placeholder env, and no Postgres/Redis `services:` block.
+- **Open question 1 — backend uses a PR flow**, so `on: pull_request` is the right trigger; no `on: push`
+  gate is added (`notify-telegram.yml` already covers the post-push ping).
 
 > Lands in the **backend** repo (`apps/backend/.github/workflows/`). Dev tooling, not commerce: no
 > products/orders/payments/DB/auth/i18n surface. The backend has **no per-branch preview** (WAYS §40), so
@@ -38,9 +48,9 @@ backend automatically, **so that** a broken backend can't reach `main` (and thus
 - **deterministic gate (this sprint's own QA):** the new workflow **is** the gate; prove it by pushing a
   red commit to a branch and seeing the check fail, then green on fix.
 - **browser smoke owed:** no.
-- **dependency check:** confirm the backend `npm install` succeeds on a clean runner and `npx tsc --noEmit`
-  is clean against the backend `tsconfig` (open question 2); fall back to `medusa build` + `test:unit` only
-  if `tsc` is noisy.
+- **dependency check:** ✅ confirmed locally — `npm install` succeeds, `medusa build` clean (no DB env),
+  `npx tsc --noEmit` exits 0 **after** the build, `test:unit` 3 suites/13 tests green. `tsc` kept (not noisy);
+  ordered after `build` so the generated `.medusa/types` resolve (OQ2, see *Resolved decisions*).
 - **operational, owed to Daniel:** the required-status-check toggle in the backend repo's settings.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
@@ -49,11 +59,15 @@ Env: the **backend** repo on GitHub (`medusa-bonsai-backend`). Use a throwaway b
 1. Create a branch off `main`, push a trivial no-op change, open a PR.
    → A **CI / Type-check + build + unit** check appears on the PR and goes **green**.
 2. On the same branch, introduce a deliberate TypeScript error (e.g. assign a string to a number) and push.
-   → The CI check goes **red** at the `tsc` / `medusa build` step; merge is blocked (once the required-check toggle is on).
+   → The CI check goes **red** at the **Type-check (`tsc --noEmit`)** step (`medusa build` is swc-based and
+     strips types without checking, so a pure type error surfaces at `tsc`, which runs right after build);
+     merge is blocked (once the required-check toggle is on).
 3. Revert the error; push.
    → CI goes **green** again.
 4. Temporarily break a unit spec (flip an assertion) and push.
-   → CI goes **red** at the `test:unit` step.
+   → CI goes **red** at the **Unit tests (`test:unit`)** step. *(The `ci-workflow.unit.spec.ts` self-check also
+     rides this step, so gutting the workflow itself — dropping a step, narrowing the trigger, adding a DB
+     service — turns it red too.)*
 5. Open `Roadmap/WAYS-OF-WORKING.md` §"Review & merge".
    → It now states the backend has a real tsc + build + unit gate, with the "no preview, no e2e" caveat.
 
