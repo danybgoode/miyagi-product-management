@@ -1,6 +1,6 @@
 # Dev-tooling reliability — Sprint 1: Backend CI gate
 
-**Status:** 🏗️ built on `chore/dev-tooling-reliability` (backend repo) — local gate green, draft PR open, awaiting CI smoke + the required-status-check toggle (Daniel).
+**Status:** 🏗️ built on `chore/dev-tooling-reliability` (backend repo) — local gate green; draft **PR #29** open with the new gate **green on its first CI run** (smoke step 1 ✓, 2m2s). Owed: the red/green smoke steps 2–4 on a throwaway branch + the required-status-check toggle (Daniel). Backend commit `ca01856`.
 
 ## Resolved decisions
 - **Open question 2 — `tsc` is kept, ordered after `build`.** On a fresh checkout `tsc --noEmit` needs
