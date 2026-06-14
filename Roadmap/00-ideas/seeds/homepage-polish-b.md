@@ -19,8 +19,7 @@ updated: 2026-06-13
 > `claude.ai/design` against the marketplace homepage; the handoff (`handoff/HANDOFF.md`) ships a
 > signed-off redesign + the visual source of truth (`handoff/mockups-directions.html`, "Dirección B"
 > frames) + the reasoning (`handoff/audit.html`). Re-validated this pass against **`origin/main`** of the
-> app repo (the working tree is parked on `feat/inventory`, a stale branch — every finding below was
-> re-read from `origin/main`, not the checked-out tree).
+> app repo (every finding below was re-read from `origin/main`).
 >
 > **Class:** Feature → epic (domain 01 — Discovery & Shopping). **Stage-2.5 bucket:** a mix —
 > the homepage *rebuild* is **genuinely new** layout work, but several modules are **light enhancements
@@ -138,8 +137,8 @@ Iconoir set.
   the rail ships before/independent of the column existing.
 - **Curation cold-start:** `metadata.featured` pinning is a new admin convention; until an admin pins,
   featured = newest qualifying listing (handoff §2.5) — confirm an admin can set product metadata.
-- The app working tree is on `feat/inventory`; Claude Code must branch `feat/homepage-polish-b` off the
-  latest **`origin/main`**, not the checked-out tree.
+- Claude Code must branch `feat/homepage-polish-b` off the latest **`origin/main`**, not whatever branch
+  happens to be checked out.
 
 ## References
 - Handoff spec: `handoff/HANDOFF.md` · visual source of truth: `handoff/mockups-directions.html` (Dirección

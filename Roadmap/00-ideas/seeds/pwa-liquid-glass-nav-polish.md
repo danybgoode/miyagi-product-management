@@ -30,14 +30,15 @@ UI at the highest level: glass quality + the search interaction.
 
 ## ⚠️ Two findings that reshape this ask (validated, not assumed)
 
-### 1. The checked-out code is stale — do **not** build from it
-`apps/miyagisanchez` is currently on branch **`feat/inventory`** (last touched **2026-05-25**), which
-**predates** the nav-reorg. Its `app/components/MobileTabBar.tsx` already shows the *old* 5-element layout
-(Inicio · Mensajes · ⊕ · Favoritos · Perfil **+ detached search circle**, **with labels**) — which happens
-to resemble the target, but it is **not what is live** and **not latest `main`**.
-**Action:** build branches off **latest `main`** (the reorg state). The `feat/inventory` `MobileTabBar.tsx`
-is a useful **reference** for the detached-search markup and the iOS synchronous-`focus()` trick — reference
-only, never the base.
+### 1. The old `MobileTabBar` is a historical reference — do **not** build from it
+The detached-search bar work shipped on the now-deleted `feat/inventory` branch, which was **merged into
+`main`** (commit `36ba5ca`, **2026-05-30**) and then **superseded by the nav-reorg**. That commit's
+`app/components/MobileTabBar.tsx` shows the *old* 5-element layout (Inicio · Mensajes · ⊕ · Favoritos ·
+Perfil **+ detached search circle**, **with labels**) — which happens to resemble the target, but it is
+**not what is live** today and **not latest `main`**.
+**Action:** build branches off **latest `main`** (the reorg state). The old `MobileTabBar.tsx` at commit
+`36ba5ca` (`git show 36ba5ca:app/components/MobileTabBar.tsx`) is a useful **reference** for the
+detached-search markup and the iOS synchronous-`focus()` trick — reference only, never the base.
 
 ### 2. This ask reverses two decisions the nav-reorg shipped 2 days ago — Daniel confirmed, eyes open
 What is **live on prod today** (screenshot + reorg docs): **Inicio · Explorar(🔍→`/l`) · ⊕ Vender · Mensajes
@@ -54,7 +55,7 @@ core journey"*). **Daniel chose the full reversal knowingly (2026-06-13).** Cons
 2. **Labels:** **icons-only** (no text labels). (Reuse the reorg's `LABEL_MODE` const if still present; default `icons-only`.)
 3. **Search interaction:** **bottom-sheet search** (pattern B). Tap the detached search → a glass sheet rises
    above the bar with the input (keyboard-focused, iOS-safe) + **recent + suggested searches**; submit → `/l?q=`.
-   *(Pattern A in-place morph was the `feat/inventory` attempt that "didn't work" — the iOS 18 PWA keyboard
+   *(Pattern A in-place morph was the earlier `feat/inventory` attempt (merged commit `36ba5ca`) that "didn't work" — the iOS 18 PWA keyboard
    bug, not the concept. B is more robust and adds recognition-over-recall. Morph kept only as optional polish.)*
 4. **Search is primary at the bottom:** **demote / hide the persistent header search on the mobile PWA** so
    there is one primary search control (desktop header search unchanged).
@@ -64,7 +65,7 @@ core journey"*). **Daniel chose the full reversal knowingly (2026-06-13).** Cons
 
 ## Stage 2.5 — orientation (can we already do this?) → mostly **light enhancement on existing primitives**
 - **The bar exists** — `app/components/MobileTabBar.tsx` (live, reorg version). Re-order + restyle in place.
-- **The detached-search affordance + iOS-safe `focus()` already shipped once** (pre-reorg, on `feat/inventory`)
+- **The detached-search affordance + iOS-safe `focus()` already shipped once** (pre-reorg, merged commit `36ba5ca`)
   — reference its markup; don't reinvent.
 - **A glass bottom-sheet pattern already ships** — Discovery Polish S2's **apply-gated mobile filter
   bottom-sheet** ("Filtrar y ordenar" → live "Ver X resultados"). **Reuse that sheet mechanism** for the search
@@ -92,7 +93,7 @@ chrome, not a commerce capability); #5 (bilingual) — any new string (e.g. "Bú
 | Need | Reuse |
 |---|---|
 | Bottom bar | `app/components/MobileTabBar.tsx` (live) — re-order + restyle in place |
-| Detached search markup + iOS `focus()` | `feat/inventory` `MobileTabBar.tsx` — **reference only** |
+| Detached search markup + iOS `focus()` | `MobileTabBar.tsx` at merged commit `36ba5ca` — **reference only** |
 | Search overlay | Discovery Polish S2 **filter bottom-sheet** seam |
 | Search results | `/l?q=` (Medusa-backed) |
 | Favoritos | `/account/favorites` + `marketplace_favorites`; `CuentaMenu` (desktop) |
@@ -153,7 +154,7 @@ chrome, not a commerce capability); #5 (bilingual) — any new string (e.g. "Bú
   sheet on iOS, and the **glass appearance** on a real screen.
 
 ## Open risks
-1. **Stale branch** — must branch off latest `main`; `feat/inventory` is reference only.
+1. **Stale reference** — must branch off latest `main`; the old `feat/inventory` `MobileTabBar.tsx` (merged commit `36ba5ca`) is reference only.
 2. **iOS 18 PWA keyboard bug** (WebKit #279904) — the keyboard can fail to appear for inputs in installed PWAs;
    mitigate with synchronous `focus()` + `touch-action: auto` on the input. The bottom-sheet pattern degrades
    gracefully (a tap on the visible field always raises the keyboard).

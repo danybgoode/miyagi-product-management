@@ -6,7 +6,7 @@
 > **Status: ✅ COMPLETE — all 4 sprints merged 2026-06-12/13.** S1 ✅ (PR #84 `14fd880`); S2 ✅ (PR #85 `6774203`); S3 ✅ (PR #86 `b472cfb`); S4 ✅ (PR #87 squash `009204b`). S4.4 (`price_cents_at_save`) found already live → re-scoped, no migration. Signed off by Daniel 2026-06-12. Authed signed-in browser smokes (rail/alert/snapshot render) owed to Daniel. Scope doc / gate:
 > [`00-ideas/seeds/homepage-polish-b.md`](../../00-ideas/seeds/homepage-polish-b.md). Visual source of
 > truth: `handoff/mockups-directions.html` (Dirección B). Spec: `handoff/HANDOFF.md`. Reasoning:
-> `handoff/audit.html`. Validated against app **`origin/main`** (working tree is on a stale `feat/inventory`).
+> `handoff/audit.html`. Validated against app **`origin/main`**.
 
 ## Why
 The current homepage is category chips + a Vecindario banner + a recency dump. Dirección B replaces it

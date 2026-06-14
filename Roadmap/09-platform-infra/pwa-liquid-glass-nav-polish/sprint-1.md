@@ -5,8 +5,9 @@
 **Files (expected):** `app/components/MobileTabBar.tsx`, `app/globals.css`,
 `lib/tabbar-visibility.ts` (extend), `e2e/tabbar-visibility.spec.ts` (extend), `app/components/CuentaMenu.tsx` (Favoritos dedup for desktop).
 
-> ⚠️ **Branch off latest `main`.** The repo's checked-out `feat/inventory` is stale (May-25, pre-reorg) —
-> reference only. The live bar to restyle is the **reorg** `MobileTabBar.tsx` on `main`.
+> ⚠️ **Branch off latest `main`.** The old `feat/inventory` `MobileTabBar.tsx` (merged commit `36ba5ca`,
+> 2026-05-30, pre-reorg) is **reference only** — that branch is merged into `main` and deleted. The live bar
+> to restyle is the **reorg** `MobileTabBar.tsx` on `main`.
 
 ## Stories
 

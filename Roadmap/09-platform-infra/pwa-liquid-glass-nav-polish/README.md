@@ -33,8 +33,9 @@ AGENTS rules #1 (Medusa) / #2 (Supabase — favorites already there) / #4 (Clerk
 
 ## What already exists (reuse, don't rebuild)
 - **`app/components/MobileTabBar.tsx`** (live, reorg version) — re-order + restyle **in place**.
-- **`feat/inventory` `MobileTabBar.tsx`** (May-25, pre-reorg) — **reference only** for the detached-search
-  markup and the iOS synchronous-`focus()` trick. **Not the base** — branch off latest `main`.
+- **Old `MobileTabBar.tsx` at merged commit `36ba5ca`** (2026-05-30, pre-reorg; the `feat/inventory`
+  branch is merged into `main` and deleted) — **reference only** for the detached-search markup and the
+  iOS synchronous-`focus()` trick. **Not the base** — branch off latest `main`.
 - **Discovery Polish S2 filter bottom-sheet** — the apply-gated mobile sheet ("Filtrar y ordenar" → live
   "Ver X resultados"). **Reuse this sheet seam** for the search sheet; don't build a new overlay primitive.
 - **`/l` + `/l?q=`** — Medusa-backed listings/search. The sheet only composes a query and navigates.
