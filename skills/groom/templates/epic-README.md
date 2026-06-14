@@ -1,3 +1,8 @@
+---
+status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+slug: {{SLUG}}
+---
+
 # Epic: {{TITLE}}
 
 > **Area:** {{MACRO}} · **Risk:** {{RISK}} · **Scope seed:** [`00-ideas/seeds/{{SLUG}}.md`](../../00-ideas/seeds/{{SLUG}}.md)
@@ -31,4 +36,4 @@
 - [ ] **Kill-switch (only if one was planned at grooming — Stage 6b):** the flag slice shipped + the flag
       exists in Flagsmith / Edge Config with the stated polarity. *Verify-only — not a new gate; whether a
       high-risk epic needs one is decided at grooming, not here.*
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`
+- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)

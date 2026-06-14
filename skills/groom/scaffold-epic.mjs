@@ -93,7 +93,8 @@ console.log(`Scaffolded epic Roadmap/${macro}/${slug} (${files.length} files):`)
 files.forEach(([p]) => console.log('  + ' + rel(p)));
 console.log('\nNext:');
 console.log(`  1. Fill the generated files with real stories / reuse list / QA stages.`);
-console.log(`  2. Set the seed frontmatter: status: scaffolded · epic: "${macro}/${slug}"`);
+console.log(`  2. The epic README frontmatter \`status:\` is the SSOT (born \`scaffolded\`; set \`shipped\` at close).`);
+console.log(`     Set the SEED frontmatter \`epic: "${macro}/${slug}"\` so it leaves the funnel (the seed is funnel-only after this).`);
 console.log(`  3. Commit PATH-SCOPED (never git add -A):`);
 const paths = files.map(([p]) => `'${rel(p)}'`).join(' ');
 console.log(`     git add ${paths} 'Roadmap/00-ideas/seeds/${slug}.md'`);

@@ -3,7 +3,12 @@
 **Status:** ⬜ not started
 
 ## Stories
-<!-- One block per story. Thinnest shippable slice first. -->
+<!-- One block per story. Thinnest shippable slice first.
+     Keep the heading shape `### Story {{N}}.M — <title>` (this is what the status board counts).
+     When a story ships, append ✅ + its commit ref to the heading, e.g.
+       ### Story {{N}}.1 — <title> ✅ `abc1234`
+     Note: the epic README frontmatter `status:` is the AUTHORITATIVE epic status; this ✅ marker only
+     feeds the cosmetic per-sprint progress count, so a format slip can't mis-state shipped/not-shipped. -->
 
 ### Story {{N}}.1 — <title>
 **As a** <role>, **I want** <capability>, **so that** <outcome>.
