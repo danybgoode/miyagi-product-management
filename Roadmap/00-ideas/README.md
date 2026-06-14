@@ -7,7 +7,7 @@ between `1. raw` / `2. readyforscope` / `3. done`).
 ```
 00-ideas/
 ├── README.md         ← you are here
-├── BUILD-ORDER.md    ← the agreed grooming queue (what gets groomed next, in order)
+├── BUILD-ORDER.md    ← GENERATED status board (run `node scripts/build-order.mjs`) — do NOT hand-edit
 ├── seeds/            ← every idea/scope seed, flat, one .md each (with frontmatter)
 └── audits/           ← UX/UI audit findings (reference material, NOT seeds)
     ├── results-refresh-2026-06/   ← the current audit (the lens we build against)
