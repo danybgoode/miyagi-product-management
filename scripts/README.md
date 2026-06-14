@@ -24,13 +24,17 @@ NOTION_TOKEN=secret_xxx NOTION_DB_ID=eb68a1fd05f443b184b6b5b3db89f47e \
 - **Sprint** — one per `sprint-N.md` inside an epic, linked to its Epic via the **Epic** relation property.
 - **Seed** — one per seed in `Roadmap/00-ideas/seeds/` whose frontmatter `epic:` is null (un-scaffolded funnel).
 
-**Status (re-derived docs-first every run):**
-- **Sprint** — reads the sprint's `**Status:**` line first (controlled vocab: ⬜ Planned · 🏗 In progress ·
-  🟦 In review · ✅ Shipped), else falls back to counting story ✅ ticks. *Tip: the "Wrap S\<n>" step
-  (`Roadmap/SESSION-KICKOFFS.md` §7) should set that line — it keeps this projection trivially reliable.*
-- **Epic** — rolled up from its sprints (all Shipped ⇒ Shipped · any active ⇒ In progress · all Planned ⇒
-  Scaffolded), corroborated by a **dated** `RETROSPECTIVE.md` ship-marker for closed epics.
-- **Seed** — its frontmatter `status`.
+**Status (docs-first every run):**
+- **Epic — the SSOT is the epic README's frontmatter `status:`** (`scaffolded | in-progress | shipped |
+  archived`, set at epic close). The sprint/retro derivation (all Shipped ⇒ Shipped · any active ⇒ In
+  progress · all Planned ⇒ Scaffolded, corroborated by a **dated** `RETROSPECTIVE.md`) is kept only as a
+  **fallback** when the field is absent, and is also emitted as `status_derived` so the board can flag an
+  advisory drift when the two disagree.
+- **Sprint** — reads the sprint's `Status:` line first (bold or plain; controlled vocab: ⬜ Planned · 🏗 In
+  progress · 🟦 In review · ✅ Shipped), else counts story headings (`## US-1` / `### Story 1.1` / `C.1` /
+  `B1.1`) and their ✅ ticks.
+- **Seed** — its frontmatter `status` (only seeds with `epic: null` produce a row — the un-scaffolded funnel;
+  once `epic:` is set the seed is funnel-only and the epic README frontmatter owns status).
 
 **Notion schema this expects:** Status options `Raw · Ready · Queued · Planned · Scaffolded · In progress ·
 In review · Shipped · Archived`; Grain options `Epic · Sprint · Seed`; an **Epic** relation property
@@ -42,6 +46,23 @@ the integration). Zero npm deps — Node 18+ (uses global `fetch`).
 **Scheduled:** `.github/workflows/notion-sync.yml` runs `--sync` nightly (08:00 UTC ≈ 02:00 CDMX) +
 on `workflow_dispatch`. It needs the `NOTION_TOKEN` repo secret (`gh secret set NOTION_TOKEN`);
 `NOTION_DB_ID` is optional (the Marketplace Roadmap id above is the workflow default).
+
+## build-order.mjs — generate the in-repo status board
+
+Renders `Roadmap/00-ideas/BUILD-ORDER.md` from the **same projection** the Notion sync reads
+(`roadmap-to-notion.mjs --extract`). The board is a **generated view** — never hand-edit it. Status
+SSOT = each epic README's frontmatter `status:` (seed frontmatter owns only the un-scaffolded funnel);
+the board groups epics by bucket and lists the funnel, plus an advisory **frontmatter-vs-derived** drift
+section when a close-out forgot to set the field.
+
+```bash
+node scripts/build-order.mjs          # regenerate Roadmap/00-ideas/BUILD-ORDER.md
+node scripts/build-order.mjs --check  # exit 1 if the committed board is stale (CI / pre-commit)
+```
+
+**Scheduled/guarded:** `.github/workflows/build-order-guard.yml` runs `--check` on push-to-main + PRs
+touching `Roadmap/**` or the scripts (fails if the board is stale). Opt-in local mirror:
+`git config core.hooksPath .githooks`. Zero npm deps — Node 18+.
 
 ## vercel-env.mjs — set + verify Vercel env vars via the REST API
 
@@ -65,6 +86,25 @@ node scripts/vercel-env.mjs delete MY_KEY
 
 **Env:** `VERCEL_API_TOKEN` + `VERCEL_PROJECT_ID` required; `VERCEL_TEAM_ID` optional (tokens are
 team-aware — a team-owned project needs `?teamId=`). Zero npm deps — Node 18+ (global `fetch`).
+
+## vercel-prune-previews.mjs — delete stale Vercel preview deployments
+
+Vercel retains **every** deployment forever, so deleting a merged git branch leaves its preview
+deployments lingering as clutter (dozens accumulate). This prunes them — **production deployments are
+never touched** (they're your rollback history). Pair it with branch cleanup: delete merged branches →
+prune their previews. Dry-run by default.
+
+```bash
+node scripts/vercel-prune-previews.mjs                          # DRY-RUN: list previews that would go
+node scripts/vercel-prune-previews.mjs --apply                 # delete them
+node scripts/vercel-prune-previews.mjs --age 7 --apply         # only previews older than 7 days
+node scripts/vercel-prune-previews.mjs --keep-branch feat/x --apply   # protect an OPEN-PR branch's preview
+node scripts/vercel-prune-previews.mjs --project despachobonsai-vercel --apply
+```
+
+**Always `--keep-branch` any branch with an open PR** (its preview is the live review target), or run
+after that PR merges. **Token:** `VERCEL_API_TOKEN`/`VERCEL_TOKEN` env, else the local `vercel login`
+(reads the CLI `auth.json`); team auto-detected (`VERCEL_TEAM_ID` to override). Zero npm deps — Node 18+.
 
 ## flags.mjs — manage Flagsmith flags via the Admin API
 

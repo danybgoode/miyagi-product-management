@@ -149,6 +149,13 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   commit feature work straight to `main`, and never force-push a shared branch. Rebase/merge latest `main`
   into a long-running branch before opening the PR. Roll back a bad merge with `git revert` on `main`.
   (Two repos deploy separately — see the deploy topology in memory; branch in each repo you touch.)
+- **Branch + preview hygiene (at merge, and as a periodic sweep).** Deleting a merged branch does **not**
+  remove its **Vercel preview deployments** — Vercel retains every deployment forever, so dead branches
+  pile up dozens of stale previews (production deployments are your rollback history and are left alone).
+  After deleting merged branches, prune their previews: **`node scripts/vercel-prune-previews.mjs`**
+  (dry-run by default; `--apply` to delete; `--age N` for "older than N days"; **`--keep-branch <a,b>` for any
+  branch with an OPEN PR** — its preview is the live review target). Same cadence as the branch cleanup itself;
+  run it per-repo project (`--project`). Pair the two: delete merged branches → prune their previews.
 - **Planning commits — own worktree + path-limited.** Planning/scaffold work commits to the monorepo-root
   repo, and **multiple planning sessions running in the same shared worktree collide the git index** (a bare
   `git add Roadmap/` stages a sibling agent's in-flight files → "another git process is running" / index lock
