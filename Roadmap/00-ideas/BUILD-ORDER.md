@@ -13,7 +13,7 @@
 ## 🏗️ Building now (2)
 
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 11/18 stories
-- [Vercel function & Fluid-CPU cost reduction](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 1/5 stories · risk: Low · Wave 1
+- [Vercel function & Fluid-CPU cost reduction](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 2/5 stories · risk: Low · Wave 1
 
 ## 📋 Ready to build (scaffolded, not started) (1)
 

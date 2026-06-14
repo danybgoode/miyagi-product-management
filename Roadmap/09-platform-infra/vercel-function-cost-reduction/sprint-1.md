@@ -1,6 +1,6 @@
 # Vercel function & Fluid-CPU cost reduction — Sprint 1: Backend cron cadence
 
-**Status:** 🟦 In review — Story 1.1 built, [backend PR #28](https://github.com/danybgoode/medusa-bonsai-backend/pull/28) open (Daniel merges).
+**Status:** ✅ Shipped — both stories merged to backend `main` via [PR #28](https://github.com/danybgoode/medusa-bonsai-backend/pull/28) (squash `2fa1773`); antigravity cross-review clean. Owed to Daniel: post-deploy live draw smoke (step 3).
 
 ## Stories
 
@@ -15,7 +15,7 @@ idempotent no-op draw that only acts when a sweepstakes has actually ended.
 - Vercel Observability: `/api/cron/sweepstakes-draw` invocations drop ~15×.
 **Risk:** low (money-adjacent: draw timing shifts ≤15 min; idempotency unchanged). Built in PR #28, pending Daniel merge.
 
-### Story 1.2 — Reconcile-checkouts every 30 min
+### Story 1.2 — Reconcile-checkouts every 30 min ✅ `2fa1773`
 **As** the platform, **I want** the reconcile-checkouts job at `*/30` instead of `*/15`, **so that** the
 incomplete-cart reconcile (not time-critical) halves its Vercel invocations.
 **Acceptance:**
