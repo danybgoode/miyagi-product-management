@@ -1,6 +1,6 @@
 # Vercel function & Fluid-CPU cost reduction — Sprint 2: /_not-found cost — Bot Protection + cheap 404
 
-**Status:** 🏗️ In review — Story 2.2 (cheap cached 404) built + gate-green via [frontend PR #92](https://github.com/danybgoode/miyagisanchezcommerce/pull/92) (risk: low; touches `middleware.ts` → Daniel's merge call). Story 2.1 (Bot Protection dashboard toggle) is **owed to Daniel** — flagged in the PR, no code.
+**Status:** ✅ Story 2.2 (cheap cached 404) **MERGED to `main`** via [frontend PR #92](https://github.com/danybgoode/miyagisanchezcommerce/pull/92) (squash `db3c0a3`) → live on Vercel prod; CI green (incl. Playwright-vs-preview HTTP assertions) + antigravity cross-review clean. Story 2.1 (Bot Protection dashboard toggle) is **owed to Daniel** — flagged in the PR, no code.
 
 ## Stories
 <!-- `/_not-found` is the #1 function by BOTH invocations (1.1K/12h) and Active CPU (1m/12h) — scanners
@@ -31,11 +31,11 @@ scanner hits don't burn Fluid Active CPU on a doomed fetch.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com (preview URL while testing pre-merge)
+Env: production · https://miyagisanchez.com (Story 2.2 is live; 2.1 pending Daniel's toggle)
 
 1. Enable Firewall → Bot Management; reload the Firewall traffic view after some time.
    → Bot Protection = Active; scanner traffic challenged; intended agent/UCP surfaces unaffected.
-2. `curl -sI https://<preview>/l/wp-admin` (and `/s/Not-A-Real-Shop`).
+2. `curl -sI https://miyagisanchez.com/l/wp-admin` (and `/s/Not-A-Real-Shop`).
    → HTTP 404 + `Cache-Control: public, s-maxage=86400` (served by middleware, before the page function — body is the bare "Not found.", not the branded page). Backend logs show **no** Medusa fetch for the junk id.
 3. Open a real listing + a real shop; also hit a well-formed-but-deleted id (e.g. `/l/prod_00000000000000000000000000`).
    → reals render normally; the deleted id still 404s cleanly through the page (no regression).
