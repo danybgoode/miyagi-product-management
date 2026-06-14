@@ -78,6 +78,20 @@ that** I know the status and can still reach the seller.
 - Browser smokes per type (anonymous where possible). **Events ticket purchase + QR redemption = money/auth path,
   owed to Daniel.** REPUVE/property/unclaimed all read existing data — no new mutations.
 
+## Follow-ups (captured at sprint close)
+- **Owed to Daniel (money/auth smoke):** the events **ticket purchase** + the **QR after payment** (S5.3) — an
+  anonymous smoke covers only the display + the "Comprar boleto"/"Ver mi boleto" links.
+- **Deferred — events aforo / ticket tiers / quantity selector (no live source).** Would need a backend money-path
+  story: link a listing → capacity + ticket tiers (today `MarketplaceEvent.capacity` is a separate Supabase RSVP
+  system not linked to PDP listings, and a paid ticket is one line-item per order). Out of this sprint's LOW–MED scope.
+- **Nit (declined this sprint) — personalized event buy label.** If an event listing *also* has personalization
+  fields, its buy CTA renders via `PersonalizationBuyBox`, which doesn't receive `buyNowLabel`/`signInBuyLabel`, so
+  it falls back to "Comprar ahora" instead of "Comprar boleto" (cross-agent review nit, PR #93). Rare combination;
+  the fix touches the shared personalized buy box and the event context is already clear from `EventHero`. Thread the
+  label through `PersonalizationBuyBox` if event-ticket personalization becomes common.
+- **Cross-cutting (from S4, still open):** normalize protocol-less seller `booking_url`s (used unguarded across the
+  codebase — also feeds the autos/inmuebles "Agendar" CTAs here); backend rental line-item pricing.
+
 ## Sprint 5 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com once merged (the branch's Vercel **preview** while pre-merge). The
 `pdp_redesign` flag must be ON (default). Steps 1–3 and 5 are anonymous (no login); step 4 is **owed to Daniel**.
