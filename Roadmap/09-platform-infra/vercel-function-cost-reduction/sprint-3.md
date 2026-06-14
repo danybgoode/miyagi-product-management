@@ -1,12 +1,12 @@
 # Vercel function & Fluid-CPU cost reduction — Sprint 3: conversations/unread poll
 
-**Status:** ⬜ not started
+**Status:** ✅ built — Story 3.1 done (frontend `26c50d3`, branch `feat/vercel-cost-s3`, PR pending). Owed Daniel: authed DevTools eyeball (walkthrough below).
 
 ## Stories
 <!-- `/api/conversations/unread` = 698/12h, polled every 60s from MobileTabBar + DesktopUnreadBadge,
      even in backgrounded tabs. In-conversation delivery is already realtime; this is only the global badge. -->
 
-### Story 3.1 — Visibility-gate + lengthen the unread-badge poll
+### Story 3.1 — Visibility-gate + lengthen the unread-badge poll ✅
 **As** a signed-in user, **I want** the unread-count poll to pause when the tab is hidden and run less
 often when visible, **so that** an idle/backgrounded tab stops generating a function invocation every
 minute.
