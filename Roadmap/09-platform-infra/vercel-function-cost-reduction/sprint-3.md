@@ -1,6 +1,6 @@
 # Vercel function & Fluid-CPU cost reduction — Sprint 3: conversations/unread poll
 
-**Status:** ✅ built — Story 3.1 done (frontend `26c50d3`, branch `feat/vercel-cost-s3`, PR pending). Owed Daniel: authed DevTools eyeball (walkthrough below).
+**Status:** ✅ **MERGED to `main`** — Story 3.1 via [frontend PR #94](https://github.com/danybgoode/miyagisanchezcommerce/pull/94) (squash `507ee9c`) → live on Vercel prod; CI green (Type-check+build + Playwright-vs-preview) + antigravity cross-review clean (one negligible self-healing nit, declined with rationale). Owed Daniel: authed DevTools eyeball (walkthrough below).
 
 ## Stories
 <!-- `/api/conversations/unread` = 698/12h, polled every 60s from MobileTabBar + DesktopUnreadBadge,

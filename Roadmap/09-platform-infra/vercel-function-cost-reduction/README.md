@@ -1,11 +1,17 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: vercel-function-cost-reduction
 ---
 
-# Epic: Vercel function & Fluid-CPU cost reduction
+# Epic: Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)
 
 > **Area:** 09-platform-infra · **Risk:** low · **Scope seed:** [`00-ideas/seeds/vercel-function-cost-reduction.md`](../../00-ideas/seeds/vercel-function-cost-reduction.md)
+
+**All 3 sprints shipped.** S1 backend cron cadence ([PR #28](https://github.com/danybgoode/medusa-bonsai-backend/pull/28) `2fa1773`) ·
+S2 `/_not-found` (2.1 Bot Protection **Active** + 2.2 cheap cached 404, [PR #92](https://github.com/danybgoode/miyagisanchezcommerce/pull/92) `db3c0a3`) ·
+S3 visibility-gated unread poll ([PR #94](https://github.com/danybgoode/miyagisanchezcommerce/pull/94) `507ee9c`).
+No product-behaviour change — pure cost tuning. See [`RETROSPECTIVE.md`](./RETROSPECTIVE.md).
+Owed Daniel: S1 live draw smoke + S3 authed DevTools eyeball; one test follow-up (`not-found-shape.spec.ts` vs the firewall 403) spun off.
 
 ## Why
 The Vercel free tier is **over on Fluid Active CPU (7h10m / 4h)** and at **822K / 1M Function Invocations**
@@ -40,14 +46,12 @@ Independent slices, any order. **S1** is backend (Cloud Run, ~12 min, no preview
 dependency; no degrade-gracefully concern (nothing reads another slice's output).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch (only if one was planned at grooming — Stage 6b):** the flag slice shipped + the flag
-      exists in Flagsmith / Edge Config with the stated polarity. *Verify-only — not a new gate; whether a
-      high-risk epic needs one is decided at grooming, not here.*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — S1 #28, S2.2 #92, S3 #94; S2.1 firewall live. Owed Daniel: S1 draw + S3 eyeball.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** N/A — none planned at grooming (low-risk epic, no money/auth path).
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)

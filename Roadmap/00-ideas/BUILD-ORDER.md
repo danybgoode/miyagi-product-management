@@ -10,17 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (1)
 
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 15/18 stories
-- [Vercel function & Fluid-CPU cost reduction](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 4/5 stories · risk: Low · Wave 1
 
 ## 📋 Ready to build (scaffolded, not started) (2)
 
 - [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 0/8 stories
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 
-## ✅ Shipped (43)
+## ✅ Shipped (44)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -64,6 +63,7 @@
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 0 Enablers
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 3/9 stories · risk: High
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers
+- [Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 4/5 stories · risk: Low · Wave 1
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
 
 ## ⬜ Funnel — seeds not yet scaffolded (7)

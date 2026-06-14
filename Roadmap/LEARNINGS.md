@@ -324,6 +324,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   spec for a *new* endpoint run against prod pre-deploy fails confusingly (expected 401, got 200) —
   that's "route doesn't exist yet", not a logic bug. CI-vs-preview is the authoritative gate for new
   routes; don't chase the prod result. *(Gem → Claim Loop, 2026-06-09.)*
+- **A managed WAF/Bot-Protection rule shadows app-level handlers for flagged paths — and applies to PROD
+  but NOT previews.** Once Vercel Bot Protection is Active, a bot-probe path (`/l/wp-admin`) returns HTTP
+  **403** with header `x-vercel-mitigated: deny` *before* middleware/page runs, so a spec asserting the
+  app's own 404 *shape* for such a path fails **on prod only** — CI-vs-preview stays green because the
+  firewall isn't enabled on preview deployments. Two corollaries: test app not-found behaviour with a
+  **benign junk slug** the WAF won't flag (not `wp-admin`/`.env`/`.git`), and a prod-targeted smoke can
+  diverge from a green CI for purely environmental (firewall) reasons — don't read it as a regression.
+  *(2026-06-13, vercel-function-cost-reduction — S2.1 firewall shadowed S2.2's `not-found-shape.spec.ts`.)*
 - **Close-out validates the *doc* deliverables shipped, not just the code.** A "docs-only" sprint
   inside a mostly-code epic is the easy one to skip: #4's S2/S3 code merged (PR #37) but the **S1
   Roadmap token-contract doc was never written** — it surfaced only at epic close. At DoD, check each
@@ -378,6 +386,22 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
 
 ## Architecture
+- **Visibility-gate every client poll/timer — the cheapest, lowest-risk serverless cost lever.** A
+  `setInterval` that fetches (or even just re-renders) keeps firing in **backgrounded tabs**, billing a
+  function invocation per tick for a tab nobody's looking at. Gate the work on
+  `document.visibilityState === 'visible'` (early-return inside the callback so the interval may tick but
+  does nothing while hidden) and add a `visibilitychange` listener that refetches the moment the tab
+  returns — then widen the interval too. The global unread-badge poll (`MobileTabBar` /
+  `DesktopUnreadBadge`) was hitting `/api/conversations/unread` every 60s from every signed-in tab incl.
+  hidden ones; gating + 60s→150s cut it hard with **zero** UX change (realtime in-conversation delivery
+  was untouched). Same pattern suits any countdown/animation timer. Test it fast by emulating a hidden
+  tab (a mutable flag backing `document.visibilityState` via `addInitScript`) and asserting no request
+  fires — no need to wait the real interval. *(2026-06-13, vercel-function-cost-reduction S3.)*
+- **Match a cron/scheduled-job cadence to its real freshness need, not the tightest possible.** An
+  idempotent no-op job (sweepstakes-draw) firing `*/1` burned ~43K invocations/month doing nothing
+  between the rare real events; widening to `*/15` (draw latency ≤15 min is fine) and reconcile to `*/30`
+  reclaimed it with no behaviour change. Ask "how stale can this safely be?" before defaulting to per-minute.
+  *(2026-06-13, vercel-function-cost-reduction S1.)*
 - **Decompose a monolith behind the seam that already fronts it, keep the old path as a coexisting
   fallback, then delete it only once it's provably unreachable.** A 4,076-line `'use client'` settings
   monolith broke into one-component-per-section with **no user-facing change** because the route +
