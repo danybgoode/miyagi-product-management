@@ -1,9 +1,12 @@
 # Sprint 5 — Per-type blocks B: autos · inmuebles · events · unclaimed
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW–MED** (frontend reorder on existing primitives; the events ticket
-> purchase is a money path — owed to Daniel). **Status: ✅ BUILT on `feat/pdp-redesign` (off `origin/main`
-> db3c0a3) — gate green (tsc + `next build` + Playwright `api` 526 passed/0 failed); frontend-only, no backend
-> deploy. All deltas gated on the `pdp_redesign` kill-switch.** Goal: the four remaining types each lead with
+> purchase is a money path — owed to Daniel). **Status: ✅ MERGED — PR
+> [#93](https://github.com/danybgoode/miyagisanchezcommerce/pull/93) squash `8ba0e1f` (off `origin/main` db3c0a3),
+> CI green (tsc + `next build` + Playwright `api` 526 passed/0 failed) + clean cross-agent review (Antigravity
+> advisory: one es-MX spelling should-fix applied `e4e3bc7`, one nit captured below); frontend-only, no backend
+> deploy. Deployed to Vercel prod. All deltas gated on the `pdp_redesign` kill-switch.** Goal: the four remaining
+> types each lead with
 > their decision block + type-appropriate primary action, reusing REPUVE, the property fields, `readEventDetails`,
 > ticketing/QR, and the unclaimed contact-only PDP.
 >
