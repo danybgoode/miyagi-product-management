@@ -64,12 +64,13 @@
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 3 sprints · risk: Low · Wave 0 Enablers
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
 
-## ⬜ Funnel — seeds not yet scaffolded (6)
+## ⬜ Funnel — seeds not yet scaffolded (7)
 
 - [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Ready · Spike · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Kill-switch flag decided at grooming, not at epic close](seeds/kill-switch-at-grooming.md) — Ready · Chore
+- [Repo hygiene — branch cleanup + build-order/status reconciliation](seeds/repo-hygiene-and-build-order.md) — Ready · Chore
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
@@ -88,4 +89,4 @@ live code (see the cleanup handoff), then both this board and the Notion project
 | Cross-channel Storefront Trust Parity | scaffolded | Shipped |
 
 ---
-_Epics: 45 · seeds in funnel: 6 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 45 · seeds in funnel: 7 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._
