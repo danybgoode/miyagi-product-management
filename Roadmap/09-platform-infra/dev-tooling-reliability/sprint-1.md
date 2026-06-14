@@ -1,6 +1,6 @@
 # Dev-tooling reliability — Sprint 1: Backend CI gate
 
-**Status:** 🏗️ built on `chore/dev-tooling-reliability` (backend repo) — local gate green; draft **PR #29** open with the new gate **green on its first CI run** (smoke step 1 ✓, 2m2s). Owed: the red/green smoke steps 2–4 on a throwaway branch + the required-status-check toggle (Daniel). Backend commit `ca01856`.
+**Status:** ✅ **MERGED** — backend **PR #29** squash-merged to `main` (`21b1e16`), gate **green on first CI run** (2m2s). The `Type-check + build + unit` check is now a **required status check** on the backend repo's `main` (branch protection configured 2026-06-14), so a red run blocks merge. Advisory cross-agent review (Antigravity — codex token revoked) returned two false positives, both declined with rationale on the PR. Owed: only the destructive red-path smoke (steps 2–4) on a throwaway branch, if you want it exercised live.
 
 ## Resolved decisions
 - **Open question 2 — `tsc` is kept, ordered after `build`.** On a fresh checkout `tsc --noEmit` needs
@@ -51,7 +51,9 @@ backend automatically, **so that** a broken backend can't reach `main` (and thus
 - **dependency check:** ✅ confirmed locally — `npm install` succeeds, `medusa build` clean (no DB env),
   `npx tsc --noEmit` exits 0 **after** the build, `test:unit` 3 suites/13 tests green. `tsc` kept (not noisy);
   ordered after `build` so the generated `.medusa/types` resolve (OQ2, see *Resolved decisions*).
-- **operational, owed to Daniel:** the required-status-check toggle in the backend repo's settings.
+- **operational:** ✅ done — `Type-check + build + unit` is a required status check on `main` (branch
+  protection, configured via `gh api` 2026-06-14; `strict:false`, no mandatory review approval so the
+  low-risk reviewer-auto-merge flow still works, admins not locked out).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: the **backend** repo on GitHub (`medusa-bonsai-backend`). Use a throwaway branch.

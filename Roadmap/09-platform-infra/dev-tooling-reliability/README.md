@@ -81,8 +81,8 @@ resolve). S1 lands in the **backend** repo; S2/S3 in the **monorepo-root** repo.
 
 ## Definition of Done (epic)
 
-- [ ] Opening a backend PR runs `tsc` + `medusa build` + `test:unit`; a deliberate type error / failing spec turns it red. *(Smoke owed to Daniel — open a throwaway backend PR.)*
-- [ ] `WAYS-OF-WORKING.md` §Review&merge corrected to reflect the real backend gate; required-status-check toggle noted as Daniel's operational step.
+- [x] Opening a backend PR runs `tsc` + `medusa build` + `test:unit` (S1, PR #29 squash `21b1e16`); the gate is a **required status check** on `main`. *(Green proven on PR #29; the deliberate-red smoke steps 2–4 owed to Daniel — throwaway backend PR.)*
+- [x] `WAYS-OF-WORKING.md` §Review&merge corrected to reflect the real backend gate; required-status-check **configured** (branch protection, 2026-06-14) — was Daniel's operational step, done with his authorization.
 - [ ] With Codex unauthenticated, `cross-review.mjs <PR#>` still posts a review via Antigravity, clearly labeled as the fallback; stderr says how to restore Codex.
 - [ ] `cross-review.mjs` with no PR# reviews the current branch's PR; running with local HEAD ahead of the PR warns instead of silently reviewing a stale diff.
 - [ ] `cross-panel.mjs` shares the branch resolver (no fork).

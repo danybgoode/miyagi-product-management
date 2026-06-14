@@ -57,8 +57,9 @@ do this, and they're complementary:
   - **Backend** (`apps/backend`): `medusa build` (which also generates the `.medusa/types` that `tsc` needs) →
     `tsc --noEmit` → `npm run test:unit` (`ci.yml`, on `pull_request`). The backend has **no per-branch preview** (it deploys
     post-merge to Cloud Run), so there is **no Playwright/e2e step** — that's correct, not a gap; DB-bound
-    integration tests are out of the gate (they need Postgres). *Operational: this check must be added to the
-    backend repo's required-status-checks (branch protection) to actually block a red merge — owed to Daniel.*
+    integration tests are out of the gate (they need Postgres). The `Type-check + build + unit` check is wired
+    into the backend repo's branch protection as a **required status check** on `main`, so a red run blocks
+    merge (configured 2026-06-14).
 - **Reviewer (judgment):** a **fresh reviewer agent** re-derives intent from the diff alone and checks
   correctness, architecture, and the five rules from `AGENTS.md`. The path is a **repo-local reviewer
   subagent** — point it at `gh pr diff <PR#>` (+ the changed files) and the five rules; it composes with
