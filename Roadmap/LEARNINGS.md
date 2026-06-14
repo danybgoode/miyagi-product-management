@@ -179,6 +179,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   single-pass (no back-and-forth, the #1 token sink). Keep it *soft* so a failed synthesis still prints the
   lenses. *(2026-06-13, cross-agent-planning-panel S1 — `## SYNTHESIS` in `cross-panel.prompt.md`.)*
 
+- **`process.exit()` truncates piped stdout — flush synchronously, or you ship a tool that works to a file
+  but crashes in a pipe.** A Node script that did `console.log(json); process.exit(0)` produced *valid* output
+  when redirected to a **file** (sync writes) but **truncated JSON down a pipe** (`execFileSync`), because the
+  async stdout write hadn't drained when exit fired — the consumer died on "Unexpected end of JSON input".
+  Use `writeSync(1, payload)` (synchronous even on a pipe) before `process.exit`, or exit in the write
+  callback. Test a tool the way it's actually invoked (pipe, not just a file redirect). *(2026-06-14,
+  build-order.mjs ↔ roadmap-to-notion.mjs --extract.)*
+- **Git background auto-maintenance races a burst of commits and leaves stale `*.lock` files.** Rapid commits
+  hit intermittent "cannot lock ref 'HEAD' / 'refs/heads/main' — File exists"; the culprit was
+  `.git/objects/maintenance.lock` (git's auto-gc/maintenance) running concurrently. Clear locks recursively
+  (`find .git -name '*.lock'`) and run the batch with `git -c gc.auto=0 commit …` (and/or
+  `git config maintenance.auto false`) so it can't re-trigger mid-sequence. *(2026-06-14, repo-hygiene chore.)*
+
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
   gets a subdomain" (164 shops), registering each `slug.host` is a dead end (and consuming the cap also
@@ -205,6 +218,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   *(2026-06-06, short-links.)*
 - **`%{redirect_url}`/curl inside a zsh `for`-loop one-liner flaked** ("command not found: curl"); run each
   curl as a plain statement (or `/usr/bin/curl`). *(2026-06-06.)*
+
+## Repo & deploy hygiene
+- **Deleting a git branch does NOT delete its Vercel preview deployments — Vercel retains every deployment
+  forever.** 73 merged/dead branches had left **150 orphan preview deployments** on the project (469 total →
+  319 after pruning). Pair branch cleanup with a preview prune: `node scripts/vercel-prune-previews.mjs`
+  (dry-run by default; `--apply`, `--age N`, `--keep-branch <open-PR branch>` — its preview is the live review
+  target; `--project`). It deletes only `target!=='production'` — production deployments are the rollback
+  history and are never touched. Token from `VERCEL_API_TOKEN` env or the local `vercel login`. *(2026-06-14,
+  repo-hygiene chore.)*
+- **A generated doc needs ONE authoritative source + a `--check` gate, or it silently drifts.** `BUILD-ORDER.md`
+  (and its Notion projection) drifted because epic status was inferred from brittle prose (story-tick regex +
+  `Status:` line) AND a *seed* frontmatter field two seeds could both claim (last-write-wins by readdir order).
+  Fix: SSOT = **the epic README's frontmatter `status:`** (set at epic close), read by both generators, with
+  the prose/retro derivation kept only as a fallback + surfaced as an advisory drift signal; the board is a
+  **generated view, never hand-edited**, guarded by `build-order.mjs --check` in CI (`build-order-guard.yml`).
+  When a doc is generated from inputs, give it a single declared source and a freshness gate — don't let two
+  heuristics vote. The story counter also has to match the *real* heading shapes agents write (`## US-1`,
+  `### Story 1.1`, letter IDs `C.1`/`B1.1`), not just the template's — but since status is now frontmatter-
+  driven, a counter slip is only a cosmetic progress count, never a wrong status. *(2026-06-14, branch-cleanup
+  + status-reconciliation chore.)*
 
 ## Build & QA
 - **The deterministic gate is non-negotiable and cheap:** `tsc --noEmit` + `next build` + the
