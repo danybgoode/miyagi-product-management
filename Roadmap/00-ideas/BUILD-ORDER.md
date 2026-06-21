@@ -14,8 +14,9 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (3)
 
+- [Neon egress reduction + DB account isolation + site-wide Clarity 🏗️](../../09-platform-infra/neon-egress-and-db-isolation/README.md) — 09 Platform-infra · 0/9 stories
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories
 
@@ -81,4 +82,4 @@ _None._
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 49 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 50 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

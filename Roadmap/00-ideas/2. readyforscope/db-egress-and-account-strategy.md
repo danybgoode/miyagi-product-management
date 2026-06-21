@@ -13,7 +13,7 @@ updated: 2026-06-21
 
 # Spike — Neon egress root-cause + DB account strategy
 
-**Status: awaiting Daniel approval — no code yet.**
+**Status: spike COMPLETE — Decision filled + APPROVED by Daniel 2026-06-21 ("approve as written"). Follow-on chore epic to be groomed. No code in this spike.**
 Macro-section: **09 · Platform & Infra**. Slug: `db-egress-and-account-strategy`.
 Class: **Spike** (a "how does X work / should it be A or B" investigation → a *written decision*, not code).
 A **Chore tail** (account separation + site-wide Clarity) is scoped here in outline but is **not sliced or
@@ -146,6 +146,140 @@ unused for N months, reopen a migration spike"). Do **not** plan a commerce-DB m
 scoped or conditional.) Decide the smallest change to get **site-wide Clarity + UTM** coverage — almost
 certainly a frontend-only, **LOW** chore. Frame it honestly as *visitor/bot visibility on the frontend*, which is
 **orthogonal to Neon egress** (see the reframe). Decide go/no-go now vs after S0.
+
+---
+
+## Decision
+> **Investigation run 2026-06-21** on Daniel's machine (authed `neonctl` 2.22, `gcloud` 555, Supabase MCP,
+> Microsoft Clarity MCP). Every number below was read from the **live console / API**, not assumed.
+> **Headline: the doc's prime hypothesis (the daily backup) is _wrong_ — the backup is ~1–2% of egress.
+> The real cause is the always‑on backend reading Neon over a cross‑cloud public endpoint.**
+
+### S0 — Account/org membership + egress split (the load-bearing finding)
+- **All three projects share one Neon org** `org-fancy-pond-57061061` ("Daniel"):
+  `medusa-bonsai` (`shiny-paper-72860331`, AWS **us-east-1**), `panfleto-miniflux`
+  (`square-mode-16910372`, AWS us-east-2), `justread` (`curly-pond-03179354`, AWS us-east-1).
+  So the side-projects **do** draw from the same pool. (Confirmed via `neonctl projects list` + `orgs list`.)
+- **The 5 GB egress allowance is per-organization** — confirmed on Neon's live pricing ("Plans apply per
+  organization"), not per-project. The usage email's *"medusa-bonsai 80% (4 GB)"* is that project's own number;
+  the cap it threatens is the **org total**.
+- **Egress this billing period (2026-06-01 → 07-01, read 06-21 from `GET /projects/{id}.data_transfer_bytes`):**
+
+  | Project | Egress | Share of org |
+  |---|---:|---:|
+  | **medusa-bonsai** | **4.136 GB** (4,135,864,293 B) | **96.3%** |
+  | panfleto-miniflux | 0.159 GB (159,476,840 B) | 3.7% |
+  | justread | 0.0002 GB (213,024 B) | ~0% |
+  | **Org total** | **4.296 GB** | **85.9% of 5 GB** |
+
+  → medusa-bonsai is essentially the entire number. **Moving the side-projects out frees only ~3.7%** — it's
+  an isolation lever, **not** the egress fix (the doc's caveat was right).
+
+### S1 — Attribution of medusa-bonsai's 4.136 GB (ranked, quantified)
+1. **Backend steady-state reads — ~97–98% (~4.0 GB, ~190 MB/day). THE root cause.** `medusa-web` Cloud Run runs
+   `minScale: 1` (always ≥1 instance) → a **permanent Neon connection pool + background loops** (Medusa
+   scheduled jobs, event-bus polling, the `livenessProbe GET /health` every 30 s) keep the Neon **main** endpoint
+   `active` ~**84%** of the period (`active_time` 1,531,062 s of 504 h; autosuspend default never reached). Every
+   query result is egress. **Cross-cloud**: backend is GCP **us-east4**, Neon is AWS **us-east-1**; the VPC
+   connector is `private-ranges-only`, so Neon traffic takes the **public** path (counts as public transfer).
+   Storefront/bot/CI traffic adds to this at the FE→Cloud Run→Neon hop (every uncached Store-API read cascades to
+   Neon). **Projection: ~190 MB/day × 30 ≈ 5.7 GB/mo → would exceed the 5 GB cap. Action needed.**
+2. **Daily backup — ~1–2% (~tens of MB). HYPOTHESIS OVERTURNED.** The job *is* live (Cloud Run Job `db-backup`,
+   Scheduler `db-backup-daily` ENABLED `0 9 * * *`, 10 runs this period since it went live 06-12 — so
+   `BACKUPS.md`'s "not yet live" status line is **stale**). But the commerce DB is nearly empty of row data: the
+   **neon dump is 179,822 bytes gzipped** (~176 KB; the 43.3 MiB logical size is mostly empty Medusa
+   schema/indexes). Even uncompressed the per-run wire read is a few MB → **~tens of MB total, not gigabytes.**
+   The doc's "DB ~130 MB × 30 ≈ 4 GB" math assumed a DB ~3× larger than reality and a backup running all month;
+   neither holds.
+3. **Staging branch — negligible.** The `staging` Neon endpoint is **idle/suspended** (2 active-hours all period,
+   1,889 cpu-s); `medusa-web-staging` is scale-to-zero. Not a contributor.
+4. **Side-project bleed — 3.7% (panfleto) + ~0 (justread).** Real but small. `panfleto-miniflux` polls feeds
+   continuously (362 active-hours) so its egress will **grow**; that's the case for isolating it (S4), not for
+   blaming it now.
+
+### S2 — Egress levers (accept / reject)
+- **A. Reduce read volume via caching — ACCEPT (biggest controllable, free lever).** Add ISR / CDN / route-level
+  caching to the storefront + the Store-API reads so repeated catalog/PDP/bot/CI reads stop cascading to Neon.
+  This is the read-side mirror of the LEARNINGS visibility-gate/cron-cadence wins.
+- **B. Quiet the always-on backend — ACCEPT (investigate at grooming).** Audit Medusa scheduled-job + event-bus
+  poll cadence, and **reconsider `minScale: 1`**. `minScale: 0` (or min=1 only during business hours) lets both
+  the backend and the Neon compute idle when truly quiet — directly attacking the ~190 MB/day "no shoppers"
+  bleed (and cutting Cloud Run cost). **Tradeoff for Daniel:** Medusa cold-start latency (~10–30 s) on the first
+  storefront hit after idle. Reasonable to trial given current near-zero traffic.
+- **C. Backup cadence (daily→weekly) — REJECT as an egress fix.** Backup is ~1–2%; quartering it saves a rounding
+  error and costs RPO. Keep daily.
+- **D. Private networking — REJECT (does not exist for this topology).** GCP Cloud Run ↔ AWS-hosted Neon is
+  **cross-cloud**; Neon PrivateLink is AWS-VPC-only and cannot reach GCP. The only "in-region private" path would
+  require co-locating the DB on GCP = a migration (**out of scope**).
+- **E. Staging / idle branches — ACCEPT (minor/tidy).** Already scale-to-zero; keep. Optionally delete the idle
+  `s2-drill-prerestore-20260611` + archived `dev`/`prewipe-backup` branches (storage tidiness, not egress).
+- **F. Account split — ACCEPT as isolation, not as the fix.** See S4.
+
+### S3 — Neon vs Supabase benchmark + recommendation
+Current pricing, verified live 2026-06-21:
+
+| Axis | Neon (Free) | Supabase (Free) |
+|---|---|---|
+| Monthly egress | **5 GB**, **per-org** (soft cap + email warnings) | **10 GB** = 5 GB DB + 5 GB cached, per-org |
+| Next tier | **Launch** — 500 GB included, then **$0.10/GB** (~$19/mo) | **Pro** — 250 GB DB ($0.09/GB over) + 250 GB cached ($0.03/GB over) |
+| Model | pure serverless Postgres; **instant cheap branching** | Postgres + auth + storage + realtime |
+| Used here for | **commerce** (Medusa) | **non-commerce** (conversations/offers/favorites) |
+
+- **Recommendation: KEEP Medusa on Neon.** The bet is paying off for *how we use it*: Neon's cheap branching is
+  what made the S2 escrow drill (`s2-drill-prerestore`) and the `staging` branch cheap and real — they exist and
+  are used. The egress problem is a **read-pattern mechanism, not an allowance shortfall**; moving DBs would only
+  buy headroom, not fix the uncached-reads cause. And the natural escalation is **Neon Launch ($19/mo, 500 GB)**,
+  which obliterates the 5 GB cap outright — so the true choice is "fix reads for free (levers A+B)" vs "pay $19/mo
+  to paper over it." Fix reads first.
+- **Re-open trigger (write it down):** reopen a commerce-DB migration spike **only if** — after pulling levers
+  A+B — projected egress still exceeds 5 GB/mo for two consecutive months *and* we're unwilling to pay Launch,
+  **or** Neon branching goes genuinely unused for 3 months (the feature we're paying the bet for). Absent those,
+  stay on Neon.
+
+### S4 — Account-isolation target + move/rollback outline
+- **Neon — DO the split, and it's lower-risk than the doc assumed.** Target: `medusa-bonsai` keeps its own
+  dedicated org (it already dominates the current one); move `panfleto-miniflux` + `justread` to a **separate**
+  org. **Mechanism = Neon project transfer between orgs** (Console → project → *Transfer*, or API
+  `POST /projects/{id}/transfer`) — **no dump/restore, and the endpoint host/DSN is unchanged on transfer**, so
+  there is **no `DATABASE_URL`/`NEON_BACKUP_DSN` rotation** and the `deploy-invariants` guard stays green untouched.
+  **Rollback:** transfer the project back (same operation, reversible). **Verify at execution:** Neon free-tier
+  org-count / project-limit before the move (create the destination org first). Benefit: frees 3.7% now + protects
+  medusa-bonsai's headroom from miniflux's growing poll traffic.
+- **Supabase — ALREADY in the target state. No move.** medusa-bonsai's Supabase (`bonsaiClerk`, the **sole**
+  project in the **sole** org `ptxoabqfllswvpbxadyj`) is already isolated; the side-projects are **not** on this
+  Supabase account. The "dedicated Supabase per project" goal is satisfied for medusa-bonsai today — just record it.
+
+### S5 — Analytics / Clarity go/no-go
+- **Validated state: Clarity is NOT installed at all** — there is **no base loader** anywhere (`app/layout.tsx`,
+  `lib/*` clean; the only reference is `/vende`'s `SellerAcquisitionVariantTag` firing `window.clarity?.('set',…)`
+  **no-ops**, and `lib/print-qr.ts`'s comment *"analytics already wired site-wide"* is **aspirational/false**).
+  The Clarity dashboard confirms it: **1 session / 1 page-view in 30 days.** So this is a genuine **install**, not
+  the "extend partial wiring" the doc assumed.
+- **Honest framing:** Clarity measures **frontend human visitors** and is **orthogonal to Neon egress** (which is
+  the Cloud Run→Neon hop). It will **not** reduce the number. (Minor diagnostic value only: visitor/bot volume
+  hints at how much storefront traffic cascades into uncached Neon reads, informing lever A.)
+- **GO — but decoupled and de-prioritized behind the egress fix.** Smallest change: add the Clarity base loader
+  **once** in `app/layout.tsx` (Next `<Script afterInteractive>`), gated to exclude white-label / embed / checkout
+  / dashboard via the **existing layout channel detection** (the seasonal-theme reuse pattern), keep the UTM
+  tagging, and fix the stale "wired site-wide" comment. **LOW, frontend-only.** Sequence it after S0/S1 levers
+  since it touches no egress.
+
+### Net recommendation (one paragraph for Daniel)
+The Neon alert is **not traffic and not the backup** — it's the **always-on Medusa backend (`minScale:1`) reading
+Neon over a cross-cloud public endpoint ~190 MB/day**, projecting to ~5.7 GB/mo against a 5 GB org cap. **Keep
+commerce on Neon.** The free fix is two read-side levers: **(A) cache storefront/Store-API reads** so repeats
+don't hit Neon, and **(B) trial `minScale:0` + audit backend job cadence** so it idles when quiet. Backup, staging,
+and private-networking are non-levers (negligible / cross-cloud-impossible). Do the **Neon org split** for
+isolation (cheap, reversible, no DSN change); **Supabase is already isolated**. Install **site-wide Clarity** as a
+separate LOW frontend chore — useful for visibility, but it answers a different question than egress. If levers
+A+B don't hold us under 5 GB, the escalation is **Neon Launch ($19/mo, 500 GB)**, not a migration.
+
+### Follow-on chore epic (to groom on approval — 09 · Platform & Infra)
+- **S-cache (LOW–MED, frontend):** ISR/CDN caching on storefront + Store-API reads.
+- **S-backend-quiet (MED, backend/infra, Daniel-merge):** `minScale` trial + job-cadence audit; measure egress delta.
+- **S-neon-split (MED, infra, Daniel-executes):** transfer `panfleto-miniflux` + `justread` to a new org (host stable).
+- **S-clarity (LOW, frontend):** site-wide Clarity loader (channel-gated) + UTM + comment fix.
+- **S-housekeeping (LOW):** delete idle drill/dev/prewipe branches; refresh stale `BACKUPS.md` status line.
 
 ---
 
