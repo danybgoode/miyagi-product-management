@@ -77,9 +77,10 @@ function ghJson(args) {
   return { ok: r.status === 0, stdout: r.stdout || '', stderr: r.stderr || '' };
 }
 
-// First 8 chars of a SHA, for human-readable guard messages. Null-safe.
+// First 8 chars of a SHA, for human-readable guard messages. Null-safe → 'unknown' (never empty parens
+// like `local HEAD ()` when `git rev-parse` couldn't read a SHA).
 export function shortSha(sha) {
-  return (sha || '').slice(0, 8);
+  return sha ? sha.slice(0, 8) : 'unknown';
 }
 
 // Pure stale-HEAD decision — the unit under test (no I/O, like decideCodexFallback). Given the local HEAD
