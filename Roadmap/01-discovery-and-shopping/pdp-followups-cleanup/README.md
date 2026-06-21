@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: pdp-followups-cleanup
 ---
 
@@ -8,7 +8,8 @@ slug: pdp-followups-cleanup
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) ·
 > **Risk: LOW** (frontend-only; two shared-surface touches → announce in PR; no money/auth, no backend, no migration).
 > Reviewer may auto-merge on green CI per the risk-tier rule — both stories declare their shared-surface touch.
-> **Status: 🚧 SCAFFOLDED — awaiting build.** Planned 2026-06-21. Scope doc:
+> **Status: ✅ COMPLETE 2026-06-21 — single sprint, frontend-only, squash-merged [#95](https://github.com/danybgoode/miyagisanchezcommerce/pull/95) `3213f6c`.**
+> Planned 2026-06-21. Scope doc:
 > [`00-ideas/2. readyforscope/pdp-followups-cleanup.md`](../../00-ideas/2.%20readyforscope/pdp-followups-cleanup.md).
 > Source: open follow-ups captured at [PDP-redesign Sprint 5](../pdp-redesign/sprint-5.md) close (carried from S4).
 
@@ -55,11 +56,11 @@ Frontend-only, single PR. **S1.1 first** (it's the shared surface that feeds the
 independent. No backend deploy, no Cloud Run window, no migration.
 
 ## Epic Definition of Done
-- [ ] Both stories merged to `main` + smoke-tested (anonymous; nothing owed to Daniel — no money/auth path).
-- [ ] `sprint-1.md` has a fool-proof smoke walkthrough (real prod URLs).
-- [ ] Epic `README.md` marked ✅; `sprint-1.md` status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written (or folded into the next retro if trivial).
-- [ ] Product poster (`Roadmap/README.md`) updated — §01 line if warranted + a Recent-highlights entry.
-- [ ] Team memory updated if any durable gotcha surfaced.
-- [ ] `LEARNINGS.md` updated with any durable learning (e.g. the shared-seam normalize pattern).
-- [ ] Feature branch deleted; PR merged.
+- [x] Both stories merged to `main` + smoke-tested (anonymous; nothing owed to Daniel — no money/auth path). PR #95 `3213f6c`; pure-logic `api` specs green in CI.
+- [x] `sprint-1.md` has a fool-proof smoke walkthrough (real prod URLs).
+- [x] Epic `README.md` marked ✅; `sprint-1.md` status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — §01 line + a Recent-highlights entry.
+- [x] Team memory updated (epic memory + MEMORY.md index).
+- [x] `LEARNINGS.md` updated — the shared-seam normalize pattern + the antigravity false-positive catch.
+- [x] Feature branch deleted; PR #95 squash-merged.

@@ -361,7 +361,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `checkout-session`), so patching only the new route creates inconsistency for no security gain (read-only
   link gen, not a boundary) — record it as a possible cross-cutting follow-up instead. Apply the genuine
   should-fixes (there: a NaN-safe limit clamp) + cheap nits, and put the decline + rationale in the fix commit
-  so the next reviewer sees it was considered. *(2026-06-13, neighborhood-pulse S2.)*
+  so the next reviewer sees it was considered. *(2026-06-13, neighborhood-pulse S2.)* **The Antigravity path
+  works the same way and caught a real should-fix the author's context-bias hid: a helper cloned from an existing
+  one inherits its latent bug.** `ensureUrlProtocol` was modelled faithfully on `lib/supply.ts` `canonicalSourceUrl`,
+  whose `raw.startsWith('http')` scheme test **false-positives a scheme-less domain that merely starts with "http"**
+  (`httpbin.org` → left protocol-less → broken relative link) and misses uppercase schemes; the cross-review flagged
+  it, fixed to `/^https?:\/\//i` + regression cases before merge. Lesson: **when you model a new helper on an existing
+  one, sanity-check its predicate against *your* input domain rather than copying it verbatim** — and run the
+  advisory cross-review on a green PR; it's cheapest right before asking for the merge. *(2026-06-21,
+  pdp-followups-cleanup S1.1 — `node scripts/cross-review.mjs <PR#> --agent antigravity --repo <app-repo>`.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
