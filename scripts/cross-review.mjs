@@ -8,7 +8,11 @@
 //   • ADVISORY ONLY — never gates, blocks, or merges. CI + the Claude reviewer + the risk-tier rule decide.
 //
 // Usage:
-//   node scripts/cross-review.mjs <PR#> --agent codex|antigravity [--repo owner/repo] [--dry-run]
+//   node scripts/cross-review.mjs [PR#] --agent codex|antigravity [--repo owner/repo] [--force] [--dry-run]
+//
+// <PR#> is OPTIONAL: with none, the command resolves the open PR for the CURRENT branch (so the FIRST run
+// reviews the right diff, no rerun) and refuses a stale local HEAD unless --force. An explicit <PR#> still
+// overrides (and bypasses the stale guard — the deliberate escape hatch).
 //
 // Default posts the findings as a labeled, clearly-advisory PR comment; --dry-run prints instead.
 // `gh` resolves the repo from the current directory; pass --repo to target another (e.g. the app repo).
@@ -27,6 +31,10 @@ import {
   loadPromptBody,
   runAntigravity,
   runWithCodexFallback,
+  resolveCurrentPr,
+  currentHeadSha,
+  decideHeadGuard,
+  shortSha,
 } from './lib/cross-agent-cli.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -40,22 +48,29 @@ const BANNER =
 const HELP = `cross-review.mjs — advisory cross-agent second opinion on a PR diff.
 
 Usage:
-  node scripts/cross-review.mjs <PR#> --agent codex|antigravity [--repo owner/repo] [--dry-run]
+  node scripts/cross-review.mjs [PR#] --agent codex|antigravity [--repo owner/repo] [--force] [--dry-run]
+
+[PR#] is optional — omit it to review the open PR for the CURRENT branch.
 
 Flags:
   --agent <name>      reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
   --repo  owner/repo  target a specific repo (default: the repo of the current directory)
+  --force             proceed even when local HEAD differs from the resolved PR head (auto-resolve only)
   --dry-run           print the comment instead of posting it (alias: --no-comment)
   -h, --help          show this help
+
+With no [PR#], resolves the branch's PR via \`gh pr view\` and refuses a stale local HEAD unless --force.
+An explicit [PR#] overrides resolution and bypasses the stale guard.
 
 Advisory only — the output never gates, blocks, or authorizes a merge.`;
 
 function parseArgs(argv) {
-  const out = { pr: null, agent: 'codex', repo: null, dryRun: false, help: false };
+  const out = { pr: null, agent: 'codex', repo: null, force: false, dryRun: false, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--help' || a === '-h') out.help = true;
     else if (a === '--dry-run' || a === '--no-comment') out.dryRun = true;
+    else if (a === '--force') out.force = true;
     else if (a === '--agent') out.agent = need(argv[++i], '--agent');
     else if (a.startsWith('--agent=')) out.agent = a.slice('--agent='.length);
     else if (a === '--repo') out.repo = need(argv[++i], '--repo');
@@ -113,16 +128,38 @@ function postComment(pr, repo, body) {
 }
 
 function main() {
-  const { pr, agent, repo, dryRun, help } = parseArgs(process.argv.slice(2));
+  let { pr, agent, repo, force, dryRun, help } = parseArgs(process.argv.slice(2));
   if (help) {
     process.stdout.write(HELP + '\n');
     process.exit(0);
   }
-  if (pr === null) die('missing <PR#>. Usage: node scripts/cross-review.mjs <PR#> --agent codex');
-  if (!/^\d+$/.test(String(pr))) die(`PR number must be numeric, got '${pr}'.`);
+  if (pr !== null && !/^\d+$/.test(String(pr))) die(`PR number must be numeric, got '${pr}'.`);
   if (!AGENTS[agent]) die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 
   ensureGh();
+
+  // No <PR#> → resolve the open PR for the current branch and guard against a stale local HEAD, so the
+  // FIRST run reviews the right diff. An explicit <PR#> skips both (the deliberate escape hatch).
+  if (pr === null) {
+    const resolved = resolveCurrentPr({ repo });
+    pr = String(resolved.number);
+    process.stderr.write(`Resolved PR #${pr} from branch \`${resolved.headRefName}\`.\n`);
+
+    const localHead = currentHeadSha();
+    const action = decideHeadGuard({ localHead, prHeadOid: resolved.headRefOid, force });
+    if (action === 'mismatch-block') {
+      die(
+        `local HEAD (${shortSha(localHead)}) differs from PR #${pr} head (${shortSha(resolved.headRefOid)}) ` +
+          `— push first, or pass --force (or an explicit <PR#>) to review anyway.`
+      );
+    }
+    if (action === 'mismatch-force') {
+      process.stderr.write(
+        `⚠ local HEAD (${shortSha(localHead)}) differs from PR #${pr} head ` +
+          `(${shortSha(resolved.headRefOid)}) — proceeding due to --force.\n`
+      );
+    }
+  }
   if (agent === 'codex') {
     ensureCmd('codex', 'codex not found — install Codex CLI (https://github.com/openai/codex) and `codex login`.');
   } else if (agent === 'antigravity') {
