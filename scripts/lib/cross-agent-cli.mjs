@@ -8,6 +8,14 @@
 // (codex takes context on stdin; agy 1.0.7 has no stdin → context rides in argv, with a size cap), and the
 // shared-prompt loader. The *framing* of the context (a PR diff vs a plan doc) and the output handling
 // (post a PR comment vs print a panel) stay in each consuming script. Zero npm deps — Node 18+.
+//
+// ── Codex → Antigravity auto-fallback ───────────────────────────────────────────────────────────────────
+// When the local Codex token has lapsed, `codex exec` exits non-zero with an AUTH error on stderr (e.g.
+// "Your session has ended. Please log in again." / "refresh token was revoked" / 401). `runWithCodexFallback`
+// detects that specific auth signal (NOT every error — a non-auth break or an empty diff still fails clearly)
+// and retries once with Antigravity, returning `{ fellBack: true, from: 'codex', to: 'antigravity' }` so the
+// caller can label the output. The trigger lives in the pure, testable `decideCodexFallback`; restoring Codex
+// is `codex login` (see scripts/README.md → "Restoring a lapsed Codex token").
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
@@ -37,6 +45,12 @@ export function need(val, flag) {
 export function ensureCmd(cmd, fix) {
   const r = spawnSync(cmd, ['--version'], { encoding: 'utf8' });
   if (r.error) die(fix);
+}
+
+// Non-fatal sibling of ensureCmd: true if the binary is on PATH, false otherwise. Used by the fallback to
+// decide whether Antigravity is even available before retrying — no die().
+export function hasCmd(cmd) {
+  return !spawnSync(cmd, ['--version'], { encoding: 'utf8' }).error;
 }
 
 export function ensureGh() {
@@ -76,19 +90,103 @@ function fail(soft, msg) {
   die(msg);
 }
 
-// codex exec: the prompt rides as an argv string, the context is piped on stdin (codex appends it as a
-// <stdin> block). The caller passes the already-composed prompt and the raw context text.
-export function runCodex(prompt, stdin, opts = {}) {
-  const r = spawnSync('codex', ['exec', prompt], {
+// Last non-empty line of a stderr blob — the human-readable tail used in failure messages.
+function lastLine(stderr) {
+  return (stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
+}
+
+// Low-level codex exec: prompt rides as an argv string, context is piped on stdin (codex appends it as a
+// <stdin> block). Returns the raw spawn result — callers decide how to interpret status/stdout/stderr.
+function execCodex(prompt, stdin) {
+  return spawnSync('codex', ['exec', prompt], {
     input: stdin,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
-  if (r.status !== 0) {
-    const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
-    return fail(opts.soft, `codex exec failed: ${last}`);
-  }
+}
+
+// codex exec wrapper preserving the original contract: returns trimmed stdout, or fail()s (die unless soft).
+export function runCodex(prompt, stdin, opts = {}) {
+  const r = execCodex(prompt, stdin);
+  if (r.status !== 0) return fail(opts.soft, `codex exec failed: ${lastLine(r.stderr)}`);
   return (r.stdout || '').trim();
+}
+
+// Soft, STRUCTURED codex run — never dies. Exposes stderr so the caller can tell an auth failure (token
+// lapsed → fall back) from a non-auth failure (real break → surface it). This is the "degrade, don't die"
+// soft mode made structured; runCodex stays the string-returning variant for its existing direct callers.
+export function tryCodex(prompt, stdin) {
+  const r = execCodex(prompt, stdin);
+  const stderr = r.stderr || '';
+  return {
+    ok: r.status === 0,
+    text: (r.stdout || '').trim(),
+    authFailed: r.status !== 0 && isCodexAuthError(stderr),
+    stderr,
+  };
+}
+
+// True when codex's stderr carries an AUTHENTICATION failure (lapsed/revoked/expired token) — the only
+// signal that should trigger the Antigravity fallback. Confirmed against a live revoked token (2026-06-21):
+// "Failed to refresh token: 401 Unauthorized … refresh_token_invalidated", "Your session has ended. Please
+// log in again.", "your refresh token was revoked. Please log out and sign in again." Kept tight to auth so
+// a genuine non-auth error (empty diff, internal break) falls through and fails clearly instead.
+export function isCodexAuthError(stderr) {
+  return /refresh[_ ]?token|session has ended|log ?in again|sign in again|401 unauthorized|token (?:was|is|could not be) (?:revoked|refreshed|expired|invalid)|not authenticated|unauthorized/i.test(
+    stderr || ''
+  );
+}
+
+// Pure fallback decision — the unit under test. Given the outcome of a codex attempt and whether agy is
+// available, return the action to take. No I/O, no exit.
+export function decideCodexFallback({ codexOk, authFailed, agyAvailable }) {
+  if (codexOk) return 'use-codex';
+  if (!authFailed) return 'fail-non-auth'; // codex broke for a non-auth reason — don't mask it behind a fallback
+  if (!agyAvailable) return 'fail-both-dead';
+  return 'fallback';
+}
+
+// Orchestrate codex with a one-shot Antigravity fallback on an auth failure. `deps` is injectable so a
+// pure node:test can mock both runners (no network). Returns { findings, fellBack[, from, to] }.
+export function runWithCodexFallback(
+  { prompt, stdin, antigravityArgv },
+  deps = {}
+) {
+  const {
+    tryCodex: tryCodexFn = tryCodex,
+    runAntigravity: runAntigravityFn = runAntigravity,
+    hasCmd: hasCmdFn = hasCmd,
+    fail: failFn = die,
+    warn = (m) => process.stderr.write(`${m}\n`),
+  } = deps;
+
+  const codex = tryCodexFn(prompt, stdin);
+  const action = decideCodexFallback({
+    codexOk: codex.ok,
+    authFailed: codex.authFailed,
+    agyAvailable: hasCmdFn('agy'),
+  });
+
+  switch (action) {
+    case 'use-codex':
+      return { findings: codex.text, fellBack: false };
+    case 'fail-non-auth':
+      return failFn(`codex exec failed (non-auth): ${lastLine(codex.stderr)}`);
+    case 'fail-both-dead':
+      return failFn(
+        'Codex token revoked AND Antigravity unavailable — restore Codex with `codex login`, ' +
+          'or install + authenticate the Antigravity CLI (agy).'
+      );
+    case 'fallback':
+    default:
+      warn('⚠ Codex unavailable (token revoked) → falling back to Antigravity. Restore: `codex login`.');
+      return {
+        findings: runAntigravityFn(antigravityArgv),
+        fellBack: true,
+        from: 'codex',
+        to: 'antigravity',
+      };
+  }
 }
 
 // agy -p: agy 1.0.7 has no stdin block and no --output-format json — the caller must embed the context in
