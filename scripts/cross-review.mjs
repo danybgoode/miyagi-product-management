@@ -25,8 +25,8 @@ import {
   ensureGh,
   checkAgyVersion,
   loadPromptBody,
-  runCodex,
   runAntigravity,
+  runWithCodexFallback,
 } from './lib/cross-agent-cli.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -78,18 +78,26 @@ function ghDiff(pr, repo) {
   return r.stdout;
 }
 
+// agy 1.0.7 has no stdin, so the diff rides embedded in the argv string (same framing codex gets on stdin).
+function agyArgv(prompt, diff) {
+  return `${prompt}\n\n## PR diff to review\n\n\`\`\`diff\n${diff}\n\`\`\`\n`;
+}
+
+// Returns { findings, fellBack[, from, to] }. The codex path auto-falls-back to Antigravity on a dead token.
 function runReview(agent, prompt, diff) {
-  // codex takes the diff on stdin; agy 1.0.7 has no stdin, so the diff rides embedded in the argv string.
-  if (agent === 'codex') return runCodex(prompt, diff);
+  if (agent === 'codex') {
+    return runWithCodexFallback({ prompt, stdin: diff, antigravityArgv: agyArgv(prompt, diff) });
+  }
   if (agent === 'antigravity') {
-    const full = `${prompt}\n\n## PR diff to review\n\n\`\`\`diff\n${diff}\n\`\`\`\n`;
-    return runAntigravity(full);
+    return { findings: runAntigravity(agyArgv(prompt, diff)), fellBack: false };
   }
   die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 }
 
-function buildComment(agentLabel, findings) {
-  return `### 🔎 Cross-agent review (${agentLabel})\n\n${BANNER}\n\n---\n\n${findings}\n`;
+function buildComment(agentLabel, findings, fellBack) {
+  // When codex fell back, make it unmistakable so nobody reads an Antigravity review as a Codex one.
+  const header = fellBack ? `${AGENTS.antigravity} — Codex unavailable` : agentLabel;
+  return `### 🔎 Cross-agent review (${header})\n\n${BANNER}\n\n---\n\n${findings}\n`;
 }
 
 function postComment(pr, repo, body) {
@@ -124,10 +132,10 @@ function main() {
 
   const prompt = loadPromptBody(PROMPT_PATH);
   const diff = ghDiff(pr, repo);
-  const findings = runReview(agent, prompt, diff);
-  if (!findings) die(`${AGENTS[agent]} returned no output.`);
+  const { findings, fellBack } = runReview(agent, prompt, diff);
+  if (!findings) die(`${fellBack ? AGENTS.antigravity : AGENTS[agent]} returned no output.`);
 
-  const body = buildComment(AGENTS[agent], findings);
+  const body = buildComment(AGENTS[agent], findings, fellBack);
   if (dryRun) {
     process.stdout.write(body);
     process.stderr.write('\n(dry-run — no comment posted)\n');
