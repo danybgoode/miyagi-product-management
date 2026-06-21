@@ -15,17 +15,17 @@
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 15/18 stories
 - [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 2/8 stories
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (2)
 
-- [PDP follow-ups cleanup](../../01-discovery-and-shopping/pdp-followups-cleanup/README.md) — 01 Discovery · 0/2 stories
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories
 
-## ✅ Shipped (44)
+## ✅ Shipped (45)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
 - [Neighborhood Pulse — online community feed](../../01-discovery-and-shopping/neighborhood-pulse/README.md) — 01 Discovery · 7/7 stories · risk: Low
+- [PDP follow-ups cleanup](../../01-discovery-and-shopping/pdp-followups-cleanup/README.md) — 01 Discovery · 0/2 stories
 - [PDP interactive image gallery ✅ COMPLETE](../../01-discovery-and-shopping/pdp-image-gallery/README.md) — 01 Discovery · 2/2 stories · risk: Low
 - [Checkout & Manual-Payment State Hardening](../../02-checkout-and-payments/checkout-state-hardening/README.md) — 02 Checkout & Payments · 9/9 stories · risk: High · Wave 2
 - [Delivery & Manual-Money Polish](../../02-checkout-and-payments/delivery-money-polish/README.md) — 02 Checkout & Payments · 5/8 stories · risk: High · Wave 3

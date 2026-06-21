@@ -1,9 +1,13 @@
 # Sprint 1 — booking_url normalize + personalized-event label
 
-> Epic: [PDP follow-ups cleanup](README.md) · **Risk: LOW** (frontend-only; two shared-surface touches → announce
-> in the PR; no money/auth, no backend, no migration). **Status: 🚧 SCAFFOLDED — awaiting build.** Goal: close the
+> Epic: [PDP follow-ups cleanup](README.md) · **Risk: LOW** (frontend-only; two shared-surface touches → announced
+> in the PR; no money/auth, no backend, no migration). **Status: ✅ COMPLETE 2026-06-21 — squash-merged
+> [#95](https://github.com/danybgoode/miyagisanchezcommerce/pull/95) `3213f6c`.** Goal: close the
 > two LOW follow-ups deferred at PDP-redesign S4/S5 — a scheme-less seller `booking_url` always resolves to a real
 > external calendar, and an event listing that's also personalized keeps the "Comprar boleto" label.
+>
+> - **S1.1** ✅ `ensureUrlProtocol` (`lib/url.ts`) at the `page.tsx` resolution seam + both UCP reads (checkout-session, mcp). Spec `e2e/ensure-url-protocol.spec.ts`. Antigravity cross-review hardened the scheme test (`/^https?:\/\//i` vs `startsWith('http')` — fixes the `httpbin.org` false positive).
+> - **S1.2** ✅ `personalizationBuyLabels` + `buyNowLabel`/`signInBuyLabel` props on `PersonalizationBuyBox`; page passes the event labels only for event-led listings (non-event unchanged). Spec `e2e/personalization-buy-labels.spec.ts`.
 
 ## Stories
 
