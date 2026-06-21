@@ -159,3 +159,30 @@ for `--agent antigravity` — each degrades with a clear, fix-naming message if 
 pinned to **1.0.7** (it has no `--output-format json`; the script uses text output and **warns** on a
 version mismatch). The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
 — the single source both this command and a human reviewer read. Zero npm deps — Node 18+.
+
+### Restoring a lapsed Codex token (auto-fallback to Antigravity)
+
+The Codex CLI's token expires periodically. **You don't have to stop:** when `--agent codex` hits a dead
+token, `cross-review.mjs` automatically falls back to Antigravity for that run — the comment is headed
+`🔎 Cross-agent review (Antigravity — Codex unavailable)` and stderr prints
+`⚠ Codex unavailable (token revoked) → falling back to Antigravity. Restore: codex login.` (The fallback
+needs `agy` present; if both are unavailable it exits with a one-line message naming both fixes.) The
+fallback fires **only on the auth signal** — a non-auth error or an empty diff still fails clearly.
+
+**Detect** a dead token:
+
+```bash
+codex exec "ping" </dev/null
+# Authed   → a clean reply, exit 0.
+# Lapsed   → exit 1, stderr like "Your session has ended. Please log in again."
+#            / "your refresh token was revoked" / "401 Unauthorized: refresh_token_invalidated".
+```
+
+**Restore** it (interactive, opens a browser):
+
+```bash
+codex login
+```
+
+Then re-run cross-review with `--agent codex` and the header will read `(Codex)` again. Nothing else needs
+resetting — the fallback is per-invocation, not a persisted mode.
