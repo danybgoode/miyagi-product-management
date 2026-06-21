@@ -384,6 +384,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   one, sanity-check its predicate against *your* input domain rather than copying it verbatim** — and run the
   advisory cross-review on a green PR; it's cheapest right before asking for the merge. *(2026-06-21,
   pdp-followups-cleanup S1.1 — `node scripts/cross-review.mjs <PR#> --agent antigravity --repo <app-repo>`.)*
+  **Corollary — when a predicate bug turns up, grep for every COPY of it, and relocate the pure logic to a
+  shared dependency-free module so copies can't re-diverge.** The follow-up sweep (PR #96) found the same
+  `startsWith('http')` bug in 3 more spots — incl. `SupplyClient.tsx cleanUrlForDisplay`, a hand-re-inlined copy
+  of `canonicalSourceUrl` that had drifted its own bug. Fix wasn't 4 isolated edits: the pure `canonicalSourceUrl`
+  moved to `lib/url.ts` (dependency-free, so the **client** paste UI can import it instead of re-inlining; the
+  server `lib/supply.ts` re-exports for back-compat), killing the duplication outright. A pure helper re-inlined
+  because its home module drags a heavy import (here `lib/supply.ts` → `./supabase`) is the classic drift seam —
+  give it a dependency-free home up front. (Left the UCP `catalog` origin default's `startsWith('http')` alone —
+  browser-controlled request origin, a separate baseUrl convention, not user-typed-data.) *(2026-06-21,
+  canonicalSourceUrl sweep — PR #96 `5925f1a`.)*
 - **VALIDATE-FIRST: confirm a live data source exists before scoping a signal/UI that displays it; if it doesn't,
   ship the static/degraded-but-honest version, defer the dynamic part, and write the gap into the PR — never
   invent the data.** A "check the model before you build the view" discipline, the read-side mirror of the
