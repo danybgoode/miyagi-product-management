@@ -212,3 +212,13 @@ test('resolveCurrentPr: a generic gh failure surfaces the stderr tail (not maske
   };
   assert.throws(() => resolveCurrentPr({}, deps), /gh pr view failed.*network is unreachable/s);
 });
+
+test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (tight matcher)', () => {
+  // e.g. a bad --repo or missing remote — must surface the real error, not "no open PR".
+  const deps = {
+    runGit: () => 'feat/x',
+    runGh: () => ({ ok: false, stdout: '', stderr: 'could not find any remotes / no default branch' }),
+    fail: throwingFail,
+  };
+  assert.throws(() => resolveCurrentPr({}, deps), /gh pr view failed/);
+});

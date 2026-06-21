@@ -163,8 +163,8 @@ stale diff**: if your local `git rev-parse HEAD` differs from the PR's head SHA 
 reused branch name whose PR already **merged**) fails with a clear `no open PR for branch \`…\`` message —
 never a stack trace. Pass `--force` to review the resolved PR despite a stale HEAD, or an explicit `<PR#>`
 to skip resolution **and** the guard entirely (the deliberate escape hatch). The resolver + guard live in
-the shared rail `scripts/lib/cross-agent-cli.mjs` (covered by its `node:test`), so `cross-panel.mjs`
-inherits the same plumbing.
+the shared rail `scripts/lib/cross-agent-cli.mjs` (covered by its `node:test`); they're available to
+`cross-panel.mjs` from the same module, though it reviews a scope-doc file and so has no PR to resolve.
 
 **Flags:** `--agent codex|antigravity` (default codex) · `--repo owner/repo` · `--force` · `--dry-run`
 (alias `--no-comment`) · `--help`. `<PR#>` is optional (omit → current branch). **Dependencies:** `gh`

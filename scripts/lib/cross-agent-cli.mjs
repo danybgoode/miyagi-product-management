@@ -92,11 +92,11 @@ export function decideHeadGuard({ localHead, prHeadOid, force }) {
   return force ? 'mismatch-force' : 'mismatch-block';
 }
 
-// gh stderr signalling "this branch has no associated open PR" (vs an auth/transport failure we shouldn't mask).
+// gh stderr signalling "this branch has no associated PR" — kept TIGHT to gh's actual no-PR message so a
+// repo/remote/auth misconfig (e.g. a bad --repo) falls through to the generic error instead of being masked
+// as "no open PR" and sending the operator chasing the wrong fix.
 function isNoPrError(stderr) {
-  return /no (?:open )?pull requests? found|no pull requests found for branch|could not find|no default branch|no git remotes? found/i.test(
-    stderr || ''
-  );
+  return /no (?:open )?pull requests? found/i.test(stderr || '');
 }
 
 // Resolve the open PR for the CURRENT branch via `gh pr view --json …`. Injectable (`deps`) so a pure
