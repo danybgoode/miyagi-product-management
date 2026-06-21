@@ -1,13 +1,14 @@
 # Neon egress reduction — Sprint 1: Measurement baseline + cache storefront reads
 
-**Status:** 🏗️ In progress. Frontend (Vercel preview per PR). Risk: low–med (caching commerce reads must
-respect price/stock freshness). Ship first — it establishes the egress baseline every later sprint reads against.
+**Status:** ✅ MERGED (squash). Frontend (Vercel preview per PR). Risk: low–med (caching commerce reads must
+respect price/stock freshness). Shipped first — it establishes the egress baseline every later sprint reads against.
 - Story 1.1 ✅ `scripts/neon-egress.mjs` + baseline recorded below — root PR
-  [#18](https://github.com/danybgoode/miyagi-product-management/pull/18) (`651a3fd`).
+  [#18](https://github.com/danybgoode/miyagi-product-management/pull/18) squash `e51ff97`.
 - Story 1.2 ✅ `lib/cache-policy.ts` SSOT + `e2e/neon-egress-cache.spec.ts` — app PR
-  [#97](https://github.com/danybgoode/miyagisanchezcommerce/pull/97) (`88a07e0`).
-- **Deterministic gate GREEN** on both PRs: app `tsc + build + Playwright api` vs preview ✅; root
-  `build-order-fresh` ✅. Both **draft, low-risk**, awaiting reviewer.
+  [#97](https://github.com/danybgoode/miyagisanchezcommerce/pull/97) squash `f918ae3` → Vercel prod.
+- **Deterministic gate was GREEN** on both PRs: app `tsc + build + Playwright api` vs preview ✅; root
+  `build-order-fresh` ✅. Codex cross-review applied (`e073c0d`): robust `x-vercel-cache` assertion +
+  `/api/embed/shop` → `CACHE.SHOP`; nit (pinned constants) declined (it's the anti-drift guard).
 
 ## Findings (Story 1.2 — VALIDATE-FIRST)
 The storefront caching this sprint set out to add was **already largely in place** (prior epics:
