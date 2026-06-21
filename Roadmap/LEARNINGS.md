@@ -191,6 +191,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `.git/objects/maintenance.lock` (git's auto-gc/maintenance) running concurrently. Clear locks recursively
   (`find .git -name '*.lock'`) and run the batch with `git -c gc.auto=0 commit …` (and/or
   `git config maintenance.auto false`) so it can't re-trigger mid-sequence. *(2026-06-14, repo-hygiene chore.)*
+- **A "resolve the PR from the current branch" tool must read PR `state` — `gh pr view` returns MERGED/CLOSED
+  PRs too.** With no `<PR#>`, `gh pr view --json number,state,headRefName,headRefOid` resolves a PR for the
+  branch — but for a **reused branch name** whose PR already merged, it silently returns that *merged* PR, so
+  the tool would review a stale diff. Treat `state !== 'OPEN'` as "no open PR for branch `<name>` (found #N,
+  state MERGED)". Pair it with a **stale-HEAD guard** (`git rev-parse HEAD` vs the PR's `headRefOid` → warn +
+  require `--force`) so the *first* run always reviews the right, current diff. And **keep the "no result"
+  stderr matcher tight to the tool's actual message** — a broad `isNoPrError` (`could not find` /
+  `no default branch` / `no git remotes found`) masks a real repo/auth/`--repo` misconfig as "no open PR" and
+  sends the operator chasing the wrong fix; match only `no … pull requests found` and let everything else
+  fall through to the generic error. Put the resolver + the **pure** decision (`decideHeadGuard`) in the
+  shared rail so a `node:test` (mock gh + git) covers it and siblings inherit it. *(2026-06-21,
+  dev-tooling-reliability S3 — `scripts/lib/cross-agent-cli.mjs`; dogfooded on its own PR #17.)*
+- **`node --test <dir>` (bare directory) was dropped in Node 24** — it tries to load the dir as a module
+  (`Cannot find module '…/scripts/lib'`). Use a glob: `node --test 'scripts/lib/*.test.mjs'`. *(2026-06-21.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop

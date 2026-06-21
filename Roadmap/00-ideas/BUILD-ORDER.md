@@ -10,17 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (1)
 
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 15/18 stories
-- [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 5/8 stories
 
 ## 📋 Ready to build (scaffolded, not started) (2)
 
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories
 
-## ✅ Shipped (45)
+## ✅ Shipped (46)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -62,6 +61,7 @@
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 0/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Design-Token / Design-System Foundation](../../09-platform-infra/design-token-foundation/README.md) — 09 Platform-infra · 0/5 stories · risk: Low · Wave 0 Enablers
+- [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 5/8 stories
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 0 Enablers
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 3/9 stories · risk: High
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers

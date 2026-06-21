@@ -1,9 +1,13 @@
 ---
-status: in-progress
+status: shipped
 slug: dev-tooling-reliability
 ---
 
 # Epic — Dev-tooling reliability (backend CI + cross-agent review hardening)
+
+> ✅ **EPIC COMPLETE 2026-06-21 — all 3 sprints shipped.** S1 backend CI (backend PR #29 `21b1e16`,
+> required status check on `main`) · S2 Codex→Antigravity auto-fallback (root PR #16 `cbed936`) · S3
+> wrong-branch tax: PR# optional + resolve-from-branch + stale-HEAD guard (root PR #17 `2534aeb`).
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / dev-tooling (engineering-facing process improvement; no buyer/seller/agent change).
@@ -83,9 +87,9 @@ resolve). S1 lands in the **backend** repo; S2/S3 in the **monorepo-root** repo.
 
 - [x] Opening a backend PR runs `tsc` + `medusa build` + `test:unit` (S1, PR #29 squash `21b1e16`); the gate is a **required status check** on `main`. *(Green proven on PR #29; the deliberate-red smoke steps 2–4 owed to Daniel — throwaway backend PR.)*
 - [x] `WAYS-OF-WORKING.md` §Review&merge corrected to reflect the real backend gate; required-status-check **configured** (branch protection, 2026-06-14) — was Daniel's operational step, done with his authorization.
-- [ ] With Codex unauthenticated, `cross-review.mjs <PR#>` still posts a review via Antigravity, clearly labeled as the fallback; stderr says how to restore Codex.
-- [ ] `cross-review.mjs` with no PR# reviews the current branch's PR; running with local HEAD ahead of the PR warns instead of silently reviewing a stale diff.
-- [ ] `cross-panel.mjs` shares the branch resolver (no fork).
-- [ ] Each `sprint-N.md` has its smoke walkthrough + status ticked with commit refs.
-- [ ] This `README.md` marked ✅; `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
-- [ ] Poster: add a line to `09-platform-infra/README.md` (infra epic — not the product poster). Run `node scripts/build-order.mjs` and stage `BUILD-ORDER.md`.
+- [x] With Codex unauthenticated, `cross-review.mjs <PR#>` still posts a review via Antigravity, clearly labeled as the fallback; stderr says how to restore Codex. *(S2, PR #16 `cbed936`.)*
+- [x] `cross-review.mjs` with no PR# reviews the current branch's PR; running with local HEAD ahead of the PR warns instead of silently reviewing a stale diff. *(S3, PR #17 `2534aeb`.)*
+- [x] `cross-panel.mjs` shares the branch resolver (no fork) — the resolver + pure guard live once in `scripts/lib/cross-agent-cli.mjs`, the module `cross-panel.mjs` already imports. *(S3.)*
+- [x] Each `sprint-N.md` has its smoke walkthrough + status ticked with commit refs.
+- [x] This `README.md` marked ✅; `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
+- [x] Poster: line added to `09-platform-infra/README.md`. Ran `node scripts/build-order.mjs` and staged `BUILD-ORDER.md`.

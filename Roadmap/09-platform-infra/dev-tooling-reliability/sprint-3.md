@@ -1,10 +1,14 @@
 # Dev-tooling reliability — Sprint 3: Wrong-branch tax (auto-resolve PR + HEAD assertion)
 
-**Status:** 🏗 In progress — built on `chore/dev-tooling-reliability`, awaiting PR + merge.
+**Status:** ✅ **SHIPPED** — PR **#17** squash-merged to `main` (`2534aeb`), CI green (`build-order-fresh` + `inflight`).
 - ✅ S3.1 PR# optional, resolved from current branch (`resolveCurrentPr` in `scripts/lib/cross-agent-cli.mjs`).
 - ✅ S3.2 Stale/wrong-branch guard (`decideHeadGuard` + HEAD vs `headRefOid`; warn + require `--force`).
 - ✅ S3.3 Resolver shared in `cross-agent-cli.mjs` (which `cross-panel.mjs` already imports); no fork.
-- ✅ QA: `node --test 'scripts/lib/*.test.mjs'` green (17 tests; resolve + SHA-compare seam mocks gh + git).
+- ✅ QA: `node --test 'scripts/lib/*.test.mjs'` green (**18 tests**; resolve + SHA-compare seam mocks gh + git).
+- Cross-agent advisory: **codex** (resolved #17 via the new resolver — dogfood) flagged a broad `isNoPrError`
+  + a README overstatement, both fixed (`32cb0ad`); **antigravity** judgment pass — no blocking/should-fix,
+  one nit (`shortSha(null)→'unknown'`, `d17da78`). Found+fixed along the way: `gh pr view` resolves
+  **merged** PRs too → added a `state !== 'OPEN'` check so a reused branch name reads "no open PR".
 
 > Lands in the **monorepo-root** repo (`scripts/lib/cross-agent-cli.mjs`, `scripts/cross-review.mjs`, and
 > `scripts/cross-panel.mjs` if it shares the path). Dev tooling, not app code. QA = a pure `node:test` on
