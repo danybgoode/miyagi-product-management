@@ -1,7 +1,9 @@
 # Neon egress reduction — Sprint 1: Measurement baseline + cache storefront reads
 
-**Status:** ⬜ Not started. Frontend (Vercel preview per PR). Risk: low–med (caching commerce reads must
+**Status:** 🏗️ In progress. Frontend (Vercel preview per PR). Risk: low–med (caching commerce reads must
 respect price/stock freshness). Ship first — it establishes the egress baseline every later sprint reads against.
+- Story 1.1 ✅ `scripts/neon-egress.mjs` + baseline recorded below.
+- Story 1.2 ⬜.
 
 ## Why
 The validated dominant cause is backend reads, but every **uncached** storefront/Store-API read (incl. bot &
@@ -33,6 +35,20 @@ cascade into a fresh Neon query and burn egress.
 - After ~2–3 days live, the Story-1.1 reading shows a measurable egress drop attributable to fewer Neon reads
   (record the delta; if negligible, say so — the baseline bleed is background, attacked in S2).
 **Risk:** med (caching commerce reads — freshness correctness; no money path mutated).
+
+## Baseline (recorded by Story 1.1 — `node scripts/neon-egress.mjs`, 2026-06-21)
+Org `org-fancy-pond-57061061` · cap 5 GB/mo (per-org, decimal GB):
+
+| Project | Egress (MB) | Egress (GB) | % of 5 GB |
+|---|--:|--:|--:|
+| medusa-bonsai (commerce) | 4135.9 | 4.136 | 82.7% |
+| panfleto-miniflux | 159.5 | 0.159 | 3.2% |
+| justread | 0.2 | 0.000 | 0.0% |
+| **ORG TOTAL** | **4295.6** | **4.296** | **85.9%** |
+
+Headroom to cap: **0.704 GB (14.1% remaining)**. Matches the spike's hand-read 85.9% exactly — every later
+sprint's egress delta is read against this. (medusa-bonsai is 96.3% of the org's own usage; the side-projects
+are the S3 split target, not the egress driver.)
 
 ## Sprint QA
 - **api spec(s):** one asserting the cache/revalidate headers on the storefront read routes (pure where a
