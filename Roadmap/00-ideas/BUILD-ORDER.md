@@ -13,7 +13,7 @@
 ## 🏗️ Building now (2)
 
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 15/18 stories
-- [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 2/8 stories
+- [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 5/8 stories
 
 ## 📋 Ready to build (scaffolded, not started) (2)
 
