@@ -19,7 +19,7 @@
 
 ## Stories
 
-### Story 1.1 — Backend `ci.yml` on `pull_request`
+### Story 1.1 — Backend `ci.yml` on `pull_request` ✅ `21b1e16`
 **As a** developer opening a backend PR, **I want** GitHub Actions to type-check, build, and unit-test the
 backend automatically, **so that** a broken backend can't reach `main` (and thus Cloud Run) unnoticed.
 **Acceptance:**
@@ -31,7 +31,7 @@ backend automatically, **so that** a broken backend can't reach `main` (and thus
 - No DB/Redis service container and no e2e step (unit specs are DB-free; preview e2e is N/A for the backend).
 **Risk:** low
 
-### Story 1.2 — Make it the merge gate + correct the docs
+### Story 1.2 — Make it the merge gate + correct the docs ✅ `21b1e16`
 **As a** reviewer, **I want** the CI check to actually block a red backend merge and the docs to say so,
 **so that** WAYS reflects reality (it currently implies the backend already has a tsc+build gate).
 **Acceptance:**

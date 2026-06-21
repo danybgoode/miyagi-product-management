@@ -1,12 +1,12 @@
 ---
 title: "Events — quantity selector on a paid GA listing"
 slug: events-quantity-selector
-status: ready
+status: scaffolded
 area: "10"
 type: feature
 priority: backlog
-risk: medium
-epic: null
+risk: high
+epic: events-quantity-selector
 build_order: null
 updated: 2026-06-21
 ---
