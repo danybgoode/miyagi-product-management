@@ -2,8 +2,32 @@
 
 **Status:** 🏗️ In progress. Frontend (Vercel preview per PR). Risk: low–med (caching commerce reads must
 respect price/stock freshness). Ship first — it establishes the egress baseline every later sprint reads against.
-- Story 1.1 ✅ `scripts/neon-egress.mjs` + baseline recorded below.
-- Story 1.2 ⬜.
+- Story 1.1 ✅ `scripts/neon-egress.mjs` + baseline recorded below (root `651a3fd`).
+- Story 1.2 ✅ `lib/cache-policy.ts` SSOT + spec (app repo, on `feat/neon-egress-and-db-isolation`).
+
+## Findings (Story 1.2 — VALIDATE-FIRST)
+The storefront caching this sprint set out to add was **already largely in place** (prior epics:
+discovery-polish, vercel-cost-reduction, homepage-polish-b):
+- Every Neon-hitting storefront read in `lib/listings.ts` already flows through `unstable_cache` /
+  `next:{revalidate}` (getListing 60s, getShop 120s, search/count 30s, curated/recent 60s, category 300s).
+  These windows were **scattered magic numbers** → consolidated into one documented SSOT `lib/cache-policy.ts`
+  (windows + a `storefrontCacheControl()` builder), behaviour-preserving. A spec pins them from drifting.
+- The bot/agent read routes (`/api/ucp/catalog`, `/api/embed/shop`) were **already CDN-cached** (`s-maxage`);
+  they now build that header from the same SSOT (dedupe).
+- **Page-HTML edge caching of the homepage + shop is NOT reachable as-is** — both render dynamically because
+  they personalize: `app/page.tsx` calls `currentUser()` (signed-in modules), `app/s/[slug]/page.tsx` reads
+  `headers()` for custom-domain detection. A no-op `export const revalidate` would not make them static. The
+  honest lever today is the **function-level cache** (already shielding Neon). **Follow-up (deferred):** split
+  the signed-out shell static + hydrate personalization in a client island to make the bot/crawler homepage
+  path edge-cacheable — a real but larger refactor, out of this sprint's low–med tier.
+- **Net:** S1's frontend egress effect is expected to be **marginal** — the reads were already cached. The
+  dominant cause (backend `minScale:1` cross-cloud loop) is **S2**. S1's durable value is the **measurement
+  harness** (1.1) + a **single, guarded cache-policy SSOT** (1.2) so windows can't silently drift.
+
+⚠️ **Vercel collapses a route handler's `Cache-Control` to client-facing `public`** (it consumes `s-maxage`
+at the edge; the verdict shows in `x-vercel-cache`). So the live spec asserts the route is *publicly
+edge-cacheable* (`public`, never `no-store`, with an `x-vercel-cache` verdict), not the raw `s-maxage`
+string — the pure spec pins the exact window the app sends.
 
 ## Why
 The validated dominant cause is backend reads, but every **uncached** storefront/Store-API read (incl. bot &
@@ -51,8 +75,9 @@ sprint's egress delta is read against this. (medusa-bonsai is 96.3% of the org's
 are the S3 split target, not the egress driver.)
 
 ## Sprint QA
-- **api spec(s):** one asserting the cache/revalidate headers on the storefront read routes (pure where a
-  cache-policy helper is extracted to `lib/`). The catalog data itself stays smoke-verified.
+- **api spec(s):** `e2e/neon-egress-cache.spec.ts` — pure assertions pin the `lib/cache-policy.ts` windows +
+  `storefrontCacheControl()` output (no network), plus a live check that `/api/ucp/catalog` is publicly
+  edge-cacheable. The catalog data itself stays smoke-verified.
 - **browser smoke owed:** no — header assertion + the egress delta reading cover it. The freshness eyeball
   (price/stock updates within the revalidate window) is a quick Daniel check, flagged below.
 - **deterministic gate:** `tsc` + `next build` + Playwright `api` green before merge.
@@ -60,16 +85,22 @@ are the S3 split target, not the egress driver.)
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (preview URL while pre-merge)
 
-1. Run the Story-1.1 egress script.
-   → prints per-project egress + org total + % of 5 GB; matches the Neon console Usage page.
-2. Open https://miyagisanchez.com/s/<test-shop> twice in a fresh private window.
-   → page renders; the second load serves from cache (response shows the ISR/`s-maxage` header; not a fresh fetch).
-3. Open a product PDP https://miyagisanchez.com/l/<test-listing-id>.
-   → renders with the cache header present.
+1. Run the Story-1.1 egress script: `node scripts/neon-egress.mjs`
+   → prints the per-project table + org total + % of 5 GB; matches the Neon console Usage page. (On a 401,
+   run any `neonctl` command to refresh the OAuth token, or `export NEON_API_KEY=…`, then re-run.)
+2. Confirm the agent/bot catalog route is publicly edge-cacheable (this is the real CDN lever — pages are
+   dynamic-by-personalization, see Findings):
+   `curl -sI "https://miyagisanchez.com/api/ucp/catalog?limit=1" | grep -iE "cache-control|x-vercel-cache"`
+   → `cache-control: public` (never `private`/`no-store`) **and** an `x-vercel-cache:` verdict. Re-run twice;
+   the second is typically `HIT` (timing/region-dependent — `MISS` then `HIT` both prove edge caching).
+3. Open https://miyagisanchez.com/s/<test-shop> and a PDP https://miyagisanchez.com/l/<test-listing-id>.
+   → both render correctly. (They render dynamically; their Neon reads are shielded by the function-level
+   cache — `getShop` 120s / `getListing` 60s — so repeat loads inside the window don't re-query Neon.)
 4. **(Owed to Daniel — freshness eyeball)** Change a test listing's price in the seller portal; reload the PDP
-   after the revalidate window.
-   → the new price appears within the documented window (not instantly, not never).
+   after ~60 s (the `CACHE.LISTING` window).
+   → the new price appears within roughly a minute (not instantly, not never).
 5. Re-run the egress script after ~2–3 days.
-   → org egress trend is flat-or-down vs the baseline (record the delta; background bleed remains — that's S2).
+   → org egress trend is flat-or-down vs the baseline (record the delta). **Expect it to be roughly flat** —
+   the reads were already cached; the real reduction is S2's `minScale` lever. Record the number either way.
 
 If any step fails, note the step number + what you saw — that's the bug report.
