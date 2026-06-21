@@ -59,6 +59,88 @@ export function ensureGh() {
   if (r.status !== 0) die('gh is not authenticated — run `gh auth login`.');
 }
 
+// ── Branch → PR resolution + stale-HEAD guard (the "wrong-branch tax" fix) ───────────────────────────────
+// cross-review takes an explicit <PR#> but never ties it to the current branch or checks the head SHA, so
+// the FIRST run regularly reviews the wrong or a stale diff and gets rerun. These helpers let the command
+// resolve the PR from the branch and refuse a stale local HEAD. They live here (the shared rail) so the
+// resolver is a single source of truth alongside the Codex-fallback plumbing both scripts already import.
+
+// Module-local git I/O: returns trimmed stdout, or null on any non-zero/spawn error (a clean "couldn't").
+function git(args) {
+  const r = spawnSync('git', args, { encoding: 'utf8' });
+  return r.status === 0 ? (r.stdout || '').trim() : null;
+}
+
+// Module-local gh I/O returning the structured result (so callers/tests can read stderr to classify failure).
+function ghJson(args) {
+  const r = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  return { ok: r.status === 0, stdout: r.stdout || '', stderr: r.stderr || '' };
+}
+
+// First 8 chars of a SHA, for human-readable guard messages. Null-safe.
+export function shortSha(sha) {
+  return (sha || '').slice(0, 8);
+}
+
+// Pure stale-HEAD decision — the unit under test (no I/O, like decideCodexFallback). Given the local HEAD
+// SHA, the PR's head SHA, and whether --force was passed, decide whether to proceed:
+//   'match'          — SHAs equal → proceed silently.
+//   'mismatch-force' — differ but --force → proceed with a warning.
+//   'mismatch-block' — differ, no --force → refuse (review would be stale).
+export function decideHeadGuard({ localHead, prHeadOid, force }) {
+  if (localHead && prHeadOid && localHead === prHeadOid) return 'match';
+  return force ? 'mismatch-force' : 'mismatch-block';
+}
+
+// gh stderr signalling "this branch has no associated open PR" (vs an auth/transport failure we shouldn't mask).
+function isNoPrError(stderr) {
+  return /no (?:open )?pull requests? found|no pull requests found for branch|could not find|no default branch|no git remotes? found/i.test(
+    stderr || ''
+  );
+}
+
+// Resolve the open PR for the CURRENT branch via `gh pr view --json …`. Injectable (`deps`) so a pure
+// node:test can mock gh + git with no network. Returns { number, headRefName, headRefOid }, or fail()s with a
+// clear, actionable message (detached HEAD / no open PR / gh error) — never a stack trace.
+export function resolveCurrentPr({ repo } = {}, deps = {}) {
+  const { runGit = git, runGh = ghJson, fail = die } = deps;
+
+  const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD']);
+  if (!branch || branch === 'HEAD')
+    return fail('detached HEAD / not on a branch — checkout the PR branch or pass <PR#> explicitly.');
+
+  const args = ['pr', 'view', '--json', 'number,state,headRefName,headRefOid'];
+  if (repo) args.push('--repo', repo);
+  const res = runGh(args);
+  if (!res.ok) {
+    if (isNoPrError(res.stderr))
+      return fail(`no open PR for branch \`${branch}\` — push/open one or pass <PR#>.`);
+    return fail(`gh pr view failed for branch \`${branch}\`: ${lastLine(res.stderr)}`);
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(res.stdout);
+  } catch {
+    return fail(`could not parse \`gh pr view\` output for branch \`${branch}\`.`);
+  }
+  if (!parsed || typeof parsed.number !== 'number')
+    return fail(`\`gh pr view\` returned no PR number for branch \`${branch}\`.`);
+  // gh resolves a MERGED/CLOSED PR too (e.g. a reused branch name) — only an OPEN PR is a valid review target.
+  if (parsed.state && parsed.state !== 'OPEN')
+    return fail(
+      `no open PR for branch \`${branch}\` (found #${parsed.number}, state ${parsed.state}) — ` +
+        `push/open one or pass <PR#>.`
+    );
+  return { number: parsed.number, headRefName: parsed.headRefName, headRefOid: parsed.headRefOid };
+}
+
+// The local HEAD SHA (`git rev-parse HEAD`), or null if it can't be read. Injectable for tests.
+export function currentHeadSha(deps = {}) {
+  const { runGit = git } = deps;
+  return runGit(['rev-parse', 'HEAD']);
+}
+
 export function checkAgyVersion() {
   const r = spawnSync('agy', ['--version'], { encoding: 'utf8' });
   const v = ((r.stdout || '') + (r.stderr || '')).trim().match(/\d+\.\d+\.\d+/);

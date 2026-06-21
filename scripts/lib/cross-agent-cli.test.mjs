@@ -1,10 +1,12 @@
 // Dev-tooling reliability — Sprint 2: pure node:test for the Codex→Antigravity auto-fallback.
 //
 // Cross-agent tooling has no Playwright gate (it's a CLI, not app code), so this node:test IS the
-// deterministic gate for the fallback-decision logic — same anti-erosion shape as the infra/gcp guard.
-// It mocks BOTH runners (no codex/agy/network) and asserts the fallback fires on the AUTH signal only.
+// deterministic gate for the fallback-decision logic AND the Sprint-3 branch-resolve + stale-HEAD seam —
+// same anti-erosion shape as the infra/gcp guard. It mocks BOTH the codex/agy runners (no network) and gh +
+// git (injected deps), asserting the fallback fires on the AUTH signal only and the resolver never reviews
+// the wrong/stale diff silently.
 //
-// Run: `node --test scripts/lib/`   (or `node --test scripts/lib/cross-agent-cli.test.js`)
+// Run: `node --test 'scripts/lib/*.test.mjs'`   (the bare-directory form was dropped in Node 24).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,6 +14,8 @@ import {
   isCodexAuthError,
   decideCodexFallback,
   runWithCodexFallback,
+  decideHeadGuard,
+  resolveCurrentPr,
 } from './cross-agent-cli.mjs';
 
 // The real stderr a live revoked Codex token emits (captured 2026-06-21) — the trigger must match THIS.
@@ -116,4 +120,95 @@ test('runWithCodexFallback: dead token + agy ALSO unavailable → one-line failu
     return true;
   });
   assert.equal(d.calls.antigravity, 0);
+});
+
+// --- Sprint 3: resolve + SHA-compare seam (mock gh + git) -----------------------------------------------
+
+test('decideHeadGuard: matching SHAs → proceed silently', () => {
+  assert.equal(decideHeadGuard({ localHead: 'abc123', prHeadOid: 'abc123', force: false }), 'match');
+  assert.equal(decideHeadGuard({ localHead: 'abc123', prHeadOid: 'abc123', force: true }), 'match');
+});
+
+test('decideHeadGuard: mismatch → block without --force, force-through with it', () => {
+  assert.equal(decideHeadGuard({ localHead: 'aaa', prHeadOid: 'bbb', force: false }), 'mismatch-block');
+  assert.equal(decideHeadGuard({ localHead: 'aaa', prHeadOid: 'bbb', force: true }), 'mismatch-force');
+});
+
+test('decideHeadGuard: an unreadable SHA is treated as a mismatch (never a silent match)', () => {
+  assert.equal(decideHeadGuard({ localHead: null, prHeadOid: 'bbb', force: false }), 'mismatch-block');
+  assert.equal(decideHeadGuard({ localHead: 'aaa', prHeadOid: null, force: false }), 'mismatch-block');
+});
+
+// A throwing `fail` (die exits the process) so the test asserts the message instead of exiting.
+const throwingFail = (m) => {
+  throw new Error(m);
+};
+
+test('resolveCurrentPr: branch + valid OPEN `gh pr view` JSON → parsed PR fields', () => {
+  const deps = {
+    runGit: (args) => (args.join(' ') === 'rev-parse --abbrev-ref HEAD' ? 'feat/x' : null),
+    runGh: () => ({
+      ok: true,
+      stdout: JSON.stringify({ number: 42, state: 'OPEN', headRefName: 'feat/x', headRefOid: 'deadbeef' }),
+      stderr: '',
+    }),
+    fail: throwingFail,
+  };
+  assert.deepEqual(resolveCurrentPr({}, deps), {
+    number: 42,
+    headRefName: 'feat/x',
+    headRefOid: 'deadbeef',
+  });
+});
+
+test('resolveCurrentPr: `--repo` is forwarded to gh', () => {
+  let seen = null;
+  const deps = {
+    runGit: () => 'feat/x',
+    runGh: (args) => {
+      seen = args;
+      return { ok: true, stdout: JSON.stringify({ number: 7, state: 'OPEN', headRefName: 'feat/x', headRefOid: 'c0ffee' }), stderr: '' };
+    },
+    fail: throwingFail,
+  };
+  resolveCurrentPr({ repo: 'owner/repo' }, deps);
+  assert.deepEqual(seen, ['pr', 'view', '--json', 'number,state,headRefName,headRefOid', '--repo', 'owner/repo']);
+});
+
+test('resolveCurrentPr: a MERGED/CLOSED PR (reused branch name) → treated as "no open PR"', () => {
+  const deps = {
+    runGit: () => 'chore/x',
+    runGh: () => ({
+      ok: true,
+      stdout: JSON.stringify({ number: 16, state: 'MERGED', headRefName: 'chore/x', headRefOid: 'f8aa7119' }),
+      stderr: '',
+    }),
+    fail: throwingFail,
+  };
+  assert.throws(() => resolveCurrentPr({}, deps), /no open PR for branch `chore\/x` \(found #16, state MERGED\)/);
+});
+
+test('resolveCurrentPr: no open PR for the branch → clear message, no stack trace', () => {
+  const deps = {
+    runGit: () => 'feat/x',
+    runGh: () => ({ ok: false, stdout: '', stderr: 'no pull requests found for branch "feat/x"' }),
+    fail: throwingFail,
+  };
+  assert.throws(() => resolveCurrentPr({}, deps), /no open PR for branch `feat\/x`/);
+});
+
+test('resolveCurrentPr: detached HEAD → clear message, never a silent wrong review', () => {
+  const detached = { runGit: () => 'HEAD', fail: throwingFail };
+  assert.throws(() => resolveCurrentPr({}, detached), /detached HEAD/);
+  const noBranch = { runGit: () => null, fail: throwingFail };
+  assert.throws(() => resolveCurrentPr({}, noBranch), /detached HEAD/);
+});
+
+test('resolveCurrentPr: a generic gh failure surfaces the stderr tail (not masked as "no PR")', () => {
+  const deps = {
+    runGit: () => 'feat/x',
+    runGh: () => ({ ok: false, stdout: '', stderr: 'error connecting to api.github.com\nnetwork is unreachable' }),
+    fail: throwingFail,
+  };
+  assert.throws(() => resolveCurrentPr({}, deps), /gh pr view failed.*network is unreachable/s);
 });

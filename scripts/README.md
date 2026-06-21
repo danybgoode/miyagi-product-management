@@ -140,7 +140,10 @@ blocks, or authorizes a merge (CI + the Claude reviewer + the risk-tier rule sta
 is **single-pass** (no debate loop).
 
 ```bash
-# Print Codex's findings without posting (safe to trial):
+# Review the open PR for the CURRENT branch (PR# is optional — resolved via `gh pr view`):
+node scripts/cross-review.mjs --agent codex --dry-run
+
+# Print a specific PR's findings without posting (safe to trial):
 node scripts/cross-review.mjs <PR#> --agent codex --dry-run
 
 # Post the advisory comment:
@@ -153,8 +156,19 @@ node scripts/cross-review.mjs <PR#> --agent antigravity
 node scripts/cross-review.mjs <PR#> --agent codex --repo danybgoode/miyagisanchezcommerce
 ```
 
-**Flags:** `--agent codex|antigravity` (default codex) · `--repo owner/repo` · `--dry-run` (alias
-`--no-comment`) · `--help`. **Dependencies:** `gh` (authed), plus `codex` for `--agent codex` and `agy`
+**Right diff on the first run (no wrong-branch tax).** With **no `<PR#>`** the command resolves the open PR
+for the **current branch** (`gh pr view --json number,state,headRefName,headRefOid`) and then **refuses a
+stale diff**: if your local `git rev-parse HEAD` differs from the PR's head SHA it stops with
+`local HEAD … differs from PR #N head … — push first, or pass --force`. A branch with **no open PR** (incl. a
+reused branch name whose PR already **merged**) fails with a clear `no open PR for branch \`…\`` message —
+never a stack trace. Pass `--force` to review the resolved PR despite a stale HEAD, or an explicit `<PR#>`
+to skip resolution **and** the guard entirely (the deliberate escape hatch). The resolver + guard live in
+the shared rail `scripts/lib/cross-agent-cli.mjs` (covered by its `node:test`), so `cross-panel.mjs`
+inherits the same plumbing.
+
+**Flags:** `--agent codex|antigravity` (default codex) · `--repo owner/repo` · `--force` · `--dry-run`
+(alias `--no-comment`) · `--help`. `<PR#>` is optional (omit → current branch). **Dependencies:** `gh`
+(authed), plus `codex` for `--agent codex` and `agy`
 for `--agent antigravity` — each degrades with a clear, fix-naming message if missing/unauthed. `agy` is
 pinned to **1.0.7** (it has no `--output-format json`; the script uses text output and **warns** on a
 version mismatch). The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
