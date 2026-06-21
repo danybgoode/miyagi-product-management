@@ -384,6 +384,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   one, sanity-check its predicate against *your* input domain rather than copying it verbatim** — and run the
   advisory cross-review on a green PR; it's cheapest right before asking for the merge. *(2026-06-21,
   pdp-followups-cleanup S1.1 — `node scripts/cross-review.mjs <PR#> --agent antigravity --repo <app-repo>`.)*
+- **VALIDATE-FIRST: confirm a live data source exists before scoping a signal/UI that displays it; if it doesn't,
+  ship the static/degraded-but-honest version, defer the dynamic part, and write the gap into the PR — never
+  invent the data.** A "check the model before you build the view" discipline, the read-side mirror of the
+  Medusa-first "grep the route before scoping a backend story" rule. In the PDP redesign it fired three times and
+  saved three rabbit holes: S2.1 had **no seller rating / response-time / ventas source** (the legacy buyer-trust
+  scorer undercounts Medusa-order sellers → would show "0 ventas") so it shipped the static capsule and deferred
+  the dynamic items; S5.3 found the **paid-ticket QR isn't cleanly resolvable from the PDP read** (it lives on the
+  buyer's order, issued by the payment webhook) so it shipped display + a "Ver mi boleto" link, not an inline QR,
+  and deferred aforo/tiers (no listing-linked capacity source); rentals showed an **exact estimate + seller
+  coordination** because the generic checkout charges one unit and can't honor nights + deposit. Each gap was
+  stated in the PR and the smoke walkthrough, not papered over. The failure mode this avoids is a UI that looks
+  done but renders invented or wrong numbers. *(2026-06-21, pdp-redesign retro — S2.1 / S5.3 / S4.2.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**

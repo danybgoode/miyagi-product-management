@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: pdp-redesign
 ---
 
@@ -8,7 +8,10 @@ slug: pdp-redesign
 > **Macro-section:** [01 · Discovery & Shopping](../README.md) ·
 > **Risk: LOW–MED overall** (frontend reorder/polish; one backend sprint; one carved HIGH auth story). Reviewer
 > may auto-merge LOW stories on green CI **unless** a story touches shared layout / the buy bar.
-> **Status: 🚧 SCAFFOLDED — awaiting build.** Planned 2026-06-13. Scope doc:
+> **Status: ✅ EPIC COMPLETE — all 18 sprint stories merged (S1–S5).** S3 attributes primitive + specs table
+> (PR [#90](https://github.com/danybgoode/miyagisanchezcommerce/pull/90) `8b91658`) · S4 per-type A (#91) · S5
+> per-type B (#93); S1–S2 base redesign earlier. **Carved #6 (login wall) remains deferred / Daniel-gated**
+> behind `pdp_defer_auth` (default off) — intentionally not in the sprint flow. Planned 2026-06-13. Scope doc:
 > [`00-ideas/2. readyforscope/pdp-redesign-decide-then-act.md`](../../00-ideas/2.%20readyforscope/pdp-redesign-decide-then-act.md).
 > Source audit: `handoff/PDP-Audit.dc.html`. Reference end-states in the audit are **inspiration, not signed-off scope.**
 
@@ -79,13 +82,13 @@ attribute schema/route must be live before the FE specs table + seller capture r
 gracefully (no attributes → table simply absent) across the window. Carved #6 is frontend + checkout-path.
 
 ## Epic Definition of Done
-- [ ] All sprints' stories merged to `main` + smoke-tested (money/auth/events-checkout gaps stated; owed to Daniel).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs; money/auth steps flagged as owed to Daniel).
-- [ ] Epic `README.md` marked ✅; every `sprint-N.md` status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated — §01 line + a Recent-highlights entry.
-- [ ] Team memory updated (epic memory + `MEMORY.md` index).
-- [ ] `LEARNINGS.md` updated with any durable learning.
-- [ ] **Kill-switches verified:** `pdp_redesign` exists (default `true`, enabled); if #6 shipped, `pdp_defer_auth`
-      exists (default `false`, disabled until Daniel enables).
-- [ ] Feature branch(es) deleted; PR(s) merged.
+- [x] All sprints' stories merged to `main` + smoke-tested (money/auth/events-checkout gaps stated; owed to Daniel).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs; money/auth steps flagged as owed to Daniel).
+- [x] Epic `README.md` marked ✅; every `sprint-N.md` status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — §01 line + a Recent-highlights entry.
+- [ ] Team memory updated (epic memory + `MEMORY.md` index). *(Team memory lives outside this repo — left for Daniel/next session.)*
+- [x] `LEARNINGS.md` updated with any durable learning (validate-first / no-live-source discipline).
+- [x] **Kill-switches verified:** `pdp_redesign` exists (default `true`, enabled); `pdp_defer_auth` stays disabled
+      (carved #6 not shipped).
+- [ ] Feature branch(es) deleted; PR(s) merged. *(per-sprint PRs #88–#93 merged; confirm no stray branch.)*

@@ -28,7 +28,7 @@ who merges. Record the decision in the PR.
 
 ## Stories
 
-### S3.1 (BE, Medusa) — Per-category attribute schema + Store API + UCP read
+### S3.1 (BE, Medusa) — Per-category attribute schema + Store API + UCP read ✅ `8b91658`
 **As** the platform, **I want** listings to carry structured per-category attributes, **so that** the PDP (and
 agents) can present specs consistently.
 - Define the schema (the recommended metadata path: a per-category field set), expose the attributes on the
@@ -37,14 +37,14 @@ agents) can present specs consistently.
 - **QA:** api spec on the route; **post-merge prod smoke** (no preview for Cloud Run) + a route-deployed probe.
   **Risk: MED–HIGH — Daniel merges.**
 
-### S3.2 (FE) — Seller capture of structured attributes
+### S3.2 (FE) — Seller capture of structured attributes ✅ `8b91658`
 **As** a seller, **I want** to fill in my listing's specs by category, **so that** buyers see accurate details.
 - Listing create/edit captures the category's attribute set (driven by S3.1's schema); persists via the existing
   listing-write path.
 - **Acceptance:** a seller sets talla/material/etc. on a listing and the values persist + read back.
 - **QA:** api/browser smoke (seller session **owed to Daniel**). **Risk: MED.**
 
-### S3.3 (FE) — Scannable specs table on the PDP
+### S3.3 (FE) — Scannable specs table on the PDP ✅ `8b91658`
 **As** a buyer, **I want** a quick scannable specs table, **so that** I can confirm the item's details at a glance.
 - Render the attributes as a Vinted-style table just above the description (fits the S1.2 reorder slot). Absent
   attributes → the table simply doesn't render.

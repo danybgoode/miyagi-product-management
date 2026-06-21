@@ -11,7 +11,7 @@
 
 ## Stories
 
-### S1.1 — (C) Normalize protocol-less seller `booking_url`s  *(do first — shared surface)*
+### S1.1 — (C) Normalize protocol-less seller `booking_url`s  *(do first — shared surface)* ✅ `3213f6c`
 **As** a buyer (or an AI agent) on a listing whose seller typed `cal.com/foo` (no scheme), **I want** the
 "Agendar" / "Ver disponibilidad" CTA to open the seller's real calendar, **so that** the booking action never
 resolves to a broken same-origin relative URL.
@@ -28,7 +28,7 @@ resolves to a broken same-origin relative URL.
   + anonymous browser smoke on an autos or inmuebles listing. **Risk: LOW. Shared surface (autos/inmuebles/services
   CTAs + UCP) → declare in the PR.**
 
-### S1.2 — (B) Personalized-event buy label
+### S1.2 — (B) Personalized-event buy label ✅ `3213f6c`
 **As** a buyer of an event listing that **also** has personalization fields, **I want** the buy button to read
 "Comprar boleto — $precio" like every other event, **so that** the CTA doesn't contradict the event framing above it.
 - Add optional `buyNowLabel?` / `signInBuyLabel?` props to `PersonalizationBuyBox` (`app/components/PersonalizationBuyBox.tsx`,
