@@ -10,13 +10,12 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
-
-_None._
-
-## 📋 Ready to build (scaffolded, not started) (3)
+## 🏗️ Building now (1)
 
 - [Neon egress reduction + DB account isolation + site-wide Clarity 🏗️](../../09-platform-infra/neon-egress-and-db-isolation/README.md) — 09 Platform-infra · 0/9 stories
+
+## 📋 Ready to build (scaffolded, not started) (2)
+
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories
 
