@@ -10,15 +10,15 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (0)
 
-- [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 3/6 stories · risk: Low
+_None._
 
 ## 📋 Ready to build (scaffolded, not started) (1)
 
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories · risk: High · backlog
 
-## ✅ Shipped (48)
+## ✅ Shipped (49)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -65,6 +65,7 @@
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 0 Enablers
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 3/9 stories · risk: High
 - [Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅](../../09-platform-infra/postgres-neon-to-cloudsql/README.md) — 09 Platform-infra · 3/8 stories
+- [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 5/6 stories · risk: Low
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers
 - [Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 4/5 stories · risk: Low · Wave 1
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4

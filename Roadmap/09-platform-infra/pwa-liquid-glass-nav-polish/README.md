@@ -1,14 +1,20 @@
 ---
-status: in-progress
+status: shipped
 slug: pwa-liquid-glass-nav-polish
 ---
 
 # Epic — PWA Liquid-Glass Nav Polish
 
-> **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/pwa-glass-nav` (S1 merged + deleted) ·
+> **Macro-section:** [09 · Platform & Infra](../README.md) · **Branches:** `feat/pwa-glass-nav` (S1) +
+> `feat/pwa-glass-nav-s2` (S2) — **both merged + deleted** ·
 > **Risk: LOW overall** (frontend-only; S1.3 + S2.2 touch shared `globals.css`/`layout.tsx` — announce).
 > Reviewer may auto-merge LOW stories on green CI **unless** they touch shared layout.
-> **Status: 🏗️ IN PROGRESS — S1 ✅ MERGED to prod** (squash `071246d`, [PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98); cross-reviewed by Codex, no blocking); **S2 next.**
+> **Status: ✅ COMPLETE — both sprints merged to prod (2026-06-22).** S1 squash `071246d`
+> ([PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98)) · S2 squash `4ab597c`
+> ([PR #99](https://github.com/danybgoode/miyagisanchezcommerce/pull/99)); both cross-reviewed by **Codex**
+> (S2 a11y/focus should-fixes applied `d3a5807`; the integration-test nit declined — the bar+sheet are
+> `.pwa-only`, not headless-testable). S2.3 (top-bar glass-parity) **deliberately skipped**. Real-device
+> iOS-keyboard + PWA-standalone smokes owed to Daniel.
 > Scope doc: [`00-ideas/seeds/pwa-liquid-glass-nav-polish.md`](../../00-ideas/seeds/pwa-liquid-glass-nav-polish.md).
 > **Source mockup: `handoff/Liquid-Glass-Navbars-(standalone).html`** — at the **monorepo root** `handoff/`,
 > NOT under `apps/` (a builder searching from inside `apps/miyagisanchez/` will miss it). It specifies the
@@ -60,21 +66,22 @@ AGENTS rules #1 (Medusa) / #2 (Supabase — favorites already there) / #4 (Clerk
 | **1 · Bar restructure + glass polish (light)** ✅ MERGED `071246d` | 1.1 ✅ Re-order to `Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil`; icons-only; drop Explorar tab; Favoritos→tab (mobile) + keep in `CuentaMenu` (desktop) | LOW |
 | | 1.2 ✅ Detached liquid-glass search control restored right of the pill; **interim → `/l`**, S2.1 wires the sheet | LOW |
 | | 1.3 ✅ Liquid-glass visual polish (light) — **matched the handoff `.glass-surface` exactly** (fill 0.50 · blur 32 · sat 180% · bright 1.018 · edge-refraction-ring shadow · white active capsule · pill 64/32 · bubble 60 · FAB 46), tokenized light+dark | LOW (announce: `globals.css`) |
-| **2 · Bottom-sheet search + dedup** | 2.1 Bottom-sheet search — reuse filter-sheet seam; synchronous `focus()` + `touch-action:auto`; recent (pure helper + localStorage) + suggested; submit → `/l?q=`; scrim/dismiss; keyboard/safe-area aware | LOW |
-| | 2.2 Demote/hide persistent header search on mobile PWA (bottom is primary); desktop unchanged | LOW (announce: shared `layout.tsx`/`globals.css`) |
-| | 2.3 (optional) Top-bar glass-parity touch — align header glass with the bar; collapse redundant top-level action icons | LOW |
+| **2 · Bottom-sheet search + dedup** ✅ MERGED `4ab597c` | 2.1 ✅ Bottom-sheet search — reused the filter-sheet idiom; **always-mounted input** so the tap handler `focus()`es synchronously + `touch-action:auto`; recent (pure `lib/search-recents.ts` + localStorage) + suggested; submit → `/l?q=`; scrim/Esc/close dismiss; `inert` when closed; sibling-of-bar so it survives the keyboard auto-hide | LOW |
+| | 2.2 ✅ Demote the persistent header search **in PWA standalone only** (`.pwa-hidden`); kept on mobile web (no bottom bar there); agent re-surfaced as a `.pwa-only` top-bar icon; desktop unchanged | LOW (shared `layout.tsx` — announced) |
+| | 2.3 ⏭️ (optional) Top-bar glass-parity touch — **SKIPPED/deferred** (cosmetic; avoids extra shared-surface risk) | LOW |
 
 ## Deploy order
 Frontend-only; each sprint independently shippable. **S1 → S2.** S1.3 + S2.2 touch shared surface — **merge
 latest `main` first and announce the cross-cutting touch** before opening each PR (LEARNINGS: shared-surface
 changes break sibling PRs). Compressible to a single sprint if Daniel prefers.
 
-## Definition of Done (epic)
-- [ ] Both sprints merged to `main` + smoke-tested (gaps stated).
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs); **PWA-standalone + real-device-keyboard steps flagged owed to Daniel**.
-- [ ] This README marked ✅; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] **Reconcile the doc-drift this epic creates:** update the **nav-reorg** docs + the **product poster**
-      (the PWA bar is no longer `Inicio · Explorar · ⊕ · Mensajes · Cuenta` with Favoritos-in-Cuenta).
-- [ ] Team memory + `MEMORY.md` index updated; durable learnings promoted to `LEARNINGS.md`.
-- [ ] Feature branch deleted; seed frontmatter `status: shipped`.
+## Definition of Done (epic) — ✅ COMPLETE
+- [x] Both sprints merged to `main` + smoke-tested (gaps stated — real-device/PWA owed to Daniel).
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs); **PWA-standalone + real-device-keyboard steps flagged owed to Daniel**.
+- [x] This README marked ✅; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] **Reconciled the doc-drift this epic creates:** updated the **nav-reorg** README + the **product poster**
+      (the PWA bar is now `Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil` icons-only, Favoritos back as a tab,
+      detached glass search → bottom-sheet, header search demoted in PWA / persists on mobile web).
+- [x] Team memory + `MEMORY.md` index updated; durable learnings promoted to `LEARNINGS.md`.
+- [x] Feature branches deleted; seed frontmatter `status: shipped`.

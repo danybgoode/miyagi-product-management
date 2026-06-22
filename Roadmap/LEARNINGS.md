@@ -321,6 +321,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   render at all. The escape hatch is to keep the new client island **channel-agnostic** (pure props, reads
   no channel header) so it renders byte-identically everywhere and the plain marketplace `/l/[id]` smoke
   covers it. *(2026-06-09 cross-channel-trust-parity D.2; reconfirmed 2026-06-10 PDP image gallery.)*
+- **A `.pwa-only` surface is NOT headless-smokeable — Playwright can't emulate `display-mode: standalone`.**
+  The installed-PWA bottom bar + its search sheet render only under
+  `@media (display-mode: standalone)`, and `page.emulateMedia()` exposes no `display-mode` option, so an
+  anonymous browser smoke can't open them — that rendered flow is genuinely **owed to Daniel** on a real
+  device. Cover the logic with a **pure `lib/` seam + `api` spec** instead (the recents add/dedupe/cap +
+  `/l?q=` encoding), and state the gap honestly in the PR rather than implying a browser smoke ran. Same
+  "name the gap, don't fake it" discipline as the authed-money-path smoke. *(2026-06-22, pwa-glass-nav S2.)*
 - **Fresh worktrees need local env before e2e means anything.** `git worktree` does not bring ignored
   `.env.local` / `.env` files. For Miyagi local API e2e, copy the app `.env.local` into the frontend
   worktree, copy backend `.env` into the backend worktree, start Next on `3001` and Medusa on `9000`,
@@ -335,7 +342,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   in a new PDP lightbox passed local tsc/build/its-own-spec but the guard failed in CI — for white-on-dark
   chrome reuse the existing `var(--fg-inverse)` (resolves to `#ffffff`), the token the surrounding gallery
   already used. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07; reconfirmed
-  2026-06-10 PDP image gallery.)* **The same shape is a general anti-erosion guard, not just for color:**
+  2026-06-10 PDP image gallery.)* **It also false-positives a `#`-prefixed NUMBER that isn't a color** — a
+  comment referencing "WebKit **#279904**" (a bug id) reads as a 6-hex and failed CI green-everywhere-else.
+  Write external bug/issue ids without the `#` ("WebKit bug 279904") in customer-facing source. *(2026-06-22,
+  pwa-glass-nav S2.1.)* **The same shape is a general anti-erosion guard, not just for color:**
   pure offender-finders in a `lib/` module + an `api` spec (real-tree assertion + in-memory negative
   fixtures) also enforce an **anti-monolith** rule — fail CI if any component in a refactored dir exceeds a
   line cap, or if a banned filename reappears. Set the cap above the current largest file with headroom
@@ -461,6 +471,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   and DB are even in the same cloud** — relocation may delete the problem at the root (and for a 43 MB DB, the
   serverless/branching value props don't justify the cross-cloud tax). *(2026-06-22, postgres-neon-to-cloudsql —
   3 sprints; supersedes the neon-egress spike's "keep on Neon + idle the backend" call.)*
+- **Raising the iOS keyboard from an in-app sheet needs an ALWAYS-MOUNTED input + a SYNCHRONOUS `focus()` in
+  the tap handler.** Mobile WebKit only opens the keyboard from a real, already-present element during a user
+  gesture — so (a) render the sheet + its input persistently and toggle visibility with a **transform**
+  (`translateY`), never a conditional mount, and (b) the trigger calls `inputRef.current.focus()` **before**
+  any `setState` (no `setTimeout`), with **`touch-action: auto`** on the input (WebKit bug 279904). Reuse a
+  proven bottom-sheet idiom (scrim + `translate-y` + Esc + scroll-lock — Discovery-S2's filter sheet) rather
+  than a new overlay. *(2026-06-22, pwa-glass-nav S2.1 — `SearchSheet.tsx` + pure `lib/search-recents.ts`.)*
+- **An always-mounted-but-hidden dialog must be `inert` when closed, and `blur()` its input on close.** Because
+  the input stays in the DOM (for the synchronous focus above), a plain offscreen/`aria-hidden` sheet leaves
+  focus **trapped behind it** (a11y violation) and can leave the mobile keyboard up after close/submit. Set
+  `inert={!open}` (drops it from tab order + the a11y tree, moves focus out) and blur the field in a
+  `!open` effect so the keyboard dismisses on every close path (scrim / button / Esc / submit). Codex
+  cross-review caught both before merge. *(2026-06-22, pwa-glass-nav S2.1.)*
+- **Scope a "hide/demote a control on mobile" change to the right `display-mode` — the PWA bottom bar is
+  `.pwa-only`.** The installed-PWA bottom bar (and anything it carries) renders only at
+  `@media (display-mode: standalone) and (max-width:767px)`; **mobile web has no bottom bar**. So hiding the
+  header search on *all* mobile would strand mobile-web users with **no search at all** — hide it `.pwa-hidden`
+  (PWA-standalone only) and keep it on mobile web + desktop. And re-surface anything the hidden control
+  *uniquely* held (here the in-search agent button → a `.pwa-only` top-bar icon). `.pwa-hidden`/`.pwa-only` are
+  the established mirror pair (S1 used them for the Favoritos row). *(2026-06-22, pwa-glass-nav S2.2.)*
 - **Visibility-gate every client poll/timer — the cheapest, lowest-risk serverless cost lever.** A
   `setInterval` that fetches (or even just re-renders) keeps firing in **backgrounded tabs**, billing a
   function invocation per tick for a tab nobody's looking at. Gate the work on
