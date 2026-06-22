@@ -12,16 +12,22 @@
 # Differences from prod deploy.sh (deploy.sh stays the prod source of truth):
 #   • service        medusa-web-staging   (not medusa-web)
 #   • min-instances  0                    (scale to zero, ~$0 idle; prod is 1)
-#   • NO --vpc-connector / --vpc-egress   (Redis OFF — in-memory fallback)
-#   • NO REDIS_URL secret binding
+#   • NO REDIS_URL secret binding         (Redis OFF — in-memory fallback)
 #   • secrets        *_STAGING            (isolated; never prod's)
 #   • CORS           localhost / staging URL (not the prod origins)
+#
+# VPC connector (Postgres→Cloud SQL co-location, Sprint 1): staging now egresses
+# private-ranges-only through the SHARED `medusa-conn` connector — the SAME path prod
+# uses for Redis — so it can reach the Cloud SQL PRIVATE IP that backs the repointed
+# DATABASE_URL_STAGING. Redis stays OFF (no REDIS_URL_STAGING binding); the connector
+# only provides VPC egress to the private DB. Mirrors what prod needs at the S2 cutover.
 
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-medusa}"
+CONNECTOR="${CONNECTOR:-medusa-conn}"   # shared with prod — VPC egress to Cloud SQL private IP
 RUN_SA="${RUN_SA:-medusa-run}"
 RUN_SA_EMAIL="${RUN_SA}@${PROJECT_ID}.iam.gserviceaccount.com"
 SERVICE_WEB="${SERVICE_WEB:-medusa-web-staging}"
@@ -49,7 +55,7 @@ else
   gcloud builds submit apps/backend --tag "$IMAGE"
 fi
 
-echo "▶ Deploying $SERVICE_WEB (min=0, Redis-OFF, no VPC connector)…"
+echo "▶ Deploying $SERVICE_WEB (min=0, Redis-OFF, VPC connector for Cloud SQL private IP)…"
 # Health probes — the probe flags here match prod deploy.sh (Backend Production Readiness
 # S3): HTTP GET /health startup + liveness. (Other runtime posture intentionally differs —
 # Redis-off, no MEDUSA_BACKEND_URL, min=0.) Staging is the place to rehearse probe behaviour
@@ -60,6 +66,8 @@ gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
   --service-account="$RUN_SA_EMAIL" \
+  --vpc-connector="$CONNECTOR" \
+  --vpc-egress=private-ranges-only \
   --min-instances=0 \
   --max-instances=2 \
   --cpu=1 \
