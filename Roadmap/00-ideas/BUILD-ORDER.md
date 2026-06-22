@@ -10,14 +10,14 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (3)
 
 - [Neon egress reduction + DB account isolation + site-wide Clarity 🏗️](../../09-platform-infra/neon-egress-and-db-isolation/README.md) — 09 Platform-infra · 0/9 stories
 - [Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) 🏗️](../../09-platform-infra/postgres-neon-to-cloudsql/README.md) — 09 Platform-infra · 0/8 stories
+- [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 3/6 stories · risk: Low
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-- [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 0/6 stories · risk: Low
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories · risk: High · backlog
 
 ## ✅ Shipped (47)
