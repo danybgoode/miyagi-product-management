@@ -1,7 +1,16 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: cross-agent-review-always
 ---
+
+> **✅ SHIPPED 2026-06-22 (local-only, by decision).** The CI auto-run (S1.2) was **descoped**: a GitHub
+> runner has no codex/agy auth — codex would need a **token-billed API key + a cross-repo PAT** and **agy has
+> no headless auth at all** (probed live). Not worth it for an advisory aid, so cross-review stays the
+> **local command, run on every PR** (the policy flip). What shipped: the **cost guard** (`--skip-trivial`,
+> root PR [#29](https://github.com/danybgoode/miyagi-product-management/pull/29)) + the **policy** (WAYS / PR
+> template / kickoffs now say "run locally on every PR, advisory"). The non-blocking `cross-review.yml` was
+> built + self-smoked green (clean-skip path) but **not merged** — PRs `miyagisanchezcommerce#103` /
+> `medusa-bonsai-backend#35` closed, branches kept if CI is ever wanted. See `RETROSPECTIVE.md`.
 
 # Epic — Cross-agent review on every PR (CI auto-run + policy)
 
@@ -39,6 +48,11 @@ token sink per `LEARNINGS.md`, so a blocking/debate variant stays out).
 4. **Validate headless auth first** — codex CI auth is unconfirmed; S1.1 checks it before building the job.
    If it can't auth headlessly, ship Sprint 2 (policy "run locally on every PR") only.
 5. **All low-risk** — additive non-blocking CI + docs; the review can never block a merge.
+6. **(2026-06-22, post-S1) Ship local-only — CI auto-run descoped.** S1.1 found codex *can* auth headlessly,
+   but **only** via a token-billed API key (its local auth is a ChatGPT-OAuth login, not portable to CI) and
+   the app-repo workflow also needs a cross-repo PAT; **agy has no headless auth path at all**. Daniel's call:
+   a new billed key + PAT isn't worth it for an advisory aid — keep cross-review as the **local command, run
+   on every PR**. The cost guard + policy still ship; the workflow is built but not merged.
 
 ## Medusa-first note
 
@@ -81,13 +95,14 @@ template in the **monorepo-root** repo.
 
 ## Definition of Done (epic)
 
-- [ ] Opening any PR auto-posts one advisory "Cross-agent review" comment; the job is **non-blocking** and
-      **not** a required check (deleting the credential makes it skip cleanly, PR still mergeable).
-- [ ] A trivial/docs-only PR skips the run with a logged reason (S1.3).
-- [ ] `WAYS-OF-WORKING.md` §Review & merge, the PR template, and `SESSION-KICKOFFS.md` #4 all say cross-review
-      runs on **every PR, advisory, never gates** (S2).
-- [ ] No gating: nothing in CI or the merge path blocks on the foreign agent's output.
-- [ ] Each `sprint-N.md` has its smoke walkthrough + status ticked with commit refs.
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted
+- [x] ~~Opening any PR auto-posts one advisory comment~~ → **descoped (decision 6).** The non-blocking
+      `cross-review.yml` was built + self-smoked green (clean-skip path), but local-only was chosen — not merged.
+- [x] A trivial/docs-only PR skips the run with a logged reason — **`--skip-trivial`** cost guard (S1.3),
+      live-smoked.
+- [x] `WAYS-OF-WORKING.md` §Review & merge, the PR template, and `SESSION-KICKOFFS.md` #4 all say cross-review
+      runs on **every PR, advisory, never gates** — reworded to "run **locally** on every PR" (S2).
+- [x] No gating: nothing in CI or the merge path blocks on the foreign agent's output (it doesn't run in CI).
+- [x] Each `sprint-N.md` has its smoke walkthrough + status ticked with commit refs.
+- [x] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted
       to `Roadmap/LEARNINGS.md`.
-- [ ] Poster: line added to `09-platform-infra/README.md`. Ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
+- [x] Poster: line added to `09-platform-infra/README.md`. Ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.

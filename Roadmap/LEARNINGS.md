@@ -182,6 +182,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   + branch its context-passing per CLI, and the smoke is "run it against a real PR and read the comment."
   *(2026-06-10, cross-agent-code-review S1 — also: a `git commit -- <paths> -m "msg"` fails because everything
   after `--` is a pathspec; put `-m` before `--`.)*
+  **A CLI authed by an interactive/OAuth login is NOT free to run in CI — confirm a portable, non-interactive
+  credential path AND its cost before scoping "automate this CLI in a runner."** A fresh runner has zero auth;
+  a local CLI login doesn't travel. Probed live: **codex** can auth headlessly (`codex login --with-api-key`,
+  key on stdin) **but** its local auth is a ChatGPT-OAuth *subscription* login (`OPENAI_API_KEY:null`), so CI
+  needs a **new token-billed API key**; **agy** has **no headless auth at all** (`agy --help`: no login/auth/key
+  flag — browser login under `~/.antigravity`). Plus, automating a **root-repo** tool from an **app-repo**
+  workflow has an irreducible cross-repo cost (a read-only **PAT** to fetch the private script, or vendoring +
+  its drift). For the always-on cross-review that bill (billed key + PAT) wasn't worth it for an **advisory aid
+  that never gates**, so it shipped **local-only** — the command, run on every PR (the CI workflow was built +
+  self-smoked green on the clean-skip path, then left unmerged). Weigh credential/billing/cross-repo cost
+  against payoff *before* building; for a nice-to-have, "keep the working local command + flip the policy" can
+  be the right call. *(2026-06-22, cross-agent-review-always — CI auto-run descoped; `--skip-trivial` cost guard
+  + policy shipped.)*
   **A SECOND single-purpose cross-agent script shares the rail, doesn't fork it.** The planning panel
   (`scripts/cross-panel.mjs` — second opinion on a *plan* instead of a PR) reused ~90% of cross-review by
   extracting the family-agnostic plumbing into one module (`scripts/lib/cross-agent-cli.mjs`: presence/version
