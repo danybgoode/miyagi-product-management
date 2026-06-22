@@ -1,7 +1,31 @@
 # Static marketplace shell — Sprint 2: Make the homepage a static CDN asset
 
-**Status:** ⬜ Not started. Frontend (Vercel), homepage only — runs on the S1 static-able `(site)` shell.
-Risk: **MED** (homepage surface; personalization intentionally dropped here, returns in Phase 2). Completes Phase 1.
+**Status:** ✅ **BUILT 2026-06-22** on `feat/marketplace-static-shell-s2` — `/` now prerenders as a
+static CDN asset (`next build` reports `○ /` with `1m` ISR revalidate, **no `ƒ`**). Frontend (Vercel),
+homepage + shared chrome. Risk: **MED** (raised to touch shared `PlatformShell` — see the key finding
+below). Completes Phase 1. Reviewer may auto-merge on green CI (non-commerce UI); **live cold-load +
+signed-in heart hydration eyeball owed to Daniel.**
+
+**Key finding (the real blocker S1 missed):** removing the page's `currentUser()` was **necessary but
+not sufficient**. The shared `PlatformShell` chrome rendered Clerk's **server** `<Show when=…>` (+
+`<UserButton>`), and Clerk's server `<Show>` calls `await auth()` → `headers()` — which forced the
+whole `(site)` tree dynamic regardless of the page. Confirmed with `export const dynamic = 'error'`
+(build failed: *"Route / … used `headers()`"* via Clerk `auth()`). **Fix (Daniel-approved, client-gate
+everywhere):** a new client `app/components/AuthShow.tsx` replaces the server `<Show>` in
+`PlatformShell` — it gates on the Clerk *client* session (`useAuth`), defaults to **signed-out** until
+a session is confirmed (so the static HTML keeps the signed-out chrome the `nav-entry-points` /
+`home-chrome` specs assert), and swaps to signed-in on hydration. Tradeoff: on the already-dynamic
+`(shell)` pages the header's auth-dependent bits now hydrate client-side (a brief swap) instead of SSR.
+
+**Also required for a build-safe static page:** because `/` is now prerendered at **build** time, a
+thrown Medusa/Supabase fetch would fail the whole deploy — so the homepage's curated reads each
+`.catch(() => fallback)` (degrade to the empty-state, self-heal on the next ISR revalidation). The
+pulse read was wrapped in `unstable_cache` (CACHE.CATEGORY) to remove the last uncached dependency.
+
+**Commits:** _(filled at merge)_ — `lib/neighborhood-pulse-server.ts` (cache pulse) ·
+`app/components/AuthShow.tsx` + `PlatformShell.tsx` (client auth-gate) ·
+`app/components/FavoritesProvider.tsx` + `FavoriteButton.tsx` (client heart hydration) ·
+`app/(site)/page.tsx` (de-personalize + `revalidate=60` + throw-safe reads) · `e2e/home-static.spec.ts`.
 
 ## Why
 With the shell no longer forcing dynamic (S1), the only remaining blocker to a static homepage is the homepage's
@@ -10,7 +34,7 @@ load, **zero Vercel functions**, no cold-start. This is the direct fix for the ~
 
 ## Stories
 
-### Story 2.1 — De-personalize the homepage to the curated shell
+### Story 2.1 — De-personalize the homepage to the curated shell ✅
 **As** any visitor, **I want** the homepage to be the same fast curated page, **so that** it serves instantly from
 the CDN.
 **Acceptance:**
@@ -21,7 +45,7 @@ the CDN.
   function marker for `/`); a cold load is instant.
 **Risk:** med (removing a personalization path; behavior change for signed-in users — by design, returns in Phase 2).
 
-### Story 2.2 — Heart-states client-side (no server seeding)
+### Story 2.2 — Heart-states client-side (no server seeding) ✅
 **As** a signed-in visitor, **I want** my favorites still reflected on the curated grid, **so that** de-personalizing
 the render doesn't lose the heart state.
 **Acceptance:**
@@ -39,5 +63,42 @@ the render doesn't lose the heart state.
   confirming the heart-states hydrate (no personalization modules, by design).
 
 ## Sprint 2 — Smoke walkthrough
-_Written at build time — numbered steps; include the `next build` static-marker check for `/` and the cold-load
-eyeball (owed-to-Daniel)._
+_Numbered steps, one action + one expected result each. Steps 1–6 are the deterministic/CI gate (run in
+the checkout off `feat/marketplace-static-shell-s2`). Steps 7–8 are the live confirmation **owed to
+Daniel** (he holds the signed-in session + sees the real cold-load)._
+
+**Deterministic gate (agent-run — this build):**
+1. **Type-check.** `npx tsc --noEmit` → exits clean, no errors.
+2. **Production build — THE load-bearing check.** `npm run build` → compiles, and the route table prints
+   **`┌ ○ /`** with a `1m` revalidate column (static / ISR-prerendered, **no `ƒ`**). This is the proof the
+   homepage is now a static CDN asset with zero per-request function. _(Locally the curated content
+   prerenders to the empty-state because the sandbox can't reach Medusa — the `.catch(() => …)` reads
+   degrade gracefully and the build still succeeds; on Vercel the build reaches the warm Medusa/Cloud SQL
+   and prerenders real curated content.)_
+3. **De-personalization (anonymous static HTML).** `curl -s http://<host>/` (or the spec) → the HTML
+   contains the curated chrome (`home-ribbon`, `site-footer`, `¿Qué estás buscando?`,
+   `vecindario-feed-entry`) and the signed-out CTAs (`Vende gratis`, `Publicar gratis`, `href="/sell"`),
+   and contains **none** of `home-retoma-rail` / `home-offer-alert` / `home-seller-snapshot` /
+   `home-seller-recruit` (the four signed-in modules are gone for everyone).
+4. **New spec.** `playwright test --project=api home-static` → the "signed-in modules absent" test passes
+   against any host; the "curated content renders" test passes where the catalog is non-empty (skips on an
+   empty env, fails only where `/api/ucp/catalog` is unreachable — i.e. local-without-Medusa; CI is
+   authoritative).
+5. **Guardrail specs stay green.** `playwright test --project=api static-shell-split home-chrome
+   home-icons home-curation nav-entry-points neon-egress-cache` → green. (The signed-out CTAs the
+   nav-entry-points spec asserts still ship in the static HTML because `AuthShow` defaults to signed-out;
+   `/sell` comes from the always-rendered `MobileTabBar` FAB.)
+6. **Full `api` suite vs the branch preview (CI — authoritative).** CI's "Playwright vs preview" must be
+   green against the `feat/marketplace-static-shell-s2` Vercel preview — the real gate (local can't reach
+   Medusa; the SSO-gated preview needs the CI bypass secret). The two catalog-dependent tests
+   (`home-static` curated-render + the pre-existing `static-shell-split` embed test) light up here.
+
+**Live confirmation (owed to Daniel — on the prod homepage after merge):**
+7. **Instant cold-load.** After ~30 min of no traffic, open `https://miyagisanchez.com/` → it paints the
+   curated homepage **instantly** (no ~30 s cold-start), because `/` is served from the CDN as a static
+   asset. _(Before this sprint the same idle-then-load took ~30 s.)_
+8. **Signed-in heart hydration.** Sign in, then open `https://miyagisanchez.com/` → the page is the same
+   curated shell (no retoma rail / offer alerts / seller snapshot — by design, returns in Phase 2), and on
+   the Selección grid the hearts for listings you've favorited **fill in after load** (client-side
+   hydration via `FavoritesProvider` → one `/api/favorites` call), with the header swapping to the
+   signed-in chrome (Publicar / account menu / UserButton) a beat after paint.
