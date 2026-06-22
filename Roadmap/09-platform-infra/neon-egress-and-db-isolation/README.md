@@ -5,6 +5,14 @@ slug: neon-egress-and-db-isolation
 
 # Epic: Neon egress reduction + DB account isolation + site-wide Clarity 🏗️
 
+> ⚠️ **SUPERSEDED (2026-06-22) by [`postgres-neon-to-cloudsql`](../postgres-neon-to-cloudsql/README.md).**
+> While building S2 we found the real fix: the egress is a **cross-cloud tax** (compute on GCP, Postgres on
+> Neon/AWS). Co-locating Postgres on Cloud SQL (GCP) eliminates it at the root, so the symptom-treating sprints
+> here (S2 `minScale:0`, S3 Neon org-split) are **dropped**. **Durable keepers that shipped:** S1's measurement
+> harness (`scripts/neon-egress.mjs`) + the `lib/cache-policy.ts` SSOT. **Disposition:** PRs #19/#32 to be
+> closed; this README's `status` flips to `archived` at the new epic's S3 close (board regen). S4 (Clarity) /
+> S5 (housekeeping) can be re-homed as standalone chores if still wanted.
+
 > **Area:** 09-platform-infra · **Risk:** high (infra: DB hosting org · `minScale` · backup/secrets) ·
 > **Scope seed / decision:** [`00-ideas/2. readyforscope/db-egress-and-account-strategy.md`](../../00-ideas/2.%20readyforscope/db-egress-and-account-strategy.md)
 > (spike COMPLETE + APPROVED 2026-06-21 — every number validated against the live Neon/GCP/Supabase/Clarity consoles).
