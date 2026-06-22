@@ -15,7 +15,8 @@ is a **parameterized re-run**, not new architecture.
 | Region / project | us-east4 · `miyagisanchezback-497722` | same |
 | Deploy trigger | `backend-main-deploy` on `^main$` | `backend-staging-deploy` on `^staging$` |
 | min / max instances | 1 / 4 | **0** / 2 (scale-to-zero, ~$0 idle) |
-| Database | Neon prod (pooled) | **Neon `staging` branch** (pooled, copy-on-write of prod) |
+| Database | Neon prod (pooled) → **Cloud SQL `medusa` (S2)** | **Cloud SQL `medusa_staging`** (private IP, us-east4) — repointed in [postgres-neon-to-cloudsql S1](../../Roadmap/09-platform-infra/postgres-neon-to-cloudsql/sprint-1.md) |
+| VPC connector | `medusa-conn` (Redis + Cloud SQL) | **`medusa-conn`** — egress `private-ranges-only` for the Cloud SQL private IP (added S1; Redis still off) |
 | Redis | Memorystore via VPC connector | **OFF** — in-memory fallback (see parity gap) |
 | Secrets | base names | **`*_STAGING`** isolated set |
 | Runtime SA | `medusa-run` | same (`secretAccessor` on `*_STAGING`) |
@@ -32,7 +33,7 @@ Both triggers reuse the backend repo's single `cloudbuild.yaml`; the staging tri
 
 | Secret | Value on staging |
 |---|---|
-| `DATABASE_URL_STAGING` | Neon **branch** pooled string (host contains `-pooler`) |
+| `DATABASE_URL_STAGING` | **Cloud SQL** `medusa_staging` private-IP DSN (set by `provision-cloudsql.sh`, S1; was the Neon branch pooled string) |
 | `JWT_SECRET_STAGING` / `COOKIE_SECRET_STAGING` | fresh `openssl rand -hex 32` (isolated from prod) |
 | `MEDUSA_INTERNAL_SECRET_STAGING` | fresh `openssl rand -hex 32` |
 | `STRIPE_SECRET_KEY_STAGING` | Stripe **test** key (`sk_test_…`) |

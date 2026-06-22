@@ -135,6 +135,22 @@ test('probe flags stay byte-identical between prod + staging', () => {
   assert.equal(flagValue(prodSrc, 'liveness-probe'), flagValue(stagingSrc, 'liveness-probe'))
 })
 
+// --- Cloud SQL co-location invariant (Postgres → Cloud SQL, Sprint 1) ---------
+// Both services reach the Cloud SQL PRIVATE IP only via VPC egress through the shared
+// `medusa-conn` connector. Staging GAINED this in S1 (it was previously connector-less);
+// lock it in so a future edit can't silently sever either service's path to the private DB.
+
+for (const [name, src] of [['deploy.sh', prodSrc], ['deploy-staging.sh', stagingSrc]]) {
+  test(`${name}: egresses to the Cloud SQL private IP via the medusa-conn VPC connector`, () => {
+    // The flag value is the shell var "$CONNECTOR"; assert the flag is present AND its
+    // default resolves to medusa-conn (the shared connector prod uses for Redis).
+    assert.match(src, /--vpc-connector="\$CONNECTOR"/, `${name} must pass --vpc-connector="$CONNECTOR"`)
+    assert.match(src, /CONNECTOR="\$\{CONNECTOR:-medusa-conn\}"/, `${name} CONNECTOR default must be medusa-conn`)
+    // egress is unquoted in the scripts, so match the literal flag.
+    assert.match(src, /--vpc-egress=private-ranges-only/, `${name} must egress private-ranges-only`)
+  })
+}
+
 // --- S3 ADMIN_CORS invariant (prod only — staging admin is same-origin localhost) ---
 
 test('deploy.sh ADMIN_CORS default includes the admin origin api.miyagisanchez.com', () => {
