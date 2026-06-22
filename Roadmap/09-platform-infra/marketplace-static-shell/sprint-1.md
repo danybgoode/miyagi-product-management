@@ -1,8 +1,19 @@
 # Static marketplace shell — Sprint 1: Route-group split (static `(site)` vs dynamic `(channel)`)
 
-**Status:** ⬜ Not started. Frontend (Vercel; **shared `app/layout.tsx` + `middleware.ts` — high blast radius**).
-Risk: **HIGH** — every channel (custom-domain / subdomain / embed / seller-mode) depends on the layout's header
-branch. **Daniel merges.** This is the architectural foundation; no homepage personalization change yet (S2).
+**Status:** ✅ BUILT (branch `feat/marketplace-static-shell`, PR pending) — awaiting CI-green + Daniel merge.
+Frontend (Vercel; **shared `app/layout.tsx` + `middleware.ts` — high blast radius**). Risk: **HIGH** — every
+channel (custom-domain / subdomain / embed / seller-mode) depends on the layout's header branch. **Daniel merges.**
+This is the architectural foundation; no homepage personalization change yet (S2).
+
+**Mechanism shipped (Option A, Daniel-confirmed in plan mode):** single dynamic `(shell)` tree + static `(site)`
+homepage. Root `app/layout.tsx` is now **static** (no `headers()`); the per-request chrome logic moved verbatim into
+`app/(shell)/layout.tsx`; the buyer chrome was extracted to `app/components/PlatformShell.tsx` (one source, both
+shells); all page-route dirs `git mv`'d under `app/(shell)/`; the homepage moved to `app/(site)/page.tsx`.
+**Middleware is functionally unchanged** — the existing custom-domain/subdomain `/`→`/s/[slug]` rewrites already keep
+channels off the bare `/`, so `/` is owned solely by the static `(site)` tree (no two-layout collision). URLs are
+byte-identical (route groups are URL-transparent). The platform seasonal-theme boot script stays in the static
+root `<head>` (it self-gates on pathname + origin-scoped localStorage, so it stays a no-op on white-label/ineligible
+paths). Commits: S1.1 `3428985` · S1.2 `2262f8f` · S1.3 `f9edca2`.
 
 ## Why
 The marketplace homepage can't be static while the *shared root layout* reads `headers()` to pick white-label vs
@@ -48,5 +59,39 @@ white-label tree, **so that** only those requests pay the dynamic render and the
 - **announce** the shared-layout/middleware change to any parallel agents.
 
 ## Sprint 1 — Smoke walkthrough
-_Written at build time — numbered steps, one action + one expected result each. Channel/white-label live checks
-flagged owed-to-Daniel (can't be header-simulated on a preview)._
+_Numbered steps, one action + one expected result each. Steps 1–6 are the deterministic/CI gate (run in the
+worktree off `feat/marketplace-static-shell`). Steps 7–9 are channel/white-label live checks **owed to Daniel** —
+they can't be header-simulated on a preview because middleware strips spoofed `x-miyagi-*` on platform hosts._
+
+**Deterministic gate (agent-run — all green this build):**
+1. **Type-check.** Run `npx tsc --noEmit` in the worktree → exits clean, no errors.
+2. **Production build.** Run `npm run build` → compiles successfully; the route table prints `┌ ƒ /` (homepage
+   resolves to one `/`, no route-group collision error) and all URLs are clean (no `(site)`/`(shell)` segment in
+   any path). `/` is still `ƒ` dynamic in S1 (the page keeps `currentUser()` until S2) — expected.
+   _(The `[neighborhood-pulse] catalog unavailable: fetch failed` log is the sandbox not reaching Medusa; it
+   degrades to `?? []`. The "inferred workspace root" warning is the worktree-local `package-lock.json` — untracked,
+   not committed.)_
+3. **Static invariant spec.** Run `playwright test --project=api static-shell-split` → 4 passed: root + `(site)`
+   layout chain reads no `headers()`/`x-miyagi`; `(shell)/layout.tsx` does; homepage serves platform chrome
+   anonymously; `/embed/*` suppresses it.
+4. **Anti-erosion guards follow the move.** Run `playwright test --project=api design-token-foundation
+   shop-settings-no-monolith` → green (the design-token allow-list + monolith `SETTINGS_DIR` were repointed to
+   `app/(shell)/...`, incl. allow-listing the relocated `channelAccent #1d6f42` default).
+5. **Pure-logic channel guards.** Run `playwright test --project=api subdomain trust-signals neon-egress-cache`
+   → green (channel detection + cache-policy SSOT unaffected).
+6. **Full `api` suite vs the branch preview (CI — authoritative).** CI's "Playwright vs preview" must be green
+   against the `feat/marketplace-static-shell` Vercel preview — this is the real gate (local can't reach Medusa;
+   the SSO-gated preview needs the CI bypass secret). The channel suite (`own-shop-seo`, `own-shop-channel`,
+   `embed-shop`, `embed-widget`, `embed-channel`, `embed-key`, `nav-entry-points`, `home-chrome`, `home-icons`,
+   `marketplace-positioning`) is the live guardrail and must stay green.
+
+**Live channel/white-label eyeball (owed to Daniel — on a real host):**
+7. **Custom domain.** Visit a verified custom-domain shop root (e.g. `theirshop.mx/`) → renders the branded
+   white-label `ChannelLayout` (no platform header/search), URL stays at `/`. Visit `theirshop.mx/l/<id>` → still
+   white-label, native on the domain.
+8. **Subdomain.** Visit `<slug>.miyagisanchez.com/` → branded white-label shell, slug never exposed in the URL.
+9. **Embed + seller-mode.** Embed a shop widget (`/embed/s/<slug>` in an iframe on a third-party page) → renders
+   the shop, no platform chrome, framable. Sign in and open `/shop/manage` → seller shell renders (dark bar +
+   SellerNav), no buyer chrome. On the platform homepage `miyagisanchez.com/` → platform header/search/footer
+   present, instant. _(Optional: toggle the seasonal platform theme on `/`, confirm it still applies before paint —
+   the boot script is unchanged but now lives in the static root `<head>`.)_
