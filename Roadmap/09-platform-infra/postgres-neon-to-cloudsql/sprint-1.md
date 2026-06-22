@@ -14,9 +14,34 @@ the entire migration pattern on the low-risk staging service** before touching p
 - 1.4 — `infra/gcp/test/deploy-invariants.test.js`: new invariant locks the VPC-connector + private-egress
   flags on **both** deploy scripts. `node --test 'infra/gcp/test/*.test.js'` green (17/17).
 
-**Owed to Daniel (live, paid):** run `provision-cloudsql.sh` (1.1); the version/extension parity read (1.2)
-and the staging dump→restore→repoint→smoke (1.3) run against the live instance once it exists — see the smoke
-walkthrough below.
+**Live state (validated 2026-06-22):** Daniel ran `provision-cloudsql.sh`. Instance `medusa-pg` is **RUNNABLE**
+— `POSTGRES_17 · db-g1-small · ZONAL · PITR=True (7 backups / 7 log-days) · PRIVATE IP 172.25.0.3` on the
+`default` VPC, with databases `medusa` + `medusa_staging` and user `medusa_app`. Story 1.2 parity read done
+(below): **no extension blocker.**
+
+**⚠️ Owed to Daniel — one prod-secret cleanup (do before any backend `main` deploy):**
+The first version of `provision-cloudsql.sh` also wrote the Cloud SQL **prod** DSN as `DATABASE_URL`
+**version 2 (enabled)**. prod `medusa-web` binds `DATABASE_URL:latest` and **re-resolves `:latest` on every
+new revision**, so an image-only deploy would have silently cut prod over to the **empty** `medusa` DB. The
+agent neutralised the accidental-cutover risk by **disabling v2** (the running revision is unaffected; prod
+still serves on Neon), but with v2 disabled `:latest` *access fails*, so **prod deploys are currently blocked**
+until this is resolved. The script has been fixed to never write the prod DSN in S1 (the disabled v2 is inert).
+**Run one of these (prod-secret op — owed to Daniel):**
+```bash
+PROJECT=miyagisanchezback-497722
+# Clean: drop the inert Cloud SQL prod version so :latest = v1 (Neon) and prod deploys normally again.
+gcloud secrets versions destroy 2 --secret=DATABASE_URL --project=$PROJECT
+gcloud secrets versions access latest --secret=DATABASE_URL --project=$PROJECT >/dev/null && echo "latest OK (Neon)"
+```
+At S2, the prod DSN is composed fresh from the `medusa_app` password (recoverable from `DATABASE_URL_STAGING`:
+swap db name `medusa_staging` → `medusa`), added as a new `DATABASE_URL` version, then deployed at cutover.
+
+**Owed to Daniel — staging rehearsal (1.3) needs a PG17 client + VPC access:** the instance is **private-IP
+only**, so the dump→restore can't run from a laptop/sandbox outside the VPC, and `pg_dump` must be **PG17**
+(local default is often 14, which refuses a PG17 server). Run it from a VPC-context PG17 client — `gcloud sql
+connect` with a temporary client, or a one-off connector-attached Cloud Run Job. Steps 8–13 below are the
+exact commands; the agent has proven the Neon-side read (step 6) and prepared the staging repoint (deploy
+script + connector).
 
 ## Why
 Co-locating Postgres on GCP kills the egress problem at the root (see epic README). Before the prod cutover, we
@@ -114,7 +139,12 @@ INSTANCE=medusa-pg
 
    | Neon extension | version | On Cloud SQL PG17? | Note |
    |---|---|---|---|
-   | _(fill in at run time — Medusa core is typically extension-light: expect `plpgsql` only)_ | | | |
+   | `plpgsql` | 1.0 | ✅ built-in (default) | Always present on Cloud SQL PG17 — no action needed |
+
+   **Result (read 2026-06-22):** Neon `main` is **PostgreSQL 17.10**; the *only* installed extension is
+   `plpgsql 1.0` (Postgres' built-in default, present on every Cloud SQL PG17 database). **No extension
+   blocker for S2.** (Cloud SQL-side `pg_available_extensions` confirmation is moot for a built-in, and the
+   instance is private-IP-only so it isn't reachable from outside the VPC anyway — see the rehearsal note.)
 
 ### D · Rehearse the migration on staging — Story 1.3
 8. **Dump Neon staging** (PG17 client; record timing).

@@ -128,22 +128,27 @@ if gcloud sql users list --instance="$INSTANCE" "${P[@]}" \
   echo "    after a password rotation, add the new DATABASE_URL / DATABASE_URL_STAGING versions by hand."
 else
   APP_PW="$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)"
-  say "Creating user $APP_USER + composing DSN secrets"
+  say "Creating user $APP_USER + composing the STAGING DSN secret"
   gcloud sql users create "$APP_USER" --instance="$INSTANCE" --password="$APP_PW" "${P[@]}"
 
-  # Private-IP DSNs (direct TCP over the VPC; no Auth Proxy needed when egressing
+  # Private-IP DSN (direct TCP over the VPC; no Auth Proxy needed when egressing
   # private-ranges-only through the connector). sslmode=disable is acceptable on a
   # private VPC path; tighten to verify-full with the server CA later if desired.
-  PROD_DSN="postgres://${APP_USER}:${APP_PW}@${PRIVATE_IP}:5432/${PROD_DB}?sslmode=disable"
   STAGING_DSN="postgres://${APP_USER}:${APP_PW}@${PRIVATE_IP}:5432/${STAGING_DB}?sslmode=disable"
 
-  # Add NEW versions to the EXISTING secrets (created by provision*.sh) — never rename,
-  # so the deploy-invariants name-parity guard stays green. The prod DATABASE_URL new
-  # version is for the S2 cutover; prod medusa-web keeps reading its CURRENT (Neon) version
-  # until S2 explicitly rolls it. Staging is repointed THIS sprint (Story 1.3).
-  printf '%s' "$PROD_DSN"    | gcloud secrets versions add DATABASE_URL         --data-file=- "${P[@]}" >/dev/null
+  # Add a NEW version to the EXISTING DATABASE_URL_STAGING secret (created by
+  # provision-staging.sh) — never rename, so the deploy-invariants name-parity guard
+  # stays green. Staging is repointed to Cloud SQL THIS sprint (Story 1.3).
   printf '%s' "$STAGING_DSN" | gcloud secrets versions add DATABASE_URL_STAGING --data-file=- "${P[@]}" >/dev/null
-  echo "  + added DATABASE_URL (prod DSN — for S2) + DATABASE_URL_STAGING (Cloud SQL DSN) versions"
+  echo "  + added DATABASE_URL_STAGING (Cloud SQL DSN) version"
+
+  # ⚠️ DELIBERATELY do NOT write the prod DATABASE_URL version here. prod medusa-web binds
+  # DATABASE_URL:latest and re-resolves :latest on EVERY new revision (image-only deploys
+  # included), so an enabled Cloud SQL prod DSN sitting as :latest would silently cut prod
+  # over to an EMPTY `medusa` DB on the next deploy — before the restore. S1 is additive:
+  # prod stays on Neon. The S2 cutover composes the prod DSN at swap time by reusing the
+  # SAME medusa_app password (recoverable from the DATABASE_URL_STAGING value: swap the db
+  # name medusa_staging → medusa), adds it as a new DATABASE_URL version, and redeploys.
 fi
 
 cat <<EOF
