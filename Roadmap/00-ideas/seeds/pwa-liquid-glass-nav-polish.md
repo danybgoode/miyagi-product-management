@@ -1,14 +1,14 @@
 ---
 title: "PWA Liquid-Glass Nav Polish"
 slug: pwa-liquid-glass-nav-polish
-status: scaffolded                  # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: shipped                     # raw | ready | queued | scaffolded | in-progress | shipped | archived
 area: "09"                          # 09-platform-infra (the app-shell / chrome lives here)
 type: feature                       # frontend-only UI/UX polish + partial revert of nav-reorg
 priority: null
 risk: low                           # frontend-only; touches shared globals.css/layout.tsx (announce)
 epic: "09-platform-infra/pwa-liquid-glass-nav-polish"   # scaffolded 2026-06-13
 build_order: null                   # brand-new ask, not part of the #1–#7 batch
-updated: 2026-06-13
+updated: 2026-06-22
 ---
 
 # PWA Liquid-Glass Nav Polish — scope (Definition of Ready)

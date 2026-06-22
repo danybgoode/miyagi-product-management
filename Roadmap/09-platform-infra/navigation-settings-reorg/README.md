@@ -12,6 +12,15 @@ slug: navigation-settings-reorg
 > S1 #75 `dc4c992` · S2 #77 `a7d6fe8` · S3 #80 `d6b0a6b` · S4 #81 `8e12782`. Scope doc:
 > [`00-ideas/seeds/navigation-settings-reorg.md`](../../00-ideas/seeds/navigation-settings-reorg.md).
 > Source: nav + settings audit (Miyagi Sánchez). es-MX default.
+>
+> **⚠️ Partially superseded (2026-06-22) by [PWA Liquid-Glass Nav Polish](../pwa-liquid-glass-nav-polish/)** —
+> Daniel knowingly reversed two of this epic's PWA-bar decisions. The bar is **no longer**
+> `Inicio · Explorar · ⊕ · Mensajes · Cuenta` with a removed search circle and Favoritos-in-Cuenta; it is now
+> **`Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil`** (icons-only) with the **detached glass search bubble
+> re-added** and **Favoritos back as a top-level tab**. S2's "persistent header search on every surface" is
+> also reversed **in the installed PWA only** — there a bottom-sheet search is primary and the header search is
+> hidden (`.pwa-hidden`); it **still persists on mobile web and desktop**. The `CuentaMenu`, seller-mode shell,
+> and `/sell`-vs-`/vende` work below are unaffected and still current.
 
 ## Why
 Buyer, seller, and agent destinations are all jammed into one set of chrome. The PWA bottom bar carries
