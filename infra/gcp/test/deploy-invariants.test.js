@@ -99,6 +99,8 @@ const PROD = {
     'STRIPE_WEBHOOK_SECRET', 'MP_ACCESS_TOKEN', 'CLERK_SECRET_KEY',
     'MEDUSA_INTERNAL_SECRET', 'ENVIA_API_KEY', 'MP_CLIENT_ID', 'MP_CLIENT_SECRET',
     'FLAGSMITH_ENVIRONMENT_KEY',
+    // marketplace-static-shell S3: read-only Supabase reads for the GCP personalization endpoint
+    'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY',
   ],
 }
 
