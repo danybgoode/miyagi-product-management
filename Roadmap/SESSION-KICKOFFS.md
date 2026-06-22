@@ -29,7 +29,7 @@ cost nothing — the leverage is the defined verb, not trimming "great work."
 | **Build S\<N\> of \<epic\>** | §2 — build a sprint |
 | **Spike \<name\>** | §3 — run a spike |
 | **Review PR #\<N\>** | §4 — fresh-reviewer single pass |
-| **Cross-review PR #\<N\> [codex\|antigravity]** | §4 advisory line — `node scripts/cross-review.mjs` (never gates) |
+| **Cross-review PR #\<N\> [codex\|antigravity]** | §4 advisory line — run locally on every PR, `node scripts/cross-review.mjs` (never gates) |
 | **Panel: \<scope-doc \| ask\>** | advisory second opinion on a *plan* — `node scripts/cross-panel.mjs <doc> --lens both --agent codex\|antigravity` (single-pass, print-only, never gates; surfaced at groom Stage 2/4) |
 | **Wrap S\<N\>** | tick the sprint doc status + emit the §7 sprint-wrap terminal summary |
 | **Close epic \<slug\>** | §6 — full epic Definition of Done |
@@ -80,8 +80,8 @@ Review PR #<N> as a fresh reviewer — you did NOT build it. Run gh pr diff <N> 
 SINGLE PASS on a green CI gate — no iterative refine loop. Check correctness + the five AGENTS rules
 (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk untouched · es-MX copy).
 Do not use /code-review ultra. Post findings; <LOW: auto-merge on green CI / HIGH: hand to Daniel>.
-Optional (suggested on HIGH): a different-model-family second opinion —
-node scripts/cross-review.mjs <N> --agent codex|antigravity (advisory only, single-pass, never gates).
+On EVERY PR, run a different-model-family second opinion locally (advisory only) —
+node scripts/cross-review.mjs <N> --agent codex|antigravity (single-pass, never gates; --skip-trivial for tiny diffs).
 ```
 
 ## 5 · Strategy / process work — Cowork (strong model)

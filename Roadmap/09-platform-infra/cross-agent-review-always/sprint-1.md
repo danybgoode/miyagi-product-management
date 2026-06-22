@@ -77,7 +77,11 @@ opened, `cross-review.yml` self-triggers on `opened`. With no secrets set, the g
 `cross-review skipped (no codex credential)` and the job is **green + non-blocking**. → Confirms the
 secret-skip idiom on the PR itself. *(FE PR: miyagisanchezcommerce#103 · BE PR: medusa-bonsai-backend#35 — both self-smoked GREEN clean-skip 2026-06-22.)*
 
-**Owed to Daniel (he holds the credentials):**
+> ⚠️ **Steps 1–4 below are MOOT — CI auto-run was descoped to local-only (decision 2026-06-22).** They
+> describe how to light up the (built-but-unmerged) `cross-review.yml` if CI is ever wanted. Day-to-day,
+> cross-review runs **locally**: `node scripts/cross-review.mjs <PR#> --agent codex [--skip-trivial]`.
+
+**~~Owed to Daniel (he holds the credentials)~~ — kept for reference if CI is ever enabled:**
 1. In **each** app repo add two repo secrets:
    - `OPENAI_API_KEY` — a Codex API key (token-billed).
    - `TOOLING_REPO_PAT` — a fine-grained PAT with **read-only Contents** on `miyagi-product-management` only.
@@ -97,8 +101,10 @@ If any step fails, note the step number + what you saw — that's the bug report
 
 ## Status
 - [x] **S1.1** — ✅ headless auth validated live (codex `--with-api-key`); finding recorded above.
-- [x] **S1.2** — `cross-review.yml` in both app repos (FE PR `miyagisanchezcommerce#103`, BE PR `medusa-bonsai-backend#35`); non-blocking,
-      opened+reopened, secret-skip + PAT checkout. Credentialed end-to-end owed to Daniel.
+- [x] **S1.2** — ⚠️ **DESCOPED to local-only (decision 2026-06-22).** `cross-review.yml` was built in both app
+      repos + **self-smoked GREEN** (clean-skip path, FE `miyagisanchezcommerce#103` / BE
+      `medusa-bonsai-backend#35`), but **not merged** — CI would need a token-billed codex API key + a PAT
+      (and agy has no headless auth), not worth it for an advisory aid. PRs closed, branches kept. See README.
 - [x] **S1.3** — cost guard `decideTrivialSkip` + `--skip-trivial`/`--min-lines`, 7 node:tests, live-smoked
       (root PR `miyagi-product-management#29`).
 

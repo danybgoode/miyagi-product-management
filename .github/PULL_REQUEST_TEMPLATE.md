@@ -13,7 +13,7 @@
 <!-- Deterministic gate (tsc + build + Playwright) green? Smoke steps run? State any gap honestly
      (the authed browser money-path smoke is owed to Daniel). -->
 
-## Cross-agent review (optional)
-<!-- A different-model-family second opinion. SUGGESTED on HIGH-risk, OPTIONAL on any PR, ADVISORY ONLY
-     — it never gates, blocks, or authorizes a merge. -->
+## Cross-agent review
+<!-- A different-model-family second opinion. Run it LOCALLY on EVERY PR (advisory only — it never gates,
+     blocks, or authorizes a merge). It runs locally, not in CI (a runner has no codex/agy auth). -->
 `node scripts/cross-review.mjs <PR#> --agent codex|antigravity`
