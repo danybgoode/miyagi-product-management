@@ -94,6 +94,26 @@ autosuspend and the ~190 MB/day baseline read bleed stops.
 `node scripts/neon-egress.mjs`, 2026-06-21 (org `org-fancy-pond-57061061`, cap 5 GB/mo):
 **org total 4295.6 MB / 85.9%**; medusa-bonsai **4135.9 MB / 82.7%**. The S2.3 delta is read against this.
 
+## ⚠️ Live-state findings (2026-06-22 — diagnostic before applying the lever)
+Verified against the live consoles before touching anything (these refine the spike's framing):
+- **The egress win comes from killing the query loop, NOT from Neon suspending.** The Neon `main` endpoint
+  (`br-lively-cell`, default branch) has **autosuspend DISABLED** (`suspend_timeout_seconds=0`) — it never
+  suspends regardless of Cloud Run. So min=0's effect is: the Medusa instance dies → its background query loop
+  (liveness `/health`, framework loops) stops → **no queries = no cross-cloud result transfer = no egress**. An
+  always-on-but-unqueried compute transfers nothing. **The real success signal is therefore the egress number
+  dropping (the script), not "watching main autosuspend."**
+  - *Optional complementary lever:* **enable Neon autosuspend** (e.g. `suspend_timeout_seconds=300`) so the
+    `main` compute also idles once min=0 stops poking it — saves Neon compute-hours and makes the suspend
+    observable. One reversible API/console change. (Enabling it while still at min=1 does nothing — Medusa
+    pokes Neon every ~30 s, so it'd never reach the idle timeout.)
+- **Today's ~30 s idle cold-start is the Vercel frontend, not the backend.** Measured warm: backend
+  `/health` 0.45 s and store API 0.25 s (Cloud Run is min=1, always warm) — but the **frontend home took 7.7 s
+  even warm** (it SSRs every hit because `currentUser()` personalizes it → not edge-cacheable; the S1 finding).
+  The cold ~30 s is the Vercel function spinning up that dynamic SSR. **Implication:** min=0 will **not** fix the
+  30 s (that's Vercel), and it **adds** Medusa cold-boot (~10–30 s) on top for any post-idle load that hits the
+  backend — so cold loads likely feel *slower*, not faster. That is the trade for the egress win; the step-8
+  eyeball is the keep/revert decision point, made knowing this.
+
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · backend = Cloud Run (`medusa-web`, us-east4, project `miyagisanchezback-497722`) ·
 Neon project `shiny-paper-72860331` · app = https://miyagisanchez.com
@@ -109,15 +129,22 @@ Neon project `shiny-paper-72860331` · app = https://miyagisanchez.com
    `gcloud run services describe medusa-web --region=us-east4 --format='value(status.latestReadyRevisionName)'`.
    → a new revision is live; Cloud Run logs no longer show `[reconcile-checkouts]` / `[sweepstakes-draw]`
    in-process (the crons now fire only from Cloud Scheduler).
-4. **Merge the root-repo PR** (`deploy.sh` min=0 + invariant + docs). *(No deploy by itself — image-only.)*
+4. **Merge the root-repo PR** (`deploy.sh` min=0 + invariant + docs). ⚠️ **This does NOT change production by
+   itself** — `deploy.sh` only runs on a manual full deploy, and the live CI path is image-only, so the merged
+   script edit just *guards* the value. The lever is applied live in step 6's `gcloud run services update`.
 5. **(Owed to Daniel)** Pause the uptime check for the window:
    `gcloud monitoring uptime list-configs --project=miyagisanchezback-497722 --filter='displayName="[medusa-web] health"' --format='value(name)'`
    then `gcloud monitoring uptime delete <that-id>`.
    → the `[medusa-web] health` check is gone (restored in step 9).
 6. **(Owed to Daniel — applies the lever live)** `gcloud run services update medusa-web --region=us-east4 --min-instances=0`.
    → `gcloud run services describe medusa-web --region=us-east4 --format='value(spec.template.metadata.annotations[autoscaling.knative.dev/minScale])'` shows `0`.
-7. **Idle the storefront ~15–30 min, then query the Neon `main` endpoint state** (`neonctl` / project API).
-   → the endpoint has **autosuspended** (active-time materially below the prior ~84%; was permanently active).
+7. **Idle the storefront ~15–30 min, then confirm the backend actually scaled to zero.**
+   `gcloud run services describe medusa-web --region=us-east4 --project=miyagisanchezback-497722 --format='value(status.traffic)'`
+   and the Cloud Run console instance count.
+   → instance count drops to 0 during the idle window (the Medusa query loop has stopped — this is what cuts
+   egress). *(Note: the Neon `main` endpoint will still report `active` — its autosuspend is DISABLED, see the
+   live-state findings above; that's expected and does not mean the lever failed. If you also enabled Neon
+   autosuspend, `main` will additionally show `idle` after its timeout.)*
 8. **(Owed to Daniel — latency eyeball)** Load https://miyagisanchez.com/s/<test-shop> as the first hit after idle.
    → page loads after a cold-start delay (~10–30 s); decide if acceptable. **If not → revert:**
    `gcloud run services update medusa-web --region=us-east4 --min-instances=1` and set the invariant + deploy.sh back to 1.

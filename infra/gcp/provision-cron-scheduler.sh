@@ -39,10 +39,20 @@ echo "▶ Provisioning Cloud Scheduler crons for $SITE_URL (project=$PROJECT_ID,
 gcloud services enable cloudscheduler.googleapis.com "${P[@]}" >/dev/null
 
 # Fetch the internal secret from Secret Manager (same value Cloud Run binds). Captured
-# into a shell var in THIS process; never printed. The header lands in the job config
-# (visible to anyone with scheduler.jobs.get — identical exposure to the Cloud Run env).
+# into a shell var in THIS process; never printed. It rides as a static header on the job,
+# matching how the target Vercel routes already authenticate (the retired Medusa jobs sent
+# the same x-internal-secret header) — so this keeps the existing auth boundary rather than
+# inventing a new one. NOTE: the header is readable to any principal with scheduler.jobs.get
+# on this project (a tighter blast radius than Cloud Run env, but not nothing); keep
+# scheduler IAM scoped. A stricter pattern (Scheduler OIDC token + the route validating a
+# Google-signed token) is a possible follow-up, but would diverge from the route's current
+# x-internal-secret convention — out of scope for this egress sprint.
 SECRET="$(gcloud secrets versions access latest --secret="$SECRET_NAME" "${P[@]}")"
 [ -n "$SECRET" ] || { echo "✗ ${SECRET_NAME} resolved empty — refusing to create unauth'd crons" >&2; exit 1; }
+# --update-headers is a comma-delimited KEY=VALUE list — a comma in the secret would split
+# it into a garbage second header and silently yield 401 crons. Fail loud instead. (The
+# secret is hex/base64 in practice, but don't depend on that.)
+case "$SECRET" in *,*) echo "✗ ${SECRET_NAME} contains a comma — unsafe for --update-headers; rotate it or extend this script to escape it" >&2; exit 1;; esac
 
 # create-or-update one HTTP GET scheduler job hitting a Vercel cron route.
 ensure_cron() {  # $1 = job name (== route segment) ; $2 = cron schedule
