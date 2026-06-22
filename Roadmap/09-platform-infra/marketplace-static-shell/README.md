@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: marketplace-static-shell
 ---
 
@@ -58,7 +58,7 @@ UCP/MCP untouched (#3).
 ## Scope — stories
 | Sprint | Phase | Story | Risk |
 |---|---|---|---|
-| 1 | 1 | Route-group split — marketplace `(site)` static layout vs `(channel)` dynamic white-label tree; middleware rewrites channel/embed requests into it | **high** |
+| 1 | 1 | ✅ **SHIPPED** (#101 `a1e6ea4`) Route-group split — static `(site)` vs dynamic `(shell)`; Option A (middleware unchanged — channels already rewrite `/`→`/s/[slug]` into `(shell)`) | **high** |
 | 2 | 1 | Make the homepage a static CDN asset — drop `currentUser()` + the 4 signed-in modules; heart-states client-side | med |
 | 3 | 2 | Personalization endpoint on Cloud Run (Clerk-JWT-gated read of favorites/offers/seller-snapshot) | med–high |
 | 4 | 2 | Re-add personalization as client islands hitting the Cloud Run endpoint (progressive enhancement) | med |

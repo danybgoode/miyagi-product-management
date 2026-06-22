@@ -1,6 +1,10 @@
 # Static marketplace shell — Sprint 1: Route-group split (static `(site)` vs dynamic `(channel)`)
 
-**Status:** ✅ BUILT (branch `feat/marketplace-static-shell`, PR pending) — awaiting CI-green + Daniel merge.
+**Status:** ✅ **SHIPPED 2026-06-22** — [PR #101](https://github.com/danybgoode/miyagisanchezcommerce/pull/101)
+squash-merged `a1e6ea4` (Daniel-authorized merge on green). CI green (type-check+build · Playwright-vs-preview, full
+channel suite) + advisory codex cross-review (no blocking; 2 findings applied `c98108b`). Branch deleted.
+**Owed to Daniel:** live custom-domain / subdomain / embed / seller-mode white-label eyeball on prod (steps 7–9) —
+can't be header-simulated on a preview.
 Frontend (Vercel; **shared `app/layout.tsx` + `middleware.ts` — high blast radius**). Risk: **HIGH** — every
 channel (custom-domain / subdomain / embed / seller-mode) depends on the layout's header branch. **Daniel merges.**
 This is the architectural foundation; no homepage personalization change yet (S2).
@@ -13,7 +17,10 @@ shells); all page-route dirs `git mv`'d under `app/(shell)/`; the homepage moved
 channels off the bare `/`, so `/` is owned solely by the static `(site)` tree (no two-layout collision). URLs are
 byte-identical (route groups are URL-transparent). The platform seasonal-theme boot script stays in the static
 root `<head>` (it self-gates on pathname + origin-scoped localStorage, so it stays a no-op on white-label/ineligible
-paths). Commits: S1.1 `3428985` · S1.2 `2262f8f` · S1.3 `f9edca2`.
+paths). Commits: S1.1 `3428985` · S1.2 `2262f8f` · S1.3 `f9edca2` · fix `348e2ad` (CI caught two
+over-broad gotcha mitigations: the theme boot script must be **path-gated** — emitted from the `(site)`/`(shell)`
+layouts, present on `/agent`/`/`, absent on `/terminos` — and `not-found.tsx` must stay **bare** so white-label
+`/embed` 404s don't leak the platform search box).
 
 ## Why
 The marketplace homepage can't be static while the *shared root layout* reads `headers()` to pick white-label vs
