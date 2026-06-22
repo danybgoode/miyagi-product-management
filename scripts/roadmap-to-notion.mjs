@@ -194,6 +194,24 @@ function epicFrontmatterStatus(epicPath) {
   return fm.status ? (EPIC_FM_TO_BUCKET[fm.status] || null) : null;
 }
 
+// Per-sprint Claude Code kickoff — the SESSION-KICKOFFS.md §2 "Build a sprint" thin-pointer template,
+// filled from values already in scope. Generated (not stored per-sprint) so it can't drift; surfaced as a
+// Notion "Kickoff" property so an open Sprint card carries its ready-to-paste prompt. Mirror §2 if it changes.
+function sprintKickoff({ epicKey, slug, n, risk }) {
+  const tier = risk === 'High' ? 'HIGH' : 'LOW';
+  let k = [
+    `Read apps/miyagisanchez/AGENTS.md (Start here) + Roadmap/LEARNINGS.md, then`,
+    `Roadmap/${epicKey}/README.md + sprint-${n}.md.`,
+    `Build Sprint ${n} of "${slug}" per WAYS-OF-WORKING, in your OWN git worktree off latest main on`,
+    `feat/${slug}. Plan mode → confirm stories with me → build one story at a time. Commit per story`,
+    `PATH-SCOPED (git add <your files> && git commit -- <those paths>; never -A). App copy is es-MX. One api spec`,
+    `per testable story. Keep the CI gate (tsc + build + Playwright) green; open a draft PR declaring risk ${tier}.`,
+    `Write the sprint smoke walkthrough into sprint-${n}.md before calling it done.`,
+  ].join('\n');
+  if (risk === 'High') k += `\nHIGH-risk: all stories HIGH → Daniel merges; the authed money-path browser smoke is owed to Daniel.`;
+  return k;
+}
+
 function buildRows() {
   const seeds = readSeeds();
   const seedByEpic = new Map();
@@ -251,6 +269,7 @@ function buildRows() {
         build_order: seed.build_order || null,
         doc_link: `Roadmap/${epicKey}/sprint-${sp.n}.md`,
         epic_slug: e.slug, // resolved to the Epic page id at sync time
+        kickoff: sprintKickoff({ epicKey, slug: e.slug, n: sp.n, risk }),
       });
     }
   }
@@ -315,6 +334,7 @@ function props(row, epicId) {
     'Sprint progress': rt(row.sprint_progress),
     'Build order ID': rt(row.build_order),
     'Doc link': rt(row.doc_link),
+    Kickoff: rt(row.kickoff),
     'Last synced': { date: { start: new Date().toISOString().slice(0, 10) } },
   };
   if (row.grain === 'Sprint') p.Epic = { relation: epicId ? [{ id: epicId }] : [] };

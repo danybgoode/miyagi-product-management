@@ -6,7 +6,7 @@ area: "10"
 type: feature
 priority: backlog
 risk: high
-epic: events-quantity-selector
+epic: "10-events-and-ticketing/events-quantity-selector"
 build_order: null
 updated: 2026-06-21
 ---

@@ -59,6 +59,12 @@ Write the sprint smoke walkthrough into sprint-<N>.md before calling it done.
 ```
 *HIGH-risk: add — "all stories HIGH → Daniel merges; the authed money-path browser smoke is owed to Daniel."*
 
+> **Mirrored to Notion.** This §2 prompt is generated per-sprint by `scripts/roadmap-to-notion.mjs`
+> (`sprintKickoff()`) and synced into each Sprint card's **"Kickoff"** property — so opening a Grain=Sprint card
+> gives you the ready-to-paste prompt (epic-slug · sprint doc · risk tier auto-filled; HIGH-risk addendum
+> included). **If you change this template, update `sprintKickoff()` to match** (it's the SSOT for what lands in
+> Notion). Values populate on the next `--sync` run.
+
 ## 3 · Run a spike — Claude Code (strong model)
 ```
 Read apps/miyagisanchez/AGENTS.md (Start here) + Roadmap/LEARNINGS.md, then <brief path>.
