@@ -1,13 +1,40 @@
 # Postgres → Cloud SQL — Sprint 2: Production cutover
 
-**Status:** 🏗️ Runbook + guards code-complete; **cutover owed to Daniel** (executed live together). Prod
-(`medusa-web` Cloud Run + the `DATABASE_URL` secret). Risk: **HIGH** — production commerce DB, money data, a
-cutover window. **Daniel executes the cutover + merges** (no autonomous anything). Runs the rehearsed S1 runbook
-against prod.
+**Status:** ✅ **CUTOVER EXECUTED LIVE 2026-06-22** (Daniel authorized + present; agent drove). Prod commerce now
+runs on **Cloud SQL** (private IP, intra-VPC, `min=1`). Neon kept **read-only as rollback ~1 week**. Risk was
+**HIGH** — production commerce DB, money data, a cutover window. PR #22 (guards + runbook) merged `8d0bacc`.
 
 - **2.2 (guards)** ✅ `b50e796` — drift guard locks prod `--min-instances=1` / staging `0` (co-location ⇒ no
   `minScale:0`); `deploy.sh` documents the `DATABASE_URL` Neon→Cloud SQL home. `node --test 'infra/gcp/test/*.test.js'` → 19/19.
-- **2.1 (cutover runbook)** 🏗️ written below — every dump/restore/secret/kill-switch/checkout step **owed to Daniel**.
+- **2.1 (cutover)** ✅ **executed** — see the **Execution log** below (real revision, row counts, baseline). The
+  one item still **owed to Daniel** is the **money-path test checkout** (a real cart→pay→order); everything else
+  was driven + verified.
+
+## Execution log — cutover ran 2026-06-22 (~04:34–04:50 UTC)
+Driven via a connector-attached **Cloud Run Job** running `postgres:17-alpine` (the dump/restore can't run from
+a laptop — instance is private-IP-only and local `pg_dump` was 14; the job had PG17 + VPC + Neon egress). All
+temp artifacts (the probe/migrate jobs, the `PROD_DSN_TMP` secret) were **deleted** after; the prod password
+lives only in `DATABASE_URL` v3.
+
+| Step | Result |
+|---|---|
+| Kill-switch OFF | Flagsmith `checkout.stripe_enabled` → new published version `enabled=false` (prod env 92069) |
+| Neon read-only | `ALTER ROLE neondb_owner SET default_transaction_read_only = on` — verified: a fresh write got `cannot execute … in a read-only transaction` |
+| Prod role | reused S1's `medusa_app` (fresh password); it's a `cloudsqlsuperuser` → CREATE in `medusa` works, **no admin-grant dance needed** |
+| Dump + restore | `pg_dump` Neon `neondb` (custom, ~1.7 s, 543 KB) → `pg_restore --clean --if-exists` into Cloud SQL `medusa` — clean, no errors |
+| Row-count parity | `order` 17=17 · `product` 60=60 · `customer` 7=7 (Neon = Cloud SQL) |
+| Repoint | `DATABASE_URL` v3 = Cloud SQL DSN added → `:latest` resolves (destroyed-v2 block **healed**) |
+| Redeploy | `gcloud run services update medusa-web --update-secrets=DATABASE_URL=DATABASE_URL:latest` → revision **`medusa-web-00106-x66`** serving 100% (it only serves if `/health` startup probe passed ⇒ booted on Cloud SQL) |
+| Verify boot | `/health` **200** |
+| Verify migrate | `npx medusa db:migrate` (backend image, VPC job) → every module *"Skipped. Database is up-to-date"*, "Migrations completed" → **no-op**; Redis connected too |
+| Verify catalog | live Store API `GET /store/products` → **49 products** with real titles; live MCP `search_listings` → 10 full listings |
+| Kill-switch ON | Flagsmith → new published version `enabled=true` |
+| Egress baseline | `node scripts/neon-egress.mjs` at cutover: medusa-bonsai **4330.4 MB (86.6%)** — should now **flatline** (no GCP→Neon queries); re-read over the next days is the win signal |
+| **Owed to Daniel** | a real **money-path test checkout** (cart→pay→order on a disposable shop); the agent's checkout proof was read-only (MCP `search_listings`/catalog) |
+
+**Rollback (still armed ~1 week):** Neon is read-only + intact, `DATABASE_URL` v1 (Neon) still enabled. Revert =
+re-add Neon DSN as a new highest `DATABASE_URL` version + `services update --update-secrets=DATABASE_URL=DATABASE_URL:latest`
++ `ALTER ROLE neondb_owner SET default_transaction_read_only = off`. (Commands in the Rollback block below.)
 
 ## Why
 S1 proved the dump→restore→repoint→verify loop on staging. This sprint runs it on **prod main** inside a short
