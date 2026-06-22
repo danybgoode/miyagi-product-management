@@ -75,7 +75,7 @@ script stays in this root repo and is sparse-checked-out by the workflow via a r
 **Step 0 — clean-skip path (already observable, NO secrets needed).** When the FE/BE workflow PRs are
 opened, `cross-review.yml` self-triggers on `opened`. With no secrets set, the guard step logs
 `cross-review skipped (no codex credential)` and the job is **green + non-blocking**. → Confirms the
-secret-skip idiom on the PR itself. *(FE PR: `__FILL__` · BE PR: `__FILL__`.)*
+secret-skip idiom on the PR itself. *(FE PR: miyagisanchezcommerce#103 · BE PR: medusa-bonsai-backend#35 — both self-smoked GREEN clean-skip 2026-06-22.)*
 
 **Owed to Daniel (he holds the credentials):**
 1. In **each** app repo add two repo secrets:
@@ -97,9 +97,9 @@ If any step fails, note the step number + what you saw — that's the bug report
 
 ## Status
 - [x] **S1.1** — ✅ headless auth validated live (codex `--with-api-key`); finding recorded above.
-- [x] **S1.2** — `cross-review.yml` in both app repos (FE PR `__FILL__`, BE PR `__FILL__`); non-blocking,
+- [x] **S1.2** — `cross-review.yml` in both app repos (FE PR `miyagisanchezcommerce#103`, BE PR `medusa-bonsai-backend#35`); non-blocking,
       opened+reopened, secret-skip + PAT checkout. Credentialed end-to-end owed to Daniel.
 - [x] **S1.3** — cost guard `decideTrivialSkip` + `--skip-trivial`/`--min-lines`, 7 node:tests, live-smoked
-      (root PR `__FILL__`).
+      (root PR `miyagi-product-management#29`).
 
-> Refs filled when the 3 draft PRs are opened. The credentialed CI run (steps 1–4 above) is owed to Daniel.
+> Refs: root #29 (`7379fca`) · FE #103 (`c714a79`) · BE #35 (`297a4e8`). The credentialed CI run (steps 1–4 above) is owed to Daniel.
