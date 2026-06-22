@@ -60,7 +60,7 @@ UCP/MCP untouched (#3).
 |---|---|---|---|
 | 1 | 1 | ✅ **SHIPPED** (#101 `a1e6ea4`) Route-group split — static `(site)` vs dynamic `(shell)`; Option A (middleware unchanged — channels already rewrite `/`→`/s/[slug]` into `(shell)`) | **high** |
 | 2 | 1 | ✅ **SHIPPED** (#102 `1c67cb6`) Static homepage — dropped `currentUser()` + the 4 signed-in modules; client `AuthShow` replaces Clerk server `<Show>` in chrome (the real blocker); `/` now `○` static. **Phase 1 done.** | med |
-| 3 | 2 | Personalization endpoint on Cloud Run (Clerk-JWT-gated read of favorites/offers/seller-snapshot) | med–high |
+| 3 | 2 | ✅ **SHIPPED** (backend #34 `49057b9`) Personalization endpoint on Cloud Run — `GET /store/home/personalization`, Clerk-JWT (jose JWKS) verified, read-only Supabase favorites/offers + native Medusa seller snapshot; returns raw data (S4 derives es-MX copy). Live `medusa-web-00109-w6m`; agent smokes green. | **high** |
 | 4 | 2 | Re-add personalization as client islands hitting the Cloud Run endpoint (progressive enhancement) | med |
 
 **Phase 1 (S1+S2)** delivers the instant, function-free homepage and stands alone. **Phase 2 (S3+S4)** restores
@@ -78,9 +78,11 @@ the signed-in "welcome back" personalization from GCP — build only if it prove
 - **S1 mechanism:** middleware **rewrite** of channel/embed/custom-domain/subdomain requests into a dedicated
   white-label subtree (URL-transparent) vs an alternative that keeps one tree — confirm the rewrite approach
   resolves the `/` route collision (same URL, two layouts) cleanly.
-- **S3 endpoint home:** a Medusa custom route on `medusa-web` (add a Supabase read client there) **vs** a small
-  standalone Cloud Run service. The personalization data is Supabase (frontend's domain per rule #2) — the
-  endpoint *reads* it from GCP with a Clerk JWT; decide which keeps the data-domain boundary cleanest.
+- ~~**S3 endpoint home:** Medusa custom route vs standalone Cloud Run service.~~ **RESOLVED (Daniel, 2026-06-22):
+  a Medusa custom route on `medusa-web`** (`GET /store/home/personalization`) — reuses the Cloud Build rail, free
+  `/store/*` CORS, `jose` already present, native seller read; backend gains a **read-only** Supabase client
+  (Supabase stays SSOT/writes frontend-owned). Also resolved: the endpoint returns **raw data**, S4 derives the
+  es-MX copy (rule #5 single-source). Rationale in `sprint-3.md` Story 3.1.
 
 ## Definition of Done (epic)
 - [ ] Homepage served as a **static CDN asset** — build output shows it prerendered; a cold load is instant (no ~30 s)

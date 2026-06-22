@@ -12,15 +12,15 @@
 
 ## 🏗️ Building now (1)
 
-- [Static marketplace shell — kill the per-request homepage function 🏗️](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 2/9 stories
+- [Static marketplace shell — kill the per-request homepage function 🏗️](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 4/9 stories
 
 ## 📋 Ready to build (scaffolded, not started) (3)
 
-- [Cross-agent review on every PR (CI auto-run + policy)](../../09-platform-infra/cross-agent-review-always/README.md) — 09 Platform-infra · 0/5 stories
+- [Notion roadmap board hygiene](../../09-platform-infra/notion-board-hygiene/README.md) — 09 Platform-infra · 0/6 stories
 - [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 0/6 stories
 - [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 0/3 stories
 
-## ✅ Shipped (50)
+## ✅ Shipped (51)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -62,6 +62,7 @@
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 0/6 stories · risk: High
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 0/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
+- [Cross-agent review on every PR (CI auto-run + policy)](../../09-platform-infra/cross-agent-review-always/README.md) — 09 Platform-infra · 0/5 stories
 - [Design-Token / Design-System Foundation](../../09-platform-infra/design-token-foundation/README.md) — 09 Platform-infra · 0/5 stories · risk: Low · Wave 0 Enablers
 - [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 5/8 stories
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 0 Enablers
@@ -84,7 +85,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -92,7 +93,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
+| Cross-agent review on every PR (CI auto-run + policy) | Shipped | Scaffolded |
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 55 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 56 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
