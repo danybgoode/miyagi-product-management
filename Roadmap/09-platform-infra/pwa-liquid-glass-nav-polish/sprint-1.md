@@ -1,9 +1,11 @@
 # PWA Liquid-Glass Nav Polish — Sprint 1: Bar restructure + glass polish (light)
 
-**Status:** ✅ BUILT — [PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98) (draft, risk LOW);
-deterministic gate green locally (`tsc` + `build` + Playwright `api`, 15 pure tests) + anonymous bar browser
-smoke passing vs local `next start`; awaiting CI-vs-preview + reviewer + merge.
-Commits: S1.1 `ff90a63` · S1.2 `f07e4d0` · S1.3 `7e3535b` + mockup-match `90677c5` · smoke `3b46783`. · **Risk:** LOW
+**Status:** ✅ **MERGED to prod** — squash `071246d` ([PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98)),
+2026-06-22. CI green (Playwright-vs-preview + Type-check+build + Vercel); cross-reviewed by **Codex** (no
+blocking; one should-fix applied — `/sign-in` owned by no tab, `0d2a689`; the `.pwa-hidden` rename nit declined
+with rationale). Branch deleted.
+Commits (pre-squash): S1.1 `ff90a63` · S1.2 `f07e4d0` · S1.3 `7e3535b` + mockup-match `90677c5` · smoke `3b46783`
+· cross-review fix `0d2a689`. · **Risk:** LOW
 (S1.3 touches `globals.css` — announced; branch merged latest `main` first) ·
 **Branch:** `feat/pwa-glass-nav` (off latest `main`) ·
 **Files (touched):** `app/components/MobileTabBar.tsx`, `app/globals.css`,

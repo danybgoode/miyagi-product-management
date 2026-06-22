@@ -1,16 +1,19 @@
 ---
-status: scaffolded
+status: in-progress
 slug: pwa-liquid-glass-nav-polish
 ---
 
 # Epic — PWA Liquid-Glass Nav Polish
 
-> **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/pwa-glass-nav` ·
+> **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/pwa-glass-nav` (S1 merged + deleted) ·
 > **Risk: LOW overall** (frontend-only; S1.3 + S2.2 touch shared `globals.css`/`layout.tsx` — announce).
 > Reviewer may auto-merge LOW stories on green CI **unless** they touch shared layout.
-> **Status: 📋 SCAFFOLDED — not started.** Scope doc:
-> [`00-ideas/seeds/pwa-liquid-glass-nav-polish.md`](../../00-ideas/seeds/pwa-liquid-glass-nav-polish.md).
-> Source: Claude-Design redesign (`handoff/Liquid-Glass-Navbars-(standalone).html`). es-MX default · light mode first.
+> **Status: 🏗️ IN PROGRESS — S1 ✅ MERGED to prod** (squash `071246d`, [PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98); cross-reviewed by Codex, no blocking); **S2 next.**
+> Scope doc: [`00-ideas/seeds/pwa-liquid-glass-nav-polish.md`](../../00-ideas/seeds/pwa-liquid-glass-nav-polish.md).
+> **Source mockup: `handoff/Liquid-Glass-Navbars-(standalone).html`** — at the **monorepo root** `handoff/`,
+> NOT under `apps/` (a builder searching from inside `apps/miyagisanchez/` will miss it). It specifies the
+> **bars only** (top + bottom + the detached search bubble's glass + active capsule); it does **not** depict
+> the S2 search **bottom-sheet** interaction. es-MX default · light mode first.
 
 ## Why
 The installed-PWA bottom bar is functional but not yet the polished iOS-26 **Liquid-Glass** experience a
@@ -54,9 +57,9 @@ AGENTS rules #1 (Medusa) / #2 (Supabase — favorites already there) / #4 (Clerk
 
 | Sprint | Story | Risk |
 |---|---|---|
-| **1 · Bar restructure + glass polish (light)** | 1.1 Re-order to `Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil`; icons-only; drop Explorar tab; Favoritos→tab (mobile) + keep in `CuentaMenu` (desktop) | LOW |
-| | 1.2 Detached liquid-glass search control restored right of the pill; opens the sheet (S2) | LOW |
-| | 1.3 Liquid-glass visual polish (light) — tune fill · blur · saturation · active-capsule · specular to mockup; keep safe-area + `tabbar-visibility` | LOW (announce: `globals.css`) |
+| **1 · Bar restructure + glass polish (light)** ✅ MERGED `071246d` | 1.1 ✅ Re-order to `Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil`; icons-only; drop Explorar tab; Favoritos→tab (mobile) + keep in `CuentaMenu` (desktop) | LOW |
+| | 1.2 ✅ Detached liquid-glass search control restored right of the pill; **interim → `/l`**, S2.1 wires the sheet | LOW |
+| | 1.3 ✅ Liquid-glass visual polish (light) — **matched the handoff `.glass-surface` exactly** (fill 0.50 · blur 32 · sat 180% · bright 1.018 · edge-refraction-ring shadow · white active capsule · pill 64/32 · bubble 60 · FAB 46), tokenized light+dark | LOW (announce: `globals.css`) |
 | **2 · Bottom-sheet search + dedup** | 2.1 Bottom-sheet search — reuse filter-sheet seam; synchronous `focus()` + `touch-action:auto`; recent (pure helper + localStorage) + suggested; submit → `/l?q=`; scrim/dismiss; keyboard/safe-area aware | LOW |
 | | 2.2 Demote/hide persistent header search on mobile PWA (bottom is primary); desktop unchanged | LOW (announce: shared `layout.tsx`/`globals.css`) |
 | | 2.3 (optional) Top-bar glass-parity touch — align header glass with the bar; collapse redundant top-level action icons | LOW |
