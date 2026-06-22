@@ -91,6 +91,10 @@ IFS=',' read -ra LIST <<< "$TARGETS"
 for t in "${LIST[@]}"; do
   case "$t" in
     supabase) back_up supabase "${SUPABASE_BACKUP_DSN:?set SUPABASE_BACKUP_DSN}" || RC=1 ;;
+    # `neon` is being RETIRED (BACKUPS.md → "Neon target retirement"): commerce moved to Cloud SQL
+    # (its own native backups + PITR are the backup-of-record), and Neon is demoted to a dev-only
+    # sandbox. Kept here only while the Neon rollback window is open; once dropped from BACKUP_TARGETS
+    # this branch is dead code (left intact — the supabase path still uses this script).
     neon)     back_up neon     "${NEON_BACKUP_DSN:?set NEON_BACKUP_DSN}"         || RC=1 ;;
     *) alert "unknown BACKUP_TARGET '$t'"; RC=1 ;;
   esac

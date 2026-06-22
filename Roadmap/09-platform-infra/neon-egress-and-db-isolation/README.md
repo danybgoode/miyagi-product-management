@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: archived   # SUPERSEDED by postgres-neon-to-cloudsql (S3 close, 2026-06-22). Durable keepers: scripts/neon-egress.mjs + lib/cache-policy.ts SSOT.
 slug: neon-egress-and-db-isolation
 ---
 
