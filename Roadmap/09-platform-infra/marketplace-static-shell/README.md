@@ -59,7 +59,7 @@ UCP/MCP untouched (#3).
 | Sprint | Phase | Story | Risk |
 |---|---|---|---|
 | 1 | 1 | ✅ **SHIPPED** (#101 `a1e6ea4`) Route-group split — static `(site)` vs dynamic `(shell)`; Option A (middleware unchanged — channels already rewrite `/`→`/s/[slug]` into `(shell)`) | **high** |
-| 2 | 1 | Make the homepage a static CDN asset — drop `currentUser()` + the 4 signed-in modules; heart-states client-side | med |
+| 2 | 1 | ✅ **SHIPPED** (#102 `1c67cb6`) Static homepage — dropped `currentUser()` + the 4 signed-in modules; client `AuthShow` replaces Clerk server `<Show>` in chrome (the real blocker); `/` now `○` static. **Phase 1 done.** | med |
 | 3 | 2 | Personalization endpoint on Cloud Run (Clerk-JWT-gated read of favorites/offers/seller-snapshot) | med–high |
 | 4 | 2 | Re-add personalization as client islands hitting the Cloud Run endpoint (progressive enhancement) | med |
 

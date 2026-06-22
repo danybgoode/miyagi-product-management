@@ -1,10 +1,12 @@
 # Static marketplace shell — Sprint 2: Make the homepage a static CDN asset
 
-**Status:** ✅ **BUILT 2026-06-22** on `feat/marketplace-static-shell-s2` — `/` now prerenders as a
+**Status:** ✅ **SHIPPED 2026-06-22** — [PR #102](https://github.com/danybgoode/miyagisanchezcommerce/pull/102)
+squash-merged `1c67cb6` (Daniel-authorized merge on green; branch deleted). `/` now prerenders as a
 static CDN asset (`next build` reports `○ /` with `1m` ISR revalidate, **no `ƒ`**). Frontend (Vercel),
 homepage + shared chrome. Risk: **MED** (raised to touch shared `PlatformShell` — see the key finding
-below). Completes Phase 1. Reviewer may auto-merge on green CI (non-commerce UI); **live cold-load +
-signed-in heart hydration eyeball owed to Daniel.**
+below). Completes **Phase 1**. CI green (type-check+build · Playwright-vs-preview, full suite) + codex
+cross-review (no blocking; 1 real should-fix applied — FavoriteButton hydrate-once, see below).
+**Owed to Daniel:** live instant cold-load + signed-in heart-hydration eyeball on prod.
 
 **Key finding (the real blocker S1 missed):** removing the page's `currentUser()` was **necessary but
 not sufficient**. The shared `PlatformShell` chrome rendered Clerk's **server** `<Show when=…>` (+
@@ -22,9 +24,9 @@ thrown Medusa/Supabase fetch would fail the whole deploy — so the homepage's c
 `.catch(() => fallback)` (degrade to the empty-state, self-heal on the next ISR revalidation). The
 pulse read was wrapped in `unstable_cache` (CACHE.CATEGORY) to remove the last uncached dependency.
 
-**Commits:** _(filled at merge)_ — `lib/neighborhood-pulse-server.ts` (cache pulse) ·
+**Squash-merged `1c67cb6` (#102), 7 files:** `lib/neighborhood-pulse-server.ts` (cache pulse) ·
 `app/components/AuthShow.tsx` + `PlatformShell.tsx` (client auth-gate) ·
-`app/components/FavoritesProvider.tsx` + `FavoriteButton.tsx` (client heart hydration) ·
+`app/components/FavoritesProvider.tsx` + `FavoriteButton.tsx` (client heart hydration, hydrate-once) ·
 `app/(site)/page.tsx` (de-personalize + `revalidate=60` + throw-safe reads) · `e2e/home-static.spec.ts`.
 
 ## Why
