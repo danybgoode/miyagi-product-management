@@ -108,6 +108,12 @@ as a **separate security follow-up** (out of scope for this sprint).
 Numbered; one action + one expected result. Prod base `https://api.miyagisanchez.com`. `$PK` =
 `MEDUSA_PUBLISHABLE_KEY`.
 
+> **✅ Agent smokes ran 2026-06-22 post-deploy (rev `medusa-web-00109-w6m`):** (1) unauth → **HTTP 401**;
+> (2) forged Bearer → **HTTP 401** `{"message":"Authentication required"}`; (3) CORS preflight → **204**,
+> `Access-Control-Allow-Origin: https://miyagisanchez.com` + `Access-Control-Allow-Headers:
+> authorization,x-publishable-api-key` (S4 browser fetch unblocked); (4) revision rolled to `…00109-w6m`.
+> **Still owed to Daniel:** steps 5–6 (authed happy path + no-data degrade — need a live Clerk session JWT).
+
 1. **Unauthenticated → 401 (agent-runnable, post-deploy).**
    `curl -i -H "x-publishable-api-key: $PK" https://api.miyagisanchez.com/store/home/personalization`
    → **HTTP 401** `{"message":"Authentication required"}`.
