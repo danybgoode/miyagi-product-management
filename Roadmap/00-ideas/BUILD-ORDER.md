@@ -14,12 +14,11 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (1)
 
 - [Static marketplace shell — kill the per-request homepage function 🏗️](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 0/9 stories
-- [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories · risk: High · backlog
 
-## ✅ Shipped (49)
+## ✅ Shipped (50)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -70,6 +69,7 @@ _None._
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers
 - [Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 4/5 stories · risk: Low · Wave 1
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
+- [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
 ## ⬜ Funnel — seeds not yet scaffolded (8)
 

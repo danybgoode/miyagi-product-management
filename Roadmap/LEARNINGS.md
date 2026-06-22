@@ -434,6 +434,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   coordination** because the generic checkout charges one unit and can't honor nights + deposit. Each gap was
   stated in the PR and the smoke walkthrough, not papered over. The failure mode this avoids is a UI that looks
   done but renders invented or wrong numbers. *(2026-06-21, pdp-redesign retro — S2.1 / S5.3 / S4.2.)*
+  **Same discipline applies to a WRITE/agent path: trace the actual code path end-to-end before scoping "agents
+  can do X," because two front doors that look equivalent may not be.** Scoping "agents buy N event tickets over
+  UCP" assumed the agent checkout issues tickets like the web buyer — but tracing showed the **web** path is
+  Medusa-cart-backed (the Stripe/MP webhook's *Medusa branch* completes the cart → `issuePaidTicketsForOrder`),
+  while the **agent** path (`UCP create_checkout` → `/api/stripe/checkout` | `/api/mp/checkout`) builds a *raw*
+  session with **no `cart_id`**, hitting the webhook's *legacy branch* — so it issues **0 tickets even at qty 1**.
+  The agent-parity story sat on a foundation that didn't exist. Surfaced to Daniel → re-scoped to **surface
+  parity** (echo/clamp quantity) with issuance **deferred**, not silently built on sand. `grep` which branch a
+  webhook takes (cart-backed vs legacy) before promising an agent surface reaches the same end-state.
+  *(2026-06-22, events-quantity-selector S1.3.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
@@ -642,6 +652,24 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   coverage), and the server gates **every** mutation that reaches the redeemed state (scan route *and* any
   sibling write), not just the named scan route — the UI gate is courtesy. *(2026-06-08, events-and-ticketing
   S3 — `lib/event-ticket-state.ts`.)*
+  **Per-UNIT issuance keys idempotency on the per-unit subject, never the line_item_id — and the replay set is
+  cron + BOTH webhooks.** "Issue one token per admission for a quantity-N line item" looks like a loop, but the
+  trap is the dedupe: all N units share one `line_item_id`, so a `line_item_id`-keyed match collapses N→1 on
+  replay. Key on `${line_item_id}#${k}` (the per-unit subject) and reuse a matched unit verbatim so a redeemed
+  ticket survives re-issue. The thing that makes it load-bearing: `issue` is re-called by the **reconcile-checkouts
+  cron AND both payment webhooks**, so "exactly N on replay, same tokens, no dupes" is the whole correctness story
+  — extract it to a pure seam and prove it (1→1 unchanged, 3→3, replay→3, redeemed-survives, legacy→1). For
+  back-compat, adopt a pre-`#k` legacy ticket (migrate its subject, reuse its token) rather than re-minting on a
+  late webhook replay of a pre-deploy order. *(2026-06-22, events-quantity-selector S1.1 —
+  `reconcileOrderTickets` in the backend `events-ticketing/_utils.ts`.)*
+  **Scope a new buy-N / quantity feature to its listing TYPE at the server clamp seam — or it leaks into every
+  commerce path.** The PDP only renders the event stepper for events, but the *enforcement* must live where the
+  quantity is honored (the `/checkout` page + the UCP route): without it, a crafted `?qty=N` / `quantity:N` buys
+  N of **any** listing once the flag is on. Gate the clamp on the type detector (`readEventDetails(listing)`), not
+  the UI. And guard the **untracked-inventory edge** in any quantity cap — `available == null` returning
+  `MAX_SAFE_INTEGER` invites money-math overflow / absurd carts; cap it (a tracked item's real stock stays
+  uncapped). Both caught by the codex cross-review on a green PR. *(2026-06-22, events-quantity-selector S1.2 —
+  `lib/ticket-quantity.ts`.)*
 - **A mirror-resync silently un-sets soft state the source-of-truth doesn't yet reflect — filter the excluded
   set before BOTH render AND resync.** A page that re-syncs a Supabase mirror *from* Medusa on every load
   (`syncSupabaseListingMirror` writes `status: listing.status`) will **clobber** any soft state the mirror holds

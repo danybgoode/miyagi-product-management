@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Shipped at epic close 2026-06-22.
 slug: events-quantity-selector
 ---
 
@@ -8,7 +8,16 @@ slug: events-quantity-selector
 > **Macro-section:** [10 · Events & Ticketing](../README.md) ·
 > **Risk: HIGH** (money + fulfillment + checkout — per-unit ticket issuance; backend-first deploy; **Daniel merges**).
 > Plan quantity > 1 behind a kill-switch until the live money/door smoke passes.
-> **Status: 🚧 SCAFFOLDED — awaiting build.** Planned 2026-06-21. Scope doc:
+> **Status: ✅ SHIPPED 2026-06-22 — 1 sprint, web buyer money/door path live behind a kill-switch.**
+> BE [#33](https://github.com/danybgoode/medusa-bonsai-backend/pull/33) `27aa7a5` (per-unit issuance) ·
+> FE [#100](https://github.com/danybgoode/miyagisanchezcommerce/pull/100) `d687c87` (stepper + UCP surface) ·
+> docs root [#27](https://github.com/danybgoode/miyagi-product-management/pull/27).
+> **Kill-switch `events.quantity_enabled`** created **disabled** in Flagsmith (both envs, enablement/default-OFF
+> ⇒ cap 1 = today's behavior). **Owed to Daniel:** flip the flag ON + the live buy-N → N-QR → scan-each-once →
+> roster-N → aforo-minus-N smoke (money/door path, can't be headless-smoked) + the `MS_TEST_EVENT_LISTING_ID`
+> repo secret. **Deferred follow-up:** agent-side ticket *issuance* (S1.3 shipped surface parity only — the agent
+> checkout path has no Medusa cart, so it issues 0 tickets even at qty 1; re-route `create_checkout` through the
+> Medusa cart to wire it). Scope doc:
 > [`00-ideas/2. readyforscope/events-quantity-selector.md`](../../00-ideas/2.%20readyforscope/events-quantity-selector.md).
 > Source: the [events-quantity-selector seed](../../00-ideas/seeds/events-quantity-selector.md), routed out of the
 > PDP follow-ups groom (the S5 "events aforo / ticket tiers / quantity" follow-up).
@@ -65,12 +74,15 @@ Consider gating **quantity > 1** behind a flag (default off / max 1) until the l
 flip on once Daniel has run the owed walkthrough.
 
 ## Epic Definition of Done
-- [ ] All S1 stories merged to `main` + smoke-tested. **Owed to Daniel:** buy N → N distinct QRs → scan each once
-      (no reuse) → roster shows N → aforo decremented by N (money/auth/door path).
-- [ ] `sprint-1.md` has a fool-proof smoke walkthrough (real prod URLs; the money/door steps flagged owed to Daniel).
-- [ ] Epic `README.md` marked ✅; `sprint-1.md` status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated — §10 line + a Recent-highlights entry.
-- [ ] Team memory + `LEARNINGS.md` updated with any durable learning (esp. the per-unit idempotent issuance pattern).
-- [ ] Kill-switch verified (quantity > 1 gated until the live smoke passes, if used).
-- [ ] Feature branch deleted; PR merged.
+- [x] All S1 stories merged to `main`. **Smoke gap stated — owed to Daniel:** flip the flag ON, then buy N →
+      N distinct QRs → scan each once (no reuse) → roster shows N → aforo decremented by N (money/auth/door path,
+      can't be headless-smoked). Anonymous stepper-render smoke is preview-covered.
+- [x] `sprint-1.md` has a fool-proof smoke walkthrough (real prod URLs; step 0 = create+enable the flag; the
+      money/door steps flagged owed to Daniel).
+- [x] Epic `README.md` marked ✅ (frontmatter `shipped`); `sprint-1.md` status ticked with commit refs (root #27).
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — §10 line + a Recent-highlights entry.
+- [x] Team memory + `LEARNINGS.md` updated (per-unit idempotent issuance pattern; validate-first agent-cart finding).
+- [x] Kill-switch verified — `events.quantity_enabled` created **disabled** in Flagsmith (both envs; enablement,
+      default OFF ⇒ cap 1). Daniel flips ON after the live smoke.
+- [x] Feature branches deleted (BE + FE, local+remote+worktree); all PRs merged.
