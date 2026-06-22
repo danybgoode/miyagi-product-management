@@ -1,9 +1,15 @@
 # PWA Liquid-Glass Nav Polish — Sprint 1: Bar restructure + glass polish (light)
 
-**Status:** 📋 NOT STARTED · **Risk:** LOW (S1.3 touches `globals.css` — announce) ·
+**Status:** ✅ BUILT — [PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98) (draft, risk LOW);
+deterministic gate green locally (`tsc` + `build` + Playwright `api`, 15 pure tests) + anonymous bar browser
+smoke passing vs local `next start`; awaiting CI-vs-preview + reviewer + merge.
+Commits: S1.1 `ff90a63` · S1.2 `f07e4d0` · S1.3 `7e3535b` · smoke `3b46783`. · **Risk:** LOW
+(S1.3 touches `globals.css` — announced; branch merged latest `main` first) ·
 **Branch:** `feat/pwa-glass-nav` (off latest `main`) ·
-**Files (expected):** `app/components/MobileTabBar.tsx`, `app/globals.css`,
-`lib/tabbar-visibility.ts` (extend), `e2e/tabbar-visibility.spec.ts` (extend), `app/components/CuentaMenu.tsx` (Favoritos dedup for desktop).
+**Files (touched):** `app/components/MobileTabBar.tsx`, `app/globals.css`,
+`lib/tabbar-visibility.ts` (+ `BOTTOM_TABS` / `resolveBottomTabHref` / `isBottomTabActive`),
+`e2e/tabbar-visibility.spec.ts` (extended), `e2e/tabbar.browser.spec.ts` (flipped to new shape),
+`app/components/CuentaMenu.tsx` + `app/layout.tsx` (PWA-only Favoritos dedup via new `.pwa-hidden`).
 
 > ⚠️ **Branch off latest `main`.** The old `feat/inventory` `MobileTabBar.tsx` (merged commit `36ba5ca`,
 > 2026-05-30, pre-reorg) is **reference only** — that branch is merged into `main` and deleted. The live bar
@@ -11,7 +17,7 @@
 
 ## Stories
 
-### Story 1.1 — Re-order the bar + icons-only
+### Story 1.1 — Re-order the bar + icons-only ✅ `ff90a63`
 **As a** buyer on the PWA, **I want** a bar ordered `Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil`,
 icons only, **so that** my core destinations are one thumb-tap away in a clean, native-feeling bar.
 **Acceptance:**
@@ -23,8 +29,12 @@ icons only, **so that** my core destinations are one thumb-tap away in a clean, 
   `CuentaMenu` on desktop** (no tab bar on desktop) — no duplicate primary control on any one surface.
 - Active-tab capsule + unread dot on Mensajes preserved. 44 px min hit targets.
 **Risk:** LOW
+**Implemented:** bar renders from a pure `BOTTOM_TABS` descriptor in `lib/tabbar-visibility.ts` (single
+source the api spec reads). Favoritos dedup is **CSS-only** — a new `.pwa-hidden` utility (mirror of
+`.pwa-only`) tags the Favoritos row on the **mobile-header** `CuentaMenu` instance, so it hides only under
+`display-mode: standalone` and stays visible on desktop **and mobile web**. Signed-out targets → `/sign-in`.
 
-### Story 1.2 — Detached liquid-glass search control
+### Story 1.2 — Detached liquid-glass search control ✅ `f07e4d0`
 **As a** buyer, **I want** a distinct glass search button beside the bar **so that** search is always one tap
 away without crowding the tabs.
 **Acceptance:**
@@ -33,8 +43,12 @@ away without crowding the tabs.
   (`aria-label="Buscar"`).
 - Respects safe-area + the existing contextual-hide behaviour (hides with the bar).
 **Risk:** LOW
+**Implemented:** the wrapper is now a flex row — the pill (`flex:1`) + a 56px `.glass-liquid` circle (reusing
+the `.search-circle-btn` press class) sharing the wrapper's hide transform. **Interim:** the control is a
+`Link href="/l"` (search one tap away; never a dead button on prod between sprint merges) — **S2.1 swaps it to
+a button that opens the bottom-sheet search.**
 
-### Story 1.3 — Liquid-glass visual polish (light)
+### Story 1.3 — Liquid-glass visual polish (light) ✅ `7e3535b`
 **As a** buyer, **I want** the bar to look like polished iOS-26 liquid glass **so that** the installed app
 feels premium.
 **Acceptance:**
@@ -45,14 +59,27 @@ feels premium.
 - Safe-area insets + `lib/tabbar-visibility.ts` contextual hide unchanged in behaviour.
 - No regression to non-PWA / desktop chrome.
 **Risk:** LOW (shared `globals.css` — **announce** before PR; merge latest `main` first)
+**Implemented:** the blur / saturation / brightness / specular are now **`:root` tokens**
+(`--glass-blur-liquid` / `--glass-sat-liquid` / `--glass-bright-liquid` / `--glass-specular`) consumed by
+`.glass-liquid` — dialed from one place, no per-component hardcoding. Light nudge: more translucent
+`--glass-fill-liquid` (0.80→0.76), crisper specular top edge + faint lower edge (thick-glass depth), softer
+float shadow. The active capsule already reads `var(--accent-soft)` (unchanged). Same refined glass applies
+to `SellerNav.tsx` (shared `.glass-liquid` — coherent). **Note:** the exact handoff mockup
+(`handoff/Liquid-Glass-Navbars-(standalone).html`) is **not in the repo** → values are a tasteful nudge; the
+pixel-exact match is a **device eyeball owed to Daniel** (the tokens make it a one-line dial).
 
 ## Sprint QA
-- **api spec (the gate):** extend `e2e/tabbar-visibility.spec.ts` — assert the new tab set/order +
-  `icons-only` default via the pure `lib/tabbar-visibility.ts` helpers (route-hide patterns unchanged).
-- **anonymous browser smoke (agent-covered):** bar render + 4-tab+FAB+search-control presence (use the
-  reorg's phone-viewport + forced-visible override — `display-mode: standalone` is not emulatable in headless Chromium).
-- **owed to Daniel (browser):** the real **PWA-standalone** look + the **glass appearance** on a device.
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **api spec (the gate) ✅:** extended `e2e/tabbar-visibility.spec.ts` — asserts `BOTTOM_TABS` set/order,
+  `resolveBottomTabHref` (signed-out → `/sign-in`), `isBottomTabActive`, and `icons-only` via the pure
+  `lib/tabbar-visibility.ts` helpers (route-hide patterns unchanged). 15 tests pass.
+- **anonymous browser smoke (agent-covered) ✅:** `e2e/tabbar.browser.spec.ts` flipped to the new shape
+  (set/order, detached search control present, Explorar/Cuenta gone, FAB→`/sell`, Buscar→`/l`, auth-gated →
+  `/sign-in`) + hide-on-scroll. Passed vs local `next start` (phone-viewport + forced-visible override —
+  `display-mode: standalone` is not emulatable in headless Chromium; PDP route-hide skipped — no local catalog).
+- **owed to Daniel (browser):** the real **PWA-standalone** look, the **device glass appearance** vs the
+  mockup, the **real-device keyboard**, and the **PWA-only Favoritos dedup** (standalone media not emulatable).
+- **deterministic gate ✅:** `tsc --noEmit` + `npm run build` + Playwright `api` green locally; CI re-runs the
+  `api` suite vs the PR's Vercel preview (authoritative pre-merge signal).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the branch preview URL while testing pre-merge)
@@ -65,9 +92,13 @@ Env: production · https://miyagisanchez.com  (or the branch preview URL while t
    → You land on `/account` (signed-out → sign-in).
 4. Tap the **⊕** center button.
    → You land on the publish flow (`/sell`).
-5. Look at the bar against the colorful feed. **[owed to Daniel — device]**
-   → The glass reads as translucent, blurred, saturated — matching the light-mode mockup; the active tab has a soft capsule.
-6. Scroll the feed down then up.
+5. Tap the **round search button** (right of the pill).
+   → Interim S1 behaviour: you land on the listings page `/l`. *(S2.1 will replace this with a glass bottom-sheet that rises over the bar — not a page change.)*
+6. Open the **Cuenta** menu (top-right user icon). **[owed to Daniel — PWA standalone]**
+   → In the installed PWA there is **no "Favoritos" row** (the bottom tab carries it). On desktop / mobile-web browser the Favoritos row is **still present** in that menu.
+7. Look at the bar against the colorful feed. **[owed to Daniel — device]**
+   → The glass reads as translucent, blurred, saturated — polished iOS-26 liquid glass; the active tab has a soft capsule. *(Pixel-exact match vs the mockup is dialed via the `--glass-*-liquid` tokens.)*
+8. Scroll the feed down then up.
    → The bar (and search button) slide away on scroll-down and spring back on scroll-up; gone on `/l/[id]`, `/checkout`, `/messages/[id]`, `/sell`.
 
 If any step fails, note the step number + what you saw — that's the bug report.
