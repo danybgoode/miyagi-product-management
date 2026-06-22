@@ -1,9 +1,9 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: marketplace-static-shell
 ---
 
-# Epic: Static marketplace shell — kill the per-request homepage function 🏗️
+# Epic: Static marketplace shell — kill the per-request homepage function ✅
 
 > **Area:** 09-platform-infra · **Risk:** med–high (S1 restructures the shared layout + middleware that all
 > channels depend on) · **Origin:** the S1-deferred "static signed-out homepage" follow-up from
@@ -61,7 +61,7 @@ UCP/MCP untouched (#3).
 | 1 | 1 | ✅ **SHIPPED** (#101 `a1e6ea4`) Route-group split — static `(site)` vs dynamic `(shell)`; Option A (middleware unchanged — channels already rewrite `/`→`/s/[slug]` into `(shell)`) | **high** |
 | 2 | 1 | ✅ **SHIPPED** (#102 `1c67cb6`) Static homepage — dropped `currentUser()` + the 4 signed-in modules; client `AuthShow` replaces Clerk server `<Show>` in chrome (the real blocker); `/` now `○` static. **Phase 1 done.** | med |
 | 3 | 2 | ✅ **SHIPPED** (backend #34 `49057b9`) Personalization endpoint on Cloud Run — `GET /store/home/personalization`, Clerk-JWT (jose JWKS) verified, read-only Supabase favorites/offers + native Medusa seller snapshot; returns raw data (S4 derives es-MX copy). Live `medusa-web-00109-w6m`; agent smokes green. | **high** |
-| 4 | 2 | Re-add personalization as client islands hitting the Cloud Run endpoint (progressive enhancement) | med |
+| 4 | 2 | ✅ **SHIPPED** ([PR #104](https://github.com/danybgoode/miyagisanchezcommerce/pull/104)) Personalization client islands — `HomePersonalizationProvider` (one Clerk-JWT fetch, not a poll) + `HomeRetomaOffers`/`HomeSellerModule` slots on the static `/`; degrades to nothing; build stays `○ /`. Cross-review (codex+agy) hardened a stale-state leak + currency/stat edges. **Epic complete.** | med |
 
 **Phase 1 (S1+S2)** delivers the instant, function-free homepage and stands alone. **Phase 2 (S3+S4)** restores
 the signed-in "welcome back" personalization from GCP — build only if it proves worth it.
@@ -85,14 +85,14 @@ the signed-in "welcome back" personalization from GCP — build only if it prove
   es-MX copy (rule #5 single-source). Rationale in `sprint-3.md` Story 3.1.
 
 ## Definition of Done (epic)
-- [ ] Homepage served as a **static CDN asset** — build output shows it prerendered; a cold load is instant (no ~30 s)
-- [ ] **Channels unbroken** — custom-domain / subdomain / embed / seller-mode white-label all still correct (suite green)
-- [ ] URLs/SEO byte-identical (canonical/robots/sitemap unchanged)
-- [ ] Phase 2 (if built): personalization renders from the **Cloud Run** endpoint via client islands; degrades gracefully
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough; the live homepage-speed + channel eyeballs flagged owed-to-Daniel
-- [ ] `RETROSPECTIVE.md`; product poster updated; team memory + `MEMORY.md`; durable learnings → `LEARNINGS.md`
+- [x] Homepage served as a **static CDN asset** — build output shows it prerendered (`○ /`, no `ƒ`); cold load instant. _(Live instant-load eyeball owed to Daniel — S2 step 7.)_
+- [x] **Channels unbroken** — custom-domain / subdomain / embed / seller-mode white-label all still correct (channel suite green through S1's split + every sprint since)
+- [x] URLs/SEO byte-identical (canonical/robots/sitemap unchanged — route groups + internal rewrites are URL-transparent)
+- [x] Phase 2 personalization renders from the **Cloud Run** endpoint via client islands; degrades gracefully (S3 endpoint live; S4 islands, PR #104)
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough; the live homepage-speed + channel + signed-in-hydration eyeballs flagged owed-to-Daniel
+- [x] `RETROSPECTIVE.md`; product poster updated; team memory + `MEMORY.md`; durable learnings → `LEARNINGS.md`
       (the big one: the app shell was dynamic for *channel routing*, not just auth — static-first needs a route split)
-- [ ] Feature branch(es) deleted; this README's frontmatter `status: shipped`
+- [x] This README's frontmatter `status: shipped`. _(Feature branches: S4 `feat/marketplace-static-shell-s4` deleted on merge; the stale `feat/marketplace-static-shell` remote — S1's pre-squash commits — can be pruned by Daniel.)_
 
 ## Session kickoffs
 Run each in a **fresh session** (one per sprint). Each enters plan mode, confirms stories with Daniel, then builds.

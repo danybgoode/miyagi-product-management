@@ -481,6 +481,29 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
 
 ## Architecture
+- **A shared app shell can be dynamic for *routing*, not just auth — making a page static needs a route split,
+  not just removing its `currentUser()`.** The marketplace homepage cold-started ~30 s as a per-request Vercel
+  function; dropping the page's `currentUser()` was **necessary but not sufficient**, because the shared
+  `layout.tsx`/chrome read `headers()` (channel detection: custom-domain/subdomain/embed/seller-mode) **and**
+  Clerk's **server** `<Show>` calls `auth()`→`headers()` — either forces the whole subtree dynamic. The fix was a
+  **route-group split** (a header-free static `(site)` tree vs a dynamic `(shell)`/white-label tree) + **client-
+  gating** the auth-dependent chrome (a client `AuthShow`/`useAuth`, defaulting signed-out so the static HTML is
+  the anonymous render). Diagnose *which* dynamic API traps a page with `export const dynamic = 'error'` — the
+  build error names it (here Clerk `auth()` via the chrome, not the page). URLs/SEO stay byte-identical because
+  route groups + internal rewrites are URL-transparent. *(2026-06-22, marketplace-static-shell S1/S2.)*
+- **Restore "compute on GCP / no Vercel function" personalization as client islands hitting a Cloud Run endpoint —
+  but the endpoint's CORS must allow the calling origin or the island silently degrades (so the authed smoke is a
+  prod-origin smoke).** After a page is made static, signed-in data returns as a client island that gets a Clerk
+  JWT client-side (`useAuth().getToken()`) and does **one fetch** (not a poll) to a JWT-verified Cloud Run read
+  endpoint, rendering nothing during SSR/loading/signed-out/error so the static page never blocks. Gotcha: the
+  endpoint's `Access-Control-Allow-Origin` allowed the **prod** origin only, so the fetch is **CORS-blocked on a
+  `*.vercel.app` preview** → the island degrades to nothing there. So the positive "it hydrated" browser smoke
+  can't run on preview/CI — **gate the strict assertion behind an env flag** (`MS_TEST_*_STRICT=1`) for the prod
+  run and keep CI lenient (assert "≤1, never a false pass"). And a client island reading **another service's wire
+  JSON** must be defensive at the render boundary — guard `Intl.NumberFormat` against a bad currency code (a
+  `RangeError` blanks the whole client render) and `?? 0` numeric fields. *(2026-06-22, marketplace-static-shell
+  S3/S4 — codex+agy cross-review caught a stale-personalization leak on sign-out/account-switch: clear island
+  state on the unauth transition **and** add `userId` to the effect deps, else a switch keeps the prior user's data.)*
 - **Co-locate compute and its database — a cross-cloud DB is a metered egress tax + a fragility, not just a
   latency footnote.** A Neon "near the 5 GB/mo egress cap" alert fired with **zero traffic for a week**: the
   cause wasn't shoppers or backups but the split itself — compute on **GCP** (Cloud Run us-east4), Postgres on

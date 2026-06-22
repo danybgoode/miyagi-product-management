@@ -1,8 +1,10 @@
 # Static marketplace shell — Sprint 4: Personalization client islands (Phase 2)
 
-**Status:** 🏗️ **BUILT — pre-merge** ([PR #104](https://github.com/danybgoode/miyagisanchezcommerce/pull/104),
-draft; branch `feat/marketplace-static-shell-s4` in `apps/miyagisanchez` — a **fresh** name off `main`, since the
-old `feat/marketplace-static-shell` remote still holds S1's stale pre-squash commits).
+**Status:** ✅ **SHIPPED 2026-06-22** — [PR #104](https://github.com/danybgoode/miyagisanchezcommerce/pull/104)
+squash-merged `f7e731a` (LOW risk → reviewer-merge on green; branch deleted). Built on a **fresh**
+`feat/marketplace-static-shell-s4` off `main`, since the old `feat/marketplace-static-shell` remote still holds
+S1's stale pre-squash commits. **Completes the epic.** Codex + Antigravity cross-review applied (stale-state leak
+fixed as blocking; currency/stat hardening + an env-gated strict browser assertion; inline-copy nit declined).
 Frontend (Vercel). Risk: **LOW** (client-side progressive enhancement on an already-static page; no
 server function, no money mutation, degrades to nothing). Independent — S3 endpoint is already live.
 **Completes the epic.**
