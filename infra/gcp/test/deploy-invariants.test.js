@@ -151,6 +151,20 @@ for (const [name, src] of [['deploy.sh', prodSrc], ['deploy-staging.sh', staging
   })
 }
 
+// --- min-instances posture (Postgres → Cloud SQL, Sprint 2) -------------------
+// Co-locating Postgres on Cloud SQL eliminates the cross-cloud egress at the root, so
+// prod STAYS warm at min=1 — the superseded neon-egress epic's `minScale:0` direction is
+// explicitly NOT applied. Lock the posture so a future edit can't silently re-introduce
+// scale-to-zero on prod (which the egress fix made unnecessary, and which would re-add
+// cold-start latency for no egress benefit). Staging stays min=0 (scale-to-zero, ~$0 idle).
+
+test('deploy.sh keeps --min-instances=1 (prod stays warm; no minScale:0)', () => {
+  assert.match(prodSrc, /--min-instances=1\b/, 'prod medusa-web must stay min-instances=1 (co-located DB, no minScale:0)')
+})
+test('deploy-staging.sh keeps --min-instances=0 (staging scales to zero)', () => {
+  assert.match(stagingSrc, /--min-instances=0\b/, 'staging medusa-web-staging must stay min-instances=0')
+})
+
 // --- S3 ADMIN_CORS invariant (prod only — staging admin is same-origin localhost) ---
 
 test('deploy.sh ADMIN_CORS default includes the admin origin api.miyagisanchez.com', () => {
