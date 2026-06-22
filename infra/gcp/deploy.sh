@@ -62,6 +62,14 @@ echo "▶ Deploying $SERVICE_WEB…"
 #     by --set-secrets' replace semantics): MP_CLIENT_ID, MP_CLIENT_SECRET,
 #     FLAGSMITH_ENVIRONMENT_KEY.
 # Net: 9 plain env + 13 secrets ≡ live. The drift guard (infra/gcp/test/) locks this in.
+#
+# DATABASE_URL home (Postgres → Cloud SQL co-location, Sprint 2 cutover): the secret
+# NAME + binding (DATABASE_URL:latest) are unchanged, but at the S2 cutover its VALUE
+# was swapped from the Neon (AWS) DSN to the Cloud SQL PRIVATE DSN — reached intra-VPC
+# over the medusa-conn connector (--vpc-egress=private-ranges-only, below), the same
+# path Redis uses. Co-location kills the cross-cloud egress at the root, so the backend
+# STAYS --min-instances=1 (warm/fast): the superseded neon-egress epic's minScale:0
+# direction is explicitly NOT applied here. The drift guard locks min-instances=1 in.
 gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
