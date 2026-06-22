@@ -69,11 +69,17 @@ reads as one system.
 ## Sprint QA
 - **api spec (the gate):** new `e2e/search-recents.spec.ts` — load the pure `lib/search-recents.ts`
   (add/dedupe/cap, build `/l?q=`) directly; assert ordering, de-dupe, cap, and query encoding. Free pure-logic coverage.
-- **anonymous browser smoke (agent-covered):** open the sheet → type → submit → lands on `/l?q=`; scrim
-  dismiss. (Keyboard auto-raise can't be asserted headless — see owed-to-Daniel.)
-- **owed to Daniel (browser):** **real-device iOS** keyboard raising the sheet on tap; the **PWA-standalone**
-  search flow end-to-end; the single-search-control look on a real phone.
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **⚠️ the rendered sheet is NOT headless-testable:** the bottom bar + sheet are `.pwa-only`
+  (`display:none` outside an installed-PWA standalone, ≤767px) and Playwright can't emulate
+  `display-mode: standalone`, so there is **no agent-runnable anonymous browser smoke** of the sheet —
+  the deterministic gate (pure spec + tsc + build + the full `api` suite + the design-token guard) is the
+  agent coverage; the rendered flow falls to Daniel.
+- **owed to Daniel (real device):** iOS keyboard raising **synchronously** on the search tap; the
+  **PWA-standalone** open → type → submit → land on `/l?q=` → scrim/Esc dismiss; the single-search-control
+  look in the PWA; **and the mobile-web regression check** — in a normal mobile browser tab the header search
+  **must still be present** (the demote is PWA-only by design).
+- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` (incl. the new spec) green
+  before merge — verified on PR #99 (Playwright-vs-preview ✓).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com once merged · pre-merge use the PR #99 **branch preview URL**
