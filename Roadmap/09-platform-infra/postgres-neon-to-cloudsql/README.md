@@ -1,9 +1,9 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Shipped at epic close 2026-06-22.
 slug: postgres-neon-to-cloudsql
 ---
 
-# Epic: Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) 🏗️
+# Epic: Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅
 
 > **Area:** 09-platform-infra · **Risk:** high (production commerce DB migration: money data, cutover) ·
 > **Supersedes** the spike's "keep commerce on Neon" call in
@@ -80,16 +80,20 @@ user-facing surface (#5). The only app-visible change is the `DATABASE_URL` secr
 - **Neon afterlife:** demote the commerce project to a **dev-only sandbox**, or **delete** it (S3).
 
 ## Definition of Done (epic)
-- [ ] Cloud SQL live (private IP, us-east4), Medusa booting clean against it on prod
-- [ ] **Egress verified ≈ 0 / well under cap** (`scripts/neon-egress.mjs`) — the success signal
-- [ ] Neon kept ≥1 week read-only as rollback, then demoted/deleted per the decision above
-- [ ] Backups reconciled to Cloud SQL-native (PITR + automated); `BACKUPS.md` updated
-- [ ] #19 + #32 closed (superseded); the `neon-egress-and-db-isolation` epic README marked `archived`/superseded
-- [ ] `deploy.sh` + `deploy-invariants.test.js` reflect the new `DATABASE_URL` home and stay green
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real commands); money/cutover steps flagged owed-to-Daniel
-- [ ] `RETROSPECTIVE.md`; product poster (`Roadmap/README.md`) updated; team memory + `MEMORY.md` updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (cross-cloud DB = egress tax; co-locate compute+DB)
-- [ ] Feature branch(es) deleted; this README's frontmatter `status: shipped`
+- [x] Cloud SQL live (private IP, us-east4), Medusa booting clean against it on prod — S2, rev `medusa-web-00106-x66`, private `172.25.0.3`
+- [x] **Egress success signal recorded** (`scripts/neon-egress.mjs`) — cutover-day baseline captured; the post-cutover **plateau** is the win (re-read over days). S3.3 / sprint-3.md.
+- [~] Neon kept ≥1 week read-only as rollback, then **demoted** (Daniel's call: dev-only sandbox, not delete) — demote is **owed to Daniel**, gated on the window closing + a confirmed Cloud SQL backup (sprint-3.md steps 6–7).
+- [x] Backups reconciled to Cloud SQL-native (PITR + automated, backup `1782097256693` SUCCESSFUL); `BACKUPS.md` updated; `neon` target retirement sequenced — S3.2
+- [x] #19 + #32 closed (superseded); the `neon-egress-and-db-isolation` epic README marked `archived` — S3.1
+- [x] `deploy.sh` + `deploy-invariants.test.js` reflect the new `DATABASE_URL` home and stay green — landed at S2 (`deploy.sh:66-72`, invariants connector + `min=1`); re-confirmed green in S3
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real commands); money/cutover steps flagged owed-to-Daniel — S1/S2/S3
+- [x] `RETROSPECTIVE.md`; product poster (`Roadmap/README.md`) updated; team memory + `MEMORY.md` updated — S3.3
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (cross-cloud DB = egress tax; co-locate compute+DB; `:latest` re-resolve + Secret-Manager `latest`=highest-NUMBER; in-VPC ops via connector-attached Job) — S3.3
+- [x] Feature branch(es) deleted (at merge); this README's frontmatter `status: shipped`
+
+> **One item stays open by design** (`[~]`): the **Neon demote** is destructive + gated (rollback window +
+> confirmed Cloud SQL backup) and is **owed to Daniel** — the runbook is in `sprint-3.md` (steps 6–7).
+> Also carry-forward from S2: a **real money-path test checkout** on Cloud SQL (read-only proof only at S2).
 
 ## Session kickoffs
 Run each in a **fresh session** (one per sprint). Each enters plan mode, confirms stories with Daniel, then builds.

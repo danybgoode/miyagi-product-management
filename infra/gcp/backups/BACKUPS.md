@@ -1,7 +1,23 @@
-# DB → R2 escrow backups — runbook
+# DB backups — runbook
 
-Daily `pg_dump` of the **Supabase** (non-commerce) and **Neon** (commerce) databases to a **Cloudflare R2**
-bucket, as off-platform, vendor-neutral, immutable escrow. Built in
+## Backup-of-record (post Cloud SQL cutover, 2026-06-22)
+The commerce DB moved from **Neon (AWS)** to **Cloud SQL (`medusa-pg`, GCP us-east4, private IP)** —
+see [`postgres-neon-to-cloudsql`](../../../Roadmap/09-platform-infra/postgres-neon-to-cloudsql/README.md).
+The backup story split accordingly:
+
+| Database | Backup-of-record | Mechanism |
+|---|---|---|
+| **Commerce** (Cloud SQL `medusa-pg`) | **Cloud SQL native** | **Automated daily backups + 7-day PITR** (`PITR 7/7`, set at provisioning) + on-demand backup + **instance clone** (the clone is the escrow-drill / point-in-time restore-rehearsal replacement for Neon's branching) |
+| **Supabase** (non-commerce: conversations, offers, supply) | **R2 escrow dump** (below) | the `db-backup` Cloud Run Job, `supabase` target — **unchanged** |
+
+Cloud SQL keeps its own backups inside GCP (intra-project, no cross-cloud egress); they're managed +
+verifiable from the console / `gcloud sql backups list --instance=medusa-pg`. A confirmed automated backup
+(`gcloud sql backups list`) is the gate for retiring any Neon-side coverage (Story 3.2). The custom R2
+escrow pipeline below is now **Supabase-only of record**; its **`neon` target is being retired** (see
+*Neon target retirement* at the bottom) once the Neon rollback window closes and the project is demoted.
+
+## R2 escrow dump pipeline (Supabase)
+Daily `pg_dump` to a **Cloudflare R2** bucket, as off-platform, vendor-neutral, immutable escrow. Built in
 [Backend Production Readiness, Sprint 2](../../../Roadmap/09-platform-infra/backend-production-readiness/sprint-2.md).
 The cross-store RPO/RTO + restore procedures live in the central
 [`tasks/backup-and-restore-runbook.md`](../../../tasks/backup-and-restore-runbook.md); this file is the
@@ -29,7 +45,7 @@ custom-format dump restorable by any PG17 client) — independent of the runner.
 | Runner | Cloud Run **Job** `db-backup` (region `us-east4`, SA `medusa-backup`, max-retries 1, 900s, 512Mi) |
 | Schedule | Cloud Scheduler `db-backup-daily`, cron `0 9 * * *` UTC (≈ 03:00 CDMX) → `:run` the job |
 | Image | `us-east4-docker.pkg.dev/<project>/medusa-ops/db-backup:<tag>` (`postgres:17-alpine` + rclone) |
-| Targets | `supabase` + `neon` (env `BACKUP_TARGETS`) |
+| Targets | `supabase` (+ `neon` **being retired** — see bottom; env `BACKUP_TARGETS`) |
 | Destination | `r2:<bucket>/<target>/YYYY/MM/DD/<target>-<ts>.dump.gz` |
 | Alerts | non-zero exit → Cloud Run Job failure (S4 alert) + best-effort Telegram |
 
@@ -81,7 +97,39 @@ pg_restore --no-owner --data-only --table=marketplace_offers --dbname="$TARGET_D
 ```
 Use a **PG17** `pg_restore` (matches the dump). RTO is a few minutes for the non-commerce volume.
 
+## Restore the commerce DB (Cloud SQL native)
+Cloud SQL restore/PITR is console- or `gcloud`-driven — no R2 dump involved for commerce:
+```bash
+# List automated backups:
+gcloud sql backups list --instance=medusa-pg --project=miyagisanchezback-497722
+# Restore a backup into a SCRATCH instance (never straight over prod), then repoint if needed:
+gcloud sql backups restore <BACKUP_ID> --restore-instance=medusa-pg-scratch --backup-instance=medusa-pg
+# Point-in-time restore (within the 7-day PITR window) → a clone at a timestamp:
+gcloud sql instances clone medusa-pg medusa-pg-pitr \
+  --point-in-time='2026-06-22T03:00:00Z'
+```
+The in-VPC dump/restore mechanics (connector-attached `postgres:17-alpine` Cloud Run Job — a laptop can't
+reach the private IP) are recorded in `postgres-neon-to-cloudsql/sprint-2.md`.
+
+## Neon target retirement
+With commerce on Cloud SQL, the R2 pipeline's **`neon` target is redundant** — it would dump the
+read-only Neon rollback copy, which is itself being demoted to a dev-only sandbox
+(`postgres-neon-to-cloudsql` Story 3.3). **Sequencing (don't drop coverage early):**
+1. Keep `neon` in `BACKUP_TARGETS` **during the ~1-week Neon rollback window** so the rollback source stays
+   escrowed.
+2. Once the window closes **and** a Cloud SQL automated backup is confirmed
+   (`gcloud sql backups list --instance=medusa-pg` → at least one `SUCCESSFUL`), drop `neon` — a one-line
+   Cloud Run Job env change (**owed to Daniel**):
+   ```bash
+   gcloud run jobs update db-backup --region=us-east4 \
+     --update-env-vars=BACKUP_TARGETS=supabase
+   ```
+   The `neon` branch of [`db-backup.sh`](db-backup.sh) then becomes dead code; it's left intact (harmless —
+   the `supabase` path still uses the script) rather than deleted.
+
 ## Status
-Pipeline **built** (scripts + image recipe + provisioning). **Not yet live** — the R2 bucket/token + the two
-read-only DSNs are owed to Daniel (no Cloudflare access from the build session). Until provisioned + a first
-run confirmed, treat Supabase/Neon escrow as *designed, not yet running*.
+Pipeline **LIVE since 2026-06-12** — Cloud Run Job `db-backup` + Cloud Scheduler `db-backup-daily`
+(`0 9 * * *` UTC) provisioned, R2 bucket/token + the read-only DSNs in Secret Manager, first run confirmed.
+**Backup-of-record today:** commerce → Cloud SQL native automated backups + PITR (confirmed
+`SUCCESSFUL`, e.g. backup `1782097256693` 2026-06-22T03:00Z); Supabase → this R2 escrow pipeline (`supabase`
+target). The `neon` target is pending retirement per the section above.

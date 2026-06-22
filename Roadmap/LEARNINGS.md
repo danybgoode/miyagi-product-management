@@ -136,6 +136,24 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   **ERROR** ("secret not found"). Reconcile against `gcloud run services describe` (compare the env-name set +
   secret-name set) and **lock parity with a static guard**. *(2026-06-12, backend-prod-readiness S4 — `deploy.sh`
   was missing 3 live secrets + bound `ENVIA_SANDBOX` as a non-existent secret; `infra/gcp/test/deploy-invariants.test.js`.)*
+- **A `:latest` Secret-Manager binding re-resolves on EVERY new revision — and `latest` = highest-NUMBER, not
+  highest-ENABLED.** Two coupled traps from the Cloud SQL cutover. (1) Cloud Run binds `DATABASE_URL:latest`,
+  and because image-only deploys *also* re-resolve it, **staging a future-cutover value as the enabled `latest`
+  version is a deploy-time landmine** — the next routine deploy silently cuts prod over to it. (2) When you
+  realize that and disable/destroy the too-high version, `:latest` does **not** fall back to the prior enabled
+  one — `latest` is the highest version *number*, so `access latest` now **errors** (fail-closed: new revisions
+  blocked, running revision unaffected). The fix is to **add a fresh higher *enabled* version** (you can't
+  reclaim a destroyed slot); **pin `:N` if you need determinism**. *(2026-06-22, postgres-neon-to-cloudsql S1/S2 —
+  the v1 provisioner wrote the Cloud SQL DSN as `DATABASE_URL` v2 against a live `:latest` binding.)*
+- **In-VPC private-IP Postgres ops need a connector-attached Cloud Run Job, not a laptop.** A private-IP-only
+  Cloud SQL (or any DB on the VPC) is **unreachable from a laptop/sandbox**, and a local `pg_dump` 14 refuses a
+  PG17 server. Run the dump/restore from a **Cloud Run Job** on `postgres:17-alpine` with
+  `--vpc-connector=medusa-conn --vpc-egress=private-ranges-only` + the SA + `--set-secrets` — it has a
+  version-matched client *and* reaches both the private Cloud SQL and any public DSN (e.g. Neon) at once.
+  Gotcha: **`gcloud --args` splits on commas by default** → a SQL command containing commas silently fails the
+  `jobs update` (the job re-runs OLD args); use a custom delimiter `--args="^@^-c@<sql>"`. A gcloud-created
+  `medusa_app` is a `cloudsqlsuperuser` (owns/creates in its DB → no extra grants needed). *(2026-06-22,
+  postgres-neon-to-cloudsql S2 — the cutover dump/restore ran as a connector-attached Job.)*
 - **Provision GCP monitoring as an idempotent script, rehearsed on staging; a `node:test` config-guard is
   infra's deterministic gate.** Stand up uptime checks + Cloud Run alert policies via a create-if-absent-by-
   displayName script (`infra/gcp/provision-monitoring.sh`, `TARGET=staging|prod` → the existing
@@ -430,6 +448,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
 
 ## Architecture
+- **Co-locate compute and its database — a cross-cloud DB is a metered egress tax + a fragility, not just a
+  latency footnote.** A Neon "near the 5 GB/mo egress cap" alert fired with **zero traffic for a week**: the
+  cause wasn't shoppers or backups but the split itself — compute on **GCP** (Cloud Run us-east4), Postgres on
+  **Neon/AWS** us-east-1, and an always-on `min=1` backend whose background loops + `/health` probes kept the
+  cross-cloud link ~84% active, every query result metered AWS→GCP over the public internet. **"No traffic" ≠
+  "no egress" — the always-on backend *is* the traffic.** The fix was architectural, not a knob: move Postgres
+  onto **Cloud SQL** (same region, **private IP** on the existing VPC via the connector Redis already used) so
+  DB traffic is intra-VPC + unmetered — which *also* let the backend stay `min=1` (warm), making the originally-
+  proposed `minScale:0` symptom-treatment unnecessary. Intra-cloud private networking is impossible across
+  clouds, so before reaching for read-caching / scale-to-zero to dodge an egress bill, **check whether compute
+  and DB are even in the same cloud** — relocation may delete the problem at the root (and for a 43 MB DB, the
+  serverless/branching value props don't justify the cross-cloud tax). *(2026-06-22, postgres-neon-to-cloudsql —
+  3 sprints; supersedes the neon-egress spike's "keep on Neon + idle the backend" call.)*
 - **Visibility-gate every client poll/timer — the cheapest, lowest-risk serverless cost lever.** A
   `setInterval` that fetches (or even just re-renders) keeps firing in **backgrounded tabs**, billing a
   function invocation per tick for a tab nobody's looking at. Gate the work on
