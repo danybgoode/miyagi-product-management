@@ -10,13 +10,15 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
+## 🏗️ Building now (1)
 
-_None._
+- [Static marketplace shell — kill the per-request homepage function 🏗️](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 2/9 stories
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (3)
 
-- [Static marketplace shell — kill the per-request homepage function 🏗️](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 0/9 stories
+- [Cross-agent review on every PR (CI auto-run + policy)](../../09-platform-infra/cross-agent-review-always/README.md) — 09 Platform-infra · 0/5 stories
+- [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 0/6 stories
+- [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 0/3 stories
 
 ## ✅ Shipped (50)
 
@@ -93,4 +95,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 52 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 55 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
