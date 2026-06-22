@@ -3,7 +3,7 @@
 **Status:** ✅ BUILT — [PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98) (draft, risk LOW);
 deterministic gate green locally (`tsc` + `build` + Playwright `api`, 15 pure tests) + anonymous bar browser
 smoke passing vs local `next start`; awaiting CI-vs-preview + reviewer + merge.
-Commits: S1.1 `ff90a63` · S1.2 `f07e4d0` · S1.3 `7e3535b` · smoke `3b46783`. · **Risk:** LOW
+Commits: S1.1 `ff90a63` · S1.2 `f07e4d0` · S1.3 `7e3535b` + mockup-match `90677c5` · smoke `3b46783`. · **Risk:** LOW
 (S1.3 touches `globals.css` — announced; branch merged latest `main` first) ·
 **Branch:** `feat/pwa-glass-nav` (off latest `main`) ·
 **Files (touched):** `app/components/MobileTabBar.tsx`, `app/globals.css`,
@@ -59,14 +59,21 @@ feels premium.
 - Safe-area insets + `lib/tabbar-visibility.ts` contextual hide unchanged in behaviour.
 - No regression to non-PWA / desktop chrome.
 **Risk:** LOW (shared `globals.css` — **announce** before PR; merge latest `main` first)
-**Implemented:** the blur / saturation / brightness / specular are now **`:root` tokens**
-(`--glass-blur-liquid` / `--glass-sat-liquid` / `--glass-bright-liquid` / `--glass-specular`) consumed by
-`.glass-liquid` — dialed from one place, no per-component hardcoding. Light nudge: more translucent
-`--glass-fill-liquid` (0.80→0.76), crisper specular top edge + faint lower edge (thick-glass depth), softer
-float shadow. The active capsule already reads `var(--accent-soft)` (unchanged). Same refined glass applies
-to `SellerNav.tsx` (shared `.glass-liquid` — coherent). **Note:** the exact handoff mockup
-(`handoff/Liquid-Glass-Navbars-(standalone).html`) is **not in the repo** → values are a tasteful nudge; the
-pixel-exact match is a **device eyeball owed to Daniel** (the tokens make it a one-line dial).
+**Implemented:** matched the handoff mockup **`handoff/Liquid-Glass-Navbars-(standalone).html`** (`.glass-surface`)
+exactly (commit `90677c5`):
+- glass = fill `rgba(249,249,247,0.50)`, `blur(32px) saturate(180%) brightness(1.018)`, and the exact box-shadow
+  (top specular `0.78` + bottom rim + **edge-refraction ring** + outer hairline + dual float shadow); a dark
+  `.glass-liquid` override added from the mockup's dark `.glass-surface`.
+- geometry = pill height 64 / radius 32 / padding `0 8px`, tabs `flex:1`; search bubble 60px (`fg-muted` icon);
+  FAB 46 / icon 24 / mockup shadow.
+- active capsule = the **white inner-glass pane** `rgba(255,255,255,0.68)` per `.tab-btn.active::before`
+  (replaces the prior pale-green `--accent-soft` pill), tokenized `--glass-capsule-fill/-stroke` so light **and**
+  dark read right.
+- All values are **`:root` tokens** (`--glass-blur/sat/bright/specular/fill-liquid`, `--glass-capsule-*`) →
+  dialed from one place, no per-component hardcoding. Same glass applies to `SellerNav.tsx` (shared `.glass-liquid`).
+
+**Owed to Daniel:** the device eyeball confirming the on-screen match (translucency/legibility of `0.50` fill vs
+the mockup is a real-screen call — automation can't see `display-mode: standalone` glass).
 
 ## Sprint QA
 - **api spec (the gate) ✅:** extended `e2e/tabbar-visibility.spec.ts` — asserts `BOTTOM_TABS` set/order,
