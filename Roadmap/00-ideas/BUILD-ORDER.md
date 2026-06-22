@@ -14,8 +14,9 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (2)
 
+- [Static marketplace shell — kill the per-request homepage function 🏗️](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 0/9 stories
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 0/3 stories · risk: High · backlog
 
 ## ✅ Shipped (49)
@@ -92,4 +93,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 51 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 52 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
