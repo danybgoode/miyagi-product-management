@@ -34,9 +34,13 @@ DB_VERSION="${DB_VERSION:-POSTGRES_17}"  # parity with Neon PG17 (verify extensi
 TIER="${TIER:-db-g1-small}"
 EDITION="${EDITION:-enterprise}"         # Enterprise edition (Enterprise Plus is the costly tier)
 PSA_RANGE_NAME="${PSA_RANGE_NAME:-google-managed-services-${NETWORK}}"
-APP_USER="${APP_USER:-medusa_app}"
 PROD_DB="${PROD_DB:-medusa}"
 STAGING_DB="${STAGING_DB:-medusa_staging}"
+# Per-environment login roles — NOT a shared credential. The staging secret carries the
+# staging role only, scoped (by the grants below) to medusa_staging, so it can never reach
+# the prod DB even on the shared instance. The prod role + password + DSN are created by S2
+# at cutover (not in S1) — so no prod-capable credential exists until the cutover itself.
+STAGING_USER="${STAGING_USER:-medusa_staging_app}"
 P=(--project="$PROJECT_ID")
 
 say() { printf '\n\033[1;36m▶ %s\033[0m\n' "$*"; }
@@ -62,16 +66,22 @@ if gcloud services vpc-peerings list --network="$NETWORK" "${P[@]}" \
      --format='value(reservedPeeringRanges)' 2>/dev/null | grep -qw "$PSA_RANGE_NAME"; then
   echo "  = exists: peering already advertises $PSA_RANGE_NAME"
 else
-  # `connect` creates it; if a peering already exists with other ranges, `update` merges.
+  # `connect` creates the peering if none exists. If a peering ALREADY exists with other
+  # ranges, `update --ranges` REPLACES the set — passing only our range would sever any
+  # other managed-service connectivity (e.g. another private service). So when updating,
+  # read the existing ranges and APPEND ours (dedup), never replace blindly.
   if gcloud services vpc-peerings connect \
        --service=servicenetworking.googleapis.com \
        --ranges="$PSA_RANGE_NAME" --network="$NETWORK" "${P[@]}" 2>/dev/null; then
     echo "  + created peering"
   else
+    EXISTING_RANGES="$(gcloud services vpc-peerings list --network="$NETWORK" "${P[@]}" \
+      --format='value(reservedPeeringRanges)' 2>/dev/null | tr ';,' '\n' | grep -v '^$' || true)"
+    MERGED="$(printf '%s\n%s\n' "$EXISTING_RANGES" "$PSA_RANGE_NAME" | sort -u | paste -sd, -)"
     gcloud services vpc-peerings update \
       --service=servicenetworking.googleapis.com \
-      --ranges="$PSA_RANGE_NAME" --network="$NETWORK" --force "${P[@]}"
-    echo "  ~ updated peering ranges"
+      --ranges="$MERGED" --network="$NETWORK" --force "${P[@]}"
+    echo "  ~ updated peering ranges (appended $PSA_RANGE_NAME → $MERGED)"
   fi
 fi
 
@@ -117,39 +127,55 @@ for d in "$PROD_DB" "$STAGING_DB"; do
   fi
 done
 
-# One login role for the app. Password generated here (never echoed), stored in
-# Secret Manager via the composed DSNs below. Re-running with the user present
-# leaves the password as-is (idempotent); to rotate, `gcloud sql users set-password`.
+# STAGING login role only (the prod role is S2's job — see the note at the end of this block).
+# Password generated here (never echoed), persisted ONLY via the DATABASE_URL_STAGING DSN.
+# Re-running with the role present leaves the password as-is (idempotent); to rotate, use
+# `gcloud sql users set-password` then add a fresh DATABASE_URL_STAGING version by hand.
 if gcloud sql users list --instance="$INSTANCE" "${P[@]}" \
-     --format='value(name)' | grep -qw "$APP_USER"; then
-  say "User $APP_USER exists — keeping current password"
-  echo "  (to rotate: gcloud sql users set-password $APP_USER --instance=$INSTANCE --prompt-for-password)"
-  echo "  ⚠ DSN secrets are only (re)written when the user is CREATED. If you need fresh DSNs"
-  echo "    after a password rotation, add the new DATABASE_URL / DATABASE_URL_STAGING versions by hand."
+     --format='value(name)' | grep -qw "$STAGING_USER"; then
+  say "Role $STAGING_USER exists — keeping current password / staging DSN"
 else
-  APP_PW="$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)"
-  say "Creating user $APP_USER + composing the STAGING DSN secret"
-  gcloud sql users create "$APP_USER" --instance="$INSTANCE" --password="$APP_PW" "${P[@]}"
+  # -base64 48 then strip non-alphanumerics and take 32 chars → GUARANTEED 32-char password
+  # (stripping is lossy, so over-generate; 48 base64 bytes ≈ 64 chars pre-strip).
+  STAGING_PW="$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 32)"
+  say "Creating role $STAGING_USER + composing the STAGING DSN secret"
+  gcloud sql users create "$STAGING_USER" --instance="$INSTANCE" --password="$STAGING_PW" "${P[@]}"
 
   # Private-IP DSN (direct TCP over the VPC; no Auth Proxy needed when egressing
   # private-ranges-only through the connector). sslmode=disable is acceptable on a
   # private VPC path; tighten to verify-full with the server CA later if desired.
-  STAGING_DSN="postgres://${APP_USER}:${APP_PW}@${PRIVATE_IP}:5432/${STAGING_DB}?sslmode=disable"
+  STAGING_DSN="postgres://${STAGING_USER}:${STAGING_PW}@${PRIVATE_IP}:5432/${STAGING_DB}?sslmode=disable"
 
   # Add a NEW version to the EXISTING DATABASE_URL_STAGING secret (created by
   # provision-staging.sh) — never rename, so the deploy-invariants name-parity guard
   # stays green. Staging is repointed to Cloud SQL THIS sprint (Story 1.3).
   printf '%s' "$STAGING_DSN" | gcloud secrets versions add DATABASE_URL_STAGING --data-file=- "${P[@]}" >/dev/null
   echo "  + added DATABASE_URL_STAGING (Cloud SQL DSN) version"
-
-  # ⚠️ DELIBERATELY do NOT write the prod DATABASE_URL version here. prod medusa-web binds
-  # DATABASE_URL:latest and re-resolves :latest on EVERY new revision (image-only deploys
-  # included), so an enabled Cloud SQL prod DSN sitting as :latest would silently cut prod
-  # over to an EMPTY `medusa` DB on the next deploy — before the restore. S1 is additive:
-  # prod stays on Neon. The S2 cutover composes the prod DSN at swap time by reusing the
-  # SAME medusa_app password (recoverable from the DATABASE_URL_STAGING value: swap the db
-  # name medusa_staging → medusa), adds it as a new DATABASE_URL version, and redeploys.
 fi
+
+# ── 5. Privileges (MUST run via a VPC-context psql — gcloud has no grant verb) ─
+# A Cloud SQL DB is owned by cloudsqlsuperuser; on PG15+ the `public` schema does NOT grant
+# CREATE to all roles, so a plain login role's pg_restore / Medusa migrations FAIL with
+# permission errors. Grant the staging role ownership of its schema, and (defence in depth
+# on the shared instance) REVOKE cross-DB CONNECT from PUBLIC so the staging role can't even
+# connect to the prod DB. Run this ONCE, connected as the `postgres` admin user from a VPC
+# context (the rehearsal session in sprint-1.md, steps 7–8):
+#
+#   ALTER DATABASE medusa_staging OWNER TO medusa_staging_app;
+#   \c medusa_staging
+#   GRANT ALL ON SCHEMA public TO medusa_staging_app;
+#   ALTER SCHEMA public OWNER TO medusa_staging_app;
+#   REVOKE CONNECT ON DATABASE medusa FROM PUBLIC;          -- staging role can't reach prod DB
+#   REVOKE CONNECT ON DATABASE medusa_staging FROM PUBLIC;
+#   GRANT  CONNECT ON DATABASE medusa_staging TO medusa_staging_app;
+#
+# ⚠️ DELIBERATELY no prod DATABASE_URL version + no prod role here. prod medusa-web binds
+# DATABASE_URL:latest and re-resolves :latest on EVERY new revision (image-only deploys
+# included), so an enabled Cloud SQL prod DSN as :latest would silently cut prod over to an
+# EMPTY `medusa` DB on the next deploy. S1 is additive — prod stays on Neon. The S2 cutover
+# creates a SEPARATE prod role (`medusa_app`) with its own fresh password, composes the prod
+# DSN, adds it as a new DATABASE_URL version, applies the mirror grants on the `medusa` DB,
+# and redeploys — all inside the maintenance window. No credential is shared across envs.
 
 cat <<EOF
 

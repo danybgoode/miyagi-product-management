@@ -43,6 +43,13 @@ connect` with a temporary client, or a one-off connector-attached Cloud Run Job.
 exact commands; the agent has proven the Neon-side read (step 6) and prepared the staging repoint (deploy
 script + connector).
 
+> **Role reconciliation (cross-review hardening, applied to the script):** the live instance was first
+> provisioned by the v1 script with a single `medusa_app` role and a staging DSN using it. The script now
+> creates a **separate, DB-scoped `medusa_staging_app`** role (so the staging secret can't reach prod) and
+> writes the staging DSN with it. **Re-run `provision-cloudsql.sh`** (idempotent) to create the new role +
+> a fresh `DATABASE_URL_STAGING` version, then apply the **step 7b** grants. The old `medusa_app` role can
+> stay (unused) — S2 repurposes it as the prod role with a fresh password.
+
 ## Why
 Co-locating Postgres on GCP kills the egress problem at the root (see epic README). Before the prod cutover, we
 stand up Cloud SQL and run the full dump→restore→repoint→verify loop against **staging** — so the S2 prod
@@ -113,7 +120,8 @@ INSTANCE=medusa-pg
 ### B · Provision Cloud SQL — Story 1.1 **[OWED-DANIEL · paid: Cloud SQL bills on creation]**
 3. **Provision (idempotent).**
    `PROJECT_ID=$PROJECT bash infra/gcp/provision-cloudsql.sh`
-   → ends with `✅ Cloud SQL provisioned (private IP 10.x.x.x).`; a re-run prints `= exists:` lines only.
+   → ends with `✅ Cloud SQL provisioned (private IP <addr>).` where `<addr>` is an RFC-1918 private IP
+   (the live instance is `172.25.0.3`); a re-run prints `= exists:` / role-create lines only.
 4. **Confirm the instance shape.**
    ```bash
    gcloud sql instances describe $INSTANCE --project=$PROJECT \
@@ -147,6 +155,20 @@ INSTANCE=medusa-pg
    instance is private-IP-only so it isn't reachable from outside the VPC anyway — see the rehearsal note.)
 
 ### D · Rehearse the migration on staging — Story 1.3
+7b. **Grant staging-role privileges** (run ONCE, as the `postgres` admin, from a VPC-context psql —
+    `gcloud sql connect`). Cloud SQL DBs are owned by `cloudsqlsuperuser`; on PG15+ the `public` schema
+    grants no CREATE to a plain role, so the restore/migrations fail without this. Also revokes cross-DB
+    CONNECT so the staging role can't reach the prod DB on the shared instance:
+    ```sql
+    ALTER DATABASE medusa_staging OWNER TO medusa_staging_app;
+    \c medusa_staging
+    GRANT ALL ON SCHEMA public TO medusa_staging_app;
+    ALTER SCHEMA public OWNER TO medusa_staging_app;
+    REVOKE CONNECT ON DATABASE medusa FROM PUBLIC;
+    REVOKE CONNECT ON DATABASE medusa_staging FROM PUBLIC;
+    GRANT  CONNECT ON DATABASE medusa_staging TO medusa_staging_app;
+    ```
+    → no errors; `\l medusa_staging` shows owner `medusa_staging_app`.
 8. **Dump Neon staging** (PG17 client; record timing).
    `time pg_dump --format=custom --no-owner --no-privileges "$NEON_STAGING_DSN" -f /tmp/staging.dump`
    → a `/tmp/staging.dump` file; note the elapsed time.
