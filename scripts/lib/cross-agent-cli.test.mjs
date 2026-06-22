@@ -15,6 +15,8 @@ import {
   decideCodexFallback,
   runWithCodexFallback,
   decideHeadGuard,
+  decideTrivialSkip,
+  isDocFile,
   resolveCurrentPr,
 } from './cross-agent-cli.mjs';
 
@@ -120,6 +122,63 @@ test('runWithCodexFallback: dead token + agy ALSO unavailable → one-line failu
     return true;
   });
   assert.equal(d.calls.antigravity, 0);
+});
+
+// --- Cost guard: decideTrivialSkip (pure, the CI "skip a typo PR" decision) -----------------------------
+
+test('isDocFile: docs/text paths → true, code → false', () => {
+  for (const p of ['README.md', 'a/b.mdx', 'notes.txt', 'x.rst', 'LICENSE', 'docs/guide.ts', '.gitignore'])
+    assert.equal(isDocFile(p), true, p);
+  for (const p of ['src/app.ts', 'a/Component.tsx', 'scripts/x.mjs', 'README.md.ts', 'mddocs/x.ts'])
+    assert.equal(isDocFile(p), false, p);
+});
+
+test('decideTrivialSkip: empty / no files → skip (nothing to review)', () => {
+  assert.deepEqual(decideTrivialSkip({ files: [] }), { skip: true, reason: 'empty diff' });
+  assert.deepEqual(decideTrivialSkip({}), { skip: true, reason: 'empty diff' });
+});
+
+test('decideTrivialSkip: docs-only of ANY size → skip', () => {
+  const files = [
+    { path: 'README.md', additions: 400, deletions: 12 },
+    { path: 'docs/x.mdx', additions: 99, deletions: 0 },
+  ];
+  assert.deepEqual(decideTrivialSkip({ files }), { skip: true, reason: 'docs-only diff' });
+});
+
+test('decideTrivialSkip: tiny code diff under threshold → skip with the count', () => {
+  const r = decideTrivialSkip({ files: [{ path: 'src/a.ts', additions: 3, deletions: 2 }] });
+  assert.equal(r.skip, true);
+  assert.match(r.reason, /trivial diff \(5 changed lines < 10\)/);
+});
+
+test('decideTrivialSkip: a real code change of any size → review (no skip)', () => {
+  assert.deepEqual(decideTrivialSkip({ files: [{ path: 'src/a.ts', additions: 40, deletions: 0 }] }), {
+    skip: false,
+  });
+  // one real code file among docs → not docs-only, and 40 lines ≥ 10 → review.
+  assert.deepEqual(
+    decideTrivialSkip({
+      files: [
+        { path: 'README.md', additions: 200, deletions: 0 },
+        { path: 'src/a.ts', additions: 40, deletions: 0 },
+      ],
+    }),
+    { skip: false }
+  );
+});
+
+test('decideTrivialSkip: boundary — exactly minLines code change is reviewed (< is strict)', () => {
+  assert.deepEqual(decideTrivialSkip({ files: [{ path: 'src/a.ts', additions: 10, deletions: 0 }] }), {
+    skip: false,
+  });
+  assert.equal(decideTrivialSkip({ files: [{ path: 'src/a.ts', additions: 9, deletions: 0 }] }).skip, true);
+});
+
+test('decideTrivialSkip: a custom minLines is honored, singular line wording', () => {
+  assert.equal(decideTrivialSkip({ files: [{ path: 'src/a.ts', additions: 30 }], minLines: 50 }).skip, true);
+  const one = decideTrivialSkip({ files: [{ path: 'src/a.ts', additions: 1, deletions: 0 }] });
+  assert.match(one.reason, /1 changed line </); // singular "line", not "lines"
 });
 
 // --- Sprint 3: resolve + SHA-compare seam (mock gh + git) -----------------------------------------------

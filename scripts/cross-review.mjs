@@ -9,6 +9,11 @@
 //
 // Usage:
 //   node scripts/cross-review.mjs [PR#] --agent codex|antigravity [--repo owner/repo] [--force] [--dry-run]
+//     [--skip-trivial] [--min-lines N]
+//
+// --skip-trivial is the CI cost guard: skip (exit 0, no comment) when the PR is docs-only or under
+// --min-lines (default 10) changed lines, so "every PR" doesn't pay for a review on a typo. Off by default
+// so the manual command always reviews.
 //
 // <PR#> is OPTIONAL: with none, the command resolves the open PR for the CURRENT branch (so the FIRST run
 // reviews the right diff, no rerun) and refuses a stale local HEAD unless --force. An explicit <PR#> still
@@ -34,6 +39,7 @@ import {
   resolveCurrentPr,
   currentHeadSha,
   decideHeadGuard,
+  decideTrivialSkip,
   shortSha,
 } from './lib/cross-agent-cli.mjs';
 
@@ -56,6 +62,8 @@ Flags:
   --agent <name>      reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
   --repo  owner/repo  target a specific repo (default: the repo of the current directory)
   --force             proceed even when local HEAD differs from the resolved PR head (auto-resolve only)
+  --skip-trivial      skip (exit 0, no comment) when the PR is docs-only or under --min-lines changed lines
+  --min-lines N       trivial-diff threshold for --skip-trivial (default: 10)
   --dry-run           print the comment instead of posting it (alias: --no-comment)
   -h, --help          show this help
 
@@ -65,12 +73,24 @@ An explicit [PR#] overrides resolution and bypasses the stale guard.
 Advisory only — the output never gates, blocks, or authorizes a merge.`;
 
 function parseArgs(argv) {
-  const out = { pr: null, agent: 'codex', repo: null, force: false, dryRun: false, help: false };
+  const out = {
+    pr: null,
+    agent: 'codex',
+    repo: null,
+    force: false,
+    dryRun: false,
+    skipTrivial: false,
+    minLines: 10,
+    help: false,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--help' || a === '-h') out.help = true;
     else if (a === '--dry-run' || a === '--no-comment') out.dryRun = true;
     else if (a === '--force') out.force = true;
+    else if (a === '--skip-trivial') out.skipTrivial = true;
+    else if (a === '--min-lines') out.minLines = parseMinLines(need(argv[++i], '--min-lines'));
+    else if (a.startsWith('--min-lines=')) out.minLines = parseMinLines(a.slice('--min-lines='.length));
     else if (a === '--agent') out.agent = need(argv[++i], '--agent');
     else if (a.startsWith('--agent=')) out.agent = a.slice('--agent='.length);
     else if (a === '--repo') out.repo = need(argv[++i], '--repo');
@@ -79,6 +99,12 @@ function parseArgs(argv) {
     else die(`unknown argument '${a}' (try --help)`);
   }
   return out;
+}
+
+function parseMinLines(v) {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 0) die(`--min-lines must be a non-negative integer, got '${v}'.`);
+  return n;
 }
 
 function ghDiff(pr, repo) {
@@ -91,6 +117,20 @@ function ghDiff(pr, repo) {
   }
   if (!r.stdout || !r.stdout.trim()) die(`PR #${pr} has an empty diff (wrong number or repo?).`);
   return r.stdout;
+}
+
+// Changed-file stats for the cost guard: [{ path, additions, deletions }, …]. Returns [] on any failure so
+// the guard degrades to "not trivial" (review runs) rather than silently skipping on a transient gh hiccup.
+function ghFiles(pr, repo) {
+  const args = ['pr', 'view', String(pr), '--json', 'files'];
+  if (repo) args.push('--repo', repo);
+  const r = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  if (r.status !== 0) return [];
+  try {
+    return JSON.parse(r.stdout || '{}').files || [];
+  } catch {
+    return [];
+  }
 }
 
 // agy 1.0.7 has no stdin, so the diff rides embedded in the argv string (same framing codex gets on stdin).
@@ -128,7 +168,7 @@ function postComment(pr, repo, body) {
 }
 
 function main() {
-  let { pr, agent, repo, force, dryRun, help } = parseArgs(process.argv.slice(2));
+  let { pr, agent, repo, force, dryRun, skipTrivial, minLines, help } = parseArgs(process.argv.slice(2));
   if (help) {
     process.stdout.write(HELP + '\n');
     process.exit(0);
@@ -160,6 +200,15 @@ function main() {
       );
     }
   }
+  // Cost guard (CI): bail before installing/running the reviewer when the diff is trivial/docs-only.
+  if (skipTrivial) {
+    const { skip, reason } = decideTrivialSkip({ files: ghFiles(pr, repo), minLines });
+    if (skip) {
+      process.stderr.write(`cross-review skipped (${reason}) — PR #${pr}.\n`);
+      process.exit(0);
+    }
+  }
+
   if (agent === 'codex') {
     ensureCmd('codex', 'codex not found — install Codex CLI (https://github.com/openai/codex) and `codex login`.');
   } else if (agent === 'antigravity') {

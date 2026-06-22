@@ -93,6 +93,29 @@ export function decideHeadGuard({ localHead, prHeadOid, force }) {
   return force ? 'mismatch-force' : 'mismatch-block';
 }
 
+// ── Cost guard: skip the review on a trivial diff ────────────────────────────────────────────────────────
+// "Every PR" must not mean paying for a Codex pass on a typo or a docs-only change. This is the pure,
+// testable decision (the unit under test, like decideHeadGuard) — the script fetches the changed-file stats
+// (`gh pr view --json files`) and passes them here. Returns { skip, reason }.
+//
+// A file counts as docs/text (cheap to skip wholesale) when it matches DOC_FILE_RE. Otherwise we sum the
+// changed lines (additions+deletions) and skip only below `minLines`. So a docs-only PR of any size skips,
+// a tiny code tweak skips, but a real code change of any size is reviewed.
+const DOC_FILE_RE = /(\.(md|mdx|txt|rst)$)|(^|\/)(LICENSE|CODEOWNERS|\.gitignore)$/i;
+
+export function isDocFile(path) {
+  return DOC_FILE_RE.test(path || '') || /(^|\/)docs\//i.test(path || '');
+}
+
+export function decideTrivialSkip({ files, minLines = 10 } = {}) {
+  if (!Array.isArray(files) || files.length === 0) return { skip: true, reason: 'empty diff' };
+  if (files.every((f) => isDocFile(f.path))) return { skip: true, reason: 'docs-only diff' };
+  const lines = files.reduce((n, f) => n + (f.additions || 0) + (f.deletions || 0), 0);
+  if (lines < minLines)
+    return { skip: true, reason: `trivial diff (${lines} changed line${lines === 1 ? '' : 's'} < ${minLines})` };
+  return { skip: false };
+}
+
 // gh stderr signalling "this branch has no associated PR" — kept TIGHT to gh's actual no-PR message so a
 // repo/remote/auth misconfig (e.g. a bad --repo) falls through to the generic error instead of being masked
 // as "no open PR" and sending the operator chasing the wrong fix.
