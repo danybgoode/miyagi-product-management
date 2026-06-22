@@ -188,3 +188,29 @@ test('deploy.sh ENVIA_SANDBOX env value is the false default', () => {
   assert.equal(envMap(prodSrc).ENVIA_SANDBOX, '${ENVIA_SANDBOX:-false}',
     'prod ENVIA_SANDBOX must be the plain-env `${ENVIA_SANDBOX:-false}` default')
 })
+
+// --- minScale invariant (Neon egress reduction S2.3) ------------------------
+//
+// Pin --min-instances on BOTH scripts so an image-only redeploy or a careless edit
+// can't silently revert the scale-to-zero lever (same anti-erosion shape as the env/
+// secret parity above). prod was 1 (the validated ~190 MB/day egress cause) and is now
+// 0; staging was always 0. A *deliberate* keep/revert of the minScale trial updates the
+// script AND the expected value here together — that's the point, the test forces the two
+// to move in lockstep rather than drift apart.
+const MIN_INSTANCES = { prod: '0', staging: '0' }
+
+// Pull the bare value of a multi-line `--flag=VALUE \` continuation (unquoted numeric).
+function bareFlag(src, flag) {
+  const m = src.match(new RegExp(`--${flag}=([^\\s\\\\]+)`))
+  assert.ok(m, `expected --${flag}=... in the script`)
+  return m[1]
+}
+
+test('deploy.sh --min-instances is 0 (scale-to-zero; S2.3 minScale trial)', () => {
+  assert.equal(bareFlag(prodSrc, 'min-instances'), MIN_INSTANCES.prod,
+    'prod --min-instances must match the pinned value — change deploy.sh + this constant together')
+})
+test('deploy-staging.sh --min-instances is 0', () => {
+  assert.equal(bareFlag(stagingSrc, 'min-instances'), MIN_INSTANCES.staging,
+    'staging --min-instances must match the pinned value')
+})

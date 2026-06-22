@@ -40,7 +40,10 @@ bash infra/gcp/deploy.sh
 - Re-enable Medusa admin (drop the `NODE_ENV==='production'` disable in `medusa-config.ts`).
 - Move `reconcile-checkouts` to a Medusa scheduled job; verify Session A reconciliation; decommission Render.
 
-Initial deploy runs a **single shared-mode** service (`min-instances=1`). Split into
+Runs a **single shared-mode** service. `min-instances=0` since the Neon egress reduction
+(S2.3) — the backend idles/scales to zero so Neon's `main` endpoint can autosuspend (was 1;
+the validated ~190 MB/day egress cause); the money-adjacent crons were externalized to Cloud
+Scheduler (`provision-cron-scheduler.sh`) so they no longer need a warm instance. Split into
 `server` + `worker` (set `MEDUSA_WORKER_MODE`) only when traffic warrants.
 
 ## CI/CD (automated deploys)

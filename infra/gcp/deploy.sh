@@ -62,13 +62,25 @@ echo "▶ Deploying $SERVICE_WEB…"
 #     by --set-secrets' replace semantics): MP_CLIENT_ID, MP_CLIENT_SECRET,
 #     FLAGSMITH_ENVIRONMENT_KEY.
 # Net: 9 plain env + 13 secrets ≡ live. The drift guard (infra/gcp/test/) locks this in.
+#
+# Scale-to-zero (Neon egress reduction S2.3): --min-instances=0 (was 1). minScale:1 kept
+# a permanent Medusa instance holding a Neon connection pool + background loops, reading
+# cross-cloud even with zero shoppers — the validated dominant cause (~190 MB/day) of the
+# Neon egress overage. Letting the backend idle lets Neon's `main` endpoint autosuspend.
+# Prereqs that made this safe: the two money-adjacent crons were externalized to Cloud
+# Scheduler (provision-cron-scheduler.sh) so they no longer need a warm instance, and the
+# 5-min uptime check is paused during the measurement window (it would otherwise keep the
+# instance warm and defeat this). Tradeoff: ~10–30 s cold-start on the first hit after an
+# idle window — a Daniel keep/revert call. Reversible by redeploy (the built-in kill switch).
+# The drift guard pins this value so an image-only redeploy / future edit can't silently
+# revert it (infra/gcp/test/deploy-invariants.test.js).
 gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
   --service-account="$RUN_SA_EMAIL" \
   --vpc-connector="$CONNECTOR" \
   --vpc-egress=private-ranges-only \
-  --min-instances=1 \
+  --min-instances=0 \
   --max-instances=4 \
   --cpu=1 \
   --memory=1Gi \
