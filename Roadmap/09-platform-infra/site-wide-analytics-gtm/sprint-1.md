@@ -59,6 +59,12 @@ Env: the branch's Vercel preview (set `NEXT_PUBLIC_GTM_ID` on the preview), then
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S1.1 — _scaffolded_
-- [ ] S1.2 — _scaffolded_
-- [ ] S1.3 — _scaffolded_
+- [x] S1.1 — BUILT `3f59de2` (`lib/analytics-gating.ts` + `e2e/analytics-gating.spec.ts`, 8 unit cases green)
+- [x] S1.2 — BUILT `fb3242b` (`app/components/SiteAnalytics.tsx` mounted in `app/layout.tsx`; `next build` keeps `/` static `○`)
+- [x] S1.3 — BUILT `e547fe9` (`e2e/site-analytics-loader.spec.ts` + `lib/print-qr.ts` stale-comment fix)
+
+**Sprint 1 BUILT 2026-06-22** → draft PR [#106](https://github.com/danybgoode/miyagisanchezcommerce/pull/106), risk **LOW**.
+Gate green locally: `tsc` ✅ · `next build` ✅ (`/` stays `○`) · Playwright `api` (`analytics-gating` 8 + `site-analytics-loader`
+gate) ✅ · design-token guard ✅. The marker api assertion is validated by **CI-vs-preview** (new-feature marker not yet on
+prod; sandbox can't reach Medusa to render `/` locally). **Owed to Daniel:** the operational GTM/GA4/Clarity steps + smoke
+above (steps 1–6) — analytics cannot fire until the container is built and `NEXT_PUBLIC_GTM_ID` is set in Vercel.
