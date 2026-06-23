@@ -53,10 +53,28 @@ that** the app is consistent after the static-shell migration.
   add/extend an anonymous SSR spec for the gated homepage CTA. No money/auth-mutation path in S1.
 - Owed to Daniel (prod, signed-in session): S1.2 CTA-absent eyeball; S1.1 hover eyeball (any session).
 
-## Audit findings (S1.3 — fill during the sprint)
+## Audit findings (S1.3)
+Swept every `(site)` static surface + shared chrome for hardcoded signed-out/in CTAs not gated by an
+auth component (`AuthShow` / Clerk `<SignedIn>/<SignedOut>` / server `currentUser()`).
+
+**Leaks found + fixed** (wrapped the signed-out-only CTA in `<AuthShow when="signed-out">`):
 | Surface | Leaked element | Wrong state | Fix |
 |---|---|---|---|
-| _(to be filled by the builder)_ | | | |
+| `app/components/PlatformShell.tsx` footer (~318) | `<Link href="/sign-up">Crear cuenta</Link>` | signed-out CTA shown to signed-in | wrapped in `AuthShow when="signed-out"` |
+| `app/(site)/page.tsx` "Únete a la comunidad" terminal section (356–377) | "Crear cuenta" → `/sign-up` | signed-out CTA shown to signed-in | wrapped in `AuthShow when="signed-out"` (= S1.2) |
+| `app/(site)/page.tsx` empty-state (338–351) | "Publica lo primero" → `/vende` (recruit) | recruit shown to signed-in sellers | auth-aware: signed-out → `/vende`, signed-in → `/sell` (publish wizard), both via `AuthShow` |
+
+**Inspected — NOT a leak (left as-is):**
+| Surface | Element | Why it's correct |
+|---|---|---|
+| `app/components/HomeSellerModule.tsx` | "Abre tu tienda" → `/vende` | client island that only hydrates for signed-in users; routing to the `/vende` pitch (not `/sell`) is design-intent per epic #6 |
+| `app/components/PlatformShell.tsx` header | "Vende/Publicar" + "Iniciar sesión" + account/messages | already gated by `AuthShow when="signed-out"/"signed-in"` |
+| `app/components/MobileTabBar.tsx` | publish FAB + Mensajes/Favoritos/Perfil | resolve their href via `useUser()` / `resolveBottomTabHref` per auth state |
+| `app/(shell)/sell/page.tsx` | "Crear cuenta gratis" / "Ya tengo cuenta" | server `currentUser()` renders the signed-out view only |
+| `app/(shell)/vende/*`, `app/(shell)/acerca/*` | acquisition / info CTAs | public-by-design landing pages (no per-auth divergence intended) |
+| `app/components/PlatformShell.tsx` footer | "Vende gratis" → `/vende` | public acquisition link, valid for both states |
+
+> `next build` keeps `(site)` static (`○ /`) — every gate is the client `AuthShow` (no `headers()`/`currentUser()` reintroduced).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: the branch's Vercel preview (then production after merge). `<preview>` = the PR's preview URL.
@@ -77,6 +95,7 @@ Env: the branch's Vercel preview (then production after merge). `<preview>` = th
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S1.1 — _pending_
-- [ ] S1.2 — _pending_
-- [ ] S1.3 — _pending_
+- [x] S1.1 — Categorías per-row hover/focus (container `.card-tile`→`.card-panel` + `.cat-row` hover, `--bg-sunk`)
+- [x] S1.2 — "Únete a la comunidad" CTA gated `AuthShow when="signed-out"`
+- [x] S1.3 — audit table filled; footer `/sign-up` + empty-state recruit gated; `e2e/home-auth-leakage.spec.ts` added
+- Gate: `tsc` ✓ · `next build` ✓ (`┌ ○ /` static) · new api spec discovered (CI runs it vs preview)
