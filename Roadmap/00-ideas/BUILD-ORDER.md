@@ -14,11 +14,11 @@
 
 - [Notion roadmap board hygiene](../../09-platform-infra/notion-board-hygiene/README.md) — 09 Platform-infra · 0/6 stories
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 0/9 stories
+_None._
 
-## ✅ Shipped (54)
+## ✅ Shipped (55)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -57,6 +57,7 @@
 - [Seasonal Theme Engine](../../08-growth-and-promotions/seasonal-theme-engine/README.md) — 08 Growth · 0/9 stories
 - [Seller-Acquisition Landing Pages (BUILD-ORDER #6)](../../08-growth-and-promotions/seller-acquisition-landing-pages/README.md) — 08 Growth · 4/9 stories · risk: Low · Wave 3
 - [Sweepstakes](../../08-growth-and-promotions/sweepstakes/README.md) — 08 Growth · 9/9 stories · risk: Low
+- [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 0/9 stories
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 0/6 stories · risk: High
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 0/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
