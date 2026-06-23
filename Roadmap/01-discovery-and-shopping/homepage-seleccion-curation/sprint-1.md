@@ -94,8 +94,9 @@ Env: the branch's Vercel preview (then production after merge). `<preview>` = th
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-## Status
+## Status — ✅ SHIPPED 2026-06-23 (PR [#112](https://github.com/danybgoode/miyagisanchezcommerce/pull/112) squash `1a4c4a4`, risk LOW)
 - [x] S1.1 — Categorías per-row hover/focus (container `.card-tile`→`.card-panel` + `.cat-row` hover, `--bg-sunk`)
 - [x] S1.2 — "Únete a la comunidad" CTA gated `AuthShow when="signed-out"`
-- [x] S1.3 — audit table filled; footer `/sign-up` + empty-state recruit gated; `e2e/home-auth-leakage.spec.ts` added
-- Gate: `tsc` ✓ · `next build` ✓ (`┌ ○ /` static) · new api spec discovered (CI runs it vs preview)
+- [x] S1.3 — audit table filled; footer `/sign-up` (`data-testid="footer-signup"`) + empty-state recruit gated; `e2e/home-auth-leakage.spec.ts` added (scoped per-element testids after codex cross-review)
+- Gate (green): `tsc` ✓ · `next build` ✓ (`┌ ○ /` static preserved) · **Playwright vs preview** ✓ (new api spec ran against real-data preview)
+- **Owed to Daniel (prod, signed-in session):** S1.2/S1.3 signed-in → no "Crear cuenta / Únete" CTA on `/` or footer; S1.1 per-row hover/focus eyeball. (Auth/island path can't false-pass on a `*.vercel.app` preview.)
