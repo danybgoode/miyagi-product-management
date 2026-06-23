@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close. (S1 #112 + S2 #113/#37 shipped; S3 pending)
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. (✅ ALL 3 SPRINTS SHIPPED 2026-06-23: S1 #112 `1a4c4a4` · S2 #113 `4a59644`/BE #37 `815994f` · S3 #114 `a5b23ca`)
 slug: homepage-seleccion-curation
 ---
 
@@ -93,21 +93,25 @@ individual row.
   Daniel merges (his call). Everything else LOW. No payments/checkout/fulfillment/auth-mutation/DB-migration.
 - **Static-shell guardrail:** S1.2, S1.3, S3.1 must keep `next build` emitting `○ /`.
 
-## Definition of Done (epic)
+## Definition of Done (epic) — ✅ COMPLETE 2026-06-23
 
-- [ ] Categorías rows highlight individually on hover/focus; the container no longer lifts as one block.
-- [ ] No public surface shows signed-out-only CTAs to a signed-in user (or vice-versa); audit table recorded in
-      `sprint-1.md`; `next build` keeps `(site)` static.
-- [ ] An admin can pin/unpin and reorder the Selección from `/admin/seleccion`; writes persist on **Medusa
-      product metadata** (Medusa-first, S2.0 recorded), are behind `requireAdmin`/`withAdmin`, and bust the
-      `listings` cache; the homepage reflects changes within the ISR window.
-- [ ] The Selección rotates across ISR windows (unpinned remainder shuffled, pinned/admin-ordered fixed);
-      `next build` keeps `/` at `○`.
-- [ ] Each `sprint-N.md` has its smoke walkthrough; signed-in/admin steps flagged **owed to Daniel** (prod);
+- [x] Categorías rows highlight individually on hover/focus; the container no longer lifts as one block. (S1.1)
+- [x] No public surface shows signed-out-only CTAs to a signed-in user (or vice-versa); audit table recorded in
+      `sprint-1.md`; `next build` keeps `(site)` static. (S1.2/S1.3, `e2e/home-auth-leakage.spec.ts`)
+- [x] An admin can pin/unpin and reorder the Selección from `/admin/seleccion`; writes persist on **Medusa
+      product metadata** (Medusa-first, S2.0 recorded — admin-scoped backend route reusing `updateSellerProduct`),
+      are behind `requireAdmin`/`withAdmin`, and bust the `listings` cache; the homepage reflects changes within
+      the ISR window. (S2.1–S2.3)
+- [x] The Selección rotates across ISR windows (unpinned remainder shuffled, pinned/admin-ordered fixed);
+      `next build` keeps `/` at `○`. (S3.1, `windowSeed` + `seededShuffle` in `lib/home-curation.ts`)
+- [x] Each `sprint-N.md` has its smoke walkthrough; signed-in/admin steps flagged **owed to Daniel** (prod);
       status ticked with commit refs.
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to
+- [x] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to
       `Roadmap/LEARNINGS.md`.
-- [ ] Poster updated — `Roadmap/README.md` 01 · Discovery & Shopping line; ran `node scripts/build-order.mjs`;
+- [x] Poster updated — `Roadmap/README.md` 01 · Discovery & Shopping line; ran `node scripts/build-order.mjs`;
       staged `BUILD-ORDER.md`. Team memory + index updated.
-- [ ] Kill-switch check: none planned at grooming (no high-risk money/auth path; admin write is additive behind
-      existing auth) — confirm at close.
+- [x] Kill-switch check: **none planned at grooming** (no high-risk money/auth path; admin write is additive
+      behind existing auth) — confirmed at close, none needed.
+
+**Owed to Daniel (operational, prod — none block the epic):** S1 signed-in CTA + per-row hover eyeball ·
+S2 admin Clerk-session pin/reorder smoke + UCP `featured` metadata check · S3 cross-window "looks alive" eyeball.

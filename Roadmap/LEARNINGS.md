@@ -548,6 +548,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   and not on `/embed/*`; it skips cleanly in CI, so the real-firing smoke stays honestly owed to Daniel.
   *(2026-06-22, site-wide-analytics-gtm — single GTM container `GTM-MWHVLJ3M`, GA4 + Clarity as tags inside
   GTM; Clarity had been created but never loaded — 1 session/30d.)*
+- **To make a static/ISR surface feel "alive" without un-static-ing it, seed a deterministic shuffle on the
+  revalidate time-bucket — not per request.** A per-refresh shuffle needs a per-request function (forbidden on a
+  static `○ /`), but a seed of `floor(now / REVALIDATE_MS)` (locked to the page's `revalidate` via the
+  cache-policy SSOT) is **stable within a window** (the same prerendered HTML serves every visitor → no hydration
+  mismatch) yet **rotates across windows**. Keep the PRNG (`mulberry32`) + Fisher–Yates `seededShuffle` **pure and
+  non-mutating** in the next-free seam so the determinism is spec-proven (same seed ⇒ identical order; different
+  buckets ⇒ different order; the fixed prefix — pins/admin order — never moves). Threading the seed is pure
+  arithmetic on the `now` the page already computes, so **no page edit and no new dynamic API** — the static build
+  is preserved. Scope nuance to settle at grooming: **"shuffle the pool" ≠ "reorder the visible N slots"** — the
+  former surfaces a *different* (still in-window) subset each window (what "feels alive" needs), the latter shows
+  the same items reordered; a cross-review will rightly flag the displacement, so the scope doc must say which.
+  *(2026-06-23, homepage-seleccion-curation S3.1 — `windowSeed`/`seededShuffle` in `lib/home-curation.ts`; codex
+  flagged shuffle-before-slice, declined because the grooming doc said shuffle the unpinned *pool*.)*
 - **Co-locate compute and its database — a cross-cloud DB is a metered egress tax + a fragility, not just a
   latency footnote.** A Neon "near the 5 GB/mo egress cap" alert fired with **zero traffic for a week**: the
   cause wasn't shoppers or backups but the split itself — compute on **GCP** (Cloud Run us-east4), Postgres on

@@ -46,8 +46,17 @@ build (the pure determinism is covered by the spec; this confirms it *looks* ali
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-## Status
-- [x] S3.1 — **built** · `apps/miyagisanchez` `b38fb40` · draft PR
-      [#114](https://github.com/danybgoode/miyagisanchezcommerce/pull/114) · risk LOW.
-      Gate green locally: `tsc` clean · 24 `home-curation` specs pass (6 new) · `next build` keeps `○ /`.
-      Cross-window "looks alive" eyeball **owed to Daniel** (prod, async — steps above).
+## Status — ✅ SHIPPED 2026-06-23 (PR [#114](https://github.com/danybgoode/miyagisanchezcommerce/pull/114) squash `a5b23ca`, risk LOW)
+- [x] S3.1 — per-ISR-window shuffle of the unpinned Selección remainder. Seam `lib/home-curation.ts`:
+      `windowSeed(now)=floor(now/REVALIDATE_MS)` (locked to `CACHE.LISTING` SSOT) + pure `mulberry32` PRNG +
+      non-mutating `seededShuffle` + optional `seed` on `curateGrid` (no seed ⇒ unchanged legacy freshest
+      order); threaded via `getCuratedListings(windowSeed(now))`. Pinned/admin-order + featured pick stay fixed.
+- Gate (green): `tsc` ✓ · `next build` ✓ (`┌ ○ /` static preserved) · **Playwright vs preview** ✓
+      (24 `home-curation` specs, 6 new: windowSeed stability · seededShuffle determinism/non-mutation ·
+      same-seed identical grid · permutation · pinned-fixed across windows · cross-window rotation).
+- Cross-review (codex) on the green PR: **no blocking**; nit applied (sharpened `REVALIDATE_MS` comment);
+      one should-fix **declined with rationale** (shuffle-before-slice is the documented intent — grooming
+      decision #2 says shuffle the unpinned *pool*, already bounded ≤14-day-fresh by `isQualifying`; rotating
+      only a fixed top-4's order would show the same items every window and defeat "feels alive").
+- **Owed to Daniel (prod, async):** the cross-window "looks alive" eyeball (walkthrough above) — only
+      observable across real ISR windows on a deployed build; the pure determinism is fully spec-covered.
