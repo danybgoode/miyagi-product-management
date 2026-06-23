@@ -52,8 +52,9 @@ Env: the branch's Vercel preview (then production after merge), signed in as a s
    → The left rail lists, under Crecer: Cupones, Suscripciones, Contenido, Eventos, Sorteos, Analíticas,
      Importar catálogo, Configuración (plus Operar: Resumen · Pedidos · Ofertas · Anuncios).
 2. Look at the shop header under the shop name/address.
-   → There is **no** second horizontal row of section links; "Ver tienda pública" is still present, and the
-     Pedidos/Ofertas pending counts are still shown.
+   → There is **no** second horizontal row of section links; "Ver tienda pública ↗" is still present, and —
+     when you have pending work — a single compact amber-dot line reads e.g. "2 pedidos · 1 oferta
+     pendientes" (links to Pedidos). With nothing pending the line is absent by design.
 3. Click "Cupones" in the rail.
    → Lands on the promotions page, whose own title now reads **Cupones**. Repeat for Analíticas /
      Configuración / Importar catálogo — each page title matches its rail label.
@@ -63,6 +64,16 @@ Env: the branch's Vercel preview (then production after merge), signed in as a s
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S1.1 — _scaffolded_
-- [ ] S1.2 — _scaffolded_
-- [ ] S1.3 — _scaffolded_
+- [x] S1.1 — **BUILT** `1b20412` — descriptor adds Suscripciones/Contenido/Sorteos + canonical renames
+      (Cupones · Analíticas · Configuración · Importar catálogo), README Crecer order; `seller-mode.spec.ts`
+      extended (routes + 8-label list + active matcher).
+- [x] S1.2 — **BUILT** `000cf85` — duplicate `·`-row removed from `ManageDashboard.tsx`; "Ver tienda
+      pública" kept; pending badges → compact line via pure `lib/seller-pending-summary.ts` +
+      `seller-pending-summary.spec.ts`.
+- [x] S1.3 — **BUILT** `b362a45` — section titles were already canonical; anti-erosion guard added
+      (`lib/seller-section-titles.ts` + `seller-section-titles.spec.ts`); no page rename.
+
+**PR:** [#105](https://github.com/danybgoode/miyagisanchezcommerce/pull/105) (draft, risk LOW).
+**Gate:** `tsc` clean · `next build` exit 0 · Playwright **api** 713 passed (incl. 3 new/extended specs).
+One unrelated local fail — `not-found-shape.spec.ts` `/l/wp-admin` → 403 (prod Bot-Protection WAF shadow,
+green on CI-vs-preview; orthogonal to this diff). **Owed Daniel:** authed seller browser smoke (steps 1–4).
