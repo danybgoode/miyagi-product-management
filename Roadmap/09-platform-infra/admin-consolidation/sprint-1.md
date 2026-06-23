@@ -52,20 +52,33 @@ shell is real on day one.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: the branch's Vercel preview (then production after merge).
 
+**Pre-req — DONE:** `MIYAGI_ADMIN_EMAILS=champion327@gmail.com` is set in Vercel (all targets). Applies on the next deploy (prod on merge; preview on next push) — an existing pre-set preview build won't carry it. To add more admins, append to the comma-list. Without this the Clerk path admits no one and only step 5 (`?secret=`) works.
+
 1. As a signed-out / non-admin user, go to `<preview>/admin`.
    → You are redirected to `/` (not shown the hub).
-2. Sign in as an allow-listed admin, go to `<preview>/admin`. **[owed to Daniel — admin session]**
-   → You see the **admin hub**: a nav listing Coupons, Print, and a "Scraping ↗" link-out. No auto-redirect to the scraper.
+2. Sign in as an allow-listed admin (your email in `MIYAGI_ADMIN_EMAILS`), go to `<preview>/admin`. **[owed to Daniel — admin session]**
+   → You see the **admin hub**: section cards + a left-nav listing Cupones, Edición impresa, and a "Scraping ↗" link-out. No auto-redirect to the scraper.
 3. Click "Scraping ↗".
-   → Opens the external scraper app (`miyagisanchez-scraper.vercel.app`).
-4. Click "Coupons" then "Print".
-   → Each renders inside the admin shell (left-nav present), not as a bare page.
+   → Opens the external scraper app (`miyagisanchez-scraper.vercel.app`) in a new tab.
+4. Click "Cupones" then "Edición impresa".
+   → Each renders **inside the admin shell** (left-nav present), not as a bare page. (Note: clicking a mutation/refresh inside Cupones/Print as a *Clerk* admin may 401 — those `/api/admin/*` routes migrate to Clerk in S2.3; the page + its initial data still render.)
 5. Sanity: hit `<preview>/admin/coupons?secret=<ADMIN_SECRET>` (dual-accept).
-   → Still works — existing secret access is not broken this sprint.
+   → Still works fully — existing secret access is not broken this sprint.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S1.1 — `lib/admin/identity.ts` + dual-accept `requireAdmin`/`withAdmin`
-- [ ] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed)
-- [ ] S1.3 — register coupons/print; delete orphaned `AdminScrapeClient.tsx`
+**PR [#108](https://github.com/danybgoode/miyagisanchezcommerce/pull/108)** — **ready for review, CI green** — branch `feat/admin-consolidation`. Bundles all three S1 stories; **HIGH overall (auth surface) → Daniel merges.**
+- [x] S1.1 — `lib/admin/identity.ts` + dual-accept `requireAdmin`/`withAdmin` · `f514bfb`
+- [x] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed) · `d6a29d1` (+ `65dda44` hub dual-accept, codex cross-review fix)
+- [x] S1.3 — register coupons/print; delete orphaned `AdminScrapeClient.tsx` · `b218a9e` (+ `9a964a6` — commit the deletion the path-limited commit had dropped; CI caught it)
+
+**Gate:** `tsc --noEmit` ✓ · `npm run build` ✓ · **CI Playwright vs preview ✓** (full api suite incl. `admin-identity` 7 + `admin-sections` 9).
+
+**Cross-review:** codex ✓ (1 fix applied — hub dual-accept `65dda44`; 1 declined — threading `?secret=` through nav links propagates the leak the epic kills; should-fixes are documented S2.3 thin scope). agy attempted but `agy -p` print mode returns no output in v1.0.10 (CLI authed — `agy models` works — but print mode broken; pinned 1.0.7) → degraded gracefully, no agy pass this PR.
+
+**Done:** `MIYAGI_ADMIN_EMAILS=champion327@gmail.com` set + verified in Vercel (production·preview·development, encrypted, len 21) — applies on the next deploy (prod on merge; preview on next push).
+
+**Owed to Daniel:** (1) **merge #108** (HIGH); (2) the authed admin smoke (steps 2–5 below — he holds an admin Clerk session, realistic on prod post-merge since the preview uses the dev Clerk instance).
+
+**Thin-shipping note:** a Clerk admin (no `?secret=`) reaching Coupons/Print renders the page (server-fetched initial data) but the client's `/api/admin/*` mutations still need the secret — those routes migrate to Clerk in **S2.3**.

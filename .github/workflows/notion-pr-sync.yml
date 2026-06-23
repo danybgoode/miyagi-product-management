@@ -8,8 +8,10 @@
 # other. So we derive the epic slug(s) from the PR's changed Roadmap/<NN>/<epic>/ paths and call the
 # script's scoped --pr mode, which writes ONLY the Lifecycle + PR link overlay (never docs-derived Status).
 #
-# Lifecycle:
-#   • opened / synchronize / reopened → set Lifecycle="In review" + PR link on the touched epic's row(s).
+# Lifecycle (the label is decided by `roadmap-to-notion.mjs --lifecycle` — single source, see lifecycleForPr):
+#   • DRAFT PR (opened/synchronize/reopened/converted_to_draft while draft) → Lifecycle="In progress".
+#   • READY PR (ready_for_review, or opened/synchronize while not draft)     → Lifecycle="In review".
+#     (both set the PR link on the touched epic's row(s)).
 #   • closed (merged OR not)          → --clear the overlay. On merge, the push to main triggers
 #                                       notion-sync.yml, which re-derives Status from the merged docs.
 #
@@ -21,7 +23,7 @@ name: notion-pr-sync
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, closed]
     paths:
       - 'Roadmap/**'
 
@@ -58,6 +60,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_ACTION: ${{ github.event.action }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
         run: |
           set -euo pipefail
           # Epic slug = the <epic> dir under Roadmap/<NN-macro>/<epic>/ for every changed file.
@@ -69,9 +72,12 @@ jobs:
             exit 0
           fi
           echo "Touched epic slug(s): $slugs"
-          if [ "$PR_ACTION" = "closed" ]; then
+          # Decide the label from PR state via the script's pure lifecycleForPr (single source, node:test-covered).
+          label=$(node scripts/roadmap-to-notion.mjs --lifecycle)
+          echo "Lifecycle decision: $label"
+          if [ "$label" = "clear" ]; then
             # merged → notion-sync.yml takes over via the push to main; unmerged → just revert. Both clear.
             node scripts/roadmap-to-notion.mjs --pr "$slugs" --clear
           else
-            node scripts/roadmap-to-notion.mjs --pr "$slugs" --status "In review" --link "$PR_URL"
+            node scripts/roadmap-to-notion.mjs --pr "$slugs" --status "$label" --link "$PR_URL"
           fi

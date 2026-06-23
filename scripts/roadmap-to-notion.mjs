@@ -189,9 +189,37 @@ function deriveEpicStatus(sprints, retroShipped) {
 // AUTHORITATIVE epic status: the README frontmatter `status:` field (set at epic close). Returns the
 // board bucket, or null when the README has no frontmatter status (→ caller falls back to derivation).
 const EPIC_FM_TO_BUCKET = { shipped: 'Shipped', 'in-progress': 'In progress', scaffolded: 'Scaffolded', queued: 'Scaffolded', archived: 'Archived' };
-function epicFrontmatterStatus(epicPath) {
-  const fm = parseFrontmatter(readFileSync(join(epicPath, 'README.md'), 'utf8'));
+function epicFrontmatter(epicPath) {
+  return parseFrontmatter(readFileSync(join(epicPath, 'README.md'), 'utf8'));
+}
+function frontmatterStatusBucket(fm) {
   return fm.status ? (EPIC_FM_TO_BUCKET[fm.status] || null) : null;
+}
+
+// Coerce a `build_order` frontmatter value: numeric → Number (so the Notion views sort right), a legacy
+// non-numeric seed value (e.g. "#3c") passes through unchanged, empty/absent → null.
+export function normalizeBuildOrder(v) {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if (s === '') return null;
+  return /^-?\d+$/.test(s) ? Number(s) : v;
+}
+
+// Floor a sprint's derived status against its epic's AUTHORITATIVE status, so the Sprints board never
+// shows an archived epic full of "Planned" sprints (S1.1) nor a Shipped epic with stale "Planned" ones.
+// Real in-flight signals (In progress / In review) are preserved on non-archived epics.
+export function floorSprintStatus(epicStatus, sprintStatus) {
+  if (epicStatus === 'Archived') return 'Archived';                          // archived epic ⇒ ALL sprints Archived
+  if (epicStatus === 'Shipped' && sprintStatus === 'Planned') return 'Shipped';
+  return sprintStatus;
+}
+
+// Decide the live PR overlay label from the PR state — the SINGLE source the workflow (`--lifecycle`)
+// and its node:test both read, so the bash and the test can't drift. Draft PR → In progress;
+// ready PR → In review; closed (merged or not) → clear (notion-sync.yml re-derives Status on merge).
+export function lifecycleForPr({ action, draft }) {
+  if (action === 'closed') return { clear: true };
+  return { status: draft ? 'In progress' : 'In review' };
 }
 
 // Per-sprint Claude Code kickoff — the SESSION-KICKOFFS.md §2 "Build a sprint" thin-pointer template,
@@ -225,7 +253,9 @@ function buildRows() {
     const sprints = epicSprints(e.path);
     const retroShipped = epicShippedByRetro(e.path);
     const statusDerived = deriveEpicStatus(sprints, retroShipped);   // prose/retro fallback + drift signal
-    const status = epicFrontmatterStatus(e.path) || statusDerived;   // README frontmatter is authoritative
+    const epicFm = epicFrontmatter(e.path);                          // read README frontmatter once
+    const status = frontmatterStatusBucket(epicFm) || statusDerived; // README frontmatter is authoritative
+    const buildOrder = normalizeBuildOrder(epicFm.build_order ?? seed.build_order); // epic FM is SSOT, seed fallback
     const totStories = sprints.reduce((a, s) => a + s.total, 0);
     const doneStories = sprints.reduce((a, s) => a + s.done, 0);
     const area = AREA_NAMES[e.area] || e.area;
@@ -244,18 +274,17 @@ function buildRows() {
       type: TYPE_LABEL[seed.type] || 'Epic',
       risk,
       sprint_progress: totStories ? `${doneStories}/${totStories} stories` : `${sprints.length} sprints`,
-      build_order: seed.build_order || null,
+      build_order: buildOrder,
       doc_link: `Roadmap/${epicKey}/README.md`,
       epic_slug: null,
     });
 
     // Sprint rows (one per sprint-N.md), related to the Epic by slug
     for (const sp of sprints) {
-      // A shipped epic whose older sprint files lack tick-markers: floor Planned → Shipped so the Sprint
-      // board doesn't show a Shipped epic full of "Planned" sprints. Keyed off the AUTHORITATIVE epic
-      // status (frontmatter), so a frontmatter-shipped epic floors too — not just a dated-retro one. Real
-      // in-flight signals (In progress / In review) are preserved.
-      const sprintStatus = status === 'Shipped' && sp.status === 'Planned' ? 'Shipped' : sp.status;
+      // Floor the sprint's derived status against the AUTHORITATIVE epic status (frontmatter): an
+      // archived epic ⇒ Archived sprints; a Shipped epic's stale "Planned" sprints ⇒ Shipped. Real
+      // in-flight signals (In progress / In review) are preserved. See floorSprintStatus().
+      const sprintStatus = floorSprintStatus(status, sp.status);
       rows.push({
         name: `${epicTitle(e.path, e.slug)} — S${sp.n}: ${sp.title}`,
         slug: `${e.slug}--s${sp.n}`,
@@ -266,7 +295,7 @@ function buildRows() {
         type: 'Sprint',
         risk,
         sprint_progress: sp.total ? `${sp.done}/${sp.total} stories` : '—',
-        build_order: seed.build_order || null,
+        build_order: buildOrder, // sprints inherit their epic's build order
         doc_link: `Roadmap/${epicKey}/sprint-${sp.n}.md`,
         epic_slug: e.slug, // resolved to the Epic page id at sync time
         kickoff: sprintKickoff({ epicKey, slug: e.slug, n: sp.n, risk }),
@@ -294,139 +323,160 @@ function buildRows() {
   return rows;
 }
 
-const args = process.argv.slice(2);
-const hasFlag = (f) => args.includes(f);
-const flagVal = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : null; };
-const mode = hasFlag('--sync') ? 'sync' : hasFlag('--pr') ? 'pr' : 'extract';
-const rows = buildRows();
+// --- CLI dispatch. Wrapped in main() + guarded by isMain so the pure helpers above (floorSprintStatus,
+// lifecycleForPr, normalizeBuildOrder, buildRows) can be imported by node:test without running the CLI
+// (a bare module load would otherwise hit writeSync/process.exit). ----------------------------------
+async function main() {
+  const args = process.argv.slice(2);
+  const hasFlag = (f) => args.includes(f);
+  const flagVal = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : null; };
 
-if (mode === 'extract') {
-  // writeSync to fd 1 is synchronous on a PIPE too — `console.log` then `process.exit(0)` truncates
-  // piped stdout (the async write hasn't flushed when exit fires), which crashed build-order.mjs's
-  // execFileSync with "Unexpected end of JSON input". Synchronous write guarantees the full payload.
-  writeSync(1, JSON.stringify(rows, null, 2) + '\n');
-  process.exit(0);
-}
-
-// --- sync mode: upsert into Notion by slug (docs always win) ---
-const TOKEN = process.env.NOTION_TOKEN;
-const DB = process.env.NOTION_DB_ID;
-const needsNotion = mode === 'sync' || (mode === 'pr' && !hasFlag('--dry'));
-if (needsNotion && (!TOKEN || !DB)) { console.error('set NOTION_TOKEN and NOTION_DB_ID'); process.exit(1); }
-const NV = '2022-06-28';
-const api = (path, init = {}) => fetch(`https://api.notion.com/v1${path}`, {
-  ...init,
-  headers: { Authorization: `Bearer ${TOKEN}`, 'Notion-Version': NV, 'Content-Type': 'application/json', ...(init.headers || {}) },
-}).then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(JSON.stringify(j)); return j; });
-
-const sel = (v) => (v ? { select: { name: String(v) } } : { select: null });
-const rt = (v) => ({ rich_text: v ? [{ text: { content: String(v) } }] : [] });
-function props(row, epicId) {
-  const p = {
-    Name: { title: [{ text: { content: row.name } }] },
-    Slug: rt(row.slug),
-    Status: sel(row.status),
-    Area: sel(row.area),
-    Priority: sel(row.priority),
-    Type: sel(row.type),
-    Risk: sel(row.risk),
-    Grain: sel(row.grain),
-    'Sprint progress': rt(row.sprint_progress),
-    'Build order ID': rt(row.build_order),
-    'Doc link': rt(row.doc_link),
-    Kickoff: rt(row.kickoff),
-    'Last synced': { date: { start: new Date().toISOString().slice(0, 10) } },
-  };
-  if (row.grain === 'Sprint') p.Epic = { relation: epicId ? [{ id: epicId }] : [] };
-  return p;
-}
-
-// --- in-flight (PR) mode: scope-limited PATCH of ONLY the named epic's row(s). -------------------
-// Used by the pull_request workflow so an open PR shows its epic as "In review" WITHOUT running the
-// full --sync rebuild from a feature branch (which would clobber every other epic's row with one
-// branch's worldview). This adds NO new rebuild path: it reuses api()/sel() and writes ONLY the two
-// overlay properties below, never the docs-derived Status (the one-way docs → Status contract stays
-// intact). Scoped by slug, so parallel PRs on different epics never touch the same row.
-//   node roadmap-to-notion.mjs --pr <epic-slug>[,<slug2>] --status "In review" --link <pr-url>
-//   node roadmap-to-notion.mjs --pr <epic-slug> --clear     # PR closed/merged → drop the overlay
-//   add --dry to preview the targeted rows from the projection without touching Notion (smoke-safe).
-if (mode === 'pr') {
-  const PR_PROP = 'Lifecycle';     // a NEW Notion Select, separate from docs-derived Status (Daniel ratifies)
-  const PR_LINK_PROP = 'PR link';  // a NEW Notion URL property                            (Daniel ratifies)
-  const prSlugs = [...new Set(
-    args.flatMap((a, i) => (a === '--pr' && args[i + 1] ? args[i + 1].split(',') : []))
-        .map((s) => s.trim()).filter(Boolean),
-  )];
-  if (!prSlugs.length) { console.error('--pr: pass at least one epic slug'); process.exit(1); }
-  const status = flagVal('--status');
-  const link = flagVal('--link');
-  const clearing = hasFlag('--clear') || !status;
-  const overlay = {
-    [PR_PROP]: sel(clearing ? null : status),
-    [PR_LINK_PROP]: { url: clearing ? null : (link || null) },
-  };
-  const isTarget = (slug) => prSlugs.some((s) => slug === s || slug.startsWith(`${s}--`)); // epic + its sprints
-
-  if (hasFlag('--dry')) {
-    const hits = rows.filter((r) => isTarget(r.slug));
-    console.log(JSON.stringify({
-      mode: clearing ? 'clear' : 'set', slugs: prSlugs, overlay,
-      would_patch: hits.map((r) => ({ slug: r.slug, grain: r.grain, name: r.name })),
-    }, null, 2));
-    if (!hits.length) console.error(`--pr --dry: no projected rows match ${prSlugs.join(', ')}`);
-    process.exit(0);
+  // --lifecycle: print the overlay label the notion-pr-sync.yml workflow should send for the current PR
+  // state (PR_ACTION + PR_DRAFT env). "clear" or the Lifecycle label. No docs/Notion read needed.
+  if (hasFlag('--lifecycle')) {
+    const decision = lifecycleForPr({ action: process.env.PR_ACTION, draft: process.env.PR_DRAFT === 'true' });
+    writeSync(1, (decision.clear ? 'clear' : decision.status) + '\n');
+    return;
   }
 
-  // live: query the DB but keep ONLY the matching slugs, then PATCH each. (read is harmless; ~one page.)
-  const targets = new Map();
-  let prCursor;
+  const mode = hasFlag('--sync') ? 'sync' : hasFlag('--pr') ? 'pr' : 'extract';
+  const rows = buildRows();
+
+  if (mode === 'extract') {
+    // writeSync to fd 1 is synchronous on a PIPE too — `console.log` then `process.exit(0)` truncates
+    // piped stdout (the async write hasn't flushed when exit fires), which crashed build-order.mjs's
+    // execFileSync with "Unexpected end of JSON input". Synchronous write guarantees the full payload.
+    writeSync(1, JSON.stringify(rows, null, 2) + '\n');
+    return;
+  }
+
+  // --- sync mode: upsert into Notion by slug (docs always win) ---
+  const TOKEN = process.env.NOTION_TOKEN;
+  const DB = process.env.NOTION_DB_ID;
+  const needsNotion = mode === 'sync' || (mode === 'pr' && !hasFlag('--dry'));
+  if (needsNotion && (!TOKEN || !DB)) { console.error('set NOTION_TOKEN and NOTION_DB_ID'); process.exitCode = 1; return; }
+  const NV = '2022-06-28';
+  const api = (path, init = {}) => fetch(`https://api.notion.com/v1${path}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${TOKEN}`, 'Notion-Version': NV, 'Content-Type': 'application/json', ...(init.headers || {}) },
+  }).then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(JSON.stringify(j)); return j; });
+
+  const sel = (v) => (v ? { select: { name: String(v) } } : { select: null });
+  const rt = (v) => ({ rich_text: v ? [{ text: { content: String(v) } }] : [] });
+  function props(row, epicId) {
+    const p = {
+      Name: { title: [{ text: { content: row.name } }] },
+      Slug: rt(row.slug),
+      Status: sel(row.status),
+      Area: sel(row.area),
+      Priority: sel(row.priority),
+      Type: sel(row.type),
+      Risk: sel(row.risk),
+      Grain: sel(row.grain),
+      'Sprint progress': rt(row.sprint_progress),
+      'Build order ID': rt(row.build_order),
+      'Doc link': rt(row.doc_link),
+      Kickoff: rt(row.kickoff),
+      'Last synced': { date: { start: new Date().toISOString().slice(0, 10) } },
+    };
+    if (row.grain === 'Sprint') p.Epic = { relation: epicId ? [{ id: epicId }] : [] };
+    return p;
+  }
+
+  // --- in-flight (PR) mode: scope-limited PATCH of ONLY the named epic's row(s). -------------------
+  // Used by the pull_request workflow so an open PR shows its epic's live Lifecycle (In progress for a
+  // draft PR, In review when ready) WITHOUT running the full --sync rebuild from a feature branch (which
+  // would clobber every other epic's row with one branch's worldview). This adds NO new rebuild path: it
+  // reuses api()/sel() and writes ONLY the two overlay properties below, never the docs-derived Status
+  // (the one-way docs → Status contract stays intact). Scoped by slug, so parallel PRs on different epics
+  // never touch the same row. The --status label is free-form (the workflow passes the --lifecycle result).
+  //   node roadmap-to-notion.mjs --pr <epic-slug>[,<slug2>] --status "In progress" --link <pr-url>
+  //   node roadmap-to-notion.mjs --pr <epic-slug> --clear     # PR closed/merged → drop the overlay
+  //   add --dry to preview the targeted rows from the projection without touching Notion (smoke-safe).
+  if (mode === 'pr') {
+    const PR_PROP = 'Lifecycle';     // a NEW Notion Select, separate from docs-derived Status (Daniel ratifies)
+    const PR_LINK_PROP = 'PR link';  // a NEW Notion URL property                            (Daniel ratifies)
+    const prSlugs = [...new Set(
+      args.flatMap((a, i) => (a === '--pr' && args[i + 1] ? args[i + 1].split(',') : []))
+          .map((s) => s.trim()).filter(Boolean),
+    )];
+    if (!prSlugs.length) { console.error('--pr: pass at least one epic slug'); process.exitCode = 1; return; }
+    const status = flagVal('--status');
+    const link = flagVal('--link');
+    const clearing = hasFlag('--clear') || !status;
+    const overlay = {
+      [PR_PROP]: sel(clearing ? null : status),
+      [PR_LINK_PROP]: { url: clearing ? null : (link || null) },
+    };
+    const isTarget = (slug) => prSlugs.some((s) => slug === s || slug.startsWith(`${s}--`)); // epic + its sprints
+
+    if (hasFlag('--dry')) {
+      const hits = rows.filter((r) => isTarget(r.slug));
+      console.log(JSON.stringify({
+        mode: clearing ? 'clear' : 'set', slugs: prSlugs, overlay,
+        would_patch: hits.map((r) => ({ slug: r.slug, grain: r.grain, name: r.name })),
+      }, null, 2));
+      if (!hits.length) console.error(`--pr --dry: no projected rows match ${prSlugs.join(', ')}`);
+      return;
+    }
+
+    // live: query the DB but keep ONLY the matching slugs, then PATCH each. (read is harmless; ~one page.)
+    const targets = new Map();
+    let prCursor;
+    do {
+      const page = await api(`/databases/${DB}/query`, { method: 'POST', body: JSON.stringify(prCursor ? { start_cursor: prCursor } : {}) });
+      for (const p of page.results) {
+        const slug = p.properties?.Slug?.rich_text?.[0]?.plain_text;
+        if (slug && isTarget(slug)) targets.set(slug, p.id);
+      }
+      prCursor = page.has_more ? page.next_cursor : null;
+    } while (prCursor);
+
+    for (const [, id] of targets) await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: overlay }) });
+    // Surface a no-op: a slug that matches no Notion row (a brand-new epic not yet --sync'd) would
+    // otherwise report success while applying nothing. Don't fail (the deploy-lag window is legit) — warn.
+    if (!targets.size) console.error(`--pr: no Notion row matched ${prSlugs.join(', ')} — overlay not applied (epic not synced yet?).`);
+    console.log(`pr-sync done — ${clearing ? 'cleared overlay' : `set ${PR_PROP}="${status}"`} on ${targets.size} row(s) for ${prSlugs.join(', ')}`);
+    return;
+  }
+
+  // 1. Snapshot existing rows by slug
+  const existing = new Map();
+  let cursor;
   do {
-    const page = await api(`/databases/${DB}/query`, { method: 'POST', body: JSON.stringify(prCursor ? { start_cursor: prCursor } : {}) });
+    const page = await api(`/databases/${DB}/query`, { method: 'POST', body: JSON.stringify(cursor ? { start_cursor: cursor } : {}) });
     for (const p of page.results) {
       const slug = p.properties?.Slug?.rich_text?.[0]?.plain_text;
-      if (slug && isTarget(slug)) targets.set(slug, p.id);
+      if (slug) existing.set(slug, p.id);
     }
-    prCursor = page.has_more ? page.next_cursor : null;
-  } while (prCursor);
+    cursor = page.has_more ? page.next_cursor : null;
+  } while (cursor);
 
-  for (const [, id] of targets) await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: overlay }) });
-  console.log(`pr-sync done — ${clearing ? 'cleared overlay' : `set ${PR_PROP}="${status}"`} on ${targets.size} row(s) for ${prSlugs.join(', ')}`);
-  process.exit(0);
-}
-
-// 1. Snapshot existing rows by slug
-const existing = new Map();
-let cursor;
-do {
-  const page = await api(`/databases/${DB}/query`, { method: 'POST', body: JSON.stringify(cursor ? { start_cursor: cursor } : {}) });
-  for (const p of page.results) {
-    const slug = p.properties?.Slug?.rich_text?.[0]?.plain_text;
-    if (slug) existing.set(slug, p.id);
+  const slugToId = new Map(existing); // slug -> page id (kept current as we upsert)
+  async function upsert(row, epicId) {
+    const id = slugToId.get(row.slug) || existing.get(row.slug);
+    if (id) { await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: props(row, epicId) }) }); return { id, created: false }; }
+    const created = await api(`/pages`, { method: 'POST', body: JSON.stringify({ parent: { database_id: DB }, properties: props(row, epicId) }) });
+    slugToId.set(row.slug, created.id);
+    return { id: created.id, created: true };
   }
-  cursor = page.has_more ? page.next_cursor : null;
-} while (cursor);
 
-const slugToId = new Map(existing); // slug -> page id (kept current as we upsert)
-async function upsert(row, epicId) {
-  const id = slugToId.get(row.slug) || existing.get(row.slug);
-  if (id) { await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: props(row, epicId) }) }); return { id, created: false }; }
-  const created = await api(`/pages`, { method: 'POST', body: JSON.stringify({ parent: { database_id: DB }, properties: props(row, epicId) }) });
-  slugToId.set(row.slug, created.id);
-  return { id: created.id, created: true };
+  let created = 0, updated = 0;
+  // Pass 1: Epics + Seeds first (so sprint→epic relations can resolve)
+  for (const row of rows.filter((r) => r.grain !== 'Sprint')) {
+    const r = await upsert(row); r.created ? created++ : updated++;
+  }
+  // Pass 2: Sprints, relation → parent epic page id
+  for (const row of rows.filter((r) => r.grain === 'Sprint')) {
+    const epicId = slugToId.get(row.epic_slug) || existing.get(row.epic_slug) || null;
+    const r = await upsert(row, epicId); r.created ? created++ : updated++;
+  }
+  // Archive Notion rows whose slug no longer exists in docs (never hard-delete)
+  for (const [slug, id] of existing) {
+    if (!rows.find((r) => r.slug === slug)) { await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: { Status: sel('Archived') } }) }); }
+  }
+  console.log(`sync done — created ${created}, updated ${updated}, scanned ${existing.size} existing`);
 }
 
-let created = 0, updated = 0;
-// Pass 1: Epics + Seeds first (so sprint→epic relations can resolve)
-for (const row of rows.filter((r) => r.grain !== 'Sprint')) {
-  const r = await upsert(row); r.created ? created++ : updated++;
-}
-// Pass 2: Sprints, relation → parent epic page id
-for (const row of rows.filter((r) => r.grain === 'Sprint')) {
-  const epicId = slugToId.get(row.epic_slug) || existing.get(row.epic_slug) || null;
-  const r = await upsert(row, epicId); r.created ? created++ : updated++;
-}
-// Archive Notion rows whose slug no longer exists in docs (never hard-delete)
-for (const [slug, id] of existing) {
-  if (!rows.find((r) => r.slug === slug)) { await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: { Status: sel('Archived') } }) }); }
-}
-console.log(`sync done — created ${created}, updated ${updated}, scanned ${existing.size} existing`);
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) await main();

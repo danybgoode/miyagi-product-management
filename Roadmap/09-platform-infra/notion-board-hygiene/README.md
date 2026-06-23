@@ -1,7 +1,7 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close. (S1 repo fixes shipped; S2 Notion config pending.)
 slug: notion-board-hygiene
-build_order:          # numeric build-order sequence (SSOT for the Notion build-order views) — set during S1.2
+build_order: 2       # numeric build-order sequence (SSOT for the Notion build-order views)
 ---
 
 # Epic — Notion roadmap board hygiene

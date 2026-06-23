@@ -25,22 +25,38 @@ before any action (and as the foundation S4's entitlement action plugs into).
   the directory route requires an admin session (S1 guard) and returns shaped rows.
 
 ## Sprint QA
-- Deterministic gate: `lib/admin/tenant-directory` pure spec + the admin-gated route spec. Read-only, no money
-  path. The live directory eyeball (real shop data) is owed to Daniel (admin session) but many assertions are
-  pure/fixture-driven and run in CI.
+- Deterministic gate (green): `e2e/admin-tenant-directory.spec.ts` (pure shaper — claim/entitlement/domain
+  derivation + search, 29 cases) + `e2e/admin-tenants-api.spec.ts` (the admin-gated route returns 401 to
+  anonymous, incl. retired URL/header secret) + the updated `e2e/admin-sections.spec.ts` (the new `tenants` nav
+  entry). `tsc --noEmit` + `npm run build` pass; `/admin/tenants` builds dynamic (`ƒ`). Read-only, no money path.
+- **Stated gaps (honest):** list-level entitlement omits the per-seller subscription lookup (too heavy to fan
+  out across a directory), so the reason `subscription` doesn't surface in the list — **moot today** because
+  `domain.paywall_enabled` defaults OFF, so every shop derives `flag_off`. When the paywall is on, a row whose
+  list-level reason is `none` is flagged **`subscriptionUnchecked`** and shown as "Sin plan (suscripción sin
+  verificar)" rather than asserting a false "no plan" (codex cross-review); S4 adds per-slug detail when its
+  grant action needs live subscription state. Listing count comes from the `marketplace_listings` mirror
+  (display/enrichment), not a live Medusa count. The live directory eyeball (real shop data) needs an admin
+  Clerk session → **owed to Daniel**.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: branch preview → production. **Admin Clerk session — owed to Daniel.**
+Env: branch preview → production. **Admin Clerk session — owed to Daniel** (the `api` suite covers the
+anonymous-401 gate; the authed 200-with-rows render is the human step).
 
-1. As an admin, open `/admin/tenants`.
-   → A list of shops renders, each with name/slug, claim status, domain, entitlement reason, and a listing count.
-2. Type a known shop name/slug in the search.
-   → The list narrows to matching shops.
-3. Open one shop's inspector.
-   → It shows that shop's identity, claim status, custom domain (+ status), entitlement reason, and listing
-     count. There are **no** edit/mutate controls yet (that's S4).
+1. As a signed-in admin, open `/admin/tenants` (it appears as **"Tiendas"** in the admin left-nav).
+   → A list of shops renders, each row showing name + `/slug`, a claim badge (Reclamada / Sin reclamar), a
+     domain badge (Sin dominio / Pendiente / Verificado), an entitlement badge, and an "N anuncios" count.
+2. Type a known shop name, slug, custom domain, or `sel_…` seller id into the search box.
+   → The list narrows to matching shops; the count line shows "X tiendas (de N)".
+3. Click one shop row to open its inline inspector.
+   → It shows that shop's **canonical Medusa seller id** (`sel_…`, or "Sin vendedor Medusa" for an un-imported
+     gem), slug, claim status, custom domain (+ status), domain plan/entitlement reason, listing count, and
+     creation date. There are **no** edit/mutate controls (that's S4).
+4. As an anonymous (signed-out) user, request `GET /api/admin/tenants`.
+   → HTTP 401 (the route is Clerk-only; a `?secret=` or `x-admin-secret` is also rejected). *(Covered by the
+     `api` suite; listed here for completeness.)*
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S3.1 — `/admin/tenants` directory + inspector (read-only; Medusa IDs canonical)
+- [x] S3.1 — `/admin/tenants` directory + inspector (read-only; Medusa IDs canonical) — branch
+      `feat/admin-consolidation-s3`
