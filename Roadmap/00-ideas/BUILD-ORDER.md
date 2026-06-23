@@ -14,8 +14,9 @@
 
 - [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 0/6 stories
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (3)
 
+- [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 0/9 stories
 - [Notion roadmap board hygiene](../../09-platform-infra/notion-board-hygiene/README.md) — 09 Platform-infra · 0/6 stories
 - [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 0/3 stories
 
@@ -97,4 +98,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Seller nav consolidation + breadcrumb standardization (`/shop/manage`) | In progress | Scaffolded |
 
 ---
-_Epics: 56 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 57 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

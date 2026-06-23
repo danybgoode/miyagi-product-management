@@ -301,5 +301,9 @@ sequencing above):
 available if Daniel wants a third lens before approving the build.)*
 
 ---
-**SPIKE COMPLETE.** Decision written; no code, no branch. Next step is Daniel's approval to fan out Epics A→D
-(or to scaffold A1 first).
+**SPIKE COMPLETE.** Decision written; no code, no branch.
+
+**APPROVED + SCAFFOLDED 2026-06-22** → built out as a **single epic** (Daniel's call: one epic, multiple
+sprints, not the four-epic fan-out): [`Roadmap/09-platform-infra/admin-consolidation`](../../09-platform-infra/admin-consolidation/README.md)
+— S1 shell + Clerk hub (dual-accept) · S2 audit + migrate sections + kill secret-in-URL · S3 tenant directory ·
+S4 entitlement grant/revoke. Suspend = deferred future epic; per-shop flags dropped. Ready to build from S1.
