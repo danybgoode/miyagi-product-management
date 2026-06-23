@@ -54,11 +54,29 @@ is intentional.
   render spec. The authed **admin** end-to-end (pin → reorder → see it on the homepage) is owed to Daniel on prod.
 - S2.0's decision must be recorded **before** S2.1 starts.
 
-## Pre-flight decision (S2.0 — fill before S2.1)
-- **Write path:** _(native Medusa admin product update | custom in-repo `withAdmin` route — decide + cite files)_
-- **Auth:** _(how the admin call authenticates)_
-- **Cache bust:** _(confirm `listings` tag)_
-- **UCP `featured`:** _(expose in `/api/ucp/catalog`? yes/no + why)_
+## Pre-flight decision (S2.0 — recorded 2026-06-23, gates S2.1)
+
+Read: `apps/backend/src/api/admin/*`, `apps/backend/src/api/internal/seller-products/[id]/route.ts`,
+`apps/backend/src/api/store/_utils/seller-product-update.ts`, frontend env + `lib/listings.ts` cache.
+
+- **Write path → a NEW thin admin-scoped backend internal route.** The frontend holds **no Medusa admin token**
+  (only the Store API publishable key + `MEDUSA_INTERNAL_SECRET`), so it can't call Medusa `/admin/products/:id`
+  directly. The existing `/internal/seller-products/[id]` route is **seller-scoped** — it requires `seller_slug`
+  and verifies the seller owns the product (wrong for admin curation). So we add
+  `apps/backend/src/api/internal/admin/featured/[id]/route.ts` (`PATCH`, `x-internal-secret`) that **reuses the
+  shared `updateSellerProduct(scope, id, body)` util** — it already does the metadata deep-merge and the safe
+  `updateProducts(id, data)` form that dodges Medusa's selector trap. **No Supabase pin, no new table** (Rule 1/2 ✓).
+- **Auth (two layers):** browser → Next.js admin route via the Clerk session cookie, gated by `withAdmin`
+  (`lib/admin/guard.ts`, audits via `after()`); Next.js → Medusa via the existing `x-internal-secret`
+  (`MEDUSA_INTERNAL_SECRET`) service-to-service secret. No Medusa admin token introduced (Rule 4 ✓).
+- **Cache bust → `revalidateTag('listings')`.** Confirmed: `getCuratedPool` (`lib/listings.ts`) reads
+  `/store/listings` tagged `['listings']`; `app/api/sell/shop/route.ts` already busts via `revalidateTag('listings')`.
+- **UCP `featured` → keep as metadata passthrough (no new code).** `featured`/`featured_rank` already flow into
+  `/api/ucp/catalog` items inside the `metadata` object (`lib/ucp/schema.ts` passes `metadata` through), so agents
+  can read them today. Promoting to a first-class field is additive scope with low value → **out of S2** (Rule 3 ✓).
+- **Deploy order:** the backend internal route **merges + finishes deploying first** (Cloud Run us-east4, ~12 min,
+  no preview); the frontend route degrades gracefully (returns a 502 with a clear message, never throws) if the
+  backend route 404s during the lag window.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: the branch's Vercel preview (then production). **All admin steps owed to Daniel — admin Clerk session.**
@@ -80,7 +98,7 @@ Env: the branch's Vercel preview (then production). **All admin steps owed to Da
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S2.0 — _pending_
+- [x] S2.0 — recorded 2026-06-23 (write path = new admin-scoped backend internal route reusing `updateSellerProduct`)
 - [ ] S2.1 — _pending_
 - [ ] S2.2 — _pending_
 - [ ] S2.3 — _pending_
