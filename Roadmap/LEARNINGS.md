@@ -364,6 +364,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   line cap, or if a banned filename reappears. Set the cap above the current largest file with headroom
   (e.g. settings cap 1,200 vs largest section ~1,063 vs the deleted ~4,076-line monolith). *(2026-06-10,
   Shop Settings refactor S4 — `lib/shop-settings/monolith-guard.ts`, `e2e/shop-settings-no-monolith.spec.ts`.)*
+  **And it converts a one-time "grep to zero" cleanup into a permanent invariant — after consolidating N bespoke
+  back-links onto a shared `<SellerBreadcrumb>`, an fs-guard scanning the surface dir for the banned strings
+  (`← Panel` / `← Mi tienda` / `← Volver al panel`) fails CI if any reappears. It earned its keep instantly: the
+  first sweep missed **four** settings sections carrying their own inline `← Volver al panel` save bars (separate
+  from the shared `SectionSaveBar`); the guard surfaced them as stragglers. Use the repo's path idiom
+  `fileURLToPath(new URL('..', import.meta.url))` (the Playwright api runner is ESM — bare `__dirname` throws).
+  *(2026-06-23, seller-nav-consolidation S2 — `e2e/seller-breadcrumb.spec.ts`.)*
 - **A write whose result nobody checks is a feature that can silently die.** The gem-claim loop broke
   three ways with zero errors surfaced — a 0-row Supabase `UPDATE` (wrong id namespace: Medusa `sel_…`
   vs mirror UUID) "succeeded", an FK-violating upsert's `error` was never read, and the dead path

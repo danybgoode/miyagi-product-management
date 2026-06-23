@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: seller-nav-consolidation
 ---
 
@@ -75,14 +75,15 @@ PR gets a preview. No backend/Cloud Run involvement.
 
 ## Definition of Done (epic)
 
-- [ ] The left rail shows every destination (incl. Suscripciones, Contenido, Sorteos) with **one canonical
+- [x] The left rail shows every destination (incl. Suscripciones, Contenido, Sorteos) with **one canonical
       label each** (Cupones · Analíticas · Configuración · Importar catálogo); the duplicate horizontal nav row
-      is gone; the Pedidos/Ofertas pending-count signal is preserved.
-- [ ] Every `/shop/manage/*` section renders the same **"Resumen / \<Section\>"** breadcrumb; no "← Panel" /
-      "← Mi tienda" / "← Volver al panel" variants remain (grep to zero).
-- [ ] eventos/sweepstakes breadcrumbs still pass the bilingual completeness gate.
-- [ ] `e2e/seller-mode.spec.ts` updated + green; pure `lib/` specs cover the breadcrumb deriver.
-- [ ] Each `sprint-N.md` has its smoke walkthrough + status ticked with commit refs.
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
-- [ ] Poster: update the `03 · Selling & Shops` seller-mode-shell line in `Roadmap/README.md` to the canonical
-      labels; ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
+      is gone; the Pedidos/Ofertas pending-count signal is preserved. *(S1 #105 `2ca1605`)*
+- [x] Every `/shop/manage/*` section renders the same **"Resumen / \<Section\>"** breadcrumb; no "← Panel" /
+      "← Mi tienda" / "← Volver al panel" variants remain (grep to zero + CI fs-guard). *(S2 #107 `2debdf7`)*
+- [x] eventos/sweepstakes breadcrumbs still pass the bilingual completeness gate (home label → Resumen / Summary).
+- [x] `e2e/seller-mode.spec.ts` updated + green; pure `lib/` spec (`e2e/seller-breadcrumb.spec.ts`) covers the
+      breadcrumb deriver + the anti-erosion guard.
+- [x] Each `sprint-N.md` has its smoke walkthrough + status ticked with commit refs.
+- [x] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
+- [x] Poster: updated the seller-mode-shell line in `Roadmap/README.md` to the canonical labels + breadcrumb;
+      ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
