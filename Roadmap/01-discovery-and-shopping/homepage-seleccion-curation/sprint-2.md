@@ -106,9 +106,14 @@ older than that yet (a search box is the noted follow-up). A pin already set sta
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-## Status
+## Status — ✅ SHIPPED 2026-06-23 (backend BE #37 `815994f` → live rev `medusa-web-00110-prz`; frontend #113 `4a59644`)
 - [x] S2.0 — recorded 2026-06-23 (write path = new admin-scoped backend internal route reusing `updateSellerProduct`)
-- [x] S2.1 — backend route `PATCH /internal/admin/featured/[id]` (BE PR #37 `c5c2df4`); frontend write path
-      `cc1f32c` (withAdmin GET pool + PATCH → revalidateTag; pure `buildFeaturedPatch`). **MED.**
-- [x] S2.2 — `/admin/seleccion` UI w/ @dnd-kit drag-reorder + nav section `03e78f2`. **LOW.**
-- [x] S2.3 — `byPinnedThenFresh` honors `featured_rank` asc + pure spec `e862149`. **LOW.**
+- [x] S2.1 — backend route `PATCH /internal/admin/featured/[id]` (BE PR #37 `815994f`, live-smoked: 401 without secret);
+      frontend write path (FE #113 `4a59644`: withAdmin GET pool + PATCH → revalidateTag; pure `buildFeaturedPatch`). **MED.**
+- [x] S2.2 — `/admin/seleccion` UI w/ @dnd-kit drag-reorder + nav section "Selección" (FE #113). **LOW.**
+- [x] S2.3 — `byPinnedThenFresh` honors `featured_rank` asc + pure spec (FE #113). **LOW.**
+
+Cross-review (codex) ran on both green PRs: backend should-fix (preserve rank when key omitted) + 3 frontend
+should-fixes/nit applied (reject coerced ranks · `featuredRank` Infinity contract · pin rank-collision `max+1`);
+3 declined with rationale (MCP-tool ask · cross-repo 502 false-positive · documented freshest-50 limit).
+**Owed to Daniel:** the admin Clerk-session end-to-end smoke (walkthrough above) + UCP metadata check on prod.
