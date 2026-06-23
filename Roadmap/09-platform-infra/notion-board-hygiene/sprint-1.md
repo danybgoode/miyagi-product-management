@@ -38,17 +38,25 @@ reflects live work.
   mapping logic). No app/commerce/money path. The live overlay end-to-end is a real-PR smoke **owed to Daniel**.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: monorepo-root repo; the live `Marketplace Roadmap` Notion DB (after merge → push triggers `--sync`).
+Env: monorepo-root repo at the branch/merge state. Steps 1–4 are local + deterministic (the agent ran
+them). Steps 5–7 exercise the **live overlay** end-to-end and are **owed to Daniel** — they need the
+Notion `Lifecycle` (Select, incl. an "In progress" option) + `PR link` (URL) properties, which S2 adds;
+until then `notion-pr-sync.yml` PATCHes an unknown property and errors by design.
 
-1. Run `node scripts/roadmap-to-notion.mjs --extract | grep -A2 neon-egress` (or the test).
-   → `neon-egress-and-db-isolation` **sprint** rows show `"status": "Archived"`.
-2. Run `--extract` and inspect a populated epic.
-   → its epic + sprint rows carry the numeric `build_order`.
-3. Open a **draft** PR touching `Roadmap/<NN>/<some-epic>/…`.
+1. **Tests** — `node --test 'scripts/**/*.test.mjs'`
+   → green: `floorSprintStatus`, `lifecycleForPr`, `normalizeBuildOrder`, and the two `--extract` integration cases pass.
+2. **Archived floor (S1.1)** — `node scripts/roadmap-to-notion.mjs --extract | grep -A2 neon-egress`
+   → every `neon-egress-and-db-isolation--sN` **sprint** row shows `"status": "Archived"` (not `"Planned"`).
+3. **build_order (S1.2)** — `node scripts/roadmap-to-notion.mjs --extract | grep -B1 -A1 '"slug": "admin-consolidation"'`
+   → the `admin-consolidation` epic row carries `"build_order": 1`; `notion-board-hygiene` carries `2`; their sprint rows inherit the same number.
+4. **Lifecycle label (S1.3)** — run, in turn:
+   `PR_ACTION=opened PR_DRAFT=true node scripts/roadmap-to-notion.mjs --lifecycle` → `In progress`;
+   `PR_DRAFT=false` (same line) → `In review`; `PR_ACTION=closed …` → `clear`.
+5. **(Owed to Daniel)** Open a **draft** PR touching `Roadmap/<NN>/<some-epic>/…`.
    → that epic's Notion row gets `Lifecycle="In progress"` + a PR link.
-4. Mark the PR **ready for review**.
-   → `Lifecycle` flips to "In review".
-5. Merge (or close) the PR.
+6. **(Owed to Daniel)** Mark the PR **ready for review**.
+   → `Lifecycle` flips to `"In review"`.
+7. **(Owed to Daniel)** Merge (or close) the PR.
    → the overlay clears; the push-to-main `--sync` re-derives `Status` from the merged docs.
 
 If any step fails, note the step number + what you saw — that's the bug report.
