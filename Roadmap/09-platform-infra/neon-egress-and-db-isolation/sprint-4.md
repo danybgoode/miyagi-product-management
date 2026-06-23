@@ -1,6 +1,11 @@
 # Neon egress reduction — Sprint 4: Site-wide Clarity loader + UTM
 
-**Status:** ⬜ Not started. Frontend (Vercel preview per PR). Risk: low. **Orthogonal to Neon egress** —
+> ⚠️ **SUPERSEDED 2026-06-22 by [`site-wide-analytics-gtm`](../site-wide-analytics-gtm/) (shipped, PR #106).**
+> This never built. Its end — Clarity recording site-wide + the stale `print-qr` comment fix — was delivered
+> there via a **single GTM container** (Clarity as a tag inside GTM) instead of a separate Clarity snippet.
+> Kept for history only.
+
+**Status:** ⬜ Not started (superseded). Frontend (Vercel preview per PR). Risk: low. **Orthogonal to Neon egress** —
 this is frontend visitor/bot visibility, not an egress lever; ship independently, after the egress sprints.
 
 ## Why

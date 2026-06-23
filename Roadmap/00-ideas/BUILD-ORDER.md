@@ -14,13 +14,12 @@
 
 - [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 0/6 stories
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (2)
 
 - [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 0/9 stories
 - [Notion roadmap board hygiene](../../09-platform-infra/notion-board-hygiene/README.md) — 09 Platform-infra · 0/6 stories
-- [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 0/3 stories
 
-## ✅ Shipped (52)
+## ✅ Shipped (53)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -69,6 +68,7 @@
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 3/9 stories · risk: High
 - [Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅](../../09-platform-infra/postgres-neon-to-cloudsql/README.md) — 09 Platform-infra · 3/8 stories
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 5/6 stories · risk: Low
+- [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 0/3 stories
 - [Static marketplace shell — kill the per-request homepage function ✅](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 4/9 stories
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 0/3 stories · risk: Low · Wave 0 Enablers
 - [Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 4/5 stories · risk: Low · Wave 1

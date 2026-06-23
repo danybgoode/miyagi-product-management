@@ -1,9 +1,16 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: site-wide-analytics-gtm
 ---
 
 # Epic — Site-wide analytics: GTM container (GA4 + Clarity)
+
+> ✅ **SHIPPED 2026-06-22 — 1 sprint, all LOW, frontend-only.** PR [#106](https://github.com/danybgoode/miyagisanchezcommerce/pull/106)
+> (S1.1 `3f59de2` · S1.2 `fb3242b` · S1.3 `e547fe9` + `8b3df66`). The single GTM container `GTM-MWHVLJ3M` loads
+> across platform surfaces, client-gated so the static `(site)` shell stays `○`. `NEXT_PUBLIC_GTM_ID` is set in
+> Vercel (prod + preview + dev). **Owed to Daniel (operational, no code):** activate Clarity via its 1-click GTM
+> wizard (it showed only 1 session/30d — created but never loading); optionally add GA4 (needs a GA4 property);
+> then the firing smoke. See [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore — frontend analytics instrumentation. No buyer/seller/agent capability change.
@@ -72,11 +79,11 @@ then verify GA4 realtime + the Clarity dashboard record and `/vende` tags land.
 
 ## Definition of Done (epic)
 
-- [ ] A single GTM container loads on the public marketplace + `/shop/manage` (+ checkout/account); it does
-      **not** load on `/embed/*` or a seller white-label host.
-- [ ] `lib/analytics-gating.ts` is a pure, unit-tested gate; `lib/print-qr.ts`'s stale analytics comment is corrected.
-- [ ] api/unit spec green; `tsc` + `next build` + Playwright `api` + the raw-color/design-token guards stay green.
-- [ ] The `sprint-1.md` smoke walkthrough is written; the **real GTM/GA/Clarity firing** smoke is stated as owed to Daniel.
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
-- [ ] Poster: add an analytics/observability line; ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
-- [ ] (Optional) one-line "superseded by site-wide-analytics-gtm" pointer added to neon-egress S4.
+- [x] A single GTM container loads on the public marketplace + `/shop/manage` (+ checkout/account); it does
+      **not** load on `/embed/*` or a seller white-label host. _(client-gated via `lib/analytics-gating.ts`; env `NEXT_PUBLIC_GTM_ID=GTM-MWHVLJ3M` set in Vercel)_
+- [x] `lib/analytics-gating.ts` is a pure, unit-tested gate; `lib/print-qr.ts`'s stale analytics comment is corrected.
+- [x] api/unit spec green; `tsc` + `next build` + Playwright `api` + the raw-color/design-token guards stay green.
+- [x] The `sprint-1.md` smoke walkthrough is written; the **real GTM/GA/Clarity firing** smoke is stated as owed to Daniel.
+- [x] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
+- [x] Poster: add an analytics/observability line; ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
+- [x] (Optional) one-line "superseded by site-wide-analytics-gtm" pointer added to neon-egress S4.

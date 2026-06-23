@@ -504,6 +504,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `RangeError` blanks the whole client render) and `?? 0` numeric fields. *(2026-06-22, marketplace-static-shell
   S3/S4 — codex+agy cross-review caught a stale-personalization leak on sign-out/account-switch: clear island
   state on the unauth transition **and** add `userId` to the effect deps, else a switch keeps the prior user's data.)*
+- **Client-side gating is how you add a site-wide third-party loader (GTM/analytics/pixels) without
+  un-static-ing a static shell.** After a homepage is made static (route-group split + no `headers()`), the
+  reflex "drop a `<Script>` in `layout.tsx`" re-introduces a per-request decision only if you gate it on the
+  server. Instead **mirror the server channel rule from `window.location`** in a *pure, unit-tested* gate
+  (`lib/analytics-gating.ts shouldLoadAnalytics({hostname,pathname})` — reusing `shopSlugFromHost` so the
+  subdomain rule can't drift from the real channel) and **inject from a `useEffect`** in a `'use client'`
+  island mounted in the static root layout. `next build` keeps `/` at `○`; the loader still decides per
+  host/path at runtime; the env id (`NEXT_PUBLIC_GTM_ID`) is build-inlined, not a header read. Corollary:
+  **a JS-only, env-gated side effect (script injection) isn't coverable by the `api` gate** — pair the pure
+  decision (unit spec) + an SSR **marker** (proves the island mounted) with an **opt-in `*.browser.spec.ts`
+  gated behind an env flag** (`MS_TEST_GTM_ID`) that asserts the script actually loads on an eligible page
+  and not on `/embed/*`; it skips cleanly in CI, so the real-firing smoke stays honestly owed to Daniel.
+  *(2026-06-22, site-wide-analytics-gtm — single GTM container `GTM-MWHVLJ3M`, GA4 + Clarity as tags inside
+  GTM; Clarity had been created but never loaded — 1 session/30d.)*
 - **Co-locate compute and its database — a cross-cloud DB is a metered egress tax + a fragility, not just a
   latency footnote.** A Neon "near the 5 GB/mo egress cap" alert fired with **zero traffic for a week**: the
   cause wasn't shoppers or backups but the split itself — compute on **GCP** (Cloud Run us-east4), Postgres on

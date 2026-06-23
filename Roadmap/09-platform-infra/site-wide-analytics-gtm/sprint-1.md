@@ -61,10 +61,13 @@ If any step fails, note the step number + what you saw — that's the bug report
 ## Status
 - [x] S1.1 — BUILT `3f59de2` (`lib/analytics-gating.ts` + `e2e/analytics-gating.spec.ts`, 8 unit cases green)
 - [x] S1.2 — BUILT `fb3242b` (`app/components/SiteAnalytics.tsx` mounted in `app/layout.tsx`; `next build` keeps `/` static `○`)
-- [x] S1.3 — BUILT `e547fe9` (`e2e/site-analytics-loader.spec.ts` + `lib/print-qr.ts` stale-comment fix)
+- [x] S1.3 — SHIPPED `e547fe9` (`e2e/site-analytics-loader.spec.ts` + `lib/print-qr.ts` stale-comment fix) + `8b3df66` (cross-review: opt-in `site-analytics-loader.browser.spec.ts` for real GTM injection)
 
-**Sprint 1 BUILT 2026-06-22** → draft PR [#106](https://github.com/danybgoode/miyagisanchezcommerce/pull/106), risk **LOW**.
-Gate green locally: `tsc` ✅ · `next build` ✅ (`/` stays `○`) · Playwright `api` (`analytics-gating` 8 + `site-analytics-loader`
-gate) ✅ · design-token guard ✅. The marker api assertion is validated by **CI-vs-preview** (new-feature marker not yet on
-prod; sandbox can't reach Medusa to render `/` locally). **Owed to Daniel:** the operational GTM/GA4/Clarity steps + smoke
-above (steps 1–6) — analytics cannot fire until the container is built and `NEXT_PUBLIC_GTM_ID` is set in Vercel.
+**Sprint 1 SHIPPED 2026-06-22** → PR [#106](https://github.com/danybgoode/miyagisanchezcommerce/pull/106) squash-merged `68a3bb0`, risk **LOW**.
+CI green vs preview: `tsc` + `next build` (`/` stays `○`) · Playwright `api` (`analytics-gating` 8 + `site-analytics-loader`
+marker/gate) · design-token guard. Codex cross-review: 0 blocking; the should-fix (api spec saw only the SSR marker) was
+closed with the opt-in browser smoke; the `.vercel.app`-breadth nit was declined (mirrors `lib/channel.ts`).
+**Env set:** `NEXT_PUBLIC_GTM_ID=GTM-MWHVLJ3M` in Vercel (production + preview + development), verified.
+**Owed to Daniel (operational, no code):** activate Clarity via its 1-click GTM wizard (Clarity confirmed only 1 session/30d —
+created but never loading); optionally add GA4 (needs a GA4 property); then the firing smoke (steps 1–6 above). The browser
+smoke can verify injection on prod: `MS_TEST_GTM_ID=1 PLAYWRIGHT_BASE_URL=https://miyagisanchez.com npm run test:e2e:browser`.
