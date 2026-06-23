@@ -393,7 +393,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `catch` that would alert. The custom-domain webhook's Medusa-activation POST silently swallowed failures
   (seller PAID but isn't entitled, and Stripe won't retry a handler that returns 200) until an explicit
   `if (!res.ok) throw` routed it to a `tg.alert`. Add the status check on any best-effort money-path call.
-  *(2026-06-11, custom-domain-paywall S3.)*
+  *(2026-06-11, custom-domain-paywall S3.)* **Corollary — an admin/mutation write must land where the LIVE
+  reader reads; confirm the source before adding the action.** Before building the admin entitlement grant,
+  S4.0 traced that the live custom-domain paywall derives from `marketplace_shops.metadata.custom_domain_grant`
+  (the connect UI, the domain mutation routes, AND the MCP `get_domain_entitlement` all call the one
+  `resolveDomainEntitlement(shop.metadata)` seam reading that field) — so the grant writes there and takes
+  effect everywhere with zero extra wiring; writing a Medusa seller field or a new table would have been
+  cosmetic. The read-side mirror of "grep every write keyed by the id": grep the consumer's *read* path and
+  write to it. And **a "revoke/clear" action scoped to one grant type must refuse the others** — the same key
+  (`custom_domain_grant`) holds both a hand-granted `comp` and a permanent `grandfather` grant, so a blind
+  `delete key` revoke could silently strip grandfathered entitlement; gate by `type` on **both** server (409)
+  and UI (hide the control). A cross-review (codex) caught this as the one blocking bug on the HIGH PR.
+  *(2026-06-23, admin-consolidation S4 — `buildCompGrant` + `POST /api/admin/tenants/[id]`.)*
 - **Unknown API routes on PROD return HTTP 200 (the not-found page), not 404.** So a negative-path
   spec for a *new* endpoint run against prod pre-deploy fails confusingly (expected 401, got 200) —
   that's "route doesn't exist yet", not a logic bug. CI-vs-preview is the authoritative gate for new

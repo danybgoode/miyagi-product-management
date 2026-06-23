@@ -105,4 +105,4 @@ If any step fails, note the step number + what you saw — that's the bug report
 
 ## Status
 - [x] S4.0 — pre-flight finding recorded (entitlement ownership) — no Medusa primitive; comp stays on `marketplace_shops.metadata`; frontend-only
-- [x] S4.1 — grant/revoke entitlement action (wraps `domain-entitlement`, audited) · HIGH — built (app `6802da3`); gate green (tsc+build); pure+gate spec; **draft PR, Daniel-merged; live grant/audit smoke owed to Daniel**
+- [x] S4.1 — grant/revoke entitlement action (wraps `domain-entitlement`, audited) · HIGH — **SHIPPED, app PR #111 squash `9ec9b1a`** (Daniel-authorized HIGH merge on green CI + codex cross-review: grandfather-revoke guard, write-landed check, honest unresolved label). `buildCompGrant` + `POST/GET /api/admin/tenants/[id]` + inspector controls + pure/gate spec. **Live grant → `/admin/audit` row → revoke smoke owed to Daniel.**

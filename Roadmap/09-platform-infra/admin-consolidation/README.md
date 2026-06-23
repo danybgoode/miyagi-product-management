@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: admin-consolidation
 build_order: 1       # numeric build-order sequence (SSOT for the Notion build-order views)
 ---
@@ -103,20 +103,21 @@ auth + audit) and a **tenant directory + entitlement action** built on the backe
 - **Risk tiers:** S1.1 + S2.3 + S4.1 are **HIGH → Daniel-merged** (auth surface + entitlement/money). S1.2/S1.3,
   S2.1/S2.2, S3.1 are LOW–MED (reviewer may auto-merge on green CI per the risk-tier rule).
 
-## Definition of Done (epic)
+## Definition of Done (epic) — ✅ COMPLETE 2026-06-23
 
-- [ ] `/admin` is a real hub with a left-nav listing every section (coupons, print, supply, vecindario,
-      referrals, scraping link-out, tenants, audit); the external redirect is gone; the orphaned scrape client deleted.
-- [ ] Every `/admin/*` page + every `/api/admin/*` + `/api/supply/*` route is gated by **Clerk admin identity**;
-      no human path sends `?secret=`; `ADMIN_SECRET` survives only on the two internal routes (grep to confirm).
-- [ ] Every admin **mutation** writes an `admin_audit_log` row; `/admin/audit` renders them.
-- [ ] `/admin/tenants` lists/searches shops (Medusa seller ⋈ mirror) and inspects one (identity, claim, domain,
-      entitlement, listing count) — read-only, Medusa IDs canonical.
-- [ ] Entitlement **grant/revoke** works from the tenant inspector, wraps `lib/domain-entitlement`, is audited,
-      and the S4.0 backend pre-flight is recorded in `sprint-4.md`.
-- [ ] Each `sprint-N.md` has its smoke walkthrough; money/auth steps flagged **owed to Daniel**; status ticked with refs.
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
-- [ ] Poster updated — `Roadmap/README.md` 09 · Platform & Infra gets the admin/tenant lines; ran
+- [x] `/admin` is a real hub with a left-nav listing every section (coupons, print, supply, vecindario,
+      referrals, scraping link-out, tenants, audit); the external redirect is gone; the orphaned scrape client deleted. *(S1 #108)*
+- [x] Every `/admin/*` page + every `/api/admin/*` + `/api/supply/*` route is gated by **Clerk admin identity**;
+      no human path sends `?secret=`; `ADMIN_SECRET` survives only on the documented internal/machine routes
+      (`/api/admin/import` Bearer + the PDF render path). *(S2.3 #109)*
+- [x] Every admin **mutation** writes an `admin_audit_log` row; `/admin/audit` renders them. *(S2.1 #109)*
+- [x] `/admin/tenants` lists/searches shops (Medusa seller ⋈ mirror) and inspects one (identity, claim, domain,
+      entitlement, listing count) — read-only, Medusa IDs canonical. *(S3.1 #110)*
+- [x] Entitlement **grant/revoke** works from the tenant inspector, wraps `lib/domain-entitlement`, is audited,
+      and the S4.0 backend pre-flight is recorded in `sprint-4.md`. *(S4 #111 `9ec9b1a`; live grant smoke owed to Daniel.)*
+- [x] Each `sprint-N.md` has its smoke walkthrough; money/auth steps flagged **owed to Daniel**; status ticked with refs.
+- [x] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
+- [x] Poster updated — `Roadmap/README.md` 09 · Platform & Infra gets the admin/tenant line; ran
       `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`. Team memory + index updated.
-- [ ] Kill-switch check: none planned at grooming (auth migration is dual-accept-additive, not flag-gated) —
-      confirm at close that the deliberate act was flipping **off** secret acceptance after the allow-list was verified.
+- [x] Kill-switch check: none planned at grooming (auth migration is dual-accept-additive, not flag-gated); the
+      deliberate act was flipping **off** secret acceptance after the allow-list was verified (S2.3) — confirmed.
