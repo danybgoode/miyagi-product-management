@@ -45,6 +45,24 @@ Supabase metadata the authority for a commerce capability (cross-panel purist co
   order/payment concept) — **but confirm, don't assume.**
 - **Acceptance:** a written 1-paragraph finding in this sprint doc; S4.1 proceeds on its conclusion.
 
+#### Finding (recorded 2026-06-23) — keep the comp-grant on `marketplace_shops.metadata`; no backend change
+Medusa has **no** seller entitlement / plan / status primitive. The backend `seller` model
+(`apps/backend/src/modules/seller/models/seller.ts`) carries only `clerk_user_id, slug, name, description,
+location, logo_url, source, source_url, verified, metadata (JSONB)` — no entitlement, plan, or suspend field;
+the admin seller routes (`api/admin/sellers[/[id]]`) only verify/edit identity fields. The one
+"plan/subscription" concept is the **separate** Medusa `subscriptions` module (the *platform* custom-domain
+plan), which feeds the **paid** `subscription` entitlement reason via `hasActiveCustomDomainSubscription` →
+`/internal/custom-domain-subscription` — that is the Stripe path, **not** a hand-grant. A hand-granted comp is
+not an order/payment concept; it is platform metadata. Decisively, the **live paywall already reads the grant
+from `marketplace_shops.metadata.custom_domain_grant`**: `getShop` in `app/api/sell/shop/domain/route.ts`
+selects from `marketplace_shops`, and the MCP agent path (`get_domain_entitlement`) reads the same
+`shop.metadata` — exactly where S3's directory reads it and where `scripts/backfill-domain-grandfather.mjs`
+writes grandfather/comp grants. **Conclusion:** keep the comp-grant on
+`marketplace_shops.metadata.custom_domain_grant` (confirmed, not assumed). No Medusa primitive exists or is
+appropriate, so **no backend change is needed** — S4 is frontend-only and the "merge backend first"
+contingency does **not** fire. S4.1 proceeds writing to `marketplace_shops.metadata`, wrapping
+`lib/domain-entitlement` shapes.
+
 ### S4.1 — Grant / revoke entitlement from the inspector · HIGH
 **As a** platform admin, **I want** to grant or revoke a shop's custom-domain comp from the UI, **so that** I
 stop hand-editing metadata and the action is attributed + audited.
@@ -81,5 +99,5 @@ Env: branch preview → production. **Admin Clerk session + a test shop — owed
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S4.0 — pre-flight finding recorded (entitlement ownership)
+- [x] S4.0 — pre-flight finding recorded (entitlement ownership) — no Medusa primitive; comp stays on `marketplace_shops.metadata`; frontend-only
 - [ ] S4.1 — grant/revoke entitlement action (wraps `domain-entitlement`, audited) · HIGH
