@@ -79,26 +79,36 @@ Read: `apps/backend/src/api/admin/*`, `apps/backend/src/api/internal/seller-prod
   backend route 404s during the lag window.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: the branch's Vercel preview (then production). **All admin steps owed to Daniel — admin Clerk session.**
+Env: prod `https://miyagisanchez.com` once the backend (PR #37) + frontend are deployed (the backend
+route has no preview, so the end-to-end pin write only works after the backend merges). **All admin
+steps owed to Daniel — admin Clerk session.** The two auto-tests that DON'T need a session (anonymous
+`/api/admin/seleccion*` → 401, and the anon `/admin/seleccion` redirect) run in CI against the preview.
 
-1. Sign in as an admin, open `<preview>/admin`.
-   → The left-nav now lists **"Selección"** (es-MX). Click it.
-2. On `/admin/seleccion`, toggle the pin **on** for a product, set/leave its order, and save.
-   → The change persists (reload shows it still pinned).
-3. Reorder two pinned products (drag), save.
-   → The new order persists on reload.
-4. Open `<preview>/` (the homepage) — wait past one ISR window (~60s) or hard-reload until revalidated.
+1. Sign in as an admin, open `https://miyagisanchez.com/admin`.
+   → The left-nav now lists **"Selección"** (es-MX, ⭐ icon), next to Vecindario. Click it.
+2. On `/admin/seleccion`, find a product under **Candidatos** and click **Fijar**.
+   → It jumps up into **Fijados** and shows a **Destacado** badge (it's the only pin → rank 1). Reload —
+     it's still pinned.
+3. Pin a second product, then **drag** the ≡ handle to reorder the two pinned rows.
+   → The order (and the `1`/`2` numbers + which row shows **Destacado**) updates and persists on reload.
+4. Open `https://miyagisanchez.com/` (the homepage) — wait past one ISR window (~60s) or hard-reload
+   until revalidated.
    → The **"Selección de la semana"** featured card + grid reflect your pins **in your chosen order**; the
-     lowest-rank pin is the big **Destacado** card.
-5. Unpin everything you pinned, save, re-check the homepage after a window.
+     rank-1 pin is the big **Destacado** card.
+5. Back on `/admin/seleccion`, click **Quitar** on each pin you added; re-check the homepage after a window.
    → The Selección reverts to pure auto-curation (freshest qualifying).
-6. (if S2.0 said yes) `GET <preview>/api/ucp/catalog`.
-   → Pinned products carry the `featured` signal for agents.
+6. `GET https://miyagisanchez.com/api/ucp/catalog` (no first-class field added per S2.0).
+   → A pinned product's catalog item carries `metadata.featured: true` (+ `metadata.featured_rank`) for
+     agents — the curation signal rides through the existing metadata passthrough, no new UCP field.
+
+Known v1 limitation: **Candidatos** lists only the freshest ~50 listings, so an admin can't pin a product
+older than that yet (a search box is the noted follow-up). A pin already set stays effective regardless.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
 - [x] S2.0 — recorded 2026-06-23 (write path = new admin-scoped backend internal route reusing `updateSellerProduct`)
-- [ ] S2.1 — _pending_
-- [ ] S2.2 — _pending_
-- [ ] S2.3 — _pending_
+- [x] S2.1 — backend route `PATCH /internal/admin/featured/[id]` (BE PR #37 `c5c2df4`); frontend write path
+      `cc1f32c` (withAdmin GET pool + PATCH → revalidateTag; pure `buildFeaturedPatch`). **MED.**
+- [x] S2.2 — `/admin/seleccion` UI w/ @dnd-kit drag-reorder + nav section `03e78f2`. **LOW.**
+- [x] S2.3 — `byPinnedThenFresh` honors `featured_rank` asc + pure spec `e862149`. **LOW.**
