@@ -70,7 +70,7 @@ If any step fails, note the step number + what you saw — that's the bug report
 ## Status
 **PR [#108](https://github.com/danybgoode/miyagisanchezcommerce/pull/108)** (draft) — branch `feat/admin-consolidation`. Bundles all three S1 stories; **HIGH overall (auth surface) → Daniel merges.**
 - [x] S1.1 — `lib/admin/identity.ts` + dual-accept `requireAdmin`/`withAdmin` · `f514bfb`
-- [x] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed) · `d6a29d1`
+- [x] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed) · `d6a29d1` (+ `65dda44` hub dual-accept, codex cross-review fix)
 - [x] S1.3 — register coupons/print; delete orphaned `AdminScrapeClient.tsx` · `b218a9e`
 
 **Gate (local):** `tsc --noEmit` ✓ · `npm run build` ✓ · new api specs green — `admin-identity.spec.ts` (7) + `admin-sections.spec.ts` (9). CI runs the full api suite vs the branch preview.
