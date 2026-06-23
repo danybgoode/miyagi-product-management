@@ -85,19 +85,24 @@ stop hand-editing metadata and the action is attributed + audited.
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: branch preview → production. **Admin Clerk session + a test shop — owed to Daniel (money/entitlement).**
+As-built: route `GET|POST /api/admin/tenants/[id]` (`[id]` = the shop's mirror row id); UI buttons
+**“Otorgar cortesía”** / **“Revocar”** under the inspector’s **“Plan de dominio”**.
 
 1. (S4.0) Read the finding paragraph in this doc.
-   → It states whether the comp-grant stays on `marketplace_shops.metadata` or moved to a Medusa primitive.
-2. As an admin, open a test shop in `/admin/tenants` and **Grant comp**.
-   → The inspector's entitlement reason becomes **comp**; that shop can now connect/keep a custom domain even
-     with the paywall on.
+   → It states the comp-grant **stays on `marketplace_shops.metadata.custom_domain_grant`** (no Medusa
+     primitive; frontend-only).
+2. As an admin, open a test shop in `/admin/tenants`, expand it, and click **Otorgar cortesía** (optionally type a note).
+   → The “Plan de dominio” reason becomes **Cortesía** (and shows “Cortesía activa desde …”); that shop can now
+     connect/keep a custom domain even with the paywall on. *(Owed to Daniel — entitlement/money path.)*
 3. Open `/admin/audit`.
-   → A "grant entitlement" row appears with your admin email, the target shop, and a timestamp.
-4. **Revoke** the comp on the same shop.
-   → Entitlement returns to its underlying reason (`none` when the paywall is on, no other grant); an audit row records the revoke.
+   → A row `POST /api/admin/tenants/<shop-id>` appears with your admin email, the target shop id, a timestamp,
+     and `payload_summary { action: "grant", … }`. *(Owed to Daniel — needs the admin session.)*
+4. On the same shop, click **Revocar** → **Sí, revocar**.
+   → The reason returns to its underlying value (**Sin plan** when the paywall is on and there’s no other grant,
+     **Sin restricción (paywall apagado)** when it’s off); a second audit row records the `revoke`.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
 - [x] S4.0 — pre-flight finding recorded (entitlement ownership) — no Medusa primitive; comp stays on `marketplace_shops.metadata`; frontend-only
-- [ ] S4.1 — grant/revoke entitlement action (wraps `domain-entitlement`, audited) · HIGH
+- [x] S4.1 — grant/revoke entitlement action (wraps `domain-entitlement`, audited) · HIGH — built (app `6802da3`); gate green (tsc+build); pure+gate spec; **draft PR, Daniel-merged; live grant/audit smoke owed to Daniel**
