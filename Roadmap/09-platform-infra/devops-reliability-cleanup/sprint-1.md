@@ -77,9 +77,20 @@ Env: production · https://miyagisanchez.com · GitHub Actions on `danybgoode/mi
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [x] **S1 (Story 1)** — built; 4 drifted browser specs realigned + `data-testid="pwa-tabbar"` added. PR #115 `a7e7674`.
-- [x] **S3 (Story 3)** — built; `tg.newShop` re-wired on net-new create **and** claim via pure `lib/shop-notify.ts`. PR #115 `bb4cb07`.
+- [x] **S1 (Story 1)** — ✅ SHIPPED; 4 drifted browser specs realigned + `data-testid="pwa-tabbar"` added.
+- [x] **S3 (Story 3)** — ✅ SHIPPED; `tg.newShop` re-wired on net-new create **and** claim via pure `lib/shop-notify.ts`.
+- [x] **Fixture follow-up** — ✅ SHIPPED; nightly fully green (see below).
 
-> Refs: PR [#115](https://github.com/danybgoode/miyagisanchezcommerce/pull/115) (draft, risk LOW) — commits `a7e7674` (S1) · `bb4cb07` (S3).
-> **Owed to Daniel:** (a) repoint `MS_TEST_PERSONALIZED_LISTING_ID` for a fully-green nightly (walkthrough step 0);
-> (b) live Telegram receipt on a real create + claim (steps 3–5); (c) the green workflow_dispatch + nightly (steps 1–2).
+> Refs: PR [#115](https://github.com/danybgoode/miyagisanchezcommerce/pull/115) squash `475ccf3` (S1 + S3) ·
+> PR [#117](https://github.com/danybgoode/miyagisanchezcommerce/pull/117) squash `8238cf1` (wire
+> `MS_TEST_PDP_LISTING_ID` into the nightly).
+>
+> **Fixture resolution (the owed nightly):** a sweep of the entire public catalog (44 listings) found **zero**
+> with a personalization custom field, so `MS_TEST_PERSONALIZED_LISTING_ID` had no valid target — it was
+> **removed** (the `personalization` smoke now **skips**, dormant; re-add once a personalized public listing
+> exists). `MS_TEST_PDP_LISTING_ID` was **set** to `prod_01KTQY8PFAVCRRD61DNSXNXKM8` (a public listing whose
+> seller exposes a payment/fulfillment method → `data-testid="pdp-methods"`) and wired into `browser-smoke.yml`
+> (#117), so `trust-signals` is green. Net: nightly = green (trust-signals pass, personalization skip).
+>
+> **Still owed to Daniel:** live Telegram receipt on a real create + a real claim (walkthrough steps 3–5) —
+> the only piece an automated smoke can't cover.

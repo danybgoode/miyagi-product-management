@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: devops-reliability-cleanup
 ---
 
@@ -67,10 +67,12 @@ so Claude may merge; owed-to-Daniel pieces are operational only (the `gcloud` en
 eyeball confirmations).
 
 ## Definition of Done (epic)
-- [ ] **S1** — the `browser` Playwright project passes against prod (a manual *Run workflow* dispatch is green
-      and the next nightly is green); the realigned `*.browser.spec.ts` carries a one-line why-note.
-- [ ] **S3** — creating a brand-new shop pings the ops chat (`🏪 Nueva tienda reclamada` + `/s/<slug>`); the
-      idempotent re-POST does **not** double-ping; an api-project spec covers the create seam.
+- [x] **S1** — ✅ the `browser` project is green (PR #115 `475ccf3` realigned 4 drifted specs + added
+      `data-testid="pwa-tabbar"`; PR #117 `8238cf1` wired `MS_TEST_PDP_LISTING_ID` so the nightly is fully
+      green — personalization skips, dormant, as no personalized public listing exists). Why-notes in each spec.
+- [x] **S3** — ✅ `tg.newShop` re-wired on net-new create **and** claim (pure `lib/shop-notify.ts`); re-POST /
+      re-claim do **not** double-ping; api-project spec covers the format + net-new contract (PR #115 `475ccf3`).
+      Live Telegram receipt owed to Daniel.
 - [ ] **S2** — no more `🛑 db-backup FAILED: neon …` after the `BACKUP_TARGETS=supabase` env change (one
       nightly cycle observed); a Cloud SQL backup-failure check pings Telegram on a forced failure and is
       silent on success; `BACKUPS.md` updated.

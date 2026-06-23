@@ -10,14 +10,13 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
+## 🏗️ Building now (1)
 
-_None._
+- [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 0/4 stories
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (1)
 
 - [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2 sprints
-- [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 0/4 stories
 
 ## ✅ Shipped (57)
 
@@ -90,7 +89,7 @@ _None._
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -98,7 +97,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
+| DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer) | In progress | Scaffolded |
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 60 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 60 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
