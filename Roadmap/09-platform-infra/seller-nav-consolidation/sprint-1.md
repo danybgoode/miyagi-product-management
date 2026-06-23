@@ -73,7 +73,10 @@ If any step fails, note the step number + what you saw — that's the bug report
 - [x] S1.3 — **BUILT** `b362a45` — section titles were already canonical; anti-erosion guard added
       (`lib/seller-section-titles.ts` + `seller-section-titles.spec.ts`); no page rename.
 
-**PR:** [#105](https://github.com/danybgoode/miyagisanchezcommerce/pull/105) (draft, risk LOW).
-**Gate:** `tsc` clean · `next build` exit 0 · Playwright **api** 713 passed (incl. 3 new/extended specs).
-One unrelated local fail — `not-found-shape.spec.ts` `/l/wp-admin` → 403 (prod Bot-Protection WAF shadow,
-green on CI-vs-preview; orthogonal to this diff). **Owed Daniel:** authed seller browser smoke (steps 1–4).
+**✅ SHIPPED** — PR [#105](https://github.com/danybgoode/miyagisanchezcommerce/pull/105) squash-merged
+`2ca1605` (2026-06-22). **Gate:** `tsc` clean · `next build` exit 0 · CI Playwright-vs-preview + Type-check
+green. **Cross-review:** codex found a routing regression (the compact line always linked to `/orders`, so
+"1 oferta pendiente" misrouted) → fixed `43db939` (`pendingSummary()` returns per-section linked segments;
+declined the "pure specs in the api suite" nit — that's our established bucket). agy returned no output
+(1.0.10 vs pinned 1.0.7; codex carried the review). **Owed Daniel:** authed seller browser smoke (steps 1–4)
+— the Claude-in-Chrome MCP isn't connected to the build session, so it couldn't be driven from here.
