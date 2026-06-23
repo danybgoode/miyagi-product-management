@@ -45,6 +45,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Neon CLI (neonctl) — local org/project config artifact, regenerates per machine
+.neon
+
 # Independent app repos (own git + deploy rails) and their worktrees
 apps/
 .worktrees/
