@@ -1,13 +1,13 @@
 # Domain-coupon mint fix — Sprint 1: Diagnose, unmask, harden + test-mode rehearsal
 
-**Status:** 📋 PLANNED.
+**Status:** 🏗️ BUILT — S1.1/S1.2/S1.4-spec shipped (PR [#118](https://github.com/danybgoode/miyagisanchezcommerce/pull/118)); S1.3 + the live card-4242 smoke owed to Daniel.
 
 | Story | Status | Risk |
 |---|---|---|
-| S1.1 — Surface the real Stripe error (mint + read paths) | ⬜ | low |
-| S1.2 — *Actualizar* always renders a definite state | ⬜ | low |
-| S1.3 — Confirm the prod cause (logs + key presence/mode/scope) | ⬜ | high (ops) |
-| S1.4 — Test-mode redemption smoke (Chrome MCP + card 4242) + cap api spec | ⬜ | high (test-mode) |
+| S1.1 — Surface the real Stripe error (mint + read paths) | ✅ `d12396d` | low |
+| S1.2 — *Actualizar* always renders a definite state | ✅ `7648608` | low |
+| S1.3 — Confirm the prod cause (logs + key presence/mode/scope) | ⬜ owed to Daniel | high (ops) |
+| S1.4 — Test-mode redemption smoke (Chrome MCP + card 4242) + cap api spec | 🟡 spec ✅ `a76738a` · live smoke owed to Daniel | high (test-mode) |
 
 > Goal: make the admin mint/track tool **honest and reliable**, find the **actual** prod cause, and prove
 > the full redeem-the-coupon mechanics in **test mode** — before touching live money state (Sprint 2).
@@ -66,21 +66,45 @@ cap boundary: redeemable at 99 redemptions, **refused at 100** (the 101st can't 
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-> _Placeholder — the builder fills real preview/prod URLs + exact labels before calling the sprint done (Stage 8b)._
 
-Env: **test mode** · preview URL `https://<branch-preview>.vercel.app` (or `http://localhost:3000`, `sk_test…`)
+**Preview (branch alias, stable):**
+`https://miyagisanchez-git-feat-domain-coupon-mint-fix-danybgoodes-projects.vercel.app`
+(this PR's immutable build at time of writing: `https://miyagisanchez-6rxeca7we-danybgoodes-projects.vercel.app`).
+**Env = whatever the Vercel _Preview_ scope holds for `STRIPE_SECRET_KEY` (expected `sk_test…` ⇒ test mode).**
+Sign in as a platform **admin** (the page is Clerk admin-gated via `withAdmin`). The preview is
+SSO-protected, so open it in a browser where you're logged into Vercel.
 
-1. Go to `https://<preview>/admin/coupons` (signed in as admin).
-   → The "Cupón de campaña — Dominio propio" card loads; status reads "Sin cupón en Stripe todavía".
+### Builder-verified (automated, green in CI)
+- ✅ `npx tsc --noEmit` + `npm run build` clean.
+- ✅ `e2e/domain-coupon.spec.ts` (api project) — 8 pure tests + the route's anonymous-401 guard, green
+  in CI's **"Playwright vs preview"** against this branch's preview. Covers the error-classifier
+  (a real resource-missing ⇒ "missing"; auth/permission/connection/rate-limit **never** masked as
+  missing; messages leak no key body) and the cap-of-100 boundary (99 ok / 100 refused / 101 refused).
+
+### Manual (Daniel — admin session + money/auth path)
+1. Open `…vercel.app/admin/coupons` (signed in as admin).
+   → The **"Cupón de campaña — Dominio propio"** card loads. If the coupon isn't minted in this env yet,
+     it reads **"Aún no se ha creado el cupón en Stripe."**
 2. Click **Actualizar**.
-   → Status text visibly resolves (still "sin cupón" but now with a confirming message) — never a silent no-op.
+   → The status line now **always** resolves to a visible message — never a silent no-op:
+     **"Sin cupón en Stripe todavía."** (none yet) · **"Estado actualizado ✓"** (exists) · or a **specific
+     Stripe error** (e.g. the key is missing/wrong-mode/lacks coupon scope). *(S1.2)*
 3. Click **Crear cupón**.
-   → Within ~2s the card flips to "0/100 · activo" and shows "Cupón listo ✓". (If it errors, the message
-     now names the real Stripe cause — capture it; that's the S1.3 finding.)
-4. (money/auth path — **Daniel**) As a test seller, open the custom-domain upsell → checkout, apply code
-   `MIYAGISAN`, pay with test card `4242 4242 4242 4242` (any future expiry / any CVC).
-   → Stripe shows the first year at **$0** (100% off); the created subscription's next renewal is **$499 MXN/yr**.
+   → Within ~2 s the card flips to **"0/100 · canjes · activo"** and shows **"Cupón listo ✓"**.
+   → **If it errors instead**, the message now **names the real Stripe cause** (no more generic "No se
+     pudo crear el cupón.") — e.g. *"La llave de Stripe (STRIPE_SECRET_KEY) falta o no es válida…"* or
+     *"…no tiene permiso para administrar cupones…"*. **Capture that text verbatim — it is the S1.3
+     finding** (the same surfaced cause appears on a **prod** retry, alongside `[admin/domain-coupon]
+     mint failed:` in the Vercel prod logs). *(S1.1)*
+4. **(money/auth path — owed to Daniel)** As a **test seller**, open the custom-domain upsell → checkout,
+   apply code `MIYAGISAN`, pay with Stripe test card `4242 4242 4242 4242` (any future expiry / any CVC).
+   → Stripe shows the first year at **$0** (100% off); the created subscription's next renewal is
+     **$499 MXN/yr**.
 5. Back on `/admin/coupons`, click **Actualizar**.
    → Counter reads **1/100 · activo**.
 
-If any step fails, note the step number + what you saw — that's the bug report.
+> **Known boundary:** a Stripe **test** card cannot redeem a **live** coupon. Steps 4–5 prove the
+> mechanics in **test mode**; the live coupon is minted + validated in **Sprint 2** (n/100 read, plus one
+> optional real redemption owed to Daniel).
+
+If any step fails, note the step number + exactly what you saw — that's the bug report.
