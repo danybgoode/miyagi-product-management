@@ -60,6 +60,25 @@ Env: the branch's Vercel preview (then production after merge), signed in as a s
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S2.1 — _scaffolded_
-- [ ] S2.2 — _scaffolded_
-- [ ] S2.3 — _scaffolded_
+- [x] S2.1 — **BUILT** `1ba557d` — pure `sellerBreadcrumbTrail()` on the nav SSOT (section label =
+      canonical rail label) + client `<SellerBreadcrumb>` (`/` separator; `extra` appends deeper
+      crumbs keeping the intermediate link; `crumbs` override for bilingual server pages);
+      `e2e/seller-breadcrumb.spec.ts` covers every section + deep cases + off-surface degrade.
+- [x] S2.2 — **BUILT** `d02bfc9` — every manage section swapped to `<SellerBreadcrumb>` (orders,
+      order detail, offers, analytics, subscriptions, content, import, promotions, settings index +
+      `[section]` + `SectionSaveBar` + the 4 manual-handshake sections' inline save bars). Order
+      detail = `Resumen / Pedidos / <id>`; settings sub-section = `Resumen / Configuración / <section>`
+      (intermediate crumb linked). Anti-erosion fs-guard fails CI if any banned back-link reappears.
+- [x] S2.3 — **BUILT** `f92502b` — eventos/sweepstakes use the shared component while staying
+      bilingual (dict crumbs via `crumbs`); home label standardized to **Resumen / Summary** (es/en);
+      key parity preserved.
+
+**Draft PR** [#107](https://github.com/danybgoode/miyagisanchezcommerce/pull/107) · risk **LOW**.
+**Gate:** `tsc` clean · `next build` exit 0 · Playwright `api` **723 passed** (incl. the new
+breadcrumb deriver + anti-erosion guard + unchanged `seller-mode.spec.ts`). The one local failure
+(`not-found-shape.spec.ts` `/l/wp-admin` 403≠404) is the **prod WAF Bot-Protection shadow**
+(`x-vercel-mitigated: deny`, prod-only, not on previews — see `LEARNINGS.md`), not a regression.
+`grep "← Panel\|← Mi tienda\|← Volver al panel" app/(shell)/shop/manage` → zero.
+**Owed Daniel:** the authed seller browser smoke (steps 1–4 above), incl. the `?lang=en` spot-check
+(`Summary / Events` · `Summary / Sweepstakes`) — the Claude-in-Chrome MCP isn't connected to this
+build session, so it couldn't be driven from here.
