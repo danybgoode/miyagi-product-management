@@ -405,6 +405,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `delete key` revoke could silently strip grandfathered entitlement; gate by `type` on **both** server (409)
   and UI (hide the control). A cross-review (codex) caught this as the one blocking bug on the HIGH PR.
   *(2026-06-23, admin-consolidation S4 — `buildCompGrant` + `POST /api/admin/tenants/[id]`.)*
+  **Corollary — derive identity/ownership from the CANONICAL store, never a best-effort mirror; a
+  fire-and-forget mirror sync drifts and a reader keyed on it silently misfires.** The homepage showed a real
+  shop owner the "¿Vendes algo? / Abre tu tienda" *recruit* card because `GET /store/home/personalization`
+  read `hasShop` from the Supabase `marketplace_shops` mirror — which the frontend writes
+  `ensureSupabaseShopMirror(...).catch(() => {})` (failure swallowed) — instead of the **canonical Medusa
+  seller** (`listSellers({clerk_user_id})`, what `/store/sellers/me` uses) that the *same endpoint already
+  queried for visitas*. When a fact has a canonical source (Medusa) and a convenience mirror (Supabase),
+  derive presence/ownership from the canonical one and use the mirror only for the data it uniquely holds;
+  the read-side twin of "grep every write keyed by the id." Harden the consumer too (a shop owner must never
+  fall through to the recruit branch). *(2026-06-23, home-personalization recruit-card leak — BE #38 + FE #116.)*
 - **Unknown API routes on PROD return HTTP 200 (the not-found page), not 404.** So a negative-path
   spec for a *new* endpoint run against prod pre-deploy fails confusingly (expected 401, got 200) —
   that's "route doesn't exist yet", not a logic bug. CI-vs-preview is the authoritative gate for new
