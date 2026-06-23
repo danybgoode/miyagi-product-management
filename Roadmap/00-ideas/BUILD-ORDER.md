@@ -14,9 +14,11 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [Homepage Selección: bug sweep + admin curation + dynamic rotation](../../01-discovery-and-shopping/homepage-seleccion-curation/README.md) — 01 Discovery · 0/8 stories
+- [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2 sprints
+- [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 0/4 stories
 
 ## ✅ Shipped (56)
 
@@ -99,4 +101,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 58 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 60 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
