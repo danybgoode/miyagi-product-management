@@ -50,21 +50,36 @@ chat as everything else.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com · GitHub Actions on `danybgoode/miyagisanchezcommerce`.
 
+> **Reality found at build:** the nightly was red across **6 specs / 9 cases**, not one. Four were
+> anonymous/structural drift from sibling epics (about-content pricing went live; the marketplace-static-shell
+> route split added a layout `<main>`; the PWA glass-nav S2.1 turned the bar's search link into a sheet-opening
+> button; `.pwa-only` spread to the search sheet + shell) — **fixed in this sprint** (PR #115). The remaining
+> three (`personalization` ×2, `trust-signals`) are **stale-fixture, owed to Daniel** (see step 0).
+
+0. **(prerequisite for a fully-green nightly — owed to Daniel)** Repoint the repo secret
+   `MS_TEST_PERSONALIZED_LISTING_ID` (optionally add `MS_TEST_PDP_LISTING_ID`) to a current **public** listing
+   that has **a required custom field** AND a **seller exposing ≥1 payment/fulfillment method**.
+   → The `personalization` + `trust-signals` browser smokes light up (they skip/​fail today on a dead fixture;
+     the spec assertions + app markup are both correct — only the fixture drifted).
 1. Go to the repo's **Actions → Browser smoke → Run workflow** (leave base URL default) and run it.
-   → The run finishes **green** (the previously-failing spec now passes).
+   → The run finishes **green** (the four realigned specs pass; the `tabbar` testid ships with PR #115).
 2. Wait for / check the next scheduled nightly Browser smoke run (`0 9 * * *` UTC).
-   → It is **green** too — the fix holds unattended.
+   → It is **green** too — the fix holds unattended (fully green once step 0 is done).
 3. (tenant ping) In a fresh browser, sign in as a new seller and complete onboarding Step 1 (shop info) to
    create a brand-new shop at a new slug.
    → Within a few seconds a Telegram message `🏪 Nueva tienda reclamada — <shop name> · miyagisanchez.com/s/<slug>`
      arrives in your ops chat.
 4. Re-submit the same onboarding Step 1 (same account, shop already exists).
    → **No** second Telegram ping (the idempotent branch doesn't re-notify).
+5. (claim ping) Complete a gem-shop **claim** (claim email → dashboard → ownership transfer).
+   → One `🏪 Nueva tienda reclamada` ping arrives; re-running the claim does **not** re-ping (404/409 return first).
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] **S1 (Story 1)** — pending.
-- [ ] **S3 (Story 3)** — pending.
+- [x] **S1 (Story 1)** — built; 4 drifted browser specs realigned + `data-testid="pwa-tabbar"` added. PR #115 `a7e7674`.
+- [x] **S3 (Story 3)** — built; `tg.newShop` re-wired on net-new create **and** claim via pure `lib/shop-notify.ts`. PR #115 `bb4cb07`.
 
-> Refs: _(fill at build — PR #, commit SHA.)_ Live Telegram + the green nightly are owed to Daniel.
+> Refs: PR [#115](https://github.com/danybgoode/miyagisanchezcommerce/pull/115) (draft, risk LOW) — commits `a7e7674` (S1) · `bb4cb07` (S3).
+> **Owed to Daniel:** (a) repoint `MS_TEST_PERSONALIZED_LISTING_ID` for a fully-green nightly (walkthrough step 0);
+> (b) live Telegram receipt on a real create + claim (steps 3–5); (c) the green workflow_dispatch + nightly (steps 1–2).
