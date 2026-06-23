@@ -1,13 +1,31 @@
 # Domain-coupon mint fix — Sprint 1: Diagnose, unmask, harden + test-mode rehearsal
 
-**Status:** 🏗️ BUILT — S1.1/S1.2/S1.4-spec shipped (PR [#118](https://github.com/danybgoode/miyagisanchezcommerce/pull/118)); S1.3 + the live card-4242 smoke owed to Daniel.
+**Status:** ✅ MERGED to prod — PR [#118](https://github.com/danybgoode/miyagisanchezcommerce/pull/118) squashed `cc73a26` (CI green, codex cross-review clean, low-risk). S1.3 mode/scope read + the live card-4242 smoke remain owed to Daniel.
 
 | Story | Status | Risk |
 |---|---|---|
-| S1.1 — Surface the real Stripe error (mint + read paths) | ✅ `d12396d` | low |
+| S1.1 — Surface the real Stripe error (mint + read paths) | ✅ `d12396d` (+ key-missing⇒auth `66261c9`) | low |
 | S1.2 — *Actualizar* always renders a definite state | ✅ `7648608` | low |
-| S1.3 — Confirm the prod cause (logs + key presence/mode/scope) | ⬜ owed to Daniel | high (ops) |
+| S1.3 — Confirm the prod cause (logs + key presence/mode/scope) | 🟡 partial — see findings below; mode/scope owed to Daniel | high (ops) |
 | S1.4 — Test-mode redemption smoke (Chrome MCP + card 4242) + cap api spec | 🟡 spec ✅ `a76738a` · live smoke owed to Daniel | high (test-mode) |
+
+## S1.3 — diagnostic findings (so far)
+Done from the Vercel CLI/REST against project `miyagisanchez`:
+- **`STRIPE_SECRET_KEY` IS present in Production** (created ~26 d ago) — so this is **not** the
+  "`vercel env add` stored empty" failure mode. ✅
+- **It is `type: sensitive` (write-only) and `target: production` only.** Two consequences:
+  1. **Mode (`sk_live` vs `sk_test`) and scope (standard `sk_` vs restricted `rk_` without Coupons/
+     Promotion-codes write) are NOT machine-readable** — a sensitive var can't be decrypted via
+     `vercel env pull` or the REST API. **This read is genuinely owed to Daniel** (Stripe dashboard →
+     the key's mode + restricted-scope), OR it now self-surfaces: post-`#118`, the next prod **Crear
+     cupón** click shows the real sanitized cause in the admin UI (auth vs permission vs …).
+  2. **The key is absent from the Preview scope**, so a Preview deploy has **no** Stripe key. `#118`
+     hardened this: `getStripe()`'s lazy "Missing STRIPE_SECRET_KEY" throw now classifies as **auth**
+     ("la llave falta"), not a generic "unknown" — so the Preview smoke (step 3) reports the missing
+     key clearly instead of a vague error.
+- **Most likely prod cause** (to confirm via the surfaced UI error on a prod retry): a **restricted key
+  lacking Coupons/Promotion-codes write** (→ `permission`) or a **wrong-mode/invalid key** (→ `auth`).
+  The fix lands in **Sprint 2 (S2.1)** once the surfaced `kind` is captured.
 
 > Goal: make the admin mint/track tool **honest and reliable**, find the **actual** prod cause, and prove
 > the full redeem-the-coupon mechanics in **test mode** — before touching live money state (Sprint 2).
@@ -67,12 +85,10 @@ cap boundary: redeemable at 99 redemptions, **refused at 100** (the 101st can't 
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 
-**Preview (branch alias, stable):**
-`https://miyagisanchez-git-feat-domain-coupon-mint-fix-danybgoodes-projects.vercel.app`
-(this PR's immutable build at time of writing: `https://miyagisanchez-6rxeca7we-danybgoodes-projects.vercel.app`).
-**Env = whatever the Vercel _Preview_ scope holds for `STRIPE_SECRET_KEY` (expected `sk_test…` ⇒ test mode).**
-Sign in as a platform **admin** (the page is Clerk admin-gated via `withAdmin`). The preview is
-SSO-protected, so open it in a browser where you're logged into Vercel.
+**Now MERGED → prod:** `https://miyagisanchez.com/admin/coupons` (Clerk **admin**-gated via `withAdmin`).
+⚠️ **`STRIPE_SECRET_KEY` is production-only** (it's a Vercel _Sensitive_ var, not set for Preview) — so
+run the **Crear cupón** step on **prod**, not a preview (a preview has no key and step 3 will report
+"la llave falta", which is the S1.1 missing-key path working, not the coupon path).
 
 ### Builder-verified (automated, green in CI)
 - ✅ `npx tsc --noEmit` + `npm run build` clean.
@@ -82,7 +98,7 @@ SSO-protected, so open it in a browser where you're logged into Vercel.
   missing; messages leak no key body) and the cap-of-100 boundary (99 ok / 100 refused / 101 refused).
 
 ### Manual (Daniel — admin session + money/auth path)
-1. Open `…vercel.app/admin/coupons` (signed in as admin).
+1. Open `https://miyagisanchez.com/admin/coupons` (signed in as admin).
    → The **"Cupón de campaña — Dominio propio"** card loads. If the coupon isn't minted in this env yet,
      it reads **"Aún no se ha creado el cupón en Stripe."**
 2. Click **Actualizar**.
