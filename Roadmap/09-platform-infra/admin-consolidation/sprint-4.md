@@ -5,6 +5,33 @@ read in S4.0) · **Goal:** turn the read-only tenant inspector (S3) into one tha
 custom-domain comp entitlement** — wrapping the existing `lib/domain-entitlement` logic, audited, HIGH-risk.
 Depends on **S3**. **S4.0 pre-flight gates S4.1.**
 
+## Handoff from S3 (read before starting) — S3 shipped 2026-06-23, app PR #110 `4d4fba8`
+The read-only directory + inspector that S4 mutates now exists. Concrete plug points:
+- **The inspector to add controls to:** `app/(shell)/admin/tenants/AdminTenantsClient.tsx` — the inline
+  expanded panel (the `<dl>` with the "Plan de dominio" `<Field>`). Add the Grant/Revoke controls there.
+- **The read model S4 must keep in sync:** `lib/admin/tenant-directory.ts` (pure `shapeTenantRow`/`filterTenants`
+  + es-MX labels) and its server sibling `lib/admin/tenant-directory-server.ts` (`listTenants()`). After a
+  grant/revoke, the inspector must reflect the new `entitlementReason` — easiest is to refetch
+  `GET /api/admin/tenants` (already exists, `withAdmin`) or have the mutation route return the reshaped row.
+- **Entitlement is already derived in one place** — `shapeTenantRow` calls `readDomainGrant` +
+  `deriveDomainEntitlement` from `lib/domain-entitlement`. S4's write must compose the **same**
+  `custom_domain_grant` shape (`{ type:'comp', granted_at, note }`), never invent a parallel one.
+- **The `subscription` gap S4 should close:** the **list** deliberately skips the per-seller subscription
+  lookup (N backend calls), so when the paywall is ON a shop's list-level reason is `none` and the row is
+  flagged `subscriptionUnchecked` (UI: "Sin plan (suscripción sin verificar)"). **S4's natural addition is a
+  per-slug detail read** (`GET /api/admin/tenants/[slug]`) that calls `resolveDomainEntitlement(metadata,
+  { sellerClerkId })` from `lib/domain-entitlement-server.ts` — that resolves the true reason incl.
+  `subscription` for the one inspected shop, cheaply. Build it when S4 needs live entitlement for the action.
+- **Audit is automatic:** `withAdmin` writes an `admin_audit_log` row on any successful **mutation** (S2.1) via
+  `after()` — so the new `POST` route gets audited for free; just honor the `if (!res.ok) throw` best-effort
+  discipline on any downstream write.
+- **No scribe coordination needed:** S2 (#109) is already merged, so S3 edited `lib/admin/sections.ts`
+  directly; S4 can too (no parallel session contends the registry).
+- **Strict read-model still holds for reads:** the directory enumerates the `marketplace_shops` mirror but
+  treats `metadata.medusa_seller_id` as canonical identity. S4's grant writes to
+  `marketplace_shops.metadata.custom_domain_grant` — **gate this on S4.0's finding** that the comp-grant is
+  genuinely non-commerce platform metadata (don't make Supabase the authority for a commerce capability).
+
 ## Stories
 
 ### S4.0 — Pre-flight: confirm the entitlement ownership · investigation (no code)
