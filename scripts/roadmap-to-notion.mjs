@@ -433,6 +433,9 @@ async function main() {
     } while (prCursor);
 
     for (const [, id] of targets) await api(`/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ properties: overlay }) });
+    // Surface a no-op: a slug that matches no Notion row (a brand-new epic not yet --sync'd) would
+    // otherwise report success while applying nothing. Don't fail (the deploy-lag window is legit) — warn.
+    if (!targets.size) console.error(`--pr: no Notion row matched ${prSlugs.join(', ')} — overlay not applied (epic not synced yet?).`);
     console.log(`pr-sync done — ${clearing ? 'cleared overlay' : `set ${PR_PROP}="${status}"`} on ${targets.size} row(s) for ${prSlugs.join(', ')}`);
     return;
   }
