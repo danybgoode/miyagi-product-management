@@ -28,6 +28,13 @@ build-order views render in order.
 - Add an **Epic build-order** view (filter Grain=Epic, sort by `Build order ID`) and a **Sprint build-order**
   view (filter Grain=Sprint, group by `Epic`, sort by `Build order ID` then sprint number).
 - **Acceptance:** both render in build order; sprints sit under their epic in sequence.
+- **⚠️ Property-type coupling (from S1 cross-review):** `Build order ID` is currently a **rich_text**
+  property, so a sort is *lexical* — `10` would sort before `2`. S1 already emits a real numeric
+  `build_order` in `--extract`. To sort numerically, **convert `Build order ID` to a Number property** —
+  and land it atomically with a one-line `props()` change in `roadmap-to-notion.mjs` (`'Build order ID':
+  { number: row.build_order }` instead of `rt(row.build_order)`), or the next `--sync` errors writing
+  rich_text into a Number property. (With only 1–2 today the lexical sort happens to be correct, so this
+  isn't urgent — but do it before the count crosses 9→10.)
 
 ## Sprint QA
 - No code/gate — verification is a **board eyeball after a `--sync` re-run**. The Notion query API (SQL) needs
