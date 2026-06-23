@@ -236,6 +236,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   dev-tooling-reliability S3 — `scripts/lib/cross-agent-cli.mjs`; dogfooded on its own PR #17.)*
 - **`node --test <dir>` (bare directory) was dropped in Node 24** — it tries to load the dir as a module
   (`Cannot find module '…/scripts/lib'`). Use a glob: `node --test 'scripts/lib/*.test.mjs'`. *(2026-06-21.)*
+- **The Notion API/MCP can't set a board to group by a FORMULA (or a RELATION) property — it silently
+  drops the grouping.** A `GROUP BY "<formula prop>"` update returns success but leaves the board
+  *ungrouped* (the `groupBy` field just vanishes). So a "board status" formula (`Lifecycle ?? Status`) is
+  great for *reading/filtering* but its **grouping must be flipped in the Notion UI** (owed step), or you
+  design around it. For "build-order views" we used a **sorted table** (`SORT BY "Build order ID", "Name"`)
+  instead of a board grouped-by-`Epic` relation — a sort clusters each epic's rows in sequence without the
+  unsettable grouping. Verify a view edit by **re-fetching the database** (the view JSON shows `groupBy`
+  only when it actually took; you can't `fetch` a `view://` URL directly). Two more: **Notion auto-creates
+  an unknown select option on write** (an overlay PATCH writing `Lifecycle="In progress"` created the
+  option — no pre-add needed); and the **SQL `query_data_sources` mode needs a Business+ plan** (else board
+  verification is a visual eyeball, not a programmatic assert). *(2026-06-23, notion-board-hygiene S2 —
+  `roadmap-to-notion.mjs` + the `Marketplace Roadmap` DB.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop

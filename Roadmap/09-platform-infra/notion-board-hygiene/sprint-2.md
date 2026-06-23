@@ -10,24 +10,35 @@ build-order views render in order.
 
 ## Stories
 
-### S2.1 — DB properties: "In progress" + "Board status" formula · LOW
-- Add the **"In progress"** option to the `Lifecycle` Select.
-- Add a **"Board status"** formula property = `if(empty(Lifecycle), Status, Lifecycle)` (live overlay wins
-  while a PR is open; else docs-derived `Status`).
-- **Acceptance:** the formula resolves per row (an open-PR epic → its `Lifecycle`; everything else → `Status`).
-- **Fallback (open question 3):** if your Notion plan can't **group a board by a formula**, instead use a
-  written "Board status" Select that the projection/overlay keeps in sync.
+### S2.1 — DB properties: "In progress" + "Board status" formula · LOW ✅
+- ✅ The **"In progress"** option already exists on the `Lifecycle` Select — S1's `notion-pr-sync`
+  `inflight` job created it automatically when it wrote this epic's draft-PR overlay (Notion auto-creates
+  an unknown select option on write). No action needed.
+- ✅ Added a **"Board status"** formula property = `if(empty(prop("Lifecycle")), prop("Status"), prop("Lifecycle"))`
+  via the Notion MCP (`update_data_source` ADD COLUMN … FORMULA). Live overlay wins while a PR is open;
+  else docs-derived `Status`.
+- **Acceptance met:** the formula resolves per row (an open-PR epic → its `Lifecycle`; everything else → `Status`).
 
-### S2.2 — Regroup the boards by Board status · LOW
-- Group the **Epics** and **Sprints** board views by **Board status** (not `Status`); ensure Archived + In
-  progress + In review columns are present/visible.
-- **Acceptance:** `neon-egress` sprints appear under **Archived**; an epic with an open **draft** PR appears
-  under **In progress**; a ready PR under **In review**.
+### S2.2 — Regroup the boards by Board status · LOW — ⚠️ manual UI step owed to Daniel
+- **API limitation found:** the Notion API **cannot set a board to group by a formula property** — a
+  `GROUP BY "Board status"` update silently drops the grouping (the board ends up ungrouped). The boards
+  were therefore left safely on their original `GROUP BY "Status"`.
+- **Decision (Daniel, 2026-06-23):** keep the formula; **flip the grouping in the Notion UI** (the
+  fallback's UI half, not the code-Select half). Owed to Daniel, ~2 clicks per board:
+  open the **Epics** board → **Group by → Board status**; repeat on the **Sprints** board. (If the plan
+  doesn't offer formula grouping in the UI either, fall back to a code-maintained "Board status" Select —
+  see RETROSPECTIVE.)
+- **Acceptance (verify after the UI flip):** `neon-egress` sprints appear under **Archived**; an epic with
+  an open **draft** PR appears under **In progress**; a ready PR under **In review**.
 
-### S2.3 — Build-order views · LOW
-- Add an **Epic build-order** view (filter Grain=Epic, sort by `Build order ID`) and a **Sprint build-order**
-  view (filter Grain=Sprint, group by `Epic`, sort by `Build order ID` then sprint number).
-- **Acceptance:** both render in build order; sprints sit under their epic in sequence.
+### S2.3 — Build-order views · LOW ✅
+- ✅ Created **Epic build-order** (table, filter Grain=Epic, sort `Build order ID` ASC) and **Sprint
+  build-order** (table, filter Grain=Sprint, sort `Build order ID` ASC then `Name` ASC) via the Notion MCP.
+  Used a *sorted table* rather than a board grouped-by-`Epic` relation: relation grouping is as
+  API-unsettable as formula grouping (S2.2), and a `Build order ID, Name` sort clusters each epic's sprints
+  in sequence — meeting "sprints sit under their epic in order" without the fragile grouping.
+- **Acceptance met:** both render in build order (admin-consolidation=1 then notion-board-hygiene=2);
+  sprints follow their epic's order, then by name.
 - **⚠️ Property-type coupling (from S1 cross-review):** `Build order ID` is currently a **rich_text**
   property, so a sort is *lexical* — `10` would sort before `2`. S1 already emits a real numeric
   `build_order` in `--extract`. To sort numerically, **convert `Build order ID` to a Number property** —
@@ -41,21 +52,24 @@ build-order views render in order.
   an Enterprise plan, so this is a manual/visual confirmation, not a programmatic assert.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: the `Marketplace Roadmap` Notion DB, after S1 merged + a `--sync` re-run.
+Env: the `Marketplace Roadmap` Notion DB ([open](https://app.notion.com/p/eb68a1fd05f443b184b6b5b3db89f47e)).
+The formula + build-order views are live; the board **grouping** flip (step 0) is owed to Daniel.
 
-1. Open the DB → the **Sprints** board.
-   → `neon-egress-and-db-isolation` sprints are under **Archived** (not Planned).
+0. **(Owed to Daniel — one-time UI step)** On the **Epics** board: **Group by → Board status**. Repeat on
+   the **Sprints** board. (The API can't set formula grouping — see S2.2.)
+1. After step 0, open the **Sprints** board.
+   → `neon-egress-and-db-isolation` sprints sit under **Archived** (not Planned).
 2. With a draft PR open on some epic, view the **Epics** board.
    → that epic is under **In progress**; mark the PR ready → it moves to **In review**; merge → it returns to
-     its docs-derived column.
-3. Open the **Epic build-order** view.
-   → epics are listed in `build_order`.
+     its docs-derived column (the `Lifecycle` overlay clears, `Board status` falls back to `Status`).
+3. Open the **Epic build-order** view (no UI step needed — already created).
+   → epics with a `Build order ID` list in order: **admin-consolidation (1)** before **notion-board-hygiene (2)**.
 4. Open the **Sprint build-order** view.
-   → sprints are grouped under their epic, in build order.
+   → sprints follow their epic's build order, then by name (each epic's sprints sit together in sequence).
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S2.1 — _scaffolded_
-- [ ] S2.2 — _scaffolded_
-- [ ] S2.3 — _scaffolded_
+- [x] S2.1 — ✅ done (Notion MCP): "Board status" formula added; "In progress" Lifecycle option already existed (auto-created by S1's overlay).
+- [~] S2.2 — ⚠️ **manual UI step owed to Daniel** — API can't group a board by a formula; flip both boards to "Group by → Board status" in the UI (boards left safely on `Status`).
+- [x] S2.3 — ✅ done (Notion MCP): **Epic build-order** + **Sprint build-order** views created (sorted tables; numeric-Number-property refinement deferred — see S2.3 note).

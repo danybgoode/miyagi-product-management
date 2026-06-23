@@ -1,5 +1,5 @@
 ---
-status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close. (S1 repo fixes shipped; S2 Notion config pending.)
+status: shipped      # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. (S1 repo fixes merged #32; S2 Notion config applied via MCP; board-grouping UI flip owed to Daniel.)
 slug: notion-board-hygiene
 build_order: 2       # numeric build-order sequence (SSOT for the Notion build-order views)
 ---
@@ -70,12 +70,21 @@ S1 lands so the build-order data + the "In progress" overlay exist for the views
 
 ## Definition of Done (epic)
 
-- [ ] An archived epic's sprints show **Archived** (not Planned) in the Sprints board (`neon-egress` is the test case).
-- [ ] The Epics + Sprints boards group by a **Board status** that shows live **In progress** (draft PR) /
-      **In review** (ready PR), auto-clearing on merge back to the docs-derived status.
-- [ ] Build-order views render epics in `build_order`, with sprints nested under their epic in order.
-- [ ] `build_order` is set in epic README frontmatter for active/near-term epics; the projection emits it.
-- [ ] S1 covered by a pure `node:test`/`--extract` assertion; `tsc`/build N/A (script-only).
-- [ ] Each `sprint-N.md` status ticked with commit refs; S2 runbook executed (or assigned).
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; learnings promoted to `LEARNINGS.md`.
-- [ ] Ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
+- [x] An archived epic's sprints show **Archived** (not Planned) — `floorSprintStatus` (S1.1), `neon-egress`
+      verified in `--extract` + `node:test`. Visible on the Sprints board after the S2.2 UI grouping flip.
+- [~] The Epics + Sprints boards group by a **Board status** that prefers the live overlay — the formula +
+      "In progress" option exist (S2.1); the **grouping flip is a UI step owed to Daniel** (API can't set
+      formula grouping — S2.2).
+- [x] Build-order views render epics in `build_order`, sprints in their epic's order — **Epic build-order**
+      + **Sprint build-order** views created (S2.3).
+- [x] `build_order` set in epic README frontmatter (admin-consolidation=1, notion-board-hygiene=2); the
+      projection emits it on epic + sprint rows (S1.2).
+- [x] S1 covered by a pure `node:test`/`--extract` assertion (`scripts/roadmap-to-notion.test.mjs`, 35 cases).
+- [x] Each `sprint-N.md` status ticked (S1 commit refs; S2 marks the owed UI step).
+- [x] This `README.md` marked `status: shipped`; `RETROSPECTIVE.md` written; learnings promoted to `LEARNINGS.md`.
+- [x] Ran `node scripts/build-order.mjs`; staged `BUILD-ORDER.md`.
+
+**Owed to Daniel (operational, no code):** (1) flip both boards to **Group by → Board status** in the
+Notion UI; (2) the live draft-PR overlay eyeball (open a draft PR → row shows In progress → ready → In
+review → merge clears). **Deferred (documented):** convert `Build order ID` to a Number property for
+true numeric sort, landed with a one-line `props()` change (S2.3 note) — not urgent at 1–2 entries.
