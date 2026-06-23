@@ -52,20 +52,29 @@ shell is real on day one.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: the branch's Vercel preview (then production after merge).
 
+**Pre-req (owed to Daniel, one-time):** set `MIYAGI_ADMIN_EMAILS` in Vercel (your email, comma-list) so the bridge-MVP allow-list admits the Clerk path. Without it the Clerk path admits no one and only step 5 (`?secret=`) works.
+
 1. As a signed-out / non-admin user, go to `<preview>/admin`.
    → You are redirected to `/` (not shown the hub).
-2. Sign in as an allow-listed admin, go to `<preview>/admin`. **[owed to Daniel — admin session]**
-   → You see the **admin hub**: a nav listing Coupons, Print, and a "Scraping ↗" link-out. No auto-redirect to the scraper.
+2. Sign in as an allow-listed admin (your email in `MIYAGI_ADMIN_EMAILS`), go to `<preview>/admin`. **[owed to Daniel — admin session]**
+   → You see the **admin hub**: section cards + a left-nav listing Cupones, Edición impresa, and a "Scraping ↗" link-out. No auto-redirect to the scraper.
 3. Click "Scraping ↗".
-   → Opens the external scraper app (`miyagisanchez-scraper.vercel.app`).
-4. Click "Coupons" then "Print".
-   → Each renders inside the admin shell (left-nav present), not as a bare page.
+   → Opens the external scraper app (`miyagisanchez-scraper.vercel.app`) in a new tab.
+4. Click "Cupones" then "Edición impresa".
+   → Each renders **inside the admin shell** (left-nav present), not as a bare page. (Note: clicking a mutation/refresh inside Cupones/Print as a *Clerk* admin may 401 — those `/api/admin/*` routes migrate to Clerk in S2.3; the page + its initial data still render.)
 5. Sanity: hit `<preview>/admin/coupons?secret=<ADMIN_SECRET>` (dual-accept).
-   → Still works — existing secret access is not broken this sprint.
+   → Still works fully — existing secret access is not broken this sprint.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S1.1 — `lib/admin/identity.ts` + dual-accept `requireAdmin`/`withAdmin`
-- [ ] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed)
-- [ ] S1.3 — register coupons/print; delete orphaned `AdminScrapeClient.tsx`
+**PR [#108](https://github.com/danybgoode/miyagisanchezcommerce/pull/108)** (draft) — branch `feat/admin-consolidation`. Bundles all three S1 stories; **HIGH overall (auth surface) → Daniel merges.**
+- [x] S1.1 — `lib/admin/identity.ts` + dual-accept `requireAdmin`/`withAdmin` · `f514bfb`
+- [x] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed) · `d6a29d1`
+- [x] S1.3 — register coupons/print; delete orphaned `AdminScrapeClient.tsx` · `b218a9e`
+
+**Gate (local):** `tsc --noEmit` ✓ · `npm run build` ✓ · new api specs green — `admin-identity.spec.ts` (7) + `admin-sections.spec.ts` (9). CI runs the full api suite vs the branch preview.
+
+**Owed to Daniel:** (1) the authed admin smoke (steps 2–5 below — he holds an admin Clerk session); (2) **operational** — set `MIYAGI_ADMIN_EMAILS` in Vercel (his email) so the bridge-MVP allow-list admits the Clerk path; until then only `?secret=` works.
+
+**Thin-shipping note:** a Clerk admin (no `?secret=`) reaching Coupons/Print renders the page (server-fetched initial data) but the client's `/api/admin/*` mutations still need the secret — those routes migrate to Clerk in **S2.3**.
