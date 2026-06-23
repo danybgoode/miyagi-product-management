@@ -54,25 +54,51 @@ history/referer/logs and is revocable per-user.
   section-render specs. **DB migration (S2.1) + the secret-retirement (S2.3) are HIGH → Daniel-merged.** State
   the authed-sweep gap honestly in the PR (agent owns api-level; Daniel owns the live admin-session sweep).
 
-## Sprint 2 — Smoke walkthrough (do these in order)
-Env: branch preview → production. **All steps need an admin Clerk session — owed to Daniel.**
+## Build decisions (confirmed with Daniel, 2026-06-22)
+1. **Scrape routes** (`/api/admin/scrape`, `/api/admin/runs`, `/api/admin/runs/[id]/csv`) were dead in-repo
+   (their only caller, `AdminScrapeClient`, was deleted in S1) → **migrated to Clerk** like every other route.
+2. **neighborhood-pulse smoke route** → refactored its internal HTTP PATCH to **direct `db` writes** of
+   `web_visible`; it no longer needs `ADMIN_SECRET`.
+3. **`admin_audit_log` migration** applied to prod via the **Supabase MCP** (`apply_migration`, project
+   `bonsaiClerk` / `xljxqymsuyhlnorfrnno`) — additive `CREATE TABLE`, table-first before the code deploys.
 
-1. As an allow-listed admin, open `/admin/supply`.
-   → The supply/import surface renders inside the admin shell (no longer at top-level `/supply`).
-2. Open `/admin/vecindario`, toggle a shop's `web_visible`.
-   → The toggle works here (and Print no longer shows it).
-3. Open `/admin/referrals`, change the reward amount, save.
-   → It persists (GET reflects the PATCH).
-4. Open `/admin/audit`.
-   → The toggle + the referrals change you just made appear as rows with your admin email + timestamp.
-5. In a fresh/incognito window (no Clerk session), hit `/admin/coupons?secret=<ADMIN_SECRET>`.
-   → **Redirected to `/`** — the human secret no longer grants access.
-6. Confirm a batch-script call to `/api/admin/import` with `Bearer <ADMIN_SECRET>` still works.
-   → Still authorized (internal route exception preserved).
+### Final `ADMIN_SECRET` surface (grep-confirmed)
+Human admin paths are **Clerk-only**. `ADMIN_SECRET` survives **only** on documented MACHINE paths that have
+no Clerk session:
+- `/api/admin/import` — Bearer, for batch scripts.
+- The **PDF render path** (a discovery, not in the original sprint scope): `/api/admin/print/editions/[id]/pdf`
+  builds the secret URL that **headless Chromium** loads, and `/admin/print/[editionId]/print` accepts it (OR a
+  Clerk admin, for the human "Vista de impresión"). The US-5b renderer is inert until `PRINT_PDF_URL` is set.
+- (`/api/cron/print-pending` uses a separate `CRON_SECRET`, unrelated to admin auth.)
+
+## Sprint 2 — Smoke walkthrough (do these in order)
+Env: branch preview → production. **All steps need an admin Clerk session — owed to Daniel.** An allow-listed
+admin = an email in `MIYAGI_ADMIN_EMAILS` (or a Clerk `publicMetadata.role = 'admin'`). No `?secret=` anywhere.
+
+1. As an allow-listed admin, open `/admin` → the hub lists Cupones, Edición impresa, Importar oferta,
+   Vecindario, Referidos, Auditoría, and Scraping (external ↗).
+   → All seven cards render; the left-nav mirrors them.
+2. Open `/admin/supply` (was top-level `/supply`).
+   → The import surface renders inside the admin shell. Visiting old `/supply` redirects here.
+3. Open `/admin/vecindario`, toggle an aporte's **“Mostrar en línea”** (`web_visible`).
+   → The toggle persists. Open `/admin/print` → it shows only **Ediciones / Proveedores** (no social tab).
+4. Open `/admin/referrals`, change the reward amount, **Guardar**.
+   → It persists (reload reflects the new value).
+5. Open `/admin/audit`.
+   → The vecindario toggle + the referrals change appear as rows with **your admin email + timestamp**, and
+     the `payload_summary` carries **no secret values**.
+6. In a fresh/incognito window (no Clerk session), hit `/admin/coupons?secret=<ADMIN_SECRET>`.
+   → **Redirected to `/`** — the human secret no longer grants access. **[owed to Daniel — auth path]**
+7. `curl` any migrated API anonymously, e.g. `GET /api/admin/referrals/config` (and again with
+   `?secret=<ADMIN_SECRET>` / `x-admin-secret`).
+   → **401** in all three cases — the URL/header secret is retired. *(Covered by `admin-auth-migration.spec.ts`.)*
+8. Confirm a batch-script call to `/api/admin/import` with `Authorization: Bearer <ADMIN_SECRET>` still works.
+   → Still authorized (internal machine exception preserved). **[owed to Daniel — money/auth path]**
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] S2.1 — `admin_audit_log` + `withAdmin` audit writes
-- [ ] S2.2 — re-home `/supply`; extract Vecindario; Referrals UI
-- [ ] S2.3 — migrate all routes/pages to Clerk; kill secret-in-URL (humans); audit viewer; scraper-hop decision
+- [x] S2.1 — `admin_audit_log` + `withAdmin` audit writes *(table live via Supabase MCP; commit `253bd25`)*
+- [x] S2.2 — re-home `/supply`; extract Vecindario; Referrals UI *(commit `cac5fd9`)*
+- [x] S2.3 — migrate all routes/pages to Clerk; kill secret-in-URL (humans); audit viewer; scraper-hop
+      decision *(scraper stays external link-out; commit `e332792`)* — **HIGH → Daniel-merged**
