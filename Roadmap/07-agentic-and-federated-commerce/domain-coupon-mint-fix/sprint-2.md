@@ -1,12 +1,12 @@
 # Domain-coupon mint fix — Sprint 2: Prod live mint + live verify
 
-**Status:** ✅ S2.1 fix MERGED to prod (PR [#120](https://github.com/danybgoode/miyagisanchezcommerce/pull/120) `68af03f`, CI green + codex cross-review clean); S2.2/S2.3 = Daniel's prod mint + verify.
+**Status:** ✅ COMPLETE — fix merged (PR [#120](https://github.com/danybgoode/miyagisanchezcommerce/pull/120) `68af03f`) + Daniel minted the live coupon (2026-06-23): reads **0/100 · activo**, present in the Stripe live dashboard as *"Dominio propio — primer año gratis"*.
 
 | Story | Status | Risk |
 |---|---|---|
 | S2.1 — Fix the mint request (coupon name ≤ 40 chars) | ✅ `68af03f` | high |
-| S2.2 — Mint the live `miyagisan` coupon (idempotent) | ⬜ Daniel — ready once deploy is live | high |
-| S2.3 — Verify live 0/100 · activo (+ optional real redemption) | ⬜ Daniel | high |
+| S2.2 — Mint the live `miyagisan` coupon (idempotent) | ✅ Daniel — *Crear cupón* → flipped; coupon live in Stripe | high |
+| S2.3 — Verify live 0/100 · activo | ✅ Daniel — *Actualizar* → **0/100 · activo**; optional real redemption still owed | high |
 
 > Goal: the **real** `miyagisan` coupon exists on the **live** Stripe platform account and the giveaway is
 > redeemable.
@@ -50,17 +50,18 @@ the result is noted in `RETROSPECTIVE.md`.
 - **deterministic gate:** if S2.1 is config-only, no code merge; if any code lands, the standard gate applies.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-> _Daniel-owned; live money path._
+> _Daniel-owned; live money path._ **✅ Steps 1–3 run + passed 2026-06-23.**
 
 Env: **production** · `https://miyagisanchez.com`
 
-1. Go to `https://miyagisanchez.com/admin/coupons` (admin).
-   → The campaign card loads; status read no longer errors (S2.1 applied).
-2. Click **Crear cupón**.
-   → Card flips to "0/100 · activo" + "Cupón listo ✓".
-3. Open the Stripe **live** dashboard → Products → Coupons.
-   → Coupon `custom_domain_campaign_miyagisan` (100% off, once, max 100) + Promotion Code `MIYAGISAN` are present.
-4. (optional, real money path — **Daniel**) Redeem `MIYAGISAN` on a real custom-domain checkout.
+1. Go to `https://miyagisanchez.com/admin/coupons` (admin). ✅
+   → The campaign card loads; the status read no longer 502s.
+2. Click **Crear cupón**. ✅
+   → Card flipped to **"0/100 · activo"** + "Cupón listo ✓".
+3. Click **Actualizar** / open the Stripe **live** dashboard → Products → Coupons. ✅
+   → Counter reads **0/100 · activo**; Coupon present as *"Dominio propio — primer año gratis"*
+     (`custom_domain_campaign_miyagisan`, 100% off, once, max 100) + Promotion Code `MIYAGISAN`.
+4. (optional, real money path — **still owed to Daniel**) Redeem `MIYAGISAN` on a real custom-domain checkout.
    → First year charges **$0**; renewal scheduled at **$499 MXN/yr**; admin counter reads **1/100**.
 
 If any step fails, note the step number + what you saw — that's the bug report.

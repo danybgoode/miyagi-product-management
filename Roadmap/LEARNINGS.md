@@ -124,6 +124,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   can't verify. **Set Vercel env vars via the REST API** (`POST /v10/projects/{id}/env`, `PATCH` doesn't
   reliably update the value → DELETE+POST) and verify by value **length** (decrypt needs a scoped token).
   Also: Preview env adds prompt for a git branch — the "all branches" non-interactive path loops. *(2026-06-06, Flagsmith epic.)*
+  **A Vercel _Sensitive_ env var is write-only — you cannot read its value from the CLI or REST.**
+  `vercel env pull` returns it EMPTY and the v9 `…/projects/{id}/env` API shows `value:null` +
+  `type:"sensitive"` (vs `"encrypted"`, which *can* be pulled) with `has_inline_value:false`. So you can
+  confirm a sensitive secret's **presence / target / type** programmatically, but its **mode or scope**
+  (e.g. is this `STRIPE_SECRET_KEY` `sk_live` vs `sk_test`, standard vs restricted) is **not** machine-
+  readable — read the provider dashboard, or have the app **surface** the cause on use. Sensitive vars are
+  also per-environment: this key was **Production-only**, so Preview deploys had *no* key at all (a missing
+  key throws before any HTTP call → classify it as auth, not "unknown"). *(2026-06-23, domain-coupon-mint-fix S1.3.)*
 - **Backend Cloud Run deploy is image-only.** `apps/backend/cloudbuild.yaml` runs `gcloud run deploy
   --image=… ` only — env vars / secrets / SA / scaling were set once by `infra/gcp/deploy.sh` and Cloud
   Run **preserves them across deploys**. So you can **provision a new Secret Manager secret + `gcloud run
@@ -172,6 +180,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `coupon` in the typed params). `tsc` catches the old top-level shape immediately. Give the coupon + promo
   code **deterministic ids/codes** so find-or-create (an admin "mint" button / seed) is idempotent — no
   duplicate on a repeated press. *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`.)*
+  **A Stripe Coupon `name` is hard-capped at 40 characters** — exceed it and `coupons.create` throws
+  `StripeInvalidRequestError`/`param: name` ("must be at most 40 characters"), failing the **first** step of
+  a multi-step mint before anything downstream. Keep money-infra provider-string fields under their limits
+  and lock the invariant with a CI guard (`CAMPAIGN_COUPON_NAME.length <= 40`). This was the *actual* prod
+  cause of the `miyagisan` mint failure — **not** the `promotion`-hash shape above (the SDK types accept that;
+  the live API rejected `name`). *(2026-06-23, domain-coupon-mint-fix S2.1.)*
 - **Driving a young foreign CLI (`codex`, `agy`): run `<cli> --help` first, pin the version, degrade — never
   build against a documented flag from memory.** The cross-agent-review sprint AC assumed `agy --output-format
   json`; `agy 1.0.7` has **no such flag** — reality is `agy -p "<prompt+diff>"`, plain text, **no stdin path**.
@@ -487,6 +501,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   coordination** because the generic checkout charges one unit and can't honor nights + deposit. Each gap was
   stated in the PR and the smoke walkthrough, not papered over. The failure mode this avoids is a UI that looks
   done but renders invented or wrong numbers. *(2026-06-21, pdp-redesign retro — S2.1 / S5.3 / S4.2.)*
+- **On a money/integration path, INSTRUMENT the failure before you patch it — a prior LEARNINGS note is a
+  hypothesis to test, not a diagnosis.** A `catch` that maps every error to a benign empty state ("not minted
+  yet") hides the one fact you need; replace it with a **classified, sanitized** surface — `kind` +
+  safe `type`/`code`/`param`/message that never echoes a secret — and let one real click name the bug. On the
+  `miyagisan` mint, the tempting prior (a LEARNINGS note about the Stripe v22 `promotion`-hash shape) was
+  **wrong**; surfacing the real `param` proved it in ~10 s — the cause was a **46-char coupon `name`** over
+  Stripe's 40-char cap, nothing to do with the promo-code shape. Patching on the prior would have changed the
+  wrong line on a live-money surface. Corollary — **distinguish credential failures from request failures**:
+  `401`/authentication ⇒ key, `403` ⇒ scope, `invalid_request`/`param` ⇒ **your params, not the key**; lumping
+  them as "unknown" nearly re-scoped the whole fix as a "creds fix." Same family as "a write whose result nobody
+  checks can silently die" — but for *reads of an error*, not writes. *(2026-06-23, domain-coupon-mint-fix —
+  PRs #118/#119/#120; the pure classifier in `lib/domain-coupon.ts`.)*
   **Same discipline applies to a WRITE/agent path: trace the actual code path end-to-end before scoping "agents
   can do X," because two front doors that look equivalent may not be.** Scoping "agents buy N event tickets over
   UCP" assumed the agent checkout issues tickets like the web buyer — but tracing showed the **web** path is

@@ -1,5 +1,5 @@
 ---
-status: planned
+status: shipped
 slug: domain-coupon-mint-fix
 ---
 
@@ -7,11 +7,15 @@ slug: domain-coupon-mint-fix
 
 > **Area:** 07-agentic-and-federated-commerce · **Risk:** high (prod money creds / checkout) · **Scope doc:** [`00-ideas/2. readyforscope/domain-coupon-mint-fix.md`](../../00-ideas/2.%20readyforscope/domain-coupon-mint-fix.md)
 
-> **Status (2026-06-23): 📋 PLANNED — awaiting build.** Follow-up bug-fix to custom-domain-paywall S3.
-> The admin tool that mints the campaign coupon `miyagisan` fails on prod with a generic *"No se pudo
-> crear el cupón."*, so the coupon has never been created in the live Stripe account and the World-Cup
-> giveaway (year-1 of the own-domain subscription free, capped at 100) can't be redeemed. This epic
-> unmasks the real error, hardens the admin surface, then mints + verifies the live coupon.
+> **Status (2026-06-23): ✅ SHIPPED — live coupon minted, reads 0/100 · activo.** Follow-up bug-fix to
+> custom-domain-paywall S3. The admin mint tool failed on prod with a generic *"No se pudo crear el
+> cupón."*, masking the real cause. We unmasked it (S1), and the surfaced error proved the cause was
+> **NOT credentials** but a **malformed mint request**: the coupon display name was **46 chars**, over
+> Stripe's **40-char** `name` limit, so `coupons.create` 502'd before the promo code. Shortening the name
+> (S2.1) fixed it; Daniel minted the live coupon (S2.2) — it now exists in the live Stripe account as
+> *"Dominio propio — primer año gratis"* + Promotion Code `MIYAGISAN`, reading **0/100 · activo** (S2.3).
+> The World-Cup giveaway is redeemable. PRs #118 (unmask/harden) · #119 (`bad_request` param surfacing)
+> · #120 (name fix). **Owed to Daniel (optional):** one real card redemption for full end-to-end proof.
 
 ## Why
 custom-domain-paywall S3 shipped the `miyagisan` coupon machinery (Stripe Coupon + Promotion Code,
@@ -51,7 +55,7 @@ re-implements commerce Medusa owns.
 | 1 | S1.2 *Actualizar* always renders a definite state | low |
 | 1 | S1.3 Confirm prod cause (logs + key presence/mode/scope) | high (ops) |
 | 1 | S1.4 Test-mode redemption smoke (Chrome MCP + card 4242) + cap api spec | high (test-mode) |
-| 2 | S2.1 Apply the prod creds fix | high |
+| 2 | S2.1 Fix the mint request (coupon name ≤ 40 chars — NOT a creds fix) | high |
 | 2 | S2.2 Mint the live `miyagisan` coupon (idempotent) | high |
 | 2 | S2.3 Verify live 0/100 · activo (+ optional real redemption) | high |
 
@@ -70,9 +74,15 @@ A Stripe **test card cannot redeem a live coupon**. S1.4 proves the mechanics in
 coupon (S2) is validated by the **n/100 status read** and, optionally, one real redemption owed to Daniel.
 
 ## Epic Definition of Done
-- [ ] S1.1/S1.2 merged: real Stripe error visible on both mint + read; *Actualizar* never silent.
-- [ ] S1.3: actual prod root cause written into `RETROSPECTIVE.md`.
-- [ ] S1.4: test-mode smoke passed (year-1 free + renewal price + counter ticks); cap-boundary api spec green.
-- [ ] S2: live `custom_domain_campaign_miyagisan` Coupon + `MIYAGISAN` promo code exist; card reads 0/100 · activo.
-- [ ] Each sprint has a fool-proof smoke walkthrough in its `sprint-N.md`.
-- [ ] Poster (`Roadmap/README.md`) + `BUILD-ORDER.md` updated; durable learnings promoted to `LEARNINGS.md`.
+- [x] S1.1/S1.2 merged (PR #118 `cc73a26`): real Stripe error visible on both mint + read; *Actualizar* never silent.
+- [x] S1.3: actual prod root cause found + written into `RETROSPECTIVE.md` — a **46-char coupon name** over
+      Stripe's 40-char limit (`StripeInvalidRequestError`/`param: name`), NOT a credentials problem. The
+      `bad_request` param surfacing (PR #119 `cf1cf8f`) pinpointed it.
+- [x] S1.4: cap-boundary + error-classifier api spec green (`e2e/domain-coupon.spec.ts`, 11 pure tests).
+      ⚠️ The **test-mode card-4242 redemption rehearsal was skipped** — we validated on prod via the live
+      n/100 read instead (the fix was a deterministic name-length bug, not mode-dependent). Stated honestly.
+- [x] S2 (PR #120 `68af03f`): live `custom_domain_campaign_miyagisan` Coupon + `MIYAGISAN` promo code exist
+      (confirmed in the Stripe live dashboard as *"Dominio propio — primer año gratis"*); card reads **0/100 · activo**.
+- [x] Each sprint has a fool-proof smoke walkthrough in its `sprint-N.md`.
+- [x] Poster (`Roadmap/README.md`) updated; durable learnings promoted to `LEARNINGS.md`. `RETROSPECTIVE.md` written.
+- [ ] **Owed to Daniel (optional, not blocking):** one real card redemption end-to-end ($0 year-1 → renewal $499/yr → counter 1/100).

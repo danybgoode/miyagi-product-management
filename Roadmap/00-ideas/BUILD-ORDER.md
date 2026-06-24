@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-06-23 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-06-24 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -14,11 +14,11 @@
 
 - [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 0/4 stories
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2 sprints
+_None._
 
-## ✅ Shipped (57)
+## ✅ Shipped (58)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -46,6 +46,7 @@
 - [Checkout on the custom domain (custom-domain-checkout)](../../07-agentic-and-federated-commerce/custom-domain-checkout/README.md) — 07 Agentic/Federated · 4/4 stories · risk: High
 - [Cross-channel Storefront Trust Parity](../../07-agentic-and-federated-commerce/cross-channel-trust-parity/README.md) — 07 Agentic/Federated · 2/2 stories · risk: Low · Wave 3
 - [Custom-domain paywall + campaign coupon](../../07-agentic-and-federated-commerce/custom-domain-paywall/README.md) — 07 Agentic/Federated · 0/9 stories · risk: High
+- [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 0/2 stories
 - [Embeddable Widget](../../07-agentic-and-federated-commerce/embeddable-widget/README.md) — 07 Agentic/Federated · 7/7 stories
 - [Multi-tenant subdomains (`yourshop.miyagisanchez.com`)](../../07-agentic-and-federated-commerce/subdomains/README.md) — 07 Agentic/Federated · 0/3 stories
 - [Own channel: custom-domain polish (custom-domain-polish)](../../07-agentic-and-federated-commerce/custom-domain-polish/README.md) — 07 Agentic/Federated · 7/7 stories · risk: Low
