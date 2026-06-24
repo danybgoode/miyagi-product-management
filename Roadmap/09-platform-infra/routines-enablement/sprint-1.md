@@ -63,24 +63,28 @@ reproducible and the guardrails are written down.
 - Keep existing repo gates green (`scripts-guard.yml`, `build-order --check`).
 - The live stand-up (account changes, GitHub-App install, a real test-PR comment) is **owed to Daniel**.
 
-## Sprint 1 — Smoke walkthrough (do these in order)
+## Sprint 1 — Smoke walkthrough (do these in order) — ✅ DONE 2026-06-24
 Env: Daniel's `claude.ai/code/routines` account + the two app repos. (Artifacts live in the root repo on the
-merged branch.)
+merged branch.) **All steps run; result noted inline.**
 
 1. Open `scripts/routines/README.md` on the merged branch and follow the **Routine A** stand-up steps: install
-   the Claude GitHub App on `miyagisanchezcommerce`, create Routine A from `pr-review.prompt.md` with the
-   GitHub trigger (pull_request opened + ready_for_review, draft=false).
-   → The routine appears at `claude.ai/code/routines`.
+   the Claude GitHub App on `miyagisanchezcommerce` + `medusa-bonsai-backend`, create Routine A from
+   `pr-review.prompt.md` with the GitHub trigger (pull_request action **`opened`**, filter draft=false — a
+   trigger is one action OR all-actions, **not** `opened`+`ready_for_review` together).
+   → ✅ Routines created (one per code repo). **Owed:** both were initially set to `ready_for_review`; flip to
+     `opened` so directly-opened non-draft PRs auto-fire (the reason #121 didn't auto-trigger).
 2. Open a small non-draft test PR in `miyagisanchezcommerce`.
-   → Within a few minutes one **advisory review comment** appears (authored as you), carrying the
-     "advisory only — not a gate" banner. The PR's required checks are unaffected and it stays mergeable.
+   → ✅ Routine A posted one **advisory review comment** with the "advisory only — not a gate" banner (FE on
+     #121, BE on #31). Required checks unaffected. (Auto-trigger pending the `opened` flip; verified via Run now.)
 3. Stand up **Routine C** from `roadmap-hygiene.prompt.md` (weekly schedule, root repo) and click **Run now**.
-   → A `claude/` docs PR appears with a regenerated `BUILD-ORDER.md` + a short drift report.
+   → ✅ Opened `claude/` docs PR **#40** (drift report). First run flagged real drift → applied as PRs #41/#42.
 4. Stand up **Routine B** from `smoke-triage.prompt.md` (nightly, frontend repo, `MS_TEST_*` + allow-list set).
    While the browser smoke is red, click **Run now**.
-   → A `claude/` **draft** PR appears naming the failing spec + a proposed fix. (Green smoke → no PR.)
+   → ✅ Ran; smoke was **green** (2026-06-24 09:00 run) so it correctly opened **no PR** (green-path no-op).
+     The red-smoke → draft-PR path stays owed to Daniel for a future red night.
 5. Check `claude.ai/settings/usage` / the routines page.
-   → Remaining daily routine runs reflect the runs above; the A+C+B mix stays within the Pro 5/day budget.
+   → ✅ Scheduled load (B nightly + C weekly) ≈ 1/day; A is a GitHub trigger and doesn't consume the Pro 5/day
+     scheduled cap (see the corrected cap budget in the runbook). Well within budget.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 

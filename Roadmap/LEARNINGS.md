@@ -222,6 +222,25 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   against payoff *before* building; for a nice-to-have, "keep the working local command + flip the policy" can
   be the right call. *(2026-06-22, cross-agent-review-always — CI auto-run descoped; `--skip-trivial` cost guard
   + policy shipped.)*
+  **A cloud Routine runs *as you*, which sidesteps the CI foreign-CLI auth blocker above — that's the unlock
+  for "auto-review on every PR."** A Claude Code Routine (research preview) is a full cloud session under your
+  claude.ai identity/connectors, so a GitHub-triggered review routine restores the auto-on-every-PR goal
+  `cross-agent-review-always` had to ship local-only — as the **Claude** family, not codex/agy, but with zero
+  CI-credential cost. Three facts that *only surfaced once it was stood up live* (the docs/spike got them
+  wrong, the running config corrected them): **(1) a GitHub trigger is ONE specific action OR all-actions —
+  you canNOT combine `opened` + `ready_for_review`**; and `opened` does **not** fire on a draft→ready flip, so
+  pick the action matching how PRs actually land (here `opened` + `Is draft=false`, incl. Dependabot — a
+  `ready_for_review`-only routine silently never fires on a directly-opened PR). **(2) the Pro daily cap (5/day)
+  bites SCHEDULED runs only** — GitHub-event + API triggers have separate hourly caps and don't consume it,
+  one-offs don't count; so a GitHub-triggered review is effectively uncapped for solo volume (verify the cap
+  *model*, don't budget a GitHub trigger against the scheduled cap). **(3) routines have no built-in failure
+  alert** — a "green" run only means the session exited cleanly, NOT that the task succeeded; route the
+  *actionable* output to a channel you already watch (a GitHub PR comment/PR gives you GitHub's own
+  notification; a failed *run* stays silent unless the prompt best-effort pings Telegram/Slack itself). Keep
+  the routine **advisory-only / never-a-required-check** (a plain PR comment carries no commit-status, so it
+  structurally can't be required — the standing convention enforced by the medium). *(2026-06-24,
+  routines-enablement — `scripts/routines/`; A confirmed live on PRs #31/#121; C's first run flagged real
+  drift → PRs #41/#42.)*
   **A SECOND single-purpose cross-agent script shares the rail, doesn't fork it.** The planning panel
   (`scripts/cross-panel.mjs` — second opinion on a *plan* instead of a PR) reused ~90% of cross-review by
   extracting the family-agnostic plumbing into one module (`scripts/lib/cross-agent-cli.mjs`: presence/version

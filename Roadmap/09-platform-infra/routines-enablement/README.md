@@ -1,9 +1,18 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: routines-enablement
 ---
 
 # Epic — Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)
+
+> ✅ **SHIPPED 2026-06-24 — 1 sprint, all LOW.** The three routine prompts + the stand-up runbook are
+> committed (`scripts/routines/`, PR #39); Routine A is **confirmed live** (it reviewed PRs #31 + #121
+> with the advisory banner). Daniel stood up all three in his account. The first Routine C run already
+> earned its keep — it flagged real drift, applied as PRs #41 (4 stale seed flips) / #42 (the
+> `deriveEpicStatus` Archived false-drift fix + `00-ideas/README` accuracy). Doc corrections (PR #43)
+> fixed the trigger model (one action, not a combo) + cap budget (GitHub triggers don't eat the 5/day)
+> and added an optional Telegram ping-on-failure. See `RETROSPECTIVE.md`. **Owed to Daniel (operational):**
+> flip both A routines `ready_for_review → opened`; optionally wire the Telegram-on-failure env.
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / dev-tooling + process (engineering-facing; no buyer/seller/agent surface).
@@ -64,18 +73,18 @@ three routines from the committed prompts, set B's `MS_TEST_*` secrets + allow-l
 provisioning.
 
 ## Definition of Done (epic)
-- [ ] `scripts/routines/{pr-review,roadmap-hygiene,smoke-triage}.prompt.md` committed in the house prompt
+- [x] `scripts/routines/{pr-review,roadmap-hygiene,smoke-triage}.prompt.md` committed in the house prompt
       format; each is self-contained (a routine runs autonomously — explicit about what to do + what success is).
-- [ ] `scripts/routines/README.md` runbook: per-routine stand-up steps (GitHub-App install targets, trigger
-      config, env/allow-list), the Pro 5/day cap budget, and the **advisory-only / never-a-required-check** rule.
-- [ ] A's prompt mirrors the `cross-review.prompt.md` rubric (five AGENTS rules, single-pass, advisory banner);
+- [x] `scripts/routines/README.md` runbook: per-routine stand-up steps (GitHub-App install targets, trigger
+      config, env/allow-list), the Pro cap budget, and the **advisory-only / never-a-required-check** rule.
+- [x] A's prompt mirrors the `cross-review.prompt.md` rubric (five AGENTS rules, single-pass, advisory banner);
       C's prompt opens a docs PR + drift report and runs `build-order.mjs` (no Notion connector); B's prompt
       reads the failing smoke run and opens a `claude/` draft fix PR.
-- [ ] D recorded as explicitly out (with the why), so it isn't re-litigated.
-- [ ] `sprint-1.md` has a smoke walkthrough (Daniel stands up A, opens a test PR, sees the advisory comment).
-- [ ] `RETROSPECTIVE.md`; poster line in `09-platform-infra/README.md`; `node scripts/build-order.mjs` re-run;
-      any durable learning (e.g. cloud-routine-as-you sidesteps CI foreign-CLI auth) promoted to `LEARNINGS.md`.
-- [ ] Feature branch deleted at merge; this README's frontmatter `status: shipped`.
+- [x] D recorded as explicitly out (with the why), so it isn't re-litigated.
+- [x] `sprint-1.md` has a smoke walkthrough (Daniel stands up A, opens a test PR, sees the advisory comment).
+- [x] `RETROSPECTIVE.md`; poster line in `09-platform-infra/README.md`; `node scripts/build-order.mjs` re-run;
+      durable learning (cloud-routine-as-you sidesteps CI foreign-CLI auth; trigger + cap model) promoted to `LEARNINGS.md`.
+- [x] Feature branch deleted at merge (PR #39); this README's frontmatter `status: shipped`.
 
 ## Session kickoff
 Run in a **fresh** Claude Code session.
