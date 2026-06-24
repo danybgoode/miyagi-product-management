@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { floorSprintStatus, lifecycleForPr, normalizeBuildOrder } from './roadmap-to-notion.mjs';
+import { floorSprintStatus, lifecycleForPr, normalizeBuildOrder, deriveEpicStatus } from './roadmap-to-notion.mjs';
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'roadmap-to-notion.mjs');
 
@@ -38,6 +38,22 @@ test('floorSprintStatus: real in-flight signals pass through unchanged', () => {
   assert.equal(floorSprintStatus('Scaffolded', 'Planned'), 'Planned');
 });
 
+// --- deriveEpicStatus: an `archived` epic short-circuits so the board never false-flags drift -----
+test('deriveEpicStatus: an archived epic derives Archived regardless of its sprints', () => {
+  // The bug this fixes: without the short-circuit, an archived epic with open-looking sprints derives
+  // In progress/Shipped, so status (Archived) != status_derived → permanent false drift every regen.
+  const openSprints = [{ status: 'In progress' }, { status: 'Planned' }];
+  assert.equal(deriveEpicStatus(openSprints, false, 'archived'), 'Archived');
+  assert.equal(deriveEpicStatus([{ status: 'Shipped' }], true, 'archived'), 'Archived'); // even retro-shipped
+});
+
+test('deriveEpicStatus: non-archived epics keep the prose/retro derivation', () => {
+  assert.equal(deriveEpicStatus([{ status: 'Shipped' }, { status: 'Shipped' }], false, 'in-progress'), 'Shipped');
+  assert.equal(deriveEpicStatus([{ status: 'In progress' }], false, undefined), 'In progress');
+  assert.equal(deriveEpicStatus([{ status: 'Planned' }], false, 'scaffolded'), 'Scaffolded');
+  assert.equal(deriveEpicStatus([], true, undefined), 'Shipped'); // retroShipped wins
+});
+
 // --- S1.1: live --extract integration (neon-egress is the canonical archived-epic test case) -----
 test('--extract: archived epic neon-egress-and-db-isolation projects all its sprints as Archived', () => {
   const out = execFileSync('node', [SCRIPT, '--extract'], { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
@@ -45,6 +61,11 @@ test('--extract: archived epic neon-egress-and-db-isolation projects all its spr
   const sprints = rows.filter((r) => r.grain === 'Sprint' && r.slug.startsWith('neon-egress-and-db-isolation--'));
   assert.ok(sprints.length > 0, 'expected neon-egress to have projected sprint rows');
   for (const s of sprints) assert.equal(s.status, 'Archived', `${s.slug} should be Archived`);
+  // The epic row itself must NOT drift: status (Archived) === status_derived (Archived).
+  const epic = rows.find((r) => r.grain === 'Epic' && r.slug === 'neon-egress-and-db-isolation');
+  assert.ok(epic, 'expected the neon-egress epic row');
+  assert.equal(epic.status, 'Archived');
+  assert.equal(epic.status_derived, 'Archived', 'archived epic must not false-flag drift');
 });
 
 // --- S1.2: build_order normalization + projection ------------------------------------------------

@@ -179,7 +179,12 @@ function epicShippedByRetro(epicPath) {
   return /20\d\d-\d\d-\d\d/.test(t);
 }
 
-function deriveEpicStatus(sprints, retroShipped) {
+// `epicFmStatus` is the raw README frontmatter `status:` (or undefined). Archival is a frontmatter-only
+// decision — it cannot be derived from sprints/retro — so when the epic declares `archived`, the
+// derivation must also say Archived; otherwise an archived epic with open-looking sprints false-flags
+// drift (status=Archived vs status_derived=In progress) on EVERY board regeneration, forever.
+export function deriveEpicStatus(sprints, retroShipped, epicFmStatus) {
+  if (epicFmStatus === 'archived') return 'Archived';
   if (retroShipped) return 'Shipped';
   if (sprints.length && sprints.every((s) => s.status === 'Shipped')) return 'Shipped';
   if (sprints.some((s) => s.status === 'Shipped' || s.status === 'In progress' || s.status === 'In review')) return 'In progress';
@@ -252,8 +257,8 @@ function buildRows() {
     const seed = seedByEpic.get(epicKey) || {};
     const sprints = epicSprints(e.path);
     const retroShipped = epicShippedByRetro(e.path);
-    const statusDerived = deriveEpicStatus(sprints, retroShipped);   // prose/retro fallback + drift signal
     const epicFm = epicFrontmatter(e.path);                          // read README frontmatter once
+    const statusDerived = deriveEpicStatus(sprints, retroShipped, epicFm.status); // prose/retro fallback + drift signal (archived short-circuits)
     const status = frontmatterStatusBucket(epicFm) || statusDerived; // README frontmatter is authoritative
     const buildOrder = normalizeBuildOrder(epicFm.build_order ?? seed.build_order); // epic FM is SSOT, seed fallback
     const totStories = sprints.reduce((a, s) => a + s.total, 0);
