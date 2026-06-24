@@ -214,8 +214,11 @@ export function normalizeBuildOrder(v) {
 // shows an archived epic full of "Planned" sprints (S1.1) nor a Shipped epic with stale "Planned" ones.
 // Real in-flight signals (In progress / In review) are preserved on non-archived epics.
 export function floorSprintStatus(epicStatus, sprintStatus) {
-  if (epicStatus === 'Archived') return 'Archived';                          // archived epic ⇒ ALL sprints Archived
-  if (epicStatus === 'Shipped' && sprintStatus === 'Planned') return 'Shipped';
+  // A TERMINAL epic forces ALL its sprints to that terminal state — a shipped/archived epic cannot have
+  // an "In progress"/"In review"/"Planned" sprint (those leaked onto the board as stale in-flight rows
+  // when this only floored Planned). Only a non-terminal epic keeps the real per-sprint signal.
+  if (epicStatus === 'Archived') return 'Archived';
+  if (epicStatus === 'Shipped') return 'Shipped';
   return sprintStatus;
 }
 
