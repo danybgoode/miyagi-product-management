@@ -170,8 +170,12 @@ the shared rail `scripts/lib/cross-agent-cli.mjs` (covered by its `node:test`); 
 (alias `--no-comment`) · `--help`. `<PR#>` is optional (omit → current branch). **Dependencies:** `gh`
 (authed), plus `codex` for `--agent codex` and `agy`
 for `--agent antigravity` — each degrades with a clear, fix-naming message if missing/unauthed. `agy` is
-pinned to **1.0.7** (it has no `--output-format json`; the script uses text output and **warns** on a
-version mismatch). The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
+pinned to **1.0.10** and the version check **fails loudly** on a mismatch (a silent warn is what let the
+1.0.7→1.0.10 print-contract change ship empty reviews). The 1.0.10 invocation is
+`agy -p "<prompt+diff>" --model "<MODEL>"`: `--print` now emits **nothing** without an explicit `--model`,
+so the script passes one — default **`GPT-OSS 120B (Medium)`** (a different family from the Claude host),
+overridable with the **`AGY_MODEL`** env var (e.g. a Gemini model once your account is entitled; Gemini
+returned empty on the dev machine). The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
 — the single source both this command and a human reviewer read. Zero npm deps — Node 18+.
 
 ### Restoring a lapsed Codex token (auto-fallback to Antigravity)

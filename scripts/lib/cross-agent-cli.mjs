@@ -5,8 +5,9 @@
 //   • scripts/cross-panel.mjs   — advisory second opinion on a proposed plan (a scope/seed doc)
 //
 // It holds only the family-agnostic mechanics: presence/version checks, the per-CLI context-passing quirks
-// (codex takes context on stdin; agy 1.0.7 has no stdin → context rides in argv, with a size cap), and the
-// shared-prompt loader. The *framing* of the context (a PR diff vs a plan doc) and the output handling
+// (codex takes context on stdin; agy takes the prompt as the `-p` argv value — stdin is NOT the prompt and
+// must be at EOF — with a size cap), and the shared-prompt loader. The *framing* of the context (a PR diff
+// vs a plan doc) and the output handling
 // (post a PR comment vs print a panel) stay in each consuming script. Zero npm deps — Node 18+.
 //
 // ── Codex → Antigravity auto-fallback ───────────────────────────────────────────────────────────────────
@@ -23,11 +24,19 @@ import { readFileSync, existsSync } from 'node:fs';
 // label per agent. Drives both the CLI dispatch and the human-readable header.
 export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 
-// Antigravity's headless CLI is new and its flags may shift between releases — pin the known-good version
-// and warn (not fail) on a mismatch so a bump surfaces but doesn't block.
-export const AGY_PINNED = '1.0.7';
+// Antigravity's headless CLI is new and its print contract shifts between releases — pin the known-good
+// version and FAIL LOUD on a mismatch (checkAgyVersion). 1.0.7→1.0.10 silently changed `--print` so it
+// emits NOTHING without an explicit --model, which a soft warn let ship as empty reviews; a hard fail forces
+// a human to re-verify the invocation below and bump this deliberately. Bumping = re-test runAntigravity().
+export const AGY_PINNED = '1.0.10';
 
-// agy 1.0.7 has no stdin input, so the prompt+context ride in a single argv string. Guard well under the
+// agy 1.0.10 `--print` mode prints NOTHING unless `--model` names a model the account is entitled to (no
+// headless default). On the dev machine GPT-OSS 120B and Claude Sonnet 4.6 worked; Gemini models returned
+// empty (likely entitlement). Default to GPT-OSS — it keeps the "different family from the Claude host" point
+// of cross-review — and let AGY_MODEL override it (e.g. a Gemini model once entitled).
+export const AGY_MODEL = process.env.AGY_MODEL || 'GPT-OSS 120B (Medium)';
+
+// agy takes the prompt+context as a single `-p` argv string (stdin is not the prompt). Guard well under the
 // OS limit (macOS ARG_MAX is 1 MB incl. env) so a huge input fails clearly instead of an opaque E2BIG.
 export const AGY_ARG_LIMIT = 256 * 1024;
 
@@ -165,14 +174,23 @@ export function currentHeadSha(deps = {}) {
   return runGit(['rev-parse', 'HEAD']);
 }
 
-export function checkAgyVersion() {
-  const r = spawnSync('agy', ['--version'], { encoding: 'utf8' });
-  const v = ((r.stdout || '') + (r.stderr || '')).trim().match(/\d+\.\d+\.\d+/);
-  if (v && v[0] !== AGY_PINNED) {
-    process.stderr.write(
-      `⚠ agy ${v[0]} (pinned ${AGY_PINNED}) — flags may have shifted; verify the output.\n`
+// FAIL LOUD on an unknown/mismatched agy version. The print contract enforced by runAntigravity (the --model
+// requirement + the argv framing) is version-specific, so a silent warn is what let 1.0.10 ship empty reviews
+// for weeks. A match is silent; an unparseable or mismatched version die()s with a fix-naming message. Deps
+// are injectable (spawn/fail/pinned) so a node:test can exercise both outcomes without a real agy or exiting.
+// NOTE: cross-review.mjs calls this only on the explicit `--agent antigravity` path; the codex→agy fallback
+// runs agy directly (kept intact) — the runAntigravity --model fix already restores its output regardless.
+export function checkAgyVersion(deps = {}) {
+  const { spawn = spawnSync, fail: failFn = die, pinned = AGY_PINNED } = deps;
+  const r = spawn('agy', ['--version'], { encoding: 'utf8' });
+  const m = ((r.stdout || '') + (r.stderr || '')).trim().match(/\d+\.\d+\.\d+/);
+  if (!m)
+    return failFn(`could not determine agy version (expected ${pinned}) — is the Antigravity CLI installed?`);
+  if (m[0] !== pinned)
+    return failFn(
+      `agy ${m[0]} != pinned ${pinned} — the print/--model contract may have shifted. ` +
+        `Re-verify runAntigravity() against \`agy --help\`, then bump AGY_PINNED to ${m[0]}.`
     );
-  }
 }
 
 // Load a shared `*.prompt.md`. The doc opens with an HTML-comment header; the prompt is everything below
@@ -295,21 +313,35 @@ export function runWithCodexFallback(
   }
 }
 
-// agy -p: agy 1.0.7 has no stdin block and no --output-format json — the caller must embed the context in
-// `fullArgv` (prompt + framed context), and we enforce the argv size cap here so an oversized input fails
-// with a clear message rather than an opaque E2BIG.
-export function runAntigravity(fullArgv, opts = {}) {
+// agy 1.0.10 `agy -p "<prompt>" --model "<MODEL>"`: the caller embeds the prompt+framed context in `fullArgv`
+// (stdin is NOT the prompt and must be at EOF — input:'' gives an immediate EOF or print mode blocks forever),
+// and --model is REQUIRED or `--print` exits 0 with NO output. We enforce the argv size cap so an oversized
+// input fails clearly (not an opaque E2BIG), and treat empty stdout as a failure (the missing-/unentitled-model
+// symptom) so the caller never posts a blank review. `deps.spawn` is injectable for a node:test (no real agy).
+export function runAntigravity(fullArgv, opts = {}, deps = {}) {
+  const { spawn = spawnSync } = deps;
   if (Buffer.byteLength(fullArgv, 'utf8') > AGY_ARG_LIMIT) {
     return fail(
       opts.soft,
       `input too large for antigravity (${Math.round(Buffer.byteLength(fullArgv) / 1024)} KB > ` +
-        `${AGY_ARG_LIMIT / 1024} KB; agy has no stdin input) — use --agent codex instead.`
+        `${AGY_ARG_LIMIT / 1024} KB; agy takes the prompt in argv, not stdin) — use --agent codex instead.`
     );
   }
-  const r = spawnSync('agy', ['-p', fullArgv], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const r = spawn('agy', ['-p', fullArgv, '--model', AGY_MODEL], {
+    input: '',
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
   if (r.status !== 0) {
     const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
     return fail(opts.soft, `agy -p failed: ${last}`);
   }
-  return (r.stdout || '').trim();
+  const out = (r.stdout || '').trim();
+  if (!out)
+    return fail(
+      opts.soft,
+      `agy returned no output — model "${AGY_MODEL}" may be unavailable/unentitled; set AGY_MODEL to a model ` +
+        `\`agy models\` lists and your account can run.`
+    );
+  return out;
 }
