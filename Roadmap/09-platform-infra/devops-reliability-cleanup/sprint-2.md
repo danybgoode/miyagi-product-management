@@ -62,28 +62,53 @@ second-opinion reviewer is usable.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: GCP project `miyagisanchezback-497722` (`gcloud config configurations activate bonsai-profile`) + a local
-checkout of the monorepo-root repo with `agy` installed.
+checkout of the monorepo-root repo with `agy` installed. Steps **1–6 are owed to Daniel** (live GCP/Telegram +
+a real agy run — they can't be driven from the build sandbox); steps 7–8 are the deterministic gate (run here).
 
-1. **(Owed to Daniel)** Run the retirement command:
+**Story 2 — Neon retirement (owed to Daniel):**
+1. **(owed)** Drop the stale target:
    `gcloud run jobs update db-backup --region=us-east4 --update-env-vars=BACKUP_TARGETS=supabase`.
-   → Command succeeds; `gcloud run jobs describe db-backup --region=us-east4` shows `BACKUP_TARGETS=supabase`.
-2. Wait one nightly cycle (job runs `0 9 * * *` UTC).
-   → **No** `🛑 db-backup FAILED: neon pg_dump failed` message in the ops Telegram chat (and no duplicate).
-3. Run the new Cloud SQL backup check on-demand against a **bogus** instance name (e.g. `--instance=does-not-exist`).
-   → A Telegram alert arrives (the failure-only path fires).
-4. Run the new check against the real instance `medusa-pg`.
-   → **Silence** (a recent `SUCCESSFUL` backup → no alert).
-5. `agy --version` (note the version), then
-   `node scripts/cross-review.mjs <a real PR#> --agent antigravity --repo danybgoode/miyagisanchezcommerce`.
-   → agy's review text prints (non-empty), carrying the "advisory only — not a gate" banner.
-6. Temporarily set `AGY_PINNED` to a clearly-wrong value and re-run.
-   → A **loud** error about the version mismatch (not a silently-ignored stderr warning).
+   → Command succeeds; `gcloud run jobs describe db-backup --region=us-east4 --format='value(...env...)'` shows
+   `BACKUP_TARGETS=supabase` (no `neon`).
+2. **(owed)** Wait one nightly cycle (`db-backup` runs `0 9 * * *` UTC).
+   → **No** `🛑 db-backup FAILED: neon pg_dump failed` in the ops Telegram chat (and no duplicate from the retry).
+
+**Story 2 — Cloud SQL backup-failure check (owed to Daniel):**
+3. **(owed)** Provision: `bash infra/gcp/backups/provision-cloudsql-backup-check.sh`.
+   → Prints `✅ cloudsql-backup-check provisioned`; the Cloud Run Job `cloudsql-backup-check` + Scheduler
+   `cloudsql-backup-check-daily` exist (`gcloud run jobs describe cloudsql-backup-check --region=us-east4`).
+4. **(owed)** Real-instance run: `gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait`.
+   → Execution **Succeeded**, **no** Telegram alert (a recent `SUCCESSFUL` automated backup is within ~26h).
+5. **(owed)** Force a failure (bogus instance), then run:
+   `gcloud run jobs update cloudsql-backup-check --region=us-east4 --update-env-vars=INSTANCE=does-not-exist`
+   then `gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait`.
+   → A `🛑 cloudsql-backup-check (does-not-exist): could not list backups …` Telegram alert arrives. **Restore:**
+   `gcloud run jobs update cloudsql-backup-check --region=us-east4 --update-env-vars=INSTANCE=medusa-pg`.
+
+**Story 4 — agy reviewer (owed to Daniel for the live run):**
+6. **(owed)** `agy --version` (expect `1.0.10`), then
+   `node scripts/cross-review.mjs <a real open PR#> --agent antigravity --repo danybgoode/miyagisanchezcommerce`.
+   → agy's review text prints **non-empty**, carrying the advisory-only banner. (If empty: the account may not
+   be entitled to the default model — set `AGY_MODEL` to a model `agy models` lists, e.g. a Gemini/Claude one.)
+
+**Deterministic gate (run here — no creds needed):**
+7. `node --test 'scripts/lib/*.test.mjs'`
+   → 33 pass, incl. `runAntigravity` non-empty capture (asserts `-p`/`--model`/stdin-EOF), empty-output
+   rejection, and `checkAgyVersion` loud-fail on a version mismatch / unparseable version.
+8. `node --test infra/gcp/test/*.test.js`
+   → 29 pass (10 new freshness-predicate + wrapper-idiom asserts; 19 existing deploy-invariants unchanged).
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] **S2 (Story 2)** — pending. (2a gcloud one-liner owed to Daniel; 2b provision script + BACKUPS.md.)
-- [ ] **S4 (Story 4)** — pending.
+- [x] **S2 (Story 2)** — built (PR #37, `1133dbb`). 2b: `cloudsql-check/` job (pure `backup-freshness.py`
+      predicate + `check-cloudsql-backup.sh` alert + Dockerfile) + idempotent
+      `provision-cloudsql-backup-check.sh` + node:test; `BACKUPS.md` updated. 2a: retirement one-liner staged
+      in `BACKUPS.md` (**owed to Daniel**). gcloud writes + forced-failure smoke owed to Daniel (steps 1–5).
+- [x] **S4 (Story 4)** — built (PR #37, `a791477`). `runAntigravity()` adapted to the agy 1.0.10 print
+      contract (`-p` + `--model` + stdin EOF; empty = failure); `AGY_PINNED → 1.0.10`; `checkAgyVersion()`
+      fails loud; argv cap + codex→agy fallback intact; node:test regressions. Live agy run owed to Daniel (step 6).
 
-> Refs: _(fill at build — PR #, commit SHA.)_ The gcloud env change, the forced-failure smoke, and a live agy
-> run are owed to Daniel.
+> Refs: PR #37 · S4 `a791477` · S2 `1133dbb`. **Owed to Daniel:** the `BACKUP_TARGETS=supabase` env change +
+> one clean nightly, the `cloudsql-backup-check` provision + forced-failure Telegram smoke + post-env nightly,
+> and a live `agy` cross-review run.
