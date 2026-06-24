@@ -1,14 +1,14 @@
 ---
 title: "Kill-switch flag decided at grooming, not at epic close"
 slug: kill-switch-at-grooming
-status: ready
+status: shipped
 area: "09"
 type: chore
 priority: null
 risk: low
 epic: null
 build_order: null
-updated: 2026-06-13
+updated: 2026-06-24
 ---
 
 # ADR — A kill-switch is a *planned, sliced* unit of work, not a close-time checkbox

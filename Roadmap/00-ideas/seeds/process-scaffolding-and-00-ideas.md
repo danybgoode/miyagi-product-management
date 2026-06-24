@@ -1,14 +1,14 @@
 ---
 title: Scaffolding automation + 00-ideas reorg
 slug: process-scaffolding-and-00-ideas
-status: in-progress
+status: shipped
 area: "09"
 type: chore
 priority: wave-0
 risk: low
 epic: null
 build_order: null
-updated: 2026-06-08
+updated: 2026-06-24
 ---
 
 > **Signed off 2026-06-08.** Directions chosen: flatten numbered folders → `seeds/` + `audits/` (frontmatter is the lifecycle); templates + thin generator script; Notion = one new DB with a Grain filter, docs always win. Building now.
