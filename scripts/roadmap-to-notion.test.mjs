@@ -27,14 +27,18 @@ test('floorSprintStatus: an Archived epic floors EVERY sprint status to Archived
   }
 });
 
-test('floorSprintStatus: a Shipped epic floors stale Planned sprints to Shipped', () => {
-  assert.equal(floorSprintStatus('Shipped', 'Planned'), 'Shipped');
+test('floorSprintStatus: a Shipped epic floors ALL sprint statuses to Shipped', () => {
+  // A shipped epic cannot have a non-shipped sprint — Planned/In progress/In review all → Shipped.
+  // (Previously only Planned was floored, so In progress/In review leaked onto the board as stale rows.)
+  for (const sp of ['Planned', 'In progress', 'In review', 'Shipped']) {
+    assert.equal(floorSprintStatus('Shipped', sp), 'Shipped');
+  }
 });
 
-test('floorSprintStatus: real in-flight signals pass through unchanged', () => {
-  assert.equal(floorSprintStatus('Shipped', 'In progress'), 'In progress');
-  assert.equal(floorSprintStatus('Shipped', 'In review'), 'In review');
-  assert.equal(floorSprintStatus('In progress', 'Planned'), 'Planned'); // non-shipped, non-archived: no floor
+test('floorSprintStatus: a NON-terminal epic keeps the real per-sprint signal', () => {
+  assert.equal(floorSprintStatus('In progress', 'In progress'), 'In progress');
+  assert.equal(floorSprintStatus('In progress', 'In review'), 'In review');
+  assert.equal(floorSprintStatus('In progress', 'Planned'), 'Planned');
   assert.equal(floorSprintStatus('Scaffolded', 'Planned'), 'Planned');
 });
 
