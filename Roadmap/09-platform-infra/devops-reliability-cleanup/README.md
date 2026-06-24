@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: devops-reliability-cleanup
 ---
 
@@ -76,18 +76,23 @@ eyeball confirmations).
 - [x] **S2** — ✅ built (PR #37, `1133dbb`). Failure-only Cloud SQL backup check (`infra/gcp/backups/cloudsql-check/`:
       pure `backup-freshness.py` predicate + `check-cloudsql-backup.sh` reusing the `db-backup.sh` `alert()` idiom +
       Dockerfile) + idempotent `provision-cloudsql-backup-check.sh` (Cloud Run Job + daily Scheduler) + node:test;
-      `BACKUPS.md` updated incl. the staged `BACKUP_TARGETS=supabase` retirement one-liner. **Owed to Daniel:** the
-      env change + one clean nightly, the provision + forced-failure (bogus-instance) Telegram smoke.
+      `BACKUPS.md` updated. **LIVE-CONFIRMED 2026-06-24:** `BACKUP_TARGETS=supabase` set on the `db-backup` job
+      (neon retired); `cloudsql-backup-check` provisioned + smoked — real `medusa-pg` run healthy & silent
+      (`✅ latest SUCCESSFUL automated backup 15.x h ago`), bogus-instance run fired the `🛑` Telegram alert,
+      restored. _One clean nightly (`db-backup` `0 9 * * *`; the check `0 12 * * *`) still rolls overnight._
 - [x] **S4** — ✅ built (PR #37, `a791477`). `runAntigravity()` adapted to agy **1.0.10** (`-p` + required `--model`
       + stdin EOF; empty output now = failure — the bug was the missing `--model`); `AGY_PINNED → 1.0.10`;
-      `checkAgyVersion()` **fails loud** on an unknown/mismatched version; argv cap + codex→agy fallback intact;
-      `node --test 'scripts/lib/*.test.mjs'` green (33). **Owed to Daniel:** a live `--agent antigravity` run.
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough; operational/owed-to-Daniel steps flagged by name.
-- [ ] Each story added an api-project spec or a `node:test` where a testable seam exists (LEARNINGS: infra's
-      deterministic gate is a pure `node:test`).
-- [ ] `RETROSPECTIVE.md`; poster line in `09-platform-infra/README.md`; durable learnings promoted to
-      `Roadmap/LEARNINGS.md`; `node scripts/build-order.mjs` re-run.
-- [ ] Feature branch(es) deleted at merge; this README's frontmatter `status: shipped`.
+      `checkAgyVersion()` **fails loud** on an unknown/mismatched version; argv cap + codex→agy fallback intact.
+      **LIVE-CONFIRMED 2026-06-24:** validated the empty output was a Gemini **quota 429** (not entitlement) →
+      made Gemini the default with an auto-fallback to GPT-OSS; a real `cross-review.mjs --agent antigravity`
+      dry-run on PR #37 fell back and printed a real review. `node --test 'scripts/lib/*.test.mjs'` green (34).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough; operational/owed-to-Daniel steps flagged by name.
+- [x] Each story added an api-project spec or a `node:test` where a testable seam exists (S1 specs; S2
+      `cloudsql-backup-check.test.js` + the agy `cross-agent-cli.test.mjs` regressions).
+- [x] `RETROSPECTIVE.md` written; poster line in `09-platform-infra/README.md` updated; durable agy learning
+      promoted to `Roadmap/LEARNINGS.md`; `node scripts/build-order.mjs` re-run. **Follow-ups shipped:**
+      `.github/workflows/scripts-guard.yml` (CI gate for `scripts/` node:tests).
+- [x] Feature branch(es) deleted at merge; this README's frontmatter `status: shipped`.
 
 ## Session kickoffs
 Run each in a **fresh** Claude Code session (one per sprint). The Routines spike has its own investigation

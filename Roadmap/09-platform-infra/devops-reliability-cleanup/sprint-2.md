@@ -109,6 +109,19 @@ If any step fails, note the step number + what you saw — that's the bug report
       contract (`-p` + `--model` + stdin EOF; empty = failure); `AGY_PINNED → 1.0.10`; `checkAgyVersion()`
       fails loud; argv cap + codex→agy fallback intact; node:test regressions. Live agy run owed to Daniel (step 6).
 
-> Refs: PR #37 · S4 `a791477` · S2 `1133dbb`. **Owed to Daniel:** the `BACKUP_TARGETS=supabase` env change +
-> one clean nightly, the `cloudsql-backup-check` provision + forced-failure Telegram smoke + post-env nightly,
-> and a live `agy` cross-review run.
+> Refs: PR #37 · S4 `a791477` · S2 `1133dbb` · close-out `plan/devops-reliability-cleanup-close`.
+
+### Live confirmation — DONE 2026-06-24 (run by Claude, authorized)
+- **Item 1 (Neon retirement):** `gcloud run jobs update db-backup --update-env-vars=BACKUP_TARGETS=supabase`
+  → `BACKUP_TARGETS supabase` confirmed; the `neon` `pg_dump` no longer runs (the unused `NEON_BACKUP_DSN`
+  secret mount is left as harmless dead wiring). The nightly `🛑 db-backup FAILED: neon` double false-alarm is
+  gone. _(Run ~6 days into the rollback window per explicit authorization; the Neon DB itself is untouched.)_
+- **Item 2 (Cloud SQL backup-failure check):** `provision-cloudsql-backup-check.sh` provisioned the Job +
+  Scheduler (`0 12 * * *` UTC, ENABLED). Smokes: real `medusa-pg` run → **Succeeded, silent**
+  (`✅ latest SUCCESSFUL automated backup 15.3h ago (id 1782201600000) — no alert`); bogus `--instance` →
+  execution **failed + `🛑` Telegram alert** (`could not list backups …`); restored `INSTANCE=medusa-pg` →
+  re-confirmed healthy & silent. _Fix during provisioning: gen2 memory floor is 512Mi (was 256Mi)._
+- **Item 3 (live agy):** `cross-review.mjs --agent antigravity --dry-run` on PR #37 → Gemini **quota 429** →
+  auto-fell-back to GPT-OSS → printed a real review. The default's quota-fallback is validated end-to-end.
+- **Still rolling overnight (no action needed):** the first post-change nightly `db-backup` cycle (`0 9 * * *`)
+  — expected to be silent (no `neon` alert).
