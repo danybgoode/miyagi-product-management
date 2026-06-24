@@ -23,9 +23,26 @@ Done from the Vercel CLI/REST against project `miyagisanchez`:
      hardened this: `getStripe()`'s lazy "Missing STRIPE_SECRET_KEY" throw now classifies as **auth**
      ("la llave falta"), not a generic "unknown" — so the Preview smoke (step 3) reports the missing
      key clearly instead of a vague error.
-- **Most likely prod cause** (to confirm via the surfaced UI error on a prod retry): a **restricted key
-  lacking Coupons/Promotion-codes write** (→ `permission`) or a **wrong-mode/invalid key** (→ `auth`).
-  The fix lands in **Sprint 2 (S2.1)** once the surfaced `kind` is captured.
+### S1.3 — ROOT CAUSE CONFIRMED (prod retry, 2026-06-23)
+Daniel ran **Crear cupón** on prod post-`#118`. The surfaced error:
+```json
+{ "error": "Stripe rechazó la operación. Revisa los registros para el detalle.",
+  "kind": "unknown", "detail": { "type": "StripeInvalidRequestError", "code": null } }
+```
+**It is NOT a credentials problem.** `StripeInvalidRequestError` + `code: null` = a **malformed mint
+request** — the live key is **present, live-mode, and scoped** (an auth/permission issue would have been
+`401`/`403`). So the original "creds fix" framing for Sprint 2 is **wrong** — S2 is a **code fix to the
+mint request params**, not an env change.
+
+**Follow-up `#119` (`cf1cf8f`)** added a `bad_request` classification that surfaces the offending
+`param` + Stripe's own (safe) parameter-validation `stripeMessage`. **Next action:** one more prod
+**Crear cupón** → `detail.param` / `detail.stripeMessage` names the exact bad parameter.
+
+**Strong prior for S2.1:** the `promotion: { type: 'coupon', coupon }` shape on
+`stripe.promotionCodes.create` (`lib/domain-coupon-server.ts`). The SDK *types* accept it, but the live
+API likely rejects it as an unknown parameter vs the stable top-level `coupon` — i.e.
+`promotionCodes.create({ coupon: coupon.id, code: PROMO_CODE, … })`. Confirm against the surfaced
+`param` before changing it (don't guess on a money path).
 
 > Goal: make the admin mint/track tool **honest and reliable**, find the **actual** prod cause, and prove
 > the full redeem-the-coupon mechanics in **test mode** — before touching live money state (Sprint 2).
