@@ -36,8 +36,13 @@ reviewed too).
 
 1. **Install the Claude GitHub App** on `danybgoode/miyagisanchezcommerce` and `medusa-bonsai-backend`.
 2. **Create the routine** from `pr-review.prompt.md`.
-3. **Trigger:** GitHub → `pull_request`, events **opened + ready_for_review**, filter **is-draft =
-   false**.
+3. **Trigger:** GitHub → `pull_request`, action **`opened`**, filter **Is draft = `false`**.
+   ⚠️ A GitHub trigger takes **one specific action OR all-actions-in-category — you cannot combine
+   `opened` + `ready_for_review`** ([docs](https://code.claude.com/docs/en/routines)). Pick **`opened`**:
+   it matches directly-opened non-draft PRs (incl. Dependabot), which is how PRs land here. (`opened`
+   does **not** fire on a draft→ready flip — `ready_for_review` does; pick that instead only if you
+   habitually open drafts first, or pick **all pull_request actions** + the draft filter for full
+   coverage, at the cost of also firing on label/sync/close.)
 4. **Env/connectors:** GitHub App only. No Notion. Network = GitHub. Push left at the `claude/`
    default (the routine only comments).
 5. **Output:** one advisory review comment per PR (mirrors the `cross-review.prompt.md` rubric — five
@@ -78,27 +83,51 @@ smoke fix) — done, so B is unblocked.
 
 ---
 
-## Daily-cap budget (Pro = 5 routine runs/day)
+## Daily-cap budget (Pro)
 
-| Routine | Cadence | Typical runs/day |
+The **daily routine-run cap (Pro = 5/day) bites the SCHEDULED runs** — GitHub-event and API triggers
+have their **own separate per-routine/per-account hourly caps**, not the scheduled daily cap, and
+**one-off `Run now` runs don't count** at all ([docs](https://code.claude.com/docs/en/routines) ·
+[blog](https://claude.com/blog/introducing-routines-in-claude-code)).
+
+| Routine | Trigger | Counts against the 5/day scheduled cap? |
 |---|---|---|
-| A — review-on-PR | per non-draft PR | 0–3 (bursty; **self-limits** on busy days — later PRs skip, acceptable because non-gating) |
-| C — roadmap hygiene | weekly | ~0 (≈0.14/day) |
-| B — smoke triage | nightly | 1 |
+| A — review-on-PR | GitHub `pull_request.opened` | **No** — GitHub-event, separate hourly caps |
+| C — roadmap hygiene | Schedule, weekly | Yes, but ~0.14/day |
+| B — smoke triage | Schedule, nightly | Yes, 1/day |
 
-- **Now (A + C):** comfortably under 5; A self-limits on bursts.
-- **After B (A + B + C):** 4 on a typical 3-PR day — still ≤ 5. On a 4+-PR day A skips the overflow
-  PRs (fine — advisory, non-gating).
-- One-off **Run now** draws normal subscription usage; the docs only exempt manual one-offs from the
-  daily cap. Treat API `/fire` as **counting** toward the cap until Anthropic confirms otherwise.
+- **Scheduled load = B (1/day) + C (~0/day) ≈ 1/day** — nowhere near the 5/day cap.
+- **A is effectively uncapped for our volume** (GitHub events, hourly caps only); it does **not** eat
+  the scheduled budget. On a busy day it's bounded by the preview hourly cap, not the daily 5.
+- **No upgrade pressure:** everything here runs on **Pro**. Higher daily run counts are the only
+  routines-relevant Max/Team/Enterprise upsell, and our scheduled load doesn't approach the Pro cap.
 
 ## Routine D — Deploy verification: **OUT** (recorded, do not re-litigate)
 Held by decision. **Both** deploys already ping Telegram with terminal status — backend (Cloud Build
 completion → Pub/Sub → Cloud Function) and frontend (`notify-telegram.yml`'s Vercel-poll job: ✅ READY
 / ❌ ERROR / ❌ CANCELED). There is **no notifier gap** to fill, so D's only delta would be a deeper
-go/no-go (run smoke + scan logs after the ping) — thin. Its API `/fire` trigger also likely counts
-against the 5/day cap, risking starving A/B on Pro. **Hold** unless those pings prove too thin; if ever
-revived, it *augments* the existing notifiers and triggers via `/fire` from CD.
+go/no-go (run smoke + scan logs after the ping) — thin. **Hold** unless those pings prove too thin; if
+ever revived, it *augments* the existing notifiers and triggers via `/fire` from CD (API triggers
+don't consume the scheduled 5/day cap).
+
+## Run-failure visibility (optional Telegram ping)
+
+Routines have **no built-in failure alert** — *"a green status means the session started and exited
+without an infrastructure error. It does not mean the task succeeded"* ([docs](https://code.claude.com/docs/en/routines)).
+Your **actionable output is already visible via GitHub** (A's PR comment, B/C's `claude/` PRs all
+trigger GitHub notifications). The gap is a **run that fails to complete** (network blocked, auth,
+hourly cap) — that shows only on `claude.ai/code/routines` / the transcript unless you check.
+
+To close it without checking the app daily, each prompt has an **optional, best-effort Telegram
+ping-on-failure** step, gated on two env vars being present (so it degrades to a no-op where unset).
+To enable it on a routine:
+1. Add env vars to the routine's environment: **`TELEGRAM_BOT_TOKEN`** + **`TELEGRAM_CHAT_ID`** (the
+   same MiyagiDevopsTele bot/chat the deploy notifiers use).
+2. Set the environment's **Network access → Custom** and add **`api.telegram.org`** to Allowed-domains
+   (the Default "Trusted" allowlist does not include it), keeping the default package-manager list.
+
+The ping fires **only on a blocking failure** (never on a healthy run — those reach you via GitHub),
+naming the routine + what failed. Skip steps 1–2 to leave a routine silent-except-GitHub.
 
 ## Notes
 - **Research preview:** limits/API may change. All three routines are advisory/observability; if the
