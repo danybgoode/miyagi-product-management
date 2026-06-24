@@ -90,4 +90,69 @@ This is a *hypothesis* — the spike confirms or revises it; nothing builds unti
 - [x] Class = spike; ends in a written decision, not a build.
 - [x] Feature understood + facts cited (official docs, 2026-06-23); the "5/month?" corrected to 5 runs/day (Pro).
 - [x] Candidate fits enumerated + mapped to existing epics/overlap; spike questions written.
-- [ ] **Daniel approves this spike** → I run the investigation and land the decision here (no scaffolding).
+- [x] **Daniel approved** (2026-06-23) → investigation run; decision landed below (no scaffolding).
+
+---
+
+## Investigation findings (2026-06-23)
+
+Grounded against the actual repos (root `miyagi-product-management`, app `danybgoode/miyagisanchezcommerce`, backend `medusa-bonsai-backend`):
+
+| Existing infra | Where it lives | What it does today |
+|---|---|---|
+| Browser smoke | `apps/miyagisanchez/.github/workflows/browser-smoke.yml` | Playwright vs prod, cron `0 9 * * *`; on fail just uploads artifacts. Reads `MS_TEST_*` secrets, skips if unset. **Frontend repo, not root.** |
+| Deploy-finish Telegram (backend) | `apps/backend/infra/gcp/cicd-telegram-notifier/index.js` | Cloud Build completion → Pub/Sub → Cloud Function → ✅/❌ ping. Lives outside the runtime (deploy-safe). |
+| Deploy-finish Telegram (frontend) | `apps/miyagisanchez/.github/workflows/notify-telegram.yml` (`vercel-production-deploy` job) | On push to `main`, polls the Vercel API for that commit's prod deploy and pings Telegram with the **terminal status** (✅ READY / ❌ ERROR / ❌ CANCELED). **Corrects the initial finding — the frontend DOES have a status-aware deploy notifier** (Daniel confirmed the ping). |
+| Notion sync | `scripts/roadmap-to-notion.mjs` + `.github/workflows/notion-sync.yml` (nightly `0 8 * * *` + push) + `notion-pr-sync.yml` (PR overlay) | Mechanical, deterministic, **free** one-way docs→Notion. Does NOT groom the funnel or reason about drift. |
+| Build-order | `scripts/build-order.mjs` | Regenerates `BUILD-ORDER.md` from the same projection; `--check` for CI. |
+| Cross-agent review | `scripts/cross-review.mjs` + `scripts/lib/cross-agent-cli.mjs` | **Local-only** (no CI runs it; `scripts-guard.yml` only runs the unit tests). This is the descoped `cross-agent-review-always` goal. |
+| `.mcp.json` / Notion connector | **None found, any repo** | A committed connector/skill is genuinely net-new → a follow-up story, per the spike's own DoD. |
+
+### Answers to the six spike questions
+
+1. **Auth/identity reality — OK.** The Claude GitHub App installs per-repo on `danybgoode/miyagisanchezcommerce` and `medusa-bonsai-backend` (and root `miyagi-product-management` for C). Runs-as-Daniel is acceptable: he's the solo operator, and PRs/commits already carry his identity (the cross-agent tools already run locally as him). Default `claude/`-prefix push restriction is fine — A only comments (no push), B/C open `claude/` PRs.
+2. **Connector reach — OK, with an allow-list note.** The Notion connector runs inside the routine env under Daniel's linked account (read+write, no per-action approval); C can use it OR just run the committed `roadmap-to-notion.mjs`/`build-order.mjs` (then it needs `NOTION_TOKEN` as an env secret + `api.notion.com` allow-listed). **B/D need a custom Allowed-domains entry** for `miyagisanchez.com` + the Clerk auth domains + the backend Cloud Run URL, plus the `MS_TEST_*` secrets, to run authed smokes.
+3. **Cap budgeting (Pro = 5/day) — sustainable as A + C now; A + B + C after B lands.** C ≈ 0.14/day (weekly), B = 1/night, A = 0–3/day typical on a solo repo (bursty). A 3-PR day with A+B+C = 4 ≤ 5 ✓. On a 4+-PR day A self-limits (later PRs skip) — fine, it's non-gating. Treat API `/fire` (D) as *counting* toward the cap until Anthropic confirms otherwise (the docs only exempt manual one-off runs); this is another reason to hold D.
+4. **Overlap — AUGMENT both, never replace.** *B:* keep `browser-smoke.yml` as the deterministic, cap-free, research-preview-immune **detector**; the routine is the **triage/self-heal layer** (read the failure → open a `claude/` draft PR with a proposed fix). They do different jobs, so two systems is justified. *D:* **both** deploys already have a status-aware Telegram ping (backend Cloud Build function + frontend `notify-telegram.yml`'s Vercel-poll job) — there is **no notifier gap** to fill. A routine would only add a deeper go/no-go (run smoke + scan logs), which makes D even thinner. Hold.
+5. **Advisory-only — structurally guaranteed.** A posts PR *comments* as Daniel. A comment carries no commit-status, and required checks in branch protection can only require things that report a commit status — so a routine comment **cannot** be made a required check. Keep it comment-only; don't wire any status reporting. Matches the standing convention + the #1-token-sink learning.
+6. **Research-preview risk — acceptable.** All four are advisory/observability; none gate a merge, deploy, or money path. If the feature changes or breaks, the deterministic layers (smoke CI, `notion-sync.yml`, the Cloud Build notifier) remain the SSOT and are untouched. The only discipline: never let a routine become load-bearing.
+
+---
+
+## WRITTEN DECISION (spike close, 2026-06-23)
+
+**Stand up A first, C second. Defer B as a fast-follow. Hold D.** This confirms the proposed hypothesis, with the replace-vs-augment calls now grounded.
+
+### ① Routine A — Review on every PR *(stand up first)*
+- **Why first:** revives the genuinely-descoped `cross-agent-review-always` goal — a Routine is a full cloud Claude session **as Daniel**, which removes the exact CI-auth blocker that forced local-only. Clearest unlock.
+- **Trigger:** GitHub `pull_request` → `opened` + `ready_for_review`, filter **is-draft = false**.
+- **Repos / App:** install the Claude GitHub App on `danybgoode/miyagisanchezcommerce` and `medusa-bonsai-backend` (the code repos). Add root `miyagi-product-management` only if you want Roadmap-doc PRs reviewed.
+- **Env/connectors:** GitHub App only. No Notion. Network = GitHub. Leave push at the `claude/` default (comments only, no push).
+- **Output:** inline + summary review comments (mirror the `cross-review.mjs` advisory framing). **Comment-only, never a status check.**
+- **Cap:** 1/PR, bursty; self-limits on busy days — acceptable because non-gating.
+
+### ② Routine C — Weekly Roadmap/Notion hygiene *(stand up second)*
+- **Why second:** low-frequency, high-leverage. The existing `notion-sync.yml` already does the *mechanical* docs→Notion push for free; C adds the **judgment layer** the scripts can't: groom the `00-ideas` funnel, flag status-drift, regenerate `BUILD-ORDER.md`, open a docs PR. **Augments, does not replace** `notion-sync.yml`.
+- **Trigger:** Schedule, weekly (e.g. Monday 14:00 UTC — after the 08:00 nightly sync).
+- **Repo / App:** root `miyagi-product-management`.
+- **Env/connectors:** Notion connector (Daniel's linked account) for reconciliation; the run also executes the committed `scripts/build-order.mjs`. If it uses the script path for Notion, add `NOTION_TOKEN` env secret. Network allow-list: `api.notion.com` + `github.com`.
+- **Output:** a `claude/` docs PR (regenerated `BUILD-ORDER.md` + a drift report). Non-gating.
+- **Cap:** ~1/week — negligible.
+
+### ③ Routine B — Nightly smoke triage *(deferred fast-follow)*
+- **Gate:** do `devops-reliability-cleanup` Story 1 (smoke fix) **first**, then stand B up.
+- **Augment, not replace:** keep `browser-smoke.yml` (cron `0 9 * * *`) as the deterministic detector; B runs ~10:00 UTC, reads/re-runs the smoke, and **on failure opens a `claude/` draft PR** with a proposed spec/prod fix.
+- **Repo / App:** frontend `miyagisanchezcommerce`. **Env:** `MS_TEST_*` secrets + Allowed-domains: `miyagisanchez.com`, Clerk auth domains, the backend Cloud Run URL. **Cap:** 1/night.
+
+### ④ Routine D — Deploy verification *(hold)*
+- **Both** deploys already ping Telegram with terminal status — backend (Cloud Build function) and frontend (`notify-telegram.yml` Vercel-poll job, ✅ READY / ❌ ERROR). There's **no notifier gap**, so D is thinner than first thought: its only delta would be a deeper go/no-go (run smoke + scan logs after the ping). API `/fire` likely counts toward the 5/day cap. **Hold** unless those pings prove too thin; if revived, it *augments* the existing notifiers and triggers via `/fire` from CD.
+
+### Daily-cap budget (Pro = 5/day)
+- **Now:** A (0–3) + C (~0/day) → comfortably under 5; A self-limits on bursts.
+- **After B lands:** A + B + C → 4 on a typical 3-PR day; still ≤ 5. A skips overflow PRs on heavy days (acceptable, non-gating).
+- **Do not add D** on top while on Pro unless one-off/API exemption is confirmed — it would risk starving A/B.
+
+### Follow-ups this spike surfaces (groomed separately, not built here)
+- A committed `.mcp.json` (Notion connector) and/or a committed skill, **if** C uses the connector rather than the existing scripts — net-new (none exist today).
+- The routine *prompts* themselves (A review prompt, C grooming prompt, B triage prompt) — author as part of stand-up.
+- **Operational, owed to Daniel:** create the routines in his `claude.ai/code/routines` account, install the GitHub App on the two app repos (+ root for C), set the env secrets/allow-lists. The spike delivers the plan + config above, not the account changes.
