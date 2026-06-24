@@ -1,20 +1,38 @@
 # 00-ideas — the idea funnel
 
 The front of the pipeline: raw ideas → scoped seeds → scaffolded epics. Lifecycle is tracked in
-**frontmatter on each seed**, not in folder names (folders used to drift because nobody moved files
-between `1. raw` / `2. readyforscope` / `3. done`).
+**frontmatter on each seed**, not in folder names (the old numbered folders drifted because nobody
+moved files between `1. raw` / `2. readyforscope` / `3. done`). The flat `seeds/` model is the
+forward path; the numbered folders are **legacy, not yet retired** — see the note below.
 
 ```
 00-ideas/
 ├── README.md         ← you are here
 ├── BUILD-ORDER.md    ← GENERATED status board (run `node scripts/build-order.mjs`) — do NOT hand-edit
-├── seeds/            ← every idea/scope seed, flat, one .md each (with frontmatter)
-└── audits/           ← UX/UI audit findings (reference material, NOT seeds)
-    ├── results-refresh-2026-06/   ← the current audit (the lens we build against)
-    └── _legacy/                   ← superseded audits, kept for history
-        ├── results-v1/
-        └── ux-uiaudit/
+├── seeds/            ← every idea/scope seed, flat, one .md each (with frontmatter) — the forward path
+├── audits/           ← UX/UI audit findings (reference material, NOT seeds)
+│   ├── results-refresh-2026-06/   ← the current audit (the lens we build against)
+│   └── _legacy/                   ← superseded audits, kept for history
+│       ├── results-v1/
+│       └── ux-uiaudit/
+├── 1. raw/           ← LEGACY intake folder (pre-`seeds/`) — kept, not yet migrated
+├── 2. readyforscope/ ← LEGACY scope-doc folder — STILL an active scaffold source (see note)
+└── ux-uiaudit/       ← LEGACY audit folder (superseded by audits/)
 ```
+
+### Legacy numbered folders — still live, not yet retired
+
+The flat `seeds/` schema above is the SSOT going forward, but the migration isn't finished:
+**`2. readyforscope/` is still an active scope-doc source.** Many epics were (and as recently as
+2026-06 still are) scaffolded directly from a scope doc in that folder rather than from a `seeds/`
+entry — which is why a large share of scaffolded epics have **no** corresponding `seeds/*.md` file.
+This is fine (the scaffolded epic README is the SSOT once `epic:` exists), but it means:
+
+- When auditing the funnel, **read both `seeds/` and `2. readyforscope/`** — a missing `seeds/` file
+  is not proof an idea was never scoped.
+- The endgame is to migrate the remaining un-scaffolded `2. readyforscope/` docs into `seeds/` and
+  retire the numbered folders. Until then, treat them as a read-only legacy staging area: **don't add
+  new files there** (new ideas go in `seeds/`), but don't assume they're dead either.
 
 ## Seed frontmatter (the lifecycle source)
 
