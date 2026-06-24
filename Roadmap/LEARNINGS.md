@@ -177,11 +177,24 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   json`; `agy 1.0.7` has **no such flag** — reality is `agy -p "<prompt+diff>"`, plain text, **no stdin path**.
   By contrast `codex exec "<prompt>"` appends **stdin** as a `<stdin>` block, so you *pipe* the diff to codex
   but must *embed* it in agy's argv — which is why an argv-size guard (E2BIG above ~256 KB) is needed for agy
-  only. Pin the known-good version and **warn (not fail)** on a mismatch so a bump surfaces without blocking.
+  only. Pin the known-good version and **FAIL LOUD** on a mismatch (a stderr-only warn gets ignored — see the
+  1.0.10 corollary below).
   `scripts/cross-review.mjs` is the reference: a script that runs a non-Anthropic reviewer must `--version`-check
   + branch its context-passing per CLI, and the smoke is "run it against a real PR and read the comment."
   *(2026-06-10, cross-agent-code-review S1 — also: a `git commit -- <paths> -m "msg"` fails because everything
   after `--` is a pathspec; put `-m` before `--`.)*
+  **A young foreign CLI silently breaks its own contract on a MINOR bump — re-validate by running it (with a
+  log file), treat empty output as failure, and design the driver to DEGRADE.** agy `1.0.7`→`1.0.10` changed
+  `--print` twice over: `-p` became an alias of `--print`, and print mode now (a) emits **nothing** without an
+  explicit `--model` (no headless default) and (b) ALSO exits **0 with empty stdout** when the model is
+  **quota-exhausted** (`RESOURCE_EXHAUSTED 429` — the error lands only in agy's *log*, never stdout/stderr), so
+  a non-zero-exit check can't catch it. The reviewer had returned empty for weeks. The generalizable fixes:
+  pass `--model` explicitly; treat **empty output as a failure**, not success; give the model a
+  **primary→fallback** (a quota-capped Gemini auto-degrades to a GPT-OSS on a separate quota pool — empty ≠
+  "no findings"); and make the version check **fail loud** (the old stderr warn was ignored, which is *how* the
+  bump shipped empty). Diagnose a stalled/empty foreign CLI with its own **`--log-file`** — the 429 (and the
+  fact that print mode blocks on an open stdin, needing `input:''` for EOF) were visible only there.
+  *(2026-06-23, devops-reliability-cleanup S4 — `runAntigravity` in `scripts/lib/cross-agent-cli.mjs`; pinned 1.0.10.)*
   **A CLI authed by an interactive/OAuth login is NOT free to run in CI — confirm a portable, non-interactive
   credential path AND its cost before scoping "automate this CLI in a runner."** A fresh runner has zero auth;
   a local CLI login doesn't travel. Probed live: **codex** can auth headlessly (`codex login --with-api-key`,

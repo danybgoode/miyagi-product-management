@@ -30,11 +30,14 @@ export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 // a human to re-verify the invocation below and bump this deliberately. Bumping = re-test runAntigravity().
 export const AGY_PINNED = '1.0.10';
 
-// agy 1.0.10 `--print` mode prints NOTHING unless `--model` names a model the account is entitled to (no
-// headless default). On the dev machine GPT-OSS 120B and Claude Sonnet 4.6 worked; Gemini models returned
-// empty (likely entitlement). Default to GPT-OSS — it keeps the "different family from the Claude host" point
-// of cross-review — and let AGY_MODEL override it (e.g. a Gemini model once entitled).
-export const AGY_MODEL = process.env.AGY_MODEL || 'GPT-OSS 120B (Medium)';
+// agy 1.0.10 `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
+// nothing (exit 0, empty stdout — the error lands only in agy's log) when the model is quota-exhausted or
+// unreachable. Gemini is the ideal reviewer (a different family from BOTH the Claude host and the GPT-family
+// codex), so it's the default — but its per-subscription quota is tight and exhausts ("RESOURCE_EXHAUSTED
+// 429: Individual quota reached"), so runAntigravity AUTO-FALLS-BACK to AGY_FALLBACK_MODEL (GPT-OSS, a
+// separate quota pool that worked on the dev machine) when the primary yields empty. Override either via env.
+export const AGY_MODEL = process.env.AGY_MODEL || 'Gemini 3.1 Pro (High)';
+export const AGY_FALLBACK_MODEL = process.env.AGY_FALLBACK_MODEL || 'GPT-OSS 120B (Medium)';
 
 // agy takes the prompt+context as a single `-p` argv string (stdin is not the prompt). Guard well under the
 // OS limit (macOS ARG_MAX is 1 MB incl. env) so a huge input fails clearly instead of an opaque E2BIG.
@@ -313,13 +316,24 @@ export function runWithCodexFallback(
   }
 }
 
-// agy 1.0.10 `agy -p "<prompt>" --model "<MODEL>"`: the caller embeds the prompt+framed context in `fullArgv`
-// (stdin is NOT the prompt and must be at EOF — input:'' gives an immediate EOF or print mode blocks forever),
-// and --model is REQUIRED or `--print` exits 0 with NO output. We enforce the argv size cap so an oversized
-// input fails clearly (not an opaque E2BIG), and treat empty stdout as a failure (the missing-/unentitled-model
-// symptom) so the caller never posts a blank review. `deps.spawn` is injectable for a node:test (no real agy).
+// One `agy -p "<prompt>" --model "<MODEL>"` invocation. The prompt+framed context ride in `fullArgv` (stdin is
+// NOT the prompt and must be at EOF — input:'' gives an immediate EOF or print mode blocks forever). Returns
+// the raw spawn result; the caller classifies status/stdout.
+function execAgy(fullArgv, model, spawn) {
+  return spawn('agy', ['-p', fullArgv, '--model', model], {
+    input: '',
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+}
+
+// agy 1.0.10 print mode: --model is REQUIRED (or `--print` exits 0 with NO output), and a quota-exhausted /
+// unreachable model ALSO exits 0 with empty stdout (the 429 lands only in agy's log). So an empty result is a
+// real failure, not success — we try AGY_MODEL first and, on empty, retry once with AGY_FALLBACK_MODEL (a
+// separate quota pool) so a Gemini quota exhaustion degrades to GPT-OSS instead of silently blanking the review.
+// We enforce the argv size cap up front (clear message, not an opaque E2BIG). `deps.spawn` is injectable for tests.
 export function runAntigravity(fullArgv, opts = {}, deps = {}) {
-  const { spawn = spawnSync } = deps;
+  const { spawn = spawnSync, warn = (m) => process.stderr.write(`${m}\n`) } = deps;
   if (Buffer.byteLength(fullArgv, 'utf8') > AGY_ARG_LIMIT) {
     return fail(
       opts.soft,
@@ -327,21 +341,27 @@ export function runAntigravity(fullArgv, opts = {}, deps = {}) {
         `${AGY_ARG_LIMIT / 1024} KB; agy takes the prompt in argv, not stdin) — use --agent codex instead.`
     );
   }
-  const r = spawn('agy', ['-p', fullArgv, '--model', AGY_MODEL], {
-    input: '',
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  if (r.status !== 0) {
-    const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
-    return fail(opts.soft, `agy -p failed: ${last}`);
+
+  const tried = [];
+  for (const model of AGY_MODEL === AGY_FALLBACK_MODEL ? [AGY_MODEL] : [AGY_MODEL, AGY_FALLBACK_MODEL]) {
+    const r = execAgy(fullArgv, model, spawn);
+    if (r.status !== 0) {
+      // A non-zero exit is a real agy error (bad flags, crash) — NOT the quota signal — so don't burn the
+      // fallback on it; surface it directly.
+      const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
+      return fail(opts.soft, `agy -p failed (model "${model}"): ${last}`);
+    }
+    const out = (r.stdout || '').trim();
+    if (out) {
+      if (model !== AGY_MODEL) warn(`⚠ agy "${AGY_MODEL}" returned no output (quota/unavailable?) → used "${model}".`);
+      return out;
+    }
+    tried.push(model);
   }
-  const out = (r.stdout || '').trim();
-  if (!out)
-    return fail(
-      opts.soft,
-      `agy returned no output — model "${AGY_MODEL}" may be unavailable/unentitled; set AGY_MODEL to a model ` +
-        `\`agy models\` lists and your account can run.`
-    );
-  return out;
+  return fail(
+    opts.soft,
+    `agy returned no output for ${tried.map((m) => `"${m}"`).join(' and ')} — likely a quota cap ` +
+      `("RESOURCE_EXHAUSTED 429") or an unavailable model. Set AGY_MODEL / AGY_FALLBACK_MODEL to a model ` +
+      `\`agy models\` lists with remaining quota, or use --agent codex.`
+  );
 }
