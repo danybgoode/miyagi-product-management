@@ -85,10 +85,16 @@ merged branch.)
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-- [ ] **R-A** — pending.
-- [ ] **R-C** — pending.
-- [ ] **R-B** — pending.
-- [ ] **R-0 (runbook)** — pending.
+- [x] **R-A** — built. `scripts/routines/pr-review.prompt.md` (mirrors `cross-review.prompt.md` — five
+      AGENTS rules, single pass, advisory banner; cloud Claude reviewer, **comment-only, never a check**).
+- [x] **R-C** — built. `scripts/routines/roadmap-hygiene.prompt.md` (groom funnel, flag status-drift,
+      run `build-order.mjs`, open a `claude/` **docs PR** + drift report; **no Notion connector**).
+- [x] **R-B** — built. `scripts/routines/smoke-triage.prompt.md` (read failing `browser-smoke.yml`
+      run/artifact → `claude/` **draft** fix PR; green = no-op; augments the smoke).
+- [x] **R-0 (runbook)** — built. `scripts/routines/README.md` (per-routine stand-up, Pro 5/day cap
+      budget, advisory-only/never-a-required-check rule, **D recorded out**). Free format guard:
+      `scripts/routines.test.mjs` (parses each prompt + asserts the advisory banner).
 
-> Refs: _(fill at build — PR #, commit SHA.)_ The live routine stand-up (account + GitHub App + a real
-> test-PR comment) is owed to Daniel.
+> Refs: PR [#39](https://github.com/danybgoode/miyagi-product-management/pull/39) · commit `75d8afb`.
+> The live routine stand-up (account + GitHub App + a real test-PR comment) is **owed to Daniel** —
+> see the Smoke walkthrough above.
