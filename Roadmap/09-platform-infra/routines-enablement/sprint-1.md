@@ -95,5 +95,6 @@ If any step fails, note the step number + what you saw — that's the bug report
       budget, advisory-only/never-a-required-check rule, **D recorded out**). Free format guard:
       `scripts/routines.test.mjs` (parses each prompt + asserts the advisory banner).
 
-> Refs: PR _(fill on open)_ · commit _(fill on commit)_. The live routine stand-up (account + GitHub
-> App + a real test-PR comment) is **owed to Daniel** — see the Smoke walkthrough above.
+> Refs: PR [#39](https://github.com/danybgoode/miyagi-product-management/pull/39) · commit `75d8afb`.
+> The live routine stand-up (account + GitHub App + a real test-PR comment) is **owed to Daniel** —
+> see the Smoke walkthrough above.
