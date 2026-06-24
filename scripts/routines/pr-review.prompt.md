@@ -77,3 +77,12 @@ no restating the diff back.
 
 End the comment with one line: *"Advisory only — not a gate. CI + the Claude reviewer + the risk-tier
 rule decide."*
+
+## If the run can't complete (optional failure ping)
+A healthy run reaches Daniel via the PR comment above — no other notice is needed. But a run that
+**fails to complete** (can't fetch the diff, network blocked, auth error) would otherwise be silent.
+So, **only on a blocking failure**, if **both** `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set in
+the environment, best-effort POST a one-line alert so Daniel knows to check:
+`curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" --data-urlencode text="⚠️ Routine A (PR review) failed on <repo>#<PR>: <one-line reason>"`
+If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silently — never block on it,
+and **never** ping on a successful review.

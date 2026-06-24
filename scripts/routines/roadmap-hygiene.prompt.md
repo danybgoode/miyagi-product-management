@@ -71,3 +71,12 @@ one-line reason.
   post nothing rather than an empty PR.
 
 End the PR body with: *"Advisory only — not a gate. notion-sync.yml propagates after merge."*
+
+## If the run can't complete (optional failure ping)
+A healthy run reaches Daniel via the docs PR (or correctly opens none) — no other notice is needed.
+But a run that **fails to complete** (network blocked, `build-order.mjs` errors, can't push) would
+otherwise be silent. So, **only on a blocking failure**, if **both** `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID` are set in the environment, best-effort POST a one-line alert:
+`curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" --data-urlencode text="⚠️ Routine C (roadmap hygiene) failed: <one-line reason>"`
+If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silently — never block on it,
+and **never** ping on a healthy run (a clean board with no PR is success, not a failure).

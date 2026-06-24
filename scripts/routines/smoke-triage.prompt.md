@@ -64,3 +64,12 @@ the two common causes (this decides what the fix is):
   guessing on a money/auth path.
 
 End the PR body with: *"Advisory only — not a gate. browser-smoke.yml remains the detector."*
+
+## If the run can't complete (optional failure ping)
+A red smoke reaches Daniel via the draft PR; a green smoke is a correct silent no-op — neither needs
+another notice. But a run that **fails to complete** (can't read the smoke run, network blocked, can't
+push) would otherwise be silent. So, **only on a blocking failure**, if **both** `TELEGRAM_BOT_TOKEN`
+and `TELEGRAM_CHAT_ID` are set in the environment, best-effort POST a one-line alert:
+`curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" --data-urlencode text="⚠️ Routine B (smoke triage) failed: <one-line reason>"`
+If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silently — never block on it,
+and **never** ping on a green smoke or a successfully-opened draft PR.
