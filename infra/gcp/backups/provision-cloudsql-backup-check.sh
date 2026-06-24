@@ -76,7 +76,7 @@ gcloud run jobs "$JOB_ACTION" "$JOB" \
   --service-account="$CHECK_SA_EMAIL" \
   --set-env-vars="INSTANCE=${INSTANCE},PROJECT=${PROJECT_ID},MAX_AGE_HOURS=${MAX_AGE_HOURS}" \
   --set-secrets="TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CICD_CHAT_ID=TELEGRAM_CICD_CHAT_ID:latest" \
-  --max-retries=1 --task-timeout=120s --memory=256Mi
+  --max-retries=1 --task-timeout=120s --memory=512Mi   # gen2 floor is 512Mi (always-allocated CPU)
 
 say "Daily Cloud Scheduler $SCHED_JOB ($CRON UTC) → runs the job"
 # Same trust shape as provision-db-backup.sh: Scheduler invokes the :run endpoint with an OAuth

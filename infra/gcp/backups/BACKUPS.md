@@ -120,7 +120,7 @@ success heartbeat** (declined by Daniel).
 
 | | |
 |---|---|
-| Runner | Cloud Run **Job** `cloudsql-backup-check` (region `us-east4`, SA `medusa-backup-check`, max-retries 1, 120s, 256Mi) |
+| Runner | Cloud Run **Job** `cloudsql-backup-check` (region `us-east4`, SA `medusa-backup-check`, max-retries 1, 120s, 512Mi) |
 | Schedule | Cloud Scheduler `cloudsql-backup-check-daily`, cron `0 12 * * *` UTC (a few h after the 09:00 backup window) → `:run` the job |
 | Image | `…/medusa-ops/cloudsql-backup-check:<tag>` (`google-cloud-cli:slim` — gcloud + python3 + bash + curl) |
 | Check | `gcloud sql backups list --instance=medusa-pg --project=miyagisanchezback-497722 --format=json` → the pure freshness predicate |
