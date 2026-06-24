@@ -1,26 +1,30 @@
 # Domain-coupon mint fix — Sprint 2: Prod live mint + live verify
 
-**Status:** 📋 PLANNED. **Gated on Sprint 1 / S1.3** (the confirmed prod cause). **All stories HIGH — Daniel runs/merges.**
+**Status:** ✅ S2.1 fix MERGED to prod (PR [#120](https://github.com/danybgoode/miyagisanchezcommerce/pull/120) `68af03f`, CI green + codex cross-review clean); S2.2/S2.3 = Daniel's prod mint + verify.
 
 | Story | Status | Risk |
 |---|---|---|
-| S2.1 — Apply the prod creds fix | ⬜ | high |
-| S2.2 — Mint the live `miyagisan` coupon (idempotent) | ⬜ | high |
-| S2.3 — Verify live 0/100 · activo (+ optional real redemption) | ⬜ | high |
+| S2.1 — Fix the mint request (coupon name ≤ 40 chars) | ✅ `68af03f` | high |
+| S2.2 — Mint the live `miyagisan` coupon (idempotent) | ⬜ Daniel — ready once deploy is live | high |
+| S2.3 — Verify live 0/100 · activo (+ optional real redemption) | ⬜ Daniel | high |
 
 > Goal: the **real** `miyagisan` coupon exists on the **live** Stripe platform account and the giveaway is
-> redeemable. No code expected here if S1.3's cause is config — this sprint is a controlled prod action.
+> redeemable.
 
 ## Stories
 
-### Story S2.1 — Apply the prod creds fix
-**As** Daniel, **I want** the prod env corrected per S1.3, **so that** the live mint can succeed.
-If S1.3 found a missing/empty/wrong-mode/under-scoped key, set the correct **live** `STRIPE_SECRET_KEY`
-(full key, or a restricted key with Coupons + Promotion codes **write**) in the Vercel **Production** env
-and redeploy/confirm it's live. (LEARNINGS: set Vercel env via the REST API + verify by value length —
-`vercel env add` can store empty; `env pull` redacts.)
-**Acceptance:** a prod admin status read no longer errors on creds; **Crear cupón** is ready to run for real.
-**Risk:** high (prod money creds).
+### Story S2.1 — Fix the mint request (NOT a creds fix)
+**As** Daniel, **I want** the mint request corrected per S1.3, **so that** the live mint can succeed.
+**S1.3 proved the cause is a CODE bug, not creds:** `coupons.create` failed with
+`StripeInvalidRequestError` on **`param: name`** — *"Invalid string: Domi…san); must be at most 40
+characters"*. The coupon display name `'Dominio propio — primer año gratis (miyagisan)'` is **46 chars**,
+over Stripe's **40-char** coupon-name limit; the mint died before the promo code. The live key is fine
+(present, live-mode, scoped). Fix: shorten the name to **`'Dominio propio — primer año gratis'`** (34) —
+the campaign code lives on the coupon `metadata` + promo code, so it needn't be in the name. Extracted to
+`CAMPAIGN_COUPON_NAME` + `STRIPE_COUPON_NAME_MAX` in `lib/domain-coupon.ts`, with a CI guard
+(`e2e/domain-coupon.spec.ts`) that fails if the name ever exceeds 40 again. **No economics change.**
+**Acceptance:** with the fix deployed, a prod **Crear cupón** no longer 502s on `param: name`.
+**Risk:** high (touches the live coupon mint — but display-string only, no economics).
 
 ### Story S2.2 — Mint the live coupon (idempotent)
 **As** Daniel, **I want** to press **Crear cupón** on prod, **so that** the live coupon exists.
