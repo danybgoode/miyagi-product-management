@@ -14,9 +14,9 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-_None._
+- [Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)](../../09-platform-infra/routines-enablement/README.md) — 09 Platform-infra · 1 sprints
 
 ## ✅ Shipped (59)
 
@@ -102,4 +102,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 60 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 61 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
