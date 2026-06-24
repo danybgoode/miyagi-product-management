@@ -5,8 +5,9 @@
 //   • scripts/cross-panel.mjs   — advisory second opinion on a proposed plan (a scope/seed doc)
 //
 // It holds only the family-agnostic mechanics: presence/version checks, the per-CLI context-passing quirks
-// (codex takes context on stdin; agy 1.0.7 has no stdin → context rides in argv, with a size cap), and the
-// shared-prompt loader. The *framing* of the context (a PR diff vs a plan doc) and the output handling
+// (codex takes context on stdin; agy takes the prompt as the `-p` argv value — stdin is NOT the prompt and
+// must be at EOF — with a size cap), and the shared-prompt loader. The *framing* of the context (a PR diff
+// vs a plan doc) and the output handling
 // (post a PR comment vs print a panel) stay in each consuming script. Zero npm deps — Node 18+.
 //
 // ── Codex → Antigravity auto-fallback ───────────────────────────────────────────────────────────────────
@@ -23,11 +24,22 @@ import { readFileSync, existsSync } from 'node:fs';
 // label per agent. Drives both the CLI dispatch and the human-readable header.
 export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 
-// Antigravity's headless CLI is new and its flags may shift between releases — pin the known-good version
-// and warn (not fail) on a mismatch so a bump surfaces but doesn't block.
-export const AGY_PINNED = '1.0.7';
+// Antigravity's headless CLI is new and its print contract shifts between releases — pin the known-good
+// version and FAIL LOUD on a mismatch (checkAgyVersion). 1.0.7→1.0.10 silently changed `--print` so it
+// emits NOTHING without an explicit --model, which a soft warn let ship as empty reviews; a hard fail forces
+// a human to re-verify the invocation below and bump this deliberately. Bumping = re-test runAntigravity().
+export const AGY_PINNED = '1.0.10';
 
-// agy 1.0.7 has no stdin input, so the prompt+context ride in a single argv string. Guard well under the
+// agy 1.0.10 `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
+// nothing (exit 0, empty stdout — the error lands only in agy's log) when the model is quota-exhausted or
+// unreachable. Gemini is the ideal reviewer (a different family from BOTH the Claude host and the GPT-family
+// codex), so it's the default — but its per-subscription quota is tight and exhausts ("RESOURCE_EXHAUSTED
+// 429: Individual quota reached"), so runAntigravity AUTO-FALLS-BACK to AGY_FALLBACK_MODEL (GPT-OSS, a
+// separate quota pool that worked on the dev machine) when the primary yields empty. Override either via env.
+export const AGY_MODEL = process.env.AGY_MODEL || 'Gemini 3.1 Pro (High)';
+export const AGY_FALLBACK_MODEL = process.env.AGY_FALLBACK_MODEL || 'GPT-OSS 120B (Medium)';
+
+// agy takes the prompt+context as a single `-p` argv string (stdin is not the prompt). Guard well under the
 // OS limit (macOS ARG_MAX is 1 MB incl. env) so a huge input fails clearly instead of an opaque E2BIG.
 export const AGY_ARG_LIMIT = 256 * 1024;
 
@@ -165,14 +177,23 @@ export function currentHeadSha(deps = {}) {
   return runGit(['rev-parse', 'HEAD']);
 }
 
-export function checkAgyVersion() {
-  const r = spawnSync('agy', ['--version'], { encoding: 'utf8' });
-  const v = ((r.stdout || '') + (r.stderr || '')).trim().match(/\d+\.\d+\.\d+/);
-  if (v && v[0] !== AGY_PINNED) {
-    process.stderr.write(
-      `⚠ agy ${v[0]} (pinned ${AGY_PINNED}) — flags may have shifted; verify the output.\n`
+// FAIL LOUD on an unknown/mismatched agy version. The print contract enforced by runAntigravity (the --model
+// requirement + the argv framing) is version-specific, so a silent warn is what let 1.0.10 ship empty reviews
+// for weeks. A match is silent; an unparseable or mismatched version die()s with a fix-naming message. Deps
+// are injectable (spawn/fail/pinned) so a node:test can exercise both outcomes without a real agy or exiting.
+// NOTE: cross-review.mjs calls this only on the explicit `--agent antigravity` path; the codex→agy fallback
+// runs agy directly (kept intact) — the runAntigravity --model fix already restores its output regardless.
+export function checkAgyVersion(deps = {}) {
+  const { spawn = spawnSync, fail: failFn = die, pinned = AGY_PINNED } = deps;
+  const r = spawn('agy', ['--version'], { encoding: 'utf8' });
+  const m = ((r.stdout || '') + (r.stderr || '')).trim().match(/\d+\.\d+\.\d+/);
+  if (!m)
+    return failFn(`could not determine agy version (expected ${pinned}) — is the Antigravity CLI installed?`);
+  if (m[0] !== pinned)
+    return failFn(
+      `agy ${m[0]} != pinned ${pinned} — the print/--model contract may have shifted. ` +
+        `Re-verify runAntigravity() against \`agy --help\`, then bump AGY_PINNED to ${m[0]}.`
     );
-  }
 }
 
 // Load a shared `*.prompt.md`. The doc opens with an HTML-comment header; the prompt is everything below
@@ -295,21 +316,52 @@ export function runWithCodexFallback(
   }
 }
 
-// agy -p: agy 1.0.7 has no stdin block and no --output-format json — the caller must embed the context in
-// `fullArgv` (prompt + framed context), and we enforce the argv size cap here so an oversized input fails
-// with a clear message rather than an opaque E2BIG.
-export function runAntigravity(fullArgv, opts = {}) {
+// One `agy -p "<prompt>" --model "<MODEL>"` invocation. The prompt+framed context ride in `fullArgv` (stdin is
+// NOT the prompt and must be at EOF — input:'' gives an immediate EOF or print mode blocks forever). Returns
+// the raw spawn result; the caller classifies status/stdout.
+function execAgy(fullArgv, model, spawn) {
+  return spawn('agy', ['-p', fullArgv, '--model', model], {
+    input: '',
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+}
+
+// agy 1.0.10 print mode: --model is REQUIRED (or `--print` exits 0 with NO output), and a quota-exhausted /
+// unreachable model ALSO exits 0 with empty stdout (the 429 lands only in agy's log). So an empty result is a
+// real failure, not success — we try AGY_MODEL first and, on empty, retry once with AGY_FALLBACK_MODEL (a
+// separate quota pool) so a Gemini quota exhaustion degrades to GPT-OSS instead of silently blanking the review.
+// We enforce the argv size cap up front (clear message, not an opaque E2BIG). `deps.spawn` is injectable for tests.
+export function runAntigravity(fullArgv, opts = {}, deps = {}) {
+  const { spawn = spawnSync, warn = (m) => process.stderr.write(`${m}\n`) } = deps;
   if (Buffer.byteLength(fullArgv, 'utf8') > AGY_ARG_LIMIT) {
     return fail(
       opts.soft,
       `input too large for antigravity (${Math.round(Buffer.byteLength(fullArgv) / 1024)} KB > ` +
-        `${AGY_ARG_LIMIT / 1024} KB; agy has no stdin input) — use --agent codex instead.`
+        `${AGY_ARG_LIMIT / 1024} KB; agy takes the prompt in argv, not stdin) — use --agent codex instead.`
     );
   }
-  const r = spawnSync('agy', ['-p', fullArgv], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  if (r.status !== 0) {
-    const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
-    return fail(opts.soft, `agy -p failed: ${last}`);
+
+  const tried = [];
+  for (const model of AGY_MODEL === AGY_FALLBACK_MODEL ? [AGY_MODEL] : [AGY_MODEL, AGY_FALLBACK_MODEL]) {
+    const r = execAgy(fullArgv, model, spawn);
+    if (r.status !== 0) {
+      // A non-zero exit is a real agy error (bad flags, crash) — NOT the quota signal — so don't burn the
+      // fallback on it; surface it directly.
+      const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
+      return fail(opts.soft, `agy -p failed (model "${model}"): ${last}`);
+    }
+    const out = (r.stdout || '').trim();
+    if (out) {
+      if (model !== AGY_MODEL) warn(`⚠ agy "${AGY_MODEL}" returned no output (quota/unavailable?) → used "${model}".`);
+      return out;
+    }
+    tried.push(model);
   }
-  return (r.stdout || '').trim();
+  return fail(
+    opts.soft,
+    `agy returned no output for ${tried.map((m) => `"${m}"`).join(' and ')} — likely a quota cap ` +
+      `("RESOURCE_EXHAUSTED 429") or an unavailable model. Set AGY_MODEL / AGY_FALLBACK_MODEL to a model ` +
+      `\`agy models\` lists with remaining quota, or use --agent codex.`
+  );
 }

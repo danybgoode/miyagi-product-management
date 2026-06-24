@@ -73,12 +73,15 @@ eyeball confirmations).
 - [x] **S3** — ✅ `tg.newShop` re-wired on net-new create **and** claim (pure `lib/shop-notify.ts`); re-POST /
       re-claim do **not** double-ping; api-project spec covers the format + net-new contract (PR #115 `475ccf3`).
       Live Telegram receipt owed to Daniel.
-- [ ] **S2** — no more `🛑 db-backup FAILED: neon …` after the `BACKUP_TARGETS=supabase` env change (one
-      nightly cycle observed); a Cloud SQL backup-failure check pings Telegram on a forced failure and is
-      silent on success; `BACKUPS.md` updated.
-- [ ] **S4** — `node scripts/cross-review.mjs <PR#> --agent antigravity` prints non-empty findings on the
-      installed agy; `checkAgyVersion()` fails loudly on an unknown version; `AGY_PINNED` bumped;
-      `node --test scripts/lib/cross-agent-cli.test.mjs` green.
+- [x] **S2** — ✅ built (PR #37, `1133dbb`). Failure-only Cloud SQL backup check (`infra/gcp/backups/cloudsql-check/`:
+      pure `backup-freshness.py` predicate + `check-cloudsql-backup.sh` reusing the `db-backup.sh` `alert()` idiom +
+      Dockerfile) + idempotent `provision-cloudsql-backup-check.sh` (Cloud Run Job + daily Scheduler) + node:test;
+      `BACKUPS.md` updated incl. the staged `BACKUP_TARGETS=supabase` retirement one-liner. **Owed to Daniel:** the
+      env change + one clean nightly, the provision + forced-failure (bogus-instance) Telegram smoke.
+- [x] **S4** — ✅ built (PR #37, `a791477`). `runAntigravity()` adapted to agy **1.0.10** (`-p` + required `--model`
+      + stdin EOF; empty output now = failure — the bug was the missing `--model`); `AGY_PINNED → 1.0.10`;
+      `checkAgyVersion()` **fails loud** on an unknown/mismatched version; argv cap + codex→agy fallback intact;
+      `node --test 'scripts/lib/*.test.mjs'` green (33). **Owed to Daniel:** a live `--agent antigravity` run.
 - [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough; operational/owed-to-Daniel steps flagged by name.
 - [ ] Each story added an api-project spec or a `node:test` where a testable seam exists (LEARNINGS: infra's
       deterministic gate is a pure `node:test`).

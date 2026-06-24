@@ -68,3 +68,6 @@ references/design_handoff_mexico26_trifold/
 ehthumbs.db
 Thumbs.db
 **/.DS_Store
+# Python bytecode (infra predicates)
+__pycache__/
+*.pyc

@@ -111,6 +111,39 @@ gcloud sql instances clone medusa-pg medusa-pg-pitr \
 The in-VPC dump/restore mechanics (connector-attached `postgres:17-alpine` Cloud Run Job — a laptop can't
 reach the private IP) are recorded in `postgres-neon-to-cloudsql/sprint-2.md`.
 
+## Cloud SQL backup-failure check (Telegram alert)
+Cloud SQL's native automated backups are the commerce backup-of-record, but they have **no alert of their
+own** — a silently-failing nightly backup would be an invisible blind spot. This job closes it (DevOps
+reliability cleanup, Sprint 2): once a day it lists `medusa-pg`'s backups and pings the ops Telegram chat
+**only when** the latest automated backup is missing or not `SUCCESSFUL` within ~26h. **Failure-only — no
+success heartbeat** (declined by Daniel).
+
+| | |
+|---|---|
+| Runner | Cloud Run **Job** `cloudsql-backup-check` (region `us-east4`, SA `medusa-backup-check`, max-retries 1, 120s, 256Mi) |
+| Schedule | Cloud Scheduler `cloudsql-backup-check-daily`, cron `0 12 * * *` UTC (a few h after the 09:00 backup window) → `:run` the job |
+| Image | `…/medusa-ops/cloudsql-backup-check:<tag>` (`google-cloud-cli:slim` — gcloud + python3 + bash + curl) |
+| Check | `gcloud sql backups list --instance=medusa-pg --project=miyagisanchezback-497722 --format=json` → the pure freshness predicate |
+| Health rule | HEALTHY iff a **SUCCESSFUL AUTOMATED** backup exists within `MAX_AGE_HOURS` (default 26). A failed `gcloud` listing also alerts (a blind listing is itself a blind spot). |
+| Alerts | best-effort Telegram via the reused `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CICD_CHAT_ID` secrets — same idiom as `db-backup.sh` |
+
+Files: [`cloudsql-check/check-cloudsql-backup.sh`](cloudsql-check/check-cloudsql-backup.sh) (gcloud fetch +
+alert relay) · [`cloudsql-check/backup-freshness.py`](cloudsql-check/backup-freshness.py) (the **pure**,
+unit-tested freshness predicate — `infra/gcp/test/cloudsql-backup-check.test.js`) ·
+[`cloudsql-check/Dockerfile`](cloudsql-check/Dockerfile) ·
+[`provision-cloudsql-backup-check.sh`](provision-cloudsql-backup-check.sh) (idempotent).
+
+**Stand it up (owed to Daniel — live GCP writes):**
+```bash
+gcloud config configurations activate bonsai-profile
+bash infra/gcp/backups/provision-cloudsql-backup-check.sh
+# Smoke — real instance → silent (Succeeded); bogus instance → a Telegram failure alert:
+gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait                       # expect Succeeded, no alert
+gcloud run jobs update  cloudsql-backup-check --region=us-east4 --update-env-vars=INSTANCE=does-not-exist
+gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait                       # expect a Telegram alert
+gcloud run jobs update  cloudsql-backup-check --region=us-east4 --update-env-vars=INSTANCE=medusa-pg
+```
+
 ## Neon target retirement
 With commerce on Cloud SQL, the R2 pipeline's **`neon` target is redundant** — it would dump the
 read-only Neon rollback copy, which is itself being demoted to a dev-only sandbox
@@ -119,13 +152,19 @@ read-only Neon rollback copy, which is itself being demoted to a dev-only sandbo
    escrowed.
 2. Once the window closes **and** a Cloud SQL automated backup is confirmed
    (`gcloud sql backups list --instance=medusa-pg` → at least one `SUCCESSFUL`), drop `neon` — a one-line
-   Cloud Run Job env change (**owed to Daniel**):
+   Cloud Run Job env change (**OWED TO DANIEL — staged, not yet run**; the Cloud SQL backup gate is already
+   met, e.g. backup `1782097256693` 2026-06-22, so this is unblocked the moment the rollback window closes
+   ~2026-06-29):
    ```bash
    gcloud run jobs update db-backup --region=us-east4 \
      --update-env-vars=BACKUP_TARGETS=supabase
    ```
-   The `neon` branch of [`db-backup.sh`](db-backup.sh) then becomes dead code; it's left intact (harmless —
-   the `supabase` path still uses the script) rather than deleted.
+   This removes the nightly `🛑 db-backup FAILED: neon pg_dump failed` (×2 via `max-retries 1`) false alarm.
+   Verify with `gcloud run jobs describe db-backup --region=us-east4` → `BACKUP_TARGETS=supabase`. The `neon`
+   branch of [`db-backup.sh`](db-backup.sh) then becomes dead code; it's left intact (harmless — the
+   `supabase` path still uses the script) rather than deleted. **Do not flip the `provision-db-backup.sh`
+   default off `supabase,neon` until after this runs** — a re-provision during the open window must keep
+   escrowing the Neon rollback source.
 
 ## Status
 Pipeline **LIVE since 2026-06-12** — Cloud Run Job `db-backup` + Cloud Scheduler `db-backup-daily`
@@ -133,3 +172,7 @@ Pipeline **LIVE since 2026-06-12** — Cloud Run Job `db-backup` + Cloud Schedul
 **Backup-of-record today:** commerce → Cloud SQL native automated backups + PITR (confirmed
 `SUCCESSFUL`, e.g. backup `1782097256693` 2026-06-22T03:00Z); Supabase → this R2 escrow pipeline (`supabase`
 target). The `neon` target is pending retirement per the section above.
+
+**Cloud SQL backup-failure check** (DevOps reliability cleanup, Sprint 2): code-complete (job image +
+idempotent provision script + pure unit-tested predicate). **Owed to Daniel:** run
+`provision-cloudsql-backup-check.sh` + the bogus-instance forced-failure smoke (live GCP writes).

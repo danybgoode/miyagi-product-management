@@ -170,8 +170,15 @@ the shared rail `scripts/lib/cross-agent-cli.mjs` (covered by its `node:test`); 
 (alias `--no-comment`) · `--help`. `<PR#>` is optional (omit → current branch). **Dependencies:** `gh`
 (authed), plus `codex` for `--agent codex` and `agy`
 for `--agent antigravity` — each degrades with a clear, fix-naming message if missing/unauthed. `agy` is
-pinned to **1.0.7** (it has no `--output-format json`; the script uses text output and **warns** on a
-version mismatch). The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
+pinned to **1.0.10** and the version check **fails loudly** on a mismatch (a silent warn is what let the
+1.0.7→1.0.10 print-contract change ship empty reviews). The 1.0.10 invocation is
+`agy -p "<prompt+diff>" --model "<MODEL>"`: `--print` now emits **nothing** without an explicit `--model`,
+and it *also* emits nothing (exit 0!) when the model is **quota-exhausted** (`RESOURCE_EXHAUSTED 429`) — the
+error only lands in agy's log. So the script passes a model and treats empty output as a failure. The default
+is **`Gemini 3.1 Pro (High)`** (a different family from *both* the Claude host and the GPT-family Codex), with
+an **auto-fallback to `GPT-OSS 120B (Medium)`** (a separate quota pool) when Gemini's tight per-subscription
+quota is exhausted — the substitution is announced on stderr. Override either via **`AGY_MODEL`** /
+**`AGY_FALLBACK_MODEL`**. The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
 — the single source both this command and a human reviewer read. Zero npm deps — Node 18+.
 
 ### Restoring a lapsed Codex token (auto-fallback to Antigravity)

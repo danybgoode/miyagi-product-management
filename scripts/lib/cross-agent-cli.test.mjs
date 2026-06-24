@@ -18,6 +18,12 @@ import {
   decideTrivialSkip,
   isDocFile,
   resolveCurrentPr,
+  runAntigravity,
+  checkAgyVersion,
+  AGY_PINNED,
+  AGY_MODEL,
+  AGY_FALLBACK_MODEL,
+  AGY_ARG_LIMIT,
 } from './cross-agent-cli.mjs';
 
 // The real stderr a live revoked Codex token emits (captured 2026-06-21) — the trigger must match THIS.
@@ -280,4 +286,126 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
     fail: throwingFail,
   };
   assert.throws(() => resolveCurrentPr({}, deps), /gh pr view failed/);
+});
+
+// --- Sprint 2 (devops-reliability-cleanup S4): agy 1.0.10 print contract + fail-loud version check ---------
+// agy 1.0.7→1.0.10 changed `--print`: it now needs an explicit --model or exits 0 with NO output (the bug we
+// fixed). These lock the new invocation (a stubbed agy → non-empty capture, the --model + argv framing present,
+// empty stdout treated as failure, the size cap intact) and the fail-loud version gate.
+
+test('AGY_PINNED bumped to the verified 1.0.10 (guards the deliberate bump)', () => {
+  assert.equal(AGY_PINNED, '1.0.10');
+  assert.equal(typeof AGY_MODEL, 'string');
+  assert.ok(AGY_MODEL.length > 0, 'AGY_MODEL must default to a non-empty model name');
+  assert.ok(AGY_FALLBACK_MODEL.length > 0, 'AGY_FALLBACK_MODEL must default to a non-empty model name');
+  assert.notEqual(AGY_MODEL, AGY_FALLBACK_MODEL, 'the fallback must differ from the primary to be useful');
+});
+
+// A stub `spawn` returning a fixed result for every call; records each call.
+function spawnStub(result) {
+  const calls = [];
+  const spawn = (cmd, args, opts) => {
+    calls.push({ cmd, args, opts });
+    return result;
+  };
+  return { spawn, calls };
+}
+
+// A stub `spawn` returning a SEQUENCE of results (one per call) — for exercising the primary→fallback retry.
+function spawnSeq(results) {
+  const calls = [];
+  const spawn = (cmd, args, opts) => {
+    calls.push({ cmd, args, opts });
+    return results[calls.length - 1];
+  };
+  return { spawn, calls };
+}
+
+const noWarn = () => {};
+
+test('runAntigravity: stubbed agy → non-empty capture, with `-p <argv> --model <MODEL>` and stdin EOF', () => {
+  const { spawn, calls } = spawnStub({ status: 0, stdout: 'AGY REVIEW FINDINGS\n', stderr: '' });
+  const out = runAntigravity('PROMPT+DIFF', {}, { spawn, warn: noWarn });
+  assert.equal(out, 'AGY REVIEW FINDINGS'); // trimmed, non-empty
+  assert.equal(calls.length, 1, 'a non-empty primary needs no fallback');
+  const { cmd, args, opts } = calls[0];
+  assert.equal(cmd, 'agy');
+  // the 1.0.10 contract: prompt is the -p value, an explicit --model is passed (the fix for the empty output)
+  assert.deepEqual(args, ['-p', 'PROMPT+DIFF', '--model', AGY_MODEL]);
+  assert.equal(opts.input, '', 'stdin must be given an immediate EOF (input:"") or print mode blocks');
+});
+
+test('runAntigravity: primary empty (quota) → AUTO-FALLS-BACK to AGY_FALLBACK_MODEL and returns its output', () => {
+  const { spawn, calls } = spawnSeq([
+    { status: 0, stdout: '   \n', stderr: '' }, // primary (Gemini) quota-exhausted → empty, exit 0
+    { status: 0, stdout: 'FALLBACK FINDINGS\n', stderr: '' }, // GPT-OSS produces the review
+  ]);
+  let warned = '';
+  const out = runAntigravity('PROMPT+DIFF', {}, { spawn, warn: (m) => (warned = m) });
+  assert.equal(out, 'FALLBACK FINDINGS');
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls[0].args, ['-p', 'PROMPT+DIFF', '--model', AGY_MODEL]);
+  assert.deepEqual(calls[1].args, ['-p', 'PROMPT+DIFF', '--model', AGY_FALLBACK_MODEL]);
+  assert.match(warned, /returned no output.*used "/); // the substitution is announced, not silent
+});
+
+test('runAntigravity: BOTH primary and fallback empty → fail naming the quota cap', () => {
+  const empty = { status: 0, stdout: '', stderr: '' };
+  const { spawn, calls } = spawnSeq([empty, empty]);
+  const out = runAntigravity('PROMPT+DIFF', { soft: true }, { spawn, warn: noWarn });
+  assert.equal(out, null); // soft → null (non-soft die()s); the real message names RESOURCE_EXHAUSTED + both models
+  assert.equal(calls.length, 2, 'tries primary then the fallback before giving up');
+});
+
+test('runAntigravity: a non-zero agy exit surfaces the stderr tail and does NOT burn the fallback', () => {
+  const { spawn, calls } = spawnStub({ status: 1, stdout: '', stderr: 'boom: bad flag\n' });
+  const out = runAntigravity('PROMPT+DIFF', { soft: true }, { spawn, warn: noWarn });
+  assert.equal(out, null); // soft → null; a crash is not the quota signal, so no fallback retry
+  assert.equal(calls.length, 1, 'a real agy error fails fast — the fallback is only for the empty/quota case');
+});
+
+test('runAntigravity: oversized argv trips the size cap BEFORE spawning', () => {
+  const { spawn, calls } = spawnStub({ status: 0, stdout: 'should not run', stderr: '' });
+  const huge = 'x'.repeat(AGY_ARG_LIMIT + 1);
+  const out = runAntigravity(huge, { soft: true }, { spawn, warn: noWarn });
+  assert.equal(out, null);
+  assert.equal(calls.length, 0, 'must not spawn agy when the input exceeds the argv cap');
+});
+
+test('checkAgyVersion: matching version → silent (no fail)', () => {
+  let failed = false;
+  checkAgyVersion({
+    spawn: () => ({ stdout: '1.0.10\n', stderr: '' }),
+    fail: () => { failed = true; },
+    pinned: '1.0.10',
+  });
+  assert.equal(failed, false);
+});
+
+test('checkAgyVersion: mismatched version → LOUD fail naming the bump (not a silent warn)', () => {
+  assert.throws(
+    () =>
+      checkAgyVersion({
+        spawn: () => ({ stdout: '1.0.11\n', stderr: '' }),
+        fail: throwingFail,
+        pinned: '1.0.10',
+      }),
+    (e) => {
+      assert.match(e.message, /agy 1\.0\.11 != pinned 1\.0\.10/);
+      assert.match(e.message, /bump AGY_PINNED/);
+      return true;
+    }
+  );
+});
+
+test('checkAgyVersion: unparseable version output → LOUD fail (never a silent pass)', () => {
+  assert.throws(
+    () =>
+      checkAgyVersion({
+        spawn: () => ({ stdout: 'not a version', stderr: '' }),
+        fail: throwingFail,
+        pinned: '1.0.10',
+      }),
+    /could not determine agy version/
+  );
 });
