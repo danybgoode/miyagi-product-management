@@ -80,14 +80,13 @@ _None._
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (8)
+## ⬜ Funnel — seeds not yet scaffolded (7)
 
 - [Rental backend line-item pricing (charge nights × rate + deposit online)](seeds/rental-backend-line-item-pricing.md) — Ready · Feature · backlog
 - [Buyer notifications — money-path addendum](seeds/buyer-notifications-money-path.md) — Ready · Feature · Wave 2
 - [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Ready · Spike · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
-- [Kill-switch flag decided at grooming, not at epic close](seeds/kill-switch-at-grooming.md) — Ready · Chore
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
@@ -102,4 +101,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Neon egress reduction + DB account isolation + site-wide Clarity 🏗️ | Archived | In progress |
 
 ---
-_Epics: 61 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 61 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._

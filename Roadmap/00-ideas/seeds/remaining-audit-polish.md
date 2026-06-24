@@ -1,14 +1,14 @@
 ---
 title: "Remaining audit polish (#3c umbrella)"
 slug: remaining-audit-polish
-status: scaffolded
+status: shipped
 area: "01"
 type: feature
 priority: wave-3
 risk: high
 epic: null
 build_order: "#3c"
-updated: 2026-06-08
+updated: 2026-06-24
 ---
 
 # Scope — Remaining Audit Polish (BUILD-ORDER #3c)
