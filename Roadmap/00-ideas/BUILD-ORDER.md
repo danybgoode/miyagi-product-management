@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-06-24 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-06-26 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -14,9 +14,11 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (3)
 
-_None._
+- [Selección: make admin pins authoritative](../../01-discovery-and-shopping/seleccion-pins-authoritative/README.md) — 01 Discovery · 0/5 stories
+- [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 0/7 stories
+- [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 1/5 stories
 
 ## ✅ Shipped (60)
 
@@ -91,5 +93,15 @@ _None._
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+
+These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
+derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
+forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
+
+| Epic | frontmatter (used) | sprint/retro-derived |
+|---|---|---|
+| Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2) | Scaffolded | In progress |
+
 ---
-_Epics: 61 · seeds in funnel: 7 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 64 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
