@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: seleccion-pins-authoritative
 ---
 
@@ -89,15 +89,20 @@ Daniel is configuring it correctly. These are half-built promises in `lib/home-c
 - **Risk tiers:** S2.1 is **MED** (shared catalog route, additive read-filter); everything else LOW. No
   payments/checkout/fulfillment/auth/DB-migration.
 
-## Definition of Done (epic)
+## Definition of Done (epic) — ✅ COMPLETE 2026-06-25 (2 sprints)
 
-- [ ] The lowest-rank pin is **always** the Destacado, regardless of price. (S1.1, `home-curation.spec.ts`)
-- [ ] Every qualifying pin renders under the Destacado in `featured_rank` order; auto-curation fills only leftover
+- [x] The lowest-rank pin is **always** the Destacado, regardless of price. (S1.1, `home-curation.spec.ts`)
+- [x] Every qualifying pin renders under the Destacado in `featured_rank` order; auto-curation fills only leftover
       slots; grid capped at 11. (S1.2)
-- [ ] A pin **older than the freshest-24** still renders (Destacado + grid); `/store/listings?featured=true`
-      returns only pins; frontend unions + still busts on `listings`. (S2.1/S2.2)
-- [ ] `next build` keeps `/` at `○` (static shell) across all stories.
-- [ ] Each `sprint-N.md` has its smoke walkthrough; admin pin/reorder → homepage steps flagged **owed to Daniel**.
-- [ ] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to
+- [x] A pin **older than the freshest-24** still renders (Destacado + grid); `/store/listings?featured=true`
+      returns only pins (BE #40 `aaab981`, live `medusa-web-00112-2tc`); frontend unions + still busts on
+      `listings` (FE #126 `8c4b6a7`). (S2.1/S2.2)
+- [x] `next build` keeps `/` at `○` (static shell) across all stories.
+- [x] Each `sprint-N.md` has its smoke walkthrough; admin pin/reorder → homepage steps flagged **owed to Daniel**.
+- [x] This `README.md` marked ✅ (`status: shipped`); `RETROSPECTIVE.md` written; durable learnings promoted to
       `Roadmap/LEARNINGS.md`; poster (`Roadmap/README.md`) + `BUILD-ORDER.md` updated.
-- [ ] Kill-switch check: none expected (additive read path, no money/auth) — confirm at close.
+- [x] Kill-switch check: **none** — additive read path (a new `?featured=true` filter + a unioned read fetch), no
+      money/checkout/auth/DB. Confirmed at close.
+
+**Owed to Daniel (operational):** the authenticated `?featured=true` curl + the admin pin/reorder → homepage smoke
+(steps in `sprint-2.md`; needs prod publishable key + admin session + real old-pin data).

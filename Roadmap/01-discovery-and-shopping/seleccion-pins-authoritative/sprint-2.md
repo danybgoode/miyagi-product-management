@@ -36,11 +36,14 @@ the param the response is unchanged.
 **QA:** a backend api spec / curl check — `?featured=true` returns only pins; absent param unchanged. **MED** (shared
 catalog route) — reviewer may auto-merge on green CI, or Daniel merges.
 
-> **✅ Built — PR [medusa-bonsai-backend#40](https://github.com/danybgoode/medusa-bonsai-backend/pull/40) (draft, MED).**
+> **✅ SHIPPED — PR [medusa-bonsai-backend#40](https://github.com/danybgoode/medusa-bonsai-backend/pull/40) squash `aaab981`.**
 > Pure `isFeaturedPin` predicate in `_utils/listing.ts` (strict `metadata.featured === true`, mirrors the frontend
 > `isPinned`) + the one-line `if (q.featured === 'true') listings = listings.filter(isFeaturedPin)` in the route +
-> DB-free `featured-filter.unit.spec.ts`. Gate green locally: `npm run build` + `npx tsc --noEmit` +
-> `npm run test:unit` (36 tests). **Owed:** merge → Cloud Run deploy (~12 min) → verify before S2.2 merges.
+> DB-free `featured-filter.unit.spec.ts`. Gate green: `npm run build` + `npx tsc --noEmit` + `npm run test:unit`
+> (36 tests). Cross-review (codex) flagged one "blocking" item — **declined with rationale** (the route fetches
+> *all* published products `take:2000` at Step 1, filters at Step 4, paginates at Step 6, so no pin is paginated
+> off; the `take:2000` ceiling is a pre-existing route-wide limit, unchanged). **Deployed live** to Cloud Run
+> revision `medusa-web-00112-2tc` (100% traffic) **before** S2.2 merged.
 
 ## S2.2 — Frontend unions pins into the pool · LOW
 
@@ -59,13 +62,17 @@ rank 1) and in the grid (by rank). Editing the pin still reflects within the ISR
 **QA:** extend the curation spec for the union (a pinned old listing is present in the pool → becomes Destacado /
 leads the grid); smoke per the walkthrough. The old-pin path is **owed to Daniel** (needs admin session + real data).
 
-> **✅ Built — PR [miyagisanchezcommerce#126](https://github.com/danybgoode/miyagisanchezcommerce/pull/126) (draft, LOW).**
+> **✅ SHIPPED — PR [miyagisanchezcommerce#126](https://github.com/danybgoode/miyagisanchezcommerce/pull/126) squash `8c4b6a7`.**
 > Pure `unionById` in the next-free `lib/home-curation.ts` seam; `getCuratedPool` fetches freshest-24 +
-> `?featured=true&limit=50` in parallel and unions (dedupe by `id`), degrading per-fetch on `!res.ok`.
-> `home-curation.spec.ts` gained a `pool union (S2.2)` describe (dedupe/non-mutating, graceful empty-fetch, and the
-> old-pin-becomes-Destacado bridge). Gate green locally: `tsc` + `next build` (**`/` stays `○`**, 1m revalidate) +
-> `playwright test home-curation --project=api` (37 tests). Full `api` suite's catalog specs need a reachable
-> Medusa (sandbox can't) → **CI vs the branch preview is the authoritative gate**.
+> `?featured=true&limit=50` in parallel and unions (dedupe by `id`). `home-curation.spec.ts` gained a
+> `pool union (S2.2)` describe (dedupe/non-mutating, graceful empty-fetch, old-pin-becomes-Destacado bridge) — 37
+> `api` tests. Gate green: `tsc` + `next build` (**`/` stays `○`**, 1m revalidate) + `playwright … home-curation`.
+> Cross-review (codex) caught a **real should-fix** — applied (`4bb484e`): `fetchListings` now degrades on a
+> *throw* (network reject / malformed JSON, the deploy-lag case), not just `!res.ok`, so `Promise.all` can't reject
+> the pool and the static build truly never throws. CI's "Playwright vs preview" first went red on the **sibling**
+> `seller-acquisition-seo.spec.ts` (PR #125's `/vende` persona metadata landed on `main` after this branch's
+> preview was built — a structural cross-branch mismatch, not this diff); cleared by `git merge origin/main` + push
+> (rebuilding the preview). Green → merged.
 
 ---
 
@@ -78,9 +85,10 @@ Deterministic gate: backend `tsc`/build + the `featured=true` spec; frontend `ts
 
 Env: production · https://miyagisanchez.com (backend on Cloud Run). **Admin steps owed to Daniel.**
 
-1. (backend) After the backend deploys, hit `https://<backend-host>/store/listings?featured=true` (with the
-   publishable-key header).
+1. (backend) ✅ deployed — hit `https://medusa-web-oehqqtyoia-uk.a.run.app/store/listings?featured=true` with the
+   `x-publishable-api-key` header (prod publishable key, public — in the storefront bundle / Vercel env).
    → JSON returns **only** pinned products; a call without `?featured=true` returns the full freshest list.
+   *(Authenticated curl + the admin pin steps below are owed to Daniel — the agent has no prod key/admin session.)*
 2. Sign in as admin → https://miyagisanchez.com/admin/seleccion → pin a product you know is **old** (far down the
    Candidatos list), set it rank 1.
    → It sits at rank 1, badged **Destacado**, in admin.

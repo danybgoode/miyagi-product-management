@@ -10,16 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (0)
 
-- [Selección: make admin pins authoritative](../../01-discovery-and-shopping/seleccion-pins-authoritative/README.md) — 01 Discovery · 2/5 stories
+_None._
 
 ## 📋 Ready to build (scaffolded, not started) (2)
 
 - [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 0/7 stories
-- [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 1/5 stories
+- [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 2/5 stories
 
-## ✅ Shipped (60)
+## ✅ Shipped (61)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -28,6 +28,7 @@
 - [PDP follow-ups cleanup](../../01-discovery-and-shopping/pdp-followups-cleanup/README.md) — 01 Discovery · 2/2 stories
 - [PDP interactive image gallery ✅ COMPLETE](../../01-discovery-and-shopping/pdp-image-gallery/README.md) — 01 Discovery · 2/2 stories · risk: Low
 - [PDP redesign: "decide, then act"](../../01-discovery-and-shopping/pdp-redesign/README.md) — 01 Discovery · 18/18 stories
+- [Selección: make admin pins authoritative](../../01-discovery-and-shopping/seleccion-pins-authoritative/README.md) — 01 Discovery · 3/5 stories
 - [Checkout & Manual-Payment State Hardening](../../02-checkout-and-payments/checkout-state-hardening/README.md) — 02 Checkout & Payments · 9/9 stories · risk: High · Wave 2
 - [Delivery & Manual-Money Polish](../../02-checkout-and-payments/delivery-money-polish/README.md) — 02 Checkout & Payments · 5/8 stories · risk: High · Wave 3
 - [Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)](../../03-selling-and-shops/agent-native-setup/README.md) — 03 Selling & Shops · 7/7 stories · risk: High

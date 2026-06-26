@@ -31,9 +31,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Merge `main`, don't debug your own diff. **A re-run alone won't fix it** — the mismatch is
   *structural* (CI runs the **merged** test set against the **branch-head** preview, which lacks the
   sibling's feature); only `git merge origin/main` + push (rebuilding the preview) clears it. Confirm with
-  `git ls-tree origin/main -- <failing-spec>` vs `HEAD` — the spec is on main but absent from your branch.
+  `git log HEAD..origin/main` — a sibling commit you don't have is the tell. (The missing thing may be the
+  *implementation the spec asserts*, not the spec **file** itself: the spec can already be on your branch — a
+  blob-identical `git ls-tree` — while the feature commit it tests sits only on `main`, so your preview fails it.)
   *(2026-06-05 seasonal-theme; reconfirmed 2026-06-09 — delivery-money-polish S3 went red on
-  `agent-native-setup-spec.spec.ts` from sibling PR #61; a re-run reproduced it, merging main fixed it.)*
+  `agent-native-setup-spec.spec.ts` from sibling PR #61; a re-run reproduced it, merging main fixed it;
+  reconfirmed 2026-06-25 — seleccion-pins S2.2 went red on the sibling `seller-acquisition-seo.spec.ts`: the
+  spec was on both branches, but PR #125's `/vende` metadata impl `af690ad` was main-only.)*
 - **Announce cross-cutting or direct-to-`main` changes**, and prefer a PR even for "engine"
   features. Anything touching shared surface — `layout.tsx`, `middleware.ts`, `globals.css`,
   `package.json`/deps, a new sibling worktree — can break every other open PR. *(2026-06-05 — a
@@ -521,6 +525,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   give it a dependency-free home up front. (Left the UCP `catalog` origin default's `startsWith('http')` alone —
   browser-controlled request origin, a separate baseUrl convention, not user-typed-data.) *(2026-06-21,
   canonicalSourceUrl sweep — PR #96 `5925f1a`.)*
+- **To make a curated/explicit subset authoritative over a "freshest-N" read without un-static-ing an ISR page,
+  fetch the subset via its own metadata filter and UNION it into the pool (dedupe by id, degrade per-fetch), and
+  mirror the route's existing filter convention so a reviewer's "filtered after pagination" flag is a misread to
+  decline.** The homepage Selección showed admin pins only when they fell inside the freshest-24 pool; an older
+  pin couldn't render. Fix: a backend `?featured=true` read-filter (mirroring the in-memory brand/transmission
+  filters — `take:2000` fetch-all → **filter** → **paginate**, so the filter is *before* pagination and misses
+  nothing) + a frontend union of `?featured=true` into the freshest-24 in the single cached pool seam. Two
+  durable corollaries: **(1)** the union/filter wrappers must degrade on a *throw*, not just `!res.ok` — a network
+  reject or malformed JSON (the cross-repo deploy-lag case) would otherwise reject `Promise.all` and break the
+  static prerender despite a "never throws" comment (wrap each fetch in try/catch → `[]`). **(2)** when the
+  cross-agent reviewer calls the in-memory filter "after pagination → results missed," check the actual fetch
+  shape before acting — if the route loads all rows then filters then paginates (this codebase's catalog
+  convention), it's correct; decline with the Step-1/4/6 trace and log the real ceiling (`take:2000`) as a
+  pre-existing route-wide follow-up, not a per-filter patch. *(2026-06-25, seleccion-pins-authoritative S2 —
+  BE #40 `aaab981` `isFeaturedPin` + FE #126 `8c4b6a7` `unionById`; both corollaries came from the codex review.)*
 - **VALIDATE-FIRST: confirm a live data source exists before scoping a signal/UI that displays it; if it doesn't,
   ship the static/degraded-but-honest version, defer the dynamic part, and write the gap into the PR — never
   invent the data.** A "check the model before you build the view" discipline, the read-side mirror of the
