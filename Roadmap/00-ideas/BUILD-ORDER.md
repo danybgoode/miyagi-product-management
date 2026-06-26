@@ -10,15 +10,15 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (0)
 
-- [Seller landing — launch polish (hero redesign + marketplace voice + benchmark example)](../../08-growth-and-promotions/seller-landing-launch-polish/README.md) — 08 Growth · 1/2 stories
+_None._
 
 ## 📋 Ready to build (scaffolded, not started) (0)
 
 _None._
 
-## ✅ Shipped (64)
+## ✅ Shipped (65)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -60,6 +60,7 @@ _None._
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 0/3 stories · risk: Low
 - [Referral Program](../../08-growth-and-promotions/referral-program/README.md) — 08 Growth · 5/5 stories · risk: Low
 - [Seasonal Theme Engine](../../08-growth-and-promotions/seasonal-theme-engine/README.md) — 08 Growth · 0/9 stories
+- [Seller landing — launch polish (hero redesign + marketplace voice + benchmark example)](../../08-growth-and-promotions/seller-landing-launch-polish/README.md) — 08 Growth · 2/2 stories
 - [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 5/5 stories
 - [Seller-Acquisition Landing Pages (BUILD-ORDER #6)](../../08-growth-and-promotions/seller-acquisition-landing-pages/README.md) — 08 Growth · 4/9 stories · risk: Low · Wave 3
 - [Sweepstakes](../../08-growth-and-promotions/sweepstakes/README.md) — 08 Growth · 9/9 stories · risk: Low

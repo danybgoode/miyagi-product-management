@@ -1,10 +1,12 @@
-# Sprint 2 — Hero & section redesign  ·  status: ✅ built (PR #134, awaiting review/merge)
+# Sprint 2 — Hero & section redesign  ·  status: ✅ shipped — PR #134 (`98a09f9`)
 
-> Built 2026-06-26 on `feat/seller-landing-launch-polish-s2` (fresh off `main` — the old
-> `feat/seller-landing-launch-polish` is S1's squash-merged dead-end branch). Commits:
-> **S2.1** `3d9d184` (visible PromptBlock + right-panel hero) · **S2.2** `355d7de` (premium grid +
-> benchmark example + steps prompt) · **S2.3** `1c840e8` (mundial bespoke hero). Gate green:
-> `tsc --noEmit` + `next build` + the api specs.
+> **Shipped 2026-06-26** — squash-merged to app `main` as `98a09f9` (PR
+> [#134](https://github.com/danybgoode/miyagisanchezcommerce/pull/134), risk **LOW**, CI green vs
+> preview, advisory cross-agent review run + triaged). Built on `feat/seller-landing-launch-polish-s2`
+> (fresh off `main` — the old `feat/seller-landing-launch-polish` was S1's squash-merged dead-end branch).
+> Branch commits: **S2.1** `3d9d184` (visible PromptBlock + right-panel hero) · **S2.2** `355d7de`
+> (premium grid + benchmark example + steps prompt) · **S2.3** `1c840e8` (mundial bespoke hero) ·
+> a11y `9bfcf4d` (`aria-live` on copy button, from the review). Owed: Daniel real-device mobile pass.
 
 > The design work behind the launch polish. Builds on Sprint 1's strings. Mobile-first; reuse the
 > v2-S4 responsive idioms. Shared renderer (`_components/SellerAcquisitionSections.tsx`) + bespoke

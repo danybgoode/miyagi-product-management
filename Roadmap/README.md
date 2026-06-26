@@ -144,6 +144,24 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-06-26 — Seller landing launch polish complete (2 sprints; LOW, frontend-only).** Pre-launch polish
+  on the v2 seller-acquisition overhaul above. **S1** ([#133](https://github.com/danybgoode/miyagisanchezcommerce/pull/133)
+  `d4d6bde`) wove in the *marketplace* word + full `miyagisanchez.com` brand, emptied the eyebrow strings, and
+  **staged every new copy key** (`shared.heroTrustLine`, `anchor.heroValues`/`premiumFeatures`/`benchmark.example`).
+  **S2** ([#134](https://github.com/danybgoode/miyagisanchezcommerce/pull/134) `98a09f9`) laid them out: the
+  directive prompt is now a **visible copy-paste `PromptBlock`** (readable text + copy button, was button-only),
+  in a **right-panel hero** built with a **scoped CSS module** (mobile-first DOM order → 2-col desktop via
+  grid-areas, so CTAs render last on mobile but sit under the trust line on desktop — without touching
+  `globals.css`/layout). The anchor hero leads with a value list (**0% · IA · Premium**); the old social-proof
+  block became a **premium-features grid** (boletos · sorteos · agenda · suscripciones · cupones · dominio); the
+  benchmark gained a **worked take-home example** ("vendes un producto de $1,000 MXN" → take-home vs Mercado
+  Libre/Shopify); eyebrows removed everywhere incl. persona-router cards; bespoke `/vende/mundial` brought to
+  parity. Two pure config-seam api specs gate the contract; nightly browser specs cover the rendered facts +
+  no-overflow. Cross-agent (Antigravity) review ran + was triaged — its two "blocking" items were false
+  positives (a `...spread`-then-override read as a duplicate key; an `@media`-scoped CSS-module class read as
+  undefined), one genuine should-fix applied (`aria-live` on the copy button). Owed to Daniel: real-device
+  mobile pass + benchmark figure re-verification at the public launch push. See
+  [08 · Growth & Promotions › Seller landing launch polish](08-growth-and-promotions/seller-landing-launch-polish/).
 - **2026-06-26 — Contextual AI-agent handoff complete (2 sprints; LOW, frontend-only).** The navbar "Compra
   con tu agente IA" card now hands the shopper a prompt that's **es-MX-only** and **contextual to the page** —
   open it on a product and the copied text already names *that* product («Tenis X» ($499) + its canonical URL),

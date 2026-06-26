@@ -1,5 +1,5 @@
 ---
-status: In progress
+status: Done
 slug: seller-landing-launch-polish
 ---
 
@@ -13,10 +13,11 @@ slug: seller-landing-launch-polish
 > under the benchmark, and applies `/vende/mundial` fixes + a whitespace/precision pass.
 > **Scope doc (approved 2026-06-26):** `../../00-ideas/2. readyforscope/seller-landing-launch-polish.md`.
 >
-> **Status: in progress.** ✅ S1 voice & copy precision shipped 2026-06-26 (PR #133 · `d4d6bde`) →
-> 🏗️ S2 hero & section redesign **built 2026-06-26, in review** (PR #134 on
-> `feat/seller-landing-launch-polish-s2`; S2.1 `3d9d184` · S2.2 `355d7de` · S2.3 `1c840e8`). S1 staged
-> all the new copy keys (heroTrustLine, heroValues, premiumFeatures, benchmark example); S2 lays them out.
+> **Status: ✅ COMPLETE 2026-06-26 (2 sprints).** ✅ S1 voice & copy precision (PR #133 · `d4d6bde`) +
+> ✅ S2 hero & section redesign (PR #134 · `98a09f9`). S1 staged all the new copy keys (heroTrustLine,
+> heroValues, premiumFeatures, benchmark example); S2 laid them out — visible PromptBlock + right-panel
+> hero, premium-features grid, benchmark worked-example, eyebrows gone, mundial parity. See
+> `RETROSPECTIVE.md`. **Owed to Daniel:** real-device mobile pass (focal hero + tap-to-copy + safe-area).
 
 ## Why
 The v2 overhaul made the pages persuasive; this round makes them *launch-ready*. The hero now centers
@@ -54,7 +55,7 @@ blocks (premium-features grid, benchmark worked-example) wire through `page-conf
 | Sprint | Story | Risk | Owner |
 |---|---|---|---|
 | **1 — Voice & copy precision** ✅ | US-1 all string changes: marketplace word · `miyagisanchez.com` brand sweep · eyebrow removal (copy) · new hero trust line + value labels · AI-channel note removal + trim · premium-features copy · mundial fixes · benchmark worked-example copy · tightening pass | low | Claude Code |
-| **2 — Hero & section redesign** 🏗️ | US-2 `PromptBlock` (visible prompt + copy icon) · right-panel hero · new value list · drop eyebrow badges · steps aside → invite+PromptBlock · anchor social → premium-features grid · benchmark example block · whitespace/icon polish · apply to bespoke `mundial` | low | Claude Code |
+| **2 — Hero & section redesign** ✅ | US-2 `PromptBlock` (visible prompt + copy icon) · right-panel hero · new value list · drop eyebrow badges · steps aside → invite+PromptBlock · anchor social → premium-features grid · benchmark example block · whitespace/icon polish · apply to bespoke `mundial` | low | Claude Code |
 
 ## Deploy order
 Frontend-only (Vercel). **S1 (copy) → S2 (hero/sections).** S2 depends on S1 strings. Both low-risk,
@@ -62,10 +63,10 @@ mergeable per sprint. Could ship as one PR if Daniel prefers (launch urgency) �
 gate (S1) green first.
 
 ## Epic Definition of Done
-- [ ] All stories merged to `main` + smoke-tested; real-device mobile pass owed to Daniel.
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed).
-- [ ] Grep clean: no bare `Miyagi` (not `Miyagi Sánchez`), no our-word `mercado`, no removed distrust lines.
-- [ ] Hero shows the visible prompt block + copy icon on all `/vende*` (incl. mundial); eyebrows gone.
-- [ ] Benchmark worked-example renders under the table, date-stamped; figures re-verified at publish.
-- [ ] README ✅; both `sprint-N.md` ticked with commit refs; `RETROSPECTIVE.md`; poster + LEARNINGS fed.
-- [ ] Branch deleted; PR(s) merged.
+- [x] All stories merged to `main` + smoke-tested (api gate + nightly browser); **real-device mobile pass owed to Daniel**.
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (preview URLs pre-merge → prod once deployed).
+- [x] Grep clean: no bare `Miyagi` (not `Miyagi Sánchez`), no our-word `mercado`, no removed distrust lines *(enforced by S1's copy guards `c49f3eb`)*.
+- [x] Hero shows the visible prompt block + copy icon on all `/vende*` (incl. mundial); eyebrows gone *(browser specs + hero-s2 api spec)*.
+- [x] Benchmark worked-example renders under the table, date-stamped; **figures re-verified at publish owed to Daniel** (still `25 de junio de 2026`).
+- [x] README ✅; both `sprint-N.md` ticked with commit refs; `RETROSPECTIVE.md`; poster + LEARNINGS fed.
+- [x] Branch deleted; PR(s) merged (#133 · #134).

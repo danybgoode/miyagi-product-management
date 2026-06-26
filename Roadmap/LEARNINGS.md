@@ -541,6 +541,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   give it a dependency-free home up front. (Left the UCP `catalog` origin default's `startsWith('http')` alone —
   browser-controlled request origin, a separate baseUrl convention, not user-typed-data.) *(2026-06-21,
   canonicalSourceUrl sweep — PR #96 `5925f1a`.)*
+  **Triage a foreign-family advisory review against the green gate before acting — its "blocking" calls can be
+  confident false positives on valid TS/CSS idioms.** On a green PR (tsc + build + CI all passing), the
+  Antigravity fallback (codex token revoked; Gemini quota-capped → GPT-OSS) flagged **two "blocking" build
+  errors that don't exist**: a `{ ...baseConfig(...), trustLine: copy.shared.heroTrustLine }` object spread-
+  then-override read as a *duplicate key* (it's the intended override — later key wins, no error), and a CSS-
+  module class declared **inside an `@media (min-width:…)` block** read as *undefined* (media-scoped rules are
+  exported too). Both are refuted by the green gate. The same pass also mis-claimed inline-set list styling was
+  "missing" and an in-file helper needed an import. **The review stays advisory** — confirm each finding against
+  the deterministic gate (a "blocking" item that contradicts a green `tsc`/`build` is almost always the
+  reviewer's miss, not a real bug), apply only the genuine should-fix (here a cheap `aria-live="polite"` on the
+  copy button for SR feedback), and record the triage in the PR comment so the decline rationale is visible.
+  Lower-capability fallback models raise the false-positive rate — weight their confidence accordingly.
+  *(2026-06-26, seller-landing-launch-polish S2 — PR #134.)*
 - **To make a curated/explicit subset authoritative over a "freshest-N" read without un-static-ing an ISR page,
   fetch the subset via its own metadata filter and UNION it into the pool (dedupe by id, degrade per-fetch), and
   mirror the route's existing filter convention so a reviewer's "filtered after pagination" flag is a misread to
