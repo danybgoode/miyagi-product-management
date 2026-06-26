@@ -8,7 +8,7 @@ network/auth. Ships first as the quick win (fixes the Destacado bug for pins alr
 
 ---
 
-## S1.1 — Pins authoritative over price · LOW
+## S1.1 — Pins authoritative over price · LOW ✅ `8f64f97`
 
 **As an** admin, **I want** a pinned product to appear in the Selección even when it has no price, **so that** my
 rank-1 pin is always the Destacado — not skipped because it's a "Sin precio" event/agenda/art listing.
@@ -26,7 +26,7 @@ rank-1 pin. Unpinned no-price listings still never appear. A pinned no-image lis
 - a **pinned no-image** listing is **still excluded**;
 - a **pinned non-active** listing is **still excluded**.
 
-## S1.2 — Grid grows to all qualifying pins · LOW
+## S1.2 — Grid grows to all qualifying pins · LOW ✅ `9ecf72e`
 
 **As an** admin, **I want** every product I pin to show under the Destacado in my order, **so that** the Selección
 reflects my full curation instead of capping at 5.
@@ -50,6 +50,9 @@ reflects my full curation instead of capping at 5.
 
 Deterministic gate: `tsc` + `next build` (must keep `○ /`) + `npm run test:e2e` (the extended `home-curation.spec.ts`,
 pure `api`). No browser smoke owed beyond the walkthrough below — the logic is fully spec-covered.
+
+**Gate result (local, 2026-06-25):** ✅ `tsc --noEmit` clean · ✅ `next build` passes with `○ /` (revalidate 1m) ·
+✅ `home-curation.spec.ts` 34/34 (`api`). CI re-runs the same gate vs the branch preview before merge.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 
