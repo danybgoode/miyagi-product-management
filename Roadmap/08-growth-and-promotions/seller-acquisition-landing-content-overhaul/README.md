@@ -12,8 +12,9 @@ slug: seller-acquisition-landing-content-overhaul
 > **Scope doc (approved 2026-06-25):**
 > `../../00-ideas/2. readyforscope/seller-acquisition-landing-content-overhaul.md`.
 >
-> **Status: scaffolded — not started.** Build order: S1 copy brief (no code) → S2 copy + es-MX → S3
-> benchmark + AI-channel → S4 mobile sweep.
+> **Status: in progress.** S1 ✅ (COPY-BRIEF approved 2026-06-25) · S2 ✅ shipped 2026-06-25
+> (PR #125 squash `af690ad`) · S3 ⬜ benchmark + AI-channel · S4 ⬜ mobile sweep. Build order: S1
+> copy brief (no code) → S2 copy + es-MX → S3 benchmark + AI-channel → S4 mobile sweep.
 
 ## Why
 The landing pages exist but the copy is placeholder: no depth, no intentionality, written in Spanish

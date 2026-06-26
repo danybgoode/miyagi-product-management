@@ -1,4 +1,4 @@
-# Sprint 2 — Copy + es-MX implementation  ·  status: 🏗️ in review (PR #125 · `ff60e1f`)
+# Sprint 2 — Copy + es-MX implementation  ·  status: ✅ shipped 2026-06-25 (PR #125 squash `af690ad`)
 
 > Land the approved S1 copy. Almost entirely edits to **one file**: `apps/miyagisanchez/locales/es.json
 > → sellerAcquisition`. Plus the `mundial` page's inline strings (it's bespoke, not on the shared system).
@@ -9,8 +9,9 @@ Every `/vende*` page reads as intentional, fully-accented es-MX copy written for
 distrust framing is gone; the CTA copies the directive prompt.
 
 ## Stories
-### US-2 — Replace placeholder copy with approved es-MX strings 🏗️ (PR #125 · `ff60e1f`)
-> Built 2026-06-25. es-MX copy landed verbatim from `COPY-BRIEF.md`; new shared `selfCheck` block
+### US-2 — Replace placeholder copy with approved es-MX strings ✅ (PR #125 squash `af690ad`)
+> Shipped 2026-06-25 (CI green: Type-check+build · Playwright vs preview · Vercel; Codex cross-review
+> clean — one nit applied: `replaceAll` for `{url}`). es-MX copy landed verbatim from `COPY-BRIEF.md`; new shared `selfCheck` block
 > replaces every page's `agentTitle`/`agentBody` (removed from `es`+`en`); `{url}`-template
 > `trustPrompt` + new `sellerTrustPrompt(id)` helper drive the directive per-page CTA; anchor
 > secondary CTA → in-page persona router; OG/brand strings accent-fixed. **Benchmark + AI-channel
