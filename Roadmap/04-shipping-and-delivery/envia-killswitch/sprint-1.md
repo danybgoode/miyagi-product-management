@@ -3,7 +3,15 @@
 Epic: [Envía — platform Flagsmith kill-switch](README.md) · Scope:
 [`envia-flagsmith-killswitch.md`](../../00-ideas/2.%20readyforscope/envia-flagsmith-killswitch.md)
 **Branch:** `feat/envia-killswitch` · **Risk: HIGH** (checkout/shipping money path) → **Daniel-merge** ·
-**Deploy order: S1.1 → S1.2 → S1.3** (backend-first).
+**Deploy order: S1.1 → S1.2 → S1.3/S1.4** (backend-first).
+
+**Build status (2026-06-26):** all built, draft PRs open, awaiting Daniel-merge + live smoke.
+- **Backend** (S1.1, S1.2): `danybgoode/medusa-bonsai-backend` **PR #41** — `tsc` clean, `test:unit` green.
+- **Frontend** (S1.3, S1.4): `danybgoode/miyagisanchezcommerce` **PR #131** — `tsc` clean, Playwright `api`
+  921✓ / 8 skip / 1 env-only fail (`not-found-shape` `/l/wp-admin` prod-WAF 403 — documented, unrelated).
+- **S1.4 was added during the build** after tracing every Envía importer (the L737 gotcha): the seller order
+  screen's `app/api/orders/[id]/ship` route calls `lib/envia.ts` directly for legacy Supabase orders (POST) and
+  re-quotes (GET), bypassing the backend gate — so it's gated too. Confirmed in scope with Daniel.
 
 > **Before any gating — trace importers (LEARNINGS ~L737).** Find every importer of the Envía client
 > (`apps/backend/src/modules/fulfillment-envia/envia-client.ts` and `apps/miyagisanchez/lib/envia.ts`) and the
@@ -11,7 +19,7 @@ Epic: [Envía — platform Flagsmith kill-switch](README.md) · Scope:
 
 ---
 
-## S1.1 — (BE) Add `shipping.envia_enabled` + gate the quote seam  *(spine — deploy first)*
+## S1.1 — (BE) Add `shipping.envia_enabled` + gate the quote seam  *(spine — deploy first)*  ✅ built (PR #41)
 **As** the admin, **I want** live-rate quoting to stop calling Envía when the flag is off, **so that** checkout
 falls back to arranged delivery without hitting an unfunded carrier.
 
@@ -30,7 +38,7 @@ falls back to arranged delivery without hitting an unfunded carrier.
 - **QA:** pure-logic spec on `enviaKillGate` (off→fallback, on→passthrough) + an api spec on the rates route.
   **Risk: HIGH.**
 
-## S1.2 — (BE) Gate label generation / shipping → manual-carrier fallback
+## S1.2 — (BE) Gate label generation / shipping → manual-carrier fallback  ✅ built (PR #41)
 **As** a seller fulfilling while Envía is off, **I want** the Envía label path disabled and manual carrier
 offered, **so that** I can still ship without an automatic label.
 
@@ -41,7 +49,7 @@ offered, **so that** I can still ship without an automatic label.
   directly returns 422 (agents / stale pages can't bypass). Flag ON → label generation works as today.
 - **QA:** api spec on the ship route's gated branch. **Risk: HIGH.**
 
-## S1.3 — (FE) Seller-settings platform-off banner
+## S1.3 — (FE) Seller-settings platform-off banner  ✅ built (PR #131)
 **As** a seller, **I want** to see that automatic Envía shipping is paused platform-wide, **so that** I'm not
 confused when my per-shop toggle has no effect.
 
@@ -50,6 +58,21 @@ confused when my per-shop toggle has no effect.
   for now. **Preserve** the per-seller `settings.shipping.envia_enabled` value (don't overwrite).
 - **Acceptance:** flag OFF → banner shows, per-shop live-rate toggle reflects platform-off; flag ON → banner
   gone, normal behavior. **QA:** es-MX copy-completeness + visual smoke owed to Daniel. **Risk: LOW.**
+- **Built:** flag added to `lib/flags.ts`; `[section]/page.tsx` evaluates it for the `envios` section (mirrors
+  the `domainEntitled`/`Canal` precedent) → `platform_envia_enabled` prop; banner + disabled toggle in
+  `Envios.tsx`, per-seller value untouched.
+
+## S1.4 — (FE) Close the FE bypass (legacy ship + re-quote)  ✅ built (PR #131)  *(added in build — see top note)*
+**As** the platform admin, **I want** the kill to also cover the in-app seller order routes that call the Envía
+client directly, **so that** the DoD's "agents / stale pages can't bypass" actually holds.
+
+- `app/api/orders/[id]/ship/route.ts` is live (called from `OrderDetail.tsx`). POST proxies *Medusa* orders to
+  the (now-gated) backend ship route, but calls FE `lib/envia.ts createShipment` **directly for legacy Supabase
+  orders**; GET re-quotes via FE `quoteShipments` **directly**. Both bypass the backend gate.
+- **Built:** gate both verbs on FE `isEnabled('shipping.envia_enabled')` → POST **422** (same es-MX
+  manual-carrier message as S1.2), GET graceful `{ rates: [], message }` (mirrors S1.1). New pure FE seam
+  `lib/envia-killswitch.ts` (mirror of the backend seam) + Playwright `api` spec.
+- **Acceptance:** flag OFF → legacy ship returns 422 / re-quote returns no rates; flag ON → unchanged. **Risk: HIGH.**
 
 ---
 
@@ -60,21 +83,31 @@ confused when my per-shop toggle has no effect.
 - **Deterministic gate per PR:** `tsc --noEmit` + `npm run build` + Playwright api green before draft PR.
 - **Owed to Daniel (money/auth — automated smoke can't cover):** the walkthrough below.
 
-## Sprint 1 — Smoke walkthrough (do these in order)
-> **PLACEHOLDER — the build session fills this in with real preview/prod URLs before calling the sprint done.**
-Env: production · https://miyagisanchez.com (or the Vercel preview URL while pre-merge). Flag toggled in the
-Flagsmith dashboard (project `miyagisanchezmarketplace`, **Production** environment).
+## Sprint 1 — Smoke walkthrough (Daniel — do these in order)
+**Prereqs / env:**
+- Merge order: **backend PR #41 first** (Cloud Run, ~12 min, no preview — confirm the live revision rolled),
+  then **frontend PR #131** (Vercel prod). Pre-merge you can exercise the FE on the **Vercel preview linked on
+  PR #131** (see the Vercel bot comment), but the backend gate only applies once #41 is live.
+- **Create the flag first:** in Flagsmith → project `miyagisanchezmarketplace` → **Production** environment,
+  create feature `shipping.envia_enabled`. **Until it exists the code default is OFF (fail-open)** — so live
+  Envía is already disabled the moment #41 deploys; creating + turning it **ON** is what re-enables Envía.
+- Target: production · https://miyagisanchez.com. Flag propagates within ~60 s (local-eval refresh).
 
-1. In Flagsmith, set `shipping.envia_enabled` = **OFF**.
-   → (expected) within ~60 s the flag propagates (local-eval refresh).
-2. Go to a physical-product PDP → add to cart → checkout → enter a delivery address.
-   → (money path) You see the **arranged-delivery fallback** message; **no** live carrier rates appear.
-3. As the seller of a paid order, open the order → ship.
-   → (money path) Only **manual carrier** is offered; the Envía label option is gone.
-4. Open `…/shop/manage/settings` → Envíos.
-   → The **platform-off banner** shows; the "tarifas en vivo" toggle reflects platform-off.
+1. In Flagsmith, set `shipping.envia_enabled` = **OFF** (or leave it uncreated — same effect).
+2. Physical-product PDP → add to cart → checkout → enter a delivery address.
+   → **(money path)** You see the **arranged-delivery fallback** message; **no** live carrier rates appear.
+3. As the seller of a paid order, open the order → **ship** (both a Medusa `order_*` order and, if any exist, a
+   legacy order).
+   → **(money path)** Only **manual carrier** is offered; the Envía label option errors out cleanly (422 →
+   "Usa paquetería manual"). Re-quoting rates on the order returns **no** carrier options.
+4. `…/shop/manage/settings` → **Envíos**.
+   → The **platform-off banner** shows; the "tarifas en vivo" toggle is **disabled**, and your saved value is
+   intact (toggle state unchanged after save).
 5. In Flagsmith, set `shipping.envia_enabled` = **ON**.
-   → Repeat step 2 → **live carrier rates** return; step 3 → Envía **label generation** works; step 4 → banner gone.
+   → Repeat step 2 → **live carrier rates** return; step 3 → Envía **label generation** works + re-quote returns
+   rates; step 4 → banner gone, toggle re-enabled.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 **Steps 2 & 3 are the money path → owed to Daniel by name (an automated browser smoke can't fully cover them).**
+Automated coverage already green: pure `enviaKillGate` seam (backend Jest `test:unit` + FE Playwright `api`),
+backend `tsc`, FE `tsc` + the full FE `api` project.

@@ -3,7 +3,9 @@
 **Domain: [04 · Shipping & Delivery](../README.md).** Reuses the shipped Flagsmith flag layer from
 [09 · feature-flags-killswitches](../../09-platform-infra/feature-flags-killswitches/README.md).
 
-**Status: scaffolded — awaiting build.** Scope doc:
+**Status: built — awaiting Daniel-merge + live smoke (2026-06-26).** Draft PRs:
+backend `medusa-bonsai-backend` **#41** (S1.1, S1.2) · frontend `miyagisanchezcommerce` **#131** (S1.3, S1.4).
+Scope doc:
 [`00-ideas/2. readyforscope/envia-flagsmith-killswitch.md`](../../00-ideas/2.%20readyforscope/envia-flagsmith-killswitch.md).
 Approved by Daniel 2026-06-25.
 
@@ -51,6 +53,11 @@ untouched. New copy es-MX. Flag reads are fail-open, so the ~12-min Cloud Run wi
 | S1.1 | Add `shipping.envia_enabled` flag (default OFF) + gate the **quote** seam → arranged-delivery fallback | BE | **HIGH** |
 | S1.2 | Gate **label generation / shipping** → manual-carrier fallback (422 on Envía label path) | BE | **HIGH** |
 | S1.3 | Seller-settings **platform-off banner** (server-evaluated) | FE | LOW |
+| S1.4 | Close the **FE bypass**: gate `app/api/orders/[id]/ship` (legacy ship POST → 422, re-quote GET → empty) | FE | **HIGH** |
+
+> **S1.4 was added during the build.** Tracing every Envía importer (the L737 gotcha this epic warned about)
+> found `app/api/orders/[id]/ship` calls `lib/envia.ts` directly for legacy orders + re-quotes — a live bypass
+> of the backend gate. Closing it honors the DoD's "agents/stale pages can't bypass." Confirmed in scope with Daniel.
 
 Full story detail + acceptance + QA in [`sprint-1.md`](sprint-1.md).
 
