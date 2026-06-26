@@ -10,13 +10,12 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
+## 🏗️ Building now (1)
 
-_None._
+- [Selección: make admin pins authoritative](../../01-discovery-and-shopping/seleccion-pins-authoritative/README.md) — 01 Discovery · 2/5 stories
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (2)
 
-- [Selección: make admin pins authoritative](../../01-discovery-and-shopping/seleccion-pins-authoritative/README.md) — 01 Discovery · 0/5 stories
 - [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 0/7 stories
 - [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 1/5 stories
 
