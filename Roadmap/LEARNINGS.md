@@ -403,6 +403,22 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   device. Cover the logic with a **pure `lib/` seam + `api` spec** instead (the recents add/dedupe/cap +
   `/l?q=` encoding), and state the gap honestly in the PR rather than implying a browser smoke ran. Same
   "name the gap, don't fake it" discipline as the authed-money-path smoke. *(2026-06-22, pwa-glass-nav S2.)*
+- **Horizontal mobile overflow is a BROWSER-project fact, not an api-gate fact — and a fixed heading size +
+  `repeat(N, 1fr)` are the two latent offenders.** `document.documentElement.scrollWidth − clientWidth` only
+  exists in a real layout, so the honest artifact for a "no overflow at 360/390/414px" story is a
+  `*.browser.spec.ts` (opt-in, nightly), NOT an api spec — the api gate structurally can't measure it (the
+  user-asked "one api spec" yields to "one *browser* spec" here). Prove it both ways: 15/15 green on the
+  fixed build, **and** the same spec catches the bug on current prod (a meaningful spec, not a tautology).
+  The two recurring CSS offenders: (1) a hero `<h1>` at a **fixed** `font-size` (e.g. `var(--t-4xl)` 48px) —
+  a long word in any language overflows a 360px line; fix with `clamp(min, vw, max)` + `overflow-wrap:
+  break-word` (continuous, no breakpoint bookkeeping), not a media query. (2) `repeat(N, 1fr)` is a latent
+  **grid blowout** because `1fr` = `minmax(auto, 1fr)` and `auto` = max-content, so a wide/unbreakable child
+  pushes the track past the container; guard with `minWidth: 0` on the grid child (the safe
+  `minmax(min(100%, Npx), 1fr)` idiom is the other half of the same rule). Keep the fix as inline styles
+  inside the page dir so it never touches `globals.css`/shared layout (stays LOW, no announce). The
+  real-device pass (font scaling, on-screen-keyboard viewport, safe-area insets) is still genuinely **owed
+  to Daniel** — headless viewport ≠ device. *(2026-06-26, seller-acquisition-landing-content-overhaul S4 —
+  `e2e/seller-acquisition-mobile.browser.spec.ts`; the `/vende/servicios` fixed-48px h1 overflowed 31px @360px.)*
 - **Fresh worktrees need local env before e2e means anything.** `git worktree` does not bring ignored
   `.env.local` / `.env` files. For Miyagi local API e2e, copy the app `.env.local` into the frontend
   worktree, copy backend `.env` into the backend worktree, start Next on `3001` and Medusa on `9000`,

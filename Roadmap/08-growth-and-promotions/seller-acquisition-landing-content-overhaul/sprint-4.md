@@ -1,4 +1,4 @@
-# Sprint 4 — Mobile-responsive sweep  ·  status: 🏗️ built — PR open (draft), gate green
+# Sprint 4 — Mobile-responsive sweep  ·  status: ✅ shipped 2026-06-26 (PR #129 squash `1e95f4e`)
 
 > Fix the overflow Daniel flagged across all `/vende*` pages. Mostly the shared renderer
 > (`SellerAcquisitionSections.tsx`) + the bespoke `mundial/page.tsx`. **Independent of copy** — may run
@@ -8,7 +8,7 @@
 Every `/vende*` page fits a phone screen with no horizontal overflow and no clipped content.
 
 ## Stories
-### US-5 — No mobile overflow across all `/vende*` pages 🏗️
+### US-5 — No mobile overflow across all `/vende*` pages ✅ (PR #129 squash `1e95f4e`)
 **As** a visitor on a phone, **I want** every `/vende*` page to fit my screen with no horizontal
 overflow, **so that** the page feels trustworthy.
 **Acceptance:** at **360 / 390 / 414px** there is no horizontal scroll or clipped content on `/vende`,

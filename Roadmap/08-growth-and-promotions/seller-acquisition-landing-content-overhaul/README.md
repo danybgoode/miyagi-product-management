@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: seller-acquisition-landing-content-overhaul
 ---
 
@@ -12,10 +12,11 @@ slug: seller-acquisition-landing-content-overhaul
 > **Scope doc (approved 2026-06-25):**
 > `../../00-ideas/2. readyforscope/seller-acquisition-landing-content-overhaul.md`.
 >
-> **Status: in progress.** S1 ✅ (COPY-BRIEF approved 2026-06-25) · S2 ✅ shipped 2026-06-25
-> (PR #125 squash `af690ad`) · S3 ✅ shipped 2026-06-25 (PR #127 squash `8119527`; anchor benchmark
-> table + AI-channel section) · S4 ⬜ mobile sweep. Build order: S1
-> copy brief (no code) → S2 copy + es-MX → S3 benchmark + AI-channel → S4 mobile sweep.
+> **Status: ✅ COMPLETE — shipped 2026-06-26, 4 sprints.** S1 ✅ (COPY-BRIEF approved 2026-06-25) ·
+> S2 ✅ shipped 2026-06-25 (PR #125 squash `af690ad`) · S3 ✅ shipped 2026-06-25 (PR #127 squash
+> `8119527`; anchor benchmark table + AI-channel section) · S4 ✅ shipped 2026-06-26 (PR #129 squash
+> `1e95f4e`; mobile-responsive sweep). Build order: S1 copy brief (no code) → S2 copy + es-MX → S3
+> benchmark + AI-channel → S4 mobile sweep.
 
 ## Why
 The landing pages exist but the copy is placeholder: no depth, no intentionality, written in Spanish
@@ -74,11 +75,11 @@ higher-care). *Note:* US-5 (mobile) is copy-independent and may run first if Dan
 correctness win before content lands.
 
 ## Epic Definition of Done
-- [ ] All sprints' stories merged to `main` and smoke-tested (gaps stated).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed).
-- [ ] No "No pedimos fe" / un-accented offenders remain in `sellerAcquisition` (grep clean).
-- [ ] Benchmark table is sourced + date-stamped; figures re-verified at publish.
-- [ ] This `README.md` marked ✅; every `sprint-N.md` ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
-- [ ] Product poster (`Roadmap/README.md`) updated; team memory updated.
-- [ ] Branch deleted; PR(s) merged.
+- [x] All sprints' stories merged to `main` and smoke-tested (gaps stated — real-device mobile pass owed to Daniel).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed).
+- [x] No "No pedimos fe" / un-accented offenders remain in `sellerAcquisition` (grep clean — S2 copy spec enforces).
+- [x] Benchmark table is sourced + date-stamped; figures re-verified at publish (S3, "Verificado: 25 de junio de 2026").
+- [x] This `README.md` marked ✅; every `sprint-N.md` ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md`.
+- [x] Product poster (`Roadmap/README.md`) updated; team memory updated.
+- [x] Branch deleted; PR(s) merged (S4 PR #129 squash `1e95f4e`; branch + worktree removed).
