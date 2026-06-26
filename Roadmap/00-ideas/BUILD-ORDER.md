@@ -10,15 +10,15 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
+## 🏗️ Building now (1)
+
+- [Seller landing — launch polish (hero redesign + marketplace voice + benchmark example)](../../08-growth-and-promotions/seller-landing-launch-polish/README.md) — 08 Growth · 1/2 stories
+
+## 📋 Ready to build (scaffolded, not started) (0)
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (1)
-
-- [Envía — platform Flagsmith kill-switch](../../04-shipping-and-delivery/envia-killswitch/README.md) — 04 Shipping · 0/3 stories
-
-## ✅ Shipped (63)
+## ✅ Shipped (64)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -38,6 +38,7 @@ _None._
 - [Seller Agent Operations](../../03-selling-and-shops/seller-agent-operations/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller Coupon Codes](../../03-selling-and-shops/promotions/README.md) — 03 Selling & Shops · 4/4 stories
 - [Shop Settings refactor](../../03-selling-and-shops/shop-settings-refactor/README.md) — 03 Selling & Shops · 21/21 stories · risk: Low
+- [Envía — platform Flagsmith kill-switch](../../04-shipping-and-delivery/envia-killswitch/README.md) — 04 Shipping · 4/4 stories
 - [Buyer Telegram channel + Buyer preference center](../../05-trust-offers-and-messaging/buyer-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Granular Multi-Channel Notifications (Email + Telegram)](../../05-trust-offers-and-messaging/granular-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Trust & Messaging Polish](../../05-trust-offers-and-messaging/trust-messaging-polish/README.md) — 05 Trust/Offers/Messaging · 5/5 stories · risk: Low · Wave 3
@@ -96,4 +97,4 @@ _None._
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 65 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 66 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

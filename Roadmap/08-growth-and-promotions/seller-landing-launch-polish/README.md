@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: In progress
 slug: seller-landing-launch-polish
 ---
 
@@ -13,7 +13,9 @@ slug: seller-landing-launch-polish
 > under the benchmark, and applies `/vende/mundial` fixes + a whitespace/precision pass.
 > **Scope doc (approved 2026-06-26):** `../../00-ideas/2. readyforscope/seller-landing-launch-polish.md`.
 >
-> **Status: scaffolded — not started.** Build order: S1 voice & copy precision → S2 hero & section redesign.
+> **Status: in progress.** ✅ S1 voice & copy precision shipped 2026-06-26 (PR #133 · `d4d6bde`) →
+> ⬜ S2 hero & section redesign (next session). S1 staged all the new copy keys (heroTrustLine,
+> heroValues, premiumFeatures, benchmark example); S2 lays them out.
 
 ## Why
 The v2 overhaul made the pages persuasive; this round makes them *launch-ready*. The hero now centers
@@ -50,7 +52,7 @@ blocks (premium-features grid, benchmark worked-example) wire through `page-conf
 ## Scope (stories)
 | Sprint | Story | Risk | Owner |
 |---|---|---|---|
-| **1 — Voice & copy precision** | US-1 all string changes: marketplace word · `miyagisanchez.com` brand sweep · eyebrow removal (copy) · new hero trust line + value labels · AI-channel note removal + trim · premium-features copy · mundial fixes · benchmark worked-example copy · tightening pass | low | Claude Code |
+| **1 — Voice & copy precision** ✅ | US-1 all string changes: marketplace word · `miyagisanchez.com` brand sweep · eyebrow removal (copy) · new hero trust line + value labels · AI-channel note removal + trim · premium-features copy · mundial fixes · benchmark worked-example copy · tightening pass | low | Claude Code |
 | **2 — Hero & section redesign** | US-2 `PromptBlock` (visible prompt + copy icon) · right-panel hero · new value list · drop eyebrow badges · steps aside → invite+PromptBlock · anchor social → premium-features grid · benchmark example block · whitespace/icon polish · apply to bespoke `mundial` | low | Claude Code |
 
 ## Deploy order

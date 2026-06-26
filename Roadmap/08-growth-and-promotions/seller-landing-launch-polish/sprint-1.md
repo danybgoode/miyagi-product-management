@@ -1,11 +1,12 @@
-# Sprint 1 — Voice & copy precision  ·  status: 🏗️ built — PR #133 (draft), smoke owed on preview
+# Sprint 1 — Voice & copy precision  ·  status: ✅ shipped — PR #133 (`d4d6bde`)
 
-> **Build refs (branch `feat/seller-landing-launch-polish`):** copy `9f888ea` (es.json + en.json) ·
-> guards `c49f3eb` (copy + aichannel specs) · draft PR
-> [#133](https://github.com/danybgoode/miyagisanchezcommerce/pull/133), risk **LOW**.
-> Gate: `tsc` ✅ · `npm run build` ✅ (all `/vende*` compiled) · 21 pure-fs api copy specs ✅.
-> Page-render specs need Medusa (unreachable locally) → CI "Playwright vs preview" is the
-> authoritative pre-merge signal.
+> **Shipped 2026-06-26** — squash-merged to app `main` as `d4d6bde` (PR
+> [#133](https://github.com/danybgoode/miyagisanchezcommerce/pull/133), risk **LOW**).
+> Branch commits: copy `9f888ea` (es.json + en.json) · guards `c49f3eb` (copy + aichannel specs).
+> CI green: `tsc + build` ✅ · `Playwright vs preview` (api) ✅ · 21 pure-fs api copy specs ✅.
+> Cross-agent review (codex) ran — both findings declined-with-reason on the PR (es-only surface,
+> not bilingual; benchmark already date-stamped + re-verify-at-publish). Live smoke + S2 layout
+> owed in the next session.
 
 > All string changes for the launch polish. Edits to `apps/miyagisanchez/locales/es.json →
 > sellerAcquisition` (+ `en.json` mirror for type-parity) and the bespoke `mundial/page.tsx` strings.
@@ -16,7 +17,7 @@ Every `/vende*` page reads in the corrected brand voice (marketplace, full `miya
 clutter copy removed and the new hero/section strings in place, ready for Sprint 2 to lay out.
 
 ## Stories
-### US-1 — Land the launch-polish copy ✅ (built — `9f888ea` + `c49f3eb`, PR #133)
+### US-1 — Land the launch-polish copy ✅ (shipped — `d4d6bde`, PR #133)
 **As** supply traffic about to be sent here at launch, **I want** precise, on-brand copy, **so that**
 the page reads trustworthy and easy to act on.
 **Acceptance:**
