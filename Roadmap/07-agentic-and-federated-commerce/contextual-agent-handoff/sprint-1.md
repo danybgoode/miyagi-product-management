@@ -1,6 +1,10 @@
 # Contextual agent handoff — Sprint 1: Icon split + Spanish + URL-only contextual
 
-**Status:** ⬜ ready to build (scaffolded 2026-06-25, not started).
+**Status:** 🏗️ BUILT 2026-06-25 — draft [PR #128](https://github.com/danybgoode/miyagisanchezcommerce/pull/128) (risk LOW), awaiting CI-green + Daniel's visual smoke + merge.
+- **S1.1** `5b79a3f` — theme toggle glyph `sparks`→`flask`; AI keeps `sparks`; grep-verified no regressions.
+- **S1.2** `cbac94a`-prior — pure `lib/agent-prompt.ts buildAgentPrompt`; generic prompt now fully es-MX (English body + bilingual close dropped), off the bilingual allow-list; cold-agent preamble kept.
+- **S1.3** `cbac94a` — `resolveAgentContext(pathname, searchParams)` + per-kind es-MX templates (PDP/catalog/shop/account + generic fallback); each carries the canonical URL.
+- **Gate:** `tsc` ✅ · `npm run build` ✅ (homepage stays `○` static — used `usePathname` + post-mount `window.location.search`, **not** `useSearchParams`, to avoid de-opting static pages) · Playwright `api` ✅ (`e2e/agent-prompt.spec.ts`, 16 tests: generic + 5 route kinds + fallback + canonical-URL templates).
 
 > The skateboard — ships on its own. Splits the AI/theme icons, makes the prompt Spanish, and makes it
 > change by page using **only the URL** (pure client, via `usePathname`/`useSearchParams`). No backend, no
@@ -51,7 +55,7 @@ assertion where the rendered prompt is checkable.
   sanity-check the Spanish phrasing.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-_Env: fill the branch's Vercel **preview URL** here pre-merge; swap to https://miyagisanchez.com after merge._
+_Env (preview, pre-merge): `https://miyagisanchez-git-feat-contextual-a-f74b70-danybgoodes-projects.vercel.app` — swap to https://miyagisanchez.com after merge. The preview is SSO-gated to danybgoodes-projects (Daniel's session opens it). Pick a real listing id for step 4 and a real shop slug for step 6._
 
 1. Open `<preview-url>/` and open the account/theme controls where the theme toggle lives.
    → The theme toggle shows a **flask** icon (not sparks).
