@@ -14,8 +14,9 @@ slug: seller-landing-launch-polish
 > **Scope doc (approved 2026-06-26):** `../../00-ideas/2. readyforscope/seller-landing-launch-polish.md`.
 >
 > **Status: in progress.** ✅ S1 voice & copy precision shipped 2026-06-26 (PR #133 · `d4d6bde`) →
-> ⬜ S2 hero & section redesign (next session). S1 staged all the new copy keys (heroTrustLine,
-> heroValues, premiumFeatures, benchmark example); S2 lays them out.
+> 🏗️ S2 hero & section redesign **built 2026-06-26, in review** (PR #134 on
+> `feat/seller-landing-launch-polish-s2`; S2.1 `3d9d184` · S2.2 `355d7de` · S2.3 `1c840e8`). S1 staged
+> all the new copy keys (heroTrustLine, heroValues, premiumFeatures, benchmark example); S2 lays them out.
 
 ## Why
 The v2 overhaul made the pages persuasive; this round makes them *launch-ready*. The hero now centers
@@ -53,7 +54,7 @@ blocks (premium-features grid, benchmark worked-example) wire through `page-conf
 | Sprint | Story | Risk | Owner |
 |---|---|---|---|
 | **1 — Voice & copy precision** ✅ | US-1 all string changes: marketplace word · `miyagisanchez.com` brand sweep · eyebrow removal (copy) · new hero trust line + value labels · AI-channel note removal + trim · premium-features copy · mundial fixes · benchmark worked-example copy · tightening pass | low | Claude Code |
-| **2 — Hero & section redesign** | US-2 `PromptBlock` (visible prompt + copy icon) · right-panel hero · new value list · drop eyebrow badges · steps aside → invite+PromptBlock · anchor social → premium-features grid · benchmark example block · whitespace/icon polish · apply to bespoke `mundial` | low | Claude Code |
+| **2 — Hero & section redesign** 🏗️ | US-2 `PromptBlock` (visible prompt + copy icon) · right-panel hero · new value list · drop eyebrow badges · steps aside → invite+PromptBlock · anchor social → premium-features grid · benchmark example block · whitespace/icon polish · apply to bespoke `mundial` | low | Claude Code |
 
 ## Deploy order
 Frontend-only (Vercel). **S1 (copy) → S2 (hero/sections).** S2 depends on S1 strings. Both low-risk,
