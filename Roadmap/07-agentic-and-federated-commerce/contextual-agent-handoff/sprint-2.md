@@ -1,7 +1,16 @@
 # Contextual agent handoff — Sprint 2: Rich human-readable context
 
-**Status:** ⬜ ready to build (scaffolded 2026-06-25, not started). **Depends on: Sprint 1 merged**
-(the `lib/agent-prompt.ts` builder seam).
+**Status:** 🏗️ built 2026-06-26 — **draft PR [#130](https://github.com/danybgoode/miyagisanchezcommerce/pull/130)**
+(branch `feat/contextual-agent-handoff-s2`, risk LOW), CI gate green pending merge. **Depends on: Sprint 1 merged**
+(the `lib/agent-prompt.ts` builder seam — shipped #128 `33ae0b3`).
+
+> **Branch note:** started on `feat/contextual-agent-handoff-s2` (not `-handoff`) — the old
+> `feat/contextual-agent-handoff` remote branch still holds Sprint 1's *pre-squash* commits (already on
+> `main` as the #128 squash), so reusing it is the "squash-merged branch is a dead end" trap. Fresh branch
+> off `origin/main` per the `feat/<epic>-s2` convention.
+
+**Commits (per story, path-scoped):** S2.1 `b7eba99` (provider + `withDetails` seam) · S2.2 `c09e480`
+(PDP title/price + shop name) · S2.3 `4c0cebb` (order ref + product title) · S2.4 `35e794a` (browser smoke).
 
 > The car — makes the prompt name the actual product/shop ("«Tenis X» ($499) — /l/abc") instead of just the
 > URL, adds the account/orders handoff in the navbar card, and locks the builder with specs. Because
@@ -58,7 +67,9 @@ specific.
   smoke can render-assert the prompt text but can't judge the agent's reply or the phrasing quality).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-_Env: fill the branch's Vercel **preview URL** here pre-merge; swap to https://miyagisanchez.com after merge._
+_Env (preview): **https://miyagisanchez-git-feat-contextual-a-f8c72a-danybgoodes-projects.vercel.app**
+(Vercel deployment-protection / SSO-gated — open it signed in to the Vercel project). Swap to
+https://miyagisanchez.com after merge._
 
 1. Go to a real product `<preview-url>/l/<id>`, open the AI card, click **Copiar prompt**, paste into a notepad.
    → The prompt reads «<product title>» (<price>) and contains the product URL — all in Spanish.
@@ -67,9 +78,21 @@ _Env: fill the branch's Vercel **preview URL** here pre-merge; swap to https://m
 3. Go to a shop `<preview-url>/s/<slug>`, open the card, copy.
    → The prompt names the **shop** and contains the shop URL.
 4. Sign in as a test buyer, open an order at `<preview-url>/account/orders/<orderId>`, open the navbar AI card.
-   → The prompt is an **order-help** prompt (mentions the order); the in-page `AgentHandoff` on the order
-     screen is unchanged. *(auth path — owed to Daniel)*
+   → The prompt is an **order-help** prompt (mentions the order + product); the in-page `AgentHandoff` on the
+     order screen is unchanged. *(auth path — owed to Daniel)*
 5. Open the card on the homepage.
    → Still the generic Spanish prompt (no leftover product/shop context bleeding across navigation).
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+### What was machine-verified vs owed (honest gap)
+- **Machine-verified (deterministic gate, local + CI):** `tsc --noEmit` clean; `npm run build` succeeds and
+  `/` stays `○` static (the provider lives under `(shell)`, not the static root); Playwright **`api`** 33/33
+  green — the pure builder over every kind (generic, PDP url-only + title/price, catalog, shop ±name,
+  account ±ref+title) and the `withDetails` graceful-fallback (null details ≡ Sprint-1 output).
+- **Anonymous browser render-smoke** is encoded as `e2e/agent-prompt.browser.spec.ts` (NOT the gate; nightly
+  `browser-smoke.yml`) — on a PDP it opens the card and asserts the copied prompt **names the product** +
+  carries `/l/<id>`. Runs anonymously once `MS_TEST_PDP_LISTING_ID` is set; skips cleanly otherwise. This
+  covers steps 1–2 at render level (the copy→paste→**agent reply quality** is still a human judgement).
+- **Owed to Daniel (browser):** step 3 (shop card) + step 4 (authed order page) + the agent round-trips —
+  the SSO-gated preview + the authed order session are his to drive; the card sheet is a JS portal, not curl-able.

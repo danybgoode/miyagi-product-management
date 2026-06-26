@@ -52,10 +52,10 @@ URL it resolves via existing UCP/MCP — no new agent surface/manifest change), 
 | 1 | Theme toggle → flask; AI keeps sparks | low | ✅ shipped (#128 `5b79a3f`) |
 | 1 | Spanish-only prompt + extract `lib/agent-prompt.ts` builder | low | ✅ shipped (#128) |
 | 1 | Route-aware contextual prompt (URL-only) — PDP/catalog/shop/account/default | low | ✅ shipped (#128 `cbac94a`+`9bb3c10`) |
-| 2 | `AgentContext` provider + per-page setter (rich context plumbing) | low | ⬜ ready |
-| 2 | PDP + shop embed title/price/shop name | low | ⬜ ready |
-| 2 | Account/orders contextual handoff in the navbar card (reuse `AgentHandoff` shape) | low | ⬜ ready |
-| 2 | Lock the builder with unit/API specs + smoke walkthrough | low | ⬜ ready |
+| 2 | `AgentContext` provider + per-page setter (rich context plumbing) | low | 🏗️ built (#130 `b7eba99`) |
+| 2 | PDP + shop embed title/price/shop name | low | 🏗️ built (#130 `c09e480`) |
+| 2 | Account/orders contextual handoff in the navbar card (reuse `AgentHandoff` shape) | low | 🏗️ built (#130 `4c0cebb`) |
+| 2 | Lock the builder with unit/API specs + smoke walkthrough | low | 🏗️ built (#130 `35e794a`) |
 
 ## Deploy order
 **Frontend-only (Vercel); no backend, no migration.** Sprint 1 ships standalone (icon split + Spanish +
