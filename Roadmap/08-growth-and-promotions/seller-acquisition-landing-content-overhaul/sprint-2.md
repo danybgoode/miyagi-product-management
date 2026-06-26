@@ -1,4 +1,4 @@
-# Sprint 2 — Copy + es-MX implementation  ·  status: ⬜ not started
+# Sprint 2 — Copy + es-MX implementation  ·  status: 🏗️ in review (PR #125 · `ff60e1f`)
 
 > Land the approved S1 copy. Almost entirely edits to **one file**: `apps/miyagisanchez/locales/es.json
 > → sellerAcquisition`. Plus the `mundial` page's inline strings (it's bespoke, not on the shared system).
@@ -9,7 +9,14 @@ Every `/vende*` page reads as intentional, fully-accented es-MX copy written for
 distrust framing is gone; the CTA copies the directive prompt.
 
 ## Stories
-### US-2 — Replace placeholder copy with approved es-MX strings ⬜
+### US-2 — Replace placeholder copy with approved es-MX strings 🏗️ (PR #125 · `ff60e1f`)
+> Built 2026-06-25. es-MX copy landed verbatim from `COPY-BRIEF.md`; new shared `selfCheck` block
+> replaces every page's `agentTitle`/`agentBody` (removed from `es`+`en`); `{url}`-template
+> `trustPrompt` + new `sellerTrustPrompt(id)` helper drive the directive per-page CTA; anchor
+> secondary CTA → in-page persona router; OG/brand strings accent-fixed. **Benchmark + AI-channel
+> blocks deferred to S3; mobile sweep to S4.** Gate green locally (tsc + build + api specs +
+> design-token guard). New `e2e/seller-acquisition-copy.spec.ts` guards banned strings, un-accented
+> offenders, and the prompt helper.
 **As** supply traffic, **I want** every `/vende*` page to read as intentional, accented es-MX copy
 written for my persona, **so that** it persuades instead of reading like placeholder.
 **Acceptance:**
@@ -32,7 +39,14 @@ Risk: low.
 - Confirm no raw hex / token regressions introduced.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: PR Vercel preview pre-merge; `https://miyagisanchez.com` after deploy.
+Env: **PR #125 Vercel preview** pre-merge; `https://miyagisanchez.com` after deploy.
+
+> **Gate owned (done):** `tsc --noEmit` ✓, `next build` ✓, Playwright **api** project ✓
+> (`seller-acquisition-copy.spec.ts` + helper + design-token guard), grep gate ✓ (zero
+> `No pedimos fe` / un-accented offenders in `sellerAcquisition`). **Owed to Daniel:** the
+> rendered browser walkthrough below (anonymous — no auth needed; clipboard + the paste-into-AI
+> step in particular can't be fully asserted headless). The SEO/metadata gate is CI's
+> "Playwright vs preview" (`seller-acquisition-seo.spec.ts` reads the new `es.json` metadata).
 
 1. Open `{BASE_URL}/vende`.
    → Hero, proof, router, FAQ, closing all read as accented es-MX (á/é/í/ó/ú, ñ, ¿/¡), no placeholder feel.
