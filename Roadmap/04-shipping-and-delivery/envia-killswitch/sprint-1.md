@@ -5,10 +5,12 @@ Epic: [Envía — platform Flagsmith kill-switch](README.md) · Scope:
 **Branch:** `feat/envia-killswitch` · **Risk: HIGH** (checkout/shipping money path) → **Daniel-merge** ·
 **Deploy order: S1.1 → S1.2 → S1.3/S1.4** (backend-first).
 
-**Build status (2026-06-26):** all built, draft PRs open, awaiting Daniel-merge + live smoke.
-- **Backend** (S1.1, S1.2): `danybgoode/medusa-bonsai-backend` **PR #41** — `tsc` clean, `test:unit` green.
-- **Frontend** (S1.3, S1.4): `danybgoode/miyagisanchezcommerce` **PR #131** — `tsc` clean, Playwright `api`
-  921✓ / 8 skip / 1 env-only fail (`not-found-shape` `/l/wp-admin` prod-WAF 403 — documented, unrelated).
+**Build status (2026-06-26):** ✅ **merged** (cross-agent reviewed, no blocking), deploying; flag created OFF.
+- **Backend** (S1.1, S1.2): `medusa-bonsai-backend` **PR #41 merged** (squash `d2b7c1a`) → Cloud Run us-east4.
+- **Frontend** (S1.3, S1.4): `miyagisanchezcommerce` **PR #131 merged** (squash `87baff9`) → Vercel prod.
+- **Flag:** `shipping.envia_enabled` created in Flagsmith Production (project `miyagisanchezmarketplace`,
+  feature 219454) — **OFF** (= Envía disabled / arranged-manual fallback). Flip ON when the account is funded.
+- Remaining owed: Daniel's live money/ship smoke (steps below).
 - **S1.4 was added during the build** after tracing every Envía importer (the L737 gotcha): the seller order
   screen's `app/api/orders/[id]/ship` route calls `lib/envia.ts` directly for legacy Supabase orders (POST) and
   re-quotes (GET), bypassing the backend gate — so it's gated too. Confirmed in scope with Daniel.
