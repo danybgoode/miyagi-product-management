@@ -1,15 +1,17 @@
-# Sprint 3 — Benchmark + AI-channel sections  ·  status: 🏗️ built 2026-06-25 (PR #127 — US-3 `c943349`, US-4 `0fb9543`)
+# Sprint 3 — Benchmark + AI-channel sections  ·  status: ✅ shipped 2026-06-25 (PR #127 squash `8119527`)
 
 > Two small new sections on the **anchor** (`/vende`), built from `globals.css` primitives and wired
 > through `_components/page-config.ts` + `SellerAcquisitionSections.tsx`. Depends on Sprint 2 copy.
 >
+> **Shipped 2026-06-25 — PR #127 squash `8119527`** (CI green: Type-check+build · Playwright vs preview ·
+> Vercel; Codex cross-review clean — two advisory items declined with rationale; Daniel confirmed the
+> rendered/mobile smokes green and authorized merge).
+>
 > **Built off `origin/main` (`af690ad`, S2 merged) — the local app checkout was stale at `740f967`.**
 > Both sections are **anchor-only + config-driven** (`benchmark`/`aiChannel` undefined on persona
 > builders → they don't render there). Copy verbatim from `COPY-BRIEF.md` §4/§5; `es.json` + `en.json`
-> mirrored for type-parity. **Gate green locally:** `tsc` ✓, `npm run build` ✓, Playwright **api** ✓
-> (34 specs incl. the two new ones + copy/SEO + design-token guard). **Owed Daniel:** the rendered
-> browser + 360/390px mobile eyeball on the PR #127 preview (opt-in `seller-acquisition-anchor-s3.browser.spec.ts`
-> covers it + runs nightly).
+> mirrored for type-parity. The opt-in `seller-acquisition-anchor-s3.browser.spec.ts` (both sections
+> render + table no-overflow at 360/390px) runs nightly via `browser-smoke.yml`.
 
 ## Goal
 The anchor shows a truthful Miyagi vs Mercado Libre vs Shopify benchmark and communicates the
