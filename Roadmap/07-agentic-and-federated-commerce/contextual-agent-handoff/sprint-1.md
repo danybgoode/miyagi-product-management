@@ -1,6 +1,6 @@
 # Contextual agent handoff — Sprint 1: Icon split + Spanish + URL-only contextual
 
-**Status:** 🏗️ BUILT 2026-06-25 — draft [PR #128](https://github.com/danybgoode/miyagisanchezcommerce/pull/128) (risk LOW), awaiting CI-green + Daniel's visual smoke + merge.
+**Status:** ✅ SHIPPED 2026-06-25 — [PR #128](https://github.com/danybgoode/miyagisanchezcommerce/pull/128) squash-merged `33ae0b3` (risk LOW; Daniel's preview smoke green; Codex cross-review applied `9bb3c10`).
 - **S1.1** `5b79a3f` — theme toggle glyph `sparks`→`flask`; AI keeps `sparks`; grep-verified no regressions.
 - **S1.2** `cbac94a`-prior — pure `lib/agent-prompt.ts buildAgentPrompt`; generic prompt now fully es-MX (English body + bilingual close dropped), off the bilingual allow-list; cold-agent preamble kept.
 - **S1.3** `cbac94a` — `resolveAgentContext(pathname, searchParams)` + per-kind es-MX templates (PDP/catalog/shop/account + generic fallback); each carries the canonical URL.

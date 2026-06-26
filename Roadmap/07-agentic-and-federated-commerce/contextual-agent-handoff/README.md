@@ -49,9 +49,9 @@ URL it resolves via existing UCP/MCP — no new agent surface/manifest change), 
 ## Scope — stories
 | Sprint | Story | Risk | Status |
 |---|---|---|---|
-| 1 | Theme toggle → flask; AI keeps sparks | low | 🏗️ built (PR #128 `5b79a3f`) |
-| 1 | Spanish-only prompt + extract `lib/agent-prompt.ts` builder | low | 🏗️ built (PR #128) |
-| 1 | Route-aware contextual prompt (URL-only) — PDP/catalog/shop/account/default | low | 🏗️ built (PR #128 `cbac94a`) |
+| 1 | Theme toggle → flask; AI keeps sparks | low | ✅ shipped (#128 `5b79a3f`) |
+| 1 | Spanish-only prompt + extract `lib/agent-prompt.ts` builder | low | ✅ shipped (#128) |
+| 1 | Route-aware contextual prompt (URL-only) — PDP/catalog/shop/account/default | low | ✅ shipped (#128 `cbac94a`+`9bb3c10`) |
 | 2 | `AgentContext` provider + per-page setter (rich context plumbing) | low | ⬜ ready |
 | 2 | PDP + shop embed title/price/shop name | low | ⬜ ready |
 | 2 | Account/orders contextual handoff in the navbar card (reuse `AgentHandoff` shape) | low | ⬜ ready |
