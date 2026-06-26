@@ -3,6 +3,11 @@
 **Epic:** [Selección — make admin pins authoritative](README.md) · **Risk:** LOW (frontend pure-logic) · **Repo:** `apps/miyagisanchez`.
 **Branch:** `feat/seleccion-pins-authoritative` off latest `main`. Keep `next build` emitting `○ /`.
 
+**✅ SHIPPED 2026-06-25 — PR [#124](https://github.com/danybgoode/miyagisanchezcommerce/pull/124) squash `740f967`, live on Vercel prod.**
+Both stories merged (S1.1 `8f64f97` · S1.2 `9ecf72e`); CI green (Type-check+build + Playwright vs preview);
+codex cross-review clean (one signature nit declined — tsc-enforced single caller, consistent with
+`getFeaturedListing(now)`). Owed to Daniel: the live admin pin/reorder eyeball (steps 1–5 below).
+
 Frontend-only, both stories on the next-free `lib/home-curation.ts` seam → proven by the Playwright `api` spec, no
 network/auth. Ships first as the quick win (fixes the Destacado bug for pins already inside the freshest-24 pool).
 
