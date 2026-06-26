@@ -621,6 +621,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `RangeError` blanks the whole client render) and `?? 0` numeric fields. *(2026-06-22, marketplace-static-shell
   S3/S4 — codex+agy cross-review caught a stale-personalization leak on sign-out/account-switch: clear island
   state on the unauth transition **and** add `userId` to the effect deps, else a switch keeps the prior user's data.)*
+- **To feed a static/server shell component per-page data, thread it through a client *context* island a server
+  page renders — and make the unmount cleanup compare-and-clear, not a blind null.** When a widget mounted in a
+  static `PlatformShell` (reads no request state) needs the *current page's* data (e.g. the navbar AI-handoff
+  card naming the product/shop on a PDP), don't make the shell dynamic: mount a tiny client `Context` provider in
+  the `(shell)` layout, have each server page render a **render-null `'use client'` setter** (`<SetAgentContext
+  title=… />`) that `useEffect`-sets the value, and let the widget consume it — degrading to a URL/prop-only
+  default when unset (a spec should assert the no-details output is byte-identical to the prior behaviour). The
+  trap the codex cross-review caught: a setter that does `return () => setValue(null)` on unmount **erases the
+  next page's value** during a client navigation, because the new page's island can set *before* the old one's
+  cleanup runs — so clear with a **functional `setState` guarded on identity** (`prev => prev === mine ? null :
+  prev`). And the comment must say the *consumer* (not the provider) is absent on the branches that don't render
+  the widget — the provider wraps all of them. The render-level "did it actually name the product?" check needs a
+  real browser (the card is a JS portal), so it's an anonymous **`*.browser.spec.ts`** off an `MS_TEST_*` fixture,
+  not the `api` gate. *(2026-06-26, contextual-agent-handoff S2 — `AgentContext`/`SetAgentContext`; `withDetails`
+  fallback spec; fix `347871b`.)*
 - **Client-side gating is how you add a site-wide third-party loader (GTM/analytics/pixels) without
   un-static-ing a static shell.** After a homepage is made static (route-group split + no `headers()`), the
   reflex "drop a `<Script>` in `layout.tsx`" re-introduces a per-request decision only if you gate it on the

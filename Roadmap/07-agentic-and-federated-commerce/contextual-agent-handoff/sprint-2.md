@@ -1,8 +1,13 @@
 # Contextual agent handoff — Sprint 2: Rich human-readable context
 
-**Status:** 🏗️ built 2026-06-26 — **draft PR [#130](https://github.com/danybgoode/miyagisanchezcommerce/pull/130)**
-(branch `feat/contextual-agent-handoff-s2`, risk LOW), CI gate green pending merge. **Depends on: Sprint 1 merged**
-(the `lib/agent-prompt.ts` builder seam — shipped #128 `33ae0b3`).
+**Status:** ✅ SHIPPED 2026-06-26 — **PR [#130](https://github.com/danybgoode/miyagisanchezcommerce/pull/130)
+squash `05530a9`** (branch `feat/contextual-agent-handoff-s2`, risk LOW), CI green + codex cross-review applied.
+**Depended on: Sprint 1** (the `lib/agent-prompt.ts` builder seam — shipped #128 `33ae0b3`).
+
+**Cross-review (codex, advisory):** flagged one should-fix — `SetAgentContext`'s blind unmount `setDetails(null)`
+could erase a *newer* page's details when nav-transition islands overlap. Fixed with **compare-and-clear**
+(functional `setState` — only null out if the context still holds OUR object) in `347871b`, plus two comment
+corrections. Re-ran the gate green before merge.
 
 > **Branch note:** started on `feat/contextual-agent-handoff-s2` (not `-handoff`) — the old
 > `feat/contextual-agent-handoff` remote branch still holds Sprint 1's *pre-squash* commits (already on

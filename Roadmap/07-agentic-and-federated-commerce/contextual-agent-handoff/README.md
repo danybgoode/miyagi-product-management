@@ -1,5 +1,5 @@
 ---
-status: ready
+status: shipped
 slug: contextual-agent-handoff
 ---
 
@@ -52,10 +52,10 @@ URL it resolves via existing UCP/MCP — no new agent surface/manifest change), 
 | 1 | Theme toggle → flask; AI keeps sparks | low | ✅ shipped (#128 `5b79a3f`) |
 | 1 | Spanish-only prompt + extract `lib/agent-prompt.ts` builder | low | ✅ shipped (#128) |
 | 1 | Route-aware contextual prompt (URL-only) — PDP/catalog/shop/account/default | low | ✅ shipped (#128 `cbac94a`+`9bb3c10`) |
-| 2 | `AgentContext` provider + per-page setter (rich context plumbing) | low | 🏗️ built (#130 `b7eba99`) |
-| 2 | PDP + shop embed title/price/shop name | low | 🏗️ built (#130 `c09e480`) |
-| 2 | Account/orders contextual handoff in the navbar card (reuse `AgentHandoff` shape) | low | 🏗️ built (#130 `4c0cebb`) |
-| 2 | Lock the builder with unit/API specs + smoke walkthrough | low | 🏗️ built (#130 `35e794a`) |
+| 2 | `AgentContext` provider + per-page setter (rich context plumbing) | low | ✅ shipped (#130 squash `05530a9`) |
+| 2 | PDP + shop embed title/price/shop name | low | ✅ shipped (#130) |
+| 2 | Account/orders contextual handoff in the navbar card (reuse `AgentHandoff` shape) | low | ✅ shipped (#130) |
+| 2 | Lock the builder with unit/API specs + smoke walkthrough | low | ✅ shipped (#130) |
 
 ## Deploy order
 **Frontend-only (Vercel); no backend, no migration.** Sprint 1 ships standalone (icon split + Spanish +
@@ -63,13 +63,13 @@ URL-only context). Sprint 2 layers rich context on top — depends on Sprint 1's
 All Low-risk → reviewer may auto-merge on green CI **unless** a story touches shared chrome
 (`PlatformShell.tsx`, `app/layout.tsx`) — then announce (it can break sibling PRs).
 
-## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (07 feature map + Recent highlights)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted
-- [ ] **No kill-switch** (all Low-risk, no money/auth/commerce path)
+## Definition of Done (epic) — ✅ COMPLETE 2026-06-26
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — S1 #128 `33ae0b3` · S2 #130 `05530a9`
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (07 feature map + Recent highlights)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted (auto-deleted on squash-merge of #130)
+- [x] **No kill-switch** (all Low-risk, no money/auth/commerce path)
