@@ -14,12 +14,11 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-- [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 0/7 stories
-- [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 2/5 stories
+- [Envía — platform Flagsmith kill-switch](../../04-shipping-and-delivery/envia-killswitch/README.md) — 04 Shipping · 0/3 stories
 
-## ✅ Shipped (61)
+## ✅ Shipped (63)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -51,6 +50,7 @@ _None._
 - [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 0/2 stories
 - [Embeddable Widget](../../07-agentic-and-federated-commerce/embeddable-widget/README.md) — 07 Agentic/Federated · 7/7 stories
 - [Multi-tenant subdomains (`yourshop.miyagisanchez.com`)](../../07-agentic-and-federated-commerce/subdomains/README.md) — 07 Agentic/Federated · 0/3 stories
+- [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 0/7 stories
 - [Own channel: custom-domain polish (custom-domain-polish)](../../07-agentic-and-federated-commerce/custom-domain-polish/README.md) — 07 Agentic/Federated · 7/7 stories · risk: Low
 - [Own channel: full shop experience (own-shop-experience)](../../07-agentic-and-federated-commerce/own-shop-experience/README.md) — 07 Agentic/Federated · 6/8 stories · risk: Low · Wave 3
 - [Pretty URL: customizable shop slug (custom-slugs)](../../07-agentic-and-federated-commerce/custom-slugs/README.md) — 07 Agentic/Federated · 0/5 stories
@@ -59,6 +59,7 @@ _None._
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 0/3 stories · risk: Low
 - [Referral Program](../../08-growth-and-promotions/referral-program/README.md) — 08 Growth · 5/5 stories · risk: Low
 - [Seasonal Theme Engine](../../08-growth-and-promotions/seasonal-theme-engine/README.md) — 08 Growth · 0/9 stories
+- [Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)](../../08-growth-and-promotions/seller-acquisition-landing-content-overhaul/README.md) — 08 Growth · 5/5 stories
 - [Seller-Acquisition Landing Pages (BUILD-ORDER #6)](../../08-growth-and-promotions/seller-acquisition-landing-pages/README.md) — 08 Growth · 4/9 stories · risk: Low · Wave 3
 - [Sweepstakes](../../08-growth-and-promotions/sweepstakes/README.md) — 08 Growth · 9/9 stories · risk: Low
 - [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 0/9 stories
@@ -83,9 +84,10 @@ _None._
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 0/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (8)
 
 - [Rental backend line-item pricing (charge nights × rate + deposit online)](seeds/rental-backend-line-item-pricing.md) — Ready · Feature · backlog
+- [Spike — BYO Envía accounts (per-seller shipping credentials)](seeds/spike-envia-byo.md) — Raw · Spike · tbd
 - [Buyer notifications — money-path addendum](seeds/buyer-notifications-money-path.md) — Ready · Feature · Wave 2
 - [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Ready · Spike · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
@@ -93,15 +95,5 @@ _None._
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
-
-These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
-derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
-forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
-
-| Epic | frontmatter (used) | sprint/retro-derived |
-|---|---|---|
-| Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2) | Scaffolded | In progress |
-
 ---
-_Epics: 64 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 65 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
