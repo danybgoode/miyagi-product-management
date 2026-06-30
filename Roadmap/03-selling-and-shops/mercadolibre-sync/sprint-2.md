@@ -1,13 +1,15 @@
 # Mercado Libre sync — Sprint 2: Import ML catalog → Miyagi
 
-**Status:** 🟨 BUILT — draft PRs open (backend
-[#45](https://github.com/danybgoode/medusa-bonsai-backend/pull/45) · frontend
-[#142](https://github.com/danybgoode/miyagisanchezcommerce/pull/142); **merge backend first**). Rides the
-existing bulk-import/supply pipeline as a new ML **source adapter**; the import surface is
-**seller-facing** (`/shop/manage/mercadolibre/import`, NOT the admin supply console) and attaches
-products to the **connected seller's own shop**, behind a new `ml.import_enabled` flag (enablement,
-default OFF, dark-ship). Deterministic gate green locally (tsc + build + Playwright `api` pure tests +
-backend unit). **Owed to Daniel:** the live ML-sandbox import smoke (steps below) + flag flip.
+**Status:** ✅ MERGED (2026-06-30) — backend
+[#45](https://github.com/danybgoode/medusa-bonsai-backend/pull/45) (squash `36e241d`, Cloud Run deploy
+running) + frontend [#142](https://github.com/danybgoode/miyagisanchezcommerce/pull/142) (squash
+`66fb9b4`, Vercel prod). Both CI gates green (BE type-check+build+unit; FE type-check+build +
+Playwright-vs-preview); cross-review (Codex) applied on both. Rides the existing bulk-import/supply
+pipeline as a new ML **source adapter**; the import surface is **seller-facing**
+(`/shop/manage/mercadolibre/import`, NOT the admin supply console) and attaches products to the
+**connected seller's own shop**, behind the new `ml.import_enabled` flag (enablement, default OFF —
+ships **dark**). **Owed to Daniel:** the live ML-sandbox import smoke (steps below) + the
+`ml.import_enabled` flip once the backend revision is live.
 
 | Story | Status | Commit |
 |---|---|---|

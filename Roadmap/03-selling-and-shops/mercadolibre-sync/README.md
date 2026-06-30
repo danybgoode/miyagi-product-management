@@ -92,8 +92,8 @@ after. S5 hardens + gates. Announce shared-surface touches.
 - [ ] Feature branch deleted; scope-doc frontmatter `status: shipped`.
 
 ## Sprints
-- [sprint-1.md](sprint-1.md) — Connect + linkage foundation (the spine).
-- [sprint-2.md](sprint-2.md) — Import ML catalog → Miyagi.
-- [sprint-3.md](sprint-3.md) — Publish Miyagi → ML.
-- [sprint-4.md](sprint-4.md) — Two-way stock sync (the oversell-safe core).
-- [sprint-5.md](sprint-5.md) — Resilience, observability & paid-SKU gating.
+- ✅ [sprint-1.md](sprint-1.md) — Connect + linkage foundation (the spine). **Merged 2026-06-30** (be #44 · fe #139); `ml.connect_enabled` ON.
+- ✅ [sprint-2.md](sprint-2.md) — Import ML catalog → Miyagi. **Merged 2026-06-30** (be #45 `36e241d` · fe #142 `66fb9b4`); behind `ml.import_enabled` (dark).
+- ⬜ [sprint-3.md](sprint-3.md) — Publish Miyagi → ML.
+- ⬜ [sprint-4.md](sprint-4.md) — Two-way stock sync (the oversell-safe core).
+- ⬜ [sprint-5.md](sprint-5.md) — Resilience, observability & paid-SKU gating.
