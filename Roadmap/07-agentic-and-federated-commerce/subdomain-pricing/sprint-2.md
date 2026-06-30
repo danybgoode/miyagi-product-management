@@ -1,12 +1,26 @@
 # Subdomain pricing — Sprint 2: Paid yearly checkout + lapse + pricing/SKU/UCP surface
 
-**Status:** 🟦 READY — not started. **Risk: HIGH (payments).** Backend-first. Daniel merges HIGH.
+**Status:** 🏗️ BUILT — green gate, draft PRs open. **Risk: HIGH (payments) → Daniel merges.**
+Backend-first deploy. Live money-path browser smoke **owed to Daniel**.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-4 — Paid yearly checkout (one-time + recurring) + graceful lapse → /s/slug | ⬜ | |
-| US-5 — Pricing copy (es/en) + promoter-SKU registration + UCP surface | ⬜ | |
-| api spec (`e2e/subdomain-checkout.spec.ts`) | ⬜ | |
+| US-4 — Paid yearly checkout (one-time + recurring) + graceful lapse → /s/slug | ✅ built | be `e6fa255` · fe `ea6ce78` |
+| US-5 — Pricing copy (es/en) + promoter-SKU registration + UCP surface | ✅ built | fe `ea6ce78` |
+| api spec (`e2e/subdomain-checkout.spec.ts`) | ✅ built | fe `ea6ce78` |
+
+> **Build note.** Faithful clone of `custom-domain-paywall` S2. **No schema migration** — the subdomain
+> plan is a data row on the shared `subscription_plan` table (`seller_id:'platform'` +
+> `metadata.kind:'subdomain_plan'`, distinct from `custom_domain_plan`). Recurring + one-time both ship
+> (the promoter one-time seam is merged). The middleware gate now resolves the recurring subscription via
+> `lib/subdomain-entitlement-server.ts`, short-circuiting the Medusa read for grandfathered shops (zero
+> extra round-trip). Agent surface: MCP tools `get_subdomain_entitlement` + `start_subdomain_subscription`,
+> manifest block `seller_subdomain_subscription`. `/acerca` reframed: free `/s/slug` stays, subdomain is a
+> $199/yr upgrade (no public grandfather mention). **Deploy order:** BE merge → Cloud Run deploy →
+> `node scripts/seed-subdomain-plan.mjs` with **prod** creds → FE merge. `subdomain.paywall_enabled` is
+> already ON (S1 cutover); seeding the plan is what makes the paid path purchasable.
+> Gate green: fe `tsc` + `next build` + 10 pure api specs; be `medusa build` + `tsc` + 66 unit tests. The
+> route-guard + manifest specs run in CI vs the preview.
 
 > Goal: a seller (or a promoter on their behalf) buys the subdomain for a year → it goes white-label;
 > at year-end it lapses gracefully **back to `/s/slug`** with no silent re-charge. Reuses the
@@ -49,9 +63,14 @@ promoter code applies its discount to the subdomain SKU; the UCP checkout-sessio
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge)
 
+0. (Prerequisite — once, after the BE deploy) Run `node scripts/seed-subdomain-plan.mjs` with **prod**
+   creds (Cloud Run `MEDUSA_STORE_URL` + `sk_live` + the prod `MEDUSA_INTERNAL_SECRET`).
+   → Prints `Medusa plan created/updated … (stripe_price_id=price_…)`. Re-running reuses the same Stripe
+     price + plan (idempotent). Until this runs, the recurring buy returns "el plan aún no está disponible".
 1. As a non-grandfathered test seller (subdomain currently 301s to /s/slug), open the subdomain upsell and
    choose **"Pagar un año"**.
-   → A checkout opens at **$199 MXN/año**.
+   → A checkout opens at **$199 MXN/año**; on success Stripe returns to
+     `/shop/manage/settings/canal?subdomain=activated`.
 2. Pay with Stripe test card `4242 4242 4242 4242` (one-time option).
    → Within ~minutes `https://<shop>.miyagisanchez.com` serves **white-label** (no longer 301s).
 3. Open the Stripe dashboard.
@@ -62,6 +81,10 @@ Env: production · https://miyagisanchez.com  (or the Vercel preview URL while p
    → The subdomain price ($199/yr) shows in both locales.
 6. (promoter) Apply a promoter code at the subdomain checkout.
    → The discount applies before pay; the sale attributes to the promoter (promoter-program).
+7. (agent path) With a shop agent token, call MCP `get_subdomain_entitlement`, then
+   `start_subdomain_subscription` (`{ "cadence": "recurring" }`).
+   → The first returns `{ entitled, reason, price_label: "$199 MXN/año (~$17/mes)" }`; the second returns
+     a Stripe `checkout_url`. The manifest's `seller_subdomain_subscription` block lists both tools.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 **Money path:** steps 2–4 + 6 are live-money → **owed to Daniel**.
