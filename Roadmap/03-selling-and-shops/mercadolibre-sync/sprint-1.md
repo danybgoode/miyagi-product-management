@@ -1,7 +1,10 @@
 # Mercado Libre sync — Sprint 1: Connect + linkage foundation (the spine)
 
-**Status:** 🟢 BUILT — backend + frontend green, draft PRs open (backend-first). No money mutation.
-Live ML-sandbox OAuth smoke owed to Daniel.
+**Status:** ✅ MERGED + LIVE (2026-06-30) — backend [#44](https://github.com/danybgoode/medusa-bonsai-backend/pull/44)
+deployed (revision `medusa-web-00117-n46`; `/internal/ml/*` live, 401-gated) + frontend
+[#139](https://github.com/danybgoode/miyagisanchezcommerce/pull/139) merged. `ml.connect_enabled` flipped
+**ON**, ML redirect URI registered, ML env provisioned (Vercel + Secret Manager + Cloud Run + `deploy.sh`).
+No money mutation. **Owed to Daniel:** the live ML-sandbox OAuth connect smoke (steps below).
 
 | Story | Status | Commit |
 |---|---|---|
