@@ -93,6 +93,8 @@ const PROD = {
     'NODE_ENV', 'MEDUSA_WORKER_MODE', 'MEDUSA_BACKEND_URL', 'STORE_CORS',
     'ADMIN_CORS', 'AUTH_CORS', 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
     'MEDUSA_SALES_CHANNEL_ID', 'ENVIA_SANDBOX', // ENVIA_SANDBOX is a PLAIN env on prod
+    // mercadolibre-sync S1: ML app id + OAuth redirect uri are non-secret (plain env)
+    'ML_APP_ID', 'ML_REDIRECT_URI',
   ],
   secrets: [
     'DATABASE_URL', 'REDIS_URL', 'JWT_SECRET', 'COOKIE_SECRET', 'STRIPE_SECRET_KEY',
@@ -101,6 +103,8 @@ const PROD = {
     'FLAGSMITH_ENVIRONMENT_KEY',
     // marketplace-static-shell S3: read-only Supabase reads for the GCP personalization endpoint
     'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY',
+    // mercadolibre-sync S1: ML client secret + token-at-rest encryption key
+    'ML_APP_SECRET', 'ML_TOKEN_ENCRYPTION_KEY',
   ],
 }
 
