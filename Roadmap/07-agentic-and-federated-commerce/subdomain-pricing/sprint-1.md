@@ -1,8 +1,9 @@
 # Subdomain pricing — Sprint 1: Gate + entitlement + grandfather (behind flag)
 
 **Status:** ✅ MERGED — PR [#145](https://github.com/danybgoode/miyagisanchezcommerce/pull/145)
-squash `3892006`, deployed to prod **inert** (flag off). **Risk: HIGH (`middleware.ts` + Edge→Node
-runtime), Daniel-merged.** Cutover (backfill `--apply` → flip flag) + browser smoke still owed.
+squash `3892006`. **Risk: HIGH (`middleware.ts` + Edge→Node runtime), Daniel-merged.**
+**CUTOVER LIVE 2026-06-30:** backfill `--apply` ✅ (179 shops grandfathered, idempotent-verified) +
+flag `subdomain.paywall_enabled` flipped **ON** by Daniel. Browser smoke still owed to Daniel.
 
 | Story | Status | Commit |
 |---|---|---|
