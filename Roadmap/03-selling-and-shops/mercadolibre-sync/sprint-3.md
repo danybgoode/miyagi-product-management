@@ -1,19 +1,22 @@
 # Mercado Libre sync — Sprint 3: Publish Miyagi → ML
 
-**Status:** 🏗️ BUILT — in review (draft PRs, deterministic gate green). Backend
-[#46](https://github.com/danybgoode/medusa-bonsai-backend/pull/46) (`008f8ee`) + frontend
-[#144](https://github.com/danybgoode/miyagisanchezcommerce/pull/144) (`07087b1`). Reuses despacho
-`publishItem` (ported), adds the update/relist/close verbs + the `domain_discovery` category predictor
-the reference lacked. Ships **dark** behind a new `ml.publish_enabled` enablement flag (default OFF).
-**Owed to Daniel:** the live ML-sandbox publish+edit+close smoke (steps below) + the `ml.publish_enabled`
-flip once backend #46 is live. **Risk tier: MED** (external write to ML; no money/inventory/migration).
+**Status:** ✅ MERGED (2026-06-30) — backend
+[#46](https://github.com/danybgoode/medusa-bonsai-backend/pull/46) (squash `bbf75a2`, Cloud Run deploy
+running) + frontend [#144](https://github.com/danybgoode/miyagisanchezcommerce/pull/144) (squash
+`e9b7420`, Vercel prod). Both CI gates green (BE type-check+build+unit; FE type-check+build +
+Playwright-vs-preview); cross-review (Codex) applied on both. Reuses despacho `publishItem` (ported),
+adds the update/relist/close verbs + the `domain_discovery` category predictor the reference lacked. Ships
+**dark** behind a new `ml.publish_enabled` enablement flag (default OFF — created in Flagsmith, feature id
+**220945**). **Risk tier: MED** (external write to ML; no money/inventory/migration). **Owed to Daniel:**
+the live ML-sandbox publish+edit+close smoke (steps below) + the `ml.publish_enabled` flip once the backend
+revision is live.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-7 — Publish a Miyagi product → ML (create) + persist linkage | ✅ | be `008f8ee` · fe `07087b1` |
-| US-8 — Update / relist / close parity (Miyagi edits propagate) | ✅ | be `008f8ee` · fe `07087b1` |
-| US-9 — ML category predictor + manual override | ✅ | be `008f8ee` · fe `07087b1` |
-| api spec (`e2e/ml-publish.spec.ts`) | ✅ | fe `07087b1` |
+| US-7 — Publish a Miyagi product → ML (create) + persist linkage | ✅ | be `bbf75a2` · fe `e9b7420` |
+| US-8 — Update / relist / close parity (Miyagi edits propagate) | ✅ | be `bbf75a2` · fe `e9b7420` |
+| US-9 — ML category predictor + manual override | ✅ | be `bbf75a2` · fe `e9b7420` |
+| api spec (`e2e/ml-publish.spec.ts`) | ✅ | fe `e9b7420` |
 
 > Goal: a seller pushes a Miyagi product out to ML and keeps the ML item in step with Miyagi edits. The
 > linkage from Sprint 1 is the join; the category predictor makes publish reliable.
