@@ -1,7 +1,8 @@
 # Promoter Program — Sprint 1: Promoter spine (code + discount + attribution)
 
-**Status:** 🏗️ BUILT — gate green (tsc + build + pure Playwright); draft PR open, awaiting
-CI-vs-preview + Daniel's browser discount-preview smoke. Behind `promoter.enabled` (off).
+**Status:** ✅ MERGED `1cea2cb` (#138, squash of the story commits below) on 2026-06-30 — full gate
+green (tsc + build + Playwright api vs preview). Supabase migration **applied**; behind
+`promoter.enabled` (off until Daniel flips). Browser discount-preview smoke owed to Daniel.
 
 | Story | Status | Commit |
 |---|---|---|
