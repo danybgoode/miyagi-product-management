@@ -1,13 +1,30 @@
 # Promoter Program — Sprint 1: Promoter spine (code + discount + attribution)
 
-**Status:** 🟦 READY — not started.
+**Status:** 🏗️ BUILT — gate green (tsc + build + pure Playwright); draft PR open, awaiting
+CI-vs-preview + Daniel's browser discount-preview smoke. Behind `promoter.enabled` (off).
 
 | Story | Status | Commit |
 |---|---|---|
-| US-1 — Promoter code + shareable link | ⬜ | |
-| US-2 — Code unlocks seller discount at SKU checkout | ⬜ | |
-| US-3 — Enrollment + sale attribution to promoter | ⬜ | |
-| api spec (`e2e/promoter-program.spec.ts`) | ⬜ | |
+| US-1 — Promoter code + shareable link | ✅ | `2e282b3` |
+| US-2 — Code unlocks seller discount at SKU checkout (preview) | ✅ | `a9e0097` |
+| US-3 — Enrollment + sale attribution to promoter | ✅ | `c884c17` |
+| api spec (`e2e/promoter-program.spec.ts`) | ✅ | `cf898a0` |
+
+**Scope calls (Daniel-approved):** discount is **preview-only / frontend-first** (no Medusa
+coupon mint or Stripe attach in S1 — that's the real charge in S2); the discount amount is a
+**single admin-set value** in a `marketplace_promoter_settings` singleton.
+
+**What shipped (reuse of the referral spine, distinct `PRM-` namespace):**
+- `supabase/migrations/20260629120000_promoter.sql` — `marketplace_promoters` /
+  `marketplace_promoter_attributions` (partial-unique idempotency guard) / `_settings` singleton.
+  **Hand-run in the Supabase SQL editor before flipping the flag on** (lib degrades until then).
+- `lib/promoter.ts` — pure code-gen + discount math + resolution + es-MX copy, plus the Supabase
+  data functions (next-free, unit-tested). `lib/flags.ts` — `promoter.enabled` (enablement, default off).
+- Admin console `/admin/promoter` (Clerk-gated) — provision promoters, set the discount, view a
+  per-promoter attribution ledger. `app/api/admin/promoter[/attributions]`.
+- `app/api/promoter/validate-code` (discount preview) + `app/api/promoter/attribute` (enrollment) —
+  both flag-gated (404 when off). `middleware.ts` captures `?promo=PRM-…` into a 30-day cookie.
+- Seller-facing preview in the custom-domain `Canal` settings section (flag-gated, no charge).
 
 > Goal: a promoter code enrolls a seller and applies a discount on a paid SKU — a **working thin loop**,
 > end-to-end, before any new payment cadence or commission ledger exists. Behind `promoter.enabled` (off).
@@ -52,15 +69,30 @@ enrollments + sales. Re-running checkout doesn't double-write.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge)
 
-1. Open `/admin/...` promoter console (secret-gated) → create a test promoter "PROMO-TEST".
-   → You see a generated code + shareable link for that promoter.
-2. Open the promoter's link in a private window.
-   → It lands on the enroll/SKU flow with the code pre-attributed (cookie/landing param set).
-3. Start a paid-SKU checkout (custom domain) as a test seller and apply the promoter code.
-   → The discount shows **before** the pay step; the total drops by the configured amount.
-4. (attribution) Back in the admin promoter console, open "PROMO-TEST".
-   → The enrollment/sale appears under that promoter with the correct shop + SKU.
+**Pre-req (one-time, owed to Daniel):** (a) run `supabase/migrations/20260629120000_promoter.sql`
+in the Supabase SQL editor; (b) flip **`promoter.enabled` → ON** in Flagsmith. Until both are done
+the seller-facing field stays hidden (fail-open off) and the admin lists are empty.
+
+1. As an **admin**, open `/admin/promoter` → under "Nuevo promotor" type a name (e.g. "María — zona
+   centro") and click **Crear promotor**.
+   → A new row appears with a `PRM-XXXXXX` code, its share link, and a "Copiar liga" button.
+2. On the same page, under "Descuento del promotor", set type **Monto fijo (MXN)** + amount **100**,
+   check **Descuento de promotor activo**, click **Guardar descuento**.
+   → "Descuento guardado." appears.
+3. Copy the promoter's share link and open it in a private window (it is
+   `https://miyagisanchez.com/vende?promo=PRM-XXXXXX`).
+   → The page loads normally; the `promo` code is silently captured in a cookie (no visible change).
+4. As a **test seller**, go to **Configuración → Canal propio** (the custom-domain section). In
+   "¿Te atendió un promotor?" enter the `PRM-XXXXXX` code and click **Aplicar**.
+   → **Before** the "Activar dominio propio" pay button you see:
+     *"Descuento de promotor: −$100 · Pagarías $399"*.
+   → Entering a wrong code shows *"Código de promotor no válido."* instead.  *(← the browser smoke)*
+5. (attribution) Back in `/admin/promoter`, click **Atribuciones** on that promoter.
+   → One row appears: `custom_domain` · the test shop id · status **enrolled**. Re-doing step 4 with
+     the same shop does **not** add a second row (idempotent).
 
 If any step fails, note the step number + what you saw — that's the bug report.
-**Money/auth note:** step 3 only *previews* a discount in S1; the actual charge + cadence is Sprint 2,
-so the live money-path smoke is owed to Daniel there.
+**Money/auth note (owed to Daniel):** step 4 only **previews** a discount in S1 — no money moves and
+nothing is billed. The actual charge with the discount applied + the one-time cadence is **Sprint 2**,
+so the live money-path smoke is owed there. Steps 1–2 + 4–5 need a real Clerk admin / seller session,
+which an automated headless smoke can't hold.
