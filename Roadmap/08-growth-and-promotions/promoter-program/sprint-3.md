@@ -1,13 +1,20 @@
 # Promoter Program — Sprint 3: Commission ledger (% per item, first-payment only)
 
-**Status:** 🟦 READY — not started. Additive on S1–S2. **Settlement is offline (no in-app payout).**
+**Status:** 🏗️ BUILT — PR [#141](https://github.com/danybgoode/miyagisanchezcommerce/pull/141) (draft, HIGH risk: DB migration → Daniel merges). Additive on S1–S2. **Settlement is offline (no in-app payout).**
 
 | Story | Status | Commit |
 |---|---|---|
-| US-7 — Per-SKU commission % config (admin) | ⬜ | |
-| US-8 — Commission accrual (paid + attributed, first-payment only) + dashboard | ⬜ | |
-| US-9 — Admin settlement view (mark paid, offline) | ⬜ | |
-| api spec (`e2e/promoter-commission.spec.ts`) | ⬜ | |
+| US-7 — Per-SKU commission % config (admin) | ✅ | `4b3857d` (seam+helpers+migration) · `79373cc` (route+UI) |
+| US-8 — Commission accrual (paid + attributed, first-payment only) + dashboard | ✅ | `4b3857d` (accrual hook) · `79373cc` (`/promotor/[code]`) |
+| US-9 — Admin settlement view (mark paid, offline) | ✅ | `4b3857d` (settle helper) · `79373cc` (settle route+UI) |
+| api spec (`e2e/promoter-commission.spec.ts`) | ✅ | `4f3ff11` (13 pure tests green; route guards vs CI preview) |
+
+> **Build notes.** Gate green locally: `tsc` ✓ · `build` ✓ · pure `api` spec 13/13 ✓.
+> Accrual is a pure seam (`lib/promoter-commission.ts`) hooked into `markAttributionPaid`
+> (eager, idempotent via `UNIQUE(attribution_id)`). New Supabase migration
+> `20260630120000_promoter_commission.sql` (additive: `promoters.clerk_user_id` for the
+> self-referral guard + `marketplace_promoter_commission_rates` + `marketplace_promoter_commissions`).
+> **Owed to Daniel:** apply the migration to the shared Supabase, then the browser render smoke below.
 
 > Goal: turn attributed sales (S1) into a **commission ledger**. Per-SKU %, accrued on a **paid +
 > attributed** sale, **first-payment/first-year only**. No money moves in-app — admin marks paid offline.
@@ -50,19 +57,26 @@ totals reconcile; the action is idempotent.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge)
+Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge).
+**Pre-req (owed to Daniel):** the migration `20260630120000_promoter_commission.sql` is applied to
+the shared Supabase, and `promoter.enabled` is flipped **on** (Flagsmith). Use a test promoter `PRM-TEST…`.
 
-1. In the admin promoter console, set the custom-domain commission to a test % (e.g. 15%).
-   → The value saves and shows on reload.
-2. Complete a paid+attributed one-time custom-domain sale (Sprint 2 flow) under promoter "PROMO-TEST".
-   → The promoter dashboard shows a commission line = 15% × the sale, status **pending**.
-3. (first-payment-only) Simulate a renewal on a recurring sale for the same promoter.
-   → **No new commission** accrues for the renewal.
-4. (self-referral guard) Attribute a sale where the buyer is the promoter's own shop.
-   → **No commission** accrues.
-5. In the admin settlement view, mark PROMO-TEST's pending commission **paid** (ref "cash-001").
-   → It moves to **paid** with a timestamp; pending total drops to zero.
+1. Open `/admin/promoter` → section **"Comisión por SKU"**. Set **Dominio propio** to `15` and press **Guardar**.
+   → Shows "Comisión guardada."; the value persists on reload. *(Try `-1` or `150` → "Datos inválidos.".)*
+2. Complete a paid+attributed one-time custom-domain sale (the Sprint 2 flow) attributed to the test promoter.
+   → Open `/promotor/PRM-TEST…` → a commission line **Dominio propio · 15% de $X** shows status **Pendiente**;
+     the **Ganado** and **Pendiente** totals equal 15% × the sale.
+3. *(first-payment-only)* Re-fire the same sale's webhook (or a simulated renewal of the same attribution).
+   → **No new commission** line appears (exactly-once on `attribution_id`); totals unchanged.
+4. *(self-referral guard)* Attribute a sale where the promoter's own Clerk account owns the enrolled shop
+   (set `marketplace_promoters.clerk_user_id` = that shop's owner).
+   → **No commission** accrues for that sale.
+5. Back in `/admin/promoter` → section **"Liquidación de comisiones"**: type a reference (`cash-001`) on the
+   pending line and press **Marcar pagada**.
+   → It disappears from pending ("Comisión marcada como pagada."); on `/promotor/PRM-TEST…` the line is now
+     **Pagada** and **Pendiente** drops by that amount. *(Pressing it again is a harmless no-op.)*
 
 If any step fails, note the step number + what you saw — that's the bug report.
 **Note:** no in-app money moves here (offline settlement) → no live money-path smoke owed; the money path
-remains the Sprint 2 / Sprint 4 checkout.
+remains the Sprint 2 / Sprint 4 checkout. Steps 1 & 5 (admin) and 2–4 (real attributed data) are the
+browser render smoke **owed to Daniel** — they need the flag on + a real S1/S2 sale.
