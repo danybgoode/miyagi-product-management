@@ -1,20 +1,27 @@
 # Promoter Program — Sprint 3: Commission ledger (% per item, first-payment only)
 
-**Status:** 🏗️ BUILT — PR [#141](https://github.com/danybgoode/miyagisanchezcommerce/pull/141) (draft, HIGH risk: DB migration → Daniel merges). Additive on S1–S2. **Settlement is offline (no in-app payout).**
+**Status:** ✅ MERGED 2026-06-30 — PR [#141](https://github.com/danybgoode/miyagisanchezcommerce/pull/141) squash `fff04ca` (HIGH: DB migration; Daniel-authorized merge). Additive on S1–S2. **Settlement is offline (no in-app payout).** Migration applied to prod Supabase; `promoter.enabled` flipped **on**.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-7 — Per-SKU commission % config (admin) | ✅ | `4b3857d` (seam+helpers+migration) · `79373cc` (route+UI) |
-| US-8 — Commission accrual (paid + attributed, first-payment only) + dashboard | ✅ | `4b3857d` (accrual hook) · `79373cc` (`/promotor/[code]`) |
-| US-9 — Admin settlement view (mark paid, offline) | ✅ | `4b3857d` (settle helper) · `79373cc` (settle route+UI) |
-| api spec (`e2e/promoter-commission.spec.ts`) | ✅ | `4f3ff11` (13 pure tests green; route guards vs CI preview) |
+| US-7 — Per-SKU commission % config (admin) | ✅ | squash `fff04ca` (#141) |
+| US-8 — Commission accrual (paid + attributed, first-payment only) + dashboard | ✅ | squash `fff04ca` (#141) |
+| US-9 — Admin settlement view (mark paid, offline) | ✅ | squash `fff04ca` (#141) |
+| api spec (`e2e/promoter-commission.spec.ts`) | ✅ | squash `fff04ca` (#141) |
 
-> **Build notes.** Gate green locally: `tsc` ✓ · `build` ✓ · pure `api` spec 13/13 ✓.
+> **Build notes.** Gate green: `tsc` ✓ · `build` ✓ · Playwright `api` vs preview ✓ (incl. 401/404 route guards).
 > Accrual is a pure seam (`lib/promoter-commission.ts`) hooked into `markAttributionPaid`
-> (eager, idempotent via `UNIQUE(attribution_id)`). New Supabase migration
-> `20260630120000_promoter_commission.sql` (additive: `promoters.clerk_user_id` for the
-> self-referral guard + `marketplace_promoter_commission_rates` + `marketplace_promoter_commissions`).
-> **Owed to Daniel:** apply the migration to the shared Supabase, then the browser render smoke below.
+> (eager, idempotent via `UNIQUE(attribution_id)`); SKU vocabulary lives in `lib/promoter-skus.ts`
+> (no import cycle). Migrations applied to prod: `promoter_commission_s3` (tables +
+> `promoters.clerk_user_id` for the self-referral guard) + `promoter_commission_s3_checks`
+> (rate 0–100 / cents ≥ 0 / `status IN ('accrued','paid')`).
+> **Cross-review (codex):** import cycle → extracted `promoter-skus.ts`; migration CHECKs added;
+> `no_gross` reason split from `no_rate`. **Owed to Daniel:** the browser render smoke below.
+>
+> ⚠️ **Learning (kill-switch ↔ preview tests):** flipping `promoter.enabled` ON in the shared Flagsmith
+> env also flipped the **preview's** eval, breaking the S1 "feature hidden (flag off) → 404" Playwright
+> assertions (validate-code → 200 invalid-code; attribute → 401). Fixed by asserting the flag-gated
+> guards in **both** states (`[200,404]` / `[401,404]`) so the gate never couples to the live flag value.
 
 > Goal: turn attributed sales (S1) into a **commission ledger**. Per-SKU %, accrued on a **paid +
 > attributed** sale, **first-payment/first-year only**. No money moves in-app — admin marks paid offline.
