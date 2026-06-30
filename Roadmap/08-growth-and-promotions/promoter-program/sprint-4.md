@@ -9,7 +9,8 @@
 | US-11 — WhatsApp claim handoff (gem-claim reuse) + authed close workspace | ✅ built | `84248e6` |
 | US-10 — Paid-by-promoter / cash-collection checkout (attributed + flagged) | ✅ built | `5dadf08` |
 | US-12 — Promoter resources mini-site + sell-sheet (es-MX) | ✅ built | `8827c6b` |
-| api spec (`e2e/promoter-close.spec.ts`) | ✅ built | (this PR) |
+| api spec (`e2e/promoter-close.spec.ts`) | ✅ built | `19f96ee` |
+| cross-review + CI hardening (verified write · auth-before-secret · es-MX · raw-color guard) | ✅ | `bd61869` · `8339b89` |
 
 ### How it was built (reuse map)
 - **Authed close workspace** `/promotor/cerrar` (Clerk- + `promoter.enabled`-gated) — a
