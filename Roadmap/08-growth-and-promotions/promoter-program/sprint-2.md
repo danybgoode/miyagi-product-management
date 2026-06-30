@@ -1,15 +1,26 @@
 # Promoter Program — Sprint 2: One-time payment cadence (the core money change)
 
-**Status:** 🏗️ BUILT on `feat/promoter-program` (deterministic gate green: `tsc` + `npm run build` +
-Playwright `api`). **Risk: HIGH (payments) → Daniel merges; live money-path smoke owed to Daniel.**
-Behind `promoter.enabled` (off) + the existing `domain.paywall_enabled`.
+**Status:** ✅ **MERGED `7d47222` (#140, squash)** on 2026-06-30 — full CI gate green (tsc + build +
+Playwright `api` vs preview) + Codex cross-review applied. **HIGH (payments) — Daniel-authorized merge;
+live money-path smoke still owed to Daniel.** Behind `promoter.enabled` (**off** — whole sprint dark)
++ the existing `domain.paywall_enabled`.
 
-| Story | Status | Commit |
+| Story | Status | Commit (squashed into `7d47222`) |
 |---|---|---|
 | US-4 — One-time cadence for custom domain (+ graceful year-end lapse) | ✅ | `d2c98a7` |
 | US-5 — One-time cadence for printed ad | ✅ | `d8241fb` |
 | US-6 — Cadence selectable over UCP/MCP | ✅ | `2bdc2c7` |
 | api spec (`e2e/promoter-cadence.spec.ts`) | ✅ | `be8b5e1` |
+| anti-monolith extract + flag-gate cadence + cross-review hardening | ✅ | `7131f9b` · `562ea67` · `2521bc1` |
+
+**Cross-review (Codex) applied (`2521bc1`):** the one-time grant write now verifies the shop exists +
+the update matched a row (was a silent 0-row-write money hazard); the lapse fn bails on a missing shop;
+the destructive sweep cron fails **closed** in production when `CRON_SECRET` is unset. Declined nit:
+`buildOneTimeGrant` month-rollover (≤1-day drift at a 1-year expiry is immaterial; lapse is graceful).
+
+**Flag posture:** `promoter.enabled` stays **OFF** until launch — with it off the cadence selector is
+hidden and a crafted `one_time` request is refused, so S2 is fully dark (recurring-only as today). Flip
+it **ON in Production** only to run the smoke below (that same switch is the public launch toggle).
 
 > Goal: a cash-paying merchant can **pay a year up front with no recurring mandate**. Adds a one-time
 > cadence alongside today's recurring SKUs — the enabler for the in-person cash close (Sprint 4).
