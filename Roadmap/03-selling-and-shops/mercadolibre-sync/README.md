@@ -36,8 +36,11 @@ The integration is a **Medusa module** at `apps/backend/src/modules/mercadolibre
 the **product ↔ ML-item linkage**, and the sync service. Stock sync hooks Medusa **Inventory** via a
 **subscriber** (outbound: stock change → ML) and an **ML webhook** (inbound: ML sale/stock → Medusa) —
 never a Supabase mirror of stock. **Import** writes **Medusa products** through the existing internal
-route + supply pipeline. Only **OAuth tokens** (non-commerce) live in Supabase, keyed to the Medusa
-seller (rule #2). SKU stays agent-accessible (rule #3); seller copy es-MX (rule #5); Clerk untouched (#4).
+route + supply pipeline. **OAuth tokens live encrypted (AES-256-GCM) in the Medusa module's Postgres,
+keyed to the Medusa seller** — co-located with the linkage + Inventory (the sync core), so the backend
+needs no Supabase dependency (decided 2026-06-29 with Daniel; supersedes the earlier "tokens in Supabase"
+sketch — the intent, non-commerce credentials encrypted at rest, is preserved). SKU stays
+agent-accessible (rule #3); seller copy es-MX (rule #5); Clerk untouched (#4).
 
 ## What already exists (reuse, don't rebuild)
 - **OAuth + ML API client + webhook shape (reference)** — `references/despachobonsai/lib/mercadolibre.ts`

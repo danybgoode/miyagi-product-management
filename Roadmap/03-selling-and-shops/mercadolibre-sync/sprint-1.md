@@ -1,13 +1,20 @@
 # Mercado Libre sync — Sprint 1: Connect + linkage foundation (the spine)
 
-**Status:** 🟦 READY — not started. Backend-first. No money mutation.
+**Status:** 🟢 BUILT — backend + frontend green, draft PRs open (backend-first). No money mutation.
+Live ML-sandbox OAuth smoke owed to Daniel.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-1 — Connect/disconnect ML (OAuth) as a Medusa module | ⬜ | |
-| US-2 — Product ↔ ML-item linkage model | ⬜ | |
-| US-3 — Connection status + health in `/shop/manage` | ⬜ | |
-| api spec (`e2e/ml-connect.spec.ts`) | ⬜ | |
+| US-1 — Connect/disconnect ML (OAuth) as a Medusa module | ✅ | be `a74bbd3` · fe `1338bb0` |
+| US-2 — Product ↔ ML-item linkage model | ✅ | be `a74bbd3` |
+| US-3 — Connection status + health in `/shop/manage` | ✅ | fe `65fd88d` |
+| api spec (`e2e/ml-connect.spec.ts`) | ✅ | fe `1338bb0` |
+
+> **Architecture note (confirmed with Daniel):** OAuth tokens live **encrypted (AES-256-GCM)
+> in the Medusa module's Postgres**, keyed to the Medusa seller — not Supabase (the epic README's
+> Medusa-first note was updated to match). The connect surface ships **dark** behind the
+> `ml.connect_enabled` Flagsmith enablement flag (default `false`), so S1 merges invisible.
+> **Risk tier: HIGH** (new DB migration + third-party auth credentials) → Daniel merges.
 
 > Goal: a seller can connect their ML account, and the system has the **linkage primitive** every later
 > sync depends on — before any import, publish, or stock movement exists. Reference: despacho's OAuth.
@@ -51,17 +58,26 @@ re-connect prompt; copy is es-MX complete.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge) · ML **sandbox** app
+**Prerequisite (owed to Daniel):** provision the ML env (backend Secret Manager `ML_APP_SECRET`
++ `ML_TOKEN_ENCRYPTION_KEY`, plus `ML_APP_ID`/`ML_REDIRECT_URI` on backend & Vercel), then flip the
+`ml.connect_enabled` flag **ON** in Flagsmith. Until the flag is on, `/shop/manage/mercadolibre`
+returns 404 by design (dark-ship).
 
-1. As a test seller, go to `/shop/manage/...` → "Conectar Mercado Libre" and complete the ML consent.
-   → You're returned connected; the status shows your ML nickname + "conectado".
-2. Inspect the stored connection (admin/db).
-   → Tokens are **encrypted**, keyed to the Medusa seller id; an expiry is set.
-3. Force the token near-expiry and trigger any ML call.
-   → The token **auto-refreshes**; the status "last refresh" updates; nothing is logged in cleartext.
-4. Link a test Medusa product to a dummy ML item id (internal action), then look it up both ways.
-   → Both lookups resolve; a second link to the same pair is **rejected**.
-5. Click "Desconectar".
-   → The connection clears; status shows "no conectado".
+1. As a test seller (flag ON), open **`/shop/manage/mercadolibre`** (or Configuración → the "Mercado
+   Libre" card) → "Conectar Mercado Libre" and complete the ML consent.
+   → You're returned to the status page; it shows your ML **nickname** + "Conectado".
+2. Inspect the stored connection (Medusa admin / DB `ml_connection`).
+   → `access_token_enc`/`refresh_token_enc` are **encrypted** (unreadable), the row is keyed to your
+   Medusa **seller_id**, and `expires_at` is set.
+3. Force the token near-expiry (set `expires_at` within 5 min) and trigger a refresh
+   (`getAccessTokenForSeller`, used by any later ML call).
+   → The token **auto-refreshes**; `last_refreshed_at`/`expires_at` advance; nothing logged in cleartext.
+4. Link a test Medusa product to a dummy ML item id via the internal route
+   (`POST /internal/ml/links`), then look it up both ways (`?product_id=` and `?ml_item_id=`).
+   → Both lookups resolve; a second `POST` of the **same** (product, ml_item) pair returns **409**.
+5. Click "Desconectar" on the status page.
+   → The connection clears (status → "No conectado"); the encrypted token fields are wiped.
 
 If any step fails, note the step number + what you saw — that's the bug report.
-**Auth path:** step 1 (real ML consent) is owed to Daniel.
+**Owed to Daniel:** steps 1–3 (real ML consent + a live token round-trip — a third-party consent
+screen can't be automated). The api gate covers the health/linkage logic + anonymous route shape.
