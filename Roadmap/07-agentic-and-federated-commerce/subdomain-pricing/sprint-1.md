@@ -1,24 +1,34 @@
 # Subdomain pricing — Sprint 1: Gate + entitlement + grandfather (behind flag)
 
-**Status:** 🏗️ BUILT — on `feat/subdomain-pricing`, draft PR open, awaiting Daniel merge.
-**Risk: HIGH (`middleware.ts` + Edge→Node runtime).** Frontend-first, behind the flag (off). Daniel merges.
+**Status:** ✅ MERGED — PR [#145](https://github.com/danybgoode/miyagisanchezcommerce/pull/145)
+squash `3892006`, deployed to prod **inert** (flag off). **Risk: HIGH (`middleware.ts` + Edge→Node
+runtime), Daniel-merged.** Cutover (backfill `--apply` → flip flag) + browser smoke still owed.
 
 | Story | Status | Commit |
 |---|---|---|
 | Step A — pure entitlement seam (`lib/subdomain-entitlement.ts`) | ✅ | `9b3f902` |
 | US-1 — Gate the middleware subdomain branch (301→/s/slug when unpaid) | ✅ | `a703f0d` |
-| US-2 — Grandfather existing shops free at cutover (backfill) | ✅ | `0d1b8b0` |
+| US-2 — Grandfather existing shops free at cutover (backfill) | ✅ | `0d1b8b0` (+ hardening `a60fd86`) |
 | US-3 — Fail-open `subdomain.paywall_enabled` flag | ✅ | `ff8454e` |
 | api spec (`e2e/subdomain-pricing.spec.ts`) | ✅ | `db2bdb5` |
 
-> **Built note.** Gate decision confirmed with Daniel: flag stays in **Flagsmith** (no Vercel Edge
+> **Merged note.** Gate decision confirmed with Daniel: flag stays in **Flagsmith** (no Vercel Edge
 > Config) and the middleware is switched to **`runtime: 'nodejs'`** so `lib/flags.ts` reads in-process
 > (~0ms, ~5-min flip propagation). Non-entitled subdomains **collapse every path** to the apex
 > `/s/slug`. Subdomain entitlement reads its **own** `metadata.subdomain_grant` key (never
-> `custom_domain_grant`); the backfill stamps **all** shops. Deterministic gate green:
-> `tsc` + `npm run build` (proves the Node-runtime middleware bundles the Flagsmith SDK) + the api
-> spec (11/11). Pre-existing-on-`main` deprecation surfaced: Next 16 wants `middleware.ts`→`proxy.ts`
-> (a separate shared-surface migration, not this epic).
+> `custom_domain_grant`); the backfill stamps **all** shops (paginated, validity-checked, row-confirmed).
+> Deterministic gate green at merge: `tsc` + `npm run build` (proves the Node-runtime middleware bundles
+> the Flagsmith SDK) + api spec (11/11) + CI Playwright-vs-preview. **Reviews:** codex cross-review
+> (caught the unpaged-backfill bug → fixed `a60fd86`) + an independent fresh-agent review (nothing
+> blocking; fixed the stale `lib/flags.ts` docstring `c887d81`). **Flagsmith flag created** —
+> `subdomain.paywall_enabled` id **220951**, created **disabled** (Production), awaiting Daniel's flip.
+>
+> **Eyes-open tradeoff (Daniel-approved):** `runtime:'nodejs'` is **global** to the matcher → Node
+> middleware now fronts *every* request, including the static `(site)` homepage. Accepted for S1; a
+> narrower scope (a `proxy.ts` split) is the follow-up if `/` cold-start/cost proves material.
+> **Deferred to S2:** a `lib/subdomain-entitlement-server.ts` composer (mirror of the domain one), once
+> the billing/settings UI needs it. **Pre-existing:** Next 16 wants `middleware.ts`→`proxy.ts` (separate
+> shared-surface migration, not this epic).
 
 > Goal: the paywall works end-to-end with entitlement granted by grandfather/hand — **before any checkout
 > exists** — and can't trap an existing seller. Mirrors `custom-domain-paywall` Sprint 1.
