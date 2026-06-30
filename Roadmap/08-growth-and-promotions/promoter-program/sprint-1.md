@@ -70,9 +70,12 @@ enrollments + sales. Re-running checkout doesn't double-write.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge)
 
-**Pre-req (one-time, owed to Daniel):** (a) run `supabase/migrations/20260629120000_promoter.sql`
-in the Supabase SQL editor; (b) flip **`promoter.enabled` → ON** in Flagsmith. Until both are done
-the seller-facing field stays hidden (fail-open off) and the admin lists are empty.
+**Pre-req:** (a) migration `20260629120000_promoter.sql` — **applied to prod 2026-06-30** ✅;
+(b) **`promoter.enabled`** Flagsmith feature **created 2026-06-30** (id 220525, default off) — flip it
+**ON in Production** to launch; (c) **the seller-facing field only renders on an UNENTITLED shop's
+Canal** (the custom-domain *upsell* block), because `domain.paywall_enabled` is ON in prod — so smoke
+with a test shop that has **no** domain grant / active subscription. The **`/admin/promoter` console is
+NOT flag-gated** and is visible as soon as the deploy lands (independent of the flag).
 
 1. As an **admin**, open `/admin/promoter` → under "Nuevo promotor" type a name (e.g. "María — zona
    centro") and click **Crear promotor**.
@@ -83,7 +86,8 @@ the seller-facing field stays hidden (fail-open off) and the admin lists are emp
 3. Copy the promoter's share link and open it in a private window (it is
    `https://miyagisanchez.com/vende?promo=PRM-XXXXXX`).
    → The page loads normally; the `promo` code is silently captured in a cookie (no visible change).
-4. As a **test seller**, go to **Configuración → Canal propio** (the custom-domain section). In
+4. As a **test seller whose shop is NOT entitled to a custom domain** (no grant / no active
+   subscription), go to **Configuración → Canal propio** (the custom-domain section). In
    "¿Te atendió un promotor?" enter the `PRM-XXXXXX` code and click **Aplicar**.
    → **Before** the "Activar dominio propio" pay button you see:
      *"Descuento de promotor: −$100 · Pagarías $399"*.
