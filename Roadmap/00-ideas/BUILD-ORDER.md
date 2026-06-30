@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-06-26 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-06-30 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -14,9 +14,11 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (3)
 
-_None._
+- [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 0/14 stories
+- [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 0/6 stories
+- [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 0/12 stories
 
 ## ✅ Shipped (65)
 
@@ -98,4 +100,4 @@ _None._
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 66 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 69 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
