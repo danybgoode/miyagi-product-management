@@ -1,13 +1,24 @@
 # Subdomain pricing — Sprint 1: Gate + entitlement + grandfather (behind flag)
 
-**Status:** 🟦 READY — not started. **Risk: HIGH (`middleware.ts`).** Frontend-first. Daniel merges.
+**Status:** 🏗️ BUILT — on `feat/subdomain-pricing`, draft PR open, awaiting Daniel merge.
+**Risk: HIGH (`middleware.ts` + Edge→Node runtime).** Frontend-first, behind the flag (off). Daniel merges.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-1 — Gate the middleware subdomain branch (301→/s/slug when unpaid) | ⬜ | |
-| US-2 — Grandfather existing shops free at cutover (backfill) | ⬜ | |
-| US-3 — Fail-open `subdomain.paywall_enabled` flag | ⬜ | |
-| api spec (`e2e/subdomain-pricing.spec.ts`) | ⬜ | |
+| Step A — pure entitlement seam (`lib/subdomain-entitlement.ts`) | ✅ | `9b3f902` |
+| US-1 — Gate the middleware subdomain branch (301→/s/slug when unpaid) | ✅ | `a703f0d` |
+| US-2 — Grandfather existing shops free at cutover (backfill) | ✅ | `0d1b8b0` |
+| US-3 — Fail-open `subdomain.paywall_enabled` flag | ✅ | `ff8454e` |
+| api spec (`e2e/subdomain-pricing.spec.ts`) | ✅ | `db2bdb5` |
+
+> **Built note.** Gate decision confirmed with Daniel: flag stays in **Flagsmith** (no Vercel Edge
+> Config) and the middleware is switched to **`runtime: 'nodejs'`** so `lib/flags.ts` reads in-process
+> (~0ms, ~5-min flip propagation). Non-entitled subdomains **collapse every path** to the apex
+> `/s/slug`. Subdomain entitlement reads its **own** `metadata.subdomain_grant` key (never
+> `custom_domain_grant`); the backfill stamps **all** shops. Deterministic gate green:
+> `tsc` + `npm run build` (proves the Node-runtime middleware bundles the Flagsmith SDK) + the api
+> spec (11/11). Pre-existing-on-`main` deprecation surfaced: Next 16 wants `middleware.ts`→`proxy.ts`
+> (a separate shared-surface migration, not this epic).
 
 > Goal: the paywall works end-to-end with entitlement granted by grandfather/hand — **before any checkout
 > exists** — and can't trap an existing seller. Mirrors `custom-domain-paywall` Sprint 1.
@@ -53,16 +64,22 @@ on ⇒ US-1/US-2 behavior applies.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com  (or the Vercel preview URL while pre-merge)
 
-1. With `subdomain.paywall_enabled` OFF, open `https://<existing-shop>.miyagisanchez.com`.
+1. With `subdomain.paywall_enabled` OFF (its default), open `https://<existing-shop>.miyagisanchez.com`.
    → Renders white-label exactly as today (nothing changed while the flag is off).
-2. Run the grandfather backfill dry-run, then for real against the target env.
-   → It reports the count of shops stamped; re-running is a no-op (idempotent).
-3. Flip `subdomain.paywall_enabled` ON. Reopen `https://<existing-shop>.miyagisanchez.com`.
+2. Dry-run the backfill, read the count, then apply it against the target env:
+   `node --env-file=.env.local scripts/backfill-subdomain-grandfather.mjs`   (prints "would stamp …")
+   then `node --env-file=.env.local scripts/backfill-subdomain-grandfather.mjs --apply`.
+   → Dry-run writes nothing; `--apply` stamps `metadata.subdomain_grant` on every shop and reports
+     `grandfathered=N`. Re-running `--apply` is a no-op (`skipped(existing grant)=N`, idempotent).
+3. Flip `subdomain.paywall_enabled` ON in Flagsmith (allow ~5 min for propagation). Reopen
+   `https://<existing-shop>.miyagisanchez.com`.
    → Still white-label (grandfathered).
-4. Open a brand-new, non-grandfathered test shop's `https://<new-shop>.miyagisanchez.com`.
+4. Open a brand-new, non-grandfathered test shop's `https://<new-shop>.miyagisanchez.com` (any path).
    → **301 redirects to `https://miyagisanchez.com/s/<new-shop>`** (the free tier).
-5. Open `https://clerk.miyagisanchez.com` / the apex.
-   → Unaffected (auth + apex serve normally).
+5. Open `https://clerk.miyagisanchez.com` / the apex `https://miyagisanchez.com`.
+   → Unaffected (auth + apex serve normally; the gate only touches resolved shop subdomains).
+6. (Rollback drill) Flip `subdomain.paywall_enabled` OFF again.
+   → Within ~5 min the new shop's subdomain serves white-label again — the instant rollback.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 **Risk path:** steps 3–4 change a live universal surface via `middleware.ts` → **owed to Daniel** (and
