@@ -1,9 +1,8 @@
 # Promoter Program — Sprint 4: In-person close (cash collection + claim handoff + resources)
 
-**Status:** 🏗️ BUILT — **draft PR [#143](https://github.com/danybgoode/miyagisanchezcommerce/pull/143),
-full CI gate GREEN** (Type-check + build · Playwright vs preview) + Codex cross-review addressed.
-US-10 + US-11 are HIGH → **Daniel merges**; the money/auth smokes (steps 2 + 4 below) are
-**owed to Daniel**. Branch `feat/promoter-program` off `main` (`fff04ca`).
+**Status:** ✅ MERGED 2026-06-30 — **PR [#143](https://github.com/danybgoode/miyagisanchezcommerce/pull/143)
+squashed to `main` as `e1ba7ad`** (HIGH, Daniel-authorized "merge on green" after full CI gate + Codex
+cross-review). US-10 + US-11 money/auth smokes (steps 2 + 4 below) **owed to Daniel**.
 
 | Story | Status | Commit |
 |---|---|---|

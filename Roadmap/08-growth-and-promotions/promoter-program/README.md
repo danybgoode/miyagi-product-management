@@ -1,13 +1,15 @@
 ---
-status: ready
+status: shipped
 slug: promoter-program
 ---
 
 # Epic · Promoter Program — in-person seller acquisition force (commission-paid)
 
 > Scoped 2026-06-29 from [`00-ideas/2. readyforscope/promoter-program.md`](../../00-ideas/2.%20readyforscope/promoter-program.md).
-> **Status: READY — scaffolded, not started.** Risk **HIGH** (introduces a one-time payment cadence +
-> a commission ledger). Daniel merges HIGH stories. Ships behind `promoter.enabled` (fail-open off).
+> **Status: ✅ SHIPPED 2026-06-30 — all 4 sprints merged to `main`.** Risk **HIGH** (a one-time payment
+> cadence + a commission ledger); Daniel merged the HIGH stories. Live behind `promoter.enabled` (ON in
+> prod, Flagsmith id 220525). Money/auth smokes owed to Daniel (declared per sprint). See `RETROSPECTIVE.md`.
+> S1 [#138](https://github.com/danybgoode/miyagisanchezcommerce/pull/138) `1cea2cb` · S2 [#140](https://github.com/danybgoode/miyagisanchezcommerce/pull/140) `7d47222` · S3 [#141](https://github.com/danybgoode/miyagisanchezcommerce/pull/141) `fff04ca` · S4 [#143](https://github.com/danybgoode/miyagisanchezcommerce/pull/143) `e1ba7ad`.
 
 **Tagline:** *Un promotor entra a la tienda, la deja montada en Miyagi, y cierra la venta en persona.*
 
@@ -76,16 +78,16 @@ order/seller. SKUs stay agent-accessible over UCP/MCP (rule #3); promoter/seller
 that needs it; Stripe webhook. **S3** additive. **S4** reuses S2's money path. **HIGH stories → Daniel
 merges.** Each frontend PR gets a Vercel preview. Announce any `middleware.ts`/shared-surface touch.
 
-## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (money-path smokes owed to Daniel, declared per sprint).
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs).
-- [ ] This README marked ✅; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated (promoter program + one-time cadence + commission).
-- [ ] Team memory + `MEMORY.md` updated.
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] Feature branch deleted; scope-doc frontmatter `status: shipped`.
-- [ ] Fast-follows seeded: `subdomain-pricing`, `ml-sync-port` (spike), `billing-cadence-monthly-recurring`.
+## Definition of Done (epic) — ✅ complete 2026-06-30
+- [x] All sprints merged to `main` + smoke-tested (money-path smokes owed to Daniel, declared per sprint).
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs).
+- [x] This README marked ✅; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated (promoter program + one-time cadence + commission).
+- [x] Team memory + `MEMORY.md` updated.
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
+- [x] Feature branch deleted; scope-doc frontmatter `status: shipped`.
+- [x] Fast-follows seeded: `subdomain-pricing`, `ml-sync-port` (spike), `billing-cadence-monthly-recurring`.
 
 ## Sprints
 - [sprint-1.md](sprint-1.md) — Promoter spine: code + discount + attribution (thin end-to-end).

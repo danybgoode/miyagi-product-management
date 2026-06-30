@@ -1,13 +1,13 @@
 ---
 title: "Promoter Program — in-person seller acquisition force (commission-paid)"
 slug: promoter-program
-status: awaiting-approval
+status: shipped
 area: "08"
 type: feature
 risk: high
 relates_to: "08-growth-and-promotions/referral-program · 03-selling-and-shops/promotions · 03-selling-and-shops/gem-claim-loop · 07-agentic-and-federated-commerce/custom-domain-paywall · 06-print-edition/printed-edition-builder"
 spawns: "subdomain-pricing (fast-follow epic) · ml-sync-port (fast-follow SPIKE→feature) · billing-cadence-monthly-recurring (fast-follow)"
-updated: 2026-06-29
+updated: 2026-06-30
 ---
 
 # Promoter Program — in-person seller acquisition force (commission-paid)

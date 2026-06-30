@@ -448,7 +448,31 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   first sweep missed **four** settings sections carrying their own inline `← Volver al panel` save bars (separate
   from the shared `SectionSaveBar`); the guard surfaced them as stragglers. Use the repo's path idiom
   `fileURLToPath(new URL('..', import.meta.url))` (the Playwright api runner is ESM — bare `__dirname` throws).
-  *(2026-06-23, seller-nav-consolidation S2 — `e2e/seller-breadcrumb.spec.ts`.)*
+  *(2026-06-23, seller-nav-consolidation S2 — `e2e/seller-breadcrumb.spec.ts`.)* **Reconfirmed once more on a
+  net-new feature surface:** a fresh client island's WhatsApp-green `#25D366` button + a `#c00` error-text
+  fallback, plus a print sell-sheet's literal `@media print` hexes, all passed local tsc/build but went red on
+  the preview. Reuse the existing tokens (`--provider-whatsapp`, `--danger`, `--fg-inverse`); add a *genuine*
+  print surface to `guardExcludedFiles` (same email/print-export rationale — print needs literal colors). The
+  rule generalizes: **whenever you add a brand color or a print stylesheet, expect the guard and tokenize first.**
+  *(2026-06-30, promoter-program S4 — `PromoterCloseClient.tsx` + `vende/promotor/sell-sheet`.)*
+- **A flag-gated route guard must (a) assert BOTH flag states and (b) gate auth BEFORE any config/secret
+  check.** Two coupled traps that only surface on the SSO-gated preview, where `promoter.enabled` is ON (a
+  shared-Flagsmith flip flips the preview eval too) and money/secret env vars are prod-only (unset). (a) An
+  api guard asserting "feature hidden ⇒ 404" goes red the moment ops launches the flag — assert `[200,404]` /
+  `[401,404]` so it's agnostic to the live flag value. (b) If the route checks a prod-only secret
+  (`CLAIM_JWT_SECRET`, `MEDUSA_INTERNAL_SECRET`) *before* the auth check, an anonymous guard request gets
+  **500, not 401** (the secret is unset on preview) — red CI. Order is **flag → auth → config-secret**, which
+  also stops a 500 from leaking that a secret is missing. *(2026-06-30, promoter-program S3+S4 — S3 found the
+  both-states rule, S4 the auth-before-secret ordering; `e2e/promoter-close.spec.ts`.)*
+- **"X acts on behalf of Y" usually decouples at the SEAM, not the route — check before forking the money
+  path.** When a new actor (a promoter) must pay/operate on a resource they don't own (a seller's shop), look
+  at whether the existing *builder + webhook* already separate actor from beneficiary (ours grant to a
+  metadata `shop_id`, independent of the payer/`seller_clerk_id`) — the only routes that hardcoded "own shop"
+  were the entry points. Then the whole feature is a new route that supplies the **target** id + a provenance
+  flag (`paidByPromoter`) threaded into the same session metadata + grant note. The hardest-looking
+  requirement needed near-zero new money plumbing; exploring the seam before planning is what surfaced it.
+  *(2026-06-30, promoter-program S4 — `startCustomDomainCheckout` + `handleCustomDomainOneTimeComplete` already
+  decoupled; only `/api/promoter/close/{domain,print}` were new.)*
 - **A write whose result nobody checks is a feature that can silently die.** The gem-claim loop broke
   three ways with zero errors surfaced — a 0-row Supabase `UPDATE` (wrong id namespace: Medusa `sel_…`
   vs mirror UUID) "succeeded", an FK-violating upsert's `error` was never read, and the dead path
