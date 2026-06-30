@@ -1,7 +1,8 @@
 # Subdomain pricing — Sprint 2: Paid yearly checkout + lapse + pricing/SKU/UCP surface
 
-**Status:** 🏗️ BUILT — green gate, draft PRs open. **Risk: HIGH (payments) → Daniel merges.**
-Backend-first deploy. Live money-path browser smoke **owed to Daniel**.
+**Status:** ✅ MERGED 2026-06-30 — be #47 (squash, deployed rev `medusa-web-00120-vrk`) · fe #146.
+**Risk: HIGH (payments).** Owed to Daniel: **prod plan seed** (step 0, money-path) + **live money-path
+browser smoke**. The Canal UI buy button is a deliberate follow-up (see "Not built this sprint").
 
 | Story | Status | Commit |
 |---|---|---|
@@ -67,9 +68,11 @@ Env: production · https://miyagisanchez.com  (or the Vercel preview URL while p
    creds (Cloud Run `MEDUSA_STORE_URL` + `sk_live` + the prod `MEDUSA_INTERNAL_SECRET`).
    → Prints `Medusa plan created/updated … (stripe_price_id=price_…)`. Re-running reuses the same Stripe
      price + plan (idempotent). Until this runs, the recurring buy returns "el plan aún no está disponible".
-1. As a non-grandfathered test seller (subdomain currently 301s to /s/slug), open the subdomain upsell and
-   choose **"Pagar un año"**.
-   → A checkout opens at **$199 MXN/año**; on success Stripe returns to
+1. As a non-grandfathered test seller (subdomain currently 301s to /s/slug), initiate the yearly buy.
+   **NOTE — no Canal UI button ships this sprint** (see "Not built this sprint" below); initiate via the
+   agent path: with a shop agent token call MCP `start_subdomain_subscription` (`{ "cadence": "recurring" }`),
+   which returns a Stripe `checkout_url`. (Or POST `/api/sell/shop/subdomain/subscribe` with a seller session.)
+   → The checkout opens at **$199 MXN/año**; on success Stripe returns to
      `/shop/manage/settings/canal?subdomain=activated`.
 2. Pay with Stripe test card `4242 4242 4242 4242` (one-time option).
    → Within ~minutes `https://<shop>.miyagisanchez.com` serves **white-label** (no longer 301s).
@@ -88,3 +91,14 @@ Env: production · https://miyagisanchez.com  (or the Vercel preview URL while p
 
 If any step fails, note the step number + what you saw — that's the bug report.
 **Money path:** steps 2–4 + 6 are live-money → **owed to Daniel**.
+
+## Not built this sprint (deliberate follow-ups)
+- **Canal "Pagar un año" UI button.** The buy ENGINE (checkout seam, route, webhook, lapse) + the **agent
+  surface** (MCP `start_subdomain_subscription`) ship this sprint, fully gated. The human-facing upsell in
+  `_sections/Canal.tsx` (entitlement-gated states + cadence selector, mirroring the custom-domain block) is
+  **not built** — it's a contained FE follow-up (S3 candidate / fast-follow). Buy is currently
+  route/MCP-only.
+- **Prod plan seed.** `scripts/seed-subdomain-plan.mjs` must run once with prod creds (see step 0) — a live
+  Stripe price + the Medusa plan. **Owed to Daniel** (money-path; the agent's auto-mode blocks it). Until
+  it runs, the recurring buy returns "el plan aún no está disponible" (graceful) and the agent tool reports
+  the SKU isn't available. New shops already 301 (S1), so nothing is broken in the gap.
