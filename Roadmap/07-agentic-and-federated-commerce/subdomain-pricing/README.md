@@ -1,14 +1,18 @@
 ---
-status: ready
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. S1+S2 merged 2026-06-30; S3 (monthly cadence) open.
 slug: subdomain-pricing
 ---
 
 # Epic · Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU
 
 > Scoped 2026-06-29 from [`00-ideas/2. readyforscope/subdomain-pricing.md`](../../00-ideas/2.%20readyforscope/subdomain-pricing.md).
-> **Status: READY — scaffolded, not started.** Risk **HIGH** (the gate is in `middleware.ts`, every
-> request, on a live universal surface). Daniel merges HIGH stories. Behind `subdomain.paywall_enabled`
-> (fail-open off). **Faithful clone of `custom-domain-paywall`** onto the subdomain.
+> **Status: IN-PROGRESS — S1 ✅ MERGED + cutover LIVE (flag ON, 179 grandfathered); S2 ✅ MERGED
+> 2026-06-30 (be #47 · fe #146) — paid yearly checkout engine + agent surface; S3 (monthly cadence)
+> open.** Risk **HIGH** (the gate is in `middleware.ts`, every request, on a live universal surface).
+> Daniel merges HIGH stories. Behind `subdomain.paywall_enabled` (ON). **Faithful clone of
+> `custom-domain-paywall`** onto the subdomain. **Owed to Daniel:** the prod plan seed
+> (`scripts/seed-subdomain-plan.mjs`, money-path) + live money-path smoke + the Canal UI buy button
+> (deliberate FE follow-up — buy is route/MCP-only today). See [sprint-2.md](sprint-2.md).
 
 **Tagline:** *El subdominio deja de ser gratis-para-todos y se vuelve el SKU de entrada del promotor.*
 
@@ -78,6 +82,6 @@ additive. **HIGH stories → Daniel merges.** Announce the `middleware.ts` chang
 - [ ] Feature branch deleted; scope-doc frontmatter `status: shipped`.
 
 ## Sprints
-- [sprint-1.md](sprint-1.md) — Gate + entitlement + grandfather (behind flag, no checkout yet).
-- [sprint-2.md](sprint-2.md) — Paid yearly checkout + lapse + pricing/SKU/UCP surface.
-- [sprint-3.md](sprint-3.md) — Monthly recurring cadence.
+- [sprint-1.md](sprint-1.md) — ✅ MERGED (#145, cutover live) — Gate + entitlement + grandfather (behind flag).
+- [sprint-2.md](sprint-2.md) — ✅ MERGED (be #47 · fe #146) — Paid yearly checkout + lapse + pricing/SKU/UCP surface. Owed: prod seed + Canal UI button + money smoke.
+- [sprint-3.md](sprint-3.md) — ⬜ Monthly recurring cadence ($25/mo).
