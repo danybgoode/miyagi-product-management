@@ -1,13 +1,13 @@
 # Subdomain pricing — Sprint 3: Monthly recurring cadence
 
-**Status:** 🏗️ BUILT — draft PRs open (be #48 · fe #147), gate green. **Risk: HIGH (payments — new
-recurring cadence).** Daniel merges. Owed to Daniel: **monthly prod seed** (`scripts/seed-subdomain-plan.mjs`,
-money-path) + **live money-path smoke** (steps below).
+**Status:** ✅ MERGED 2026-07-01 — be #48 (squash `5353c00`, deployed rev `medusa-web-00121-fq8`) · fe #147
+(squash `d03f93f`). **Risk: HIGH (payments — new recurring cadence).** Owed to Daniel: **monthly prod seed**
+(`scripts/seed-subdomain-plan.mjs`, money-path) + **live money-path smoke** (steps below).
 
 | Story | Status | Commit |
 |---|---|---|
-| US-6 — Monthly recurring cadence ($25/mo) + monthly↔yearly switch + lapse | ✅ built | be `8232cf1` (#48) · fe `feat/subdomain-pricing-s3` (#147) |
-| api spec (`e2e/subdomain-monthly.spec.ts`) | ✅ built | fe (#147) |
+| US-6 — Monthly recurring cadence ($25/mo) + monthly↔yearly switch + lapse | ✅ merged | be `5353c00` (#48) · fe `d03f93f` (#147) |
+| api spec (`e2e/subdomain-monthly.spec.ts`) | ✅ merged | fe `d03f93f` (#147) |
 
 > Goal: a seller can pay **$25/mo** instead of yearly; yearly stays the discounted option. This is the
 > `billing-cadence-monthly-recurring` work, delivered here for the subdomain SKU. (A later epic can

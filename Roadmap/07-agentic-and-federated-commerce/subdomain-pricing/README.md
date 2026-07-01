@@ -1,18 +1,20 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. S1+S2 merged 2026-06-30; S3 (monthly cadence) open.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. S1+S2 merged 2026-06-30; S3 (monthly cadence) merged 2026-07-01.
 slug: subdomain-pricing
 ---
 
 # Epic · Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU
 
 > Scoped 2026-06-29 from [`00-ideas/2. readyforscope/subdomain-pricing.md`](../../00-ideas/2.%20readyforscope/subdomain-pricing.md).
-> **Status: IN-PROGRESS — S1 ✅ MERGED + cutover LIVE (flag ON, 179 grandfathered); S2 ✅ MERGED
-> 2026-06-30 (be #47 · fe #146) — paid yearly checkout engine + agent surface; S3 (monthly cadence)
-> open.** Risk **HIGH** (the gate is in `middleware.ts`, every request, on a live universal surface).
-> Daniel merges HIGH stories. Behind `subdomain.paywall_enabled` (ON). **Faithful clone of
+> **Status: ✅ COMPLETE — all 3 sprints merged.** S1 ✅ MERGED + cutover LIVE (flag ON, 179 grandfathered);
+> S2 ✅ MERGED 2026-06-30 (be #47 · fe #146) — paid yearly checkout engine + agent surface; S3 ✅ MERGED
+> 2026-07-01 (be #48 `5353c00` rev `medusa-web-00121-fq8` · fe #147 `d03f93f`) — monthly cadence ($25/mo) +
+> monthly↔yearly switch. Risk **HIGH** (the gate is in `middleware.ts`, every request, on a live universal
+> surface). Daniel merges HIGH stories. Behind `subdomain.paywall_enabled` (ON). **Faithful clone of
 > `custom-domain-paywall`** onto the subdomain. **Owed to Daniel:** the prod plan seed
-> (`scripts/seed-subdomain-plan.mjs`, money-path) + live money-path smoke + the Canal UI buy button
-> (deliberate FE follow-up — buy is route/MCP-only today). See [sprint-2.md](sprint-2.md).
+> (`scripts/seed-subdomain-plan.mjs`, money-path — now seeds BOTH yearly + monthly prices) + live money-path
+> smoke + the Canal UI buy/switch button (deliberate FE follow-up — buy/switch is route/MCP-only today).
+> See [sprint-3.md](sprint-3.md).
 
 **Tagline:** *El subdominio deja de ser gratis-para-todos y se vuelve el SKU de entrada del promotor.*
 
@@ -72,16 +74,16 @@ change. **Cutover runbook (mirror custom-domain):** merge inert → run grandfat
 additive. **HIGH stories → Daniel merges.** Announce the `middleware.ts` change (shared surface).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (money-path smokes owed to Daniel, declared per sprint).
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs).
-- [ ] This README marked ✅; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated (subdomain now a paid SKU; grandfather note).
-- [ ] Team memory + `MEMORY.md` updated.
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] Feature branch deleted; scope-doc frontmatter `status: shipped`.
+- [x] All sprints merged to `main` + smoke-tested (money-path smokes owed to Daniel, declared per sprint).
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs).
+- [x] This README marked ✅; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated (subdomain now a paid SKU; grandfather note).
+- [x] Team memory + `MEMORY.md` updated.
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
+- [x] Feature branch deleted; scope-doc frontmatter `status: shipped`.
 
 ## Sprints
 - [sprint-1.md](sprint-1.md) — ✅ MERGED (#145, cutover live) — Gate + entitlement + grandfather (behind flag).
 - [sprint-2.md](sprint-2.md) — ✅ MERGED (be #47 · fe #146) — Paid yearly checkout + lapse + pricing/SKU/UCP surface. Owed: prod seed + Canal UI button + money smoke.
-- [sprint-3.md](sprint-3.md) — 🏗️ BUILT (draft PRs be #48 · fe #147) — Monthly cadence ($25/mo) + monthly↔yearly switch. Owed: prod monthly seed + money smoke.
+- [sprint-3.md](sprint-3.md) — ✅ MERGED (be #48 `5353c00` · fe #147 `d03f93f`) — Monthly cadence ($25/mo) + monthly↔yearly switch. Owed: prod monthly seed + money smoke.

@@ -464,6 +464,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   **500, not 401** (the secret is unset on preview) — red CI. Order is **flag → auth → config-secret**, which
   also stops a 500 from leaking that a secret is missing. *(2026-06-30, promoter-program S3+S4 — S3 found the
   both-states rule, S4 the auth-before-secret ordering; `e2e/promoter-close.spec.ts`.)*
+- **Split "coerce a blank input to a default" vs "reject it" by whether the action is a PURCHASE or a
+  MUTATION.** The same field (a billing `interval`) wants opposite defaulting on two money paths: a *buy* can
+  safely back-compat a missing/blank interval to the discounted default (buying yearly is harmless), but a
+  cadence *switch* is a money **mutation** — a malformed body or agent call defaulting to yearly would move a
+  seller's plan + prorate behind their back, so the switch must **reject** an invalid interval (400 via a
+  strict `asX` narrow) rather than coerce it. A cross-review (codex) flagged exactly this on a green PR. Same
+  family as the flag→auth→secret ordering above: on a money surface, a permissive default is a latent bug.
+  *(2026-06-30, subdomain-pricing S3 — `switchSubdomainCadence` uses strict `asSubdomainInterval`; the buy
+  path keeps `coerceSubdomainInterval`.)*
 - **"X acts on behalf of Y" usually decouples at the SEAM, not the route — check before forking the money
   path.** When a new actor (a promoter) must pay/operate on a resource they don't own (a seller's shop), look
   at whether the existing *builder + webhook* already separate actor from beneficiary (ours grant to a
@@ -1020,6 +1029,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   authoritative cap** — a campaign coupon capped at N refuses the (N+1)th server-side even under a race; a
   pure app-side pre-check (`timesRedeemed < max`) is only for a clean message, never the guarantee.
   *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`, `lib/domain-coupon.ts` pure + Stripe server seam.)*
+- **A new billing INTERVAL (monthly beside yearly) on a subscription SKU is a second Stripe price on the SAME
+  plan — never a second plan row.** One plan keeps the two hardest things trivially correct: the entitlement
+  read (still lists subscriptions by one `plan_id`) and — crucially — a cadence **switch**, which becomes a
+  `stripe.subscriptions.update` price-swap on the **same** subscription (`proration_behavior:'create_prorations'`
+  ⇒ no double charge; same `stripe_subscription_id` ⇒ no entitlement gap; **no Medusa row rewrite** — the read
+  is liveness-based, interval-agnostic). Store the alt price where the plan-by-kind reader already looks (the
+  plan's `metadata`, the column stays the original interval), and in the activation webhook resolve the plan
+  **by kind**, NOT by `by-stripe-price` — otherwise a monthly-priced subscription (whose price ≠ the plan's
+  column) misses the shared lookup, and you'd be tempted to touch that shared route (also used by seller-
+  listing + custom-domain subs). Before scoping the new cadence, grep the reuse target: the S2 webhook +
+  entitlement seam were already **interval-agnostic** (branch on `kind==='subdomain'` / a boolean
+  `hasActiveSubscription`), so the "reuse the lapse logic" AC needed **zero code** — the whole sprint was a
+  price + the switch. *(2026-07-01, subdomain-pricing S3 — `metadata.monthly_stripe_price_id` on the one
+  `subdomain_plan`; `lib/subdomain-switch.ts`; webhook `handleSubdomainSubscriptionComplete` resolves by kind.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole

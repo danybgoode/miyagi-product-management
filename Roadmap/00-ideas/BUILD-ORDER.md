@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-06-30 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-01 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -14,11 +14,11 @@
 
 - [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 0/14 stories
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 0/6 stories
+_None._
 
-## ✅ Shipped (66)
+## ✅ Shipped (67)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -56,6 +56,7 @@
 - [Own channel: full shop experience (own-shop-experience)](../../07-agentic-and-federated-commerce/own-shop-experience/README.md) — 07 Agentic/Federated · 6/8 stories · risk: Low · Wave 3
 - [Pretty URL: customizable shop slug (custom-slugs)](../../07-agentic-and-federated-commerce/custom-slugs/README.md) — 07 Agentic/Federated · 0/5 stories
 - [Short links (`mschz.org/shop` and `mschz.org/product`)](../../07-agentic-and-federated-commerce/short-links/README.md) — 07 Agentic/Federated · 0/4 stories
+- [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 0/6 stories
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 0/3 stories · risk: Low
 - [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 0/12 stories
