@@ -1,7 +1,7 @@
 # Sprint 2 — Admin control surface
 
-**Status: ✅ BUILT 2026-07-01** (draft PR, risk **LOW**) — deterministic gate green (tsc + build + 35 pure api
-specs). Authed 200-upsert + `admin_audit_log` render + the `checkout.stripe_enabled` money flip are **owed to
+**Status: ✅ BUILT 2026-07-01** (draft PR **#151**, risk **LOW**) — deterministic gate green (tsc + build + 35
+pure api specs). Authed 200-upsert + `admin_audit_log` render + the `checkout.stripe_enabled` money flip are **owed to
 Daniel** (smoke §3–§5). Stories: S2.0 `204ea23` · S2.1 `187171f` · S2.2 `838bc3b`.
 
 > **Note — 11 flags, not 10.** `ml.sync_enabled` (ML S4, #148) joined `FlagKey` after this doc's scaffold;
