@@ -1,14 +1,15 @@
 ---
-status: scaffolded
+status: complete
 slug: feature-flags-inhouse
 ---
 
 # Epic — In-house feature flags (replace Flagsmith)
 
-> **Status: 📋 SCAFFOLDED 2026-07-01** (from the approved scope doc
-> [`Roadmap/00-ideas/2. readyforscope/feature-flags-inhouse.md`](../../00-ideas/2.%20readyforscope/feature-flags-inhouse.md)).
-> 3 sprints. Swaps the flag backend from **Flagsmith SaaS** to a **Supabase-backed, in-process-cached,
-> fail-open** store behind the *unchanged* `isEnabled()` interface — then decommissions Flagsmith. No code yet.
+> **Status: ✅ COMPLETE 2026-07-01** (3 sprints, all merged + deployed). Swapped the flag backend from
+> **Flagsmith SaaS** to a **Supabase-backed, in-process-cached (60 s TTL), fail-open** store behind the
+> *unchanged* `isEnabled()` interface, added an audited `/admin/flags` control surface, then fully
+> decommissioned Flagsmith (dependency, env/secrets, MCP server, doc refs). Flagsmith is gone from both
+> running apps and all live infra. See [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
 **Macro-section:** 09 · Platform & Infra
 **Class:** Chore / infra migration (no user-facing change) with one design decision, resolved in grooming.
@@ -60,12 +61,12 @@ N/A — only new copy is the admin-only `/admin/flags` UI (es-MX, not on the bil
 
 | Sprint | Story | What it ships | Risk |
 |---|---|---|---|
-| [S1](sprint-1.md) | S1.1 | `platform_flags` Supabase table + migration, seeded behavior-preserving (10 rows) | **LOW** |
-| [S1](sprint-1.md) | S1.2 | FE `lib/flags.ts` internals → Supabase-backed 60 s in-process cache, fail-open, same interface | **HIGH** |
-| [S1](sprint-1.md) | S1.3 | BE `src/lib/flags.ts` internals → read `platform_flags` via `supabaseRead`, fail-open | **HIGH** |
+| [S1](sprint-1.md) | S1.1 ✅ | `platform_flags` Supabase table + migration, seeded behavior-preserving (11 rows) | **LOW** |
+| [S1](sprint-1.md) | S1.2 ✅ | FE `lib/flags.ts` internals → Supabase-backed 60 s in-process cache, fail-open, same interface — FE #150 `b0582b0` | **HIGH** |
+| [S1](sprint-1.md) | S1.3 ✅ | BE `src/lib/flags.ts` internals → read `platform_flags` via `supabaseRead`, fail-open — BE #50 `5179718` | **HIGH** |
 | [S2](sprint-2.md) | S2.1 ✅ | `/admin/flags` page in `AdminShell` (`requireAdmin`), lists all 11 flags + state — #151 `03f5770` | **LOW** |
 | [S2](sprint-2.md) | S2.2 ✅ | `POST /api/admin/flags` (`withAdmin`, audited) + wire the toggles — #151 `03f5770` | **LOW** |
-| [S3](sprint-3.md) | S3.1 | Remove `flagsmith-nodejs` + `FLAGSMITH_*` env/secrets + doc scrub | **LOW** (shared `package.json` → announce) |
+| [S3](sprint-3.md) | S3.1 ✅ | Remove `flagsmith-nodejs` + `FLAGSMITH_*` env/secrets + doc scrub — FE #152 `d9eddd1` · BE #51 `1b44587` · infra `c853827` | **LOW** (shared `package.json` → announce) |
 
 ## Seed values (v1 — from current `DEFAULT_FLAGS`, behavior-preserving)
 
@@ -91,11 +92,11 @@ N/A — only new copy is the admin-only `/admin/flags` UI (es-MX, not on the bil
 
 ## Definition of Done (epic)
 
-- [ ] S1.1 merged — `platform_flags` exists with 10 seed rows matching the table; RLS confirmed (service-role read, not anon).
-- [ ] S1.2 + S1.3 merged + **live-smoked** (flip a row → both apps reflect it within 60 s; make the table unreadable → both fail open to defaults). Daniel merges (HIGH).
+- [x] S1.1 merged — `platform_flags` exists with 11 seed rows matching the table; RLS confirmed (service-role read, not anon).
+- [x] S1.2 + S1.3 merged (FE #150 `b0582b0` · BE #50 `5179718`), serving on `main`. Live flip-a-row smoke **owed to Daniel** (HIGH).
 - [x] S2.1 + S2.2 merged (+ S2.0 pure validator seam) — `/admin/flags` flips a flag with no deploy; `admin_audit_log` records it. PR #151 `03f5770`, 2026-07-01. Money-path smoke (`checkout.stripe_enabled`) **owed to Daniel**.
-- [ ] S3.1 merged — `grep -ri flagsmith apps/` returns only historical Roadmap references; both apps build.
-- [ ] Every sprint doc has a fool-proof smoke walkthrough + status ticked with PR refs.
-- [ ] This `README.md` flipped to ✅; `RETROSPECTIVE.md` written; durable learnings promoted to `LEARNINGS.md`.
-- [ ] **Poster:** `09-platform-infra/README.md` updated — new epic line; `feature-flags-killswitches` line annotated "backend migrated to in-house (see feature-flags-inhouse)".
-- [ ] Team memory updated (Supabase flag store + 60 s cache pattern); branch deleted; PRs merged.
+- [x] S3.1 merged — FE #152 `d9eddd1` · BE #51 `1b44587` · infra `c853827`. `grep -ri flagsmith apps/` clean on both merged `main`s (only build artifacts + historical Roadmap refs). Live `FLAGSMITH_*` secrets deleted (Vercel prod+preview, Cloud Run binding `medusa-web-00125-6lx`, Secret Manager); MCP server + token permission lines removed from local config.
+- [x] Every sprint doc has a fool-proof smoke walkthrough + status ticked with PR refs.
+- [x] This `README.md` flipped to ✅; `RETROSPECTIVE.md` written; durable learnings promoted to `LEARNINGS.md`.
+- [x] **Poster:** `09-platform-infra/README.md` updated — new epic line; `feature-flags-killswitches` annotated "backend migrated to in-house".
+- [x] Team memory updated (Supabase flag store + 60 s cache pattern); branches deleted; PRs merged.

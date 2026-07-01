@@ -71,6 +71,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   can't be fast-forwarded. Confirm with `git cat-file -e origin/main:<a-file-the-sprint-added>` (changes are
   on main) and branch the next sprint cleanly: `feat/<epic>-s2` off `origin/main`. *(2026-06-09,
   trust-messaging-polish S2 — S1's #64 squashed → S2 on `feat/trust-messaging-polish-s2`.)*
+- **To verify "is the prior sprint serving?", reason off `origin/main` — never the working tree — and read
+  PR *state*, not branch commits (a squash-merge looks "unmerged").** Local app checkouts routinely sit on
+  *other* agents' branches, so on-disk files lie about `main`: a decommission sprint opened with `flags.ts`
+  still importing the very dependency it was there to remove — a pure stale-checkout artifact, not reality.
+  Worse, a sub-agent that trusted a **stale local `origin/main`** misread a squash-merged prior sprint as
+  "unmerged" (the branch's individual commits aren't on main — only the squash commit is). Confirm with
+  `gh pr view <#> --json state,mergeCommit` + `gh api repos/<o>/<r>/contents/<path>?ref=main`, or `git fetch`
+  then `git grep <x> origin/main` — an `ls`/working-tree read is not evidence about `main`. *(2026-07-01,
+  feature-flags-inhouse S3 — both app trees parked on sibling epics' branches; squash-merged S2 misread.)*
+- **Decommissioning a dependency is bigger than the `package.json` line — the acceptance grep is the real
+  bar, and post-swap comments go stale.** Removing Flagsmith meant an acceptance of `grep -ri flagsmith apps/`
+  clean, which forced scrubbing ~30 comment/spec/script/migration mentions, not just the two `flags.ts`.
+  Several comments were *factually wrong* after the earlier reader-swap sprint (they claimed a helper avoids
+  pulling in `flagsmith-nodejs` when the reader now imports Supabase) — rewrite comments for the **new**
+  reality, don't blind find-replace. *(2026-07-01, feature-flags-inhouse S3.)*
 - **Concurrent planning commits in a shared worktree collide the git index.** App code already gets isolated
   `git worktree`s (`.worktrees/`) — but *planning/scaffold* commits ran in the shared root worktree, so two
   sessions' `git add` raced ("another git process is running" / index lock; commits interleaved). Fix, two
@@ -148,6 +163,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   **ERROR** ("secret not found"). Reconcile against `gcloud run services describe` (compare the env-name set +
   secret-name set) and **lock parity with a static guard**. *(2026-06-12, backend-prod-readiness S4 — `deploy.sh`
   was missing 3 live secrets + bound `ENVIA_SANDBOX` as a non-existent secret; `infra/gcp/test/deploy-invariants.test.js`.)*
+  **Corollary — RETIRING a secret is a same-change trio + a strict live order.** To remove a Cloud Run secret
+  cleanly: drop it from `deploy.sh` `--set-secrets` **and** the drift-guard `node:test`'s expected set in the
+  **same** change (else the static guard reds; and because `--set-secrets` *replaces*, a stale binding makes a
+  future full run ERROR "secret not found"). Then, live, in order: `gcloud run services update
+  --remove-secrets=X` **first** — the new revision must boot *without* it, which proves nothing reads it — and
+  only **then** `gcloud secrets delete X`. Deleting the secret first would fail-close any new revision on an
+  unresolvable `:latest`. A dep whose reader was already swapped out is dead weight the moment nothing imports
+  it, so the running revision already ignores the secret — removal is safe once the swap merged. *(2026-07-01,
+  feature-flags-inhouse S3 — retired `FLAGSMITH_ENVIRONMENT_KEY`; revision `medusa-web-00125-6lx` booted clean.)*
 - **A `:latest` Secret-Manager binding re-resolves on EVERY new revision — and `latest` = highest-NUMBER, not
   highest-ENABLED.** Two coupled traps from the Cloud SQL cutover. (1) Cloud Run binds `DATABASE_URL:latest`,
   and because image-only deploys *also* re-resolve it, **staging a future-cutover value as the enabled `latest`
