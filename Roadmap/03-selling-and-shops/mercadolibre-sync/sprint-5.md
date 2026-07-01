@@ -1,16 +1,26 @@
 # Mercado Libre sync — Sprint 5: Resilience, observability & paid-SKU gating
 
-**Status:** 🟩 BUILT (US-13 + US-14) — draft PRs, deterministic gate green, dark-shipped. **US-15 deferred**
-to a follow-up sprint (its own HIGH-risk migration PR). Scoped 2026-07-01 with Daniel: build US-13 + US-14
-only; US-14 depth = the read-side gate + promoter-SKU registration (the live Stripe money path is a deferred
-fast-follow).
+**Status:** ✅ **MERGED + DEPLOYED (dark) 2026-07-01** (US-13 + US-14). CI green, codex cross-review clean
+(should-fixes applied), squash-merged be #52 `2b81fa5` (Cloud Run) · fe #153 `20e100f` (Vercel). Dark behind
+`ml.sync_enabled`; the paywall gate is inert until `ml.sync_paywall_enabled` is flipped. **US-15 deferred** to
+a follow-up sprint (its own HIGH-risk migration PR). Scoped 2026-07-01 with Daniel: build US-13 + US-14 only;
+US-14 depth = the read-side gate + promoter-SKU registration (the live Stripe money path is a deferred fast-follow).
 
 | Story | Status | Commit |
 |---|---|---|
-| US-13 — Token-refresh recovery + re-auth surfaces + sync activity log | ✅ BUILT | be `e6a1c88` · fe `e9c4567` |
-| US-14 — Paid/promoter-SKU entitlement gate (gate + SKU registration) | ✅ BUILT | fe `e9c4567` |
+| US-13 — Token-refresh recovery + re-auth surfaces + sync activity log | ✅ MERGED | be #52 `2b81fa5` · fe #153 `20e100f` |
+| US-14 — Paid/promoter-SKU entitlement gate (gate + SKU registration) | ✅ MERGED | fe #153 `20e100f` |
 | US-15 — Durable sync-state table (crash-safe, clobber-proof idempotency) | ⬜ DEFERRED | — (own follow-up PR) |
-| api spec (`e2e/ml-resilience-gate.spec.ts`) | ✅ | fe `e9c4567` |
+| api spec (`e2e/ml-resilience-gate.spec.ts`) | ✅ MERGED | fe #153 `20e100f` |
+
+> **Owed post-deploy (dark-safe, run before enabling sync):**
+> 1. **BE migration — REQUIRED for the activity log.** `medusa db:migrate` against **prod Cloud SQL** creates
+>    `ml_sync_event` (the Cloud Run deploy is image-only — no auto-migrate; in-VPC private IP ⇒ run via the
+>    connector-attached Cloud Run Job, per LEARNINGS). Until then `recordSyncEvent` is a best-effort no-op
+>    (try/catch swallows the missing-table error) — nothing breaks, but the log stays empty.
+> 2. **FE Supabase seed — OPTIONAL (behavior-preserving).** `20260701210000_ml_sync_paywall_flag.sql` seeds
+>    `ml.sync_paywall_enabled=false`. The flag already fail-opens `false`, and `/admin/flags` upserts the row
+>    on first toggle, so this is cosmetic (makes the flag show in the admin table before it's ever flipped).
 
 > Goal: the integration recovers from real-world failures and the seller can see what it's doing; and ML
 > sync can be turned into a paid/promoter SKU when you want to monetize it.

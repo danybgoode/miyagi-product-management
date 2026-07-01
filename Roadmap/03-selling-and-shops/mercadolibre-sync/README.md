@@ -104,4 +104,11 @@ after. S5 hardens + gates. Announce shared-surface touches.
   webhooks (polls ML orders) + re-mirrors + Telegram drift alerts. Two safe-direction concurrency residuals
   documented → **S5 US-15** (durable idempotency table). Owed: live ML-sandbox oversell smoke + flag flip +
   webhook registration.
-- ⬜ [sprint-5.md](sprint-5.md) — Resilience, observability & paid-SKU gating.
+- ✅ [sprint-5.md](sprint-5.md) — Resilience, observability & paid-SKU gating. **MERGED (dark) 2026-07-01** —
+  be #52 `2b81fa5` (Cloud Run) · fe #153 `20e100f` (Vercel). **US-13** token re-auth recovery (`needs_reauth`
+  health + `ML_REAUTH_REQUIRED` — no more silent 502s) + per-seller `ml_sync_event` activity log (backend
+  module, token-redacted). **US-14** paid/promoter-SKU entitlement gate — `lib/ml-sync-entitlement*` on the
+  `ml_sync_grant` key + new fail-safe `ml.sync_paywall_enabled` flag + gated `/api/sell/ml/sync-settings`
+  toggle/upsell + `ml_sync` registered as a promoter SKU (comp-grant entitles testers). Codex cross-review
+  clean. **US-15 deferred** (durable idempotency table, own PR). Owed: prod `medusa db:migrate` (ml_sync_event)
+  + the live revoke-token / entitlement browser smokes.
