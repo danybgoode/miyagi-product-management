@@ -84,4 +84,4 @@ additive. **HIGH stories → Daniel merges.** Announce the `middleware.ts` chang
 ## Sprints
 - [sprint-1.md](sprint-1.md) — ✅ MERGED (#145, cutover live) — Gate + entitlement + grandfather (behind flag).
 - [sprint-2.md](sprint-2.md) — ✅ MERGED (be #47 · fe #146) — Paid yearly checkout + lapse + pricing/SKU/UCP surface. Owed: prod seed + Canal UI button + money smoke.
-- [sprint-3.md](sprint-3.md) — ⬜ Monthly recurring cadence ($25/mo).
+- [sprint-3.md](sprint-3.md) — 🏗️ BUILT (draft PRs be #48 · fe #147) — Monthly cadence ($25/mo) + monthly↔yearly switch. Owed: prod monthly seed + money smoke.
