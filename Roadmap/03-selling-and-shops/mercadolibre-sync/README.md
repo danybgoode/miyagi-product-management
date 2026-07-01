@@ -111,4 +111,13 @@ after. S5 hardens + gates. Announce shared-surface touches.
   `ml_sync_grant` key + new fail-safe `ml.sync_paywall_enabled` flag + gated `/api/sell/ml/sync-settings`
   toggle/upsell + `ml_sync` registered as a promoter SKU (comp-grant entitles testers). Codex cross-review
   clean. **US-15 deferred** (durable idempotency table, own PR). Owed: prod `medusa db:migrate` (ml_sync_event)
-  + the live revoke-token / entitlement browser smokes.
+  + the live revoke-token / entitlement browser smokes. ✅ **Post-deploy DONE 2026-07-01:** all 5 `ml.*` flags ON
+  in prod; the `ml_sync_event` migration auto-applied on boot (entrypoint `medusa db:migrate`, revision
+  `medusa-web-00127-l5p`, `✔ Migrated Migration20260701200527`); `ml.sync_paywall_enabled` seed reconciled.
+- 🟩 [sprint-6.md](sprint-6.md) — Make ML sync obtainable + discoverable (fast-follow). **BUILT — draft PRs
+  be #53 · fe #154 `1560545`.** Faithful clone of the subdomain money path onto `ml_sync` ($299/yr one-time +
+  $30/mo subscription). **US-16** seller-nav entry + upsell CTA→real checkout (was the confusing `/vende/promotor`
+  link). **US-17** self-serve purchase (backend plan + subscription routes, webhook `ML_SYNC` handlers +
+  lifecycle, subscription wired into the gate, buy route, seed script). **US-18** promoter close route (UI picker
+  deferred). **US-19** admin comp-grant generalized to any SKU (custom_domain/subdomain/ml_sync). Gate green
+  (28/28 pure). Owed: prod Stripe seed (`seed-ml-sync-plan.mjs`, Daniel) **before** FE deploy + live money smokes.
