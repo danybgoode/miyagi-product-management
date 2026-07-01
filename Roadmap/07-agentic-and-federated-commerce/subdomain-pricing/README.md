@@ -11,9 +11,8 @@ slug: subdomain-pricing
 > 2026-07-01 (be #48 `5353c00` rev `medusa-web-00121-fq8` · fe #147 `d03f93f`) — monthly cadence ($25/mo) +
 > monthly↔yearly switch. Risk **HIGH** (the gate is in `middleware.ts`, every request, on a live universal
 > surface). Daniel merges HIGH stories. Behind `subdomain.paywall_enabled` (ON). **Faithful clone of
-> `custom-domain-paywall`** onto the subdomain. **Owed to Daniel:** the prod plan seed
-> (`scripts/seed-subdomain-plan.mjs`, money-path — now seeds BOTH yearly + monthly prices) + live money-path
-> smoke + the Canal UI buy/switch button (deliberate FE follow-up — buy/switch is route/MCP-only today).
+> `custom-domain-paywall`** onto the subdomain. **Prod seed DONE** (both prices, 2026-07-01); **Canal
+> buy/switch UI shipped** (fe #149 `6d6b13b`). **Only owed to Daniel:** the live money-path smoke.
 > See [sprint-3.md](sprint-3.md).
 
 **Tagline:** *El subdominio deja de ser gratis-para-todos y se vuelve el SKU de entrada del promotor.*

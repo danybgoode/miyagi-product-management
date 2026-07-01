@@ -442,6 +442,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   line cap, or if a banned filename reappears. Set the cap above the current largest file with headroom
   (e.g. settings cap 1,200 vs largest section ~1,063 vs the deleted ~4,076-line monolith). *(2026-06-10,
   Shop Settings refactor S4 — `lib/shop-settings/monolith-guard.ts`, `e2e/shop-settings-no-monolith.spec.ts`.)*
+  **When the guard trips because an orchestrator file has crept up to the cap, DECOMPOSE — don't bump the
+  cap (that's the erosion the guard exists to stop).** An orchestrator that composes many sub-sections
+  (Canal.tsx) drifts up over successive epics; the day a new feature tips it over, extract — the new
+  feature's section AND, to reclaim headroom, an existing sibling (extract the new block's *twin* so the
+  file keeps a parallel structure). CI caught Canal at 1,196/1,200: adding the subdomain buy/switch section
+  needed extracting *both* `SubdomainSection` and (verbatim, behavior-preserving) the existing
+  `DomainPaywallUpsell`, dropping Canal to 1,117. A near-cap file means the next feature pays a small
+  extraction tax — that's the guard working, not a blocker. *(2026-07-01, subdomain-pricing Canal UI — fe #149.)*
   **And it converts a one-time "grep to zero" cleanup into a permanent invariant — after consolidating N bespoke
   back-links onto a shared `<SellerBreadcrumb>`, an fs-guard scanning the surface dir for the banned strings
   (`← Panel` / `← Mi tienda` / `← Volver al panel`) fails CI if any reappears. It earned its keep instantly: the

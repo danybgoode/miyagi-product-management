@@ -70,16 +70,20 @@ _(Promoted to `Roadmap/LEARNINGS.md` — see there for the durable one-liners.)_
   — the "reuse the lapse logic" AC needed no code. Read the seam you're told to reuse before assuming it needs
   extending.
 
+## Follow-up shipped after epic close — Canal buy/switch UI (fe #149 `6d6b13b`, 2026-07-01)
+The deferred human-facing UI landed as a fast-follow. `SubdomainSection.tsx` in shop settings › Canal:
+not-entitled → buy upsell ($199/yr vs $25/mo selector); active recurring sub → monthly↔yearly switch
+buttons (in-place, prorated); grant → "incluido" note. Loader resolves the entitlement/subscription props.
+**Lesson (promoted to LEARNINGS):** the anti-monolith guard tripped because `Canal.tsx` was already at
+1196/1200 — the fix was to decompose (extract `SubdomainSection` **and**, to make room, the existing
+custom-domain upsell into `DomainPaywallUpsell`, verbatim), not to bump the cap. Buying/switching is now
+UI-driven, not route/MCP-only.
+
 ## Gaps / follow-ups (owed to Daniel)
-- **Prod monthly seed (money-path, auto-mode blocks it):** run `node scripts/seed-subdomain-plan.mjs` once
-  with **prod** creds (Cloud Run `MEDUSA_STORE_URL` + `sk_live` + prod `MEDUSA_INTERNAL_SECRET`) — it now
-  creates/reuses BOTH the yearly + monthly Stripe price and merges the monthly one into the plan metadata
-  (idempotent). Until it runs, the monthly buy degrades gracefully to "el plan aún no está disponible" (new
-  shops already 301 from S1 — nothing broken). The **S2 yearly seed** may also still be owed.
-- **Live money-path smoke (can't automate Stripe subscription lifecycle):** the `sprint-3.md` walkthrough —
-  buy $25/mo → white-label; simulated renewal stays live; cancel/fail → 301 lapse, no orphan charge;
-  monthly→yearly switch → continuous entitlement + proration credit, no double charge. Plus the S2 yearly
-  money smoke.
-- **Canal UI (deferred by decision):** the human-facing buy/cadence-selector + "switch cadence" control in
-  `_sections/Canal.tsx` (mirroring the custom-domain block). Buy + switch are route/MCP-only today.
-- **Deferred:** generalizing the monthly cadence to the **custom domain** SKU (a later epic, if desired).
+- **Live money-path smoke (can't automate Stripe subscription lifecycle) — the ONLY remaining item:** the
+  `sprint-3.md` walkthrough, now runnable from the Canal UI — buy $25/mo → white-label; simulated renewal
+  stays live; cancel/fail → 301 lapse, no orphan charge; monthly→yearly switch → continuous entitlement +
+  proration credit, no double charge. Plus the S2 yearly money smoke.
+- ✅ **Prod seed DONE** (Daniel ran `seed-subdomain-plan.mjs` 2026-07-01 — both yearly + monthly prices live).
+- ✅ **Canal UI DONE** (fe #149).
+- **Deferred (by decision):** generalizing the monthly cadence to the **custom domain** SKU (a later epic).
