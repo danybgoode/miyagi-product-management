@@ -63,8 +63,8 @@ N/A — only new copy is the admin-only `/admin/flags` UI (es-MX, not on the bil
 | [S1](sprint-1.md) | S1.1 | `platform_flags` Supabase table + migration, seeded behavior-preserving (10 rows) | **LOW** |
 | [S1](sprint-1.md) | S1.2 | FE `lib/flags.ts` internals → Supabase-backed 60 s in-process cache, fail-open, same interface | **HIGH** |
 | [S1](sprint-1.md) | S1.3 | BE `src/lib/flags.ts` internals → read `platform_flags` via `supabaseRead`, fail-open | **HIGH** |
-| [S2](sprint-2.md) | S2.1 | `/admin/flags` page in `AdminShell` (`requireAdmin`), lists all flags + state | **LOW** |
-| [S2](sprint-2.md) | S2.2 | `POST /api/admin/flags` (`withAdmin`, audited) + wire the toggles | **LOW** |
+| [S2](sprint-2.md) | S2.1 ✅ | `/admin/flags` page in `AdminShell` (`requireAdmin`), lists all 11 flags + state — #151 `03f5770` | **LOW** |
+| [S2](sprint-2.md) | S2.2 ✅ | `POST /api/admin/flags` (`withAdmin`, audited) + wire the toggles — #151 `03f5770` | **LOW** |
 | [S3](sprint-3.md) | S3.1 | Remove `flagsmith-nodejs` + `FLAGSMITH_*` env/secrets + doc scrub | **LOW** (shared `package.json` → announce) |
 
 ## Seed values (v1 — from current `DEFAULT_FLAGS`, behavior-preserving)
@@ -93,7 +93,7 @@ N/A — only new copy is the admin-only `/admin/flags` UI (es-MX, not on the bil
 
 - [ ] S1.1 merged — `platform_flags` exists with 10 seed rows matching the table; RLS confirmed (service-role read, not anon).
 - [ ] S1.2 + S1.3 merged + **live-smoked** (flip a row → both apps reflect it within 60 s; make the table unreadable → both fail open to defaults). Daniel merges (HIGH).
-- [ ] S2.1 + S2.2 merged — `/admin/flags` flips a flag with no deploy; `admin_audit_log` records it. Money-path smoke (`checkout.stripe_enabled`) **owed to Daniel**.
+- [x] S2.1 + S2.2 merged (+ S2.0 pure validator seam) — `/admin/flags` flips a flag with no deploy; `admin_audit_log` records it. PR #151 `03f5770`, 2026-07-01. Money-path smoke (`checkout.stripe_enabled`) **owed to Daniel**.
 - [ ] S3.1 merged — `grep -ri flagsmith apps/` returns only historical Roadmap references; both apps build.
 - [ ] Every sprint doc has a fool-proof smoke walkthrough + status ticked with PR refs.
 - [ ] This `README.md` flipped to ✅; `RETROSPECTIVE.md` written; durable learnings promoted to `LEARNINGS.md`.

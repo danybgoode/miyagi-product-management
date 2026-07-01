@@ -1,8 +1,12 @@
 # Sprint 2 — Admin control surface
 
-**Status: ✅ BUILT 2026-07-01** (draft PR **#151**, risk **LOW**) — deterministic gate green (tsc + build + 35
-pure api specs). Authed 200-upsert + `admin_audit_log` render + the `checkout.stripe_enabled` money flip are **owed to
-Daniel** (smoke §3–§5). Stories: S2.0 `204ea23` · S2.1 `187171f` · S2.2 `838bc3b`.
+**Status: ✅ MERGED + DEPLOYED (Vercel prod) 2026-07-01** — PR **#151** squash `03f5770`, risk **LOW**.
+Deterministic gate green (tsc + build + 35 pure api specs + the anonymous 401 gate on CI-vs-preview). Both
+reviews clean: fresh Claude reviewer **APPROVE WITH NITS** (confirmed the upsert doesn't clobber + the client is
+pessimistic — the two Codex should-fixes were non-issues); one review-named hardening applied (`1e879ff` —
+stamp `polarity` on upsert). Authed 200-upsert + `admin_audit_log` render + the `checkout.stripe_enabled`
+money flip are **owed to Daniel** (smoke §2–§5). Stories: S2.0 `204ea23` · S2.1 `187171f` · S2.2 `838bc3b` +
+`1e879ff`.
 
 > **Note — 11 flags, not 10.** `ml.sync_enabled` (ML S4, #148) joined `FlagKey` after this doc's scaffold;
 > the S1 `platform_flags` table already seeds all 11 with `polarity` + `description` columns, so the admin
