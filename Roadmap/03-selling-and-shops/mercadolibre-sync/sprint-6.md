@@ -1,16 +1,27 @@
 # Mercado Libre sync — Sprint 6 (fast-follow): make ML sync obtainable + discoverable
 
-**Status:** 🟩 BUILT — draft PRs, deterministic gate green. Makes the S5 ML-sync entitlement gate actually
-usable: a seller can **buy** ML sync (self-serve), a **promoter** can set it up, an **admin** can comp it, and
-it's **linked** from the seller panel. Scoped 2026-07-01 with Daniel from his live smoke on `champions-not`.
+**Status:** ✅ **MERGED + DEPLOYED (LIVE) 2026-07-01.** The S5 ML-sync entitlement gate is now usable: a seller
+can **buy** ML sync (self-serve), a **promoter** can set it up, an **admin** can comp it, and it's **linked**
+from the seller panel. Backend #53 `8ae2583` (Cloud Run) + hotfix #54 `7fd88ba` (revision `medusa-web-00129-t5x`)
+· frontend #154 `9e264eb` (Vercel prod). **Prod Stripe seeded** — plan `subplan_01KWFYVH0R1CW6XCA9QNTYMA7J`
+resolves $299/yr (`price_…585nomXf`) + $30/mo (`price_…3cLPdEY4`). Codex cross-review clean. Scoped 2026-07-01
+with Daniel from his live smoke on `champions-not`.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-16 — Discoverability: seller-nav entry + fix the confusing upsell CTA | ✅ BUILT | fe `1560545` |
-| US-17 — Self-serve purchase (yearly $299 one-time + monthly $30 subscription) | ✅ BUILT | be `1b83125` · fe `1560545` |
-| US-18 — Promoter sets it up (route/mechanism; UI picker deferred) | ✅ BUILT | fe `1560545` |
-| US-19 — Admin comp-grant for any SKU (custom_domain / subdomain / ml_sync) | ✅ BUILT | fe `1560545` |
-| api spec (`e2e/ml-sync-monetization.spec.ts`) | ✅ | fe `1560545` |
+| US-16 — Discoverability: seller-nav entry + fix the confusing upsell CTA | ✅ MERGED | fe #154 `9e264eb` |
+| US-17 — Self-serve purchase (yearly $299 one-time + monthly $30 subscription) | ✅ MERGED | be #53 `8ae2583` (+#54 `7fd88ba`) · fe #154 `9e264eb` |
+| US-18 — Promoter sets it up (route/mechanism; UI picker deferred) | ✅ MERGED | fe #154 `9e264eb` |
+| US-19 — Admin comp-grant for any SKU (custom_domain / subdomain / ml_sync) | ✅ MERGED | fe #154 `9e264eb` |
+| api spec (`e2e/ml-sync-monetization.spec.ts`) | ✅ | fe #154 `9e264eb` |
+
+> **Hotfix #54 (`7fd88ba`):** the first prod seed 500'd on the update path —
+> `updateSubscriptionPlans({id,…})` returns a SINGLE object, but the route array-destructured it (`const [plan]
+> = …`) → "object is not iterable". The create path (single object, used directly) worked, so build/tsc (result
+> is `subs as any`) never caught it. Fixed with an `Array.isArray` guard at both update sites; re-seed succeeded.
+> **The subdomain route has the same latent shape** (`setup-subdomain-plan`) — flagged for a separate look.
+> LEARNING: an `(x as any)` service-method return that's array-destructured is invisible to the gate — verify
+> the update/re-seed path live, not just the first-time create.
 
 > **Decisions (Daniel):** pricing = **yearly $299 (one-time 12-mo grant) + monthly $30 (subscription)**, a
 > faithful clone of the subdomain money path; shipped as **one bundled fast-follow**.

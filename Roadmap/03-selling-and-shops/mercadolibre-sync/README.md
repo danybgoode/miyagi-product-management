@@ -114,10 +114,13 @@ after. S5 hardens + gates. Announce shared-surface touches.
   + the live revoke-token / entitlement browser smokes. ✅ **Post-deploy DONE 2026-07-01:** all 5 `ml.*` flags ON
   in prod; the `ml_sync_event` migration auto-applied on boot (entrypoint `medusa db:migrate`, revision
   `medusa-web-00127-l5p`, `✔ Migrated Migration20260701200527`); `ml.sync_paywall_enabled` seed reconciled.
-- 🟩 [sprint-6.md](sprint-6.md) — Make ML sync obtainable + discoverable (fast-follow). **BUILT — draft PRs
-  be #53 · fe #154 `1560545`.** Faithful clone of the subdomain money path onto `ml_sync` ($299/yr one-time +
-  $30/mo subscription). **US-16** seller-nav entry + upsell CTA→real checkout (was the confusing `/vende/promotor`
-  link). **US-17** self-serve purchase (backend plan + subscription routes, webhook `ML_SYNC` handlers +
-  lifecycle, subscription wired into the gate, buy route, seed script). **US-18** promoter close route (UI picker
-  deferred). **US-19** admin comp-grant generalized to any SKU (custom_domain/subdomain/ml_sync). Gate green
-  (28/28 pure). Owed: prod Stripe seed (`seed-ml-sync-plan.mjs`, Daniel) **before** FE deploy + live money smokes.
+- ✅ [sprint-6.md](sprint-6.md) — Make ML sync obtainable + discoverable (fast-follow). **MERGED + DEPLOYED
+  (LIVE) 2026-07-01** — be #53 `8ae2583` + hotfix #54 `7fd88ba` (revision `medusa-web-00129-t5x`) · fe #154
+  `9e264eb` (Vercel). Faithful clone of the subdomain money path onto `ml_sync` ($299/yr one-time + $30/mo
+  subscription). **Prod Stripe seeded** — plan `subplan_01KWFYVH0R1CW6XCA9QNTYMA7J` resolves both prices.
+  **US-16** seller-nav entry + upsell CTA→real checkout (was the confusing `/vende/promotor` link). **US-17**
+  self-serve purchase (backend plan + subscription routes, webhook `ML_SYNC` handlers + lifecycle, subscription
+  wired into the gate, buy route, seed). **US-18** promoter close route (UI picker deferred). **US-19** admin
+  comp-grant generalized to any SKU. Codex cross-review clean. Hotfix #54: the update path 500'd
+  (`updateSubscriptionPlans` returns a single object, was array-destructured — invisible to tsc under
+  `subs as any`). Owed: live purchase smokes (buy yearly/monthly, cancel, promoter close) — Daniel.

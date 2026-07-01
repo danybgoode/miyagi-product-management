@@ -203,6 +203,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   anti-erosion shape as the raw-color/monolith guards; monorepo-root needed its **first `.github/workflows/`**
   to host it. **Error tracking went GCP-native** (Error Reporting auto-groups `severity>=ERROR` Cloud Run logs)
   **over adding `@sentry` to the live service — zero new dependency.** *(2026-06-12, backend-prod-readiness S4.)*
+- **A Medusa `MedusaService` auto-generated `update{Models}({id,…})` returns a SINGLE object, not an array —
+  array-destructuring it throws "object is not iterable", and `(svc as any)` hides it from `tsc`.** A money-plan
+  seed 500'd at ~25 ms (too fast for a DB error → an early synchronous throw) on every UPDATE while the CREATE
+  path worked: `const [plan] = await updateSubscriptionPlans({id,…})` destructured a non-iterable. The `create`
+  return is a single object used directly (fine); the destructure only bites the update path, so a first-time
+  seed (all creates) passes and a re-seed / second-cadence (updates) explodes. Because the service is resolved
+  as `(subs as any)`, the build/gate can't type-check the return. Normalize with `Array.isArray(x) ? x[0] : x`
+  (the same guard the connect/upsert paths already use), and **verify the UPDATE/re-seed path against live
+  Medusa, not just the first-time create** — the gate only exercised create. The generic Medusa 500
+  `{"code":"unknown_error"}` masks the real cause; the stack (`object is not iterable (… Symbol.iterator)`)
+  is in the Cloud Run **stdout** logs, not the structured error entry. *(2026-07-01, mercadolibre-sync S6 —
+  `setup-ml-sync-plan` hotfix #54; `setup-subdomain-plan` has the same latent shape.)*
 - **Stripe Node SDK v22 reshaped promotion-code params under a `promotion:{type:'coupon',coupon}` hash** —
   both the `PromotionCode` object read (`pc.promotion.coupon`) and `promotionCodes.create` (no top-level
   `coupon` in the typed params). `tsc` catches the old top-level shape immediately. Give the coupon + promo
