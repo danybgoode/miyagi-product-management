@@ -95,8 +95,10 @@ after. S5 hardens + gates. Announce shared-surface touches.
 - ✅ [sprint-1.md](sprint-1.md) — Connect + linkage foundation (the spine). **Merged 2026-06-30** (be #44 · fe #139); `ml.connect_enabled` ON.
 - ✅ [sprint-2.md](sprint-2.md) — Import ML catalog → Miyagi. **Merged 2026-06-30** (be #45 `36e241d` · fe #142 `66fb9b4`); behind `ml.import_enabled` (dark).
 - ✅ [sprint-3.md](sprint-3.md) — Publish Miyagi → ML. **Merged 2026-06-30** (be #46 `bbf75a2` · fe #144 `e9b7420`); behind `ml.publish_enabled` (dark, flag id 220945). Explicit "Sincronizar" action over a reusable reconcile seam (S4-reusable); `domain_discovery` predictor + override.
-- 🟨 [sprint-4.md](sprint-4.md) — Two-way stock sync (the oversell-safe core). **BUILT — draft PRs (HIGH →
-  Daniel merges)**; be `b3c9c3b` · fe `19d9cfb`; ships dark behind `ml.sync_enabled` (default OFF /
-  fail-closed) + per-seller enable. Outbound via `order.placed` + manual-edit → `pushStockToMl`; inbound via
-  public `/webhooks/mercadolibre`; `reconcile-ml-inventory` job (`*/30`) heals drift + Telegram alerts.
+- 🟨 [sprint-4.md](sprint-4.md) — Two-way stock sync (the oversell-safe core). **BUILT — PRs #49 (be) ·
+  #148 (fe), HIGH**; ships dark behind `ml.sync_enabled` (default OFF / fail-closed) + per-seller enable.
+  **Delta / source-of-truth model** (cross-review caught + fixed an absolute-min oversell flaw): each sale
+  applied to Medusa exactly once per ML order id (`applySale`); inbound `orders_v2` webhook decrements;
+  outbound `order.placed` + manual-edit mirror Medusa→ML; `reconcile-ml-inventory` job (`*/30`) recovers
+  missed webhooks (polls ML orders) + re-mirrors + Telegram alerts.
 - ⬜ [sprint-5.md](sprint-5.md) — Resilience, observability & paid-SKU gating.

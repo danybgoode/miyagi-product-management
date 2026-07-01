@@ -19,25 +19,30 @@ drift alerts.
 > Goal: selling on either platform keeps stock consistent and **never oversells**. This is the core; it is
 > gated per-seller behind a kill-switch so it can't oversell at scale before it's proven.
 
-> **Architecture notes (decided while building):**
-> - **Outbound trigger = `order.placed`, not an `inventory-level.updated` subscriber.** Medusa v2 reduces
->   *available* on a sale by creating a **reservation** (reserved_quantity ↑), not by writing a stocked
->   level — and the inventory module never emits `inventory-level.updated` anyway (the constant is defined
->   but no flow emits it). So the guaranteed, exactly-once "stock consumed" signal is `order.placed`; a
->   seller **manual** stock edit pushes from the seller-product-update path; the reconcile job is the
->   catch-all. All three funnel into one `service.pushStockToMl` (linkage + token + `updateMlItem({
->   available_quantity })`), which skips-if-unchanged (collapses bursts, safe on retry) and defers an ML
->   rate-limit to the reconcile job (never throws out of a subscriber).
-> - **Source of truth = Medusa** (available = stocked − reserved). Conflict resolution when both sides
->   moved = **conservative `min()`** (`reconcileStock` → `max(0, min(both))`): the reconciled quantity
->   never exceeds either side and is never negative, so neither channel can sell what the other sold. This
->   pure seam (`modules/mercadolibre/sync-utils.ts`, mirrored to FE `lib/ml-stock.ts`) is the oversell proof.
-> - **Inbound** re-fetches ML's *authoritative* `available_quantity` (never trusts the webhook body) and
->   applies it with `setVariantAvailableQuantity` (clamps ≥ 0, preserves Medusa reservations); replay-safe
->   per ML notification id (a bounded dedupe ring on the linkage metadata).
+> **Architecture notes (decided while building + hardened by cross-agent review):**
+> - **Delta / source-of-truth model — NOT absolute reconcile.** Cross-review caught that comparing the two
+>   channels' *absolute* available quantities can't recover concurrent independent sales (baseline 5, ML
+>   sells 2 → 3, Miyagi sells 3 → 2; true remaining 0, but `min(3,2)=2` → a 2-unit oversell). So **Medusa is
+>   the single source of truth**, and each channel's **sale** is applied to Medusa as a **delta, exactly
+>   once**. `applySale(available, sold) = max(0, available − sold)` composes correctly with a simultaneous
+>   Miyagi sale (`applySale(2,2)=0`) and never goes negative — the oversell proof (pure
+>   `modules/mercadolibre/sync-utils.ts`, mirrored to FE `lib/ml-stock.ts`).
+> - **Inbound (US-11)** — public `/webhooks/mercadolibre` on the `orders_v2` topic reads the order's
+>   per-item **sold quantities** and **decrements** Medusa via `applySale` (preserving reservations),
+>   **idempotent per ML order id** (a bounded applied-orders ring on the linkage). The order id — not the
+>   notification `_id` — is the exactly-once key.
+> - **Outbound (US-10) = `order.placed` + manual-edit hook → mirror Medusa's available to ML** (not an
+>   `inventory-level.updated` subscriber: Medusa v2 reduces available via a *reservation*, and never emits
+>   that event). Skips-if-unchanged; a manual edit pushes the product's **summed** available (multi-variant
+>   safe); an ML rate-limit defers to the job (never throws).
+> - **Reconcile job (US-12) = missed-webhook recovery + mirror.** Polls each seller's ML orders since a
+>   per-seller marker and applies any **not-yet-applied** order (delta, idempotent) — recovering a dropped
+>   webhook — then mirrors Medusa→ML so ML never advertises more than the truth. Telegram drift alert on
+>   failure.
 > - **Per-seller enable lives on the ML connection metadata** (`sync_enabled`), co-located with the token +
->   linkage in the module's own Postgres — set via secret-gated `POST /internal/ml/sync-settings`. No new
->   migration (all S4 state rides existing json metadata).
+>   linkage — set via secret-gated `POST /internal/ml/sync-settings`. No migration (all S4 state rides json
+>   metadata). *Deferred to S5:* ML cancellations/returns (restock) + manual ML-side stock edits (the mirror
+>   keeps ML ≤ Medusa meanwhile — safe direction).
 
 ## Stories
 
@@ -71,9 +76,10 @@ immediately.
 
 ## Sprint QA
 - **Backend unit spec (authoritative correctness proof):** `modules/mercadolibre/__tests__/ml-sync.unit.spec.ts`
-  (13 tests, run by `npm run test:unit`) — `reconcileStock` never exceeds either side / never negative over
-  a wide grid (US-12), `shouldPushStock` skip-if-unchanged (US-10), the replay-safe dedupe ring (US-11),
-  `clampAvailable` no-negative. **Asserts no input combination yields oversold/negative stock.**
+  (run by `npm run test:unit`) — `applySale` decrements by exactly the sold qty / never negative over a grid
+  incl. the concurrent case (US-11), the exactly-once applied-order ring (US-11/12), `shouldPushStock`
+  skip-if-unchanged (US-10), `normalizeOrderItems` per-item aggregation. **Asserts no input combination
+  yields oversold/negative stock.**
 - **api spec:** `e2e/ml-stock-sync.spec.ts` (9 tests) — the FE mirror (`lib/ml-stock.ts`) of the same pure
   invariants, so the FE gate also proves no-oversell. The subscriber/webhook/job are backend writes (no ML
   mock needed — the correctness lives in the pure seam), so there is no live-HTTP layer here by design.
@@ -102,10 +108,11 @@ set `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` on Cloud Run so drift alerts fire.
    in Mi tienda → the seller-product-update path).
    → The ML item `available_quantity` updates to **2**; the push is logged once, and an unchanged re-trigger
    is skipped (idempotent).
-4. (drift) Manually set the ML quantity wrong (e.g. **9**) and wait for / trigger the `reconcile-ml-inventory`
-   job (`*/30`).
-   → Reconciliation corrects ML back to the true remaining (**2**, the conservative minimum); if it can't
-   read/reconcile an item, a Telegram drift alert fires.
+4. (missed-webhook recovery) Buy 1 more on ML, but simulate a dropped webhook (don't let it deliver, or
+   temporarily point the ML webhook elsewhere). Wait for / trigger the `reconcile-ml-inventory` job (`*/30`).
+   → The job polls ML orders, finds the un-applied sale, and decrements Medusa to **1** (delta, exactly-
+   once — re-running the job does NOT double-decrement); it then mirrors Medusa→ML. If it can't reach ML, a
+   Telegram drift alert fires.
 5. Flip `ml.sync_enabled` **OFF**.
    → No further pushes or webhook-driven adjustments occur (the webhook ACKs 200 and ignores; the job
    early-returns). This is the instant rollback.
