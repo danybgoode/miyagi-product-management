@@ -6,6 +6,7 @@
 |---|---|---|
 | US-13 — Token-refresh recovery + re-auth surfaces + sync activity log | ⬜ | |
 | US-14 — Paid/promoter-SKU entitlement gate (wiring) | ⬜ | |
+| US-15 — Durable sync-state table (crash-safe, clobber-proof idempotency) | ⬜ | |
 | api spec (`e2e/ml-resilience-gate.spec.ts`) | ⬜ | |
 
 > Goal: the integration recovers from real-world failures and the seller can see what it's doing; and ML
@@ -30,6 +31,20 @@ Register ML sync as a promoter SKU so a promoter code + commission apply (promot
 **Acceptance:** a non-entitled seller can't enable ML sync (sees the upsell); an entitled seller can; a
 promoter code applies to the ML-sync SKU; flipping the gate off doesn't break enabled testers.
 **Risk:** med
+
+### US-15 — Durable sync-state table (crash-safe, clobber-proof idempotency)
+**As the** system, **I want** the ML sale-application idempotency + mirror state to live in a real table, not
+the linkage JSON metadata, **so that** the two bounded concurrency residuals S4 documented can't ever
+double-decrement or drop state. Add a `product_ml_sync` (or extend a table) with a **`unique(link_id,
+ml_order_id)`** constraint written **in the same transaction as the inventory decrement** (insert-first
+idempotency), and move `last_pushed_available` / `orders_synced_at` / applied-orders off the JSON blob so
+inbound and outbound writes stop clobbering each other. Requires a **migration** (deliberately out of S4).
+**Acceptance:** a simulated crash between decrement and marker does NOT double-apply on retry; concurrent
+inbound+outbound never lose an applied-order or the push baseline; the S4 unit invariants still hold.
+**Risk:** high (inventory idempotency; migration). Daniel merges.
+> Context: S4 shipped the oversell-safe core on JSON metadata (no migration) with two *safe-direction*
+> residuals (crash → under-count; metadata clobber → under-count/harmless), reconcile-healed. This makes them
+> impossible rather than merely bounded. Approved with Daniel 2026-07-01 (S4 close).
 
 ## Sprint QA
 - **api spec(s):** `e2e/ml-resilience-gate.spec.ts` (api) — revoked-token → re-auth surface, activity-log

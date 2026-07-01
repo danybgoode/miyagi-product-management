@@ -43,6 +43,18 @@ drift alerts.
 >   linkage — set via secret-gated `POST /internal/ml/sync-settings`. No migration (all S4 state rides json
 >   metadata). *Deferred to S5:* ML cancellations/returns (restock) + manual ML-side stock edits (the mirror
 >   keeps ML ≤ Medusa meanwhile — safe direction).
+> - **Hardened over 4 cross-agent review rounds** (codex): the min-reconcile oversell → delta model; a
+>   non-atomic apply → per-link Redis lock + re-check; absolute available-set → relative `adjustInventory`
+>   decrement (reservation-safe); paid-only status filter; order-id (not notification-id) idempotency;
+>   truncated-poll progress; mark-only-when-inventory-resolved.
+> - **Known bounded residuals → S5 idempotency table (approved with Daniel 2026-07-01).** Riding sync state
+>   on the linkage JSON metadata leaves two *safe-direction* concurrency residuals under rare same-item
+>   concurrency: (1) a crash between the inventory decrement and the applied-order marker → double-decrement →
+>   **under-count, never oversell** (decrement-first is the deliberate safe ordering); (2) concurrent
+>   full-metadata rewrites (inbound ring vs outbound push marker) can drop a field → re-decrement (under-count)
+>   or a harmless extra push. Both self-heal via the 30-min reconcile. The durable fix is a dedicated
+>   sync-state table with a `unique(link_id, ml_order_id)` constraint + writes transactional with the
+>   inventory change — a migration, deliberately out of S4's no-migration scope. **S5 story owed.**
 
 ## Stories
 
