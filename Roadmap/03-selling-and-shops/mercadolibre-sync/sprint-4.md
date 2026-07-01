@@ -1,20 +1,23 @@
 # Mercado Libre sync — Sprint 4: Two-way stock sync (the oversell-safe core)
 
-**Status:** 🟨 BUILT — draft PRs open, **HIGH → Daniel merges**. Backend
-[be `b3c9c3b`] + frontend [fe `19d9cfb`], both gates green (BE: `medusa build` + `tsc --noEmit` + 40/40
-unit specs incl. 13 new; FE: `tsc --noEmit` + 9/9 api specs). Ships **fully dark**: global
-`ml.sync_enabled` kill-switch **default FALSE / fail-closed** (created in Flagsmith owed) **+** a per-seller
-enable (default off). The reconciliation job ships **with** the live sync. **Owed to Daniel:** the
-correctness/oversell ML-sandbox smoke (steps below) + flip `ml.sync_enabled` ON + register the webhook URL
-in the ML dev portal + (optional) add `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` to the Cloud Run env for
-drift alerts.
+**Status:** ✅ MERGED + DEPLOYED (dark) 2026-07-01, **HIGH**. Backend
+[#49](https://github.com/danybgoode/medusa-bonsai-backend/pull/49) squash `0b7e4b9` (Cloud Run rev
+`medusa-web-00123-4zt`, incl. Telegram env) + frontend
+[#148](https://github.com/danybgoode/miyagisanchezcommerce/pull/148) squash `0c8c249` (Vercel prod). Both
+CI gates green; **hardened over 4 codex cross-review rounds** (see architecture notes). Ships **fully dark**:
+global `ml.sync_enabled` kill-switch **default FALSE / fail-closed** (created in Flagsmith, id 221414) **+** a
+per-seller enable (default off). **Post-deploy API smoke ✅:** `POST /webhooks/mercadolibre` → 200
+`{received,ignored:"sync_disabled"}` (route live + kill-switch enforced); `/internal/ml/sync-settings`
+unsecured → 401. **Owed to Daniel:** the correctness/oversell ML-sandbox smoke (steps below) + flip
+`ml.sync_enabled` ON + register the webhook URL `https://medusa-web-oehqqtyoia-uk.a.run.app/webhooks/mercadolibre`
+(topic `orders_v2`) in the ML dev portal.
 
 | Story | Status | Commit |
 |---|---|---|
-| US-10 — Medusa stock change → push to ML (idempotent, rate-limit aware) | ✅ | be `b3c9c3b` |
-| US-11 — ML webhook → adjust Medusa inventory (replay-safe) | ✅ | be `b3c9c3b` |
-| US-12 — Oversell-safe source-of-truth + reconciliation job + drift alerts | ✅ | be `b3c9c3b` |
-| api spec (`e2e/ml-stock-sync.spec.ts`) | ✅ | fe `19d9cfb` |
+| US-10 — Medusa stock change → push to ML (idempotent, rate-limit aware) | ✅ | be `0b7e4b9` |
+| US-11 — ML webhook → adjust Medusa inventory (delta, exactly-once) | ✅ | be `0b7e4b9` |
+| US-12 — Oversell-safe source-of-truth + reconciliation job + drift alerts | ✅ | be `0b7e4b9` |
+| api spec (`e2e/ml-stock-sync.spec.ts`) | ✅ | fe `0c8c249` |
 
 > Goal: selling on either platform keeps stock consistent and **never oversells**. This is the core; it is
 > gated per-seller behind a kill-switch so it can't oversell at scale before it's proven.
