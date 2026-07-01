@@ -100,7 +100,6 @@ const PROD = {
     'DATABASE_URL', 'REDIS_URL', 'JWT_SECRET', 'COOKIE_SECRET', 'STRIPE_SECRET_KEY',
     'STRIPE_WEBHOOK_SECRET', 'MP_ACCESS_TOKEN', 'CLERK_SECRET_KEY',
     'MEDUSA_INTERNAL_SECRET', 'ENVIA_API_KEY', 'MP_CLIENT_ID', 'MP_CLIENT_SECRET',
-    'FLAGSMITH_ENVIRONMENT_KEY',
     // marketplace-static-shell S3: read-only Supabase reads for the GCP personalization endpoint
     'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY',
     // mercadolibre-sync S1: ML client secret + token-at-rest encryption key
@@ -199,8 +198,8 @@ test('ENVIA_SANDBOX classification matches each environment', () => {
   assert.ok(!envNames(stagingSrc).has('ENVIA_SANDBOX'), 'staging ENVIA_SANDBOX must NOT be a plain env var')
 })
 
-test('deploy.sh binds the 3 secrets the §5 drift was missing', () => {
-  for (const s of ['MP_CLIENT_ID', 'MP_CLIENT_SECRET', 'FLAGSMITH_ENVIRONMENT_KEY']) {
+test('deploy.sh binds the 2 secrets the §5 drift was missing', () => {
+  for (const s of ['MP_CLIENT_ID', 'MP_CLIENT_SECRET']) {
     assert.ok(secretNames(prodSrc).has(s), `deploy.sh must bind ${s} (dropped before S4 reconcile)`)
   }
 })

@@ -58,10 +58,12 @@ echo "▶ Deploying $SERVICE_WEB…"
 #   • ENVIA_SANDBOX is a PLAIN env var live ('false') — it was wrongly bound as a
 #     secret here (and no ENVIA_SANDBOX secret shell exists → a full run failed
 #     "secret not found"). Moved to --set-env-vars.
-#   • Added the 3 secrets live binds that the script omitted (would have been DROPPED
-#     by --set-secrets' replace semantics): MP_CLIENT_ID, MP_CLIENT_SECRET,
-#     FLAGSMITH_ENVIRONMENT_KEY.
-# Net: 9 plain env + 15 secrets ≡ live. The drift guard (infra/gcp/test/) locks this in.
+#   • Added the secrets live binds that the script omitted (would have been DROPPED
+#     by --set-secrets' replace semantics): MP_CLIENT_ID, MP_CLIENT_SECRET.
+#     (FLAGSMITH_ENVIRONMENT_KEY was bound here until the in-house feature-flags epic,
+#     Sprint 3, retired the Flagsmith dependency — flags now read from the owned
+#     Supabase platform_flags table via SUPABASE_URL/SERVICE_ROLE_KEY.)
+# Net: prod env + secrets ≡ live. The drift guard (infra/gcp/test/) locks this in.
 #   • SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY added 2026-06-22 (marketplace-static-shell
 #     S3): the GCP-hosted GET /store/home/personalization read endpoint reads the frontend's
 #     Supabase (favorites/offers) READ-ONLY. Provision the two secret shells + grant the
@@ -90,7 +92,7 @@ gcloud run deploy "$SERVICE_WEB" \
   --liveness-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=30,failureThreshold=3" \
   --allow-unauthenticated \
   --set-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@MEDUSA_BACKEND_URL=${BACKEND_URL}@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID:-sc_01KSK1J0V81P4EPY9G0JAPX353}@ENVIA_SANDBOX=${ENVIA_SANDBOX:-false}@ML_APP_ID=${ML_APP_ID:-5089915168138245}@ML_REDIRECT_URI=${ML_REDIRECT_URI:-https://miyagisanchez.com/api/sell/ml/callback}" \
-  --set-secrets="DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET:latest,ENVIA_API_KEY=ENVIA_API_KEY:latest,MP_CLIENT_ID=MP_CLIENT_ID:latest,MP_CLIENT_SECRET=MP_CLIENT_SECRET:latest,FLAGSMITH_ENVIRONMENT_KEY=FLAGSMITH_ENVIRONMENT_KEY:latest,SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ML_APP_SECRET=ML_APP_SECRET:latest,ML_TOKEN_ENCRYPTION_KEY=ML_TOKEN_ENCRYPTION_KEY:latest"
+  --set-secrets="DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET:latest,ENVIA_API_KEY=ENVIA_API_KEY:latest,MP_CLIENT_ID=MP_CLIENT_ID:latest,MP_CLIENT_SECRET=MP_CLIENT_SECRET:latest,SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ML_APP_SECRET=ML_APP_SECRET:latest,ML_TOKEN_ENCRYPTION_KEY=ML_TOKEN_ENCRYPTION_KEY:latest"
 
 echo "▶ Service URL:"
 gcloud run services describe "$SERVICE_WEB" --region="$REGION" --format='value(status.url)'
