@@ -1,14 +1,14 @@
 ---
 title: "Spike — role archetypes (Prototyper/Builder/Sweeper/Grower/Maintainer) as a groom lens"
 slug: spike-role-archetypes
-status: ready
+status: shipped
 area: "09 · Platform & Infra"
 type: spike
 priority: null
 risk: low
 epic: null
 build_order: null
-updated: 2026-07-01
+updated: 2026-07-02
 parent: process-iteration-portfolio
 ---
 
@@ -64,4 +64,70 @@ those become a follow-up chore **only if** the decision is "adopt."
 ## Definition of Ready (spike)
 - [x] Class = spike; ends in a written decision; framing captured; solo-operator caveat flagged.
 - [x] Investigation questions + the "does it change decisions?" acid test written.
-- [ ] Daniel approves → run it; land the WRITTEN DECISION here. Wiring (if any) is a separate groomed chore.
+- [x] Daniel approved → investigation run; WRITTEN DECISION landed below. Wiring is a separate groomed chore.
+
+---
+
+## WRITTEN DECISION (spike close, 2026-07-02)
+
+**Adopt the five archetypes as an optional, lightweight lens at groom Stage 2 — a second orthogonal tag
+alongside the existing Feature/Spike/Bug/Chore class — on a trial basis. Drop the team-mix ratios (they
+don't translate to a solo operator + agents). It passes the acid test: for 4 of the 5 archetypes it changes
+concrete grooming decisions, not just the label.** Wiring `skills/groom` is a separate low-risk follow-up
+chore (this spike is planning-only).
+
+### 1. Does it change decisions? (the acid test — per archetype)
+| Archetype | What it changes in groom output | Verdict |
+|---|---|---|
+| **Prototyper** | Thin, explicitly-disposable slice; **minimal/optional QA**; skip the full epic DoD; low-risk by default; speed over polish; "this may never ship" stated up front. | **Changes decisions** — a different (lighter) gate than the default. |
+| **Builder** | Production-grade, full Definition of Done, per-story risk-tier, Sonnet-5 build with the C-escalation guardrail. | **No change — this IS the current default.** Its value is as the baseline the others deviate from; no tag needed when work is a Builder. |
+| **Sweeper** | Acceptance flips from "new behavior works" to **"less code / same behavior / no regressions"**; QA emphasis on regression + a **guard against the thing coming back** (anti-monolith/size guards); frequently touches **shared surface → announce** (sibling-PR risk); "prove the old path is unreachable before deleting." | **Changes decisions** — a distinct acceptance + QA + risk shape. |
+| **Grower** | Acceptance tied to a **success signal / metric / funnel**, not just "works"; forces a *measurement or observation plan*; iterate-on-shipped, so reuse-first is even stronger. | **Changes decisions** — adds a measurement gate the default doesn't require. |
+| **Maintainer** | Security / reliability / cost / perf on a mature system; **expects high-risk** (money/auth/migrations/shared-infra) → kill-switch thinking at Stage 6b, Opus/escalation; ties to the runbook + infra-ops skills (Initiative D gap-map). | **Changes decisions** — front-loads high-risk + reliability acceptance. |
+
+**Conclusion:** 4/5 shift the plan; Builder is the null case. That's exactly the outcome that justifies a lens
+(if *all* five collapsed to "Builder with a label," it would be noise — they don't).
+
+### 2. Compose, don't replace
+The archetype is **orthogonal to the class**, not a substitute. The class answers *"what kind of work item
+is this?"* (Feature/Spike/Bug/Chore → which downstream path); the archetype answers *"what mode/intent is it
+in?"* (→ acceptance + QA + risk + model emphasis). They pair into a 2-tuple, e.g. **Chore/Sweeper**,
+**Feature/Grower**, **Chore/Maintainer**. Keep both; the archetype is an *added* Stage-2 tag, and it's
+**optional** (default = Builder, i.e. omit the tag and nothing changes).
+
+### 3. Solo-operator fit
+- **Per-ask archetype: adopt.** It's a useful mode label for one operator + agents.
+- **Team-mix ratios (1+2+3 pre-PMF, etc.): drop.** They're about *staffing a multi-person team*; they don't
+  translate here. Keep only the *soft* corollary: a macro-section's **product maturity** biases which
+  archetypes to expect (pre-PMF `07-agentic`/`10-events` → Prototyper/Builder; mature
+  `02-checkout-payments`/`09-infra` → Sweeper/Maintainer). This is an expectation-setter, never a gate.
+
+### 4. Worked examples (recent epics — would the tag have changed the plan?)
+- **`shop-settings-refactor` = Chore/Sweeper.** The plan *discovered* the Sweeper shape mid-flight (prove the
+  4,076-line fallback unreachable → delete → add an anti-monolith CI guard). A Sweeper tag would have
+  **front-loaded** that acceptance ("behavior-preserving; prove old path dead; add a regression guard")
+  instead of finding it. **Tag changes the plan → yes.**
+- **`neighborhood-pulse` = Feature/Grower** (a recurring reason to return). It shipped **live-but-empty**,
+  with success measurement *owed* rather than defined. A Grower tag would have forced a **success-signal /
+  observation plan** into acceptance up front. **Tag changes the plan → yes.**
+- **`ops-routines-reporting` = Chore/Builder** (turn the idea into production infra). Default path; a Builder
+  tag adds nothing over the status quo. **Tag changes the plan → no — and that's the correct null result.**
+- **`feature-flags-inhouse` / `backend-production-readiness` = Chore/Maintainer.** A Maintainer tag would
+  have named "expect high-risk + reliability/kill-switch acceptance" at Stage 2, which those epics reached
+  anyway via the risk tier. **Tag changes emphasis → mildly (mostly confirms the existing HIGH-risk path).**
+
+### 5. Interaction with the model split (Initiative C)
+Archetype is a **soft input** to model choice — Prototyper → Sonnet 5 fast/throwaway; Sweeper-on-shared-infra
+/ Maintainer / money-path → Opus or escalate. But the **C escalation triggers (money/auth/migration/
+shared-infra/ambiguity) stay the hard SSOT** — the archetype must not *re-encode* or override them. Rule:
+archetype *suggests* a starting model; the C triggers *force* escalation regardless of archetype.
+
+### 6. Recommendation + follow-up (not built in this spike)
+- **Adopt as an optional Stage-2 lens, trial it on the next ~3–4 epics, and keep it cheap to remove.** If it
+  keeps collapsing to "Builder with a label" in practice, drop it — the acid test above says it shouldn't.
+- **Follow-up chore (groom this separately):** a small edit to `skills/groom/SKILL.md` Stage 2 adding the
+  optional archetype tag + a one-line per-archetype "what this changes" checklist (Prototyper→light gate ·
+  Sweeper→regression+unreachability+announce · Grower→success signal · Maintainer→high-risk/reliability ·
+  Builder=default). Docs-only, low-risk. Optionally surface the tag in the epic README house format.
+- **Explicitly out:** any build-time execution wiring, new tooling, or per-story enforcement — the lens is a
+  *planning prompt*, not a gate.

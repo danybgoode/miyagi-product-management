@@ -176,8 +176,9 @@ This brain-dump lands on a **mature automation surface**. Concrete primitives to
 
 ## Recommended sequence (dependencies)
 > **Progress (2026-07-02):** C ✅ shipped (PR #47) · A ✅ shipped (PR #48) · D-spike ✅ decision landed
-> (PR #49) · **B ✅ scaffolded** (`09-platform-infra/ops-routines-reporting/`, 3 sprints) — ready to build ·
-> E ⬜ spike still runnable, unscheduled.
+> (PR #49) · **B ✅ built + merged** (`ops-routines-reporting`, 3 sprints — routine account stand-up owed to
+> Daniel) · **E-spike ✅ decision landed** — adopt archetypes as an optional Stage-2 lens; groom-wiring is a
+> separate low-risk follow-up chore. **All five portfolio initiatives are now resolved.**
 
 1. **C — Model split** *(quick win, unblocks nothing but cheap and high-value)* — ~1 doc PR.
 2. **A — Doc/memory sweep** *(quick win; shrinks every future session's context)* — 1 sweep PR + the
