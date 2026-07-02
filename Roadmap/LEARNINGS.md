@@ -359,6 +359,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Any Roadmap PR that flips `status:` makes the committed `BUILD-ORDER.md` stale and the guard reds —
   expected, not a false positive. Fix: re-run `node scripts/build-order.mjs` and commit the regenerated file
   in the same PR whenever a story touches epic status. *(2026-07-01, model-split-sonnet5-execution S1.)*
+  **Corollary — regenerating from a DIRTY working directory can bake in a sibling's untracked file and pass
+  locally while CI's clean checkout reds.** `roadmap-to-notion.mjs`'s status derivation checks whether an
+  epic's `RETROSPECTIVE.md` exists **on disk** (not via git) as a fallback signal — so a stray untracked
+  retro file left by unrelated in-progress work (a sibling branch/worktree) silently changed another
+  epic's derived bucket in the local regen, which then passed `--check` locally but failed CI's clean
+  checkout (`build-order-fresh` red) since that file was never committed. Fix: regenerate from a
+  disposable clean `git worktree` of the exact commit (`git worktree add <tmp> HEAD`) whenever the working
+  tree has any untracked files that aren't your own, diff/copy the result in, then remove the scratch
+  worktree — don't trust a `--check` pass in a dirty tree as proof CI will agree. *(2026-07-02,
+  ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
 - **The deterministic gate is non-negotiable and cheap:** `tsc --noEmit` + `next build` + the
