@@ -175,12 +175,16 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   **give each planning session its own `git worktree`** (app code already does this via `.worktrees/`; planning
   must too), or appoint a single **scribe** for shared files like `BUILD-ORDER.md`. Path-limited commits are the
   single highest-leverage habit — they keep each commit clean regardless of what else is in the shared index.
-- **Model tiers — strong model for the thinking; let execution assembly-line.** The leverage is in getting
-  the *foundation* right — grooming, spikes, plan mode, review — so run those on the strongest model (Opus)
-  with full deep-thinking, and don't rush them. Once the plan and slices are approved, per-story execution is
-  mechanical, so a faster model is fine there; Claude Code's plan-mode largely automates this hand-off, so
-  there's nothing to micromanage mid-session. **Quality-first:** when a story still carries real judgment or
-  money-path risk, keep it on the strong model. This is a default, not a constraint. Planning in Cowork;
+- **Model tiers — Opus 4.8 plans, Sonnet 5 builds; escalate rather than guess.** The leverage is in getting
+  the *foundation* right — grooming, spikes, plan mode, review — so run those on **Opus 4.8** with full
+  deep-thinking, and don't rush them. Once the plan and slices are approved, per-story execution is
+  mechanical, so **Sonnet 5** runs the build; Claude Code's plan-mode largely automates this hand-off, so
+  there's nothing to micromanage mid-session. **Escalate-don't-guess:** a Sonnet-5 build session stops and
+  asks / hands back to Opus — instead of inventing an answer — on the same triggers as the **high-risk tier**
+  defined above (*Review & merge*): payments / checkout / fulfillment / auth / DB migrations / shared infra /
+  money — **plus** plan ambiguity, a decision the plan doesn't cover, or a repeated failed attempt (2+ tries
+  at the same problem). Default to escalate when unsure. This is a default, not a constraint — a story that
+  still carries real judgment or money-path risk stays on the strong model end to end. Planning in Cowork;
   building in Claude Code.
 - **Docs track code — verified, not generalized.** A canonical rule (the AGENTS five rules, `conventions.md`)
   must reflect what the code *actually* does, checked against it — **don't globalize a scoped learning** into a

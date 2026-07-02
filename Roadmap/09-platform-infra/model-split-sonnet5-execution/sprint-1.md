@@ -1,6 +1,6 @@
 # Model split — Sprint 1: name the models + the escalation guardrail
 
-**Status:** ⬜ not started
+**Status:** 🔧 built, PR open — doc edits done; live escalation smoke (step 3 below) owed to Daniel
 
 ## Stories
 
@@ -28,11 +28,11 @@ faster model without silently making judgment or money-path calls it should hand
 ## Sprint 1 — Verification walkthrough (do these in order)
 Env: the repo docs (this is a process change, not an app deploy — no production URL).
 
-1. Open `Roadmap/WAYS-OF-WORKING.md` → *Conventions → Model tiers*.
+1. ✅ Open `Roadmap/WAYS-OF-WORKING.md` → *Conventions → Model tiers*.
    → It names Sonnet 5 (build) + Opus 4.8 (plan) and lists the escalate-don't-guess triggers.
-2. Open `skills/groom/SKILL.md` → Stage 8 kickoff template.
+2. ✅ Open `skills/groom/SKILL.md` → Stage 8 kickoff template.
    → The kickoff prompt tells the build session to escalate to Opus on those triggers.
-3. **(the real test)** Start a fresh Claude Code build session **on Sonnet 5** and hand it a deliberately
+3. ⬜ **(the real test, owed to Daniel)** Start a fresh Claude Code build session **on Sonnet 5** and hand it a deliberately
    under-specified or money-path story (e.g. "add a discount to checkout" with no rule stated).
    → It **pauses and asks a clarifying question / flags the fork / escalates to Opus** rather than inventing
    an answer. This is the acceptance signal.

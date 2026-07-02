@@ -203,7 +203,10 @@ Then read Roadmap/<NN-macro>/<epic-slug>/README.md and Roadmap/<NN-macro>/<epic-
 
 You're building Sprint <N> of "<epic title>". Enter plan mode, confirm the plan as user stories with me,
 then branch feat/<epic-slug> off latest main and build one story at a time per WAYS-OF-WORKING.
-Reuse before rebuild (see "What already exists"). Commit per story with path-limited adds
+Reuse before rebuild (see "What already exists"). Escalate rather than guess: stop and ask / hand back to
+Opus on payments / checkout / fulfillment / auth / DB migrations / shared infra / money, plan ambiguity, a
+decision the plan doesn't cover, or 2+ failed attempts at the same problem — default to escalate when unsure
+(WAYS-OF-WORKING → Model tiers). Commit per story with path-limited adds
 (`git add <your files>` + `git commit -- <those paths>`, never `git add -A` — a shared worktree races the
 index). App copy is es-MX by default (es/en only on the bilingual allow-list — AGENTS rule #5). Add one api spec per testable story; name the
 QA/smoke stage and state any browser smoke owed to me. When the deterministic gate (tsc + build + Playwright
@@ -215,9 +218,11 @@ The invariant preamble (line 1 of the prompt — the orientation reads + skim me
 session; it stays in the prompt so a *fresh* Claude Code session re-orients with zero prior context. Keep
 the sprint-specific delta (this epic, this sprint, its reuse list, its risk) as the part that actually varies.
 
-**Model tiers:** run the groom/plan and any spike on the strong model (Opus); the per-sprint build can run on
-a faster model (Sonnet) once the plan is approved — the kickoff already opens in plan mode, so judgment still
-happens up front. (Planning here in Cowork; building in Claude Code.)
+**Model tiers:** run the groom/plan and any spike on **Opus 4.8**; the per-sprint build runs on **Sonnet 5**
+once the plan is approved — the kickoff already opens in plan mode, so judgment still happens up front, and
+the kickoff prompt above carries the escalate-don't-guess triggers so Sonnet 5 hands back rather than
+guessing. (Planning here in Cowork; building in Claude Code. Full trigger list + rationale: WAYS-OF-WORKING →
+Model tiers — one SSOT, don't fork a second copy here.)
 
 For a **spike**, emit instead a short investigation prompt that ends in a written decision in the scope
 doc — no branch, no build.
