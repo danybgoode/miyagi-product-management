@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+// build-order-sync.mjs — regenerate Roadmap/00-ideas/BUILD-ORDER.md when it's drifted from the SSOT,
+// and open a `claude/` DOCS PR with the fix. Never hand-edits the board (SSOT = each epic README's
+// frontmatter `status:`, per scripts/build-order.mjs).
+//
+// Usage:
+//   node scripts/build-order-sync.mjs             # check → regen → branch → commit → push → gh pr create
+//   node scripts/build-order-sync.mjs --dry-run   # check → regen on disk → print `git diff --stat` only;
+//                                                  # no branch/commit/push/PR (fully read-only otherwise)
+//
+// The branch stays `claude/`-prefixed on purpose — that's a routine's DEFAULT push scope (see
+// scripts/routines/README.md's two standing rules), unlike standup.mjs which needed push enabled
+// BEYOND that default to land its log commit on `main` directly. Don't over-grant push for this one.
+//
+// Reuse, don't rebuild: scripts/build-order.mjs (the regenerator + --check), ensureGh()/die()
+// (scripts/lib/cross-agent-cli.mjs). Zero new npm deps — Node 18+.
+
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..');
+const BOARD_PATH = 'Roadmap/00-ideas/BUILD-ORDER.md';
+const BANNER =
+  '> **Advisory — docs-only.** Auto-regenerated from the SSOT (each epic README\'s frontmatter ' +
+  '`status:`). This PR only refreshes the derived board; it never touches the doc that caused the drift.';
+
+const DRY_RUN = process.argv.includes('--dry-run');
+
+function run(cmd, args, opts = {}) {
+  return spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', ...opts });
+}
+
+// Pure — the date-stamped branch name. Exported for the co-located test.
+export function branchName(date = new Date()) {
+  return `claude/build-order-sync-${date.toISOString().slice(0, 10)}`;
+}
+
+// Pure — the PR title + body. Exported for the co-located test.
+export function buildPrBody() {
+  return [
+    BANNER,
+    '',
+    `\`${BOARD_PATH}\` was stale — regenerated via \`node scripts/build-order.mjs\` and committed as-is,`,
+    'no hand edits.',
+    '',
+    'Advisory only — not a gate. Review the diff and merge by hand.',
+  ].join('\n');
+}
+export const PR_TITLE = 'chore(build-order): regenerate stale board';
+
+function isDrifted() {
+  const r = run('node', ['scripts/build-order.mjs', '--check']);
+  return r.status !== 0;
+}
+
+function regenerate() {
+  const r = run('node', ['scripts/build-order.mjs']);
+  if (r.status !== 0) die(`build-order.mjs regen failed: ${(r.stderr || r.stdout || '').trim()}`);
+}
+
+function boardActuallyChanged() {
+  const r = run('git', ['status', '--porcelain', '--', BOARD_PATH]);
+  return !!(r.stdout || '').trim();
+}
+
+function main() {
+  if (!isDrifted()) {
+    console.log('BUILD-ORDER.md is up to date — no PR needed.');
+    return;
+  }
+
+  regenerate();
+  if (!boardActuallyChanged()) {
+    console.log('build-order.mjs --check reported drift, but regen produced no file diff — nothing to commit.');
+    return;
+  }
+
+  if (DRY_RUN) {
+    const diff = run('git', ['diff', '--stat', '--', BOARD_PATH]);
+    console.log('DRY-RUN — board would be regenerated (no branch/commit/push/PR):');
+    console.log((diff.stdout || '').trim());
+    return;
+  }
+
+  ensureGh();
+
+  const branch = branchName();
+  const checkout = run('git', ['checkout', '-b', branch]);
+  if (checkout.status !== 0) die(`git checkout -b ${branch} failed: ${(checkout.stderr || '').trim()}`);
+
+  const add = run('git', ['add', BOARD_PATH]);
+  if (add.status !== 0) die(`git add failed: ${(add.stderr || '').trim()}`);
+
+  const commit = run('git', ['commit', '-m', 'chore(build-order): regenerate stale board', '--', BOARD_PATH]);
+  if (commit.status !== 0) die(`git commit failed: ${(commit.stderr || '').trim()}`);
+
+  const push = run('git', ['push', '-u', 'origin', branch]);
+  if (push.status !== 0) die(`git push failed: ${(push.stderr || '').trim()}`);
+
+  const pr = run('gh', ['pr', 'create', '--title', PR_TITLE, '--body', buildPrBody(), '--head', branch, '--base', 'main']);
+  if (pr.status !== 0) die(`gh pr create failed: ${(pr.stderr || pr.stdout || '').trim()}`);
+  console.log((pr.stdout || '').trim());
+}
+
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) main();
