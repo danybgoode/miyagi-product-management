@@ -1,6 +1,7 @@
 # Ops routines & reporting — Sprint 1: the standup skateboard
 
-**Status:** 🟦 In review — PR open, live Telegram confirmation owed to Daniel
+**Status:** 🟦 In review — merged + routine created (2026-07-02); first live scheduled run + Telegram
+confirmation still owed to Daniel (schedule hasn't fired yet)
 
 > The thinnest end-to-end slice that ships value: a delta-only **daily standup in Telegram**, triggered by
 > one nightly routine. It composes signals from scripts/tools that already exist (`gh`, `build-order.mjs
@@ -51,8 +52,9 @@ arrives without me triggering it, and we stay well under the Pro scheduled-run c
   updated Pro daily-cap table/total (now ~2/day, still well under 5).
 - ✅ **Advisory/observability only** — the routine's prompt states it merges nothing, gates nothing, and makes
   no code changes; its Telegram post is its entire output.
-- ⬜ **Account creation of the routine is operational, owed to Daniel** (per the runbook) — this sprint commits
-  the prompt + runbook, not the account change.
+- ✅ **Account creation done (2026-07-02, Daniel).** The `ops-nightly` routine is created in
+  `claude.ai/code/routines` from `ops-nightly.prompt.md`. ⬜ Its first scheduled run hasn't fired yet, so
+  the live "a standup arrives unprompted" proof (walkthrough step 3) is still pending.
 **Risk:** Low.
 
 ## Sprint QA
@@ -79,12 +81,14 @@ Env: the repo scripts + the Telegram bot (process change; no app deploy / produc
 2. Run `node scripts/standup.mjs` again immediately.
    → The second post reads "🌙 Quiet night — nothing new since the last standup" (proving the
    `standups.log` diff works, not a re-dump). `git log -1 -- scripts/standups.log` shows a second commit.
-3. Stand up the nightly ops routine in `claude.ai/code/routines` from `ops-nightly.prompt.md` (owed to
-   Daniel) — per `scripts/routines/README.md`'s new section, including enabling push beyond the
+3. ✅ Stand up the nightly ops routine in `claude.ai/code/routines` from `ops-nightly.prompt.md` — **done
+   2026-07-02 (Daniel)**, per `scripts/routines/README.md`'s section, including enabling push beyond the
    `claude/`-prefix default.
-   → Next morning a standup arrives unprompted. Two nights in a row, confirm the second night's standup
-   only reports genuinely new overnight activity (proving the log persisted across a fresh routine session,
-   not just consecutive local runs).
+   → ⬜ **Still owed:** confirm the first scheduled run actually posts a standup unprompted (hasn't fired
+   yet as of this write-up). Two nights in a row, confirm the second night's standup only reports
+   genuinely new overnight activity (proving the log persisted across a fresh routine session, not just
+   consecutive local runs — this is the one behavior steps 1–2 above couldn't prove, since those were
+   local-only).
 
 If any step fails, note the step number + what you saw — that's the bug report.
 

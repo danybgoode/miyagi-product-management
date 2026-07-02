@@ -49,8 +49,8 @@ Daniel's account).
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| [S1](sprint-1.md) | B-1 · `standup-post` skill + `scripts/standup.mjs` → nightly Telegram standup (delta-only, `config.json` chat id, `standups.log` memory) ✅ built (live confirmation owed) | Low |
-| [S1](sprint-1.md) | B-2 · Nightly "ops" routine that triggers the standup (one routine, not many — cap-safe) ✅ built (account stand-up owed) | Low |
+| [S1](sprint-1.md) | B-1 · `standup-post` skill + `scripts/standup.mjs` → nightly Telegram standup (delta-only, `config.json` chat id, `standups.log` memory) ✅ built (first live post owed) | Low |
+| [S1](sprint-1.md) | B-2 · Nightly "ops" routine that triggers the standup (one routine, not many — cap-safe) ✅ built + routine created 2026-07-02 (first scheduled fire owed) | Low |
 | [S2](sprint-2.md) | B-3 · `build-order-sync` skill — nightly regen; open a `claude/` **docs PR** on drift (never hand-edit) | Low |
 | [S2](sprint-2.md) | B-4 · `vercel-prune` skill — scheduled **dry-run report**; `--apply` **human-confirmed**; `--keep-branch` open-PR previews | **Medium** (destructive op) |
 | [S2](sprint-2.md) | B-5 · `babysit-pr` skill — watch a PR, retry flaky CI, surface conflicts; **advisory only**, never a required check | **Medium** (PR writes) |
