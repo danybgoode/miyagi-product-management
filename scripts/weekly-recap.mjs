@@ -1,0 +1,345 @@
+#!/usr/bin/env node
+// weekly-recap.mjs — gathers the week's merged PRs (all 3 repos) + shipped/closed epics (README
+// frontmatter status: flips) + a short retro digest, and posts a formatted weekly Telegram recap.
+//
+// "Deploys" = merged-PR counts on the frontend/backend repos, not a live Vercel/Cloud-Build API read.
+// Per WAYS-OF-WORKING.md, "merging to main IS the production deploy" — so this is exactly the number a
+// human would get by manually tallying merges for the week (the sprint's own acceptance bar), and it
+// avoids a new external API dependency this script would need real credentials for.
+//
+// "Shipped/closed epics" = epic README frontmatter status: flips to `shipped` or `archived` this window,
+// detected by scanning `git log -p` diff hunks for an added `+status: shipped`/`+status: archived` line
+// (the epic-close flip; SSOT per scripts/build-order.mjs). For each one found, pulls a short excerpt from
+// its sibling RETROSPECTIVE.md (if present) as the "retro digest".
+//
+// Window: unlike standup.mjs's delta-snapshot diffing, this keeps a WINDOW tracker
+// (scripts/weekly-recaps.log, JSONL) — next run's `since` = last logged `windowEnd` (falls back to
+// now-7d on first run / missing log), so back-to-back runs don't double-count regardless of exact
+// cadence drift. After a successful Telegram post, commits + pushes the updated log to `main`
+// (path-scoped) — same push-beyond-`claude/`-prefix requirement standup.mjs already documents.
+//
+// Usage:
+//   node scripts/weekly-recap.mjs             # gather, post to Telegram, commit+push the log
+//   node scripts/weekly-recap.mjs --dry-run   # gather + print the message only — fully read-only
+//   node scripts/weekly-recap.mjs --since 2026-06-25T00:00:00Z   # override the window start (testing/backfill)
+//
+// Reuse, don't rebuild: ensureGh()/die() (scripts/lib/cross-agent-cli.mjs), the same Telegram
+// sendMessage shape scripts/standup.mjs already reimplements standalone (no access to the app's
+// node_modules/TS build here). Zero npm deps — Node >=20 (global fetch, spawnSync).
+
+import { spawnSync } from 'node:child_process';
+import { readFileSync, appendFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, '..');
+const LOG_PATH = join(__dirname, 'weekly-recaps.log');
+const CONFIG_PATH = join(ROOT, 'skills/weekly-recap/config.json');
+
+const argv = process.argv.slice(2);
+const DRY_RUN = argv.includes('--dry-run');
+const SINCE_OVERRIDE = (() => {
+  const i = argv.indexOf('--since');
+  return i !== -1 ? argv[i + 1] : null;
+})();
+
+// Same 3 repos standup.mjs already lists — confirmed via `git remote -v` in each checkout (2026-07-02).
+const REPOS = [
+  'danybgoode/miyagi-product-management',
+  'danybgoode/miyagisanchezcommerce',
+  'danybgoode/medusa-bonsai-backend',
+];
+const FRONTEND_REPO = 'danybgoode/miyagisanchezcommerce';
+const BACKEND_REPO = 'danybgoode/medusa-bonsai-backend';
+
+const RETRO_DIGEST_MAX_CHARS = 320;
+const DEFAULT_WINDOW_DAYS = 7;
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function shortRepo(repo) {
+  return repo.split('/')[1] || repo;
+}
+
+// ---- window / memory log (scripts/weekly-recaps.log — JSONL, one line per run) ----
+
+function loadLastRun() {
+  if (!existsSync(LOG_PATH)) return null;
+  const lines = readFileSync(LOG_PATH, 'utf8').trim().split('\n').filter(Boolean);
+  if (!lines.length) return null;
+  try {
+    return JSON.parse(lines[lines.length - 1]);
+  } catch {
+    return null;
+  }
+}
+
+// Pure — a window tracker (not a delta diff like standup.mjs). Next run picks up exactly where the
+// last one left off; a first run (or a wiped log) falls back to a plain trailing 7 days.
+export function computeWindow(lastLogLine, now, overrideSinceISO) {
+  const nowISO = now.toISOString();
+  if (overrideSinceISO) return { sinceISO: overrideSinceISO, untilISO: nowISO };
+  if (lastLogLine?.windowEnd) return { sinceISO: lastLogLine.windowEnd, untilISO: nowISO };
+  const fallback = new Date(now.getTime() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  return { sinceISO: fallback.toISOString(), untilISO: nowISO };
+}
+
+function appendRun(entry) {
+  appendFileSync(LOG_PATH, `${JSON.stringify(entry)}\n`);
+}
+
+// ---- gather: merged PRs per repo (gh) ----
+
+function ghJson(args) {
+  const r = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  if (r.status !== 0) return null;
+  try {
+    return JSON.parse(r.stdout || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function gatherMergedPrs(repo, sinceISO) {
+  const sinceDate = sinceISO.slice(0, 10);
+  const prs = ghJson([
+    'pr', 'list', '--repo', repo, '--state', 'merged', '--search', `merged:>=${sinceDate}`,
+    '--json', 'number,title,mergedAt,url', '--limit', '100',
+  ]);
+  if (prs === null) return { repo, available: false, prs: [] };
+  // The search's date qualifier is day-granular — filter to the real ISO window so a run near
+  // midnight UTC doesn't double-count a PR merged just before `sinceISO` on the boundary day.
+  const filtered = prs.filter((p) => p.mergedAt >= sinceISO);
+  return { repo, available: true, prs: filtered };
+}
+
+// ---- gather: shipped/closed epics (git log -p on epic READMEs) ----
+
+// Pure — parses `git log -p -- 'Roadmap/*/*/README.md'` output for added `+status: shipped|archived`
+// lines, pairing each with the file its diff hunk belongs to (tracked via the preceding `diff --git`
+// header). Dedupes to the LAST flip per file in the window (in case a file flipped more than once).
+export function parseStatusFlipsFromLog(diffText) {
+  const flips = new Map(); // file -> status (insertion order = chronological, oldest→newest from git log)
+  let currentFile = null;
+  const fileRe = /^diff --git a\/(.+?) b\/.+$/;
+  const statusRe = /^\+status:\s*(shipped|archived)\b/;
+  for (const line of diffText.split('\n')) {
+    const fm = fileRe.exec(line);
+    if (fm) {
+      currentFile = fm[1];
+      continue;
+    }
+    const sm = statusRe.exec(line);
+    if (sm && currentFile) {
+      flips.set(currentFile, sm[1]); // last write wins — git log is oldest-commit-first by default... see note below
+    }
+  }
+  return [...flips.entries()].map(([file, status]) => ({ file, status }));
+}
+
+// Pure — pulls the epic's display name from its README's first `# Epic...`/`# Epic:` heading, else the
+// slug derived from the path.
+export function epicNameFromReadme(markdown, filePath) {
+  const m = /^#\s+(.+)$/m.exec(markdown);
+  if (m) return m[1].replace(/^Epic:?\s*/i, '').trim();
+  const parts = filePath.split('/');
+  return parts[parts.length - 2] || filePath;
+}
+
+function gatherShippedEpics(sinceISO) {
+  // git log defaults to newest-first; -p in that order still gives each flip's LATEST value first per
+  // file, so reverse iteration order (oldest first) before building the map so "last write wins" means
+  // chronologically last, not textually last in output.
+  const r = spawnSync(
+    'git',
+    ['log', '--since', sinceISO, '-p', '--reverse', '--', 'Roadmap/*/*/README.md'],
+    { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }
+  );
+  if (r.status !== 0) return [];
+  const flips = parseStatusFlipsFromLog(r.stdout || '');
+  return flips.map(({ file, status }) => {
+    const abs = join(ROOT, file);
+    let name = file;
+    let retroDigest = null;
+    if (existsSync(abs)) {
+      name = epicNameFromReadme(readFileSync(abs, 'utf8'), file);
+    }
+    const retroPath = join(dirname(abs), 'RETROSPECTIVE.md');
+    if (existsSync(retroPath)) {
+      retroDigest = extractRetroDigest(readFileSync(retroPath, 'utf8'), RETRO_DIGEST_MAX_CHARS);
+    }
+    return { file, status, name, retroDigest };
+  });
+}
+
+// Pure — pulls a short excerpt from a RETROSPECTIVE.md's "## What shipped" section (the first
+// paragraph), capped at maxChars. Degrades to null if the section isn't found — the caller then just
+// shows the epic name/link with no digest, rather than failing.
+export function extractRetroDigest(markdown, maxChars) {
+  const m = /^##\s+What shipped\s*\n+([\s\S]+?)(?=\n##\s|\n*$)/m.exec(markdown);
+  if (!m) return null;
+  const firstBlock = m[1].split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim();
+  if (!firstBlock) return null;
+  return firstBlock.length > maxChars ? `${firstBlock.slice(0, maxChars).trim()}…` : firstBlock;
+}
+
+// ---- config / secrets ----
+
+function loadChatId() {
+  if (!existsSync(CONFIG_PATH)) return null;
+  try {
+    const cfg = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
+    return cfg.chat_id || null;
+  } catch {
+    return null;
+  }
+}
+
+// ---- message ----
+
+// Pure — builds the Telegram message from already-gathered data. No I/O.
+export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) {
+  const since = sinceISO.slice(0, 10);
+  const until = untilISO.slice(0, 10);
+  const lines = [`<b>Weekly recap · ${since} – ${until}</b>`];
+
+  lines.push('');
+  lines.push('<b>🚀 Merged PRs</b>');
+  let totalPrs = 0;
+  for (const r of repoResults) {
+    const label = esc(shortRepo(r.repo));
+    if (!r.available) {
+      lines.push(`${label}: unavailable`);
+      continue;
+    }
+    totalPrs += r.prs.length;
+    if (!r.prs.length) {
+      lines.push(`${label}: none this week`);
+      continue;
+    }
+    lines.push(`${label} (${r.prs.length}): ${r.prs.map((p) => `#${p.number} ${esc(p.title)}`).join('; ')}`);
+  }
+
+  lines.push('');
+  lines.push('<b>📦 Deploys</b> (merges to main)');
+  const feResult = repoResults.find((r) => r.repo === FRONTEND_REPO);
+  const beResult = repoResults.find((r) => r.repo === BACKEND_REPO);
+  lines.push(`Frontend: ${feResult?.available ? feResult.prs.length : 'unavailable'} · Backend: ${beResult?.available ? beResult.prs.length : 'unavailable'}`);
+
+  lines.push('');
+  lines.push('<b>✅ Shipped / closed epics</b>');
+  if (!shippedEpics.length) {
+    lines.push('none this week');
+  } else {
+    for (const e of shippedEpics) {
+      lines.push(`${e.status === 'shipped' ? '✅' : '🗄️'} <b>${esc(e.name)}</b>`);
+      if (e.retroDigest) lines.push(esc(e.retroDigest));
+    }
+  }
+
+  // Only collapse to the quiet-week one-liner when every repo actually reported in — an unavailable
+  // repo must never be silently swallowed into the upbeat "nothing happened" framing.
+  const allAvailable = repoResults.every((r) => r.available);
+  if (allAvailable && totalPrs === 0 && !shippedEpics.length) {
+    return `<b>Weekly recap · ${since} – ${until}</b>\n🌙 Quiet week — nothing merged or shipped since the last recap.`;
+  }
+
+  return lines.join('\n');
+}
+
+// ---- Telegram (same shape standup.mjs reimplements standalone) ----
+
+async function sendTelegram(chatId, text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) die('TELEGRAM_BOT_TOKEN is not set — export it before running weekly-recap.mjs.');
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
+    signal: AbortSignal.timeout(10000),
+  });
+  let body = {};
+  try {
+    body = await res.json();
+  } catch {
+    /* non-JSON error body */
+  }
+  if (!res.ok) die(`Telegram sendMessage failed: ${res.status} ${JSON.stringify(body).slice(0, 300)}`);
+}
+
+// ---- git persistence of the log ----
+
+function commitAndPushLog() {
+  const add = spawnSync('git', ['add', 'scripts/weekly-recaps.log'], { cwd: ROOT, encoding: 'utf8' });
+  if (add.status !== 0) {
+    console.error(`weekly-recap: git add failed — log won't persist to the next run: ${add.stderr}`);
+    return;
+  }
+  const commit = spawnSync(
+    'git',
+    ['commit', '-m', `chore(weekly-recap): log ${new Date().toISOString().slice(0, 10)}`, '--', 'scripts/weekly-recaps.log'],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+  if (commit.status !== 0) {
+    if (!/nothing to commit/i.test(commit.stdout || '')) {
+      console.error(`weekly-recap: git commit failed — log won't persist to the next run: ${commit.stderr}`);
+    }
+    return;
+  }
+  const push = spawnSync('git', ['push'], { cwd: ROOT, encoding: 'utf8' });
+  if (push.status !== 0) {
+    console.error(
+      `weekly-recap: git push failed — the log commit is local only, so the next run (esp. a fresh ` +
+        `routine session) won't see it and will re-derive its window from a stale/missing log. Needs ` +
+        `push enabled beyond the claude/-prefix default. ${push.stderr}`
+    );
+  }
+}
+
+// ---- main ----
+
+async function main() {
+  ensureGh();
+
+  const now = new Date();
+  const lastRun = loadLastRun();
+  const { sinceISO, untilISO } = computeWindow(lastRun, now, SINCE_OVERRIDE);
+
+  const repoResults = REPOS.map((repo) => gatherMergedPrs(repo, sinceISO));
+  const shippedEpics = gatherShippedEpics(sinceISO);
+
+  const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics });
+  console.log(message.replace(/<\/?[^>]+>/g, ''));
+
+  if (!DRY_RUN) {
+    const chatId = loadChatId();
+    if (!chatId) {
+      die(
+        `No Telegram chat id configured — set "chat_id" in ${CONFIG_PATH} ` +
+          `(copy skills/weekly-recap/config.example.json, or let the weekly-recap skill ask via AskUserQuestion).`
+      );
+    }
+    await sendTelegram(chatId, message);
+
+    appendRun({
+      ts: now.toISOString(),
+      windowStart: sinceISO,
+      windowEnd: untilISO,
+      prCount: repoResults.reduce((n, r) => n + (r.available ? r.prs.length : 0), 0),
+      shippedCount: shippedEpics.length,
+    });
+    commitAndPushLog();
+  }
+}
+
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) {
+  main().catch((e) => {
+    console.error(e.message || e);
+    process.exit(1);
+  });
+}
