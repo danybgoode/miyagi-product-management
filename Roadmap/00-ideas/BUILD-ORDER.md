@@ -14,9 +14,9 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-_None._
+- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 0/19 stories
 
 ## ✅ Shipped (76)
 
@@ -109,4 +109,4 @@ _None._
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 77 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 78 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
