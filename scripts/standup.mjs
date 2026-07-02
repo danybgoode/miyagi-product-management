@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // standup.mjs — gathers overnight signals across the 3 repos and posts a DELTA-ONLY Telegram standup.
 //
-// Signals: opened/merged PRs + CI status (gh, all 3 repos), the latest browser-smoke.yml run (frontend
-// repo only — the backend has no per-branch preview / no Playwright), BUILD-ORDER.md drift
-// (`node scripts/build-order.mjs --check`), open-PR state, and the stale-preview count
-// (`node scripts/vercel-prune-previews.mjs --age 7`, dry-run — never `--apply`).
+// Signals: opened/merged PRs + CI status + merge-conflict state (gh, all 3 repos), the latest
+// browser-smoke.yml run (frontend repo only — the backend has no per-branch preview / no Playwright),
+// BUILD-ORDER.md drift (`node scripts/build-order.mjs --check`), open-PR state, and the stale-preview
+// count (`node scripts/vercel-prune-previews.mjs --age 7`, dry-run — never `--apply`). The CI-red and
+// conflict signals are this standup's OWN independent read — taken after babysit-pr has had a chance
+// to act (it runs earlier in the same ops-nightly routine), so a "still red" line reflects state
+// post-retry, not pre-retry.
 //
 // Delta-only: keeps scripts/standups.log (JSONL, one snapshot per run) and diffs the current gather
 // against the LAST logged snapshot. Nothing changed → posts a one-line "quiet night" message instead of
@@ -72,7 +75,7 @@ function ghJson(args) {
 function gatherRepoPrs(repo) {
   const prs = ghJson([
     'pr', 'list', '--repo', repo, '--state', 'all', '--limit', '50', '--json',
-    'number,title,state,isDraft,mergedAt,createdAt,updatedAt,statusCheckRollup,url',
+    'number,title,state,isDraft,mergedAt,createdAt,updatedAt,statusCheckRollup,mergeable,url',
   ]);
   if (prs === null) return { repo, available: false };
 
@@ -81,6 +84,9 @@ function gatherRepoPrs(repo) {
   const failingOpen = open.filter((p) =>
     (p.statusCheckRollup || []).some((c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.state === 'FAILURE')
   );
+  // Surfaced by babysit-pr's own advisory comment too — this is the standup's independent read of the
+  // same fact, taken AFTER babysit-pr has had a chance to act (it runs earlier in the ops-nightly routine).
+  const conflictingOpen = open.filter((p) => p.mergeable === 'CONFLICTING');
 
   return {
     repo,
@@ -88,6 +94,7 @@ function gatherRepoPrs(repo) {
     openNumbers: open.map((p) => p.number),
     mergedNumbers: merged.map((p) => p.number),
     failingOpenNumbers: failingOpen.map((p) => p.number),
+    conflictingOpenNumbers: conflictingOpen.map((p) => p.number),
     // small lookup for rendering human-readable delta lines
     byNumber: Object.fromEntries(prs.map((p) => [p.number, { title: p.title, url: p.url }])),
   };
@@ -156,7 +163,12 @@ function buildSnapshot({ repoSignals, smoke, buildOrder, previews }) {
       repoSignals.map((r) => [
         r.repo,
         r.available
-          ? { openNumbers: r.openNumbers, mergedNumbers: r.mergedNumbers, failingOpenNumbers: r.failingOpenNumbers }
+          ? {
+              openNumbers: r.openNumbers,
+              mergedNumbers: r.mergedNumbers,
+              failingOpenNumbers: r.failingOpenNumbers,
+              conflictingOpenNumbers: r.conflictingOpenNumbers,
+            }
           : null,
       ])
     ),
@@ -194,6 +206,10 @@ function diffSnapshots(prev, cur, repoSignals) {
     const prevFailing = new Set(prevRepo?.failingOpenNumbers || []);
     const newFailing = curRepo.failingOpenNumbers.filter((n) => !prevFailing.has(n));
     if (newFailing.length) lines.push(`🔴 <b>${label}</b> CI red on open PR: ${newFailing.map((n) => `#${n}`).join(', ')}`);
+
+    const prevConflicting = new Set(prevRepo?.conflictingOpenNumbers || []);
+    const newConflicting = (curRepo.conflictingOpenNumbers || []).filter((n) => !prevConflicting.has(n));
+    if (newConflicting.length) lines.push(`⚠️ <b>${label}</b> merge conflict on open PR: ${newConflicting.map((n) => `#${n}`).join(', ')}`);
 
     if (!prevRepo || prevRepo.openNumbers?.length !== curRepo.openNumbers.length) {
       lines.push(`📋 <b>${label}</b> open PRs: ${curRepo.openNumbers.length}`);
