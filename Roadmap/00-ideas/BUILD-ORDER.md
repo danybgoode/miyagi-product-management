@@ -14,13 +14,12 @@
 
 - [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 6/8 stories
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (2)
 
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 0/4 stories
 - [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
-- [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
 
-## ✅ Shipped (71)
+## ✅ Shipped (72)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -62,6 +61,7 @@
 - [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 0/6 stories
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 0/3 stories · risk: Low
+- [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
 - [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 0/12 stories
 - [Referral Program](../../08-growth-and-promotions/referral-program/README.md) — 08 Growth · 5/5 stories · risk: Low
 - [Seasonal Theme Engine](../../08-growth-and-promotions/seasonal-theme-engine/README.md) — 08 Growth · 0/9 stories
