@@ -1,6 +1,7 @@
 # Ops routines & reporting — Sprint 2: the nightly fixers + feed the standup
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — built, ready for PR review; first live `--apply` (2.2) and first live
+babysit action (2.3) still owed to Daniel before either runs unattended
 
 > Adds the overnight chore-workers the standup reports on: regenerate the build-order board, report stale
 > Vercel previews, babysit open PRs — then fold their outputs into the S1 standup and the one nightly ops
@@ -9,66 +10,122 @@
 
 ## Stories
 
-### Story 2.1 — `build-order-sync` skill (nightly regen → docs PR on drift)
+### Story 2.1 — `build-order-sync` skill (nightly regen → docs PR on drift) ✅ built
 **As a** product owner, **I want** the build-order board regenerated overnight, **so that** its CI guard
 stops going red because someone forgot to run the generator.
 **Acceptance:**
-- `skills/build-order-sync/SKILL.md` wraps `node scripts/build-order.mjs`; on drift vs committed, opens a
-  `claude/` **docs PR** with the regenerated `BUILD-ORDER.md`. **Never hand-edits** the board (SSOT = epic
-  frontmatter). Mandatory `## Gotchas` (the "board is a derived view" rule).
-- On no drift, no PR. Feeds a one-line drift status into the standup.
+- ✅ `skills/build-order-sync/SKILL.md` wraps `node scripts/build-order-sync.mjs` (which itself wraps
+  `scripts/build-order.mjs`'s `--check`/regen); on drift vs committed, opens a `claude/` **docs PR** with
+  the regenerated `BUILD-ORDER.md`. **Never hand-edits** the board (SSOT = epic frontmatter). Mandatory
+  `## Gotchas` (the "board is a derived view" rule + the `claude/`-prefix push-scope note).
+- ✅ On no drift, no PR — confirmed live (see walkthrough).
+- ⚠️ **Not** a separate standup feed this sprint — the standup's own `buildOrderDrifted` signal (S1)
+  already reads `build-order.mjs --check` directly and independently; this skill's job is the fix
+  (opening the PR), not a second read of the same fact.
 **Risk:** Low (docs PR only; auto-generated content).
 
-### Story 2.2 — `vercel-prune` skill (scheduled dry-run report; apply gated)
+### Story 2.2 — `vercel-prune` skill (scheduled dry-run report; apply gated) ✅ built
 **As a** product owner, **I want** stale preview deployments reported nightly, **so that** dead previews
 don't pile up — without ever deleting something I still need.
 **Acceptance:**
-- `skills/vercel-prune/SKILL.md` wraps `scripts/vercel-prune-previews.mjs`; runs a **dry-run** on schedule and
-  reports the stale-preview count/list into the standup. **`--apply` is human-confirmed** (never automatic);
-  `--keep-branch` protects any open-PR preview. Mandatory `## Gotchas` (production deploys are rollback
-  history — never touched; open-PR previews are the live review target).
-**Risk:** **Medium** — destructive on `--apply`. Dry-run-first + Daniel confirms the first live apply.
+- ✅ `skills/vercel-prune/SKILL.md` wraps `scripts/vercel-prune-previews.mjs` (no new script — it already
+  supported everything needed) — a two-command recipe (compute the open-PR keep-branch list via `gh pr
+  list`, then run the existing script `--age 7 --keep-branch <list>`, dry-run). **`--apply` is
+  human-confirmed** (Stage 3 — only on an explicit, in-conversation ask, never automatic, never invoked
+  by the routine); `--keep-branch` protects any open-PR preview. Mandatory `## Gotchas` (production
+  deploys are never touched regardless of flags; open-PR previews are the live review target; the
+  underlying script's own bare default is `--age 0`, not the `--age 7` this skill always passes).
+**Risk:** **Medium** — destructive on `--apply`. Dry-run-first + **Daniel confirms the first live
+apply** (not yet run — no `VERCEL_API_TOKEN` in the build sandbox, same gap S1 hit; see walkthrough).
 
-### Story 2.3 — `babysit-pr` skill (advisory PR watch)
+### Story 2.3 — `babysit-pr` skill (advisory PR watch) ✅ built
 **As a** product owner, **I want** open PRs babysat overnight, **so that** flaky CI and merge conflicts are
 retried/surfaced instead of silently stalling a PR.
 **Acceptance:**
-- `skills/babysit-pr/SKILL.md` + a helper script: for an open PR, read CI status (`gh`), retry a flaky run,
-  and surface merge conflicts. **Advisory only** — posts status; **never auto-merges, never reports a
-  commit-status check** (a comment structurally can't become a required check — keep it that way). Mandatory
-  `## Gotchas`.
-- Feeds "PRs needing attention" into the standup.
-**Risk:** **Medium** — writes to PRs (re-run CI, comment). Daniel confirms the first live babysit action.
+- ✅ `skills/babysit-pr/SKILL.md` + `scripts/babysit-pr.mjs`: for an open PR, reads CI status + `mergeable`
+  (`gh pr view`), retries any genuinely `FAILURE`/`ERROR`/`TIMED_OUT` workflow run on its branch (`gh run
+  rerun --failed`), and surfaces a merge conflict. **Advisory only** — posts one comment; **never
+  auto-merges, never reports a commit-status check** (a comment structurally can't become a required
+  check — keep it that way). Mandatory `## Gotchas`. The classification logic
+  (`decideBabysitActions`) is a pure, tested function (`scripts/babysit-pr.test.mjs`, 6 cases).
+- ✅ A **clean** PR (no conflict, no failing checks) gets **no comment** — confirmed live against 6 real
+  open PRs across the frontend and backend repos (see walkthrough); only a genuinely actionable PR
+  produces one.
+- "PRs needing attention" folds into the standup via `standup.mjs`'s own new `conflictingOpenNumbers`
+  signal (S2.4) plus its existing CI-red line, which now reflects state *after* babysit-pr's retry
+  attempt (babysit-pr runs earlier in the same routine).
+**Risk:** **Medium** — writes to PRs (re-run CI, comment). **Daniel confirms the first live babysit
+action** (not yet run for real — every live check in this sprint used `--dry-run`; see walkthrough).
 
-### Story 2.4 — Fold the fixers into the standup + the one nightly ops routine
+### Story 2.4 — Fold the fixers into the standup + the one nightly ops routine ✅ built
 **As a** product owner, **I want** all overnight work in one routine and one standup, **so that** I get a
 single morning message and stay under the scheduled-run cap.
 **Acceptance:**
-- `scripts/routines/ops-nightly.prompt.md` (from S1) now invokes, in order: `build-order-sync`,
-  `vercel-prune` (dry-run), `babysit-pr`, then `standup-post` (which reports their outputs).
-- Still one scheduled routine (cap-safe); still advisory/non-gating.
+- ✅ `scripts/routines/ops-nightly.prompt.md` (from S1) now invokes, in order: `build-order-sync`,
+  `vercel-prune` (dry-run), `babysit-pr` (once per open PR, across all 3 repos), then `standup-post`
+  (which reports the new merge-conflict signal, plus its existing signals which now reflect
+  post-fixer-step state).
+- ✅ Still one scheduled routine (cap-safe); still advisory/non-gating. `scripts/routines/README.md`
+  updated with the new env/scope requirements (see below).
+- ✅ `scripts/routines.test.mjs` now also covers `ops-nightly.prompt.md`'s advisory-only framing (it was
+  the one prompt missing from that guard's list since S1 — closed as part of this sprint's rewrite).
 **Risk:** Low.
 
+## Incident during this sprint's build (recorded for the retro)
+An early version of `build-order-sync.mjs` called its `main()` unconditionally at module scope (no
+entry-point guard). Importing it from `build-order-sync.test.mjs` to test its two pure helpers — via
+`node --test 'scripts/*.test.mjs'` — executed `main()` for real against the live repo. The board was
+genuinely drifted (a pre-existing, correct drift: the `agent-discovery-and-indexing` epic's status had
+already been flipped to shipped, with an untracked `RETROSPECTIVE.md` sitting in the working tree from
+before this session started), so the script did exactly what it's designed to do on real drift: pushed
+branch `claude/build-order-sync-2026-07-02` and opened a real PR (#51) on `miyagi-product-management`
+— before the story was reviewed or the human was asked. The regenerated content itself was correct
+(verified by diff), so at Daniel's direction the PR was merged and the branch cleaned up rather than
+discarded. **Fix applied to both new scripts** (`build-order-sync.mjs`, `babysit-pr.mjs`): the standard
+`isMain` entry-point guard already used by `scripts/roadmap-to-notion.mjs`
+(`process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])`) — a script with a
+co-located pure-logic test **must** guard its `main()` call, or importing it for the pure helpers
+re-executes the whole script for real. Promoted to `LEARNINGS.md` at epic close.
+
 ## Sprint QA
-- **api spec(s):** none. `node --check` each new/changed script; live-run each skill once and confirm its
-  standup line.
-- **browser smoke owed:** no.
-- **deterministic gate:** `node --check` green; the risk-tier stories (2.2 apply, 2.3 writes) get an explicit
-  first-live-run confirmation from Daniel before being left to run nightly.
+- **api spec(s):** none — no app surface. `node --check` on every new/changed script (green).
+  `node --test 'scripts/*.test.mjs' 'scripts/lib/*.test.mjs'` — 61 pass, 0 fail (the two new pure-logic
+  test files plus every pre-existing one, incl. the now-covered `ops-nightly.prompt.md`).
+- **browser smoke owed:** no — no app/browser surface.
+- **deterministic gate:** `node --check` + the full `node --test` suite green (this is exactly what
+  `scripts-guard.yml` runs). `node scripts/build-order.mjs --check` confirmed clean before and after —
+  no story here touches epic frontmatter status. The risk-tier stories (2.2 apply, 2.3 writes) still
+  get an explicit first-live-run confirmation from Daniel before being left to run nightly — see below.
 
 ## Sprint 2 — Verification walkthrough (do these in order)
 Env: the repo scripts + Telegram + `claude.ai/code/routines` (process change; no app deploy).
 
-1. With the board deliberately stale, run `build-order-sync`.
-   → It opens a `claude/` docs PR with the regenerated `BUILD-ORDER.md`; it does **not** hand-edit the board.
-2. Run `vercel-prune` on schedule (dry-run).
-   → It reports stale previews into the standup and deletes **nothing**. Confirm an open-PR preview is in the
-   `--keep-branch` protected set. **(money/infra-adjacent — the first `--apply` is owed to Daniel.)**
-3. Point `babysit-pr` at an open PR with a flaky/failed check.
-   → It retries/ surfaces status as an advisory comment; it does **not** merge and creates **no** required
-   check. **(the first live babysit write is owed to Daniel.)**
-4. Trigger the nightly ops routine.
-   → One standup arrives folding in build-order drift, stale-preview count, and PRs-needing-attention.
+1. ✅ **Ran live** — `node scripts/build-order-sync.mjs --dry-run` against the real (clean, post-incident)
+   board: printed `BUILD-ORDER.md is up to date — no PR needed.` and touched nothing. The
+   drift→PR path was exercised for real (unintentionally — see the incident note above) when the
+   pre-existing drift produced PR #51, which Daniel reviewed and merged; that IS the intended live
+   behavior, just triggered ahead of schedule. **Confirmed:** on a clean board, no PR; on real drift, a
+   correct `claude/` docs PR with only the regenerated file, never a hand-edit.
+2. ✅ **Ran live (dry-run)** — computed the open-PR keep-branch list (`gh pr list
+   --repo danybgoode/miyagisanchezcommerce --state open --json headRefName`, one open PR:
+   `feat/supply-listing-image-backfill`) and ran `node scripts/vercel-prune-previews.mjs --age 7
+   --keep-branch feat/supply-listing-image-backfill`. Result: `403 forbidden` — no `VERCEL_API_TOKEN`
+   in this build sandbox (the same gap S1 hit; `standup.mjs`'s own simpler read already degrades to
+   "unavailable" for this exact reason). The script's dry-run-by-default + explicit-`--apply` contract
+   is unchanged and verified by code read, but **the actual live report + the first `--apply` are owed
+   to Daniel**, who holds a real token.
+3. ✅ **Ran live (dry-run)** — `node scripts/babysit-pr.mjs <PR#> --repo <repo> --dry-run` against 7 real
+   open PRs (1 frontend, 6 backend/dependabot). 6 were clean → correctly printed "no comment posted",
+   nothing else happened. 1 (backend #23) had a genuinely failed check → correctly printed "would
+   rerun failed run #28542370519" and a preview comment reading "Would retry failing CI run(s):
+   #28542370519" (an initial version of this preview said "no retry needed" while also printing "would
+   rerun" — inconsistent; fixed so the dry-run preview and the printed action agree). **The first LIVE
+   (non-dry-run) babysit action — an actual retry + a real posted comment — is owed to Daniel** before
+   this runs unattended nightly.
+4. ⬜ **Owed to Daniel** — trigger the nightly ops routine for real (once the account-side routine prompt
+   is updated to this sprint's 4-step version) and confirm one standup arrives folding in build-order
+   drift, the stale-preview count, and PRs-needing-attention (conflicts + still-red CI). Not
+   achievable in this session (no routine account access).
 
 If any step fails, note the step number + what you saw — that's the bug report.
 

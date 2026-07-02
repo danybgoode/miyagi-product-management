@@ -12,7 +12,7 @@
 
 ## 🏗️ Building now (1)
 
-- [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 2/8 stories
+- [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 6/8 stories
 
 ## 📋 Ready to build (scaffolded, not started) (2)
 
