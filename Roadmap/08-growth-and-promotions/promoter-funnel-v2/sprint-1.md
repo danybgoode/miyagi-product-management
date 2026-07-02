@@ -1,7 +1,18 @@
 # Sprint 1 · Landing v2 — say the true offer
 
-> Epic: [Promoter Funnel v2](README.md) · Risk: LOW (frontend copy + pure lib) · Status: 📋 planned
+> Epic: [Promoter Funnel v2](README.md) · Risk: LOW (frontend copy + pure lib) · Status: ✅ built,
+> [PR #162](https://github.com/danybgoode/miyagisanchezcommerce/pull/162) open (draft) — full gate
+> green (tsc + build + Playwright api); browser mobile-overflow spec green.
 > Surfaces: `/vende/promotor`, `/vende/promotor/sell-sheet`, the "Agente IA" sheet. Frontend-only.
+
+| Story | Status | Commit |
+|---|---|---|
+| US-1.1 — Hero prompt = the promoter agent prompt (single source) | ✅ | `cde9b74` |
+| US-1.2 — Context-aware agent-sheet preamble | ✅ | `0ad7678` |
+| US-1.3 — CTA + wording sweep | ✅ | `d1fdea5` |
+| US-1.4 — Real earnings + per-SKU price table | ✅ | `0480b26` |
+| US-1.5 — Handbook: sell-sheet → "Manual del promotor" | ✅ | `4fd7c24` |
+| Mobile-overflow browser spec (+ a real bug it caught + fixed) | ✅ | `535d3f1` |
 
 ## US-1.1 — Hero copiable prompt = the promoter agent prompt
 **As** a prospective promoter, **I want** the landing's copy-paste prompt to be the promoter ask
@@ -63,16 +74,32 @@ printable layout intact.
 - Mobile overflow browser spec on the reworked landing (360/390/414px) — nightly project.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-*(placeholder — fill with real URLs at build time)*
-Env: production · https://miyagisanchez.com
+Env: **PR #162 Vercel preview** ·
+https://miyagisanchez-git-feat-promoter-funnel-v2-danybgoodes-projects.vercel.app
+(swap in https://miyagisanchez.com once merged to `main` — same paths).
 
-1. Open https://miyagisanchez.com/vende/promotor → hero shows earnings numbers (no lone `%`), CTA
-   reads "Aplica para ser promotor" (or the S2 teaser).
-2. Tap the hero copy button → paste: the "Quiero ser promotor…" prompt with the real URL.
-3. Open the navbar "Agente IA" sheet on the same page → prompt opens with the recruiting framing,
-   still cites miyagisanchez.com/agent and ucp.dev.
-4. Open https://miyagisanchez.com/vende/promotor/sell-sheet → the Manual del promotor renders +
-   prints cleanly.
-5. In /admin/promoter change a commission % → reload the landing → number updated.
+1. Open `<preview>/vende/promotor` (signed out) → hero shows `$499` (Dominio propio) and `$199`
+   (Subdominio) — no lone `%` and no `Gratis` placeholder. Primary CTA reads **"Aplica para ser
+   promotor"** (not "Abrir mi panel para cerrar") and jumps to the "La solicitud en línea llega
+   pronto" section further down the page when tapped.
+2. Tap the hero copy button ("Copiar prompt para mi IA") → paste it somewhere → it should read
+   *"Quiero ser promotor de Miyagi Sánchez y ganar comisión montando tiendas en persona. Abre
+   https://miyagisanchez.com/vende/promotor…"* — the same text the navbar sheet uses (step 3).
+3. Open the navbar "Agente IA" sheet on the same page → the prompt opens with *"Eres mi asesor para
+   evaluar esta oportunidad de negocio…"* (not "Eres mi asistente de compras"), still cites
+   `miyagisanchez.com/agent` and `ucp.dev`, and is byte-identical to the hero prompt from step 2.
+4. Open `<preview>/vende/promotor/sell-sheet` → **"Manual del promotor"** renders with the glossary,
+   the 5-step close checklist, 4 sales scripts, and the payments section (incl. one "Próximamente"
+   line); ⌘P / print preview shows a clean printable layout (site chrome hidden).
+5. Resize to a phone width (or open on a real phone) on both pages above → no sideways scroll.
+6. **Deferred to Sprint 3 (admin commission config isn't built yet):** once `/admin/promoter` gets a
+   commission-rate field, changing a SKU's % there and reloading `/vende/promotor` should update the
+   heroStat + glossary price lines without a deploy — the pure computation
+   (`lib/promoter-earnings.ts`) is unit-tested now (`e2e/promoter-earnings.spec.ts`), but there's no
+   live admin UI to drive it end-to-end until then.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Nothing here is money/auth-gated** — every step above is a public, unauthed content page, so there's
+no smoke step that's structurally owed to Daniel; this walkthrough is a quick confirmation pass, not a
+gap-fill.
