@@ -1,8 +1,9 @@
 # Seller agent connect — Sprint 1: a setup prompt that actually helps (skateboard, ships alone)
 
-**Status:** ✅ built 2026-07-02 · branch `feat/seller-agent-connect-mcp-url` off latest `main` ·
-[PR #158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) `3e244b7` · awaiting merge
-**Risk:** low (copy only) — reviewer may auto-merge on a green gate.
+**Status:** ✅ shipped 2026-07-02 · [PR #158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)
+merged `893d23b` (squash) · branch deleted
+**Risk:** low (copy only) — reviewer-merged on green CI + clean fresh-reviewer pass + clean Codex
+cross-review (advisory).
 
 ## Story 1.1 — Rewrite `buildSetupPrompt` to read context + interview ✅
 **As a** prospective seller, **I want** the setup prompt to give my agent Miyagi context and interview me when

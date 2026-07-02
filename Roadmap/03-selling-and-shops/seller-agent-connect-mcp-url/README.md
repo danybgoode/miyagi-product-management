@@ -1,5 +1,5 @@
 ---
-status: planned
+status: in-progress
 slug: seller-agent-connect-mcp-url
 ---
 
@@ -7,7 +7,7 @@ slug: seller-agent-connect-mcp-url
 
 > **Area:** 03-selling-and-shops · **Risk:** Sprint 1 low · Sprint 2 **high (auth)** · **Type:** feature + copy
 > **Scope doc:** [`00-ideas/2. readyforscope/seller-agent-connect-mcp-url.md`](../../00-ideas/2.%20readyforscope/seller-agent-connect-mcp-url.md)
-> **Status:** 📋 planned · approved 2026-07-01 · Agent-native setup / "Conecta tu agente" follow-up
+> **Status:** 🚧 in progress · S1 ✅ shipped 2026-07-02 ([#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)) · S2 next
 
 ## Why
 Two gaps stop a seller's agent from actually running the shop. (1) The setup emit prompt
@@ -44,7 +44,7 @@ must ride in the URL (chosen) or via OAuth (deferred). The header snippet stays 
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| 1 | Rewrite `buildSetupPrompt` — read Miyagi context + interview on thin input, keep JSON-only final output | low |
+| 1 | Rewrite `buildSetupPrompt` — read Miyagi context + interview on thin input, keep JSON-only final output ✅ [#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) | low |
 | 2 | Per-shop personal MCP URL (opaque connector slug in path) resolving to the existing seller scope | **high (auth)** |
 | 2 | `ConnectAgentPanel`: always-shown copyable URL + "Agregar a Claude" deep-link + rotate/revoke; keep header snippet | **high** |
 | 2 | Kill-switch (default off), auth `api` specs (both flag states, flag→auth→config ordering), smoke walkthrough | high |
