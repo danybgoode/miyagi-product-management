@@ -26,7 +26,8 @@ parent: process-iteration-portfolio
 
 ## Why a spike, not a build
 There's a real decision under this with no deterministic gate: **which skills to build vs reuse vs skip,
-where they live (repo `./.claude/skills` vs a plugin marketplace), and the house conventions** — getting
+where they live (repo `./.claude/skills` vs a plugin marketplace — decided below: this repo's actual
+checked-in-skill path is `skills/<name>/`, not `.claude/skills`), and the house conventions** — getting
 this wrong means either context bloat (too many checked-in skills) or duplicated logic (skills that overlap
 routines/scripts). Decide once, then B builds against it.
 
@@ -50,9 +51,10 @@ routines/scripts). Decide once, then B builds against it.
    section, progressive disclosure (references/ + scripts/ + assets/ templates), **descriptions written for
    the model** (trigger words), `config.json` for setup (e.g. Telegram chat id), and a **memory log** where
    useful (e.g. `standups.log` so `standup-post` diffs against yesterday).
-4. **Distribution decision:** repo-checked-in (`./.claude/skills`) vs an internal **plugin marketplace**.
-   The blog's guidance for a small solo repo is checked-in — but each checked-in skill adds session context,
-   which collides with Initiative A (trim first). Decide the threshold at which a marketplace is worth it.
+4. **Distribution decision:** repo-checked-in (`skills/<name>/` — not `.claude/skills`, see below) vs an
+   internal **plugin marketplace**. The blog's guidance for a small solo repo is checked-in — but each
+   checked-in skill adds session context, which collides with Initiative A (trim first). Decide the
+   threshold at which a marketplace is worth it.
 5. **Skill↔routine wiring:** confirm the standing pattern — logic in a committed skill, triggered by a
    routine/hook/`/verb`; never duplicate a script's job inside a routine prompt.
 
@@ -106,6 +108,7 @@ Best-practice guidance confirmed verbatim: **Gotchas is the highest-signal secti
 | `scripts/cross-review.mjs` / `cross-panel.mjs` | **6** (quality/review) | Scripts, not skills (no `SKILL.md`) | Already the category-6 answer per the original gap-map — confirmed, not rebuilt. |
 | `scripts/lib/cross-agent-cli.mjs` | *(not a skill)* | Shared library | Infrastructure code both cross-agent scripts import — correctly not duplicated. |
 | `scripts/build-order.mjs`, `scripts/vercel-prune-previews.mjs` | **9** (infra-ops) — **no skill wrapper today** | Scripts only | Real, low-urgency gap: both are invoked directly (`node scripts/x.mjs`); a thin wrapping skill is optional polish, not a blocker. |
+| `consolidate-memory` (built-in, available via the `Skill` tool — not a repo-authored file) | **9** (infra-ops, applied to the personal memory store) with elements of **8** (a reflective pass that reports what it merged/pruned) | Anthropic-provided skill, not vendored/checked in here | The parallel lever for `~/.claude/projects/.../memory/` — distinct scope from `doc-hygiene` (which covers `Roadmap/` docs, not personal memory). Nothing to inventory as a repo artifact; noted for completeness since the spike's own investigation list named it. |
 
 No skill in the repo straddles categories badly enough to need decoupling right now — `groom`'s 4↔5 overlap is the one to watch if it keeps growing (see `LEARNINGS.md`'s anti-monolith guard precedent: decompose when a file/skill creeps, don't let the cap creep with it).
 
