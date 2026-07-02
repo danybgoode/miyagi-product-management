@@ -89,7 +89,14 @@ seed has run; `ml.sync_enabled` + `ml.sync_paywall_enabled` are ON (both already
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
+## Follow-ups shipped after S6 (2026-07-01)
+- ✅ **Promoter-close SKU picker** (fe #155 `0e2d60b`) — `PromoterCloseClient` gains a SKU `<select>` (Dominio
+  propio + Sincronización Mercado Libre) over the one-time close routes; a promoter can now close ML sync, not
+  just domain. Print stays out (its flow needs ad content). Was the deferred piece of US-18.
+- ✅ **Plan-seed update-destructure sweep** (be #55 `8bb99ac`) — the same `updateSubscriptionPlans` single-object
+  bug hotfix #54 fixed on ml-sync also lived in `setup-subdomain-plan` (×2) + `setup-custom-domain-plan` (×1);
+  swept (latent-only — both already seeded — so no re-seed, just future-safe). Cross-review clean on both.
+
 ## Out of scope (this sprint)
-The promoter-close **UI** SKU-picker (route ships; small follow-up); cadence *switch* (monthly↔yearly, subdomain
-has it to clone); the S5 US-15 durable-idempotency table (own PR); epic close-out (RETROSPECTIVE / poster /
-LEARNINGS).
+Cadence *switch* (monthly↔yearly, subdomain has it to clone); the S5 US-15 durable-idempotency table (own PR);
+epic close-out (RETROSPECTIVE / poster / LEARNINGS).
