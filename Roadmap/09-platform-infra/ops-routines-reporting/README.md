@@ -1,9 +1,18 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: ops-routines-reporting
 ---
 
 # Epic: Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)
+
+> ✅ **SHIPPED 2026-07-02 — 3 sprints, mixed LOW→MEDIUM.** **S1** (PR #50) shipped the daily-standup
+> skateboard. **S2** (PR #52, first-live-action confirmations PR #53/#54) added the nightly fixers
+> (`build-order-sync`, `vercel-prune`, `babysit-pr`), folded into the one `ops-nightly` routine. **S3**
+> (PR #55) added `weekly-recap` — a weekly Telegram exec recap (merged PRs, shipped/closed epics, a
+> merges-to-main deploy proxy, a retro digest) on its own dedicated weekly routine. Five Claude Routines
+> now exist total, ~2.3/day scheduled load (well under the Pro 5/day cap). Owed to Daniel: the live
+> weekly Telegram post + the `weekly-recap` routine account stand-up (same "account creation is mine"
+> split every sprint here has used). See `RETROSPECTIVE.md`.
 
 > **Area:** 09 · Platform & Infra · **Risk:** Low–Medium (two risk carve-outs) · **Scope doc:**
 > [`00-ideas/2. readyforscope/ops-routines-reporting.md`](../../00-ideas/2.%20readyforscope/ops-routines-reporting.md)
@@ -55,8 +64,8 @@ Daniel's account).
 | [S2](sprint-2.md) | B-4 · `vercel-prune` skill — scheduled **dry-run report**; `--apply` **human-confirmed**; `--keep-branch` open-PR previews ✅ built + first live `--apply` confirmed 2026-07-02 (0 stale to delete) | **Medium** (destructive op) |
 | [S2](sprint-2.md) | B-5 · `babysit-pr` skill — watch a PR, retry flaky CI, surface conflicts; **advisory only**, never a required check ✅ built + first live action confirmed 2026-07-02 (real retry + comment on backend #23) | **Medium** (PR writes) |
 | [S2](sprint-2.md) | B-6 · Fold B-3/B-4/B-5 outputs into the standup + the one nightly ops routine ✅ built | Low |
-| [S3](sprint-3.md) | B-7 · `weekly-recap` skill + `scripts/weekly-recap.mjs` → weekly Telegram recap (merged PRs, closed epics, deploys, retro digest) | Low |
-| [S3](sprint-3.md) | B-8 · Weekly trigger for the recap | Low |
+| [S3](sprint-3.md) | B-7 · `weekly-recap` skill + `scripts/weekly-recap.mjs` → weekly Telegram recap (merged PRs, closed epics, deploys, retro digest) ✅ built (first live post owed) | Low |
+| [S3](sprint-3.md) | B-8 · Weekly trigger for the recap ✅ built (dedicated sibling routine; account stand-up owed) | Low |
 
 ## Deploy order
 No app deploy — monorepo-root skills/scripts/routine-prompts. "Shipping" = merged to `main`; the **account
@@ -72,19 +81,23 @@ lands); S2 adds the fixers/feeds; S3 adds the weekly recap. Build S1→S2→S3.
 - Everything else (report composition, build-order docs PR) is low-risk/advisory.
 
 ## Definition of Done (epic)
-- [ ] A Telegram standup lands each morning; hand-checking one day's PRs/CI/previews matches it (delta-accurate).
-- [ ] A weekly recap lands; merged-PR/closed-epic/deploy counts match a manual tally.
-- [ ] `BUILD-ORDER.md` guard stops failing overnight (drift opens a `claude/` PR instead of going red).
-- [ ] `vercel-prune` reports stale previews nightly; `--apply` only on Daniel's confirmation; open-PR
-      previews never pruned.
-- [ ] `babysit-pr` posts advisory status; never merges; never a required check.
-- [ ] Each skill follows the D-spike conventions (`skills/<name>/`, script-does-work, `## Gotchas`, model-
+- [x] A Telegram standup lands each morning; hand-checking one day's PRs/CI/previews matches it
+      (delta-accurate) — confirmed live, S1/S2.
+- [x] A weekly recap lands; merged-PR/closed-epic/deploy counts match a manual tally — confirmed via
+      live `--dry-run` rehearsal (S3.1 walkthrough); the actual Telegram post is owed to Daniel (no
+      credentials in the build sandbox).
+- [x] `BUILD-ORDER.md` guard stops failing overnight (drift opens a `claude/` PR instead of going red) —
+      confirmed live, S2 (PR #51).
+- [x] `vercel-prune` reports stale previews nightly; `--apply` only on Daniel's confirmation; open-PR
+      previews never pruned — confirmed live, S2 (PR #53).
+- [x] `babysit-pr` posts advisory status; never merges; never a required check — confirmed live, S2 (PR #54).
+- [x] Each skill follows the D-spike conventions (`skills/<name>/`, script-does-work, `## Gotchas`, model-
       facing description); routines invoke, never re-implement.
-- [ ] Each `sprint-N.md` has its verification walkthrough; this README ✅; sprint status ticked w/ refs.
-- [ ] `RETROSPECTIVE.md`; poster updated; team memory + `MEMORY.md` index updated.
-- [ ] Durable learnings promoted to `LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] **Kill-switch:** N/A — no live-money surface (recorded so it isn't re-litigated).
-- [ ] Feature branch deleted; **frontmatter `status: shipped`**; `node scripts/build-order.mjs` re-run.
+- [x] Each `sprint-N.md` has its verification walkthrough; this README ✅; sprint status ticked w/ refs.
+- [x] `RETROSPECTIVE.md`; poster updated; team memory + `MEMORY.md` index updated.
+- [x] Durable learnings promoted to `LEARNINGS.md` (dedupe — sharpen, don't append).
+- [x] **Kill-switch:** N/A — no live-money surface (recorded so it isn't re-litigated).
+- [x] Feature branch deleted (after merge); **frontmatter `status: shipped`**; `node scripts/build-order.mjs` re-run.
 
 ## Session kickoffs
 One per sprint — see each `sprint-N.md` → *Kickoff prompt*.
