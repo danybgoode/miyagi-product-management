@@ -1,7 +1,7 @@
 # Ops routines & reporting — Sprint 2: the nightly fixers + feed the standup
 
-**Status:** 🟦 In review — merged (#52); first live `--apply` (2.2) confirmed by Daniel (see below);
-first live babysit action (2.3) still owed before it runs unattended
+**Status:** ✅ Built + merged (#52); both risk-tier first-live-actions confirmed by Daniel —
+`vercel-prune --apply` (2.2, #53) and a real `babysit-pr` action (2.3, see below)
 
 > Adds the overnight chore-workers the standup reports on: regenerate the build-order board, report stale
 > Vercel previews, babysit open PRs — then fold their outputs into the S1 standup and the one nightly ops
@@ -63,8 +63,12 @@ retried/surfaced instead of silently stalling a PR.
 - "PRs needing attention" folds into the standup via `standup.mjs`'s own new `conflictingOpenNumbers`
   signal (S2.4) plus its existing CI-red line, which now reflects state *after* babysit-pr's retry
   attempt (babysit-pr runs earlier in the same routine).
-**Risk:** **Medium** — writes to PRs (re-run CI, comment). **Daniel confirms the first live babysit
-action** (not yet run for real — every live check in this sprint used `--dry-run`; see walkthrough).
+**Risk:** **Medium** — writes to PRs (re-run CI, comment). **First live babysit action confirmed by
+Daniel, 2026-07-02** — ran `node scripts/babysit-pr.mjs 23 --repo danybgoode/medusa-bonsai-backend` for
+real against a genuinely failing check (`Type-check + build + unit`): `gh run rerun --failed` fired
+(the run went `in_progress`), and one advisory comment posted
+([#23](https://github.com/danybgoode/medusa-bonsai-backend/pull/23)) — no merge, no commit-status/
+check-run, exactly as designed.
 
 ### Story 2.4 — Fold the fixers into the standup + the one nightly ops routine ✅ built
 **As a** product owner, **I want** all overnight work in one routine and one standup, **so that** I get a
@@ -131,14 +135,15 @@ Env: the repo scripts + Telegram + `claude.ai/code/routines` (process change; no
    correctly not touched). **Confirmed:** dry-run and apply agree, production is never scanned as a
    candidate, an open-PR branch is excluded. Not yet observed live: the actual DELETE call firing on a
    genuinely stale preview (none existed at the time of this run).
-3. ✅ **Ran live (dry-run)** — `node scripts/babysit-pr.mjs <PR#> --repo <repo> --dry-run` against 7 real
-   open PRs (1 frontend, 6 backend/dependabot). 6 were clean → correctly printed "no comment posted",
-   nothing else happened. 1 (backend #23) had a genuinely failed check → correctly printed "would
-   rerun failed run #28542370519" and a preview comment reading "Would retry failing CI run(s):
-   #28542370519" (an initial version of this preview said "no retry needed" while also printing "would
-   rerun" — inconsistent; fixed so the dry-run preview and the printed action agree). **The first LIVE
-   (non-dry-run) babysit action — an actual retry + a real posted comment — is owed to Daniel** before
-   this runs unattended nightly.
+3. ✅ **Ran live, incl. the real (non-dry-run) action** (2026-07-02, confirmed by Daniel). Dry-run pass
+   first: `node scripts/babysit-pr.mjs <PR#> --repo <repo> --dry-run` against 7 real open PRs (1
+   frontend, 6 backend/dependabot) — 6 clean → "no comment posted", nothing else happened; 1 (backend
+   #23) had a genuinely failed check → correctly printed "would rerun failed run #28542370519" and a
+   matching preview comment. Then the **real** run, same PR, no `--dry-run`: `node scripts/babysit-pr.mjs
+   23 --repo danybgoode/medusa-bonsai-backend` — `gh run rerun --failed` actually fired (the run went
+   `in_progress`), and one advisory comment actually posted:
+   [#23](https://github.com/danybgoode/medusa-bonsai-backend/pull/23#issuecomment-4862208870). No merge,
+   no commit-status/check-run — exactly as designed.
 4. ⬜ **Owed to Daniel** — trigger the nightly ops routine for real (once the account-side routine prompt
    is updated to this sprint's 4-step version) and confirm one standup arrives folding in build-order
    drift, the stale-preview count, and PRs-needing-attention (conflicts + still-red CI). Not
