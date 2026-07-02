@@ -112,31 +112,52 @@ function ghJson(args) {
   }
 }
 
+// `gh pr list --limit` has no hard ceiling (gh paginates internally up to the requested count) — set
+// generously above what even a full-month backfill needs (the busiest repo here runs ~30-40 merged
+// PRs/week, so a month is comfortably under 500) rather than the weekly-sized default of 100, which a
+// SKILL.md-documented month-long backfill could silently exceed with zero signal that it happened.
+const MAX_PRS_FETCHED_PER_REPO = 500;
+
 function gatherMergedPrs(repo, sinceISO, untilISO) {
   const sinceDate = sinceISO.slice(0, 10);
   const prs = ghJson([
     'pr', 'list', '--repo', repo, '--state', 'merged', '--base', 'main',
-    '--search', `merged:>=${sinceDate}`, '--json', 'number,title,mergedAt,url', '--limit', '100',
+    '--search', `merged:>=${sinceDate}`, '--json', 'number,title,mergedAt,url',
+    '--limit', String(MAX_PRS_FETCHED_PER_REPO),
   ]);
-  if (prs === null) return { repo, available: false, prs: [] };
+  if (prs === null) return { repo, available: false, prs: [], capped: false };
   // The search's date qualifier is day-granular — filter to the real [sinceISO, untilISO) window so a
   // run near midnight UTC doesn't double-count a PR merged just outside the boundary day, and a bounded
   // backfill (--until) doesn't pull in PRs merged after it.
   const filtered = prs.filter((p) => p.mergedAt >= sinceISO && p.mergedAt < untilISO);
-  return { repo, available: true, prs: filtered };
+  // Hitting the fetch cap exactly is the one signal we get that the true count may be higher — gh gives
+  // no "there were more" flag beyond "we returned exactly --limit results".
+  return { repo, available: true, prs: filtered, capped: prs.length === MAX_PRS_FETCHED_PER_REPO };
 }
 
 // ---- gather: shipped/closed epics (git log -p on epic READMEs) ----
 
-// Pure — parses `git log -p -- 'Roadmap/*/*/README.md'` output for added `+status: shipped|archived`
-// lines, pairing each with the file its diff hunk belongs to (tracked via the preceding `diff --git`
-// header). Dedupes to the LAST flip per file in the window (in case a file flipped more than once).
+// Pure — parses `git log --date=iso-strict -p -- 'Roadmap/*/*/README.md'` output for added
+// `+status: shipped|archived` lines, pairing each with the file its diff hunk belongs to (tracked via
+// the preceding `diff --git` header) and the ISO date of the commit that made it (tracked via the
+// preceding `Date:` header). Dedupes to the LAST flip per file in the window (in case a file flipped
+// more than once). The date lets the caller enforce an exact [sinceISO, untilISO) bound in JS — `git
+// log --since/--until` are themselves INCLUSIVE on both ends, not half-open, so relying on them alone
+// (as an earlier version of this function did) could double-count a commit landing exactly on a window
+// boundary second across two consecutive runs.
 export function parseStatusFlipsFromLog(diffText) {
-  const flips = new Map(); // file -> status (insertion order = chronological, oldest→newest from git log)
+  const flips = new Map(); // file -> {status, date} (insertion order = chronological, oldest→newest from git log)
   let currentFile = null;
+  let currentDate = null;
+  const dateRe = /^Date:\s+(.+)$/;
   const fileRe = /^diff --git a\/(.+?) b\/.+$/;
   const statusRe = /^\+status:\s*(shipped|archived)\b/;
   for (const line of diffText.split('\n')) {
+    const dm = dateRe.exec(line);
+    if (dm) {
+      currentDate = dm[1].trim();
+      continue;
+    }
     const fm = fileRe.exec(line);
     if (fm) {
       currentFile = fm[1];
@@ -144,10 +165,10 @@ export function parseStatusFlipsFromLog(diffText) {
     }
     const sm = statusRe.exec(line);
     if (sm && currentFile) {
-      flips.set(currentFile, sm[1]); // last write wins — git log is oldest-commit-first by default... see note below
+      flips.set(currentFile, { status: sm[1], date: currentDate }); // last write wins (chronological — see note below)
     }
   }
-  return [...flips.entries()].map(([file, status]) => ({ file, status }));
+  return [...flips.entries()].map(([file, v]) => ({ file, status: v.status, date: v.date }));
 }
 
 // Pure — pulls the epic's display name from its README's first `# Epic...`/`# Epic:` heading, else the
@@ -159,19 +180,33 @@ export function epicNameFromReadme(markdown, filePath) {
   return parts[parts.length - 2] || filePath;
 }
 
+// Pure — the exact [sinceISO, untilISO) bound, matching gatherMergedPrs's `p.mergedAt >= sinceISO &&
+// p.mergedAt < untilISO` convention. `git log --since/--until` are themselves INCLUSIVE on both ends, so
+// they're only a coarse pre-filter (passed to git for efficiency) — this is what actually enforces the
+// window and stops a commit landing exactly on a boundary second from double-counting across two
+// consecutive runs.
+export function filterFlipsToWindow(flips, sinceISO, untilISO) {
+  const sinceMs = new Date(sinceISO).getTime();
+  const untilMs = new Date(untilISO).getTime();
+  return flips.filter((f) => {
+    const t = new Date(f.date).getTime();
+    return t >= sinceMs && t < untilMs;
+  });
+}
+
 // Returns `{ available: false }` on a git failure (so the caller can distinguish "couldn't read git
 // history" from "genuinely zero epics shipped") — never a bare [] that looks identical to "quiet".
 function gatherShippedEpics(sinceISO, untilISO) {
   // git log defaults to newest-first; -p in that order still gives each flip's LATEST value first per
   // file, so reverse iteration order (oldest first) before building the map so "last write wins" means
-  // chronologically last, not textually last in output. --until makes a bounded backfill exact.
+  // chronologically last, not textually last in output.
   const r = spawnSync(
     'git',
-    ['log', '--since', sinceISO, '--until', untilISO, '-p', '--reverse', '--', 'Roadmap/*/*/README.md'],
+    ['log', '--since', sinceISO, '--until', untilISO, '--date=iso-strict', '-p', '--reverse', '--', 'Roadmap/*/*/README.md'],
     { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }
   );
   if (r.status !== 0) return { available: false, epics: [] };
-  const flips = parseStatusFlipsFromLog(r.stdout || '');
+  const flips = filterFlipsToWindow(parseStatusFlipsFromLog(r.stdout || ''), sinceISO, untilISO);
   const epics = flips.map(({ file, status }) => {
     const abs = join(ROOT, file);
     let name = file;
@@ -224,12 +259,15 @@ export function formatPrList(prs, maxItems) {
 
 // Pure — a last-resort safety net for Telegram's hard 4096-char sendMessage limit. formatPrList already
 // keeps a normal week well under this; this only bites an extreme outlier (e.g. an unusually long run of
-// epic retro digests) so the API call never gets rejected outright instead of silently never posting. If
-// the cut lands inside an unclosed `<b>` (the only tag this script emits), close it — an unbalanced tag
-// would make Telegram reject the whole message as invalid HTML, defeating the safety net's own purpose.
+// epic retro digests) so the API call never gets rejected outright instead of silently never posting. Two
+// HTML-safety steps, since the only tags this script emits are `<b>`/`</b>` and an unbalanced/incomplete
+// one would make Telegram reject the whole message as invalid HTML — defeating the safety net's purpose:
+// (1) strip a trailing PARTIAL tag first (the cut landing mid-`<b>`/`</b>` itself, e.g. a dangling `<b`),
+// (2) then close any remaining fully-formed-but-unclosed `<b>`.
 export function truncateForTelegram(text, limit) {
   if (text.length <= limit) return text;
-  const truncated = `${text.slice(0, limit - 1).trim()}…`;
+  const sliced = text.slice(0, limit - 1).replace(/<[^>]*$/, '');
+  const truncated = `${sliced.trim()}…`;
   const opens = (truncated.match(/<b>/g) || []).length;
   const closes = (truncated.match(/<\/b>/g) || []).length;
   return opens > closes ? `${truncated}${'</b>'.repeat(opens - closes)}` : truncated;
@@ -257,7 +295,8 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) 
       lines.push(`${label}: none this week`);
       continue;
     }
-    lines.push(`${label} (${r.prs.length}): ${formatPrList(r.prs, MAX_PRS_SHOWN_PER_REPO)}`);
+    const cappedNote = r.capped ? ' ⚠️ hit the fetch cap — count may be incomplete' : '';
+    lines.push(`${label} (${r.prs.length}${cappedNote}): ${formatPrList(r.prs, MAX_PRS_SHOWN_PER_REPO)}`);
   }
 
   lines.push('');

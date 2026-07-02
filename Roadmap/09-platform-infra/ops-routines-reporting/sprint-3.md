@@ -26,9 +26,12 @@ what shipped and what's next without assembling it.
   across weeks — next run's window starts exactly where the last one's ended, falling back to a trailing
   7 days on first run. Distinct from the standup's delta-snapshot log (a week either happened or didn't;
   there's no diff to take).
-- ✅ 17 pure-logic unit tests (`scripts/weekly-recap.test.mjs`) cover the window tracker, the git-log
-  status-flip parser, the retro-digest extractor, and message building — fixture-based, no live git/gh/
-  network. Picked up automatically by `scripts-guard.yml`'s existing glob.
+- ✅ 32 pure-logic unit tests (`scripts/weekly-recap.test.mjs`) cover the window tracker, the git-log
+  status-flip parser + its exact half-open `[sinceISO, untilISO)` window filter, the retro-digest
+  extractor, the busy-week PR-list cap, the Telegram-length safety net (incl. mid-tag truncation), and
+  message building — fixture-based, no live git/gh/network. Picked up automatically by
+  `scripts-guard.yml`'s existing glob. (Grew from an initial 17 to 32 after a cross-agent review pass and
+  an independent fresh-agent review each found real, now-fixed issues — see the incident note below.)
 - ✅ **Live-rehearsed**: `node scripts/weekly-recap.mjs --dry-run --since 2026-06-25T00:00:00Z` ran
   against the real repo and produced a message whose per-repo merged-PR counts (9/32/16) and shipped-epic
   list matched a manual `gh pr list --state merged --search "merged:>=2026-06-25"` + `git log -p --since`
@@ -51,9 +54,37 @@ what shipped and what's next without assembling it.
   format + the "advisory only" banner), still green.
 **Risk:** Low.
 
+## Two review passes caught real issues, both fixed before merge (recorded for the retro)
+- **Cross-agent review** (`node scripts/cross-review.mjs 55 --agent codex`) found **2 blocking + 4
+  should-fix + 1 nit**. The confirmed-live blocking one: an uncapped busy-week message ran ~6,500 chars,
+  over Telegram's 4096 `sendMessage` limit — a real post would have failed outright. Fixed with
+  `formatPrList` (caps a repo's listed PR titles, exact header count preserved) as the primary defense,
+  `truncateForTelegram` as a last-resort safety net, `--base main` scoping on `gh pr list`, and an
+  `{available, epics}` shape for the shipped-epics read so a git-log failure never renders identically to
+  "genuinely zero epics shipped."
+- **An independent fresh-agent review** (a different agent instance, no shared context with the builder)
+  caught what the first pass missed — including inside the FIX commit itself, exactly the kind of place a
+  new bug slips in: `gatherShippedEpics` claimed to enforce the `[sinceISO, untilISO)` half-open window
+  but only relied on `git log --since/--until`, which are themselves **inclusive on both ends** — a
+  status-flip commit landing on an exact boundary second could double-count across two consecutive runs.
+  Fixed by threading each flip's own commit date (`git log --date=iso-strict`) through
+  `parseStatusFlipsFromLog` and enforcing the exact bound in a new pure `filterFlipsToWindow`, mirroring
+  `gatherMergedPrs`'s convention exactly. Also caught: `gh pr list --limit 100` silently truncates a
+  busy-enough backfill (the SKILL's own documented "what shipped in June" example could exceed it) with
+  no signal that it happened — fixed by raising the fetch cap and surfacing a `capped` flag in the
+  message; and `truncateForTelegram`'s tag-balancing didn't guard against the cut landing **inside** a tag
+  itself (a dangling `<b` or `</b` fragment) — fixed by stripping any trailing partial tag before the
+  open/close balancing pass.
+- **Separately, epic close-out hit the dirty-working-tree `BUILD-ORDER.md` regen gotcha** (promoted to
+  `LEARNINGS.md`): a stray untracked `RETROSPECTIVE.md` from unrelated sibling work made a local regen
+  pass CI's clean-checkout `build-order-fresh` check locally but fail it in CI. Fixed by regenerating from
+  a disposable `git worktree` of the exact commit instead of the dirty local tree — twice, once for the
+  original contamination and once more after merging latest `main` (which had moved twice during this
+  sprint) shifted a sibling epic's `sprint_progress` count.
+
 ## Sprint QA
 - **api spec(s):** none — no app surface. `node --check scripts/weekly-recap.mjs` green.
-  `node --test 'scripts/*.test.mjs' 'scripts/lib/*.test.mjs'` — 82 pass, 0 fail (17 new weekly-recap
+  `node --test 'scripts/*.test.mjs' 'scripts/lib/*.test.mjs'` — 97 pass, 0 fail (32 weekly-recap
   pure-logic cases + every pre-existing one, incl. the now-covered `weekly-recap.prompt.md`).
 - **browser smoke owed:** no — no app/browser surface.
 - **deterministic gate:** `node --check` + the full `node --test` suite green (exactly what

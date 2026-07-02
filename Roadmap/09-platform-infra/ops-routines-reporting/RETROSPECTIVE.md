@@ -49,6 +49,16 @@ Five Claude Routines now exist in total (A/B/C from `routines-enablement` + `ops
 - **The `--dry-run` rehearsal against real live data is a strong pre-merge signal for a reporting
   script** — the S3.1 walkthrough ran it against the actual repo and cross-checked every count by hand
   (`gh pr list --search`, `git log -p`) rather than trusting the script's own output.
+- **Two independent review passes caught two different bug classes on the same PR — a cross-agent
+  (different model family) pass and a fresh-agent (same family, zero shared context) pass — and the
+  second one found a real bug inside the FIRST one's own fix commit.** Codex's pass caught the confirmed
+  Telegram-message-length overflow (live-verified: ~6,500 chars, over the 4096 limit); a follow-up fresh
+  Claude reviewer, with no memory of the fix's own reasoning, then found that the fix's window-boundary
+  claim didn't hold (`git log --since/--until` are inclusive, not the half-open interval the fix commit's
+  message claimed) plus two more real gaps (a silent `gh pr list --limit 100` truncation risk, an
+  incomplete mid-tag guard in the new truncation safety net). A fix commit is exactly the kind of place a
+  new bug gets introduced — reviewing only the original diff and treating a fix as automatically correct
+  would have missed all three.
 
 ## What we learned (promoted to LEARNINGS.md)
 - **A git-log pickaxe scan (`git log -p -- <pathspec>`, regex over `+`-prefixed added lines, tracked
