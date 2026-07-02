@@ -175,6 +175,10 @@ This brain-dump lands on a **mature automation surface**. Concrete primitives to
 - **Risk:** low (planning-process only).
 
 ## Recommended sequence (dependencies)
+> **Progress (2026-07-02):** C ✅ shipped (PR #47) · A ✅ shipped (PR #48) · D-spike ✅ decision landed
+> (PR #49) · **B ✅ scaffolded** (`09-platform-infra/ops-routines-reporting/`, 3 sprints) — ready to build ·
+> E ⬜ spike still runnable, unscheduled.
+
 1. **C — Model split** *(quick win, unblocks nothing but cheap and high-value)* — ~1 doc PR.
 2. **A — Doc/memory sweep** *(quick win; shrinks every future session's context)* — 1 sweep PR + the
    `doc-hygiene` skill. Do the sweep **before** loading more skills into context (skills add to session
