@@ -12,7 +12,7 @@
 
 ## 🏗️ Building now (1)
 
-- [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 1/4 stories
+- [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 4/4 stories
 
 ## 📋 Ready to build (scaffolded, not started) (1)
 
@@ -105,5 +105,15 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+
+These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
+derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
+forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
+
+| Epic | frontmatter (used) | sprint/retro-derived |
+|---|---|---|
+| Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps | In progress | Shipped |
+
 ---
-_Epics: 76 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 76 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
