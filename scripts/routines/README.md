@@ -61,8 +61,10 @@ restored.)
 2. **Create the routine** from `roadmap-hygiene.prompt.md`.
 3. **Trigger:** Schedule, **weekly — Mon 14:00 UTC** (after the 08:00 nightly `notion-sync.yml`).
 4. **Env/connectors:** **No Notion connector** — no `.mcp.json`, no `NOTION_TOKEN`. The routine grooms
-   the `00-ideas` funnel, flags status-drift, runs `node scripts/build-order.mjs`, and opens a
-   `claude/` **docs PR** with the regenerated `BUILD-ORDER.md` + a drift report. Network = GitHub.
+   the `00-ideas` funnel, flags status-drift, runs `node scripts/build-order.mjs`, invokes the
+   `doc-hygiene` skill (`node scripts/doc-hygiene.mjs` — always-read-set size + LEARNINGS/poster
+   dedupe-staleness candidates), and opens a `claude/` **docs PR** with the regenerated
+   `BUILD-ORDER.md` + any new `DOC-HYGIENE-REPORT-*.md` + a drift report. Network = GitHub.
 5. **Propagation:** after Daniel merges the docs PR, the existing `notion-sync.yml` propagates
    docs→Notion as usual. **Augments, does not replace** that workflow.
 

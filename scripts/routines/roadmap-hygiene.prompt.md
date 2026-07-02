@@ -16,6 +16,10 @@
     - SSOT = each epic README frontmatter `status:`; seed frontmatter owns the un-scaffolded funnel.
       The extractor emits r.status (authoritative) AND r.status_derived (fallback) so drift is detectable.
     - Funnel docs: Roadmap/00-ideas/README.md (seed lifecycle: raw|ready|queued|scaffolded|in-progress|shipped|archived)
+    - `node scripts/doc-hygiene.mjs` (skills/doc-hygiene) → measures the always-read set + flags
+      dedupe/staleness candidates in LEARNINGS.md/the poster; writes its own dated
+      Roadmap/00-ideas/DOC-HYGIENE-REPORT-<date>.md — a DIFFERENT concern from this routine's own
+      HYGIENE-REPORT-*.md (funnel/status drift). Never auto-edits either.
 
   Stand-up + guardrails: scripts/routines/README.md. Decision: 00-ideas/2. readyforscope/spike-claude-routines.md.
 
@@ -58,12 +62,21 @@ one-line reason.
 `Roadmap/00-ideas/BUILD-ORDER.md` from the projection. If it changes, that change goes in the PR; if
 `node scripts/build-order.mjs --check` is already clean, say so (the board was current).
 
+**4. Doc hygiene pass.** Invoke the `doc-hygiene` skill (`skills/doc-hygiene/SKILL.md`) — run
+`node scripts/doc-hygiene.mjs`, review any flagged candidates per its Stage 2 (verify before reporting;
+its heuristics are deliberately cheap and can false-positive), and note the always-read set's current
+size. It writes its own dated `Roadmap/00-ideas/DOC-HYGIENE-REPORT-<date>.md` — commit that alongside
+the PR if `--check` wasn't used. **It never edits `LEARNINGS.md`/`README.md`** — a genuine candidate
+worth acting on goes in the PR body as a proposal, same as everything else this routine surfaces.
+
 ## Output — a `claude/` docs PR
-- Branch `claude/roadmap-hygiene-<date>`; commit any regenerated `BUILD-ORDER.md` (and only docs under
-  `Roadmap/`). **Docs only — never touch app code, scripts, or infra.**
-- PR body = the **drift report**: three short sections — *Funnel grooming*, *Status drift*, *Board
-  regenerated?* — each a bullet list of findings (or "nothing to flag"). Each finding is one line:
-  what, where, and the proposed fix. Lead the PR body with the advisory banner:
+- Branch `claude/roadmap-hygiene-<date>`; commit any regenerated `BUILD-ORDER.md`, any new
+  `DOC-HYGIENE-REPORT-*.md` (and only docs under `Roadmap/`). **Docs only — never touch app code,
+  scripts, or infra** (running `scripts/doc-hygiene.mjs` is a read-plus-one-new-report tool invocation,
+  not a script edit).
+- PR body = the **drift report**: four short sections — *Funnel grooming*, *Status drift*, *Board
+  regenerated?*, *Doc hygiene* — each a bullet list of findings (or "nothing to flag"). Each finding is
+  one line: what, where, and the proposed fix. Lead the PR body with the advisory banner:
   > 🤖 **Routine C — weekly roadmap hygiene (Claude, cloud).** Advisory docs PR — review & merge by hand; nothing here gates.
 - **Do not auto-merge.** After Daniel merges, `notion-sync.yml` propagates docs→Notion as usual —
   you do not touch Notion.
