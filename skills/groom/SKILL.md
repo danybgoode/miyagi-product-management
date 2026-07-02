@@ -64,6 +64,25 @@ Pick one. The class decides the downstream path:
 > doc**; Daniel's decision/scope-doc approval remains the only gate. *Surface = a required offer, not an
 > auto-run* (cost-safe, matches `cross-review`). See the full trigger model at Stage 4.
 
+**Optional archetype tag.** Alongside the class, an ask can also carry a *mode* tag — orthogonal, from the
+[role-archetypes spike decision](../../Roadmap/00-ideas/2.%20readyforscope/spike-role-archetypes.md) (trial
+basis). Omit it for the default (Builder); only tag when it isn't.
+
+| Archetype | What it changes |
+|---|---|
+| **Prototyper** | Thin, explicitly-disposable slice; minimal/optional QA; skip full DoD; low-risk; state "may never ship" up front. |
+| **Builder** | *Default* — production-grade, full DoD. No tag needed. |
+| **Sweeper** | Acceptance = "less code / same behavior / no regressions"; prove the old path unreachable; add a guard against it returning; shared-surface touch → announce. |
+| **Grower** | Acceptance ties to a success signal/metric, not just "works"; reuse-first even stronger. |
+| **Maintainer** | Security/reliability/cost/perf on a mature system; expect high-risk (Stage 6b kill-switch thinking, Opus/escalate); ties to runbook/infra skills. |
+
+It **composes with, doesn't replace** the class above — pairs into a 2-tuple, e.g. *Chore/Sweeper*. It's a
+**planning prompt, not a gate**: no new required field, no CI check, no team-mix ratios. Soft note: a
+macro-section's product maturity biases which archetype to expect (pre-PMF → Prototyper/Builder; mature →
+Sweeper/Maintainer) — an expectation-setter, never a rule. Archetype may *suggest* a starting model, but the
+Stage 6 / Model-tiers escalation triggers (money/auth/migration/shared-infra/ambiguity) stay the hard SSOT —
+referenced here, not re-encoded.
+
 ## Stage 2.5 — Orientation: can we already do this? *(do this before disambiguating)*
 **Many asks aren't new features or bugs — they're orientation.** Before planning a build, ask: can the
 current setup already deliver this outcome, with **existing features + communication, or a light
