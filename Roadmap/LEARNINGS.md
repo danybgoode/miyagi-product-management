@@ -70,6 +70,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `.env`/`.env.local` are dev-scoped (`localhost`, `sk_test_…`), so running with them silently provisions a
   test-mode plan against localhost. Capture secrets into shell vars in the *same* command (shell state
   doesn't persist) and never echo them. *(2026-06-11, custom-domain-paywall.)*
+- **Corollary/exception — unlike Stripe/GCP, Supabase has NO separate dev-scoped credential: `.env.local`
+  points at the SAME shared project as production** (`xljxqymsuyhlnorfrnno`, see
+  `shared-infra-supabase-stripe` in team memory). A plan that says "verify by flipping a flag row locally,
+  dev-only" is a plan built on the Stripe/GCP pattern above (local = test-mode, prod = real) — for
+  `platform_flags` (and any other Supabase-backed state) that assumption is simply false, and the "local"
+  flip IS the prod flip. Catch this **before** running the write, not after: check which project a
+  `SUPABASE_URL` env var points to before treating any Supabase table as a safe local sandbox. Because
+  `isEnabled()` already fails open to the same default when a flag row is absent, the safe move is to leave
+  the seed migration file in the PR (applied at normal deploy time) rather than push it from a build
+  session. *(2026-07-02, seller-agent-connect-mcp-url S2 — caught before acting, not after.)*
 - **A squash-merged sprint branch is a dead end — start the next sprint on a FRESH branch off `main`.** A
   squash-merged PR's individual commits aren't on `main` (only the one squash commit is), so continuing
   that branch for the next sprint re-introduces a messy duplicate diff and can't fast-forward. Confirm with
@@ -103,6 +113,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   reconciliation.)*
 
 ## Tooling gotchas
+- **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
+  AFTER it already landed** — the push itself succeeds (visible on `origin/main`), but a denial message
+  attaches to a *later* tool call, reads like it's blocking that unrelated call, and doesn't roll anything
+  back. Don't treat "doc-only root-repo commits are low-risk, push them along the way" (WAYS-OF-WORKING's
+  own framing) as pre-authorization for an agent to push `main` directly without asking — confirm with
+  Daniel first, even for a trivial status-tick commit; queue any further doc commits unpushed until he
+  says go. *(2026-07-02, seller-agent-connect-mcp-url S2.)*
 - **Run the repo binaries directly when `npm`/`npx` chokes.** A sibling worktree that reuses the same
   package name (e.g. `apps/miyagisanchez-seasonal-theme`) breaks npm **workspace resolution** at the
   monorepo root. Use `node /…/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json` and
@@ -517,7 +534,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (`CLAIM_JWT_SECRET`, `MEDUSA_INTERNAL_SECRET`) *before* the auth check, an anonymous guard request gets
   **500, not 401** (the secret is unset on preview) — red CI. Order is **flag → auth → config-secret**, which
   also stops a 500 from leaking that a secret is missing. *(2026-06-30, promoter-program S3+S4 — S3 found the
-  both-states rule, S4 the auth-before-secret ordering; `e2e/promoter-close.spec.ts`.)*
+  both-states rule, S4 the auth-before-secret ordering; `e2e/promoter-close.spec.ts`.)* **Corollary — the flag
+  check must precede EVERY other gate on the flag-off path, including rate-limiting, not just secrets.** A
+  connector-URL route checked rate-limit before the kill-switch, so a throttled client with the feature OFF
+  got `429` instead of a deterministic `404` — same underlying bug as the secret-before-auth case (a
+  non-auth gate answering before the flag decides the route "exists" at all), just with a different second
+  gate. A cross-review (codex) caught it pre-merge. *(2026-07-02, seller-agent-connect-mcp-url S2 —
+  `app/api/ucp/mcp/c/[slug]/route.ts`.)*
 - **Split "coerce a blank input to a default" vs "reject it" by whether the action is a PURCHASE or a
   MUTATION.** The same field (a billing `interval`) wants opposite defaulting on two money paths: a *buy* can
   safely back-compat a missing/blank interval to the discounted default (buying yearly is harmless), but a
@@ -568,6 +591,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   derive presence/ownership from the canonical one and use the mirror only for the data it uniquely holds;
   the read-side twin of "grep every write keyed by the id." Harden the consumer too (a shop owner must never
   fall through to the recruit branch). *(2026-06-23, home-personalization recruit-card leak — BE #38 + FE #116.)*
+  **Corollary — a revoke/delete button must gate on `res.ok` too, not just the success-path update.** A
+  panel's `revokeConnector()` unconditionally cleared the shown credential after `DELETE`, with no `res.ok`
+  check — since `fetch` doesn't throw on a non-2xx response, a failed server-side revoke (500, or the flag
+  flipping off mid-session) would still show the seller "revoked" while the credential stayed live. The
+  adjacent `rotateConnector()` in the same file already gated correctly (`if (res.ok && data.url) …`) — the
+  bug was an inconsistency between two near-identical handlers, not a missing pattern; a cross-review
+  (codex) caught it. Third documented instance of this exact class. *(2026-07-02,
+  seller-agent-connect-mcp-url S2 — `components/ConnectAgentPanel.tsx`.)*
 - **Unknown API routes on PROD return HTTP 200 (the not-found page), not 404.** So a negative-path
   spec for a *new* endpoint run against prod pre-deploy fails confusingly (expected 401, got 200) —
   that's "route doesn't exist yet", not a logic bug. CI-vs-preview is the authoritative gate for new

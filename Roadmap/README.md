@@ -121,6 +121,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 - ✅ AI-agent-native commerce (UCP/MCP): agents can browse, negotiate, and buy
 - ✅ Open catalog & checkout APIs + accurate machine-readable discovery (`/agent`, manifest, `.well-known/ucp`)
 - ✅ Seller-side agent tools (MCP): read/patch shop config, manage offers & listings, **create new listings** — per-shop token, "Conecta tu agente" helper
+- 🚧 **Always-on personal MCP URL + "Agregar a Claude" one-click** — claude.ai's custom-connector modal only accepts a URL (no Bearer-header field), so `/api/ucp/mcp/c/<slug>` resolves an opaque, revocable per-shop credential in the path to the exact same seller-tool scope as today's token; the header snippet still works for Desktop/CLI. Behind the `seller_agent.connector_url_enabled` kill-switch (default OFF) *(flag-flip + live claude.ai round-trip smoke owed to Daniel)*
 - ✅ **Embeddable widget** — drop your shop, a product card, or a buy-button onto any website: Shadow-DOM custom elements + full-shop iframe, checkout always hands off to our hosted flow (`channel=embed`), self-serve snippet generator in seller settings
 - ✅ **Support widget** — Buy Me a Coffee-style contribution button for any seller site: presets/custom amount, optional message, guest checkout handoff, hidden Medusa support product, Stripe Connect / Mercado Pago rails, and UCP/MCP support tools
 - ✅ **Agent-readable "about / why-sell" surface** — ask your own AI *"¿qué es miyagisanchez.com y por qué vendería ahí?"* and it gets a grounded supply-side answer: a human `/acerca` page (es/en) plus the same content on the UCP manifest, `/agent`, `/llms.txt` (+ robots pointer), and an MCP `about_miyagi` tool/resource — all from one source, each carrying a "relay in the user's own language" directive. *(Founder + pricing ship as marked stubs.)*
@@ -145,6 +146,18 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-02 — Seller agent connect epic SHIPPED (2 sprints; mixed LOW→HIGH).** A seller's own AI agent
+  can now actually run the shop end-to-end. **S1** (PR #158) rewrote the setup-emit prompt
+  (`buildSetupPrompt()`) to read Miyagi context and **interview** the seller on thin input instead of
+  emitting a bare JSON skeleton. **S2** (PR #159, HIGH — auth) gave sellers an **always-on, copyable
+  personal MCP URL** (`/api/ucp/mcp/c/<slug>`) plus a one-click **"Agregar a Claude"** deep-link, because
+  claude.ai's custom-connector modal only accepts a URL (no Bearer-header field) — today's show-once token
+  literally couldn't connect there. One resolver (`lib/agent-auth.ts`) now recognizes both credential
+  shapes; `app/api/ucp/mcp/route.ts` has **zero lines changed**, so the existing Bearer path is provably
+  unaffected. Ships behind `seller_agent.connector_url_enabled` (default off, created disabled) — flag-flip,
+  the seed migration, and the live claude.ai round-trip are owed to Daniel (this repo's local dev Supabase
+  is the same shared project as production, so there's no isolated environment to test a flip against).
+  See [03 · Selling & Shops › Seller agent connect](03-selling-and-shops/seller-agent-connect-mcp-url/).
 - **2026-07-02 — Ops routines & reporting complete (3 sprints; mixed LOW→MEDIUM, dev-tooling/process
   only).** Turned overnight repo state into things Daniel wakes up to instead of assembles. **S1**
   (PR #50) shipped a **delta-only daily Telegram standup** (`standup-post` skill + `scripts/standup.mjs`)

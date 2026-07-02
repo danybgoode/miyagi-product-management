@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: seller-agent-connect-mcp-url
 ---
 
@@ -7,7 +7,11 @@ slug: seller-agent-connect-mcp-url
 
 > **Area:** 03-selling-and-shops · **Risk:** Sprint 1 low · Sprint 2 **high (auth)** · **Type:** feature + copy
 > **Scope doc:** [`00-ideas/2. readyforscope/seller-agent-connect-mcp-url.md`](../../00-ideas/2.%20readyforscope/seller-agent-connect-mcp-url.md)
-> **Status:** 🚧 in progress · S1 ✅ shipped 2026-07-02 ([#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)) · S2 built 2026-07-02, [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) open, awaiting Daniel's merge (HIGH risk)
+> **Status:** ✅ SHIPPED 2026-07-02 · S1 [#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) ·
+> S2 [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) squash-merged `4be2b86`, Daniel merged
+> on green CI. **Owed:** applying the flag seed migration + flipping `seller_agent.connector_url_enabled` on,
+> the live claude.ai connector round-trip, and the valid-slug smoke (see `sprint-2.md`) — all deliberate,
+> post-merge, live-infra/auth steps, not build gaps.
 
 ## Why
 Two gaps stop a seller's agent from actually running the shop. (1) The setup emit prompt
@@ -44,10 +48,10 @@ must ride in the URL (chosen) or via OAuth (deferred). The header snippet stays 
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| 1 | Rewrite `buildSetupPrompt` — read Miyagi context + interview on thin input, keep JSON-only final output ✅ [#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) | low |
-| 2 | Per-shop personal MCP URL (opaque connector slug in path) resolving to the existing seller scope ✅ built | **high (auth)** |
-| 2 | `ConnectAgentPanel`: always-shown copyable URL + "Agregar a Claude" deep-link + rotate/revoke; keep header snippet ✅ built | **high** |
-| 2 | Kill-switch (default off), auth `api` specs (both flag states, flag→auth→config ordering), smoke walkthrough ✅ built | high |
+| 1 | Rewrite `buildSetupPrompt` — read Miyagi context + interview on thin input, keep JSON-only final output ✅ [#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) merged `893d23b` | low |
+| 2 | Per-shop personal MCP URL (opaque connector slug in path) resolving to the existing seller scope ✅ [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) merged `4be2b86` | **high (auth)** |
+| 2 | `ConnectAgentPanel`: always-shown copyable URL + "Agregar a Claude" deep-link + rotate/revoke; keep header snippet ✅ [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) merged `4be2b86` | **high** |
+| 2 | Kill-switch (default off), auth `api` specs (both flag states, flag→auth→config ordering), smoke walkthrough ✅ [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) merged `4be2b86` | high |
 
 ## Deploy order
 Sprint 1 frontend-only (prompt string), low-risk, can merge alone. Sprint 2 touches the **auth** path to
@@ -56,16 +60,19 @@ run-order; **Daniel merges**. If any backend (Medusa/Cloud Run) piece is needed 
 backend-first and degrade the frontend gracefully.
 
 ## Definition of Done (epic)
-- [ ] All stories merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs); money/auth steps flagged owed to Daniel
-- [ ] This README marked ✅; sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (03 agent-native setup / "Conecta tu agente" line)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe)
-- [ ] Kill-switch exists in `platform_flags` (the in-house flag store — epic 09 · feature-flags-inhouse
-      replaced Flagsmith) with the stated polarity (enablement ⇒ default false, created disabled). The
-      seed migration ships in the PR; the row itself is applied through the normal deploy/seed step since
-      `.env.local` points at the same shared Supabase project as production (no isolated dev DB to test
-      against locally).
-- [ ] Feature branch deleted; PR merged
+- [x] All stories merged to `main` + smoke-tested (gaps stated) — S1 `893d23b`, S2 `4be2b86`; the auth/live
+      gaps below are explicitly owed to Daniel, not silently skipped
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs); money/auth steps flagged owed to Daniel
+- [x] This README marked ✅; sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (03 agent-native setup / "Conecta tu agente" line)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe)
+- [ ] **Kill-switch migration ships but is NOT yet applied to the live `platform_flags` table** — the in-house
+      flag store (epic 09 · feature-flags-inhouse replaced Flagsmith). The seed migration
+      (`supabase/migrations/20260702120000_seller_agent_connector_flag.sql`, `enabled: false`) is on `main`;
+      applying it + later flipping it on are left as a deliberate deploy-time step, because `.env.local`
+      points at the **same shared Supabase project as production** (`xljxqymsuyhlnorfrnno`) — there's no
+      isolated dev DB to rehearse a live flip against without touching prod. Until applied, `isEnabled()`
+      already fails open to the same `false` default, so this is a paperwork gap, not a behavior gap.
+- [x] Feature branch deleted; PR merged

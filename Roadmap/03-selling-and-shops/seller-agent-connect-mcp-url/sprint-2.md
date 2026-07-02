@@ -1,8 +1,8 @@
 # Seller agent connect — Sprint 2: always-on personal MCP URL + Claude one-click (the car)
 
-**Status:** 🚧 built 2026-07-02 on `feat/seller-agent-connect-mcp-url-s2`, [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) open, awaiting Daniel's merge
+**Status:** ✅ MERGED 2026-07-02 — [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) squash-merged `4be2b86`, Daniel merged on green CI
 **Risk:** **HIGH (auth)** across the board — a new authentication path to seller-scoped, money-adjacent MCP
-tools. Behind a kill-switch (default off → merge dark). **Daniel merges.**
+tools. Behind a kill-switch (default off → merged dark). **Daniel merged.**
 
 > **Design decision (default, confirm at kickoff):** the personal MCP URL carries an **opaque, revocable
 > per-shop connector slug** in the **path** — `https://miyagisanchez.com/api/ucp/mcp/c/<slug>` — that the
