@@ -247,12 +247,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   pre-installed in a routine's cloud sandbox.** The sandbox has built-in, read-oriented GitHub tools
   (issues/PRs/diffs/comments) that work with zero setup, but they're scoped to whichever repo the routine
   cloned — a script written around `spawnSync('gh', …)` for multi-repo writes (`gh pr list --repo <any>`,
-  `gh run rerun`, `gh pr comment`) fails outright with no `gh` binary at all. Fix: add
-  `apt update && apt install -y gh` to the environment's **Setup script** (runs once, cached ~7 days) and
-  a `GH_TOKEN` env var holding a PAT scoped to the repos needed — `gh` reads `GH_TOKEN` automatically, no
+  `gh run rerun`, `gh pr comment`) fails outright with no `gh` binary at all. Fix: add `apt update ||
+  true` then `apt install -y gh` to the environment's **Setup script** (runs once, cached ~7 days) and a
+  `GH_TOKEN` env var holding a PAT scoped to the repos needed — `gh` reads `GH_TOKEN` automatically, no
   `gh auth login` needed. `github.com`/`api.github.com` are already in the **Trusted** network-access
   default, so no domain change is needed, only the two steps above. *(2026-07-02, ops-routines-reporting
   — `ops-nightly`'s first two live scheduled fires both failed at step 2 with exactly this gap.)*
+  **Corollary — `apt update` is fatal on ANY configured repo's failure, even one the install doesn't
+  need, and the sandbox base image ships third-party PPAs that can 403.** The naive `apt update && apt
+  install -y gh` setup script failed live (exit 100): the base image pre-configures `deadsnakes` and
+  `ondrej/php` PPAs (for extra Python/PHP versions, unrelated to `gh`), and Launchpad returned `403
+  Forbidden` on both — a real response from Launchpad's server (shared-sandbox-IP reputation, most
+  likely), not a network-access/proxy block — while the actual Ubuntu archives `gh` needs
+  (`noble-updates/universe`, where `gh` ships on 24.04) fetched fine in the same run. `apt update`'s
+  all-or-nothing exit code doesn't distinguish "a repo I don't need failed" from "the repo I need
+  failed," so it aborted before the install step ever ran. Fix: `apt update || true` (matches the docs'
+  own general guidance to append `|| true` to non-critical setup-script commands) before `apt install`.
+  *(2026-07-02, ops-routines-reporting.)*
   **Corollary — a skill's `config.json` (gitignored, written via an interactive `AskUserQuestion` flow)
   cannot be the sole config source for an unattended routine.** Each routine run is a fresh git checkout,
   so a locally-written, gitignored file from one run never reaches the next — a routine session has no

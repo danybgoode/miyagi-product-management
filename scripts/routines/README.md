@@ -125,8 +125,19 @@ routine (cap-safe) — see the budget table below.
      built-in GitHub tools were present, and those are read-oriented and scoped to whichever repo the
      routine cloned, not the 3-repo `gh pr list`/`gh run rerun`/`gh pr comment` calls these scripts make.)
      Fix, in the routine's **environment** settings (Edit routine → environment icon → settings gear):
-     1. **Setup script** — add `apt update && apt install -y gh`. This runs once and is cached (~7-day
-        expiry); it does not re-run every session.
+     1. **Setup script** — add:
+        ```bash
+        apt update || true
+        apt install -y gh
+        ```
+        **Not** the naive `apt update && apt install -y gh`, which failed live (exit 100, 2026-07-02):
+        the base image ships two THIRD-PARTY PPAs pre-configured (`deadsnakes`, `ondrej/php` — unrelated
+        to `gh`), and Launchpad returned `403 Forbidden` on both (a shared-sandbox-IP reputation issue,
+        not a network-access misconfiguration — the request reached Launchpad's server and got a real
+        403, not a proxy-block). `apt update` treats ANY repo failure as fatal even though the Ubuntu
+        archives `gh` actually needs (`noble-updates/universe`, where `gh` ships on 24.04) fetched fine.
+        `|| true` makes the update non-fatal so the install step still runs. This runs once and is
+        cached (~7-day expiry); it does not re-run every session.
      2. **`GH_TOKEN`** env var — a GitHub Personal Access Token with access to all 3 repos
         (`miyagi-product-management`, `miyagisanchezcommerce`, `medusa-bonsai-backend`). `gh` reads
         `GH_TOKEN` automatically — no `gh auth login` step needed. A **fine-grained PAT** scoped to just
