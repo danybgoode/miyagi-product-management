@@ -111,7 +111,7 @@ additive. HIGH stories → **Daniel merges**. Every frontend PR gets a Vercel pr
 - [ ] Feature branch deleted; scope-doc frontmatter flipped to `status: shipped`
 
 ## Sprints
-- [sprint-0.md](sprint-0.md) — Bug: subdomain paywall not gating new sellers.
+- [sprint-0.md](sprint-0.md) — ✅ closed 2026-07-02, not reproducible (PR #160) — Bug: subdomain paywall not gating new sellers.
 - [sprint-1.md](sprint-1.md) — Landing v2: say the true offer (prompt, preamble, CTAs, earnings, handbook).
 - [sprint-2.md](sprint-2.md) — Become a promoter: self-serve application flow.
 - [sprint-3.md](sprint-3.md) — The offer: bundle pricing, free-first-year subdomain, 2x1 print ad.
