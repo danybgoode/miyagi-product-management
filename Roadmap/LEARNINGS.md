@@ -283,6 +283,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   option — no pre-add needed); and the **SQL `query_data_sources` mode needs a Business+ plan** (else board
   verification is a visual eyeball, not a programmatic assert). *(2026-06-23, notion-board-hygiene S2 —
   `roadmap-to-notion.mjs` + the `Marketplace Roadmap` DB.)*
+- **A heuristic path-existence check in this monorepo needs every known app root, not just the repo
+  root.** `apps/miyagisanchez` and `apps/backend` are separate, gitignored repos here, so a doc bullet's
+  `lib/x.ts` reference is relative to one of *them*, not the monorepo root — checking only the root
+  produced ~50 false "dead path" positives before the fix; checking all known app roots dropped it to a
+  handful of genuine edge cases. *(2026-07-02, doc-hygiene-learnings-sweep S1.2 — `scripts/doc-hygiene.mjs`.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
@@ -949,6 +954,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   edit. The behavioral acceptance signal (a fresh Sonnet-5 session actually escalating on an ambiguous story)
   can't be self-certified by the session that writes the docs — it's a standing owed-to-Daniel smoke, not a
   one-time close item. *(2026-07-01, model-split-sonnet5-execution S1 — PR #47.)*
+  **Reconfirmed on a non-money-path judgment call: report the honest result and ask, rather than silently
+  declaring "done" or guessing how aggressive to be.** A LEARNINGS de-noise pass initially found real
+  staleness but almost no true duplication — size barely moved. Rather than either stopping there (not
+  meeting the epic's "measurably smaller" signal) or unilaterally deciding how much detail to trade for
+  size, surfacing the tradeoff let Daniel pick the aggressiveness. Escalate-don't-guess isn't only for the
+  high-risk-tier triggers; it's also for "the plan doesn't specify how far to push a judgment call."
+  *(2026-07-02, doc-hygiene-learnings-sweep S1.1.)*
 
 ## Authed browser smokes — @clerk/testing (built; runs LOCALLY)
 - **How it works (live).** `e2e/global.setup.ts` runs `clerkSetup()` in Playwright **globalSetup**
