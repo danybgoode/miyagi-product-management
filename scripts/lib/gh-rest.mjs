@@ -165,11 +165,16 @@ export function getPull({ repo, number, retries = 1, delayMs = 2000 }) {
   };
 }
 
-// GET commits/{sha}/status + commits/{sha}/check-runs, merged via buildStatusRollup().
+// GET commits/{sha}/status + commits/{sha}/check-runs, merged via buildStatusRollup(). `per_page=100`
+// (GitHub's max) on check-runs — its default page size is 30, so an unpaginated call could silently miss
+// failures past page 1 on a commit with many parallel jobs.
 export function getStatusRollup({ repo, sha }) {
   const combinedStatus = ghApi([`repos/${repo}/commits/${sha}/status`, '--method', 'GET']);
-  const checkRuns = ghApi([`repos/${repo}/commits/${sha}/check-runs`, '--method', 'GET']);
-  if (combinedStatus === null && checkRuns === null) return null;
+  const checkRuns = ghApi([`repos/${repo}/commits/${sha}/check-runs`, '--method', 'GET', '-f', 'per_page=100']);
+  // Fail closed on EITHER source failing, not just both — a PARTIAL rollup (one source real, the other
+  // silently empty) is worse than no rollup at all, since it can misreport a genuine failure as "clean."
+  // Callers treat a null rollup as "unavailable" (degrading to no-signal), never as "confirmed clean."
+  if (combinedStatus === null || checkRuns === null) return null;
   return buildStatusRollup({ combinedStatus, checkRuns });
 }
 

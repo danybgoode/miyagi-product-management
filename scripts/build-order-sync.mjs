@@ -55,9 +55,12 @@ export function buildPrBody() {
 export const PR_TITLE = 'chore(build-order): regenerate stale board';
 
 // Pure — parses "owner/repo" from either remote URL form git produces (HTTPS or SSH). Exported for the
-// co-located test.
+// co-located test. `(?:^|[/@])` requires "github.com" to be preceded by the start of the string, `/`, or
+// `@` — not just any substring match — so a host like `notgithub.com` doesn't false-positive. The repo
+// group allows dots (GitHub permits dotted repo names); it's non-greedy so a trailing `.git` still gets
+// stripped rather than swallowed into the name.
 export function repoSlugFromRemoteUrl(url) {
-  const m = /github\.com[:/]([^/]+)\/([^/.]+?)(?:\.git)?$/.exec((url || '').trim());
+  const m = /(?:^|[/@])github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/.exec((url || '').trim());
   return m ? `${m[1]}/${m[2]}` : null;
 }
 

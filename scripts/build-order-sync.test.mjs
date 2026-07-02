@@ -43,3 +43,12 @@ test('repoSlugFromRemoteUrl: a non-GitHub or empty URL returns null, not a throw
   assert.equal(repoSlugFromRemoteUrl(''), null);
   assert.equal(repoSlugFromRemoteUrl(null), null);
 });
+
+test('repoSlugFromRemoteUrl: a repo name containing a dot is kept, not truncated at the dot', () => {
+  assert.equal(repoSlugFromRemoteUrl('https://github.com/danybgoode/my.repo.git'), 'danybgoode/my.repo');
+  assert.equal(repoSlugFromRemoteUrl('https://github.com/danybgoode/my.repo'), 'danybgoode/my.repo');
+});
+
+test('repoSlugFromRemoteUrl: a lookalike host like notgithub.com does not false-positive', () => {
+  assert.equal(repoSlugFromRemoteUrl('https://notgithub.com/danybgoode/foo.git'), null);
+});
