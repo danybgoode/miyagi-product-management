@@ -145,6 +145,16 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-02 — Promoter funnel fixes shipped (1 sprint; LOW — bug fix + light enhancement).** Closed three
+  cracks in the promoter recruit → close funnel: the `/vende/promotor` copy-paste "ask your AI" prompt no
+  longer renders the literal `{url}` placeholder (inherited from an unrelated epic's PR
+  [#156](https://github.com/danybgoode/miyagisanchezcommerce/pull/156), merged first); the public
+  "Abrir mi panel para cerrar" CTA no longer links to a dead 404 when `promoter.enabled` is off (it now
+  hides itself instead); and the navbar "Agente IA" sheet pitches selling/recruiting on seller/promoter
+  pages instead of the generic buyer prompt. PR [#157](https://github.com/danybgoode/miyagisanchezcommerce/pull/157)
+  (`b3a9956`), codex cross-review clean (2 non-blocking should-fixes applied). `promoter.enabled` confirmed
+  **ON** in prod. Durable learning: grep whether an open sibling PR already fixed the same root cause before
+  building it twice. See [08 · Growth & Promotions › Promoter funnel fixes](08-growth-and-promotions/promoter-funnel-fixes/).
 - **2026-07-02 — Doc hygiene: LEARNINGS/README sweep + a rolling doc-hygiene skill (1 sprint; LOW,
   docs/tooling only).** De-noised the always-read `Roadmap/LEARNINGS.md` (1,155→980 lines, 117.7→96.7 KB,
   −18%) — sharpened the Flagsmith-era flag-layer bullets to reflect the `feature-flags-inhouse` Supabase

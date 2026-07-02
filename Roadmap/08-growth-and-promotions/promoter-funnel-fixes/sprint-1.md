@@ -1,7 +1,8 @@
 # Promoter funnel fixes — Sprint 1: `{url}` fix, no-404 CTA, promoter-aware sheet
 
-**Status:** 🏗️ built, draft PR [#157](https://github.com/danybgoode/miyagisanchezcommerce/pull/157) open ·
-branch `feat/promoter-funnel-fixes` off latest `main` (post PR #156 merge)
+**Status:** ✅ shipped 2026-07-02 — PR [#157](https://github.com/danybgoode/miyagisanchezcommerce/pull/157)
+(squash `b3a9956`) merged to `main`; `promoter.enabled` confirmed **ON** in prod (Daniel). Branch
+`feat/promoter-funnel-fixes` deleted.
 
 > All copy is **es-MX** (not on the bilingual allow-list). Prompt phrasings below are recommendations to
 > confirm in the smoke.
@@ -51,8 +52,8 @@ promoter-program S3/S4); Daniel confirms the flag in Flagsmith.
 `closingCta: null` when off — `SellerAcquisitionPageConfig`'s CTA fields became nullable (mirrors the existing
 optional `secondaryCta`), so the shared hero/closing sections just skip rendering them. **Default is hidden**,
 not "Próximamente" copy (no new locale strings needed). New `api` specs in `e2e/promoter-close.spec.ts` assert
-the CTA-presence ⇔ route-reachability invariant directly, agnostic to the live flag value. **`promoter.enabled`
-prod confirmation is still owed to Daniel** — flagged in PR #157, not resolved by this code.
+the CTA-presence ⇔ route-reachability invariant directly, agnostic to the live flag value.
+**`promoter.enabled` confirmed ON in prod (Daniel, 2026-07-02)** — the CTA is live and reachable.
 
 ### Story 1.3 — Promoter/seller-aware "Agente IA" sheet
 **As a** prospective seller/promoter, **I want** the navbar agent sheet to pitch selling/recruiting on
@@ -75,6 +76,11 @@ es-MX `ask()` branches (keep the shared `PREAMBLE`). Buyer paths unchanged.
 `/vende*` or `/sell*` → `seller`. Shipped the recommended phrasings below verbatim. 12 new `api` specs in
 `e2e/agent-prompt.spec.ts` cover both new kinds + a buyer-path regression check.
 
+**Cross-agent review (codex, PR #157, advisory):** no blocking findings. Applied both non-blocking items in
+`7ff6ac8` — hardened the Story 1.2 CTA-invariant test to fetch both routes concurrently instead of sequentially
+(closes an already-narrow race given `lib/flags.ts`'s 60s in-process flag cache), and deduped the two
+identical flag-gated CTA shapes in `buildPromoterPageConfig` into one `closeWorkspaceCta()` helper.
+
 ## Sprint QA
 - **api spec(s):** Story 1.1 (SSR URL), Story 1.2 (flag-agnostic status), Story 1.3 (path → prompt).
 - **Free coverage seam:** `lib/agent-prompt.ts` is pure → unit/`api` covers Story 1.3 fully.
@@ -83,20 +89,15 @@ es-MX `ask()` branches (keep the shared `PREAMBLE`). Buyer paths unchanged.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: **pre-merge** — the PR #157 branch preview:
-`https://miyagisanchez-git-feat-promoter-fun-8918b0-danybgoodes-projects.vercel.app`
-(swap in `https://miyagisanchez.com` once merged to `main`).
+Env: **production** — `https://miyagisanchez.com` (merged 2026-07-02, `promoter.enabled` confirmed **ON**).
 
-1. Open `<env>/vende/promotor` and find the "Copiar prompt para mi IA" block.
+1. Open `https://miyagisanchez.com/vende/promotor` and find the "Copiar prompt para mi IA" block.
    → The prompt reads **"…abrir https://miyagisanchez.com/vende/promotor…"** — no literal `{url}` anywhere.
    *(Shipped via PR #156, confirmed live on this branch.)*
 2. Scroll to "Compruébalo tú mismo" further down the same page.
    → The second prompt block also shows the real URL, not `{url}`.
 3. Click **"Abrir mi panel para cerrar"** while **signed out**.
-   → You land on sign-in (then the close workspace) — **not** a 404. **If `promoter.enabled` is OFF**, the
-   button is **absent entirely** from both the hero and the closing section instead (no "Próximamente" copy —
-   confirmed default: hidden). **[flag state — owed to Daniel: confirm `promoter.enabled` in the flag admin
-   console / Supabase `platform_flags`; the button's presence/absence on this page is your confirmation signal]**
+   → With the flag ON, you land on sign-in (then the close workspace) — **not** a 404.
 4. In the top navbar, tap **"Agente IA"** while on `/vende/promotor`.
    → The bottom-sheet prompt reads *"Quiero ser promotor de Miyagi Sánchez y ganar comisión montando tiendas en
    persona…"* — not "¿Qué estás buscando hoy?". Tap **Copiar prompt** → it copies; **Abrir en Claude** opens
@@ -104,13 +105,13 @@ Env: **pre-merge** — the PR #157 branch preview:
 5. Tap **"Agente IA"** on `/vende` (the anchor seller page).
    → The prompt reads *"Estoy pensando en vender en Miyagi Sánchez…"* — the seller pitch, distinct from the
    promoter one in step 4.
-6. Open `<env>/l/<any-listing>` and tap **"Agente IA"**.
+6. Open `https://miyagisanchez.com/l/<any-listing>` and tap **"Agente IA"**.
    → The buyer prompt is unchanged (regression check) — still the generic marketplace hand-off, not a seller
    or promoter pitch.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
 **Owed to Daniel (not covered by this branch's automated gate):**
-- Confirm `promoter.enabled`'s live prod value (step 3 above is the live signal once this merges to `main`).
+- ~~Confirm `promoter.enabled`'s live prod value~~ — **done, confirmed ON 2026-07-02.**
 - The copy→paste→agent round-trip itself (an automated smoke can assert the sheet renders + copies the right
-  text, but not judge how Claude/ChatGPT/Gemini actually responds to it).
+  text, but not judge how Claude/ChatGPT/Gemini actually responds to it) — still owed.
