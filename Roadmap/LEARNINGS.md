@@ -440,10 +440,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   hand-edited**, guarded by `build-order.mjs --check` in CI. When a doc is generated from inputs, give it one
   declared source and a freshness gate — don't let two heuristics vote. *(2026-06-14, branch-cleanup +
   status-reconciliation chore.)*
-  **Corollary — editing an epic README's `status:` frontmatter mid-PR is itself a trigger for the guard.**
-  Any Roadmap PR that flips `status:` makes the committed `BUILD-ORDER.md` stale and the guard reds —
-  expected, not a false positive. Fix: re-run `node scripts/build-order.mjs` and commit the regenerated file
-  in the same PR whenever a story touches epic status. *(2026-07-01, model-split-sonnet5-execution S1.)*
+  **Corollary — editing an epic README's `status:` frontmatter mid-PR is itself a trigger for the guard —
+  and so is ticking a sprint doc's stories to done, even with the frontmatter untouched.** Any Roadmap PR
+  that flips `status:` makes the committed `BUILD-ORDER.md` stale and the guard reds — expected, not a false
+  positive. Fix: re-run `node scripts/build-order.mjs` and commit the regenerated file in the same PR
+  whenever a story touches epic status. *(2026-07-01, model-split-sonnet5-execution S1.)* The same guard also
+  fires from the **other** input it reads: `build-order.mjs`'s status-drift check compares the
+  frontmatter-authoritative status against a **sprint/retro-derived** status, so marking a sprint's stories
+  done in `sprint-N.md` (without touching the README's `status:` line at all) flips the derived side and
+  reds CI on its own — this is the natural epic-close moment, so the fix is the same regen, done as part of
+  actually setting `status: shipped`. *(2026-07-02, groom-archetype-lens S1 — closing its own PR.)*
   **Corollary — regenerating from a DIRTY working directory can bake in a sibling's untracked file and pass
   locally while CI's clean checkout reds.** `roadmap-to-notion.mjs`'s status derivation checks whether an
   epic's `RETROSPECTIVE.md` exists **on disk** (not via git) as a fallback signal — so a stray untracked

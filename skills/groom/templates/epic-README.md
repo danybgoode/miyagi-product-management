@@ -6,6 +6,9 @@ slug: {{SLUG}}
 # Epic: {{TITLE}}
 
 > **Area:** {{MACRO}} · **Risk:** {{RISK}} · **Scope seed:** [`00-ideas/seeds/{{SLUG}}.md`](../../00-ideas/seeds/{{SLUG}}.md)
+<!-- Optional: if this epic was tagged at grooming (see spike-role-archetypes.md), append
+     " · **Archetype:** <Prototyper|Builder|Sweeper|Grower|Maintainer>" to the line above.
+     Omit entirely for the Builder default — untagged is fine. -->
 
 ## Why
 <!-- One paragraph: the outcome this epic delivers and for whom. Plain product language, no tech. -->

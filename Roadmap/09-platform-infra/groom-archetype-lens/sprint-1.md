@@ -1,10 +1,10 @@
 # Groom archetype-lens — Sprint 1: wire the optional Stage-2 tag
 
-**Status:** ⬜ not started
+**Status:** ✅ done — `00b7e50` (Story 1.1), `1fa7b1c` (Story 1.2)
 
 ## Stories
 
-### Story 1.1 — Optional archetype tag + cues in groom Stage 2
+### Story 1.1 — Optional archetype tag + cues in groom Stage 2 ✅ `00b7e50`
 **As a** groomer (Cowork planning session), **I want** an optional archetype tag with per-archetype cues at
 Stage 2, **so that** an ask's mode (Sweeper/Grower/etc.) front-loads the right acceptance/QA/risk emphasis
 instead of it being discovered mid-build.
@@ -26,7 +26,7 @@ instead of it being discovered mid-build.
 - Compact (a small table/inset), not a new mega-section — respects the doc-hygiene sweep's spirit.
 **Risk:** Low (docs/tooling; may merge directly).
 
-### Story 1.2 (optional) — Optional `archetype:` line in the epic README template
+### Story 1.2 (optional) — Optional `archetype:` line in the epic README template ✅ `1fa7b1c`
 **As a** groomer, **I want** an optional `archetype:` field in the epic README house format, **so that** a
 tagged epic records its archetype.
 **Acceptance:** `skills/groom/templates/epic-README.md` carries an **optional** `archetype:` line (clearly
@@ -54,6 +54,13 @@ Env: the repo skill docs (process change; no app deploy / production URL).
    that epic actually needed — confirming the lens front-loads real decisions, not just a label.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Dogfood result (confirmed):** `shop-settings-refactor` was Chore/Sweeper — the actual epic broke the
+4,076-line `ShopSettings.tsx` fallback down by proving the old monolith path unreachable, deleting it, and
+adding an anti-monolith CI guard against it returning. That's exactly the Sweeper cue's shape
+("prove old path unreachable + regression guard"), and it also touched shared surface, matching
+"shared-surface touch → announce." The lens would have front-loaded this acceptance shape at grooming
+instead of the plan discovering it mid-flight (per the spike decision's own worked-example finding). ✅
 
 ## Kickoff prompt (paste into a fresh Claude Code session)
 > Read apps/miyagisanchez/AGENTS.md, Roadmap/WAYS-OF-WORKING.md and Roadmap/LEARNINGS.md. Skim team memory.

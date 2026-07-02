@@ -146,6 +146,16 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-02 — Groom archetype-lens wiring SHIPPED (1 sprint; chore + LOW).** Wires the
+  `spike-role-archetypes` WRITTEN DECISION into the `groom` skill: `skills/groom/SKILL.md` Stage 2 gains an
+  **optional** archetype tag (Prototyper/Builder/Sweeper/Grower/Maintainer) alongside the existing
+  Feature/Spike/Bug/Chore class, each with a one-line "what this changes" cue, transcribed from the spike
+  decision. Composes with the class (never replaces it), is a **planning prompt, not a gate** (no new
+  required field, no CI check, team-mix ratios explicitly excluded), and references — never re-encodes —
+  the Model-tiers escalation triggers. `skills/groom/templates/epic-README.md` got a matching optional
+  `archetype:` line. Dogfooded by re-tagging `shop-settings-refactor` as Chore/Sweeper and confirming the
+  cue matches its real acceptance shape. Docs/tooling only, no app code, no deploy. PR #62. See
+  [09 · Platform & Infra › Groom archetype-lens wiring](09-platform-infra/groom-archetype-lens/).
 - **2026-07-02 — Agent discovery & indexing SHIPPED (S0 spike + 1 sprint; spike + LOW).** Reframed "agents
   can't find us" as an **indexing** problem, not a code bug. The S0 spike audited the crawl surface live
   (`robots`/`sitemap`/`llms`/manifest, a Googlebot-UA-vs-default body byte-diff, `whois` domain age) and
