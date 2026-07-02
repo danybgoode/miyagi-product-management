@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 import { loadPromptBody } from './lib/cross-agent-cli.mjs';
 
 const ROUTINES = join(dirname(fileURLToPath(import.meta.url)), 'routines');
-const PROMPTS = ['pr-review', 'roadmap-hygiene', 'smoke-triage', 'ops-nightly'];
+const PROMPTS = ['pr-review', 'roadmap-hygiene', 'smoke-triage', 'ops-nightly', 'weekly-recap'];
 
 for (const name of PROMPTS) {
   test(`${name}.prompt.md parses to a non-empty body in the house format`, () => {

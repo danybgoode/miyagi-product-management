@@ -300,6 +300,32 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `lib/x.ts` reference is relative to one of *them*, not the monorepo root — checking only the root
   produced ~50 false "dead path" positives before the fix; checking all known app roots dropped it to a
   handful of genuine edge cases. *(2026-07-02, doc-hygiene-learnings-sweep S1.2 — `scripts/doc-hygiene.mjs`.)*
+- **A git-log pickaxe scan is a cheap, dependency-free way to detect a specific frontmatter field's flip
+  within a date window — no new metadata field needed.** `git log --since=<date> -p -- <pathspec>`,
+  regex-matching added (`+`-prefixed) lines against the preceding `diff --git a/<file> b/…` header to
+  know which file each hunk belongs to, found every epic README's `status: shipped`/`status: archived`
+  flip in a trailing window with zero false positives against a manual tally — the flip's own commit date
+  **is** the ship date, so no separate "shipped-on" frontmatter field is needed. Pass `--reverse` so the
+  diff arrives oldest-first, making "last write wins" in a dedupe map mean *chronologically* last, not
+  textually last in the output. *(2026-07-02, ops-routines-reporting S3 — `scripts/weekly-recap.mjs`.)*
+- **"Merging to `main` is the deploy" is a legitimate, zero-new-dependency proxy metric for a reporting
+  tool, when the acceptance bar is "matches what a human would count by hand."** A weekly recap needed a
+  "deploys" count with no API specified; rather than add a new Vercel-API/gcloud credential surface for a
+  LOW-risk read-only report, reusing `WAYS-OF-WORKING.md`'s own framing (merging to `main` on either app
+  repo already **is** the production deploy) gave the exact number a manual tally would produce. Reach for
+  an existing documented convention before reaching for a new external API. *(2026-07-02,
+  ops-routines-reporting S3.)*
+- **A periodic-but-not-strictly-cadenced report needs a WINDOW-tracking memory log, not a delta-snapshot
+  one — they solve different problems.** The daily standup (`scripts/standups.log`) diffs the current
+  full state against yesterday's snapshot (nothing changed → say so); a weekly recap instead needs to
+  know **where the last window ended** (`scripts/weekly-recaps.log`: `{windowStart, windowEnd}` per run)
+  so back-to-back runs — whether exactly 7 days apart or not — never double-count or leave a gap. Don't
+  reach for the delta-diff shape by default just because a sibling script already has one; match the log
+  shape to whether the report is "what changed since last look" or "what happened in this period." A
+  quiet-period collapse built on either shape must still check every underlying signal actually reported
+  in before printing the upbeat "nothing happened" framing — an unavailable read is a different fact from
+  a genuinely quiet one, and a fixture test catches the conflation before it reaches a real message.
+  *(2026-07-02, ops-routines-reporting S3 — `scripts/weekly-recap.mjs`.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
@@ -345,6 +371,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Any Roadmap PR that flips `status:` makes the committed `BUILD-ORDER.md` stale and the guard reds —
   expected, not a false positive. Fix: re-run `node scripts/build-order.mjs` and commit the regenerated file
   in the same PR whenever a story touches epic status. *(2026-07-01, model-split-sonnet5-execution S1.)*
+  **Corollary — regenerating from a DIRTY working directory can bake in a sibling's untracked file and pass
+  locally while CI's clean checkout reds.** `roadmap-to-notion.mjs`'s status derivation checks whether an
+  epic's `RETROSPECTIVE.md` exists **on disk** (not via git) as a fallback signal — so a stray untracked
+  retro file left by unrelated in-progress work (a sibling branch/worktree) silently changed another
+  epic's derived bucket in the local regen, which then passed `--check` locally but failed CI's clean
+  checkout (`build-order-fresh` red) since that file was never committed. Fix: regenerate from a
+  disposable clean `git worktree` of the exact commit (`git worktree add <tmp> HEAD`) whenever the working
+  tree has any untracked files that aren't your own, diff/copy the result in, then remove the scratch
+  worktree — don't trust a `--check` pass in a dirty tree as proof CI will agree. *(2026-07-02,
+  ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
 - **The deterministic gate is non-negotiable and cheap:** `tsc --noEmit` + `next build` + the

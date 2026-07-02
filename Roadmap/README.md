@@ -145,6 +145,28 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-02 — Ops routines & reporting complete (3 sprints; mixed LOW→MEDIUM, dev-tooling/process
+  only).** Turned overnight repo state into things Daniel wakes up to instead of assembles. **S1**
+  (PR #50) shipped a **delta-only daily Telegram standup** (`standup-post` skill + `scripts/standup.mjs`)
+  aggregating overnight PR/CI/smoke/build-order-drift/stale-preview signals across all 3 repos, diffed
+  against `scripts/standups.log` so a quiet night collapses to one line. **S2** (PR #52, first-live-action
+  confirmations PR #53/#54) added the nightly fixers, folded into the same one `ops-nightly` routine:
+  `build-order-sync` (regen + a `claude/` docs PR on drift, never hand-edits), `vercel-prune` (scheduled
+  dry-run report; `--apply` stays human-confirmed, never run by the routine itself), `babysit-pr`
+  (advisory PR watch — retries flaky CI scoped to the exact failing run, surfaces merge conflicts, never
+  merges, never a required check). **S3** (PR #55) added `weekly-recap` — a weekly executive Telegram
+  recap (merged PRs across all 3 repos, shipped/closed epics via each epic README's frontmatter `status:`
+  flip, a merges-to-main deploy-count proxy per `WAYS-OF-WORKING.md`'s own "merging is the deploy"
+  framing, and a short retro digest per shipped epic), window-tracked (not delta-diffed) via
+  `scripts/weekly-recaps.log`, on its own dedicated weekly routine mirroring Routine C's precedent. Every
+  skill follows the `spike-skills-library-audit` D-spike's conventions (script-does-work /
+  `SKILL.md`-wraps / routine-triggers, mandatory `## Gotchas`). Five Claude Routines now exist total,
+  ~2.3 scheduled runs/day — well under the Pro 5/day cap. Durable lever promoted to LEARNINGS: a
+  git-log pickaxe scan (`git log -p`, regex over added lines tracked against the preceding `diff --git`
+  header) is a cheap, dependency-free way to detect a frontmatter field's flip within a date window — no
+  new metadata needed, the flip's own commit date IS the event date. Owed to Daniel: the live weekly
+  Telegram post + the `weekly-recap` routine account stand-up. See
+  [09 · Platform & Infra › Ops routines & reporting](09-platform-infra/ops-routines-reporting/).
 - **2026-07-02 — Promoter funnel fixes shipped (1 sprint; LOW — bug fix + light enhancement).** Closed three
   cracks in the promoter recruit → close funnel: the `/vende/promotor` copy-paste "ask your AI" prompt no
   longer renders the literal `{url}` placeholder (inherited from an unrelated epic's PR

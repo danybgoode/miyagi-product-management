@@ -10,12 +10,13 @@ Daniel** — so they keep running with the laptop closed. Created/managed in Dan
 > (WRITTEN DECISION, 2026-06-23) and the epic
 > [`routines-enablement`](../../Roadmap/09-platform-infra/routines-enablement/README.md).
 > **Decision:** stand up **A** first, **C** second, **B** as a now-unblocked fast-follow; **D is out.**
-> A fourth routine, **ops-nightly**, was added by the
+> A fourth and fifth routine, **ops-nightly** and **weekly-recap**, were added by the
 > [`ops-routines-reporting`](../../Roadmap/09-platform-infra/ops-routines-reporting/README.md) epic —
 > built against the skill conventions from
 > [`spike-skills-library-audit`](../../Roadmap/00-ideas/2.%20readyforscope/spike-skills-library-audit.md).
-> S1 shipped it as the daily standup alone; **S2 added the three nightly fixer steps that now run
-> before it** (`build-order-sync`, `vercel-prune` dry-run, `babysit-pr`).
+> S1 shipped `ops-nightly` as the daily standup alone; **S2 added the three nightly fixer steps that now
+> run before it** (`build-order-sync`, `vercel-prune` dry-run, `babysit-pr`); **S3 added `weekly-recap`**,
+> a dedicated weekly routine (mirroring Routine C's precedent) for the longer-horizon exec recap.
 
 This repo commits the *prompts + this runbook*. **The account stand-up itself is operational, owed to
 Daniel** — installing the GitHub App, creating the routines from these prompts, and setting B's
@@ -143,6 +144,44 @@ routine (cap-safe) — see the budget table below.
      PR) each look correct — see
      [`sprint-2.md`](../../Roadmap/09-platform-infra/ops-routines-reporting/sprint-2.md)'s walkthrough.
 
+## Routine weekly-recap — Weekly executive recap  *(fifth routine, the longer-horizon complement to ops-nightly)*
+**Prompt:** [`weekly-recap.prompt.md`](weekly-recap.prompt.md) · **Repo:** root `miyagi-product-management`
+(reads `gh` + `git log` across all 3 repos: root, `miyagisanchezcommerce`, `medusa-bonsai-backend`).
+
+Shipped by [`ops-routines-reporting`](../../Roadmap/09-platform-infra/ops-routines-reporting/README.md)
+S3 — a dedicated **weekly** routine (mirroring Routine C's precedent of a standalone weekly schedule,
+rather than a day-of-week-gated step folded into the nightly `ops-nightly` routine). One step: the
+`weekly-recap` skill (`scripts/weekly-recap.mjs`) gathers the week's merged PRs (all 3 repos),
+shipped/closed epics (README frontmatter `status:` flips), a merges-to-main deploy count per app repo,
+and a short retro digest per shipped epic — then posts one Telegram message.
+
+1. **Install the Claude GitHub App** on `miyagi-product-management` (root repo) if not already done for
+   Routine C / `ops-nightly`.
+2. **Create the routine** from `weekly-recap.prompt.md`.
+3. **Trigger:** Schedule, **weekly — Mon 15:30 UTC** (after Routine C's Mon 14:00 roadmap-hygiene and
+   comfortably after the prior night's `ops-nightly` run, so the recap can reflect that week's tail end).
+4. **Env:**
+   - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — this routine's Telegram use is
+     **LOAD-BEARING** (its one step's actual output), same as `ops-nightly`'s.
+   - The Telegram **chat id** lives in `skills/weekly-recap/config.json` (`chat_id`, gitignored — copy
+     `config.example.json` and fill it in, or let the skill ask via `AskUserQuestion` on first run) — its
+     **own** config file, separate from `standup-post/config.json`, per the D-spike's per-skill
+     convention, even though both typically hold the same physical chat id.
+   - **`TELEGRAM_CHAT_ID`** (env var) only if you also want the failure-ping — same bot/chat as above,
+     sourced differently for that one code path (see `weekly-recap.prompt.md`'s closing note).
+   - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
+     other routines).
+   - **Push enabled beyond the `claude/`-prefix default.** `scripts/weekly-recap.mjs` commits + pushes
+     `scripts/weekly-recaps.log` directly to `main` after every successful post (a path-scoped, data-only
+     commit), so the *next* run — a fresh routine session with no local state — knows where the last
+     window ended. Without this, the recap still posts fine, but the window silently falls back to a
+     plain trailing-7-days read every time instead of picking up exactly where the last run left off (see
+     `skills/weekly-recap/SKILL.md`'s Gotchas). This is the **same** grant `ops-nightly` already needs for
+     `standup.mjs` — if that's already enabled account-wide, nothing new to configure here.
+5. **Output:** one Telegram message per week — merged PRs, deploys (merge counts), shipped/closed epics,
+   and a short retro digest per shipped epic, or a one-line "quiet week" post when there's nothing to
+   report. **Never** a PR, **never** a code change, **never** a required check.
+
 ---
 
 ## Daily-cap budget (Pro)
@@ -158,8 +197,10 @@ have their **own separate per-routine/per-account hourly caps**, not the schedul
 | C — roadmap hygiene | Schedule, weekly | Yes, but ~0.14/day |
 | B — smoke triage | Schedule, nightly | Yes, 1/day |
 | ops-nightly — standup + nightly fixers | Schedule, nightly | Yes, 1/day (still one routine, now 4 steps) |
+| weekly-recap — weekly exec recap | Schedule, weekly | Yes, but ~0.14/day |
 
-- **Scheduled load = B (1/day) + ops-nightly (1/day) + C (~0/day) ≈ 2/day** — still well under the 5/day cap.
+- **Scheduled load = B (1/day) + ops-nightly (1/day) + C (~0.14/day) + weekly-recap (~0.14/day) ≈ 2.3/day**
+  — still well under the 5/day cap.
 - **A is effectively uncapped for our volume** (GitHub events, hourly caps only); it does **not** eat
   the scheduled budget. On a busy day it's bounded by the preview hourly cap, not the daily 5.
 - **No upgrade pressure:** everything here runs on **Pro**. Higher daily run counts are the only
@@ -182,9 +223,10 @@ trigger GitHub notifications). The gap is a **run that fails to complete** (netw
 hourly cap) — that shows only on `claude.ai/code/routines` / the transcript unless you check.
 
 This section is about that **optional** ping for A/B/C — none of them has a Telegram post as its actual
-output. **ops-nightly is the one exception**: its Telegram post IS the routine's output, so its
-Telegram setup is load-bearing, not optional (see its own section above for the full env list). It
-still uses this same failure-ping *pattern* for the "couldn't even attempt the standup" case.
+output. **ops-nightly and weekly-recap are the two exceptions**: their Telegram post IS the routine's
+output, so their Telegram setup is load-bearing, not optional (see each one's own section above for the
+full env list). Both still use this same failure-ping *pattern* for the "couldn't even attempt the
+post" case.
 
 To close it without checking the app daily, each prompt has an **optional, best-effort Telegram
 ping-on-failure** step, gated on two env vars being present (so it degrades to a no-op where unset).
