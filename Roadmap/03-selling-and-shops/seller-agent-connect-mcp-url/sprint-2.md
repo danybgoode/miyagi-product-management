@@ -1,6 +1,6 @@
 # Seller agent connect — Sprint 2: always-on personal MCP URL + Claude one-click (the car)
 
-**Status:** 📋 planned (approved 2026-07-01) · same branch or `feat/seller-agent-connect-mcp-url-s2` off latest `main`
+**Status:** 🚧 built 2026-07-02 on `feat/seller-agent-connect-mcp-url-s2`, PR open, awaiting Daniel's merge
 **Risk:** **HIGH (auth)** across the board — a new authentication path to seller-scoped, money-adjacent MCP
 tools. Behind a kill-switch (default off → merge dark). **Daniel merges.**
 
@@ -11,7 +11,7 @@ tools. Behind a kill-switch (default off → merge dark). **Daniel merges.**
 > without exposing a password-equivalent secret. (Alternatives considered + rejected for v1: encrypt-the-bearer;
 > full OAuth — see scope doc.)
 
-## Story 2.1 — Personal MCP URL that always exists and resolves to the shop scope
+## Story 2.1 — Personal MCP URL that always exists and resolves to the shop scope ✅ built 2026-07-02
 **As a** seller, **I want** a per-shop MCP connector URL that's always present, **so that** I never hunt for a
 token.
 **Changes:**
@@ -27,7 +27,7 @@ tools; the Bearer header path is unaffected.
 **Risk:** **high (auth)** · **QA:** `api` specs: valid→scope, invalid/rotated/revoked→401, cross-shop→denied;
 assert the **flag → auth → config** ordering (LEARNINGS) and **both** flag states.
 
-## Story 2.2 — Always-shown copyable URL + "Agregar a Claude" one-click
+## Story 2.2 — Always-shown copyable URL + "Agregar a Claude" one-click ✅ built 2026-07-02
 **As a** seller, **I want** to copy my URL and add it to Claude in one click, **so that** connecting is trivial.
 **Changes (`components/ConnectAgentPanel.tsx`):**
 - On load, ensure the connector URL exists (auto-provision if absent) and **always render it copyable** — no
@@ -44,7 +44,7 @@ URL; the header snippet still works for Desktop.
 **Risk:** **high** (renders a live credential) · **QA:** `api`/browser: panel shows a copyable URL with no
 click; deep-link href correct; rotate invalidates the old URL (ties to 2.1's spec).
 
-## Story 2.3 — Kill-switch + auth specs + smoke walkthrough
+## Story 2.3 — Kill-switch + auth specs + smoke walkthrough ✅ built 2026-07-02
 **As a** builder, **I want** Part B behind a flag with the auth path locked by specs, **so that** it merges dark
 and can't regress.
 **Changes:** gate the URL-credential path + the panel's URL/deep-link behind a kill-switch (default **false**,
@@ -54,12 +54,24 @@ green both ways.
 **Risk:** high (flag polarity) · **QA:** deterministic gate green; flag asserted both states.
 
 ## Sprint QA
-- **api specs:** slug→scope resolver (2.1), panel URL presence + deep-link (2.2), flag both-states (2.3).
-- **Free coverage seam:** the slug→scope resolver (pure `lib/` seam).
-- **owed to Daniel (authed/browser):** the real claude.ai "add connector → paste URL → call a seller tool"
-  round-trip (an automated smoke can't drive the claude.ai modal or judge the agent); prod money/auth infra
-  seeded with **real** creds per the flag run-order (LEARNINGS).
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **api specs (`e2e/agent-connector.spec.ts`) ✅:** `classifyAgentCredential`/`parseBearer` pure-seam coverage
+  (both credential shapes + garbage, 2.1); `resolveFlag` both-states for the new key, mirroring
+  `flags-cache.spec.ts` (2.3); live route-guard tests on `/api/sell/agent-connector` and
+  `/api/ucp/mcp/c/<slug>` — flag-agnostic `[401,404]` assertions (same convention as
+  `promoter-close.spec.ts`) for a malformed slug and a well-formed-but-guaranteed-absent slug. Cross-shop
+  denial is architectural (same single-row `.eq()` lookup the Bearer token already relies on), not a new
+  fixture. This codebase has no DB-mock or live-flag-flip harness, so "both flag states" is proven at the
+  pure `resolveFlag`/classifier level, not by toggling the live row from a spec.
+- **Free coverage seam ✅:** `classifyAgentCredential` (pure, `lib/agent-auth.ts`).
+- **owed to Daniel (authed/browser/live-infra):** the real claude.ai "add connector → paste URL → call a
+  seller tool" round-trip; the live valid-slug → own-shop-config / rotate-breaks-old-URL smoke (steps 2–4
+  below) — no authed seller session exists in the build sandbox to drive this locally. Also owed: applying
+  the seed migration + flipping the flag, since `.env.local` points at the **same shared Supabase project
+  as production** (`xljxqymsuyhlnorfrnno`) — there's no isolated dev DB to test a live flip against without
+  affecting prod, so this stays a deliberate, deploy-time action per the flag run-order (LEARNINGS).
+- **deterministic gate ✅:** `tsc --noEmit`, `npm run build`, and Playwright `api` (1174/1176 relevant specs
+  green; the only 2 residual failures are pre-existing homepage/catalog-content specs unrelated to this
+  diff — local Medusa dev data, not code).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the branch preview URL while testing pre-merge) · flag **on**

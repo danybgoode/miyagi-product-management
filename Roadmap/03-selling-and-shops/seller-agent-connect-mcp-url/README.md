@@ -7,7 +7,7 @@ slug: seller-agent-connect-mcp-url
 
 > **Area:** 03-selling-and-shops · **Risk:** Sprint 1 low · Sprint 2 **high (auth)** · **Type:** feature + copy
 > **Scope doc:** [`00-ideas/2. readyforscope/seller-agent-connect-mcp-url.md`](../../00-ideas/2.%20readyforscope/seller-agent-connect-mcp-url.md)
-> **Status:** 🚧 in progress · S1 ✅ shipped 2026-07-02 ([#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)) · S2 next
+> **Status:** 🚧 in progress · S1 ✅ shipped 2026-07-02 ([#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)) · S2 built 2026-07-02, PR open, awaiting Daniel's merge (HIGH risk)
 
 ## Why
 Two gaps stop a seller's agent from actually running the shop. (1) The setup emit prompt
@@ -45,9 +45,9 @@ must ride in the URL (chosen) or via OAuth (deferred). The header snippet stays 
 | Sprint | Story | Risk |
 |---|---|---|
 | 1 | Rewrite `buildSetupPrompt` — read Miyagi context + interview on thin input, keep JSON-only final output ✅ [#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) | low |
-| 2 | Per-shop personal MCP URL (opaque connector slug in path) resolving to the existing seller scope | **high (auth)** |
-| 2 | `ConnectAgentPanel`: always-shown copyable URL + "Agregar a Claude" deep-link + rotate/revoke; keep header snippet | **high** |
-| 2 | Kill-switch (default off), auth `api` specs (both flag states, flag→auth→config ordering), smoke walkthrough | high |
+| 2 | Per-shop personal MCP URL (opaque connector slug in path) resolving to the existing seller scope ✅ built | **high (auth)** |
+| 2 | `ConnectAgentPanel`: always-shown copyable URL + "Agregar a Claude" deep-link + rotate/revoke; keep header snippet ✅ built | **high** |
+| 2 | Kill-switch (default off), auth `api` specs (both flag states, flag→auth→config ordering), smoke walkthrough ✅ built | high |
 
 ## Deploy order
 Sprint 1 frontend-only (prompt string), low-risk, can merge alone. Sprint 2 touches the **auth** path to
@@ -63,5 +63,9 @@ backend-first and degrade the frontend gracefully.
 - [ ] Product poster (`Roadmap/README.md`) updated (03 agent-native setup / "Conecta tu agente" line)
 - [ ] Team memory + `MEMORY.md` index updated
 - [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe)
-- [ ] Kill-switch exists in Flagsmith with the stated polarity (enablement ⇒ default false, created disabled)
+- [ ] Kill-switch exists in `platform_flags` (the in-house flag store — epic 09 · feature-flags-inhouse
+      replaced Flagsmith) with the stated polarity (enablement ⇒ default false, created disabled). The
+      seed migration ships in the PR; the row itself is applied through the normal deploy/seed step since
+      `.env.local` points at the same shared Supabase project as production (no isolated dev DB to test
+      against locally).
 - [ ] Feature branch deleted; PR merged
