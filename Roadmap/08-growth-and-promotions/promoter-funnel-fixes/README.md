@@ -1,5 +1,5 @@
 ---
-status: planned
+status: shipped
 slug: promoter-funnel-fixes
 ---
 
@@ -7,7 +7,7 @@ slug: promoter-funnel-fixes
 
 > **Area:** 08-growth-and-promotions · **Risk:** low · **Type:** bug + light enhancement
 > **Scope doc:** [`00-ideas/2. readyforscope/promoter-funnel-fixes.md`](../../00-ideas/2.%20readyforscope/promoter-funnel-fixes.md)
-> **Status:** 📋 planned · approved 2026-07-01 · Promoter program (epic `promoter-program`) follow-up
+> **Status:** ✅ shipped 2026-07-02, 1 sprint · Promoter program (epic `promoter-program`) follow-up
 
 ## Why
 Three cracks in the promoter recruit → close funnel: (1) the copy-paste "ask your AI" prompt on
@@ -35,22 +35,22 @@ allow-list).
   builder returns — **no UI change**.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | Substitute the real URL into the `/vende/promotor` copy-paste prompt (both render sites) | low |
-| 1 | Confirm `promoter.enabled` prod state; make the public promoter CTA degrade gracefully (never 404) | low + ops |
-| 1 | Add `seller`/`promoter` context to `resolveAgentContext` + es-MX onboarding `ask()` | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | Substitute the real URL into the `/vende/promotor` copy-paste prompt (both render sites) | low | ✅ shipped via PR [#156](https://github.com/danybgoode/miyagisanchezcommerce/pull/156) (unrelated epic, merged first) |
+| 1 | Confirm `promoter.enabled` prod state; make the public promoter CTA degrade gracefully (never 404) | low + ops | ✅ PR [#157](https://github.com/danybgoode/miyagisanchezcommerce/pull/157) `b3a9956`; flag confirmed **ON** in prod (Daniel) |
+| 1 | Add `seller`/`promoter` context to `resolveAgentContext` + es-MX onboarding `ask()` | low | ✅ PR [#157](https://github.com/danybgoode/miyagisanchezcommerce/pull/157) `b3a9956` |
 
 ## Deploy order
 Frontend-only (`apps/miyagisanchez` → Vercel). No backend/Cloud Run, no migration. One PR; reviewer may
 auto-merge on a green gate (low-risk). Story 2's flag confirmation is an ops step owed to Daniel (Flagsmith).
 
 ## Definition of Done (epic)
-- [ ] All sprint-1 stories merged to `main` + smoke-tested (gaps stated)
-- [ ] `sprint-1.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (08 promoter line, if behavior changes)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe)
-- [ ] `promoter.enabled` prod state confirmed (Daniel); feature branch deleted
+- [x] All sprint-1 stories merged to `main` + smoke-tested (gaps stated)
+- [x] `sprint-1.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (08 promoter line, if behavior changes)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe)
+- [x] `promoter.enabled` prod state confirmed (Daniel: **ON**); feature branch deleted

@@ -38,9 +38,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   features. Anything touching shared surface — `layout.tsx`, `middleware.ts`, `globals.css`,
   `package.json`/deps, a new sibling worktree — can break every other open PR. *(2026-06-05 — a
   feature pushed straight to `main` broke this epic's CI and local tooling.)*
-- **Don't yank a shared branch out from under another agent.** If the repo's working tree is on
-  someone else's branch, do your change in an isolated `git worktree` instead of switching it.
-  *(2026-06-05 — backend tree was on another agent's branch; used `.worktrees/…` for the S3 change.)*
+- **Don't yank a shared branch out from under another agent — and this bites the product-docs ROOT repo too,
+  not just the app repos.** If the repo's working tree is on someone else's branch, do your change in an
+  isolated `git worktree` instead of switching it. *(2026-06-05 — backend tree was on another agent's branch;
+  used `.worktrees/…` for the S3 change.)* **Reconfirmed 2026-07-02** (promoter-funnel-fixes S1): mid-build, a
+  concurrent routine checked out a different branch in the shared `medusa-bonsai` root checkout; a Roadmap doc
+  commit still landed safely via its own `.worktrees/<name>` off `origin/main`, then `git push origin
+  HEAD:main` (or `main:main` if the local branch itself has the commit) — same fix the parallel-*planning*
+  rule already prescribed, just needed mid-*build* too.
+- **Before building a story, grep whether a sibling PR already fixed the identical root cause.** Two epics
+  approved the same day can target the same bug from different scope docs. `feat/agent-discovery-and-indexing`
+  had an open, green, mergeable PR that fixed `promoter-funnel-fixes` Story 1.1's exact root cause
+  (`{url}` never resolving in `buildPromoterPageConfig`) before that sprint wrote a line of code — caught by
+  `git log --oneline -- <the file the story's root-cause names>` + `gh pr list` during research, not assumed.
+  Merging the sibling PR first, then branching the new epic off the resulting `main`, gave zero duplicate code
+  instead of two epics racing to patch the same line. *(2026-07-02, promoter-funnel-fixes S1.)*
 - **Risk tier decides who merges** (from WAYS-OF-WORKING): low-risk → the reviewer/agent may merge on
   green CI; anything touching payments / checkout / fulfillment / auth / DB / shared infra / money →
   **Daniel merges**. When unsure, treat as high.
