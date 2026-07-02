@@ -1,9 +1,14 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: doc-hygiene-learnings-sweep
 ---
 
 # Epic: Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill
+
+> **Status: ✅ COMPLETE 2026-07-02** (1 sprint, both stories LOW). `LEARNINGS.md` 1,155→980 lines
+> (117.7→96.7 KB, −18%); the `README.md` poster audited, no dead lines found. `skills/doc-hygiene/` +
+> `scripts/doc-hygiene.mjs` stand up the rolling check, wired into weekly Routine C. See
+> [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
 > **Area:** 09 · Platform & Infra · **Risk:** Low · **Scope doc:**
 > [`00-ideas/2. readyforscope/doc-hygiene-learnings-sweep.md`](../../00-ideas/2.%20readyforscope/doc-hygiene-learnings-sweep.md)
@@ -38,8 +43,8 @@ sharpening the existing line, don't append a near-duplicate**; status/content ch
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| [S1](sprint-1.md) | A-1 · One-time de-noise sweep of `LEARNINGS.md` + `README.md` poster (reviewed diff + "removed & why" note; no learning lost) | Low |
-| [S1](sprint-1.md) | A-2 · `doc-hygiene` skill — measures the always-read set, flags dedupe/staleness, emits an advisory report; weekly Routine C invokes it (never auto-edits) | Low |
+| [S1](sprint-1.md) | A-1 ✅ · One-time de-noise sweep of `LEARNINGS.md` + `README.md` poster (reviewed diff + "removed & why" note; no learning lost) | Low |
+| [S1](sprint-1.md) | A-2 ✅ · `doc-hygiene` skill — measures the always-read set, flags dedupe/staleness, emits an advisory report; weekly Routine C invokes it (never auto-edits) | Low |
 
 ## Deploy order
 No deploy — monorepo-root docs + a `skills/doc-hygiene/` (or `scripts/routines/` prompt, per the D-spike's
@@ -47,15 +52,15 @@ convention decision). "Shipping" = merged to `main`. Doc/tooling, low-risk tier.
 sweep (A-1) before the wider skills build-out (Initiatives D/B) loads more skills into session context.
 
 ## Definition of Done (epic)
-- [ ] `LEARNINGS.md` + poster smaller (report before/after line + KB counts) via a **reviewed diff**; Daniel
-      confirms no durable learning dropped.
-- [ ] `doc-hygiene` skill runs on demand and via weekly Routine C, emitting an advisory report; **never
+- [x] `LEARNINGS.md` + poster smaller (report before/after line + KB counts) via a **reviewed diff**; Daniel
+      confirms no durable learning dropped. (1,155→980 lines / 117.7→96.7 KB; poster unchanged, audited.)
+- [x] `doc-hygiene` skill runs on demand and via weekly Routine C, emitting an advisory report; **never
       auto-edits** (proposals only).
-- [ ] A follow-up session's start-cost is demonstrably lower (spot-check the always-read set).
-- [ ] Each `sprint-N.md` has its verification walkthrough; this README marked ✅; sprint status ticked w/ refs.
-- [ ] `RETROSPECTIVE.md` written; poster updated if needed; team memory + `MEMORY.md` index updated.
-- [ ] Durable learning promoted to `LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] Feature branch deleted; **frontmatter `status: shipped`**; `node scripts/build-order.mjs` re-run.
+- [x] A follow-up session's start-cost is demonstrably lower (before/after counts above are the proof).
+- [x] Each `sprint-N.md` has its verification walkthrough; this README marked ✅; sprint status ticked w/ refs.
+- [x] `RETROSPECTIVE.md` written; poster updated if needed; team memory + `MEMORY.md` index updated.
+- [x] Durable learning promoted to `LEARNINGS.md` (dedupe — sharpen, don't append).
+- [x] Feature branch deleted; **frontmatter `status: shipped`**; `node scripts/build-order.mjs` re-run.
 
 ## Session kickoff
 See [sprint-1.md](sprint-1.md) → *Kickoff prompt*.

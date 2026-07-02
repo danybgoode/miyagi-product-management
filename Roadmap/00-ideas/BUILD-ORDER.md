@@ -14,14 +14,13 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (4)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 0/4 stories
 - [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
-- [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (70)
+## ✅ Shipped (71)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -79,6 +78,7 @@ _None._
 - [Design-Token / Design-System Foundation](../../09-platform-infra/design-token-foundation/README.md) — 09 Platform-infra · 0/5 stories · risk: Low · Wave 0 Enablers
 - [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 5/8 stories
 - [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 0/4 stories
+- [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 2/2 stories
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 0 Enablers
 - [In-house feature flags (replace Flagsmith)](../../09-platform-infra/feature-flags-inhouse/README.md) — 09 Platform-infra · 6/7 stories
 - [Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess ✅ COMPLETE 2026-07-01](../../09-platform-infra/model-split-sonnet5-execution/README.md) — 09 Platform-infra · 0/1 stories

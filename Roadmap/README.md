@@ -145,6 +145,15 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-02 — Doc hygiene: LEARNINGS/README sweep + a rolling doc-hygiene skill (1 sprint; LOW,
+  docs/tooling only).** De-noised the always-read `Roadmap/LEARNINGS.md` (1,155→980 lines, 117.7→96.7 KB,
+  −18%) — sharpened the Flagsmith-era flag-layer bullets to reflect the `feature-flags-inhouse` Supabase
+  swap, removed one dead placeholder section, and tightened wording on ~20 dense multi-corollary bullets,
+  keeping every retained line's why + date/source (reviewed diff, confirmed by Daniel before merge). The
+  `README.md` poster's Feature map was audited — no dead lines found. Stood up `skills/doc-hygiene/` +
+  `scripts/doc-hygiene.mjs`, a repeatable advisory check (always-read-set size + dedupe/staleness
+  candidates) wired into weekly Routine C; it never auto-edits. See [09 · Platform & Infra › Doc
+  hygiene](09-platform-infra/doc-hygiene-learnings-sweep/).
 - **2026-07-01 — Model split: Sonnet 5 builds, Opus 4.8 plans, escalate-don't-guess (1 sprint; LOW,
   process/docs only).** Named the model-tier default and added the guardrail Daniel asked for.
   `WAYS-OF-WORKING.md` → *Conventions → Model tiers* now names **Opus 4.8** for planning/grooming/spikes/
