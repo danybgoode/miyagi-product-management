@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { branchName, buildPrBody, PR_TITLE } from './build-order-sync.mjs';
+import { branchName, buildPrBody, PR_TITLE, repoSlugFromRemoteUrl } from './build-order-sync.mjs';
 
 test('branchName is claude/-prefixed and date-stamped (YYYY-MM-DD)', () => {
   const name = branchName(new Date('2026-07-15T03:00:00Z'));
@@ -24,4 +24,22 @@ test('buildPrBody mentions the board path and the advisory-only framing', () => 
 
 test('PR_TITLE is a stable, descriptive chore(...) title', () => {
   assert.equal(PR_TITLE, 'chore(build-order): regenerate stale board');
+});
+
+test('repoSlugFromRemoteUrl: parses an HTTPS remote URL', () => {
+  assert.equal(repoSlugFromRemoteUrl('https://github.com/danybgoode/miyagi-product-management.git'), 'danybgoode/miyagi-product-management');
+});
+
+test('repoSlugFromRemoteUrl: parses an SSH remote URL', () => {
+  assert.equal(repoSlugFromRemoteUrl('git@github.com:danybgoode/miyagi-product-management.git'), 'danybgoode/miyagi-product-management');
+});
+
+test('repoSlugFromRemoteUrl: works without a trailing .git too', () => {
+  assert.equal(repoSlugFromRemoteUrl('https://github.com/danybgoode/miyagi-product-management'), 'danybgoode/miyagi-product-management');
+});
+
+test('repoSlugFromRemoteUrl: a non-GitHub or empty URL returns null, not a throw', () => {
+  assert.equal(repoSlugFromRemoteUrl('https://gitlab.com/foo/bar.git'), null);
+  assert.equal(repoSlugFromRemoteUrl(''), null);
+  assert.equal(repoSlugFromRemoteUrl(null), null);
 });

@@ -33,6 +33,7 @@ import { readFileSync, appendFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+import { searchMergedPrs } from './lib/gh-rest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -100,38 +101,28 @@ function appendRun(entry) {
   appendFileSync(LOG_PATH, `${JSON.stringify(entry)}\n`);
 }
 
-// ---- gather: merged PRs per repo (gh) ----
+// ---- gather: merged PRs per repo (REST-only — scripts/lib/gh-rest.mjs) ----
+//
+// `gh pr list --search` hits GraphQL internally, which is blocked in at least one live routine sandbox
+// (confirmed 2026-07-02). searchMergedPrs() uses the REST-based /search/issues endpoint instead, which
+// supports the same `merged:>=` day-granular qualifier and a `base:` filter.
 
-function ghJson(args) {
-  const r = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
-  if (r.status !== 0) return null;
-  try {
-    return JSON.parse(r.stdout || 'null');
-  } catch {
-    return null;
-  }
-}
-
-// `gh pr list --limit` has no hard ceiling (gh paginates internally up to the requested count) — set
-// generously above what even a full-month backfill needs (the busiest repo here runs ~30-40 merged
-// PRs/week, so a month is comfortably under 500) rather than the weekly-sized default of 100, which a
-// SKILL.md-documented month-long backfill could silently exceed with zero signal that it happened.
+// searchMergedPrs's own maxItems ceiling — set generously above what even a full-month backfill needs
+// (the busiest repo here runs ~30-40 merged PRs/week, so a month is comfortably under 500) rather than a
+// weekly-sized default, which a SKILL.md-documented month-long backfill could silently exceed with zero
+// signal that it happened.
 const MAX_PRS_FETCHED_PER_REPO = 500;
 
 function gatherMergedPrs(repo, sinceISO, untilISO) {
   const sinceDate = sinceISO.slice(0, 10);
-  const prs = ghJson([
-    'pr', 'list', '--repo', repo, '--state', 'merged', '--base', 'main',
-    '--search', `merged:>=${sinceDate}`, '--json', 'number,title,mergedAt,url',
-    '--limit', String(MAX_PRS_FETCHED_PER_REPO),
-  ]);
+  const prs = searchMergedPrs({ repo, sinceDate, base: 'main', maxItems: MAX_PRS_FETCHED_PER_REPO });
   if (prs === null) return { repo, available: false, prs: [], capped: false };
   // The search's date qualifier is day-granular — filter to the real [sinceISO, untilISO) window so a
   // run near midnight UTC doesn't double-count a PR merged just outside the boundary day, and a bounded
   // backfill (--until) doesn't pull in PRs merged after it.
   const filtered = prs.filter((p) => p.mergedAt >= sinceISO && p.mergedAt < untilISO);
-  // Hitting the fetch cap exactly is the one signal we get that the true count may be higher — gh gives
-  // no "there were more" flag beyond "we returned exactly --limit results".
+  // Hitting the fetch cap exactly is the one signal we get that the true count may be higher — the
+  // search API gives no "there were more" flag beyond "we returned exactly maxItems results".
   return { repo, available: true, prs: filtered, capped: prs.length === MAX_PRS_FETCHED_PER_REPO };
 }
 

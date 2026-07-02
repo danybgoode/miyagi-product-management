@@ -21,6 +21,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+import { createPullRequest } from './lib/gh-rest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -52,6 +53,13 @@ export function buildPrBody() {
   ].join('\n');
 }
 export const PR_TITLE = 'chore(build-order): regenerate stale board';
+
+// Pure — parses "owner/repo" from either remote URL form git produces (HTTPS or SSH). Exported for the
+// co-located test.
+export function repoSlugFromRemoteUrl(url) {
+  const m = /github\.com[:/]([^/]+)\/([^/.]+?)(?:\.git)?$/.exec((url || '').trim());
+  return m ? `${m[1]}/${m[2]}` : null;
+}
 
 function isDrifted() {
   const r = run('node', ['scripts/build-order.mjs', '--check']);
@@ -108,9 +116,17 @@ function main() {
   const push = run('git', ['push', '-u', 'origin', branch]);
   if (push.status !== 0) die(`git push failed: ${(push.stderr || '').trim()}`);
 
-  const pr = run('gh', ['pr', 'create', '--title', PR_TITLE, '--body', buildPrBody(), '--head', branch, '--base', 'main']);
-  if (pr.status !== 0) die(`gh pr create failed: ${(pr.stderr || pr.stdout || '').trim()}`);
-  console.log((pr.stdout || '').trim());
+  // REST-only (scripts/lib/gh-rest.mjs) — `gh pr create` hits GraphQL internally, which is blocked in at
+  // least one live routine sandbox (confirmed 2026-07-02, ops-nightly). createPullRequest() is a plain
+  // REST POST instead, so this needs the owner/repo slug explicitly (gh CLI normally infers it from the
+  // current directory's git remote — parsed here from `git remote get-url origin` instead).
+  const remoteUrl = (run('git', ['remote', 'get-url', 'origin']).stdout || '').trim();
+  const repo = repoSlugFromRemoteUrl(remoteUrl);
+  if (!repo) die(`could not parse an owner/repo slug from the origin remote URL: ${remoteUrl || '(empty)'}`);
+
+  const pr = createPullRequest({ repo, head: branch, base: 'main', title: PR_TITLE, body: buildPrBody() });
+  if (!pr) die('creating the build-order docs PR failed.');
+  console.log(pr.url);
 }
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
