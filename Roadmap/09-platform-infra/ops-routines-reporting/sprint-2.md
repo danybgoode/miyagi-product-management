@@ -1,7 +1,7 @@
 # Ops routines & reporting — Sprint 2: the nightly fixers + feed the standup
 
-**Status:** 🟦 In review — built, ready for PR review; first live `--apply` (2.2) and first live
-babysit action (2.3) still owed to Daniel before either runs unattended
+**Status:** 🟦 In review — merged (#52); first live `--apply` (2.2) confirmed by Daniel (see below);
+first live babysit action (2.3) still owed before it runs unattended
 
 > Adds the overnight chore-workers the standup reports on: regenerate the build-order board, report stale
 > Vercel previews, babysit open PRs — then fold their outputs into the S1 standup and the one nightly ops
@@ -35,8 +35,14 @@ don't pile up — without ever deleting something I still need.
   by the routine); `--keep-branch` protects any open-PR preview. Mandatory `## Gotchas` (production
   deploys are never touched regardless of flags; open-PR previews are the live review target; the
   underlying script's own bare default is `--age 0`, not the `--age 7` this skill always passes).
-**Risk:** **Medium** — destructive on `--apply`. Dry-run-first + **Daniel confirms the first live
-apply** (not yet run — no `VERCEL_API_TOKEN` in the build sandbox, same gap S1 hit; see walkthrough).
+**Risk:** **Medium** — destructive on `--apply`. Dry-run-first + **first live apply confirmed by
+Daniel, 2026-07-02** — he supplied `VERCEL_API_TOKEN`; `--age 7 --keep-branch <open-PR branches>
+--apply` ran for real against the live `miyagisanchez` project (417 deployments scanned). Result: 0
+stale (everything non-production was under 7 days old — 36 previews existed at `--age 0`, all from
+recently-merged branches the 7-day grace window is designed to protect, so correctly NOT deleted).
+**The code path up through "decide what to delete" is now live-confirmed; the actual DELETE-API call
+branch has not yet fired for real** (nothing met the bar this run) — that remains to be observed the
+next time a genuinely stale preview exists.
 
 ### Story 2.3 — `babysit-pr` skill (advisory PR watch) ✅ built
 **As a** product owner, **I want** open PRs babysat overnight, **so that** flaky CI and merge conflicts are
@@ -116,14 +122,15 @@ Env: the repo scripts + Telegram + `claude.ai/code/routines` (process change; no
    pre-existing drift produced PR #51, which Daniel reviewed and merged; that IS the intended live
    behavior, just triggered ahead of schedule. **Confirmed:** on a clean board, no PR; on real drift, a
    correct `claude/` docs PR with only the regenerated file, never a hand-edit.
-2. ✅ **Ran live (dry-run)** — computed the open-PR keep-branch list (`gh pr list
-   --repo danybgoode/miyagisanchezcommerce --state open --json headRefName`, one open PR:
-   `feat/supply-listing-image-backfill`) and ran `node scripts/vercel-prune-previews.mjs --age 7
-   --keep-branch feat/supply-listing-image-backfill`. Result: `403 forbidden` — no `VERCEL_API_TOKEN`
-   in this build sandbox (the same gap S1 hit; `standup.mjs`'s own simpler read already degrades to
-   "unavailable" for this exact reason). The script's dry-run-by-default + explicit-`--apply` contract
-   is unchanged and verified by code read, but **the actual live report + the first `--apply` are owed
-   to Daniel**, who holds a real token.
+2. ✅ **Ran live, incl. the real `--apply`** (2026-07-02, after this sprint's PR merged — Daniel supplied
+   `VERCEL_API_TOKEN`). Computed the open-PR keep-branch list (`gh pr list --repo
+   danybgoode/miyagisanchezcommerce --state open --json headRefName` → two open PRs at the time) and ran
+   `node scripts/vercel-prune-previews.mjs --age 7 --keep-branch <list>` (dry-run), then the same command
+   `--apply`. Both agreed: 0 stale previews (417 deployments scanned; the 36 non-production previews that
+   exist at `--age 0` were all under 7 days old — recently-merged branches the grace window protects —
+   correctly not touched). **Confirmed:** dry-run and apply agree, production is never scanned as a
+   candidate, an open-PR branch is excluded. Not yet observed live: the actual DELETE call firing on a
+   genuinely stale preview (none existed at the time of this run).
 3. ✅ **Ran live (dry-run)** — `node scripts/babysit-pr.mjs <PR#> --repo <repo> --dry-run` against 7 real
    open PRs (1 frontend, 6 backend/dependabot). 6 were clean → correctly printed "no comment posted",
    nothing else happened. 1 (backend #23) had a genuinely failed check → correctly printed "would
