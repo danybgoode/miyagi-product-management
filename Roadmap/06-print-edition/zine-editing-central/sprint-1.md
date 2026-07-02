@@ -1,6 +1,6 @@
 # Zine editing central — Sprint 1: the bridge (a real paid ad lands in zine)
 
-**Status:** ✅ all 3 stories built + verified; PR #161 (Story 1.2) awaiting Daniel's merge (HIGH risk)
+**Status:** ✅ Sprint 1 complete — all 3 stories merged
 
 ## Stories
 
@@ -32,10 +32,15 @@ data and keep advertiser status truthful.
 and see the same submissions `/admin/print` shows; flipping to `placed` shows in the admin
 submissions queue (and reverts). Mutations limited to that one transition — nothing money-touching.
 **Risk:** **HIGH** (new auth surface + advertiser-facing status mutation) — **Daniel merges.**
-**Done:** commit `d3113c8` on `feat/zine-editing-central` (`apps/miyagisanchez`), built in an isolated
-worktree (the shared checkout was on a sibling epic's branch). **PR #161** (draft):
-https://github.com/danybgoode/miyagisanchezcommerce/pull/161 — CI green (`Type-check + build` pass,
-`Playwright vs preview` pass, Vercel preview deployed). **Awaiting Daniel's merge** per risk tier.
+**Done:** built in an isolated worktree (the shared checkout was on a sibling epic's branch). **PR
+#161**: https://github.com/danybgoode/miyagisanchezcommerce/pull/161 — merged (squash `5583bf9`)
+2026-07-02. CI green throughout (`Type-check + build`, `Playwright vs preview`, Vercel preview). A
+fresh-reviewer pass (before merge) flagged that the token-authed submissions read/write leaked buyer
+PII + SPEI bank details via `select('*')` — fixed same-day (`toStudioSafeSubmission` in `lib/print.ts`
+projects only layout-relevant fields; also deduped the catalog-item mapping into
+`lib/listings.ts`'s `toCatalogItems`), re-verified green, then merged. codex/agy cross-agent advisory
+pass was unavailable this round (codex quota-exhausted until 2026-07-31; agy drifted to 1.0.12 vs the
+pinned 1.0.10, and the script correctly refused to run unverified) — noted, not a blocker per process.
 
 ### Story 1.3 — "Anuncios pagados" drawer in zine ✅
 **As** Daniel (editor), **I want** to browse the current edition's paid ads inside zine and place
