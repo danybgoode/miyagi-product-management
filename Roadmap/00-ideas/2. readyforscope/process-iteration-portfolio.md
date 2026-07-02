@@ -144,6 +144,12 @@ This brain-dump lands on a **mature automation surface**. Concrete primitives to
   / escalates** rather than inventing an answer.
 
 ### Initiative D — Skills-library build-out (the blog's 9 categories)
+> **Spike decided 2026-07-02** — see the WRITTEN DECISION in
+> [`spike-skills-library-audit.md`](spike-skills-library-audit.md): repo-checked-in `skills/<name>/`
+> (no marketplace yet), a mandatory `## Gotchas` section, descriptions written for the model, and the
+> confirmed script-does-the-work/skill-wraps-it/routine-triggers-it wiring. Categories 4/7 (`standup-post`,
+> `weekly-recap`, `babysit-pr`, `build-order-sync`) and category 8 (`<service>-debugging`/`oncall-runner`)
+> are confirmed real gaps, ready for Initiative B to build against these conventions.
 - **Class:** Spike → then epic. **Stage-2.5:** *genuinely-new* (net-new skills), but heavily reuse-driven.
 - **Spike deliverable (written decision):** audit current skills against the 9 categories; map each candidate
   (`standup-post`, `weekly-recap`, `babysit-pr`, `vercel-prune`, `build-order-sync`, `doc-hygiene`, infra-ops,
