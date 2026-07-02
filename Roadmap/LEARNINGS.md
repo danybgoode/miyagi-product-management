@@ -281,6 +281,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   failed," so it aborted before the install step ever ran. Fix: `apt update || true` (matches the docs'
   own general guidance to append `|| true` to non-critical setup-script commands) before `apt install`.
   *(2026-07-02, ops-routines-reporting.)*
+  **Corollary — even with `gh` installed and a working `GH_TOKEN`, its GraphQL-backed subcommands can
+  still be blocked in a routine sandbox — trace with `GH_DEBUG=api` before assuming a fix worked.**
+  After fixing the setup script, `ops-nightly` ran further but its PR/CI signals were still silently
+  blank: `gh pr list/view --json` and `gh pr comment` all route through `https://api.github.com/graphql`
+  internally (confirmed with `GH_DEBUG=api gh pr list --json … 2>&1 | grep 'Request to'`), and GraphQL
+  was blocked in that sandbox even though REST wasn't — `gh run list/rerun` and any `gh api <rest-path>`
+  call use REST v3 and worked fine throughout. The fix is a REST-only rewrite (`scripts/lib/gh-rest.mjs`):
+  `gh pr list --search` → the REST `/search/issues` endpoint (same `merged:>=`/`base:` qualifiers, and —
+  contrary to what you'd guess — genuinely REST, not GraphQL, despite `gh pr list --search` itself routing
+  through GraphQL); `gh pr view --json mergeable` → `GET /pulls/{number}`, with GitHub's own documented
+  retry-on-`"unknown"` pattern since `mergeable` is computed **asynchronously** (a just-fetched PR can
+  report `mergeable_state:"unknown"` on the first try — one retry with a short delay resolves it,
+  confirmed live); `statusCheckRollup` → merge `GET commits/{sha}/status` (legacy) +
+  `GET commits/{sha}/check-runs` (Actions/Apps) into one rollup, since GraphQL combined what REST splits
+  across two endpoints; `gh pr comment`/`gh pr create` → `gh api … --input -` with a JSON body on stdin
+  (avoids argv-escaping for multi-line content). Normalize REST's lowercase `conclusion`/`state` values to
+  the UPPERCASE casing GraphQL's enums used, so existing pure decision functions (already unit-tested)
+  need zero changes — only the I/O layer feeding them does. *(2026-07-02, ops-routines-reporting —
+  live-verified end-to-end: a real conflict + a real CI-red run detected correctly, and
+  createPullRequest()/postIssueComment() each round-tripped against a real throwaway PR/comment.)*
   **Corollary — a skill's `config.json` (gitignored, written via an interactive `AskUserQuestion` flow)
   cannot be the sole config source for an unattended routine.** Each routine run is a fresh git checkout,
   so a locally-written, gitignored file from one run never reaches the next — a routine session has no
