@@ -1,8 +1,13 @@
 # Sprint 1 · Landing v2 — say the true offer
 
-> Epic: [Promoter Funnel v2](README.md) · Risk: LOW (frontend copy + pure lib) · Status: ✅ built,
-> [PR #162](https://github.com/danybgoode/miyagisanchezcommerce/pull/162) open (draft) — full gate
-> green (tsc + build + Playwright api); browser mobile-overflow spec green.
+> Epic: [Promoter Funnel v2](README.md) · Risk: LOW (frontend copy + pure lib) · Status: ✅ **MERGED**
+> [PR #162](https://github.com/danybgoode/miyagisanchezcommerce/pull/162) squash-merged to `main` as
+> `8513fee` on 2026-07-02 — full gate green (tsc + build + Playwright api vs preview); browser
+> mobile-overflow spec green (7/7); cross-agent review (a fresh Claude reviewer agent) came back
+> mergeable, no rule violations, one real numeric bug caught and fixed pre-merge (see below). The
+> `scripts/cross-review.mjs` advisory pass couldn't run this time — codex was quota-exhausted, and
+> antigravity's pinned-CLI-version guard tripped (1.0.12 vs pinned 1.0.10) — both non-blocking, since
+> that pass is advisory-only per WAYS-OF-WORKING.
 > Surfaces: `/vende/promotor`, `/vende/promotor/sell-sheet`, the "Agente IA" sheet. Frontend-only.
 
 | Story | Status | Commit |
@@ -13,6 +18,15 @@
 | US-1.4 — Real earnings + per-SKU price table | ✅ | `0480b26` |
 | US-1.5 — Handbook: sell-sheet → "Manual del promotor" | ✅ | `4fd7c24` |
 | Mobile-overflow browser spec (+ a real bug it caught + fixed) | ✅ | `535d3f1` |
+| Post-review fix: commission preview must use the discounted price | ✅ | `5c8db13` |
+
+**Post-merge note:** `computePromoterSkuEarnings` originally computed the displayed commission off the
+*regular* (undiscounted) SKU price; a fresh reviewer agent caught that the real accrual path
+(`markAttributionPaid` → `gross_amount_cents`) pays commission on the amount actually **charged**
+(the promoter-discounted price) — and `getPromoterSettings()` already falls back to a non-zero
+discount by default, so the divergence is live-reachable the moment Sprint 3 sets a real commission
+rate. Fixed in `5c8db13` before merge (commission now computed off the discounted price); new spec
+assertion added.
 
 ## US-1.1 — Hero copiable prompt = the promoter agent prompt
 **As** a prospective promoter, **I want** the landing's copy-paste prompt to be the promoter ask
@@ -74,12 +88,10 @@ printable layout intact.
 - Mobile overflow browser spec on the reworked landing (360/390/414px) — nightly project.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: **PR #162 Vercel preview** ·
-https://miyagisanchez-git-feat-promoter-funnel-v2-danybgoodes-projects.vercel.app
-(swap in https://miyagisanchez.com once merged to `main` — same paths).
+Env: **production** · https://miyagisanchez.com (live since the `main` merge, 2026-07-02).
 
-1. Open `<preview>/vende/promotor` (signed out) → hero shows `$499` (Dominio propio) and `$199`
-   (Subdominio) — no lone `%` and no `Gratis` placeholder. Primary CTA reads **"Aplica para ser
+1. Open https://miyagisanchez.com/vende/promotor (signed out) → hero shows `$499` (Dominio propio) and
+   `$199` (Subdominio) — no lone `%` and no `Gratis` placeholder. Primary CTA reads **"Aplica para ser
    promotor"** (not "Abrir mi panel para cerrar") and jumps to the "La solicitud en línea llega
    pronto" section further down the page when tapped.
 2. Tap the hero copy button ("Copiar prompt para mi IA") → paste it somewhere → it should read
@@ -88,9 +100,9 @@ https://miyagisanchez-git-feat-promoter-funnel-v2-danybgoodes-projects.vercel.ap
 3. Open the navbar "Agente IA" sheet on the same page → the prompt opens with *"Eres mi asesor para
    evaluar esta oportunidad de negocio…"* (not "Eres mi asistente de compras"), still cites
    `miyagisanchez.com/agent` and `ucp.dev`, and is byte-identical to the hero prompt from step 2.
-4. Open `<preview>/vende/promotor/sell-sheet` → **"Manual del promotor"** renders with the glossary,
-   the 5-step close checklist, 4 sales scripts, and the payments section (incl. one "Próximamente"
-   line); ⌘P / print preview shows a clean printable layout (site chrome hidden).
+4. Open https://miyagisanchez.com/vende/promotor/sell-sheet → **"Manual del promotor"** renders with
+   the glossary, the 5-step close checklist, 4 sales scripts, and the payments section (incl. one
+   "Próximamente" line); ⌘P / print preview shows a clean printable layout (site chrome hidden).
 5. Resize to a phone width (or open on a real phone) on both pages above → no sideways scroll.
 6. **Deferred to Sprint 3 (admin commission config isn't built yet):** once `/admin/promoter` gets a
    commission-rate field, changing a SKU's % there and reloading `/vende/promotor` should update the
