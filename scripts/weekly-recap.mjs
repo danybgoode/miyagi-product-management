@@ -21,7 +21,8 @@
 // Usage:
 //   node scripts/weekly-recap.mjs             # gather, post to Telegram, commit+push the log
 //   node scripts/weekly-recap.mjs --dry-run   # gather + print the message only — fully read-only
-//   node scripts/weekly-recap.mjs --since 2026-06-25T00:00:00Z   # override the window start (testing/backfill)
+//   node scripts/weekly-recap.mjs --since 2026-06-25T00:00:00Z   # override the window start
+//   node scripts/weekly-recap.mjs --since 2026-06-01T00:00:00Z --until 2026-06-30T23:59:59Z   # a bounded backfill window
 //
 // Reuse, don't rebuild: ensureGh()/die() (scripts/lib/cross-agent-cli.mjs), the same Telegram
 // sendMessage shape scripts/standup.mjs already reimplements standalone (no access to the app's
@@ -40,10 +41,12 @@ const CONFIG_PATH = join(ROOT, 'skills/weekly-recap/config.json');
 
 const argv = process.argv.slice(2);
 const DRY_RUN = argv.includes('--dry-run');
-const SINCE_OVERRIDE = (() => {
-  const i = argv.indexOf('--since');
+function argValue(flag) {
+  const i = argv.indexOf(flag);
   return i !== -1 ? argv[i + 1] : null;
-})();
+}
+const SINCE_OVERRIDE = argValue('--since');
+const UNTIL_OVERRIDE = argValue('--until');
 
 // Same 3 repos standup.mjs already lists — confirmed via `git remote -v` in each checkout (2026-07-02).
 const REPOS = [
@@ -56,6 +59,8 @@ const BACKEND_REPO = 'danybgoode/medusa-bonsai-backend';
 
 const RETRO_DIGEST_MAX_CHARS = 320;
 const DEFAULT_WINDOW_DAYS = 7;
+const MAX_PRS_SHOWN_PER_REPO = 12; // caps a busy-week PR listing before it dominates the message
+const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a safety net, not the primary control
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -79,13 +84,16 @@ function loadLastRun() {
 }
 
 // Pure — a window tracker (not a delta diff like standup.mjs). Next run picks up exactly where the
-// last one left off; a first run (or a wiped log) falls back to a plain trailing 7 days.
-export function computeWindow(lastLogLine, now, overrideSinceISO) {
+// last one left off; a first run (or a wiped log) falls back to a plain trailing 7 days. `overrideUntilISO`
+// lets a manual backfill bound the window (e.g. "what shipped in June") — the normal nightly/weekly path
+// never sets it, so `untilISO` is always "now" there.
+export function computeWindow(lastLogLine, now, overrideSinceISO, overrideUntilISO) {
   const nowISO = now.toISOString();
-  if (overrideSinceISO) return { sinceISO: overrideSinceISO, untilISO: nowISO };
-  if (lastLogLine?.windowEnd) return { sinceISO: lastLogLine.windowEnd, untilISO: nowISO };
+  const untilISO = overrideUntilISO || nowISO;
+  if (overrideSinceISO) return { sinceISO: overrideSinceISO, untilISO };
+  if (lastLogLine?.windowEnd) return { sinceISO: lastLogLine.windowEnd, untilISO };
   const fallback = new Date(now.getTime() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  return { sinceISO: fallback.toISOString(), untilISO: nowISO };
+  return { sinceISO: fallback.toISOString(), untilISO };
 }
 
 function appendRun(entry) {
@@ -104,16 +112,17 @@ function ghJson(args) {
   }
 }
 
-function gatherMergedPrs(repo, sinceISO) {
+function gatherMergedPrs(repo, sinceISO, untilISO) {
   const sinceDate = sinceISO.slice(0, 10);
   const prs = ghJson([
-    'pr', 'list', '--repo', repo, '--state', 'merged', '--search', `merged:>=${sinceDate}`,
-    '--json', 'number,title,mergedAt,url', '--limit', '100',
+    'pr', 'list', '--repo', repo, '--state', 'merged', '--base', 'main',
+    '--search', `merged:>=${sinceDate}`, '--json', 'number,title,mergedAt,url', '--limit', '100',
   ]);
   if (prs === null) return { repo, available: false, prs: [] };
-  // The search's date qualifier is day-granular — filter to the real ISO window so a run near
-  // midnight UTC doesn't double-count a PR merged just before `sinceISO` on the boundary day.
-  const filtered = prs.filter((p) => p.mergedAt >= sinceISO);
+  // The search's date qualifier is day-granular — filter to the real [sinceISO, untilISO) window so a
+  // run near midnight UTC doesn't double-count a PR merged just outside the boundary day, and a bounded
+  // backfill (--until) doesn't pull in PRs merged after it.
+  const filtered = prs.filter((p) => p.mergedAt >= sinceISO && p.mergedAt < untilISO);
   return { repo, available: true, prs: filtered };
 }
 
@@ -150,18 +159,20 @@ export function epicNameFromReadme(markdown, filePath) {
   return parts[parts.length - 2] || filePath;
 }
 
-function gatherShippedEpics(sinceISO) {
+// Returns `{ available: false }` on a git failure (so the caller can distinguish "couldn't read git
+// history" from "genuinely zero epics shipped") — never a bare [] that looks identical to "quiet".
+function gatherShippedEpics(sinceISO, untilISO) {
   // git log defaults to newest-first; -p in that order still gives each flip's LATEST value first per
   // file, so reverse iteration order (oldest first) before building the map so "last write wins" means
-  // chronologically last, not textually last in output.
+  // chronologically last, not textually last in output. --until makes a bounded backfill exact.
   const r = spawnSync(
     'git',
-    ['log', '--since', sinceISO, '-p', '--reverse', '--', 'Roadmap/*/*/README.md'],
+    ['log', '--since', sinceISO, '--until', untilISO, '-p', '--reverse', '--', 'Roadmap/*/*/README.md'],
     { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }
   );
-  if (r.status !== 0) return [];
+  if (r.status !== 0) return { available: false, epics: [] };
   const flips = parseStatusFlipsFromLog(r.stdout || '');
-  return flips.map(({ file, status }) => {
+  const epics = flips.map(({ file, status }) => {
     const abs = join(ROOT, file);
     let name = file;
     let retroDigest = null;
@@ -174,6 +185,7 @@ function gatherShippedEpics(sinceISO) {
     }
     return { file, status, name, retroDigest };
   });
+  return { available: true, epics };
 }
 
 // Pure — pulls a short excerpt from a RETROSPECTIVE.md's "## What shipped" section (the first
@@ -201,7 +213,31 @@ function loadChatId() {
 
 // ---- message ----
 
+// Pure — caps a repo's PR list to MAX_PRS_SHOWN_PER_REPO titles before it can dominate the message on a
+// busy week, folding the rest into a "…and N more" tail. Keeps the count in the section header exact
+// (the count is never capped, only the listed titles are).
+export function formatPrList(prs, maxItems) {
+  const shown = prs.slice(0, maxItems).map((p) => `#${p.number} ${esc(p.title)}`).join('; ');
+  const rest = prs.length - maxItems;
+  return rest > 0 ? `${shown}; …and ${rest} more` : shown;
+}
+
+// Pure — a last-resort safety net for Telegram's hard 4096-char sendMessage limit. formatPrList already
+// keeps a normal week well under this; this only bites an extreme outlier (e.g. an unusually long run of
+// epic retro digests) so the API call never gets rejected outright instead of silently never posting. If
+// the cut lands inside an unclosed `<b>` (the only tag this script emits), close it — an unbalanced tag
+// would make Telegram reject the whole message as invalid HTML, defeating the safety net's own purpose.
+export function truncateForTelegram(text, limit) {
+  if (text.length <= limit) return text;
+  const truncated = `${text.slice(0, limit - 1).trim()}…`;
+  const opens = (truncated.match(/<b>/g) || []).length;
+  const closes = (truncated.match(/<\/b>/g) || []).length;
+  return opens > closes ? `${truncated}${'</b>'.repeat(opens - closes)}` : truncated;
+}
+
 // Pure — builds the Telegram message from already-gathered data. No I/O.
+// `shippedEpics` is `{ available, epics }` — `available: false` (a git-log read failure) must render as
+// "unavailable", never fold into "none this week"/the quiet-week collapse (that's a different fact).
 export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) {
   const since = sinceISO.slice(0, 10);
   const until = untilISO.slice(0, 10);
@@ -221,7 +257,7 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) 
       lines.push(`${label}: none this week`);
       continue;
     }
-    lines.push(`${label} (${r.prs.length}): ${r.prs.map((p) => `#${p.number} ${esc(p.title)}`).join('; ')}`);
+    lines.push(`${label} (${r.prs.length}): ${formatPrList(r.prs, MAX_PRS_SHOWN_PER_REPO)}`);
   }
 
   lines.push('');
@@ -232,23 +268,26 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) 
 
   lines.push('');
   lines.push('<b>✅ Shipped / closed epics</b>');
-  if (!shippedEpics.length) {
+  if (!shippedEpics.available) {
+    lines.push('unavailable (git log read failed)');
+  } else if (!shippedEpics.epics.length) {
     lines.push('none this week');
   } else {
-    for (const e of shippedEpics) {
+    for (const e of shippedEpics.epics) {
       lines.push(`${e.status === 'shipped' ? '✅' : '🗄️'} <b>${esc(e.name)}</b>`);
       if (e.retroDigest) lines.push(esc(e.retroDigest));
     }
   }
 
-  // Only collapse to the quiet-week one-liner when every repo actually reported in — an unavailable
-  // repo must never be silently swallowed into the upbeat "nothing happened" framing.
-  const allAvailable = repoResults.every((r) => r.available);
-  if (allAvailable && totalPrs === 0 && !shippedEpics.length) {
+  // Only collapse to the quiet-week one-liner when every signal actually reported in — an unavailable
+  // repo or an unavailable epic read must never be silently swallowed into the upbeat "nothing happened"
+  // framing (those are different facts a reader needs distinguished).
+  const allAvailable = repoResults.every((r) => r.available) && shippedEpics.available;
+  if (allAvailable && totalPrs === 0 && !shippedEpics.epics.length) {
     return `<b>Weekly recap · ${since} – ${until}</b>\n🌙 Quiet week — nothing merged or shipped since the last recap.`;
   }
 
-  return lines.join('\n');
+  return truncateForTelegram(lines.join('\n'), TELEGRAM_MAX_CHARS);
 }
 
 // ---- Telegram (same shape standup.mjs reimplements standalone) ----
@@ -307,10 +346,10 @@ async function main() {
 
   const now = new Date();
   const lastRun = loadLastRun();
-  const { sinceISO, untilISO } = computeWindow(lastRun, now, SINCE_OVERRIDE);
+  const { sinceISO, untilISO } = computeWindow(lastRun, now, SINCE_OVERRIDE, UNTIL_OVERRIDE);
 
-  const repoResults = REPOS.map((repo) => gatherMergedPrs(repo, sinceISO));
-  const shippedEpics = gatherShippedEpics(sinceISO);
+  const repoResults = REPOS.map((repo) => gatherMergedPrs(repo, sinceISO, untilISO));
+  const shippedEpics = gatherShippedEpics(sinceISO, untilISO);
 
   const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics });
   console.log(message.replace(/<\/?[^>]+>/g, ''));
@@ -330,7 +369,7 @@ async function main() {
       windowStart: sinceISO,
       windowEnd: untilISO,
       prCount: repoResults.reduce((n, r) => n + (r.available ? r.prs.length : 0), 0),
-      shippedCount: shippedEpics.length,
+      shippedCount: shippedEpics.available ? shippedEpics.epics.length : null,
     });
     commitAndPushLog();
   }

@@ -25,8 +25,9 @@ Daniel asks for the weekly recap / "what shipped this week" / "weekly retro", or
 - **`scripts/weekly-recap.mjs`** — the mechanical part. Run it, always: `node scripts/weekly-recap.mjs`
   (gathers, posts, commits the log) or `node scripts/weekly-recap.mjs --dry-run` (gathers + prints the
   message only — skips Telegram and the git commit; use this to sanity-check without touching anything).
-  `--since <ISO date>` overrides the window start (useful for a manual backfill or a one-off ask like
-  "what shipped in June").
+  `--since <ISO date>` overrides the window start; pair it with `--until <ISO date>` to bound the end too
+  (e.g. `--since 2026-06-01T00:00:00Z --until 2026-06-30T23:59:59Z` for "what shipped in June" — `--since`
+  alone always runs through *now*, not a fixed end date).
 - **`gh` CLI** — the merged-PR signal, same 3-repo list `scripts/standup.mjs` already uses. A repo it
   can't reach degrades to "unavailable" in its section — it does not fail the whole run.
 - **`git log -p` on epic `README.md`s** — the shipped/closed-epic signal (frontmatter `status:` SSOT,
@@ -89,3 +90,19 @@ API error). Don't retry blindly; a repeated failure on the same cause is a confi
 - **`skills/weekly-recap/config.json` is its own file, separate from `standup-post/config.json`**, even
   though both typically hold the exact same `chat_id` (same physical Telegram chat). This is deliberate
   per-skill decoupling, not duplication to clean up.
+- **A busy repo's merged-PR listing caps at 12 titles per repo** (`formatPrList`, folding the rest into
+  "…and N more") — the section header's own count is always exact, only the listed titles are capped.
+  This is the primary defense against Telegram's 4096-char `sendMessage` limit (confirmed live: an
+  uncapped busy-week message ran ~6,500 chars and would have failed to post). A final
+  `truncateForTelegram` hard cap is a last-resort safety net on top (auto-closes an unclosed `<b>` if the
+  cut lands inside one, so the truncated message still parses as valid HTML) — it should essentially
+  never fire given the cap above, but if it ever does, the cut content is genuinely lost from that post
+  (not carried to next week), which is an acceptable trade for a LOW-risk advisory report.
+- **`commitAndPushLog()`'s git failures only log to stderr and don't fail the run** — deliberate, mirrors
+  `standup.mjs`'s identical convention: the Telegram post already succeeded by that point, so a log-
+  persistence failure shouldn't retroactively "fail" a run whose real output already landed. The
+  consequence (next run re-derives its window from a stale/missing log) is the same one documented two
+  bullets up — check for a `git push failed` line before assuming the underlying signals changed.
+- **`gh pr list` is scoped to `--base main`** — a PR merged into any other base branch (a rare
+  sub-branch merge) is correctly excluded from both the merged-PR count and the deploy-count proxy, since
+  neither represents a real production deploy.

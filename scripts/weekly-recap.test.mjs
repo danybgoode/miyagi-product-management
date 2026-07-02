@@ -9,6 +9,8 @@ import {
   parseStatusFlipsFromLog,
   epicNameFromReadme,
   extractRetroDigest,
+  formatPrList,
+  truncateForTelegram,
   buildMessage,
 } from './weekly-recap.mjs';
 
@@ -16,7 +18,7 @@ import {
 
 test('computeWindow: no prior log → falls back to a trailing 7 days', () => {
   const now = new Date('2026-07-09T10:00:00Z');
-  const { sinceISO, untilISO } = computeWindow(null, now, null);
+  const { sinceISO, untilISO } = computeWindow(null, now, null, null);
   assert.equal(sinceISO, '2026-07-02T10:00:00.000Z');
   assert.equal(untilISO, now.toISOString());
 });
@@ -24,15 +26,21 @@ test('computeWindow: no prior log → falls back to a trailing 7 days', () => {
 test('computeWindow: prior log → picks up exactly where the last run left off', () => {
   const now = new Date('2026-07-09T10:00:00Z');
   const last = { windowEnd: '2026-07-03T15:30:00.000Z' };
-  const { sinceISO } = computeWindow(last, now, null);
+  const { sinceISO } = computeWindow(last, now, null, null);
   assert.equal(sinceISO, '2026-07-03T15:30:00.000Z');
 });
 
 test('computeWindow: --since override wins over both the log and the 7-day fallback', () => {
   const now = new Date('2026-07-09T10:00:00Z');
   const last = { windowEnd: '2026-07-03T15:30:00.000Z' };
-  const { sinceISO } = computeWindow(last, now, '2026-06-01T00:00:00Z');
+  const { sinceISO } = computeWindow(last, now, '2026-06-01T00:00:00Z', null);
   assert.equal(sinceISO, '2026-06-01T00:00:00Z');
+});
+
+test('computeWindow: --until override bounds the window instead of "now"', () => {
+  const now = new Date('2026-07-09T10:00:00Z');
+  const { untilISO } = computeWindow(null, now, '2026-06-01T00:00:00Z', '2026-06-30T23:59:59Z');
+  assert.equal(untilISO, '2026-06-30T23:59:59Z');
 });
 
 // ---- parseStatusFlipsFromLog ----
@@ -154,6 +162,41 @@ test('extractRetroDigest: no "## What shipped" section → null, not a throw', (
   assert.equal(extractRetroDigest('# Retrospective — Foo\n\nJust some text.', 300), null);
 });
 
+// ---- formatPrList ----
+
+test('formatPrList: under the cap → lists every PR, no "more" tail', () => {
+  const prs = [{ number: 1, title: 'a' }, { number: 2, title: 'b' }];
+  assert.equal(formatPrList(prs, 12), '#1 a; #2 b');
+});
+
+test('formatPrList: over the cap → truncates the list and appends an exact remainder count', () => {
+  const prs = Array.from({ length: 15 }, (_, i) => ({ number: i + 1, title: `pr${i + 1}` }));
+  const out = formatPrList(prs, 12);
+  assert.match(out, /#12 pr12; …and 3 more$/);
+  assert.doesNotMatch(out, /#13/);
+});
+
+// ---- truncateForTelegram ----
+
+test('truncateForTelegram: under the limit → unchanged', () => {
+  assert.equal(truncateForTelegram('short', 4096), 'short');
+});
+
+test('truncateForTelegram: over the limit → cut with an ellipsis, length bounded', () => {
+  const long = 'x'.repeat(5000);
+  const out = truncateForTelegram(long, 4096);
+  assert.ok(out.length <= 4096);
+  assert.ok(out.endsWith('…'));
+});
+
+test('truncateForTelegram: an unclosed <b> after truncation gets auto-closed (valid HTML)', () => {
+  const text = `${'x'.repeat(90)}<b>${'y'.repeat(90)}`; // <b> opened, never closed, spans the cut
+  const out = truncateForTelegram(text, 100);
+  const opens = (out.match(/<b>/g) || []).length;
+  const closes = (out.match(/<\/b>/g) || []).length;
+  assert.equal(opens, closes);
+});
+
 // ---- buildMessage ----
 
 test('buildMessage: fully quiet week collapses to a one-line message', () => {
@@ -165,7 +208,7 @@ test('buildMessage: fully quiet week collapses to a one-line message', () => {
       { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] },
       { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
     ],
-    shippedEpics: [],
+    shippedEpics: { available: true, epics: [] },
   });
   assert.match(msg, /Quiet week/);
 });
@@ -183,7 +226,10 @@ test('buildMessage: a merged PR and a shipped epic both surface, with the retro 
       },
       { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
     ],
-    shippedEpics: [{ file: 'x/README.md', status: 'shipped', name: 'Cool Epic', retroDigest: 'It shipped well.' }],
+    shippedEpics: {
+      available: true,
+      epics: [{ file: 'x/README.md', status: 'shipped', name: 'Cool Epic', retroDigest: 'It shipped well.' }],
+    },
   });
   assert.match(msg, /#200 feat: something/);
   assert.match(msg, /Cool Epic/);
@@ -200,7 +246,42 @@ test('buildMessage: an unavailable repo is labeled, not silently dropped', () =>
       { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] },
       { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
     ],
-    shippedEpics: [],
+    shippedEpics: { available: true, epics: [] },
   });
   assert.match(msg, /miyagi-product-management: unavailable/);
+});
+
+test('buildMessage: an unavailable epic read is labeled, never folded into "none"/quiet-week', () => {
+  const msg = buildMessage({
+    sinceISO: '2026-07-02T00:00:00Z',
+    untilISO: '2026-07-09T00:00:00Z',
+    repoResults: [
+      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
+      { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] },
+      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+    ],
+    shippedEpics: { available: false, epics: [] },
+  });
+  assert.match(msg, /unavailable \(git log read failed\)/);
+  assert.doesNotMatch(msg, /Quiet week/);
+});
+
+test('buildMessage: a busy repo caps its listed PRs via formatPrList (message stays well under 4096 chars)', () => {
+  const busyPrs = Array.from({ length: 40 }, (_, i) => ({
+    number: i + 1,
+    title: `feat(something): a reasonably long PR title number ${i + 1}`,
+  }));
+  const msg = buildMessage({
+    sinceISO: '2026-06-25T00:00:00Z',
+    untilISO: '2026-07-02T00:00:00Z',
+    repoResults: [
+      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
+      { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: busyPrs },
+      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+    ],
+    shippedEpics: { available: true, epics: [] },
+  });
+  assert.match(msg, /miyagisanchezcommerce \(40\):/); // the header count stays exact
+  assert.match(msg, /…and 28 more/); // only 12 titles listed, per MAX_PRS_SHOWN_PER_REPO
+  assert.ok(msg.length < 4096);
 });

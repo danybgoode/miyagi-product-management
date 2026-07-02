@@ -83,9 +83,10 @@ lands); S2 adds the fixers/feeds; S3 adds the weekly recap. Build S1→S2→S3.
 ## Definition of Done (epic)
 - [x] A Telegram standup lands each morning; hand-checking one day's PRs/CI/previews matches it
       (delta-accurate) — confirmed live, S1/S2.
-- [x] A weekly recap lands; merged-PR/closed-epic/deploy counts match a manual tally — confirmed via
-      live `--dry-run` rehearsal (S3.1 walkthrough); the actual Telegram post is owed to Daniel (no
-      credentials in the build sandbox).
+- [ ] A weekly recap lands; merged-PR/closed-epic/deploy counts match a manual tally — the **counts are
+      confirmed** via a live `--dry-run` rehearsal (S3.1 walkthrough), but the recap has not yet actually
+      **landed** (posted to Telegram) — that live post + the routine's first scheduled fire are owed to
+      Daniel (no Telegram credentials in the build sandbox). Un-ticked deliberately until it's live.
 - [x] `BUILD-ORDER.md` guard stops failing overnight (drift opens a `claude/` PR instead of going red) —
       confirmed live, S2 (PR #51).
 - [x] `vercel-prune` reports stale previews nightly; `--apply` only on Daniel's confirmation; open-PR
