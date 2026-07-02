@@ -14,9 +14,9 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-_None._
+- [Groom archetype-lens wiring — optional Stage-2 archetype tag](../../09-platform-infra/groom-archetype-lens/README.md) — 09 Platform-infra · 0/2 stories
 
 ## ✅ Shipped (75)
 
@@ -108,4 +108,4 @@ _None._
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 76 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 77 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
