@@ -14,12 +14,13 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 0/4 stories
+- [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
 
-## ✅ Shipped (73)
+## ✅ Shipped (72)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -46,7 +47,6 @@ _None._
 - [Trust & Messaging Polish](../../05-trust-offers-and-messaging/trust-messaging-polish/README.md) — 05 Trust/Offers/Messaging · 5/5 stories · risk: Low · Wave 3
 - [Printed-Edition Builder ("Maqueta")](../../06-print-edition/printed-edition-builder/README.md) — 06 Print · 0/8 stories
 - [Agent Connection & Discoverability](../../07-agentic-and-federated-commerce/agent-connection/README.md) — 07 Agentic/Federated · 6/6 stories · risk: High
-- [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
 - [Agent-readable why-sell / about surface](../../07-agentic-and-federated-commerce/agent-readable-about-surface/README.md) — 07 Agentic/Federated · 6/6 stories · risk: Low
 - [Checkout on the custom domain (custom-domain-checkout)](../../07-agentic-and-federated-commerce/custom-domain-checkout/README.md) — 07 Agentic/Federated · 4/4 stories · risk: High
 - [Cross-channel Storefront Trust Parity](../../07-agentic-and-federated-commerce/cross-channel-trust-parity/README.md) — 07 Agentic/Federated · 2/2 stories · risk: Low · Wave 3
