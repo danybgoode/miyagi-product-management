@@ -17,7 +17,10 @@ session costs less context without losing any durable learning.
   accuracy. ✅ Audited the Feature map — no dead/wrong lines found; left "Recent highlights" untouched
   (out of scope, a changelog not a status claim).
 - Report **before/after** line + KB counts for both files. ✅ `LEARNINGS.md`: 1,155→980 lines (−15%),
-  117,700→96,716 bytes (−18%). `README.md`: unchanged (322 lines / 115,248 bytes — audited, nothing to cut).
+  117,700→96,716 bytes (−18%). `README.md`'s Feature map: audited, nothing to cut (322 lines / 115,248
+  bytes at audit time); the poster's final count in this PR is 331 lines / 116,142 bytes because this
+  same close adds one "Recent highlights" entry for this epic's own shipment — expected growth, not a
+  missed sweep target.
 - Daniel confirms no durable learning was dropped before merge. ✅ Confirmed in-session before Story 1.2.
 **Risk:** Low (docs only; a reviewed diff, human-merged).
 

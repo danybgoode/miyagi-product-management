@@ -53,7 +53,9 @@ sweep (A-1) before the wider skills build-out (Initiatives D/B) loads more skill
 
 ## Definition of Done (epic)
 - [x] `LEARNINGS.md` + poster smaller (report before/after line + KB counts) via a **reviewed diff**; Daniel
-      confirms no durable learning dropped. (1,155→980 lines / 117.7→96.7 KB; poster unchanged, audited.)
+      confirms no durable learning dropped. (1,155→980 lines / 117.7→96.7 KB; poster's Feature map audited,
+      nothing to cut — its final line count in this PR reflects one added "Recent highlights" entry for
+      this epic's own close, not missed bloat.)
 - [x] `doc-hygiene` skill runs on demand and via weekly Routine C, emitting an advisory report; **never
       auto-edits** (proposals only).
 - [x] A follow-up session's start-cost is demonstrably lower (before/after counts above are the proof).
