@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decideBabysitActions } from './babysit-pr.mjs';
+import { decideBabysitActions, actionsRunIdFromDetailsUrl } from './babysit-pr.mjs';
 
 test('clean PR (mergeable, no failing/pending checks) → allClean true, nothing to do', () => {
   const d = decideBabysitActions({
@@ -65,4 +65,24 @@ test('missing/undefined checks array degrades to empty, not a throw', () => {
   assert.deepEqual(d.failingChecks, []);
   assert.deepEqual(d.pendingChecks, []);
   assert.equal(d.allClean, true);
+});
+
+test('a legacy/external status context (state, no conclusion) failing is still caught — not silently clean', () => {
+  const d = decideBabysitActions({
+    mergeable: 'MERGEABLE',
+    checks: [{ name: 'external-ci', state: 'FAILURE' }],
+  });
+  assert.equal(d.failingChecks.length, 1);
+  assert.equal(d.allClean, false);
+});
+
+test('actionsRunIdFromDetailsUrl extracts the run id from a GitHub Actions job URL', () => {
+  const url = 'https://github.com/o/r/actions/runs/28542370519/job/84619135130';
+  assert.equal(actionsRunIdFromDetailsUrl(url), '28542370519');
+});
+
+test('actionsRunIdFromDetailsUrl returns null for a non-Actions / missing URL', () => {
+  assert.equal(actionsRunIdFromDetailsUrl('https://circleci.com/gh/o/r/123'), null);
+  assert.equal(actionsRunIdFromDetailsUrl(undefined), null);
+  assert.equal(actionsRunIdFromDetailsUrl(''), null);
 });

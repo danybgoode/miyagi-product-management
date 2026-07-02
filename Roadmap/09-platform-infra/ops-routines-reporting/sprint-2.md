@@ -43,10 +43,13 @@ apply** (not yet run — no `VERCEL_API_TOKEN` in the build sandbox, same gap S1
 retried/surfaced instead of silently stalling a PR.
 **Acceptance:**
 - ✅ `skills/babysit-pr/SKILL.md` + `scripts/babysit-pr.mjs`: for an open PR, reads CI status + `mergeable`
-  (`gh pr view`), retries any genuinely `FAILURE`/`ERROR`/`TIMED_OUT` workflow run on its branch (`gh run
-  rerun --failed`), and surfaces a merge conflict. **Advisory only** — posts one comment; **never
-  auto-merges, never reports a commit-status check** (a comment structurally can't become a required
-  check — keep it that way). Mandatory `## Gotchas`. The classification logic
+  (`gh pr view`), retries any genuinely `FAILURE`/`ERROR`/`TIMED_OUT` check — **or** a legacy/external
+  status context in `state: 'FAILURE'` (a cross-agent review caught this shape being missed initially) —
+  by rerunning ONLY the Actions run(s) parsed from each failing check's own `detailsUrl` (never a
+  branch-wide "list the last 20 runs and retry whatever's red" sweep, which could retry a stale,
+  unrelated run and report a misleading "retried" comment), and surfaces a merge conflict. **Advisory
+  only** — posts one comment; **never auto-merges, never reports a commit-status check** (a comment
+  structurally can't become a required check — keep it that way). Mandatory `## Gotchas`. The classification logic
   (`decideBabysitActions`) is a pure, tested function (`scripts/babysit-pr.test.mjs`, 6 cases).
 - ✅ A **clean** PR (no conflict, no failing checks) gets **no comment** — confirmed live against 6 real
   open PRs across the frontend and backend repos (see walkthrough); only a genuinely actionable PR
@@ -89,13 +92,20 @@ re-executes the whole script for real. Promoted to `LEARNINGS.md` at epic close.
 
 ## Sprint QA
 - **api spec(s):** none — no app surface. `node --check` on every new/changed script (green).
-  `node --test 'scripts/*.test.mjs' 'scripts/lib/*.test.mjs'` — 61 pass, 0 fail (the two new pure-logic
+  `node --test 'scripts/*.test.mjs' 'scripts/lib/*.test.mjs'` — 64 pass, 0 fail (the new pure-logic
   test files plus every pre-existing one, incl. the now-covered `ops-nightly.prompt.md`).
 - **browser smoke owed:** no — no app/browser surface.
 - **deterministic gate:** `node --check` + the full `node --test` suite green (this is exactly what
   `scripts-guard.yml` runs). `node scripts/build-order.mjs --check` confirmed clean before and after —
   no story here touches epic frontmatter status. The risk-tier stories (2.2 apply, 2.3 writes) still
   get an explicit first-live-run confirmation from Daniel before being left to run nightly — see below.
+- **Cross-agent review** (`node scripts/cross-review.mjs 52 --repo danybgoode/miyagi-product-management
+  --agent codex`, PR #52) — 0 blocking, 2 should-fix, 1 nit, all applied: `decideBabysitActions` now
+  also catches a legacy/external status context (`state: 'FAILURE'`, no `conclusion`) that it initially
+  missed; retries are now scoped to the exact Actions run backing each failing check (parsed from its
+  `detailsUrl`) instead of a coarse branch-wide "retry the last 20 red runs" sweep; `build-order-sync
+  --dry-run`'s docs were misleading about mutating the working tree — fixed by actually restoring the
+  file after the diff, not just the wording.
 
 ## Sprint 2 — Verification walkthrough (do these in order)
 Env: the repo scripts + Telegram + `claude.ai/code/routines` (process change; no app deploy).

@@ -25,8 +25,10 @@ Daniel asks to check/regenerate the build-order board, or the nightly **ops-nigh
   re-derive status yourself — this is the one source of truth.
 - **`scripts/build-order-sync.mjs`** — the mechanical part this skill wraps: `node
   scripts/build-order-sync.mjs` (check → regen → branch → commit → push → `gh pr create`, only if
-  actually drifted) or `node scripts/build-order-sync.mjs --dry-run` (check → regen on disk → print
-  `git diff --stat` only — no branch/commit/push/PR; use this to sanity-check without touching git).
+  actually drifted) or `node scripts/build-order-sync.mjs --dry-run` (check → regen → print `git diff
+  --stat` → **restores the file** so the working tree ends up exactly as it started — no
+  branch/commit/push/PR, and no lingering mutation either; use this to sanity-check without touching
+  git at all).
 
 ## Stage 1 — run it
 `node scripts/build-order-sync.mjs`. Report back exactly what it printed:

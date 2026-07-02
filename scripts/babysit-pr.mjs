@@ -50,13 +50,14 @@ function ghJson(args) {
 }
 
 // Pure — the unit under test. No I/O. Classifies what babysit-pr should do for this PR's current state.
-// checks: array of { name, conclusion, status } (from statusCheckRollup). Returns:
-//   { conflict, failingChecks: [{name}], pendingChecks: [{name}], allClean }
+// checks: array of statusCheckRollup entries — either a GitHub Actions check run (`conclusion`) or a
+// legacy/external commit status context (`state`, no `conclusion`); `standup.mjs` checks both shapes
+// for the same reason, mirrored here. Returns { conflict, failingChecks, pendingChecks, allClean }.
 export function decideBabysitActions({ mergeable, checks }) {
   const list = Array.isArray(checks) ? checks : [];
   const conflict = mergeable === 'CONFLICTING';
   const failingChecks = list.filter(
-    (c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.conclusion === 'TIMED_OUT'
+    (c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.conclusion === 'TIMED_OUT' || c.state === 'FAILURE'
   );
   const pendingChecks = list.filter(
     (c) => !c.conclusion && (c.status === 'IN_PROGRESS' || c.status === 'QUEUED' || c.status === 'PENDING')
@@ -67,6 +68,14 @@ export function decideBabysitActions({ mergeable, checks }) {
     pendingChecks,
     allClean: !conflict && failingChecks.length === 0,
   };
+}
+
+// Pure — extracts the GitHub Actions run id from a check's detailsUrl
+// (".../actions/runs/<id>/job/<jobId>"). Returns null for a check with no such URL (a legacy/external
+// status context, e.g. non-Actions CI) — those aren't rerunnable via `gh run rerun` at all.
+export function actionsRunIdFromDetailsUrl(url) {
+  const m = /\/actions\/runs\/(\d+)/.exec(url || '');
+  return m ? m[1] : null;
 }
 
 function fetchPr(pr, repo) {
@@ -81,27 +90,22 @@ function fetchPr(pr, repo) {
   ]);
 }
 
-// The most recent failing workflow-run ids on this PR's branch, so a failing check can be re-run.
-// Degrades to [] on any gh error — a run-resolution failure for one PR must never crash the batch.
-function failingRunIdsForBranch(repo, headRefName) {
-  const runs = ghJson(['run', 'list', '--repo', repo, '--branch', headRefName, '--json', 'databaseId,conclusion', '-L', '20']);
-  if (!runs) return [];
-  return runs.filter((r) => r.conclusion === 'failure' || r.conclusion === 'timed_out').map((r) => r.databaseId);
-}
-
 function rerun(repo, runId) {
   const r = gh(['run', 'rerun', String(runId), '--failed', '--repo', repo]);
   return r.status === 0;
 }
 
-function buildComment({ conflict, retried, dryRun, stillPendingNames }) {
+function buildComment({ conflict, retried, dryRun, noAutoRetryNames, stillPendingNames }) {
   const lines = [BANNER, ''];
   lines.push(conflict ? '⚠️ Merge conflict detected — needs a human rebase/resolve; not something this tool does.' : '✅ No merge conflict.');
   if (retried.length) {
     const verb = dryRun ? 'Would retry' : 'Retried';
-    lines.push(`🔁 ${verb} failing CI run(s): ${retried.map((id) => `#${id}`).join(', ')}.`);
+    lines.push(`🔁 ${verb} failing Actions run(s): ${retried.map((id) => `#${id}`).join(', ')}.`);
   } else {
     lines.push('🔁 No failing CI runs needed a retry.');
+  }
+  if (noAutoRetryNames.length) {
+    lines.push(`🛑 No automated retry available (not a GitHub Actions run): ${noAutoRetryNames.join(', ')}.`);
   }
   if (stillPendingNames.length) {
     lines.push(`⏳ Still pending: ${stillPendingNames.join(', ')}.`);
@@ -133,23 +137,29 @@ function main() {
     return;
   }
 
+  // Target ONLY the Actions runs backing the checks that are actually failing right now (parsed from
+  // each check's own detailsUrl) — never a branch-wide "list the last 20 runs and retry whatever's red"
+  // sweep, which can retry a stale, unrelated failed run and report a misleading "retried" comment.
+  const runIds = [...new Set(decision.failingChecks.map((c) => actionsRunIdFromDetailsUrl(c.detailsUrl)).filter(Boolean))];
+  const noAutoRetryNames = decision.failingChecks
+    .filter((c) => !actionsRunIdFromDetailsUrl(c.detailsUrl))
+    .map((c) => c.name)
+    .filter(Boolean);
+
   const retried = [];
-  if (decision.failingChecks.length) {
-    const failingRunIds = failingRunIdsForBranch(repo, info.headRefName);
-    for (const runId of failingRunIds) {
-      if (dryRun) {
-        console.log(`DRY-RUN — would rerun failed run #${runId} in ${repo}.`);
-        retried.push(runId);
-        continue;
-      }
-      const ok = rerun(repo, runId);
-      if (ok) retried.push(runId);
-      else console.error(`babysit-pr: rerun failed for run #${runId} in ${repo} — continuing.`);
+  for (const runId of runIds) {
+    if (dryRun) {
+      console.log(`DRY-RUN — would rerun failed run #${runId} in ${repo}.`);
+      retried.push(runId);
+      continue;
     }
+    const ok = rerun(repo, runId);
+    if (ok) retried.push(runId);
+    else console.error(`babysit-pr: rerun failed for run #${runId} in ${repo} — continuing.`);
   }
 
   const stillPendingNames = decision.pendingChecks.map((c) => c.name).filter(Boolean);
-  const body = buildComment({ conflict: decision.conflict, retried, dryRun, stillPendingNames });
+  const body = buildComment({ conflict: decision.conflict, retried, dryRun, noAutoRetryNames, stillPendingNames });
 
   if (dryRun) {
     console.log('DRY-RUN — would post this advisory comment:\n');

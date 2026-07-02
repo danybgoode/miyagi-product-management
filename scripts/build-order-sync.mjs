@@ -5,8 +5,10 @@
 //
 // Usage:
 //   node scripts/build-order-sync.mjs             # check → regen → branch → commit → push → gh pr create
-//   node scripts/build-order-sync.mjs --dry-run   # check → regen on disk → print `git diff --stat` only;
-//                                                  # no branch/commit/push/PR (fully read-only otherwise)
+//   node scripts/build-order-sync.mjs --dry-run   # check → regen → print `git diff --stat` → restore the
+//                                                  # file (`git checkout --`), leaving the working tree
+//                                                  # exactly as found — no branch/commit/push/PR, and no
+//                                                  # lingering file mutation either
 //
 // The branch stays `claude/`-prefixed on purpose — that's a routine's DEFAULT push scope (see
 // scripts/routines/README.md's two standing rules), unlike standup.mjs which needed push enabled
@@ -82,6 +84,12 @@ function main() {
     const diff = run('git', ['diff', '--stat', '--', BOARD_PATH]);
     console.log('DRY-RUN — board would be regenerated (no branch/commit/push/PR):');
     console.log((diff.stdout || '').trim());
+    // regenerate() already wrote the file to disk to compute this diff — restore it so --dry-run leaves
+    // the working tree exactly as it found it (a real "would do this" preview, not a partial mutation).
+    const restore = run('git', ['checkout', '--', BOARD_PATH]);
+    if (restore.status !== 0) {
+      console.error(`build-order-sync: could not restore ${BOARD_PATH} after --dry-run (${(restore.stderr || '').trim()}) — the working tree is left with the regenerated file; revert it manually if needed.`);
+    }
     return;
   }
 
