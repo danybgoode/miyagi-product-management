@@ -10,16 +10,15 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
+## 🏗️ Building now (1)
 
-_None._
+- [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 2/8 stories
 
-## 📋 Ready to build (scaffolded, not started) (4)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 0/4 stories
 - [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
-- [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 0/8 stories
 
 ## ✅ Shipped (71)
 
