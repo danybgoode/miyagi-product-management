@@ -35,7 +35,12 @@ Daniel asks for a standup / "what happened overnight", or the nightly **ops-nigh
   the app's build).
 
 ## Stage 1 — ensure config
-Check `skills/standup-post/config.json` exists and has a non-empty `chat_id`. If it doesn't:
+`standup.mjs` resolves the chat id two ways, in order: `skills/standup-post/config.json`'s `chat_id`
+first, then the `TELEGRAM_CHAT_ID` env var. **In a routine session (no interactive human present), the
+env var is the one that actually works** — `config.json` is gitignored and a routine's cloud sandbox is
+a fresh checkout every run, so a locally-written `config.json` never survives to the next run. Set
+`TELEGRAM_CHAT_ID` on the routine's environment (the same var its optional failure-ping already needs —
+one setting covers both). `config.json` remains the right mechanism for a local/interactive run:
 1. Use `AskUserQuestion` to ask Daniel for the Telegram chat id (the same MiyagiDevopsTele bot/chat the
    deploy notifiers and routine failure-pings already use).
 2. Copy `config.example.json` → `config.json` and write the answer into `chat_id`.

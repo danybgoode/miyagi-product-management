@@ -236,14 +236,21 @@ export function extractRetroDigest(markdown, maxChars) {
 
 // ---- config / secrets ----
 
+// config.json is gitignored and a routine's cloud sandbox is a fresh checkout every run — it has no
+// mechanism to persist a locally-written config.json across separate runs. So a routine environment
+// can't rely on the interactive AskUserQuestion-then-write-config.json flow; it needs TELEGRAM_CHAT_ID
+// as an env var instead (the same var already required for the optional failure-ping), which this
+// falls back to when config.json doesn't exist. A local/interactive run still prefers config.json.
 function loadChatId() {
-  if (!existsSync(CONFIG_PATH)) return null;
-  try {
-    const cfg = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
-    return cfg.chat_id || null;
-  } catch {
-    return null;
+  if (existsSync(CONFIG_PATH)) {
+    try {
+      const cfg = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
+      if (cfg.chat_id) return cfg.chat_id;
+    } catch {
+      /* fall through to the env var */
+    }
   }
+  return process.env.TELEGRAM_CHAT_ID || null;
 }
 
 // ---- message ----

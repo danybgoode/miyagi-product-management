@@ -243,6 +243,24 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   output somewhere you already watch (a PR comment) rather than trust silence. Keep any routine
   advisory-only/never-a-required-check (a plain PR comment carries no commit-status, so it structurally
   can't gate). *(2026-06-24, routines-enablement.)*
+  **Corollary — a routine that shells out to `gh` needs that CLI provisioned explicitly; it is NOT
+  pre-installed in a routine's cloud sandbox.** The sandbox has built-in, read-oriented GitHub tools
+  (issues/PRs/diffs/comments) that work with zero setup, but they're scoped to whichever repo the routine
+  cloned — a script written around `spawnSync('gh', …)` for multi-repo writes (`gh pr list --repo <any>`,
+  `gh run rerun`, `gh pr comment`) fails outright with no `gh` binary at all. Fix: add
+  `apt update && apt install -y gh` to the environment's **Setup script** (runs once, cached ~7 days) and
+  a `GH_TOKEN` env var holding a PAT scoped to the repos needed — `gh` reads `GH_TOKEN` automatically, no
+  `gh auth login` needed. `github.com`/`api.github.com` are already in the **Trusted** network-access
+  default, so no domain change is needed, only the two steps above. *(2026-07-02, ops-routines-reporting
+  — `ops-nightly`'s first two live scheduled fires both failed at step 2 with exactly this gap.)*
+  **Corollary — a skill's `config.json` (gitignored, written via an interactive `AskUserQuestion` flow)
+  cannot be the sole config source for an unattended routine.** Each routine run is a fresh git checkout,
+  so a locally-written, gitignored file from one run never reaches the next — a routine session has no
+  interactive human to answer `AskUserQuestion` either. The fix is an env-var fallback for anything a
+  routine needs unattended: `standup.mjs`/`weekly-recap.mjs`'s `loadChatId()` now tries `config.json`
+  first (the right mechanism for a local/interactive run) and falls back to `process.env.TELEGRAM_CHAT_ID`
+  — reusing the same var the routines' optional failure-ping already required, so provisioning it once
+  covers both call sites. *(2026-07-02, ops-routines-reporting.)*
   **A second single-purpose cross-agent script should share the rail, not fork it.** The planning-panel
   script (a second opinion on a *plan* instead of a PR) reused ~90% of cross-review by extracting the
   family-agnostic plumbing (version checks, the per-CLI runners, the agy argv size-cap) into one shared
