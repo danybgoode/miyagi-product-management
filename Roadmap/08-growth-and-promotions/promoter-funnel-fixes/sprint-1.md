@@ -21,6 +21,12 @@ through `sellerTrustPrompt(personaId, copy.shared.trustPrompt)` (`lib/seller-acq
 **Acceptance:** `/vende/promotor` SSR HTML shows `…abrir https://miyagisanchez.com/vende/promotor…` in both
 prompt blocks; the literal `{url}` appears nowhere on the page.
 **Risk:** low · **QA:** `api` spec asserting the SSR HTML contains the real URL and **not** `{url}`.
+**✅ Shipped via PR [#156](https://github.com/danybgoode/miyagisanchezcommerce/pull/156) (squash `c922e38`,
+`feat/agent-discovery-and-indexing` S1.2, commit `e23482c`), merged to `main` 2026-07-02 — a different epic
+found and fixed the identical root cause (`promoterTrustPrompt()` in `lib/seller-acquisition.ts` +
+`buildPromoterPageConfig` wiring) before this sprint started building. No new code for this story in
+`feat/promoter-funnel-fixes` — merged first so it's inherited, not duplicated. Verified live in this branch's
+worktree: `promoterTrustPrompt` present, resolves to the real URL.**
 
 ### Story 1.2 — The public promoter CTA never 404s
 **As a** promoter recruit, **I want** "Abrir mi panel para cerrar" to always reach a useful next step, **so
