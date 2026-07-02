@@ -5,22 +5,23 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-01 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-02 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
 ## 🏗️ Building now (1)
 
-- [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 0/15 stories
+- [Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess](../../09-platform-infra/model-split-sonnet5-execution/README.md) — 09 Platform-infra · 0/1 stories
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (4)
 
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 0/4 stories
 - [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
+- [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (68)
+## ✅ Shipped (69)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -36,6 +37,7 @@
 - [Bulk Import & Express Migration](../../03-selling-and-shops/bulk-import-migration/README.md) — 03 Selling & Shops · 17/17 stories · risk: High
 - [Configurable & Personalized Products](../../03-selling-and-shops/configurable-personalized-products/README.md) — 03 Selling & Shops · 10/10 stories · risk: High
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 0/9 stories
+- [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 0/15 stories
 - [Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10](../../03-selling-and-shops/seller-unclaimed-bug-sweep/README.md) — 03 Selling & Shops · 7/7 stories · risk: High
 - [Seller Agent Operations](../../03-selling-and-shops/seller-agent-operations/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller Coupon Codes](../../03-selling-and-shops/promotions/README.md) — 03 Selling & Shops · 4/4 stories
@@ -102,5 +104,15 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+
+These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
+derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
+forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
+
+| Epic | frontmatter (used) | sprint/retro-derived |
+|---|---|---|
+| Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess | In progress | Scaffolded |
+
 ---
-_Epics: 73 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 75 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
