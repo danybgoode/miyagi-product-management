@@ -7,7 +7,7 @@ slug: seller-agent-connect-mcp-url
 
 > **Area:** 03-selling-and-shops · **Risk:** Sprint 1 low · Sprint 2 **high (auth)** · **Type:** feature + copy
 > **Scope doc:** [`00-ideas/2. readyforscope/seller-agent-connect-mcp-url.md`](../../00-ideas/2.%20readyforscope/seller-agent-connect-mcp-url.md)
-> **Status:** 🚧 in progress · S1 ✅ shipped 2026-07-02 ([#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)) · S2 built 2026-07-02, PR open, awaiting Daniel's merge (HIGH risk)
+> **Status:** 🚧 in progress · S1 ✅ shipped 2026-07-02 ([#158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)) · S2 built 2026-07-02, [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) open, awaiting Daniel's merge (HIGH risk)
 
 ## Why
 Two gaps stop a seller's agent from actually running the shop. (1) The setup emit prompt
