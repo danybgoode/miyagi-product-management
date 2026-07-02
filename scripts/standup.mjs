@@ -30,6 +30,7 @@ import { readFileSync, appendFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -72,29 +73,38 @@ function ghJson(args) {
   }
 }
 
+// REST-only (scripts/lib/gh-rest.mjs) — `gh pr list --json` hits GraphQL internally, which is blocked in
+// at least one live routine sandbox (confirmed 2026-07-02). The list endpoint alone doesn't carry
+// mergeable/check-status, so those are one extra pair of REST calls per OPEN PR only (bounded — typically
+// a handful, never the full 50-item history list).
 function gatherRepoPrs(repo) {
-  const prs = ghJson([
-    'pr', 'list', '--repo', repo, '--state', 'all', '--limit', '50', '--json',
-    'number,title,state,isDraft,mergedAt,createdAt,updatedAt,statusCheckRollup,mergeable,url',
-  ]);
+  const prs = listPulls({ repo, state: 'all', perPage: 50 });
   if (prs === null) return { repo, available: false };
 
   const open = prs.filter((p) => p.state === 'OPEN');
   const merged = prs.filter((p) => p.state === 'MERGED');
-  const failingOpen = open.filter((p) =>
-    (p.statusCheckRollup || []).some((c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.state === 'FAILURE')
-  );
-  // Surfaced by babysit-pr's own advisory comment too — this is the standup's independent read of the
-  // same fact, taken AFTER babysit-pr has had a chance to act (it runs earlier in the ops-nightly routine).
-  const conflictingOpen = open.filter((p) => p.mergeable === 'CONFLICTING');
+
+  const failingOpenNumbers = [];
+  const conflictingOpenNumbers = [];
+  for (const p of open) {
+    const mergeable = getPullMergeability({ repo, number: p.number });
+    if (mergeable === 'CONFLICTING') conflictingOpenNumbers.push(p.number);
+    if (p.headSha) {
+      const rollup = getStatusRollup({ repo, sha: p.headSha }) || [];
+      const failing = rollup.some((c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.state === 'FAILURE');
+      if (failing) failingOpenNumbers.push(p.number);
+    }
+  }
 
   return {
     repo,
     available: true,
     openNumbers: open.map((p) => p.number),
     mergedNumbers: merged.map((p) => p.number),
-    failingOpenNumbers: failingOpen.map((p) => p.number),
-    conflictingOpenNumbers: conflictingOpen.map((p) => p.number),
+    failingOpenNumbers,
+    // Surfaced by babysit-pr's own advisory comment too — this is the standup's independent read of the
+    // same fact, taken AFTER babysit-pr has had a chance to act (it runs earlier in the ops-nightly routine).
+    conflictingOpenNumbers,
     // small lookup for rendering human-readable delta lines
     byNumber: Object.fromEntries(prs.map((p) => [p.number, { title: p.title, url: p.url }])),
   };

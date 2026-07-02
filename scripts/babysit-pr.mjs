@@ -15,6 +15,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+import { getPull, getStatusRollup, postIssueComment } from './lib/gh-rest.mjs';
 
 const BANNER =
   '🤖 **babysit-pr — advisory PR watch (Claude).** Never merges; never a required check — a plain ' +
@@ -35,18 +36,10 @@ function parseArgs(argv) {
   return out;
 }
 
+// `gh run rerun` uses the REST Actions API regardless (confirmed live, unaffected by GraphQL being
+// blocked) — kept as a direct `gh` shell-out, no need to route it through gh-rest.mjs.
 function gh(args, opts = {}) {
   return spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, ...opts });
-}
-
-function ghJson(args) {
-  const r = gh(args);
-  if (r.status !== 0) return null;
-  try {
-    return JSON.parse(r.stdout || 'null');
-  } catch {
-    return null;
-  }
 }
 
 // Pure — the unit under test. No I/O. Classifies what babysit-pr should do for this PR's current state.
@@ -78,16 +71,14 @@ export function actionsRunIdFromDetailsUrl(url) {
   return m ? m[1] : null;
 }
 
+// REST-only (scripts/lib/gh-rest.mjs) — `gh pr view --json` hits GraphQL internally, which is blocked in
+// at least one live routine sandbox (confirmed 2026-07-02). getPull() + getStatusRollup() reconstruct the
+// same {state, mergeable, statusCheckRollup} shape from two REST calls instead.
 function fetchPr(pr, repo) {
-  return ghJson([
-    'pr',
-    'view',
-    String(pr),
-    '--repo',
-    repo,
-    '--json',
-    'number,state,url,mergeable,mergeStateStatus,headRefName,statusCheckRollup',
-  ]);
+  const info = getPull({ repo, number: pr });
+  if (!info) return null;
+  const statusCheckRollup = info.headSha ? getStatusRollup({ repo, sha: info.headSha }) || [] : [];
+  return { ...info, statusCheckRollup };
 }
 
 function rerun(repo, runId) {
@@ -113,10 +104,11 @@ function buildComment({ conflict, retried, dryRun, noAutoRetryNames, stillPendin
   return lines.join('\n');
 }
 
+// REST-only (scripts/lib/gh-rest.mjs) — `gh pr comment` hits GraphQL internally, same reason as fetchPr.
 function postComment(pr, repo, body) {
-  const r = gh(['pr', 'comment', String(pr), '--repo', repo, '--body-file', '-'], { input: body });
-  if (r.status !== 0) die(`gh pr comment failed for #${pr}: ${(r.stderr || '').trim().split('\n')[0] || 'unknown error'}`);
-  return (r.stdout || '').trim();
+  const result = postIssueComment({ repo, number: pr, body });
+  if (!result) die(`posting the advisory comment failed for #${pr} (${repo}).`);
+  return result.url;
 }
 
 function main() {
