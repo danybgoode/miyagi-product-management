@@ -1,40 +1,52 @@
 # Doc hygiene — Sprint 1: the sweep + the rolling skill
 
-**Status:** ⬜ not started
+**Status:** ✅ SHIPPED 2026-07-02 (both stories; `chore/doc-hygiene-learnings-sweep` — commits `2fe5f9c`
+S1.1, `3a80c6e` + `29124b9` S1.2)
 
 ## Stories
 
-### Story 1.1 — One-time de-noise sweep of LEARNINGS.md + the README poster
+### Story 1.1 — One-time de-noise sweep of LEARNINGS.md + the README poster ✅
 **As a** builder starting a fresh session, **I want** the always-read docs de-noised, **so that** each
 session costs less context without losing any durable learning.
 **Acceptance:**
 - A pass over `Roadmap/LEARNINGS.md`: merge near-duplicate lines, prune stale/superseded entries, tighten
   wording. Every retained line keeps its **why + date/source**. Present as a **reviewed diff** plus a short
-  **"what was removed and why"** note — no silent deletions.
+  **"what was removed and why"** note — no silent deletions. ✅ Done — see `RETROSPECTIVE.md` for the
+  categorized list; Daniel reviewed the diff in-session and confirmed no durable learning was lost.
 - The same lighter pass on `Roadmap/README.md` (poster): drop dead lines, keep the ✅=enforced-in-code
-  accuracy.
-- Report **before/after** line + KB counts for both files.
-- Daniel confirms no durable learning was dropped before merge.
+  accuracy. ✅ Audited the Feature map — no dead/wrong lines found; left "Recent highlights" untouched
+  (out of scope, a changelog not a status claim).
+- Report **before/after** line + KB counts for both files. ✅ `LEARNINGS.md`: 1,155→980 lines (−15%),
+  117,700→96,716 bytes (−18%). `README.md`'s Feature map: audited, nothing to cut (322 lines / 115,248
+  bytes at audit time); the poster's final count in this PR is 331 lines / 116,142 bytes because this
+  same close adds one "Recent highlights" entry for this epic's own shipment — expected growth, not a
+  missed sweep target.
+- Daniel confirms no durable learning was dropped before merge. ✅ Confirmed in-session before Story 1.2.
 **Risk:** Low (docs only; a reviewed diff, human-merged).
 
-### Story 1.2 — The `doc-hygiene` skill (rolling maintenance)
+### Story 1.2 — The `doc-hygiene` skill (rolling maintenance) ✅
 **As a** product owner, **I want** a repeatable skill that keeps the always-read docs from re-bloating,
 **so that** hygiene is a standing, low-effort process not a one-off.
 **Acceptance:**
-- A committed skill (`skills/doc-hygiene/` — final home per the D-spike convention decision) that measures
-  the size of the always-read set, flags dedupe/staleness candidates in `LEARNINGS.md` + the poster, and
-  emits an advisory report in the `HYGIENE-REPORT-*.md` format.
-- The weekly **Routine C** invokes it (or its prompt) as part of the hygiene pass.
-- It **never auto-edits** — proposals only, human merges (matches the standing HYGIENE-REPORT rule).
+- A committed skill (`skills/doc-hygiene/` — the D-spike convention decision hadn't landed yet, so used
+  the kickoff's stated default) that measures the size of the always-read set, flags dedupe/staleness
+  candidates in `LEARNINGS.md` + the poster, and emits an advisory report in the `HYGIENE-REPORT-*.md`
+  format. ✅ `scripts/doc-hygiene.mjs` + `skills/doc-hygiene/SKILL.md`; first real report committed at
+  `Roadmap/00-ideas/DOC-HYGIENE-REPORT-2026-07-02.md`.
+- The weekly **Routine C** invokes it (or its prompt) as part of the hygiene pass. ✅
+  `scripts/routines/roadmap-hygiene.prompt.md` step 4 + `scripts/routines/README.md` updated.
+- It **never auto-edits** — proposals only, human merges (matches the standing HYGIENE-REPORT rule). ✅
+  Verified live: `node scripts/doc-hygiene.mjs` touched zero existing docs, wrote only its own new report.
 - Description written for the model (trigger words), with a Gotchas section (LEARNINGS' "keep why+date",
-  "sharpen don't append" rules).
+  "sharpen don't append" rules). ✅
 **Risk:** Low (advisory tooling).
 
 ## Sprint QA
 - **api spec(s):** none — no code surface.
 - **browser smoke owed:** no.
 - **deterministic gate:** N/A (docs/tooling). If the skill ships a script, `node --check` it; otherwise
-  verify by running the skill once and reading its report.
+  verify by running the skill once and reading its report. ✅ `node --check scripts/doc-hygiene.mjs` passes;
+  live run confirmed (see Story 1.2).
 
 ## Sprint 1 — Verification walkthrough (do these in order)
 Env: the repo docs + the new skill (process change, no app deploy — no production URL).

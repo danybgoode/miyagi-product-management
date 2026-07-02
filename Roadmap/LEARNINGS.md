@@ -25,19 +25,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   history, ignore it for Miyagi backend shipping. The source of truth is the backend repo's
   `cloudbuild.yaml`: Cloud Build trigger `backend-main-deploy` in `us-east4`, deploying Cloud Run
   service `medusa-web`. *(Support Widget epic, 2026-06-05.)*
-- **`main` moves under you.** Before opening a PR — and again if it sits open — **merge latest
-  `main` into your branch**. Tell-tale: CI's "Playwright vs preview" fails on a spec for a feature
-  you never touched → a sibling agent landed something on `main` and your preview predates it.
-  Merge `main`, don't debug your own diff. **A re-run alone won't fix it** — the mismatch is
-  *structural* (CI runs the **merged** test set against the **branch-head** preview, which lacks the
-  sibling's feature); only `git merge origin/main` + push (rebuilding the preview) clears it. Confirm with
-  `git log HEAD..origin/main` — a sibling commit you don't have is the tell. (The missing thing may be the
-  *implementation the spec asserts*, not the spec **file** itself: the spec can already be on your branch — a
-  blob-identical `git ls-tree` — while the feature commit it tests sits only on `main`, so your preview fails it.)
-  *(2026-06-05 seasonal-theme; reconfirmed 2026-06-09 — delivery-money-polish S3 went red on
-  `agent-native-setup-spec.spec.ts` from sibling PR #61; a re-run reproduced it, merging main fixed it;
-  reconfirmed 2026-06-25 — seleccion-pins S2.2 went red on the sibling `seller-acquisition-seo.spec.ts`: the
-  spec was on both branches, but PR #125's `/vende` metadata impl `af690ad` was main-only.)*
+- **`main` moves under you.** Before opening a PR — and again if it sits open — **merge latest `main` into
+  your branch**. Tell-tale: CI's "Playwright vs preview" fails on a spec for a feature you never touched →
+  a sibling agent landed something on `main` and your preview predates it. **A re-run alone won't fix it**
+  — the mismatch is structural (CI runs the merged test set against the branch-head preview, which lacks
+  the sibling's feature); only `git merge origin/main` + push (rebuilding the preview) clears it. Confirm
+  with `git log HEAD..origin/main`. The missing piece may be the *implementation* a spec asserts, not the
+  spec file itself — the spec can already be blob-identical on your branch while the feature commit it
+  tests sits only on `main`. *(First hit 2026-06-05 seasonal-theme; reconfirmed twice more since —
+  delivery-money-polish S3, seleccion-pins S2.2.)*
 - **Announce cross-cutting or direct-to-`main` changes**, and prefer a PR even for "engine"
   features. Anything touching shared surface — `layout.tsx`, `middleware.ts`, `globals.css`,
   `package.json`/deps, a new sibling worktree — can break every other open PR. *(2026-06-05 — a
@@ -55,56 +51,44 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   into the branch before merging the PR** so the merged tree is what actually ships. *(2026-06-11,
   custom-domain-paywall — nav-reorg #80/#81 landed mid-flight; two-dot showed nav files "deleted".)*
 - **Shipping a flag-gated paid feature has a load-bearing run-order: code merge → deploy → seed → flip
-  flag — and seed prod money infra with the REAL creds, not local `.env`.** The fail-open flag (default off)
-  lets the FE+BE merge dark with zero risk; *then* activate deliberately. Backend (Cloud Run, ~12 min, no
-  preview) merges + **finishes deploying** before the seed script (which calls its new internal route);
-  confirm the live revision actually rolled (`gcloud run services describe … latestReadyRevisionName`) — a
-  `SUCCESS` build is not yet a live revision. The seed/activation must use **prod** creds from **Secret
-  Manager** (`gcloud secrets versions access`) + the Cloud Run URL — the app's local `.env.local`/`.env` are
-  **dev-scoped** (`localhost:9000`, `sk_test_…`), so running with them silently provisions a test-mode plan
-  against localhost. Capture secrets into shell vars in the *same* command (shell state doesn't persist) and
-  never echo them (a `${KEY:0:7}` mode-prefix is enough to confirm `sk_live`). *(2026-06-11,
-  custom-domain-paywall — seed-custom-domain-plan.mjs against prod live Stripe.)*
-- **A squash-merged sprint branch is a dead end — start the next sprint on a FRESH branch off `main`.** When
-  a sprint PR is **squash**-merged, its branch's individual commits are *not* on `main` (the changes are, as
-  one commit), so continuing that same branch for the next sprint re-introduces a messy duplicate diff and
-  can't be fast-forwarded. Confirm with `git cat-file -e origin/main:<a-file-the-sprint-added>` (changes are
-  on main) and branch the next sprint cleanly: `feat/<epic>-s2` off `origin/main`. *(2026-06-09,
-  trust-messaging-polish S2 — S1's #64 squashed → S2 on `feat/trust-messaging-polish-s2`.)*
+  flag — and seed prod money infra with REAL creds, not local `.env`.** The fail-open flag (default off)
+  lets FE+BE merge dark with zero risk; activate deliberately after. Backend merges + **finishes
+  deploying** before the seed script runs; confirm the live revision actually rolled (a `SUCCESS` build is
+  not yet a live revision). Seed/activation must use **prod** creds from Secret Manager — local
+  `.env`/`.env.local` are dev-scoped (`localhost`, `sk_test_…`), so running with them silently provisions a
+  test-mode plan against localhost. Capture secrets into shell vars in the *same* command (shell state
+  doesn't persist) and never echo them. *(2026-06-11, custom-domain-paywall.)*
+- **A squash-merged sprint branch is a dead end — start the next sprint on a FRESH branch off `main`.** A
+  squash-merged PR's individual commits aren't on `main` (only the one squash commit is), so continuing
+  that branch for the next sprint re-introduces a messy duplicate diff and can't fast-forward. Confirm with
+  `git cat-file -e origin/main:<a-file-the-sprint-added>`, then branch clean: `feat/<epic>-s2` off
+  `origin/main`. *(2026-06-09, trust-messaging-polish S2.)*
 - **To verify "is the prior sprint serving?", reason off `origin/main` — never the working tree — and read
-  PR *state*, not branch commits (a squash-merge looks "unmerged").** Local app checkouts routinely sit on
-  *other* agents' branches, so on-disk files lie about `main`: a decommission sprint opened with `flags.ts`
-  still importing the very dependency it was there to remove — a pure stale-checkout artifact, not reality.
-  Worse, a sub-agent that trusted a **stale local `origin/main`** misread a squash-merged prior sprint as
-  "unmerged" (the branch's individual commits aren't on main — only the squash commit is). Confirm with
-  `gh pr view <#> --json state,mergeCommit` + `gh api repos/<o>/<r>/contents/<path>?ref=main`, or `git fetch`
-  then `git grep <x> origin/main` — an `ls`/working-tree read is not evidence about `main`. *(2026-07-01,
-  feature-flags-inhouse S3 — both app trees parked on sibling epics' branches; squash-merged S2 misread.)*
+  PR *state*, not branch commits.** Local app checkouts routinely sit on *other* agents' branches, so
+  on-disk files lie about `main` (a stale checkout can still show a dependency imported after the sprint
+  that removed it) — and a squash-merged sprint's individual commits genuinely aren't on `main`, so trusting
+  a stale local `origin/main` misreads it as "unmerged." Confirm with `gh pr view <#> --json state,mergeCommit`
+  + `gh api repos/<o>/<r>/contents/<path>?ref=main`, or `git fetch` then `git grep <x> origin/main` — an
+  `ls`/working-tree read is not evidence about `main`. *(2026-07-01, feature-flags-inhouse S3.)*
 - **Decommissioning a dependency is bigger than the `package.json` line — the acceptance grep is the real
   bar, and post-swap comments go stale.** Removing Flagsmith meant an acceptance of `grep -ri flagsmith apps/`
   clean, which forced scrubbing ~30 comment/spec/script/migration mentions, not just the two `flags.ts`.
   Several comments were *factually wrong* after the earlier reader-swap sprint (they claimed a helper avoids
   pulling in `flagsmith-nodejs` when the reader now imports Supabase) — rewrite comments for the **new**
   reality, don't blind find-replace. *(2026-07-01, feature-flags-inhouse S3.)*
-- **Concurrent planning commits in a shared worktree collide the git index.** App code already gets isolated
-  `git worktree`s (`.worktrees/`) — but *planning/scaffold* commits ran in the shared root worktree, so two
-  sessions' `git add` raced ("another git process is running" / index lock; commits interleaved). Fix, two
-  parts: (1) **path-limited commits** — `git add <your files>` + `git commit -- <those paths>`, never
-  `git add Roadmap/` or `-A`; that alone keeps each commit clean regardless of the shared index. (2) For
-  parallel planning, **give each planning session its own worktree**, or appoint a single **scribe** for
-  shared files (`BUILD-ORDER.md`). The single highest-leverage line is the path-limited commit.
-  *(2026-06-07 — planning sessions collided in the shared root worktree.)*
+- **Concurrent planning commits in a shared worktree collide the git index.** App code gets isolated `git
+  worktree`s already, but planning/scaffold commits ran in the shared root worktree, so two sessions' `git
+  add` raced ("another git process is running" / interleaved commits). Fix: (1) **path-limited commits** —
+  `git add <your files>` + `git commit -- <those paths>`, never `git add Roadmap/` or `-A` (the single
+  highest-leverage line); (2) for parallel planning, give each session its own worktree, or appoint a
+  single **scribe** for shared files (`BUILD-ORDER.md`). *(2026-06-07.)*
 - **Cowork planning sandbox: the mounted `.git` blocks `unlink` on lock files, and GitHub egress is
-  proxied-off — `rename` aside to commit, and the human pushes.** Committing from the Cowork desktop
-  sandbox, every git index op (`add`/`commit`) leaves a stale `.git/index.lock` (+ `HEAD.lock` /
-  `next-index-*.lock`) because the mount returns **EPERM on `unlink`** — so `rm` can't clear them and the
-  next op dies with `File exists` / "another git process is running". **`rename` is allowed** (git's own
-  commit renames lockfile→target fine), so clear them by moving aside before each commit:
-  `for L in .git/*.lock; do [ -e "$L" ] && mv "$L" "$L.stale.$RANDOM"; done` (the harmless
-  `unable to unlink … tmp_obj`/lock warnings during commit can be ignored — the commit still lands).
-  Separately, **`git push`/`fetch` to GitHub 403 through the sandbox proxy** — planning commits land
-  locally on the mounted repo on `main`, and the **human pushes from their own terminal**
-  (`git push origin main`); the agent can't push or fetch itself. *(2026-06-12, doc-drift reconciliation.)*
+  proxied-off.** The mount returns EPERM on `unlink`, so every commit leaves a stale `.git/index.lock` (+
+  `HEAD.lock`) that `rm` can't clear — but `rename` works, so move locks aside before each commit:
+  `for L in .git/*.lock; do [ -e "$L" ] && mv "$L" "$L.stale.$RANDOM"; done`. Separately, `git push`/`fetch`
+  to GitHub 403s through the sandbox proxy — planning commits land locally on `main`, and the **human
+  pushes** from their own terminal; the agent can't push or fetch itself. *(2026-06-12, doc-drift
+  reconciliation.)*
 
 ## Tooling gotchas
 - **Run the repo binaries directly when `npm`/`npx` chokes.** A sibling worktree that reuses the same
@@ -138,40 +122,34 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ran minutes apart but ours never triggered on `opened`; **close/reopen didn't fix it — an empty-commit
   push (a real `synchronize`) did.** Don't merge on an absent gate: re-trigger, and lean on the local
   gate (tsc + build + specs) + the green Vercel preview as the real signal. *(2026-06-06.)*
-- **`vercel env add` (the Claude vercel plugin) silently stores EMPTY values.** Both stdin-pipe and
-  `--value` created the var but with no value; `vercel env pull` also redacts *all* values to `""` so it
-  can't verify. **Set Vercel env vars via the REST API** (`POST /v10/projects/{id}/env`, `PATCH` doesn't
-  reliably update the value → DELETE+POST) and verify by value **length** (decrypt needs a scoped token).
-  Also: Preview env adds prompt for a git branch — the "all branches" non-interactive path loops. *(2026-06-06, Flagsmith epic.)*
-  **A Vercel _Sensitive_ env var is write-only — you cannot read its value from the CLI or REST.**
-  `vercel env pull` returns it EMPTY and the v9 `…/projects/{id}/env` API shows `value:null` +
-  `type:"sensitive"` (vs `"encrypted"`, which *can* be pulled) with `has_inline_value:false`. So you can
-  confirm a sensitive secret's **presence / target / type** programmatically, but its **mode or scope**
-  (e.g. is this `STRIPE_SECRET_KEY` `sk_live` vs `sk_test`, standard vs restricted) is **not** machine-
-  readable — read the provider dashboard, or have the app **surface** the cause on use. Sensitive vars are
-  also per-environment: this key was **Production-only**, so Preview deploys had *no* key at all (a missing
-  key throws before any HTTP call → classify it as auth, not "unknown"). *(2026-06-23, domain-coupon-mint-fix S1.3.)*
-- **Backend Cloud Run deploy is image-only.** `apps/backend/cloudbuild.yaml` runs `gcloud run deploy
-  --image=… ` only — env vars / secrets / SA / scaling were set once by `infra/gcp/deploy.sh` and Cloud
-  Run **preserves them across deploys**. So you can **provision a new Secret Manager secret + `gcloud run
-  services update --update-secrets` (additive) BEFORE the merge** that needs it, and the merge's
-  image-swap keeps it. Grant `secretAccessor` to the runtime SA `medusa-run@`. *(2026-06-06.)*
-  **Corollary — image-only deploys make the full deploy *script* silently DRIFT from live.** Because CI never
-  re-applies the full config, the script accumulates gaps: a secret added live-only via `services update` is
-  missing from the script's `--set-secrets` (which **replaces**, so a full run would **drop** it), and a var
-  bound as a `secret` that live actually carries as a **plain env** (with no secret shell) makes a full run
-  **ERROR** ("secret not found"). Reconcile against `gcloud run services describe` (compare the env-name set +
-  secret-name set) and **lock parity with a static guard**. *(2026-06-12, backend-prod-readiness S4 — `deploy.sh`
-  was missing 3 live secrets + bound `ENVIA_SANDBOX` as a non-existent secret; `infra/gcp/test/deploy-invariants.test.js`.)*
-  **Corollary — RETIRING a secret is a same-change trio + a strict live order.** To remove a Cloud Run secret
-  cleanly: drop it from `deploy.sh` `--set-secrets` **and** the drift-guard `node:test`'s expected set in the
-  **same** change (else the static guard reds; and because `--set-secrets` *replaces*, a stale binding makes a
-  future full run ERROR "secret not found"). Then, live, in order: `gcloud run services update
-  --remove-secrets=X` **first** — the new revision must boot *without* it, which proves nothing reads it — and
-  only **then** `gcloud secrets delete X`. Deleting the secret first would fail-close any new revision on an
-  unresolvable `:latest`. A dep whose reader was already swapped out is dead weight the moment nothing imports
-  it, so the running revision already ignores the secret — removal is safe once the swap merged. *(2026-07-01,
-  feature-flags-inhouse S3 — retired `FLAGSMITH_ENVIRONMENT_KEY`; revision `medusa-web-00125-6lx` booted clean.)*
+- **`vercel env add` silently stores EMPTY values** (both stdin-pipe and `--value`); `vercel env pull` also
+  redacts every value to `""`, so it can't verify either. Set vars via the **REST API**
+  (`POST /v10/projects/{id}/env`; `PATCH` doesn't reliably update → DELETE+POST) and verify by value
+  **length** (decrypt needs a scoped token). Preview env-add also prompts for a git branch — the "all
+  branches" non-interactive path loops. *(2026-06-06, Flagsmith epic.)*
+  **A Vercel _Sensitive_ env var is write-only — you cannot read its value from the CLI or REST at all.**
+  You can confirm its **presence/target/type** programmatically (`type:"sensitive"`, `has_inline_value:false`)
+  but not its **mode/scope** (e.g. `sk_live` vs `sk_test`) — read the provider dashboard, or have the app
+  surface the cause on use. Sensitive vars are also per-environment: a Production-only key leaves Preview
+  with none at all (missing key throws before any HTTP call → classify as auth, not "unknown").
+  *(2026-06-23, domain-coupon-mint-fix S1.3.)*
+- **Backend Cloud Run deploy is image-only** — `cloudbuild.yaml` runs `gcloud run deploy --image=…` only;
+  env vars/secrets/SA/scaling were set once by `infra/gcp/deploy.sh` and Cloud Run **preserves them across
+  deploys**. So you can provision a new Secret Manager secret + `gcloud run services update
+  --update-secrets` (additive) **before** the merge that needs it, and the merge's image-swap keeps it.
+  Grant `secretAccessor` to the runtime SA. *(2026-06-06.)*
+  **Corollary — image-only deploys make the full deploy *script* silently drift from live.** CI never
+  re-applies the full config, so the script accumulates gaps: a secret added live-only is missing from its
+  `--set-secrets` (which **replaces**, so a full run would drop it), and a var bound as a secret that live
+  actually carries as a plain env makes a full run **ERROR**. Reconcile against `gcloud run services
+  describe` and lock parity with a static guard. *(2026-06-12, backend-prod-readiness S4 —
+  `infra/gcp/test/deploy-invariants.test.js`.)*
+  **Corollary — retiring a secret is a same-change trio + a strict live order.** Drop it from `deploy.sh`
+  `--set-secrets` **and** the drift-guard's expected set in the same change (else the guard reds, or a
+  stale binding ERRORs a future full run). Then, live: `gcloud run services update --remove-secrets=X`
+  **first** (the new revision must boot without it, proving nothing reads it), only **then** `gcloud
+  secrets delete X` — deleting first fail-closes any new revision on an unresolvable `:latest`.
+  *(2026-07-01, feature-flags-inhouse S3.)*
 - **A `:latest` Secret-Manager binding re-resolves on EVERY new revision — and `latest` = highest-NUMBER, not
   highest-ENABLED.** Two coupled traps from the Cloud SQL cutover. (1) Cloud Run binds `DATABASE_URL:latest`,
   and because image-only deploys *also* re-resolve it, **staging a future-cutover value as the enabled `latest`
@@ -191,18 +169,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `medusa_app` is a `cloudsqlsuperuser` (owns/creates in its DB → no extra grants needed). *(2026-06-22,
   postgres-neon-to-cloudsql S2 — the cutover dump/restore ran as a connector-attached Job.)*
 - **Provision GCP monitoring as an idempotent script, rehearsed on staging; a `node:test` config-guard is
-  infra's deterministic gate.** Stand up uptime checks + Cloud Run alert policies via a create-if-absent-by-
-  displayName script (`infra/gcp/provision-monitoring.sh`, `TARGET=staging|prod` → the existing
-  `MiyagiDevopsTele` channel) and **rehearse on staging then tear down** (staging min=0 flaps an uptime check).
-  The rehearsal surfaces CLI-shape bugs for free — concretes it caught: alert **threshold conditions support
-  only `COMPARISON_LT`/`GT`** (no GE/LE → "active ≥ max" = `GT max-1`); a **log-based (`conditionMatchedLog`)
-  alert needs an `alertStrategy.notificationRateLimit`**; build policy JSON via `python3`/a file, **never a
-  shell heredoc** (filter strings carry quotes that break inline JSON); pass `--project` per call (a global
-  `gcloud config set project` trips an org `environment`-tag warning). Infra isn't Playwright-gated, so the
-  deterministic gate is a **pure `node:test` asserting the deploy scripts vs the live config** — same
-  anti-erosion shape as the raw-color/monolith guards; monorepo-root needed its **first `.github/workflows/`**
-  to host it. **Error tracking went GCP-native** (Error Reporting auto-groups `severity>=ERROR` Cloud Run logs)
-  **over adding `@sentry` to the live service — zero new dependency.** *(2026-06-12, backend-prod-readiness S4.)*
+  infra's deterministic gate.** Stand up uptime checks + Cloud Run alert policies via a
+  create-if-absent-by-displayName script (`TARGET=staging|prod`) and **rehearse on staging then tear down**
+  (staging `min=0` flaps an uptime check) — the rehearsal surfaces CLI-shape bugs for free: threshold
+  conditions support only `COMPARISON_LT`/`GT` (no GE/LE); a log-based alert needs
+  `alertStrategy.notificationRateLimit`; build policy JSON via a file/`python3`, never a shell heredoc
+  (quoted filter strings break inline JSON); pass `--project` per call. Infra isn't Playwright-gated, so the
+  deterministic gate is a pure `node:test` asserting the deploy scripts vs live config — same anti-erosion
+  shape as the raw-color/monolith guards. **Error tracking went GCP-native** (Error Reporting auto-groups
+  `severity>=ERROR` logs) over adding `@sentry` — zero new dependency. *(2026-06-12, backend-prod-readiness S4.)*
 - **A Medusa `MedusaService` auto-generated `update{Models}({id,…})` returns a SINGLE object, not an array —
   array-destructuring it throws "object is not iterable", and `(svc as any)` hides it from `tsc`.** A money-plan
   seed 500'd at ~25 ms (too fast for a DB error → an early synchronous throw) on every UPDATE while the CREATE
@@ -216,85 +191,59 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   is in the Cloud Run **stdout** logs, not the structured error entry. *(2026-07-01, mercadolibre-sync S6 —
   `setup-ml-sync-plan` hotfix #54; `setup-subdomain-plan` has the same latent shape.)*
 - **Stripe Node SDK v22 reshaped promotion-code params under a `promotion:{type:'coupon',coupon}` hash** —
-  both the `PromotionCode` object read (`pc.promotion.coupon`) and `promotionCodes.create` (no top-level
-  `coupon` in the typed params). `tsc` catches the old top-level shape immediately. Give the coupon + promo
-  code **deterministic ids/codes** so find-or-create (an admin "mint" button / seed) is idempotent — no
-  duplicate on a repeated press. *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`.)*
-  **A Stripe Coupon `name` is hard-capped at 40 characters** — exceed it and `coupons.create` throws
-  `StripeInvalidRequestError`/`param: name` ("must be at most 40 characters"), failing the **first** step of
-  a multi-step mint before anything downstream. Keep money-infra provider-string fields under their limits
-  and lock the invariant with a CI guard (`CAMPAIGN_COUPON_NAME.length <= 40`). This was the *actual* prod
-  cause of the `miyagisan` mint failure — **not** the `promotion`-hash shape above (the SDK types accept that;
-  the live API rejected `name`). *(2026-06-23, domain-coupon-mint-fix S2.1.)*
-- **Driving a young foreign CLI (`codex`, `agy`): run `<cli> --help` first, pin the version, degrade — never
-  build against a documented flag from memory.** The cross-agent-review sprint AC assumed `agy --output-format
-  json`; `agy 1.0.7` has **no such flag** — reality is `agy -p "<prompt+diff>"`, plain text, **no stdin path**.
-  By contrast `codex exec "<prompt>"` appends **stdin** as a `<stdin>` block, so you *pipe* the diff to codex
-  but must *embed* it in agy's argv — which is why an argv-size guard (E2BIG above ~256 KB) is needed for agy
-  only. Pin the known-good version and **FAIL LOUD** on a mismatch (a stderr-only warn gets ignored — see the
-  1.0.10 corollary below).
-  `scripts/cross-review.mjs` is the reference: a script that runs a non-Anthropic reviewer must `--version`-check
-  + branch its context-passing per CLI, and the smoke is "run it against a real PR and read the comment."
-  *(2026-06-10, cross-agent-code-review S1 — also: a `git commit -- <paths> -m "msg"` fails because everything
-  after `--` is a pathspec; put `-m` before `--`.)*
-  **A young foreign CLI silently breaks its own contract on a MINOR bump — re-validate by running it (with a
-  log file), treat empty output as failure, and design the driver to DEGRADE.** agy `1.0.7`→`1.0.10` changed
-  `--print` twice over: `-p` became an alias of `--print`, and print mode now (a) emits **nothing** without an
-  explicit `--model` (no headless default) and (b) ALSO exits **0 with empty stdout** when the model is
-  **quota-exhausted** (`RESOURCE_EXHAUSTED 429` — the error lands only in agy's *log*, never stdout/stderr), so
-  a non-zero-exit check can't catch it. The reviewer had returned empty for weeks. The generalizable fixes:
-  pass `--model` explicitly; treat **empty output as a failure**, not success; give the model a
-  **primary→fallback** (a quota-capped Gemini auto-degrades to a GPT-OSS on a separate quota pool — empty ≠
-  "no findings"); and make the version check **fail loud** (the old stderr warn was ignored, which is *how* the
-  bump shipped empty). Diagnose a stalled/empty foreign CLI with its own **`--log-file`** — the 429 (and the
-  fact that print mode blocks on an open stdin, needing `input:''` for EOF) were visible only there.
-  *(2026-06-23, devops-reliability-cleanup S4 — `runAntigravity` in `scripts/lib/cross-agent-cli.mjs`; pinned 1.0.10.)*
-  **A CLI authed by an interactive/OAuth login is NOT free to run in CI — confirm a portable, non-interactive
-  credential path AND its cost before scoping "automate this CLI in a runner."** A fresh runner has zero auth;
-  a local CLI login doesn't travel. Probed live: **codex** can auth headlessly (`codex login --with-api-key`,
-  key on stdin) **but** its local auth is a ChatGPT-OAuth *subscription* login (`OPENAI_API_KEY:null`), so CI
-  needs a **new token-billed API key**; **agy** has **no headless auth at all** (`agy --help`: no login/auth/key
-  flag — browser login under `~/.antigravity`). Plus, automating a **root-repo** tool from an **app-repo**
-  workflow has an irreducible cross-repo cost (a read-only **PAT** to fetch the private script, or vendoring +
-  its drift). For the always-on cross-review that bill (billed key + PAT) wasn't worth it for an **advisory aid
-  that never gates**, so it shipped **local-only** — the command, run on every PR (the CI workflow was built +
-  self-smoked green on the clean-skip path, then left unmerged). Weigh credential/billing/cross-repo cost
-  against payoff *before* building; for a nice-to-have, "keep the working local command + flip the policy" can
-  be the right call. *(2026-06-22, cross-agent-review-always — CI auto-run descoped; `--skip-trivial` cost guard
-  + policy shipped.)*
-  **A cloud Routine runs *as you*, which sidesteps the CI foreign-CLI auth blocker above — that's the unlock
-  for "auto-review on every PR."** A Claude Code Routine (research preview) is a full cloud session under your
-  claude.ai identity/connectors, so a GitHub-triggered review routine restores the auto-on-every-PR goal
-  `cross-agent-review-always` had to ship local-only — as the **Claude** family, not codex/agy, but with zero
-  CI-credential cost. Three facts that *only surfaced once it was stood up live* (the docs/spike got them
-  wrong, the running config corrected them): **(1) a GitHub trigger is ONE specific action OR all-actions —
-  you canNOT combine `opened` + `ready_for_review`**; and `opened` does **not** fire on a draft→ready flip, so
-  pick the action matching how PRs actually land (here `opened` + `Is draft=false`, incl. Dependabot — a
-  `ready_for_review`-only routine silently never fires on a directly-opened PR). **(2) the Pro daily cap (5/day)
-  bites SCHEDULED runs only** — GitHub-event + API triggers have separate hourly caps and don't consume it,
-  one-offs don't count; so a GitHub-triggered review is effectively uncapped for solo volume (verify the cap
-  *model*, don't budget a GitHub trigger against the scheduled cap). **(3) routines have no built-in failure
-  alert** — a "green" run only means the session exited cleanly, NOT that the task succeeded; route the
-  *actionable* output to a channel you already watch (a GitHub PR comment/PR gives you GitHub's own
-  notification; a failed *run* stays silent unless the prompt best-effort pings Telegram/Slack itself). Keep
-  the routine **advisory-only / never-a-required-check** (a plain PR comment carries no commit-status, so it
-  structurally can't be required — the standing convention enforced by the medium). *(2026-06-24,
-  routines-enablement — `scripts/routines/`; A confirmed live on PRs #31/#121; C's first run flagged real
-  drift → PRs #41/#42.)*
-  **A SECOND single-purpose cross-agent script shares the rail, doesn't fork it.** The planning panel
-  (`scripts/cross-panel.mjs` — second opinion on a *plan* instead of a PR) reused ~90% of cross-review by
-  extracting the family-agnostic plumbing into one module (`scripts/lib/cross-agent-cli.mjs`: presence/version
-  checks, `runCodex`/`runAntigravity` + the agy argv size-cap, the `\n---` prompt-body loader) and keeping each
-  script's *framing* (PR diff vs plan doc) and *output* (post a comment vs print a panel) local. Add an
-  `opts.soft` mode on the runners so a **non-essential** pass degrades to a stderr note instead of `die()`-ing
-  (the panel's contradiction-synthesis uses it). Don't import cross-review.mjs directly — it runs `main()` at
-  module load; extract to a sibling lib both import. After `git mv`-ing a module, grep stale path refs in
-  **header comments + docs**, not just the imports. *(2026-06-13, cross-agent-planning-panel S1.)*
-  **To "surface contradictions" between two single-pass critiques, one constrained synthesis pass beats both
-  side-by-side and a debate loop.** Print the critiques verbatim, then a single pass that lists *only*
-  opposite-action contradictions (else one "complementary" line) — the tool does the flagging, but it stays
-  single-pass (no back-and-forth, the #1 token sink). Keep it *soft* so a failed synthesis still prints the
-  lenses. *(2026-06-13, cross-agent-planning-panel S1 — `## SYNTHESIS` in `cross-panel.prompt.md`.)*
+  `tsc` catches the old top-level shape immediately. Give the coupon + promo code **deterministic ids/codes**
+  so find-or-create (an admin "mint" button / seed) is idempotent. *(2026-06-11, custom-domain-paywall S3 —
+  coupon `miyagisan`.)*
+  **A Stripe Coupon `name` is hard-capped at 40 characters** — exceed it and `coupons.create` throws before
+  anything downstream in a multi-step mint. Keep money-infra provider-string fields under their limits and
+  lock it with a CI guard. This was the *actual* prod cause of the `miyagisan` mint failure, not the
+  `promotion`-hash shape above. *(2026-06-23, domain-coupon-mint-fix S2.1.)*
+- **Driving a young foreign CLI (`codex`, `agy`): run `<cli> --help` first, pin the version, and design for
+  degrade — never build against a documented flag from memory.** `agy` has no `--output-format json`; the
+  real interface is `agy -p "<prompt+diff>"` (plain text, **no stdin path** — the diff must be embedded in
+  argv, so guard against E2BIG above ~256 KB). `codex exec "<prompt>"` takes the diff on **stdin** instead.
+  `scripts/cross-review.mjs` is the reference shape: `--version`-check + branch context-passing per CLI;
+  smoke-test by running it against a real PR and reading the output. *(2026-06-10, cross-agent-code-review
+  S1 — also: `git commit -- <paths> -m "msg"` fails because everything after `--` is a pathspec; put `-m`
+  first.)*
+  **A young foreign CLI can silently break its own contract on a MINOR version bump.** `agy`'s print mode
+  started (a) emitting nothing without an explicit `--model`, and (b) exiting **0 with empty stdout** on a
+  quota-exhausted model (the real error only appears in its own `--log-file`, never stdout/stderr) — so a
+  non-zero-exit check can't catch it, and the reviewer silently returned empty for weeks. Fixes that
+  generalize: pass `--model` explicitly, treat **empty output as failure** (not success), give the model a
+  primary→fallback pair, and make the version check **fail loud** (a stderr-only warn gets ignored, which
+  is how the bad bump shipped). *(2026-06-23, devops-reliability-cleanup S4 — pinned `agy` 1.0.10.)*
+  **A CLI authed by an interactive/OAuth login is NOT free to run in CI — confirm a portable
+  non-interactive credential path AND its cost before automating it in a runner.** `codex` can auth
+  headlessly with a token-billed API key; `agy` has **no headless auth at all**. Automating a root-repo
+  tool from an app-repo workflow also costs a cross-repo PAT. That bill wasn't worth it for an advisory aid
+  that never gates, so the cross-review command shipped **local-only** (run manually on every PR) rather
+  than as a CI job. *(2026-06-22, cross-agent-review-always.)*
+  **A cloud Routine runs *as you*, which sidesteps that CI foreign-CLI auth blocker — the unlock for
+  "auto-review on every PR."** A Claude Code Routine is a full cloud session under your own claude.ai
+  identity, so a GitHub-triggered review routine gets auto-on-every-PR with zero CI-credential cost (as the
+  Claude family, not codex/agy). Three facts that only surfaced live: **(1)** a GitHub trigger is one
+  specific action OR all-actions — you cannot combine `opened` + `ready_for_review`; pick whichever matches
+  how PRs actually land (`opened` misses a draft→ready flip). **(2)** the Pro daily cap (5/day) bites
+  **scheduled** runs only — GitHub-event/API triggers have separate hourly caps, so a GitHub-triggered
+  review is effectively uncapped for solo volume. **(3)** routines have **no built-in failure alert** — a
+  green run only means the session exited cleanly, not that the task succeeded, so route the actionable
+  output somewhere you already watch (a PR comment) rather than trust silence. Keep any routine
+  advisory-only/never-a-required-check (a plain PR comment carries no commit-status, so it structurally
+  can't gate). *(2026-06-24, routines-enablement.)*
+  **A second single-purpose cross-agent script should share the rail, not fork it.** The planning-panel
+  script (a second opinion on a *plan* instead of a PR) reused ~90% of cross-review by extracting the
+  family-agnostic plumbing (version checks, the per-CLI runners, the agy argv size-cap) into one shared
+  `scripts/lib/cross-agent-cli.mjs`, keeping only each script's framing/output local. Give a runner an
+  `opts.soft` mode so a non-essential pass degrades to a stderr note instead of dying; don't import a
+  script with a `main()` that runs at module load — extract to a sibling lib both import. After `git mv`-ing
+  a module, grep stale path refs in header comments + docs too, not just imports. *(2026-06-13,
+  cross-agent-planning-panel S1.)*
+  **To surface contradictions between two single-pass critiques, one constrained synthesis pass beats a
+  debate loop.** Print both critiques verbatim, then one pass that lists only genuinely *opposite-action*
+  contradictions (else "complementary") — stays single-pass (no back-and-forth, the #1 token sink) and
+  degrades gracefully (a failed synthesis still prints the raw critiques). *(2026-06-13,
+  cross-agent-planning-panel S1.)*
 
 - **`process.exit()` truncates piped stdout — flush synchronously, or you ship a tool that works to a file
   but crashes in a pipe.** A Node script that did `console.log(json); process.exit(0)` produced *valid* output
@@ -334,6 +283,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   option — no pre-add needed); and the **SQL `query_data_sources` mode needs a Business+ plan** (else board
   verification is a visual eyeball, not a programmatic assert). *(2026-06-23, notion-board-hygiene S2 —
   `roadmap-to-notion.mjs` + the `Marketplace Roadmap` DB.)*
+- **A heuristic path-existence check in this monorepo needs every known app root, not just the repo
+  root.** `apps/miyagisanchez` and `apps/backend` are separate, gitignored repos here, so a doc bullet's
+  `lib/x.ts` reference is relative to one of *them*, not the monorepo root — checking only the root
+  produced ~50 false "dead path" positives before the fix; checking all known app roots dropped it to a
+  handful of genuine edge cases. *(2026-07-02, doc-hygiene-learnings-sweep S1.2 — `scripts/doc-hygiene.mjs`.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
@@ -364,29 +318,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 
 ## Repo & deploy hygiene
 - **Deleting a git branch does NOT delete its Vercel preview deployments — Vercel retains every deployment
-  forever.** 73 merged/dead branches had left **150 orphan preview deployments** on the project (469 total →
-  319 after pruning). Pair branch cleanup with a preview prune: `node scripts/vercel-prune-previews.mjs`
-  (dry-run by default; `--apply`, `--age N`, `--keep-branch <open-PR branch>` — its preview is the live review
-  target; `--project`). It deletes only `target!=='production'` — production deployments are the rollback
-  history and are never touched. Token from `VERCEL_API_TOKEN` env or the local `vercel login`. *(2026-06-14,
-  repo-hygiene chore.)*
+  forever.** 73 merged/dead branches had left **150 orphan preview deployments** (469→319 after pruning).
+  Pair branch cleanup with a preview prune: `node scripts/vercel-prune-previews.mjs` (dry-run by default;
+  `--apply`, `--age N`, `--keep-branch <open-PR branch>`, `--project`) — it only deletes
+  `target!=='production'`. *(2026-06-14, repo-hygiene chore.)*
 - **A generated doc needs ONE authoritative source + a `--check` gate, or it silently drifts.** `BUILD-ORDER.md`
-  (and its Notion projection) drifted because epic status was inferred from brittle prose (story-tick regex +
-  `Status:` line) AND a *seed* frontmatter field two seeds could both claim (last-write-wins by readdir order).
-  Fix: SSOT = **the epic README's frontmatter `status:`** (set at epic close), read by both generators, with
-  the prose/retro derivation kept only as a fallback + surfaced as an advisory drift signal; the board is a
-  **generated view, never hand-edited**, guarded by `build-order.mjs --check` in CI (`build-order-guard.yml`).
-  When a doc is generated from inputs, give it a single declared source and a freshness gate — don't let two
-  heuristics vote. The story counter also has to match the *real* heading shapes agents write (`## US-1`,
-  `### Story 1.1`, letter IDs `C.1`/`B1.1`), not just the template's — but since status is now frontmatter-
-  driven, a counter slip is only a cosmetic progress count, never a wrong status. *(2026-06-14, branch-cleanup
-  + status-reconciliation chore.)*
+  drifted because epic status was inferred from brittle prose AND a *seed* frontmatter field two seeds could
+  both claim (last-write-wins). Fix: SSOT = **the epic README's frontmatter `status:`**, read by both
+  generators (prose/retro kept only as an advisory fallback signal); the board is a **generated view, never
+  hand-edited**, guarded by `build-order.mjs --check` in CI. When a doc is generated from inputs, give it one
+  declared source and a freshness gate — don't let two heuristics vote. *(2026-06-14, branch-cleanup +
+  status-reconciliation chore.)*
   **Corollary — editing an epic README's `status:` frontmatter mid-PR is itself a trigger for the guard.**
-  Any Roadmap PR that flips `status:` (not just prose) makes the committed `BUILD-ORDER.md` stale, and
-  `build-order-guard.yml` (`node scripts/build-order.mjs --check`) reds on the PR — expected behavior, not a
-  false positive, but easy to be surprised by on an otherwise-trivial docs PR. Fix: re-run
-  `node scripts/build-order.mjs` and commit the regenerated file in the same PR whenever a story touches epic
-  status. *(2026-07-01, model-split-sonnet5-execution S1 — PR #47 caught by the guard on its own status flip.)*
+  Any Roadmap PR that flips `status:` makes the committed `BUILD-ORDER.md` stale and the guard reds —
+  expected, not a false positive. Fix: re-run `node scripts/build-order.mjs` and commit the regenerated file
+  in the same PR whenever a story touches epic status. *(2026-07-01, model-split-sonnet5-execution S1.)*
 
 ## Build & QA
 - **The deterministic gate is non-negotiable and cheap:** `tsc --noEmit` + `next build` + the
@@ -467,44 +413,25 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   then run `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npm run test:e2e`. Otherwise catalog/homepage
   tests fail with `fetch failed` / `ECONNREFUSED`, which looks like a regression but is just Medusa
   not running. *(Support Widget epic, 2026-06-05.)*
-- **A raw-color guard keeps a tokenized surface tokenized.** Once components are moved onto semantic
-  CSS tokens, add a pure-logic `api` spec that scans the customer-facing dirs and **fails CI on a
-  newly-introduced raw hex** (allow-list the legit hardcoded contexts: email — clients strip CSS vars
-  — print/PDF, OG image, admin, sandbox). Cheapest way to stop the foundation eroding; coverage
-  accretes for free. **It bites brand-new client islands too, and only CI catches it:** a fresh `#fff`
-  in a new PDP lightbox passed local tsc/build/its-own-spec but the guard failed in CI — for white-on-dark
-  chrome reuse the existing `var(--fg-inverse)` (resolves to `#ffffff`), the token the surrounding gallery
-  already used. *(#4 design-token foundation, `e2e/design-token-foundation.spec.ts`, 2026-06-07; reconfirmed
-  2026-06-10 PDP image gallery.)* **It also false-positives a `#`-prefixed NUMBER that isn't a color** — a
-  comment referencing "WebKit **#279904**" (a bug id) reads as a 6-hex and failed CI green-everywhere-else.
-  Write external bug/issue ids without the `#` ("WebKit bug 279904") in customer-facing source. *(2026-06-22,
-  pwa-glass-nav S2.1.)* **The same shape is a general anti-erosion guard, not just for color:**
-  pure offender-finders in a `lib/` module + an `api` spec (real-tree assertion + in-memory negative
-  fixtures) also enforce an **anti-monolith** rule — fail CI if any component in a refactored dir exceeds a
-  line cap, or if a banned filename reappears. Set the cap above the current largest file with headroom
-  (e.g. settings cap 1,200 vs largest section ~1,063 vs the deleted ~4,076-line monolith). *(2026-06-10,
-  Shop Settings refactor S4 — `lib/shop-settings/monolith-guard.ts`, `e2e/shop-settings-no-monolith.spec.ts`.)*
-  **When the guard trips because an orchestrator file has crept up to the cap, DECOMPOSE — don't bump the
-  cap (that's the erosion the guard exists to stop).** An orchestrator that composes many sub-sections
-  (Canal.tsx) drifts up over successive epics; the day a new feature tips it over, extract — the new
-  feature's section AND, to reclaim headroom, an existing sibling (extract the new block's *twin* so the
-  file keeps a parallel structure). CI caught Canal at 1,196/1,200: adding the subdomain buy/switch section
-  needed extracting *both* `SubdomainSection` and (verbatim, behavior-preserving) the existing
-  `DomainPaywallUpsell`, dropping Canal to 1,117. A near-cap file means the next feature pays a small
-  extraction tax — that's the guard working, not a blocker. *(2026-07-01, subdomain-pricing Canal UI — fe #149.)*
-  **And it converts a one-time "grep to zero" cleanup into a permanent invariant — after consolidating N bespoke
-  back-links onto a shared `<SellerBreadcrumb>`, an fs-guard scanning the surface dir for the banned strings
-  (`← Panel` / `← Mi tienda` / `← Volver al panel`) fails CI if any reappears. It earned its keep instantly: the
-  first sweep missed **four** settings sections carrying their own inline `← Volver al panel` save bars (separate
-  from the shared `SectionSaveBar`); the guard surfaced them as stragglers. Use the repo's path idiom
-  `fileURLToPath(new URL('..', import.meta.url))` (the Playwright api runner is ESM — bare `__dirname` throws).
-  *(2026-06-23, seller-nav-consolidation S2 — `e2e/seller-breadcrumb.spec.ts`.)* **Reconfirmed once more on a
-  net-new feature surface:** a fresh client island's WhatsApp-green `#25D366` button + a `#c00` error-text
-  fallback, plus a print sell-sheet's literal `@media print` hexes, all passed local tsc/build but went red on
-  the preview. Reuse the existing tokens (`--provider-whatsapp`, `--danger`, `--fg-inverse`); add a *genuine*
-  print surface to `guardExcludedFiles` (same email/print-export rationale — print needs literal colors). The
-  rule generalizes: **whenever you add a brand color or a print stylesheet, expect the guard and tokenize first.**
-  *(2026-06-30, promoter-program S4 — `PromoterCloseClient.tsx` + `vende/promotor/sell-sheet`.)*
+- **A raw-color guard keeps a tokenized surface tokenized.** Once components move onto semantic CSS
+  tokens, add a pure-logic `api` spec that scans customer-facing dirs and **fails CI on a newly-introduced
+  raw hex** (allow-list legit hardcoded contexts: email, print/PDF, OG image, admin, sandbox) — cheapest
+  way to stop the foundation eroding. **It bites brand-new client islands too, and only CI catches it:** a
+  fresh `#fff` in a new PDP lightbox passed local tsc/build but failed CI; reuse the existing token
+  (`var(--fg-inverse)`) instead. *(design-token-foundation, 2026-06-07 — reconfirmed on new client islands
+  each of 2026-06-10, 2026-06-22, 2026-06-30.)* **It also false-positives a `#`-prefixed NUMBER that isn't
+  a color** (e.g. a bug id like "WebKit #279904") — write external bug ids without the `#` in
+  customer-facing source. *(2026-06-22, pwa-glass-nav S2.1.)*
+  **The same shape generalizes beyond color, to an anti-monolith guard:** a pure offender-finder `lib/`
+  module + an `api` spec (real-tree assertion + in-memory negative fixtures) fails CI if a component in a
+  refactored dir exceeds a line cap, or a banned filename/back-link string reappears — set the cap above
+  the current largest file with headroom. *(2026-06-10, Shop Settings refactor — `monolith-guard.ts`.)*
+  **When the guard trips because an orchestrator file crept up to the cap, DECOMPOSE — don't bump the cap**
+  (that's the erosion it exists to stop): extract the new feature's section AND an existing sibling to
+  reclaim headroom, keeping the file's parallel structure. *(2026-07-01, subdomain-pricing Canal UI.)*
+  **And a grep-to-zero cleanup (e.g. consolidating bespoke back-links onto one shared component) becomes a
+  permanent invariant the same way** — an fs-guard scanning for the banned strings catches stragglers a
+  first sweep missed. *(2026-06-23, seller-nav-consolidation S2.)*
 - **A flag-gated route guard must (a) assert BOTH flag states and (b) gate auth BEFORE any config/secret
   check.** Two coupled traps that only surface on the SSO-gated preview, where `promoter.enabled` is ON (a
   shared-Flagsmith flip flips the preview eval too) and money/secret env vars are prod-only (unset). (a) An
@@ -590,102 +517,67 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   A merged build with stale docs taxes the next groom. *(2026-06-10, #6 doc close-out during nav-reorg groom.)*
 - **The cross-agent advisory review (`scripts/cross-review.mjs --agent codex`) earns its keep as a cheap
   pre-merge second opinion — run it on a GREEN PR, treat it as advisory, apply the should-fixes, ignore the
-  noise.** First real use (PR #8, backend-staging — shell/infra, not app code): one `codex exec` single pass
-  found **no blocking** items but three legit should-fixes (a script that warned-and-exit-0 instead of
-  failing on a missing required secret; an inconsistent CORS example; a non-idempotent trigger create) plus
-  two nits — all worth fixing, none a false block. Operating notes that held: it's **advisory-only** (never
-  gates — CI + the risk-tier rule still decide), **single-pass** (no iterate-to-converge loop, our #1 token
-  sink), and **codex is the default** because it takes the diff on **stdin** (handles large PRs), whereas
-  `agy` has no stdin and a ~256 KB argv cap. Cheapest insertion point: right after the deterministic gate is
-  green and before you ask for the merge. *(2026-06-11, backend-staging S1 — first run of the cross-agent
-  flow on a real PR; complements the build-time CLI-driving note under Tooling gotchas.)* **Decline (with a
-  written reason) any should-fix that would diverge from an established cross-cutting convention if fixed in
-  isolation — that's "noise," not a fix.** On neighborhood-pulse S2, codex flagged the agent `baseUrl` being
-  built from the `Host` header; but that's the convention across the *whole* UCP surface (`manifest`, `mcp`,
-  `checkout-session`), so patching only the new route creates inconsistency for no security gain (read-only
-  link gen, not a boundary) — record it as a possible cross-cutting follow-up instead. Apply the genuine
-  should-fixes (there: a NaN-safe limit clamp) + cheap nits, and put the decline + rationale in the fix commit
-  so the next reviewer sees it was considered. *(2026-06-13, neighborhood-pulse S2.)* **The Antigravity path
-  works the same way and caught a real should-fix the author's context-bias hid: a helper cloned from an existing
-  one inherits its latent bug.** `ensureUrlProtocol` was modelled faithfully on `lib/supply.ts` `canonicalSourceUrl`,
-  whose `raw.startsWith('http')` scheme test **false-positives a scheme-less domain that merely starts with "http"**
-  (`httpbin.org` → left protocol-less → broken relative link) and misses uppercase schemes; the cross-review flagged
-  it, fixed to `/^https?:\/\//i` + regression cases before merge. Lesson: **when you model a new helper on an existing
-  one, sanity-check its predicate against *your* input domain rather than copying it verbatim** — and run the
-  advisory cross-review on a green PR; it's cheapest right before asking for the merge. *(2026-06-21,
-  pdp-followups-cleanup S1.1 — `node scripts/cross-review.mjs <PR#> --agent antigravity --repo <app-repo>`.)*
-  **Corollary — when a predicate bug turns up, grep for every COPY of it, and relocate the pure logic to a
-  shared dependency-free module so copies can't re-diverge.** The follow-up sweep (PR #96) found the same
-  `startsWith('http')` bug in 3 more spots — incl. `SupplyClient.tsx cleanUrlForDisplay`, a hand-re-inlined copy
-  of `canonicalSourceUrl` that had drifted its own bug. Fix wasn't 4 isolated edits: the pure `canonicalSourceUrl`
-  moved to `lib/url.ts` (dependency-free, so the **client** paste UI can import it instead of re-inlining; the
-  server `lib/supply.ts` re-exports for back-compat), killing the duplication outright. A pure helper re-inlined
-  because its home module drags a heavy import (here `lib/supply.ts` → `./supabase`) is the classic drift seam —
-  give it a dependency-free home up front. (Left the UCP `catalog` origin default's `startsWith('http')` alone —
-  browser-controlled request origin, a separate baseUrl convention, not user-typed-data.) *(2026-06-21,
-  canonicalSourceUrl sweep — PR #96 `5925f1a`.)*
-  **Triage a foreign-family advisory review against the green gate before acting — its "blocking" calls can be
-  confident false positives on valid TS/CSS idioms.** On a green PR (tsc + build + CI all passing), the
-  Antigravity fallback (codex token revoked; Gemini quota-capped → GPT-OSS) flagged **two "blocking" build
-  errors that don't exist**: a `{ ...baseConfig(...), trustLine: copy.shared.heroTrustLine }` object spread-
-  then-override read as a *duplicate key* (it's the intended override — later key wins, no error), and a CSS-
-  module class declared **inside an `@media (min-width:…)` block** read as *undefined* (media-scoped rules are
-  exported too). Both are refuted by the green gate. The same pass also mis-claimed inline-set list styling was
-  "missing" and an in-file helper needed an import. **The review stays advisory** — confirm each finding against
-  the deterministic gate (a "blocking" item that contradicts a green `tsc`/`build` is almost always the
-  reviewer's miss, not a real bug), apply only the genuine should-fix (here a cheap `aria-live="polite"` on the
-  copy button for SR feedback), and record the triage in the PR comment so the decline rationale is visible.
-  Lower-capability fallback models raise the false-positive rate — weight their confidence accordingly.
-  *(2026-06-26, seller-landing-launch-polish S2 — PR #134.)*
-- **To make a curated/explicit subset authoritative over a "freshest-N" read without un-static-ing an ISR page,
-  fetch the subset via its own metadata filter and UNION it into the pool (dedupe by id, degrade per-fetch), and
-  mirror the route's existing filter convention so a reviewer's "filtered after pagination" flag is a misread to
-  decline.** The homepage Selección showed admin pins only when they fell inside the freshest-24 pool; an older
-  pin couldn't render. Fix: a backend `?featured=true` read-filter (mirroring the in-memory brand/transmission
-  filters — `take:2000` fetch-all → **filter** → **paginate**, so the filter is *before* pagination and misses
-  nothing) + a frontend union of `?featured=true` into the freshest-24 in the single cached pool seam. Two
-  durable corollaries: **(1)** the union/filter wrappers must degrade on a *throw*, not just `!res.ok` — a network
-  reject or malformed JSON (the cross-repo deploy-lag case) would otherwise reject `Promise.all` and break the
-  static prerender despite a "never throws" comment (wrap each fetch in try/catch → `[]`). **(2)** when the
-  cross-agent reviewer calls the in-memory filter "after pagination → results missed," check the actual fetch
-  shape before acting — if the route loads all rows then filters then paginates (this codebase's catalog
-  convention), it's correct; decline with the Step-1/4/6 trace and log the real ceiling (`take:2000`) as a
-  pre-existing route-wide follow-up, not a per-filter patch. *(2026-06-25, seleccion-pins-authoritative S2 —
-  BE #40 `aaab981` `isFeaturedPin` + FE #126 `8c4b6a7` `unionById`; both corollaries came from the codex review.)*
-- **VALIDATE-FIRST: confirm a live data source exists before scoping a signal/UI that displays it; if it doesn't,
-  ship the static/degraded-but-honest version, defer the dynamic part, and write the gap into the PR — never
-  invent the data.** A "check the model before you build the view" discipline, the read-side mirror of the
-  Medusa-first "grep the route before scoping a backend story" rule. In the PDP redesign it fired three times and
-  saved three rabbit holes: S2.1 had **no seller rating / response-time / ventas source** (the legacy buyer-trust
-  scorer undercounts Medusa-order sellers → would show "0 ventas") so it shipped the static capsule and deferred
-  the dynamic items; S5.3 found the **paid-ticket QR isn't cleanly resolvable from the PDP read** (it lives on the
-  buyer's order, issued by the payment webhook) so it shipped display + a "Ver mi boleto" link, not an inline QR,
-  and deferred aforo/tiers (no listing-linked capacity source); rentals showed an **exact estimate + seller
-  coordination** because the generic checkout charges one unit and can't honor nights + deposit. Each gap was
-  stated in the PR and the smoke walkthrough, not papered over. The failure mode this avoids is a UI that looks
-  done but renders invented or wrong numbers. *(2026-06-21, pdp-redesign retro — S2.1 / S5.3 / S4.2.)*
+  noise.** First real use found no blocking items but several legit should-fixes and nits — all worth
+  fixing, none a false block. It's **advisory-only** (never gates), **single-pass** (no iterate-to-converge
+  loop, our #1 token sink), and **codex is the default** because it takes the diff on stdin (handles large
+  PRs), whereas `agy` has no stdin and a ~256 KB argv cap. Cheapest insertion point: right after the
+  deterministic gate is green, before asking for the merge. *(2026-06-11, backend-staging S1.)*
+  **Decline (with a written reason) any should-fix that would diverge from an established cross-cutting
+  convention if fixed in isolation — that's "noise," not a fix.** Codex once flagged an agent `baseUrl`
+  built from the `Host` header, but that's the convention across the whole UCP surface, so patching only
+  the new route would create inconsistency for no security gain — recorded as a possible cross-cutting
+  follow-up instead, while the genuine should-fixes still landed. *(2026-06-13, neighborhood-pulse S2.)*
+  **The Antigravity path works the same way and catches the same class of bug: a helper cloned from an
+  existing one inherits its latent bug.** `ensureUrlProtocol`, modelled on `canonicalSourceUrl`, inherited
+  its `raw.startsWith('http')` scheme test — which **false-positives a scheme-less domain that merely
+  starts with "http"** (`httpbin.org`) — caught pre-merge and hardened to `/^https?:\/\//i`. When you model
+  a new helper on an existing one, sanity-check its predicate against *your* input domain rather than
+  copying it verbatim. *(2026-06-21, pdp-followups-cleanup S1.1.)* **Corollary — when a predicate bug turns
+  up, grep for every COPY of it and relocate the pure logic to a shared dependency-free module** so copies
+  can't re-diverge; a follow-up sweep found the same bug in 3 more hand-re-inlined copies, fixed by moving
+  the pure helper to a dependency-free `lib/url.ts` that both server and client import. A pure helper gets
+  re-inlined when its home module drags a heavy import — give it a dependency-free home up front.
+  *(2026-06-21, canonicalSourceUrl sweep.)*
+  **Triage a foreign-family advisory review against the green gate before acting — its "blocking" calls can
+  be confident false positives on valid TS/CSS idioms.** A quota-degraded Antigravity fallback flagged two
+  "blocking" build errors that don't exist (an intended object-spread override misread as a duplicate key;
+  a CSS-module class inside an `@media` block misread as undefined) — both refuted by the already-green
+  gate. **A "blocking" item that contradicts a green `tsc`/`build` is almost always the reviewer's miss, not
+  a real bug** — apply only the genuine should-fix, and record the triage in the PR comment. Lower-
+  capability fallback models raise the false-positive rate. *(2026-06-26, seller-landing-launch-polish S2.)*
+- **To make a curated/explicit subset authoritative over a "freshest-N" read without un-static-ing an ISR
+  page, fetch the subset via its own metadata filter and UNION it into the pool** (dedupe by id, degrade
+  per-fetch), mirroring the route's existing filter convention. The homepage Selección showed admin pins
+  only when they fell inside the freshest-24 pool; fix: a backend `?featured=true` read-filter (fetch-all →
+  filter → paginate, so nothing is missed) + a frontend union into the cached pool seam. Two corollaries:
+  **(1)** the union/filter wrappers must degrade on a *throw*, not just `!res.ok` — a network reject or
+  malformed JSON would otherwise reject `Promise.all` and break the static prerender (wrap each fetch in
+  try/catch → `[]`). **(2)** if a reviewer calls an in-memory filter "after pagination → results missed,"
+  check the actual fetch shape first — if the route loads all rows then filters then paginates, it's
+  correct; decline with the trace instead of patching. *(2026-06-25, seleccion-pins-authoritative S2.)*
+- **VALIDATE-FIRST: confirm a live data source exists before scoping a signal/UI that displays it; if it
+  doesn't, ship the static/degraded-but-honest version, defer the dynamic part, and write the gap into the
+  PR — never invent the data.** The read-side mirror of "grep the route before scoping a backend story." In
+  the PDP redesign this fired three times and saved three rabbit holes: no seller-rating source (shipped a
+  static capsule, deferred the dynamic item), a paid-ticket QR not resolvable from the PDP read (shipped a
+  link instead of an inline QR), and rentals needing seller coordination (generic checkout can't honor
+  nights + deposit). Each gap was stated in the PR, not papered over — a UI that looks done but renders
+  invented numbers is the failure mode this avoids. *(2026-06-21, pdp-redesign retro.)*
 - **On a money/integration path, INSTRUMENT the failure before you patch it — a prior LEARNINGS note is a
-  hypothesis to test, not a diagnosis.** A `catch` that maps every error to a benign empty state ("not minted
-  yet") hides the one fact you need; replace it with a **classified, sanitized** surface — `kind` +
-  safe `type`/`code`/`param`/message that never echoes a secret — and let one real click name the bug. On the
-  `miyagisan` mint, the tempting prior (a LEARNINGS note about the Stripe v22 `promotion`-hash shape) was
-  **wrong**; surfacing the real `param` proved it in ~10 s — the cause was a **46-char coupon `name`** over
-  Stripe's 40-char cap, nothing to do with the promo-code shape. Patching on the prior would have changed the
-  wrong line on a live-money surface. Corollary — **distinguish credential failures from request failures**:
-  `401`/authentication ⇒ key, `403` ⇒ scope, `invalid_request`/`param` ⇒ **your params, not the key**; lumping
-  them as "unknown" nearly re-scoped the whole fix as a "creds fix." Same family as "a write whose result nobody
-  checks can silently die" — but for *reads of an error*, not writes. *(2026-06-23, domain-coupon-mint-fix —
-  PRs #118/#119/#120; the pure classifier in `lib/domain-coupon.ts`.)*
-  **Same discipline applies to a WRITE/agent path: trace the actual code path end-to-end before scoping "agents
-  can do X," because two front doors that look equivalent may not be.** Scoping "agents buy N event tickets over
-  UCP" assumed the agent checkout issues tickets like the web buyer — but tracing showed the **web** path is
-  Medusa-cart-backed (the Stripe/MP webhook's *Medusa branch* completes the cart → `issuePaidTicketsForOrder`),
-  while the **agent** path (`UCP create_checkout` → `/api/stripe/checkout` | `/api/mp/checkout`) builds a *raw*
-  session with **no `cart_id`**, hitting the webhook's *legacy branch* — so it issues **0 tickets even at qty 1**.
-  The agent-parity story sat on a foundation that didn't exist. Surfaced to Daniel → re-scoped to **surface
-  parity** (echo/clamp quantity) with issuance **deferred**, not silently built on sand. `grep` which branch a
-  webhook takes (cart-backed vs legacy) before promising an agent surface reaches the same end-state.
-  *(2026-06-22, events-quantity-selector S1.3.)*
+  hypothesis to test, not a diagnosis.** A `catch` that maps every error to one benign empty state hides
+  the fact you need; replace it with a classified, sanitized surface (`kind` + safe `type`/`code`/`param`)
+  and let one real click name the bug. On the `miyagisan` mint, the tempting prior (the Stripe v22
+  `promotion`-hash shape) was **wrong** — the real cause was a 46-char coupon `name` over Stripe's 40-char
+  cap. Corollary — **distinguish credential failures from request failures**: `401` ⇒ key, `403` ⇒ scope,
+  `invalid_request`/`param` ⇒ your params, not the key; lumping them as "unknown" nearly re-scoped the
+  whole fix as a "creds fix." *(2026-06-23, domain-coupon-mint-fix.)*
+  **Same discipline applies to a WRITE/agent path: trace the actual code path end-to-end before scoping
+  "agents can do X," because two front doors that look equivalent may not be.** Scoping "agents buy N event
+  tickets over UCP" assumed agent checkout issues tickets like the web buyer — but the **web** path is
+  Medusa-cart-backed while the **agent** path builds a raw Stripe/MP session with no `cart_id`, hitting the
+  webhook's legacy branch and issuing **0 tickets even at qty 1**. Re-scoped to surface parity
+  (echo/clamp quantity) with issuance deferred, not silently built on sand. *(2026-06-22,
+  events-quantity-selector S1.3.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
@@ -710,58 +602,37 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
 
 ## Architecture
-- **A shared app shell can be dynamic for *routing*, not just auth — making a page static needs a route split,
-  not just removing its `currentUser()`.** The marketplace homepage cold-started ~30 s as a per-request Vercel
-  function; dropping the page's `currentUser()` was **necessary but not sufficient**, because the shared
-  `layout.tsx`/chrome read `headers()` (channel detection: custom-domain/subdomain/embed/seller-mode) **and**
-  Clerk's **server** `<Show>` calls `auth()`→`headers()` — either forces the whole subtree dynamic. The fix was a
-  **route-group split** (a header-free static `(site)` tree vs a dynamic `(shell)`/white-label tree) + **client-
-  gating** the auth-dependent chrome (a client `AuthShow`/`useAuth`, defaulting signed-out so the static HTML is
-  the anonymous render). Diagnose *which* dynamic API traps a page with `export const dynamic = 'error'` — the
-  build error names it (here Clerk `auth()` via the chrome, not the page). URLs/SEO stay byte-identical because
-  route groups + internal rewrites are URL-transparent. *(2026-06-22, marketplace-static-shell S1/S2.)*
-- **Restore "compute on GCP / no Vercel function" personalization as client islands hitting a Cloud Run endpoint —
-  but the endpoint's CORS must allow the calling origin or the island silently degrades (so the authed smoke is a
-  prod-origin smoke).** After a page is made static, signed-in data returns as a client island that gets a Clerk
-  JWT client-side (`useAuth().getToken()`) and does **one fetch** (not a poll) to a JWT-verified Cloud Run read
-  endpoint, rendering nothing during SSR/loading/signed-out/error so the static page never blocks. Gotcha: the
-  endpoint's `Access-Control-Allow-Origin` allowed the **prod** origin only, so the fetch is **CORS-blocked on a
-  `*.vercel.app` preview** → the island degrades to nothing there. So the positive "it hydrated" browser smoke
-  can't run on preview/CI — **gate the strict assertion behind an env flag** (`MS_TEST_*_STRICT=1`) for the prod
-  run and keep CI lenient (assert "≤1, never a false pass"). And a client island reading **another service's wire
-  JSON** must be defensive at the render boundary — guard `Intl.NumberFormat` against a bad currency code (a
-  `RangeError` blanks the whole client render) and `?? 0` numeric fields. *(2026-06-22, marketplace-static-shell
-  S3/S4 — codex+agy cross-review caught a stale-personalization leak on sign-out/account-switch: clear island
-  state on the unauth transition **and** add `userId` to the effect deps, else a switch keeps the prior user's data.)*
-- **To feed a static/server shell component per-page data, thread it through a client *context* island a server
-  page renders — and make the unmount cleanup compare-and-clear, not a blind null.** When a widget mounted in a
-  static `PlatformShell` (reads no request state) needs the *current page's* data (e.g. the navbar AI-handoff
-  card naming the product/shop on a PDP), don't make the shell dynamic: mount a tiny client `Context` provider in
-  the `(shell)` layout, have each server page render a **render-null `'use client'` setter** (`<SetAgentContext
-  title=… />`) that `useEffect`-sets the value, and let the widget consume it — degrading to a URL/prop-only
-  default when unset (a spec should assert the no-details output is byte-identical to the prior behaviour). The
-  trap the codex cross-review caught: a setter that does `return () => setValue(null)` on unmount **erases the
-  next page's value** during a client navigation, because the new page's island can set *before* the old one's
-  cleanup runs — so clear with a **functional `setState` guarded on identity** (`prev => prev === mine ? null :
-  prev`). And the comment must say the *consumer* (not the provider) is absent on the branches that don't render
-  the widget — the provider wraps all of them. The render-level "did it actually name the product?" check needs a
-  real browser (the card is a JS portal), so it's an anonymous **`*.browser.spec.ts`** off an `MS_TEST_*` fixture,
-  not the `api` gate. *(2026-06-26, contextual-agent-handoff S2 — `AgentContext`/`SetAgentContext`; `withDetails`
-  fallback spec; fix `347871b`.)*
-- **Client-side gating is how you add a site-wide third-party loader (GTM/analytics/pixels) without
-  un-static-ing a static shell.** After a homepage is made static (route-group split + no `headers()`), the
-  reflex "drop a `<Script>` in `layout.tsx`" re-introduces a per-request decision only if you gate it on the
-  server. Instead **mirror the server channel rule from `window.location`** in a *pure, unit-tested* gate
-  (`lib/analytics-gating.ts shouldLoadAnalytics({hostname,pathname})` — reusing `shopSlugFromHost` so the
-  subdomain rule can't drift from the real channel) and **inject from a `useEffect`** in a `'use client'`
-  island mounted in the static root layout. `next build` keeps `/` at `○`; the loader still decides per
-  host/path at runtime; the env id (`NEXT_PUBLIC_GTM_ID`) is build-inlined, not a header read. Corollary:
-  **a JS-only, env-gated side effect (script injection) isn't coverable by the `api` gate** — pair the pure
-  decision (unit spec) + an SSR **marker** (proves the island mounted) with an **opt-in `*.browser.spec.ts`
-  gated behind an env flag** (`MS_TEST_GTM_ID`) that asserts the script actually loads on an eligible page
-  and not on `/embed/*`; it skips cleanly in CI, so the real-firing smoke stays honestly owed to Daniel.
-  *(2026-06-22, site-wide-analytics-gtm — single GTM container `GTM-MWHVLJ3M`, GA4 + Clarity as tags inside
-  GTM; Clarity had been created but never loaded — 1 session/30d.)*
+- **A shared app shell can be dynamic for *routing*, not just auth — making a page static needs a route
+  split, not just removing its `currentUser()`.** The marketplace homepage cold-started ~30s as a
+  per-request Vercel function; dropping `currentUser()` was necessary but not sufficient, because the
+  shared `layout.tsx`/chrome read `headers()` (channel detection) **and** Clerk's server `<Show>` calls
+  `auth()`→`headers()` — either forces the whole subtree dynamic. Fix: a **route-group split** (header-free
+  static `(site)` tree vs dynamic `(shell)`/white-label tree) + **client-gating** the auth-dependent chrome
+  (a client `AuthShow`, defaulting signed-out). Diagnose *which* dynamic API traps a page with `export const
+  dynamic = 'error'` — the build error names it. URLs/SEO stay byte-identical since route groups are
+  URL-transparent. *(2026-06-22, marketplace-static-shell S1/S2.)*
+- **Restore signed-in personalization on a static page as client islands hitting a Cloud Run endpoint —
+  but the endpoint's CORS must allow the calling origin or the island silently degrades.** The island gets
+  a Clerk JWT client-side, does one fetch (not a poll) to a JWT-verified read endpoint, rendering nothing
+  during SSR/loading/error so the static page never blocks. Gotcha: CORS allowing only the **prod** origin
+  silently degrades the island on any `*.vercel.app` preview — gate the strict "it hydrated" assertion
+  behind an env flag for the prod run, keep CI lenient. A client island reading another service's wire JSON
+  must also be defensive at the render boundary (guard `Intl.NumberFormat` against a bad currency code,
+  `?? 0` numeric fields). *(2026-06-22, marketplace-static-shell S3/S4 — cross-review caught a
+  stale-personalization leak on sign-out/account-switch: clear island state + add `userId` to effect deps.)*
+- **To feed a static shell component per-page data, thread it through a client *context* island a server
+  page renders — and make the unmount cleanup compare-and-clear, not a blind null.** Mount a tiny client
+  `Context` provider in the layout; each server page renders a render-null `'use client'` setter that
+  `useEffect`-sets the value, degrading to a URL/prop-only default when unset. The trap: a setter that does
+  `setValue(null)` on unmount can erase the **next** page's value during a client nav (the new page's
+  island can set before the old one's cleanup runs) — clear with a functional `setState` guarded on
+  identity instead. *(2026-06-26, contextual-agent-handoff S2.)*
+- **Client-side gating is how you add a site-wide third-party loader (GTM/analytics) without un-static-ing
+  a static shell.** Mirror the server channel rule from `window.location` in a pure, unit-tested gate, and
+  inject from a `useEffect` in a client island mounted in the static root layout — `next build` keeps `/`
+  static; the loader still decides per host/path at runtime. A JS-only, env-gated side effect isn't
+  coverable by the `api` gate — pair the pure decision (unit spec) + an SSR marker with an opt-in
+  `*.browser.spec.ts` behind an env flag. *(2026-06-22, site-wide-analytics-gtm.)*
 - **To make a static/ISR surface feel "alive" without un-static-ing it, seed a deterministic shuffle on the
   revalidate time-bucket — not per request.** A per-refresh shuffle needs a per-request function (forbidden on a
   static `○ /`), but a seed of `floor(now / REVALIDATE_MS)` (locked to the page's `revalidate` via the
@@ -837,29 +708,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   fallback branch was dead code; confirm that, then remove, instead of a big-bang swap. Lock it in with an
   anti-monolith guard spec (see Build & QA). *(2026-06-10, Shop Settings refactor — PRs #68/#69/#71/#74.)*
 - **Medusa-first pays off (AGENTS rule #1).** Model new commerce features on Medusa primitives before
-  reaching for Supabase/custom routes. *(Personalized Products shipped with **zero** new tables and
-  near-zero backend change — field definitions on product metadata, buyer payload on line-item
-  metadata, both flowing natively into the order. Custom-slugs the same: slug was already `unique()` on
-  the Medusa seller and `POST` already accepted it, alias history rode `seller.metadata` → 1-field
-  backend change, no migration. **Read the backend model + route first — it often re-scopes the epic
-  smaller.** Discovery Polish #3c is the limit case: a "data → query → UI" type-filter epic where the
-  backend `/store/listings` **already filtered** `listing_type`, the normalizer already emitted it, and
-  `/api/ucp/catalog` already forwarded it — so the planned "merge backend first" sprint evaporated and the
-  whole epic shipped **frontend-only, no Cloud Run deploy**. Grep the route + normalizer for the field
-  before scoping a backend story. 2026-06-08.)* **Corollary — a planned HIGH-risk *migration* story may
-  already be shipped; check the live schema + write path before authoring it.** Homepage-polish-b S4.4 was
-  scoped as "add `price_cents_at_save` to `marketplace_favorites` (DB migration → Daniel merges)"; a
-  five-minute check (the column was in the original table migration, `POST /api/favorites` already wrote it,
-  and a live `SELECT` showed every row populated) collapsed the whole HIGH story to verify-and-document — no
-  migration, no Daniel-merge gate, the sprint shipped frontend-only LOW. For any additive-column/backfill
+  reaching for Supabase/custom routes — Personalized Products shipped with zero new tables (field
+  definitions on product metadata, buyer payload on line-item metadata); custom-slugs was a 1-field backend
+  change (slug already `unique()` on the seller). **Read the backend model + route first — it often
+  re-scopes the epic smaller.** Discovery Polish #3c is the limit case: the backend already filtered
+  `listing_type` end-to-end, so the planned "merge backend first" sprint evaporated and the epic shipped
+  frontend-only. *(2026-06-08.)* **Corollary — a planned HIGH-risk migration story may already be shipped;
+  check the live schema + write path before authoring it.** Homepage-polish-b S4.4 was scoped as a DB
+  migration; a five-minute check showed the column + write path already existed and every row was
+  populated — collapsing the story to verify-and-document, LOW not HIGH. For any additive-column/backfill
   story, `git show` the table's migration + grep the write route, and confirm against the live DB before
-  treating it as unbuilt. *(2026-06-12, homepage-polish-b S4.4.)* **The mirror failure mode: a doc that calls a
-  migration "rollout pending" when it's already applied.** Neighborhood-pulse's README said the S1.1 MED
-  migration + opt-in seed "hadn't been run"; one live-Supabase check showed `web_visible` already present
-  (`NOT NULL DEFAULT false`) and the admin toggle live — so the only real residual was an *operational opt-in*,
-  not a deploy. Audit the live schema (supabase MCP `execute_sql` on `information_schema.columns`) before
-  believing *or re-opening* work a doc calls pending; a "🚧 rollout pending" line drifts as easily as a "✅
-  done" one. *(2026-06-13, neighborhood-pulse audit.)*
+  treating it as unbuilt. *(2026-06-12, homepage-polish-b S4.4.)* **The mirror failure mode: a doc that
+  calls a migration "rollout pending" when it's already applied.** Neighborhood-pulse's README claimed a
+  migration "hadn't been run" when a live-Supabase check showed the column already present and in use —
+  audit the live schema before believing (or re-opening) work a doc calls pending. *(2026-06-13,
+  neighborhood-pulse audit.)*
 - **Fix the call the *user* awaits, not the lib the plan named — a proxy makes the named module a red
   herring.** The plan said "time out `lib/envia.ts quoteShipments`," but tracing importers showed that
   frontend lib only feeds the *seller* ship route; the *buyer's* quote is a
@@ -950,33 +813,25 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   adds no protection and would trap a lapsed seller's escape hatch. Enumerate mutations by *which direction*
   they move the protected state. *(2026-06-11, custom-domain-paywall S1.)*
 - **A lifecycle/state machine lives best as a pure, next-free `lib/` helper** (derivation + transition
-  guards + copy), mirrored once in the backend normalizer for agents. One source of truth per side, and
-  a pure-logic spec proves invariants for free — e.g. summary ≡ CTA *because both call the one
-  `computeCheckoutTotal`*, and an illegal transition (`pending_payment → processing`) is rejected by the
-  guard. *(2026-06-07, checkout-state-hardening — `lib/manual-payment-state.ts`, `lib/checkout-total.ts`.)*
-  **A one-time redemption (door check-in / single-use ticket) is the same shape:** a pure
-  `lib/` token+redemption state machine makes double-redeem an illegal transition (free pure-logic
-  coverage), and the server gates **every** mutation that reaches the redeemed state (scan route *and* any
-  sibling write), not just the named scan route — the UI gate is courtesy. *(2026-06-08, events-and-ticketing
-  S3 — `lib/event-ticket-state.ts`.)*
-  **Per-UNIT issuance keys idempotency on the per-unit subject, never the line_item_id — and the replay set is
-  cron + BOTH webhooks.** "Issue one token per admission for a quantity-N line item" looks like a loop, but the
-  trap is the dedupe: all N units share one `line_item_id`, so a `line_item_id`-keyed match collapses N→1 on
-  replay. Key on `${line_item_id}#${k}` (the per-unit subject) and reuse a matched unit verbatim so a redeemed
-  ticket survives re-issue. The thing that makes it load-bearing: `issue` is re-called by the **reconcile-checkouts
-  cron AND both payment webhooks**, so "exactly N on replay, same tokens, no dupes" is the whole correctness story
-  — extract it to a pure seam and prove it (1→1 unchanged, 3→3, replay→3, redeemed-survives, legacy→1). For
-  back-compat, adopt a pre-`#k` legacy ticket (migrate its subject, reuse its token) rather than re-minting on a
-  late webhook replay of a pre-deploy order. *(2026-06-22, events-quantity-selector S1.1 —
-  `reconcileOrderTickets` in the backend `events-ticketing/_utils.ts`.)*
-  **Scope a new buy-N / quantity feature to its listing TYPE at the server clamp seam — or it leaks into every
-  commerce path.** The PDP only renders the event stepper for events, but the *enforcement* must live where the
-  quantity is honored (the `/checkout` page + the UCP route): without it, a crafted `?qty=N` / `quantity:N` buys
-  N of **any** listing once the flag is on. Gate the clamp on the type detector (`readEventDetails(listing)`), not
-  the UI. And guard the **untracked-inventory edge** in any quantity cap — `available == null` returning
-  `MAX_SAFE_INTEGER` invites money-math overflow / absurd carts; cap it (a tracked item's real stock stays
-  uncapped). Both caught by the codex cross-review on a green PR. *(2026-06-22, events-quantity-selector S1.2 —
-  `lib/ticket-quantity.ts`.)*
+  guards + copy), mirrored once in the backend normalizer for agents — a pure-logic spec proves invariants
+  for free (e.g. an illegal transition like `pending_payment → processing` is rejected by the guard).
+  *(2026-06-07, checkout-state-hardening.)* **A one-time redemption (door check-in / single-use ticket) is
+  the same shape:** a pure token+redemption state machine makes double-redeem an illegal transition, and
+  the server gates **every** mutation that reaches the redeemed state, not just the named scan route.
+  *(2026-06-08, events-and-ticketing S3.)*
+  **Per-UNIT issuance keys idempotency on the per-unit subject, never the line_item_id.** "Issue one token
+  per admission for a quantity-N line item" looks like a loop, but all N units share one `line_item_id`, so
+  a `line_item_id`-keyed dedupe collapses N→1 on replay. Key on `${line_item_id}#${k}` and reuse a matched
+  unit verbatim so a redeemed ticket survives re-issue. This is load-bearing because `issue` is re-called
+  by the reconcile-checkouts cron AND both payment webhooks, so "exactly N on replay, no dupes" is the
+  whole correctness story — extract it to a pure seam and prove it (1→1, 3→3, replay→3, redeemed-survives,
+  legacy→1). *(2026-06-22, events-quantity-selector S1.1.)*
+  **Scope a new buy-N / quantity feature to its listing TYPE at the server clamp seam — or it leaks into
+  every commerce path.** The PDP only renders the event stepper for events, but the *enforcement* must live
+  where quantity is honored (checkout + the UCP route): without it, a crafted `?qty=N` buys N of **any**
+  listing once the flag is on. Gate the clamp on the type detector, not the UI. And guard the
+  **untracked-inventory edge** — `available == null` returning `MAX_SAFE_INTEGER` invites money-math
+  overflow; cap it. *(2026-06-22, events-quantity-selector S1.2.)*
 - **A mirror-resync silently un-sets soft state the source-of-truth doesn't yet reflect — filter the excluded
   set before BOTH render AND resync.** A page that re-syncs a Supabase mirror *from* Medusa on every load
   (`syncSupabaseListingMirror` writes `status: listing.status`) will **clobber** any soft state the mirror holds
@@ -987,79 +842,62 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   drop a row, audit every place that writes the mirror *back* from that source, not just the read. Bonus: this is
   exactly what makes the frontend deploy-lag-safe (empty set once the backend omits the row → no-op).
   *(2026-06-10, seller bug sweep S2 — `lib/listing-lifecycle.ts`, `app/shop/manage/page.tsx`.)*
-- **A real flag layer now exists — `lib/flags.ts` in BOTH apps (`flagsmith-nodejs`, Flagsmith SaaS).**
-  Adding a kill-switch = create the flag in Flagsmith + one `isEnabled('...')` check at the seam. **Rules
-  baked in:** fail-open (a hardcoded `DEFAULT_FLAGS` + `isEnabled` never throws → feature stays on if
-  Flagsmith is down/absent); build the client at **module load** (no init race / leaked poll timer); set
-  `requestTimeoutSeconds:2, retries:0` (the SDK default is **3 retries × 10 s ≈ 33 s** — fatal on a hot
-  path). Enforce at the **single source of truth** (e.g. `resolveSellerPaymentMethods`) so UI + agents/UCP
-  + checkout are covered at once. The SDK is **not Edge-compatible** → `middleware.ts` flags need a
-  different mechanism (Edge Config). *(2026-06-06, Flagsmith epic — `checkout.stripe_enabled` shipped
-  front+back; rest of taxonomy deferred, cheap to extend on demand.)*
+- **The flag layer — `isEnabled('...')` in BOTH apps' `lib/flags.ts` — is fail-open by contract, whatever
+  backs it.** A hardcoded `DEFAULT_FLAGS` + an `isEnabled` that never throws means a feature stays on if the
+  store is down/absent; build any client at **module load** (no init race / leaked poll timer) and **bound
+  its refresh/timeout** explicitly (the original Flagsmith SDK's 3-retries×10s default was fatal on a hot
+  path — any store needs the same explicit cap). Enforce at the **single source of truth** (e.g.
+  `resolveSellerPaymentMethods`) so UI + agents/UCP + checkout are covered at once, and keep the reader
+  **Node-only** — `middleware.ts` runs on the Node runtime specifically so it can read a flag (the subdomain
+  paywall), so don't assume Edge compatibility. *(2026-06-06, Flagsmith epic — `checkout.stripe_enabled`
+  shipped front+back.)* **Superseded 2026-07-01** — the backend is now Supabase `platform_flags` (60s
+  in-process cache) behind the *same* `isEnabled()` interface; see `feature-flags-inhouse`. Every principle
+  above carried over unchanged; only the store moved.
   **Two flag polarities — pick the fail-open DEFAULT to match.** A **kill-switch** defaults `true` (feature
-  stays on if Flagsmith is down; disabling is the deliberate act). An **enablement** flag (e.g.
-  `domain.paywall_enabled`) defaults `false` ⇒ **ungated** (a flag outage can never trap users behind a new
+  stays on if the store is down; disabling is the deliberate act). An **enablement** flag (e.g.
+  `domain.paywall_enabled`) defaults `false` ⇒ **ungated** (a store outage can never trap users behind a new
   gate; enabling is the deliberate act). Comment the polarity in `DEFAULT_FLAGS`. **And a flag defined in
-  code is invisible until you CREATE it in Flagsmith** — absent ⇒ every read returns the code default, so
-  there's nothing to toggle in the dashboard until you add it (create it disabled in every environment, then
-  flip when ready). *(2026-06-11, custom-domain-paywall — the flag existed in code for days but Daniel "didn't
-  see it" in either environment until it was created via the Flagsmith API.)*
+  code is invisible until you CREATE it in the store** — absent ⇒ every read returns the code default, so
+  there's nothing to toggle until you add it (create it disabled in every environment, then flip when
+  ready). *(2026-06-11, custom-domain-paywall — the flag existed in code for days but Daniel "didn't see it"
+  until it was created.)*
 - **Extract a fan-out seam once, then project new events onto it.** A fire-and-forget
-  `dispatchToSeller(userId, {group, email?, push?, telegram?})` over a *pure, next-free* preference resolver
-  (`resolvePrefs`/`isChannelEnabled`/`telegramTarget`) made adding the money-path event later one line in the
-  event→group map + one call at the route — every channel + the prefs + the settings UI came for free. Defaults
-  baked into the resolver de-risk a HIGH surface: email/push **default-on** (absent row ⇒ no regression, no
-  backfill), a new realtime channel (Telegram) **opt-in default-off** (no flood). The dispatcher is
-  `server-only`; keep the gating in a next-free sibling so the Playwright `api` runner can unit-test the seam
-  every channel trusts. *(2026-06-07, Granular Notifications — `lib/notifications/{dispatch,preferences}.ts`;
-  `tgNotify`→`tgSend(chatId, …)` with admin default kept every `tg.*` byte-for-byte.)*
-  **The same seam projects onto a second *audience*, not just new events** — a sibling `dispatchToBuyer` reused
-  the resolver/tables/`/start` webhook/grid wholesale because #5 keyed everything by **person, not role**.
-  Make it cheap + migration-free: **audience-namespace the keys** (buyer rows = `buyer.*` `event_group` values
-  in the *same* prefs table → a buyer+seller keeps two independent grids, no new column); a **guest
-  fall-through** (no resolvable user id ⇒ send today's transactional email, skip prefs/push/TG) makes routing
-  money-adjacent mail through the new seam strictly additive (non-regressive); and one shared `telegram_links`
-  row per person drives a **per-audience unlink derived from prefs** (`audienceTelegramInUse` — delete the row
-  only when the *other* audience has no enabled telegram pref), so neither side's disconnect kills the other.
-  The webhook needed **zero** logic change (only audience-neutral copy) because it already bound the chat by
-  `clerk_user_id`. *(2026-06-07, Buyer Notifications #5b — `dispatchToBuyer`, `buyer-messages.ts`.)*
-- **Notify the *recipient*, not the actor — and resolve them from the data, not the session.** A buyer-authed
-  route (`report-payment`) still has to ping the *seller*: resolve the seller from the order itself (Medusa:
-  `GET /store/buyer/me/orders/:id` → embedded `marketplace_shops.clerk_user_id`; legacy: the order-mirror join),
-  best-effort, durable write + admin nudge unaffected if it fails. Corollary: **"complete the lifecycle" ≠
-  "notify on every transition"** — `payment_confirmed`/ship/deliver are *seller-self-triggered*, so notifying the
-  seller of their own click is noise. Wire the genuinely buyer-/system-triggered events (`buyer_reported_paid`,
-  `return_requested`); name the recipient per event as the test. *(2026-06-07, Granular Notifications S3.)*
+  `dispatchToSeller(userId, {group, email?, push?, telegram?})` over a pure preference resolver made adding
+  a new money-path event later one line in the event→group map + one route call — every channel + the
+  settings UI came for free. Defaults de-risk a HIGH surface: email/push default-on (no regression), a new
+  realtime channel (Telegram) opt-in default-off (no flood). *(2026-06-07, Granular Notifications —
+  `lib/notifications/{dispatch,preferences}.ts`.)*
+  **The same seam projects onto a second *audience*, not just new events** — a sibling `dispatchToBuyer`
+  reused the resolver/tables/webhook/grid wholesale because prefs are keyed by **person, not role**.
+  Audience-namespace the keys (`buyer.*` event_group values in the same table, no new column); a guest
+  fall-through (no resolvable user id ⇒ transactional email only) keeps routing additive; one shared
+  `telegram_links` row per person drives a per-audience unlink derived from prefs so neither side's
+  disconnect kills the other. *(2026-06-07, Buyer Notifications #5b.)*
+- **Notify the *recipient*, not the actor — and resolve them from the data, not the session.** A
+  buyer-authed route still has to ping the *seller*: resolve the seller from the order itself, best-effort,
+  durable write + admin nudge unaffected if it fails. Corollary: **"complete the lifecycle" ≠ "notify on
+  every transition"** — a seller-self-triggered event (payment_confirmed/ship/deliver) notifying the seller
+  of their own click is noise; wire only the genuinely buyer-/system-triggered events. *(2026-06-07,
+  Granular Notifications S3.)*
   **But check the recipient id is actually *in* the data before assuming a seam can gate.** Buyer
-  notifications gate fine for **offers + legacy orders** (those rows carry `buyer_clerk_user_id`), but for
-  **Medusa orders the buyer's Clerk id is unrecoverable frontend-side** — `normalizeMedusaOrder` returns
-  `buyer_clerk_user_id: null` and `lib/order-mirror.ts` doesn't persist it (and keys the Medusa id in
-  `metadata`, not the row `id`). So seller-triggered ship/deliver/return routes hit the guest fall-through and
-  send email only (no push/TG) for Medusa orders. No regression, but the feature silently doesn't bite on the
-  majority order type until a backend fix. **Grep the normalizer + mirror for the id before scoping a
-  recipient-gated feature** — it may shrink (or re-shape) the sprint. *(2026-06-07, Buyer Notifications #5b.)*
+  notifications gate fine for offers + legacy orders, but for **Medusa orders the buyer's Clerk id is
+  unrecoverable frontend-side** (the normalizer/mirror don't persist it) — so seller-triggered routes hit
+  the guest fall-through and send email only for Medusa orders. No regression, but the feature silently
+  doesn't bite on the majority order type until a backend fix. Grep the normalizer + mirror for the id
+  before scoping a recipient-gated feature. *(2026-06-07, Buyer Notifications #5b.)*
 - **Match the codebase's real i18n reality before writing translations — and don't globalize it.** The
-  **seller portal + notifications are hardcoded es-MX**, so `en` keys *there* are dead code. But the app is **not**
-  English-free: `locales/{es,en}.json` is a **~119-key bilingual dictionary** (`getDictionary()` resolves es+en,
-  15 call sites incl. `app/layout.tsx`) feeding a **bilingual allow-list** — `app/terminos`, the sweepstakes
-  public flow (`app/g/[slug]`, `?lang=en`, per-campaign `*_en/*_es`), and the embed widget toggle. So the rule is
-  **es-MX default + a defined bilingual allow-list** (AGENTS rule #5), NOT "es-MX everywhere / no en.json."
-  *(2026-06-08 — corrected after a drift audit caught an over-generalized rule; the original note below conflated
-  "seller portal is es-MX" with "the site has no English.")*
-  **Grep for the dictionary's actual consumers first.** Keep copy in the language the surface really renders, and
-  make the "bilingual" gate a **copy-completeness** check (every group has non-empty copy; no orphan copy). es-MX
-  copy lives fine in a next-free `lib/` module (`GROUP_COPY` in `preferences.ts`) as the single source the UI
-  *and* the spec read, so it can't drift from what the seam sends. *(2026-06-07.)*
-  **For an AGENT-facing surface with a global audience, one relay directive beats N locales.** es-MX canonical +
-  en lingua-franca, then every agent-facing payload (manifest/`/agent`/MCP/`llms.txt`) carries a short
-  "present this to the user in their own language" instruction — the **reading agent is the localization layer**
-  (same model as Onboarding 0's "mirror the seller's language"). Hold the directive as one constant in the pure
-  seam so every surface renders it identically; keep its assertion phrase **apostrophe-free** ("in their own
-  language") so it survives HTML escaping on a page and stays a robust spec target. *(2026-06-09, agent-readable
-  about surface — `RELAY_LANGUAGE_DIRECTIVE` in `lib/about-agent.ts`, projected onto 4 surfaces from one source.)*
-  **Reuse the directive *constant*, don't re-paraphrase it** — a second surface (Onboarding 0's shop-clerk
-  operate-prompt) reused `SETUP_LANGUAGE_DIRECTIVE` verbatim, so the mirror rule is byte-identical wherever it
-  appears and one stable phrase covers both specs. *(2026-06-09, agent-native setup S3 — `buildClerkPrompt()`.)*
+  seller portal + notifications are hardcoded es-MX, so `en` keys there are dead code — but the app isn't
+  English-free: `locales/{es,en}.json` is a ~119-key bilingual dictionary feeding a **bilingual allow-list**
+  (`app/terminos`, the sweepstakes public flow, the embed widget). The rule is **es-MX default + a defined
+  bilingual allow-list** (AGENTS rule #5), not "es-MX everywhere, no en.json." *(2026-06-08 — corrected
+  after a drift audit caught an over-generalized rule.)* Grep the dictionary's actual consumers first, and
+  make the "bilingual" gate a copy-completeness check (every group non-empty, no orphans). *(2026-06-07.)*
+  **For an AGENT-facing surface with a global audience, one relay directive beats N locales.** es-MX
+  canonical + en lingua-franca, then every agent-facing payload carries a short "present this to the user
+  in their own language" instruction — the reading agent is the localization layer. Hold it as one constant
+  in a pure seam so every surface renders it identically (keep the phrase apostrophe-free so it survives
+  HTML escaping). *(2026-06-09, agent-readable about surface — `RELAY_LANGUAGE_DIRECTIVE`.)* Reuse the
+  constant verbatim on a second surface rather than re-paraphrasing it. *(2026-06-09, agent-native setup S3.)*
 - **A handoff/operate prompt that drives tools should name the tools from ONE shared source the prompt AND its
   spec read.** The shop-clerk prompt renders `SELLER_MCP_TOOLS` (the 8 already-live seller MCP tools) and the
   api spec loop-asserts every name appears — so the named toolset can never drift from what `/api/ucp/mcp`
@@ -1073,25 +911,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   its `ms_agent_` token, then call the builder), not a re-derivation. *(2026-06-11, custom-domain-paywall S3.)*
 - **A 100%-off-first-period coupon is a real "gift" only with `payment_method_collection:'if_required'`** —
   Stripe then collects NO card on the $0 first invoice, so the *existing* cancel→lapse path covers the
-  no-card renewal end with **zero new lapse code** (the "free year" sprint was mostly "pick the flag + reuse
-  the prior lapse"). Apply `if_required` **only on the discounted path** so the full-price checkout still
-  collects a card (keep the non-coupon path byte-identical). And **Stripe's own `max_redemptions` is the
-  authoritative cap** — a campaign coupon capped at N refuses the (N+1)th server-side even under a race; a
-  pure app-side pre-check (`timesRedeemed < max`) is only for a clean message, never the guarantee.
-  *(2026-06-11, custom-domain-paywall S3 — coupon `miyagisan`, `lib/domain-coupon.ts` pure + Stripe server seam.)*
+  no-card renewal end with **zero new lapse code**. Apply `if_required` **only on the discounted path** so
+  full-price checkout still collects a card. And **Stripe's own `max_redemptions` is the authoritative
+  cap** — a coupon capped at N refuses the (N+1)th server-side even under a race; a pure app-side pre-check
+  is only for a clean message, never the guarantee. *(2026-06-11, custom-domain-paywall S3 — coupon
+  `miyagisan`.)*
 - **A new billing INTERVAL (monthly beside yearly) on a subscription SKU is a second Stripe price on the SAME
-  plan — never a second plan row.** One plan keeps the two hardest things trivially correct: the entitlement
-  read (still lists subscriptions by one `plan_id`) and — crucially — a cadence **switch**, which becomes a
-  `stripe.subscriptions.update` price-swap on the **same** subscription (`proration_behavior:'create_prorations'`
-  ⇒ no double charge; same `stripe_subscription_id` ⇒ no entitlement gap; **no Medusa row rewrite** — the read
-  is liveness-based, interval-agnostic). Store the alt price where the plan-by-kind reader already looks (the
-  plan's `metadata`, the column stays the original interval), and in the activation webhook resolve the plan
-  **by kind**, NOT by `by-stripe-price` — otherwise a monthly-priced subscription (whose price ≠ the plan's
-  column) misses the shared lookup, and you'd be tempted to touch that shared route (also used by seller-
-  listing + custom-domain subs). Before scoping the new cadence, grep the reuse target: the S2 webhook +
-  entitlement seam were already **interval-agnostic** (branch on `kind==='subdomain'` / a boolean
-  `hasActiveSubscription`), so the "reuse the lapse logic" AC needed **zero code** — the whole sprint was a
-  price + the switch. *(2026-07-01, subdomain-pricing S3 — `metadata.monthly_stripe_price_id` on the one
+  plan — never a second plan row.** One plan keeps the entitlement read simple (still lists by one
+  `plan_id`) and makes a cadence **switch** a `stripe.subscriptions.update` price-swap on the same
+  subscription (proration ⇒ no double charge; same `stripe_subscription_id` ⇒ no entitlement gap; no Medusa
+  row rewrite). Store the alt price where the plan-by-kind reader already looks, and in the activation
+  webhook resolve the plan **by kind**, NOT by `by-stripe-price` — a monthly-priced subscription's price ≠
+  the plan's column, so it would miss the shared lookup. Before scoping a new cadence, grep the reuse
+  target: if the webhook + entitlement seam are already interval-agnostic, "reuse the lapse logic" needs
+  zero code — the whole sprint becomes a price + the switch. *(2026-07-01, subdomain-pricing S3 — `metadata.monthly_stripe_price_id` on the one
   `subdomain_plan`; `lib/subdomain-switch.ts`; webhook `handleSubdomainSubscriptionComplete` resolves by kind.)*
 
 ## Working efficiently across a long epic
@@ -1121,9 +954,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   edit. The behavioral acceptance signal (a fresh Sonnet-5 session actually escalating on an ambiguous story)
   can't be self-certified by the session that writes the docs — it's a standing owed-to-Daniel smoke, not a
   one-time close item. *(2026-07-01, model-split-sonnet5-execution S1 — PR #47.)*
-
-## Adopted-next (not yet wired) — improvements we've agreed on but haven't built
-- *(none open — the browser-smoke layer shipped 2026-06-05; see Build & QA above.)*
+  **Reconfirmed on a non-money-path judgment call: report the honest result and ask, rather than silently
+  declaring "done" or guessing how aggressive to be.** A LEARNINGS de-noise pass initially found real
+  staleness but almost no true duplication — size barely moved. Rather than either stopping there (not
+  meeting the epic's "measurably smaller" signal) or unilaterally deciding how much detail to trade for
+  size, surfacing the tradeoff let Daniel pick the aggressiveness. Escalate-don't-guess isn't only for the
+  high-risk-tier triggers; it's also for "the plan doesn't specify how far to push a judgment call."
+  *(2026-07-02, doc-hygiene-learnings-sweep S1.1.)*
 
 ## Authed browser smokes — @clerk/testing (built; runs LOCALLY)
 - **How it works (live).** `e2e/global.setup.ts` runs `clerkSetup()` in Playwright **globalSetup**
@@ -1150,6 +987,6 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (`prod_01KTCRH4MTB0XMVJ73Q8SHSPY2`, a required custom field). The anonymous personalization browser
   smoke (`personalization.browser.spec.ts`, AC 2.1/2.2/2.3) **passes against prod** — the agent now
   headlessly verifies the buy-box render + required-field interception, no auth needed.
-- **Cleanup DONE (2026-06-05):** the orphan test users (prod + `evident-catfish-58`) were deleted via
-  `clerk api /users/<id> -X DELETE --app <id> --instance <prod|dev> --yes`. Shell gotcha: don't name a
-  loop var `UID` (read-only in zsh → "operation not permitted").
+- **Shell gotcha (2026-06-05):** don't name a zsh loop var `UID` — it's read-only ("operation not
+  permitted"); hit this bulk-deleting orphan Clerk test users via `clerk api /users/<id> -X DELETE --app
+  <id> --instance <prod|dev> --yes`.
