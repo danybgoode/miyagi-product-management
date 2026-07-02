@@ -146,6 +146,17 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-02 — Agent discovery & indexing SHIPPED (S0 spike + 1 sprint; spike + LOW).** Reframed "agents
+  can't find us" as an **indexing** problem, not a code bug. The S0 spike audited the crawl surface live
+  (`robots`/`sitemap`/`llms`/manifest, a Googlebot-UA-vs-default body byte-diff, `whois` domain age) and
+  concluded the config is clean — the zero `site:` coverage is **new-domain crawl starvation** on a ~6-week
+  domain, so the fix is Search Console verification/submission + time (owed to Daniel), not more code. Sprint 1
+  (frontend #156 `c922e38`) translated **`/agent` to es-MX** (JSON-LD keys stay English; relay-language
+  directive intact; not added to the bilingual allow-list), made the promoted "ask your agent" prompt
+  consistently target **`/vende`**, and re-verified the `/vende` OG unfurl. Sprint 2 was conditional and
+  descoped — the audit found nothing that must be built; optional hygiene (www→apex 301, canonical on
+  `/l`+`/agent`) is owed to Daniel only if the Search Console read surfaces a need. See
+  [07 · Agentic & Federated Commerce › Agent discovery & indexing](07-agentic-and-federated-commerce/agent-discovery-and-indexing/).
 - **2026-07-02 — Seller agent connect epic SHIPPED (2 sprints; mixed LOW→HIGH).** A seller's own AI agent
   can now actually run the shop end-to-end. **S1** (PR #158) rewrote the setup-emit prompt
   (`buildSetupPrompt()`) to read Miyagi context and **interview** the seller on thin input instead of

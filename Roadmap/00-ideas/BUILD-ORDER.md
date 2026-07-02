@@ -14,11 +14,11 @@
 
 _None._
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 0/3 stories
+_None._
 
-## ✅ Shipped (74)
+## ✅ Shipped (75)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -46,6 +46,7 @@ _None._
 - [Trust & Messaging Polish](../../05-trust-offers-and-messaging/trust-messaging-polish/README.md) — 05 Trust/Offers/Messaging · 5/5 stories · risk: Low · Wave 3
 - [Printed-Edition Builder ("Maqueta")](../../06-print-edition/printed-edition-builder/README.md) — 06 Print · 0/8 stories
 - [Agent Connection & Discoverability](../../07-agentic-and-federated-commerce/agent-connection/README.md) — 07 Agentic/Federated · 6/6 stories · risk: High
+- [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 3/3 stories
 - [Agent-readable why-sell / about surface](../../07-agentic-and-federated-commerce/agent-readable-about-surface/README.md) — 07 Agentic/Federated · 6/6 stories · risk: Low
 - [Checkout on the custom domain (custom-domain-checkout)](../../07-agentic-and-federated-commerce/custom-domain-checkout/README.md) — 07 Agentic/Federated · 4/4 stories · risk: High
 - [Cross-channel Storefront Trust Parity](../../07-agentic-and-federated-commerce/cross-channel-trust-parity/README.md) — 07 Agentic/Federated · 2/2 stories · risk: Low · Wave 3

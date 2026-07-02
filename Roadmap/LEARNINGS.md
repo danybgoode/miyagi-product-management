@@ -419,6 +419,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   *(2026-06-06, short-links.)*
 - **`%{redirect_url}`/curl inside a zsh `for`-loop one-liner flaked** ("command not found: curl"); run each
   curl as a plain statement (or `/usr/bin/curl`). *(2026-06-06.)*
+- **Zero search coverage on a clean, correctly-configured site is usually new-domain crawl-starvation, not a
+  code bug.** Before touching code, rule out cloaking/noindex/robots with a **live Googlebot-UA-vs-default
+  body byte-diff** + live `robots`/`sitemap`/`llms`/manifest fetches + `whois` domain age; if the config is
+  clean, the fix is Search Console verify + submit + *time*, not more code. **A spoofed Googlebot UA from a
+  dev IP only proves the app doesn't branch on UA — it cannot prove Vercel Bot/Firewall Protection wouldn't
+  challenge a real Googlebot IP;** that gap closes only with Search Console URL-Inspection Live Test.
+  *(2026-07-02, agent-discovery-and-indexing S0.)*
 
 ## Repo & deploy hygiene
 - **Deleting a git branch does NOT delete its Vercel preview deployments — Vercel retains every deployment

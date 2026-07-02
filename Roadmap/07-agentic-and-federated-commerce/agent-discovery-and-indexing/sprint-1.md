@@ -1,12 +1,13 @@
 # Agent discovery & indexing — Sprint 1: es-MX `/agent`, prompt-target consistency, OG re-verify
 
-**Status:** 📋 planned (approved 2026-07-01) · branch `feat/agent-discovery-and-indexing` off latest `main`
+**Status:** ✅ SHIPPED 2026-07-02 — frontend **PR #156** (`c922e38`). All three stories merged; deterministic
+gate green. Link-unfurl (step 4) + the async indexing read (step 5) owed to Daniel.
 **Risk:** low (copy/config, no money/auth/commerce) — reviewer may auto-merge on a green gate.
 
 > Runs after (or alongside) the **S0 spike** in the epic README. Sprint 1's stories don't depend on S0's
 > outcome; S0 gates only the conditional Sprint 2.
 
-## Story 1.1 — Translate `/agent` to es-MX
+## Story 1.1 — Translate `/agent` to es-MX ✅ `c922e38`
 **As a** Spanish-speaking visitor/agent, **I want** `/agent` in es-MX, **so that** it isn't jarringly English.
 **Root cause:** `app/(shell)/agent/page.tsx` renders entirely English body copy and pulls `getAboutSection(...)
 .en` sections + English `ucp-use-cases.json` strings.
@@ -21,7 +22,7 @@ language.
 JSON-LD still valid. (Per LEARNINGS: when touching a framework-generated/asserted surface, grep the suite for
 stale English assertions and update them in the same PR.)
 
-## Story 1.2 — Promoted prompt consistently targets `/vende`
+## Story 1.2 — Promoted prompt consistently targets `/vende` ✅ `c922e38`
 **As a** seller/agent, **I want** the promoted "ask your agent" prompt to open `/vende` everywhere, **so that**
 the richest page (cost comparison + personas) is what gets evaluated.
 **Changes:** audit the promoted prompt strings across surfaces (the `/vende` anchor, `/agent`'s buttons, the
@@ -31,7 +32,7 @@ promoter context — coordinated with the promoter-funnel `{url}` fix). No redir
 as the machine briefing but isn't the promoted *evaluation* target.
 **Risk:** low · **QA:** `api` spec asserting the promoted prompt URLs.
 
-## Story 1.3 — Re-verify the `/vende` link unfurl
+## Story 1.3 — Re-verify the `/vende` link unfurl ✅ `c922e38`
 **As a** person sharing a Miyagi link, **I want** `/vende` to unfurl correctly, **so that** shared links look
 right.
 **Changes:** verify the OG image (`/vende/opengraph-image`) renders and the OG/Twitter tags unfurl; fix only if

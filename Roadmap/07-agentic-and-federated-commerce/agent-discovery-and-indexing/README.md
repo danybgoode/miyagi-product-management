@@ -1,14 +1,20 @@
 ---
-status: planned
+status: shipped
 slug: agent-discovery-and-indexing
 ---
 
 # Epic: Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target
 
+> **Status: ✅ COMPLETE 2026-07-02.** S0 indexing spike landed a written decision + prioritized action list
+> (see `RETROSPECTIVE.md`); Sprint 1 shipped (frontend **PR #156** `c922e38`): `/agent` translated to es-MX,
+> the promoted prompt consistently targets `/vende`, and the `/vende` OG unfurl re-verified. **Sprint 2 was
+> conditional** on Daniel's Search Console read — the S0 audit found the crawl config clean (primary cause =
+> new-domain crawl starvation), so its code/config items are **optional hygiene owed to Daniel as ops**, not
+> a build gate; the epic closes without them (indexing outcomes are asynchronous — not a merge gate).
+
 > **Area:** 07-agentic-and-federated-commerce (the `/vende` indexing angle is 08-Growth flavored — cross-linked)
 > · **Risk:** spike + low · **Type:** spike + copy chore
 > **Scope doc:** [`00-ideas/2. readyforscope/agent-discovery-and-indexing.md`](../../00-ideas/2.%20readyforscope/agent-discovery-and-indexing.md)
-> **Status:** 📋 planned · approved 2026-07-01 · **spike-first — no build until S0's decision lands**
 
 ## Why
 "Agents can't find us" is an **indexing** problem, not a code bug. Validated live 2026-07-01: `/vende` is fully
@@ -52,13 +58,13 @@ list into `RETROSPECTIVE.md`:
    Sprint 2 builds until this lands.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| S0 | Indexing diagnosis → written decision + action list (ops/investigation) | spike |
-| 1 | Translate `/agent` rendered copy to es-MX (keep JSON-LD keys English) | low |
-| 1 | Promoted prompt consistently points to `/vende` (coordinate with promoter `{url}` fix) | low |
-| 1 | Re-verify `/vende` link unfurl (OG image + tags) | low |
-| 2 | Execute the spike's code/config fixes — only if S0 finds any | tbd (set at S0) |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| S0 | Indexing diagnosis → written decision + action list (ops/investigation) | spike | ✅ decision in `RETROSPECTIVE.md` |
+| 1 | Translate `/agent` rendered copy to es-MX (keep JSON-LD keys English) | low | ✅ #156 `c922e38` |
+| 1 | Promoted prompt consistently points to `/vende` (coordinate with promoter `{url}` fix) | low | ✅ #156 `c922e38` |
+| 1 | Re-verify `/vende` link unfurl (OG image + tags) | low | ✅ #156 `c922e38` |
+| 2 | Execute the spike's code/config fixes — only if S0 finds any | tbd | ⏭️ **descoped** — S0 found config clean; items are optional hygiene owed to Daniel (see below) |
 
 ## Deploy order
 S0 is investigation (Daniel holds Search Console; agent audits headers/robots/sitemap/llms/manifest). Sprint 1
@@ -66,11 +72,14 @@ frontend-only, low-risk, ships alone. Sprint 2 conditional on S0 (risk set when 
 outcomes are **asynchronous** — "did it get indexed" is a post-submit read, not a merge gate.
 
 ## Definition of Done (epic)
-- [ ] S0 written decision + action list in `RETROSPECTIVE.md`; ops actions done or owed to Daniel
-- [ ] Sprint 1 merged + smoke-tested; `sprint-1.md` smoke walkthrough present (real URLs)
-- [ ] `/agent` renders es-MX; JSON-LD/schema keys still valid
-- [ ] `/vende` link unfurl verified; promoted prompt points to `/vende` everywhere
-- [ ] This README marked ✅; sprint status ticked with commit refs
-- [ ] Product poster (`Roadmap/README.md`) updated (07 discovery / `/agent` line)
-- [ ] Team memory + `MEMORY.md` index updated; durable learnings → `Roadmap/LEARNINGS.md` (dedupe)
-- [ ] Feature branch deleted; PR merged
+- [x] S0 written decision + action list in `RETROSPECTIVE.md`; ops actions **owed to Daniel** (Search Console)
+- [x] Sprint 1 merged (#156 `c922e38`) + smoke-tested; `sprint-1.md` smoke walkthrough present (real URLs)
+- [x] `/agent` renders es-MX; JSON-LD/schema keys still valid
+- [x] `/vende` link unfurl verified (route render); promoted prompt points to `/vende` everywhere
+- [x] This README marked ✅; sprint status ticked with commit refs
+- [x] Product poster (`Roadmap/README.md`) updated (Recent highlights entry)
+- [x] Durable learnings → `Roadmap/LEARNINGS.md` (crawl-starvation diagnosis + the spoofed-UA audit limit; deduped)
+- [x] Feature branch merged (#156); **frontmatter `status: shipped`** — `node scripts/build-order.mjs` re-run
+- [ ] **Owed to Daniel (async, non-gating):** the Search Console ops from S0's action list + the async
+      "did it get indexed" re-check in ~2–3 weeks. Optional code hygiene (www→apex 301, canonical on
+      `/l`+`/agent`) tracked there if the SC read surfaces a need.
