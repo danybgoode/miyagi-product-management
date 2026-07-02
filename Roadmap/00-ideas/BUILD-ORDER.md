@@ -10,9 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (0)
 
-- [Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess](../../09-platform-infra/model-split-sonnet5-execution/README.md) — 09 Platform-infra · 0/1 stories
+_None._
 
 ## 📋 Ready to build (scaffolded, not started) (4)
 
@@ -21,7 +21,7 @@
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
 - [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (69)
+## ✅ Shipped (70)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -81,6 +81,7 @@
 - [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 0/4 stories
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 0 Enablers
 - [In-house feature flags (replace Flagsmith)](../../09-platform-infra/feature-flags-inhouse/README.md) — 09 Platform-infra · 6/7 stories
+- [Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess ✅ COMPLETE 2026-07-01](../../09-platform-infra/model-split-sonnet5-execution/README.md) — 09 Platform-infra · 0/1 stories
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 3/9 stories · risk: High
 - [Notion roadmap board hygiene](../../09-platform-infra/notion-board-hygiene/README.md) — 09 Platform-infra · 2/6 stories
 - [Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅](../../09-platform-infra/postgres-neon-to-cloudsql/README.md) — 09 Platform-infra · 3/8 stories
@@ -104,15 +105,5 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
-
-These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
-derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
-forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
-
-| Epic | frontmatter (used) | sprint/retro-derived |
-|---|---|---|
-| Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess | In progress | Scaffolded |
-
 ---
-_Epics: 75 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 75 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

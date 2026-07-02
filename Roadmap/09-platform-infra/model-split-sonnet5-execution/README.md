@@ -1,9 +1,9 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: model-split-sonnet5-execution
 ---
 
-# Epic: Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess
+# Epic: Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess ✅ COMPLETE 2026-07-01
 
 > **Area:** 09 · Platform & Infra · **Risk:** Low · **Scope doc:**
 > [`00-ideas/2. readyforscope/model-split-sonnet5-execution.md`](../../00-ideas/2.%20readyforscope/model-split-sonnet5-execution.md)
@@ -40,16 +40,18 @@ No deploy — monorepo-root docs (`Roadmap/WAYS-OF-WORKING.md` + `skills/groom/S
 to `main`. Doc-only, low-risk tier → may merge directly (no preview, no Playwright).
 
 ## Definition of Done (epic)
-- [ ] `WAYS-OF-WORKING.md` *Model tiers* names Sonnet 5 (build) + Opus 4.8 (plan) and lists the
+- [x] `WAYS-OF-WORKING.md` *Model tiers* names Sonnet 5 (build) + Opus 4.8 (plan) and lists the
       escalate-don't-guess triggers (identical to the high-risk-tier list).
-- [ ] The groom Stage-8 kickoff template tells the build session to escalate on those triggers.
+- [x] The groom Stage-8 kickoff template tells the build session to escalate on those triggers.
 - [ ] Smoke: a Sonnet-5 session on a deliberately-ambiguous / money-path story pauses and asks / escalates
-      rather than guessing (Daniel confirms — see sprint-1 walkthrough).
-- [ ] This README marked ✅; `sprint-1.md` status ticked with commit ref.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated if it references the model-tier convention.
-- [ ] Durable learning promoted to `Roadmap/LEARNINGS.md` (the escalation-trigger = high-risk-tier SSOT link).
-- [ ] Feature branch deleted; **frontmatter `status: shipped`**; `node scripts/build-order.mjs` re-run.
+      rather than guessing (**owed to Daniel** — see sprint-1 walkthrough step 3; not self-certifiable by the
+      session that wrote the docs).
+- [x] This README marked ✅; `sprint-1.md` status ticked with commit ref (PR [#47](https://github.com/danybgoode/miyagi-product-management/pull/47), squash `3544073`).
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated — Recent highlights entry added.
+- [x] Durable learning promoted to `Roadmap/LEARNINGS.md` (the escalation-trigger = high-risk-tier SSOT link
+      + the build-order-guard-on-status-flip gotcha).
+- [x] Feature branch deleted; **frontmatter `status: shipped`**; `node scripts/build-order.mjs` re-run.
 
 ## Session kickoff
 See [sprint-1.md](sprint-1.md) → *Kickoff prompt*.

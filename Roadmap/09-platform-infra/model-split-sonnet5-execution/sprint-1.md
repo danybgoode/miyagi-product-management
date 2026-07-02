@@ -1,6 +1,6 @@
 # Model split — Sprint 1: name the models + the escalation guardrail
 
-**Status:** 🔧 built, PR open — doc edits done; live escalation smoke (step 3 below) owed to Daniel
+**Status:** ✅ merged — PR [#47](https://github.com/danybgoode/miyagi-product-management/pull/47) (squash `3544073`); live escalation smoke (step 3 below) owed to Daniel
 
 ## Stories
 

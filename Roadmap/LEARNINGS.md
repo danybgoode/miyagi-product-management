@@ -381,6 +381,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `### Story 1.1`, letter IDs `C.1`/`B1.1`), not just the template's — but since status is now frontmatter-
   driven, a counter slip is only a cosmetic progress count, never a wrong status. *(2026-06-14, branch-cleanup
   + status-reconciliation chore.)*
+  **Corollary — editing an epic README's `status:` frontmatter mid-PR is itself a trigger for the guard.**
+  Any Roadmap PR that flips `status:` (not just prose) makes the committed `BUILD-ORDER.md` stale, and
+  `build-order-guard.yml` (`node scripts/build-order.mjs --check`) reds on the PR — expected behavior, not a
+  false positive, but easy to be surprised by on an otherwise-trivial docs PR. Fix: re-run
+  `node scripts/build-order.mjs` and commit the regenerated file in the same PR whenever a story touches epic
+  status. *(2026-07-01, model-split-sonnet5-execution S1 — PR #47 caught by the guard on its own status flip.)*
 
 ## Build & QA
 - **The deterministic gate is non-negotiable and cheap:** `tsc --noEmit` + `next build` + the
@@ -1103,6 +1109,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   repetitive checking); and this file is itself the human **"shortcut library"** (distilled past successes so
   the next agent skips rediscovery). The research's headline — an assembly-line SOP beats hierarchical
   agent-to-agent conversation — is the architecture we already run. *(2026-06-08.)*
+- **Model tiers are now named, with an escalate-don't-guess guardrail — one SSOT, don't fork a second
+  trigger list.** `WAYS-OF-WORKING.md` → *Conventions → Model tiers* names **Opus 4.8** for
+  planning/grooming/spikes/plan-mode/review and **Sonnet 5** for per-story execution, and the per-sprint
+  kickoff template (`skills/groom/SKILL.md` Stage 8) carries the same rule to every build session: **stop and
+  ask / hand back to Opus, don't guess**, on the same triggers as the high-risk tier (payments / checkout /
+  fulfillment / auth / DB migrations / shared infra / money) **plus** plan ambiguity, a decision the plan
+  doesn't cover, or 2+ failed attempts at the same problem. Default to escalate when unsure. The trigger list
+  is defined once, in WAYS-OF-WORKING; SKILL.md's Model-tiers note and the kickoff prompt both cross-reference
+  it rather than duplicating it — if you ever need to change the list, WAYS-OF-WORKING is the only place to
+  edit. The behavioral acceptance signal (a fresh Sonnet-5 session actually escalating on an ambiguous story)
+  can't be self-certified by the session that writes the docs — it's a standing owed-to-Daniel smoke, not a
+  one-time close item. *(2026-07-01, model-split-sonnet5-execution S1 — PR #47.)*
 
 ## Adopted-next (not yet wired) — improvements we've agreed on but haven't built
 - *(none open — the browser-smoke layer shipped 2026-06-05; see Build & QA above.)*
