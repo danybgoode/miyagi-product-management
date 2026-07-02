@@ -36,7 +36,13 @@ Daniel asks for the weekly recap / "what shipped this week" / "weekly retro", or
   reimplements standalone (this script has no access to the app's build), same as `standup.mjs` does.
 
 ## Stage 1 — ensure config
-Check `skills/weekly-recap/config.json` exists and has a non-empty `chat_id`. If it doesn't:
+`weekly-recap.mjs` resolves the chat id two ways, in order: `skills/weekly-recap/config.json`'s
+`chat_id` first, then the `TELEGRAM_CHAT_ID` env var. **In a routine session (no interactive human
+present), the env var is the one that actually works** — `config.json` is gitignored and a routine's
+cloud sandbox is a fresh checkout every run, so a locally-written `config.json` never survives to the
+next run. Set `TELEGRAM_CHAT_ID` on the routine's environment (the same var its optional failure-ping
+already needs — one setting covers both). `config.json` remains the right mechanism for a
+local/interactive run:
 1. Use `AskUserQuestion` to ask Daniel for the Telegram chat id — this is the **same** MiyagiDevopsTele
    bot/chat `standup-post` and the deploy notifiers already use, just configured independently per the
    D-spike's per-skill `config.json` convention (don't read `standup-post`'s config directly).

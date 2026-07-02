@@ -30,12 +30,13 @@ Everything you do is **advisory/observability only** — read-only aggregation p
 one log-commit; you never merge, approve, block, or touch any repo's code.
 
 ## The one step — `weekly-recap`
-Follow `skills/weekly-recap/SKILL.md` exactly — it handles the config check (chat id in
-`skills/weekly-recap/config.json`, falling back to `AskUserQuestion` only if genuinely unset, though in
-a routine session with no interactive human present, treat a missing chat id as a hard stop and use the
-failure ping below instead of guessing), the `TELEGRAM_BOT_TOKEN` secret check, running
-`node scripts/weekly-recap.mjs`, and reporting the result (merged-PR/deploy/shipped-epic counts, any
-retro-digest excerpts).
+Follow `skills/weekly-recap/SKILL.md` exactly — it handles the config check (chat id from
+`skills/weekly-recap/config.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
+actually works in this unattended routine session, since `config.json` is gitignored and can't survive
+between separate runs; if genuinely BOTH are unset, that's a hard stop, use the failure ping below
+instead of guessing — never `AskUserQuestion` here, no interactive human is present), the
+`TELEGRAM_BOT_TOKEN` secret check, running `node scripts/weekly-recap.mjs`, and reporting the result
+(merged-PR/deploy/shipped-epic counts, any retro-digest excerpts).
 
 ## Nothing else
 No PR, no comment, no code change of your own — the Telegram post (plus the `scripts/weekly-recaps.log`

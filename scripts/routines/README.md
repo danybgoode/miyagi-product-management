@@ -111,13 +111,33 @@ routine (cap-safe) — see the budget table below.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — this routine's Telegram use is
      **LOAD-BEARING** (step 4's actual output), not the optional failure-ping the other three routines
      use.
-   - The Telegram **chat id** lives in `skills/standup-post/config.json` (`chat_id`, gitignored — copy
-     `config.example.json` and fill it in, or let the skill ask via `AskUserQuestion` on first run), per
-     the D-spike convention (user-specific setup → `config.json`, not an env var).
-   - **`TELEGRAM_CHAT_ID`** (env var) only if you also want the failure-ping — same bot/chat as above,
-     just sourced differently for that one code path (see `ops-nightly.prompt.md`'s closing note).
+   - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
+     unattended routine run.** `skills/standup-post/config.json`'s `chat_id` (gitignored, per the
+     D-spike's user-specific-setup convention) is preferred when present, but a routine's cloud sandbox
+     is a fresh checkout every run, so a locally-written `config.json` never persists to the next run —
+     `standup.mjs` falls back to this env var, and it's the same one the optional failure-ping already
+     needed, so one setting covers both.
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other three routines' optional ping — here it's required for step 4 to do anything at all).
+   - **⚠️ The `gh` CLI is NOT pre-installed in a routine's cloud sandbox — every step here shells out to
+     it, so this is the #1 thing that blocks the whole routine if skipped.** (Confirmed live, 2026-07-02:
+     the first two `ops-nightly` runs both failed at step 2 with "no `gh` CLI binary at all" — only the
+     built-in GitHub tools were present, and those are read-oriented and scoped to whichever repo the
+     routine cloned, not the 3-repo `gh pr list`/`gh run rerun`/`gh pr comment` calls these scripts make.)
+     Fix, in the routine's **environment** settings (Edit routine → environment icon → settings gear):
+     1. **Setup script** — add `apt update && apt install -y gh`. This runs once and is cached (~7-day
+        expiry); it does not re-run every session.
+     2. **`GH_TOKEN`** env var — a GitHub Personal Access Token with access to all 3 repos
+        (`miyagi-product-management`, `miyagisanchezcommerce`, `medusa-bonsai-backend`). `gh` reads
+        `GH_TOKEN` automatically — no `gh auth login` step needed. A **fine-grained PAT** scoped to just
+        those 3 repos with **Contents: Read & Write**, **Pull requests: Read & Write**, **Actions: Read &
+        Write** (Metadata: Read is auto-included) is the least-privilege choice; a classic PAT with the
+        `repo` scope also works if simpler. Mint one at
+        [github.com/settings/tokens](https://github.com/settings/tokens) (or
+        [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+        for fine-grained).
+     3. `github.com`/`api.github.com` are already in the **Trusted** network-access default — no domain
+        change needed there, only the two steps above.
    - **`gh` write scope sufficient for `run rerun`, `pr comment`, and `pr create` on a `claude/`-branch.**
      Steps 1 and 3 write (build-order-sync opens a docs PR; babysit-pr re-runs failed workflow runs and
      posts a PR comment) — both stay inside the routine's **default** `claude/`-prefix push scope (step
@@ -161,14 +181,19 @@ and a short retro digest per shipped epic — then posts one Telegram message.
 3. **Trigger:** Schedule, **weekly — Mon 15:30 UTC** (after Routine C's Mon 14:00 roadmap-hygiene and
    comfortably after the prior night's `ops-nightly` run, so the recap can reflect that week's tail end).
 4. **Env:**
+   - **The `gh` CLI setup script + `GH_TOKEN`** — same requirement as `ops-nightly`'s (see its own env
+     section above for the exact setup script and PAT scopes). `weekly-recap.mjs` shells out to
+     `gh pr list` across all 3 repos, so this is load-bearing here too. If `ops-nightly` and
+     `weekly-recap` share the same cloud environment (the usual setup), provisioning it once for
+     `ops-nightly` covers this routine too — nothing to redo.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — this routine's Telegram use is
      **LOAD-BEARING** (its one step's actual output), same as `ops-nightly`'s.
-   - The Telegram **chat id** lives in `skills/weekly-recap/config.json` (`chat_id`, gitignored — copy
-     `config.example.json` and fill it in, or let the skill ask via `AskUserQuestion` on first run) — its
-     **own** config file, separate from `standup-post/config.json`, per the D-spike's per-skill
-     convention, even though both typically hold the same physical chat id.
-   - **`TELEGRAM_CHAT_ID`** (env var) only if you also want the failure-ping — same bot/chat as above,
-     sourced differently for that one code path (see `weekly-recap.prompt.md`'s closing note).
+   - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
+     unattended routine run** (same reasoning as `ops-nightly`'s: `skills/weekly-recap/config.json`'s
+     `chat_id`, its own file separate from `standup-post/config.json` per the D-spike's per-skill
+     convention, is preferred when present, but can't persist across a routine's fresh-checkout-per-run
+     sandbox — `weekly-recap.mjs` falls back to this env var, the same one the optional failure-ping
+     already needed).
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other routines).
    - **Push enabled beyond the `claude/`-prefix default.** `scripts/weekly-recap.mjs` commits + pushes
