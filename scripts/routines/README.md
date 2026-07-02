@@ -10,6 +10,10 @@ Daniel** — so they keep running with the laptop closed. Created/managed in Dan
 > (WRITTEN DECISION, 2026-06-23) and the epic
 > [`routines-enablement`](../../Roadmap/09-platform-infra/routines-enablement/README.md).
 > **Decision:** stand up **A** first, **C** second, **B** as a now-unblocked fast-follow; **D is out.**
+> A fourth routine, **ops-nightly** (the daily standup), was added by the
+> [`ops-routines-reporting`](../../Roadmap/09-platform-infra/ops-routines-reporting/README.md) epic —
+> built against the skill conventions from
+> [`spike-skills-library-audit`](../../Roadmap/00-ideas/2.%20readyforscope/spike-skills-library-audit.md).
 
 This repo commits the *prompts + this runbook*. **The account stand-up itself is operational, owed to
 Daniel** — installing the GitHub App, creating the routines from these prompts, and setting B's
@@ -83,6 +87,35 @@ smoke fix) — done, so B is unblocked.
    proposed spec realign or prod fix; on a **green** smoke, no PR. **Augments, never replaces** the
    deterministic smoke (which stays the detector); does not auto-merge.
 
+## Routine ops-nightly — Daily standup  *(fourth routine, stand up any time after B)*
+**Prompt:** [`ops-nightly.prompt.md`](ops-nightly.prompt.md) · **Repo:** root `miyagi-product-management`
+(reads `gh` across all 3 repos: root, `miyagisanchezcommerce`, `medusa-bonsai-backend`).
+
+1. **Install the Claude GitHub App** on `miyagi-product-management` (root repo) if not already done for
+   Routine C.
+2. **Create the routine** from `ops-nightly.prompt.md`.
+3. **Trigger:** Schedule, **nightly ~10:30 UTC** — after both the frontend's `browser-smoke.yml`
+   (`0 9 * * *`) and Routine B (smoke-triage, ~10:00 UTC) have had a chance to complete, so the standup's
+   smoke signal reflects the night's actual result.
+4. **Env — this routine's Telegram use is LOAD-BEARING, not the optional failure-ping the other three
+   routines use.** It needs:
+   - **`TELEGRAM_BOT_TOKEN`** in the routine's environment (the standup post itself, and — reused — the
+     optional failure ping).
+   - The Telegram **chat id** lives in `skills/standup-post/config.json` (`chat_id`, gitignored — copy
+     `config.example.json` and fill it in, or let the skill ask via `AskUserQuestion` on first run), per
+     the D-spike convention (user-specific setup → `config.json`, not an env var).
+   - **`TELEGRAM_CHAT_ID`** (env var) only if you also want the failure-ping — same bot/chat as above,
+     just sourced differently for that one code path (see `ops-nightly.prompt.md`'s closing note).
+   - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
+     other three routines' optional ping — here it's required for the routine to do anything at all).
+   - **Push enabled beyond the `claude/`-prefix default.** `scripts/standup.mjs` commits + pushes
+     `scripts/standups.log` directly to `main` after every successful post (a path-scoped, data-only
+     commit) so the *next* run — a fresh routine session with no local state — has yesterday's snapshot
+     to diff against. Without this, the standup still posts fine, but the delta silently degrades to a
+     full re-dump every night (see `skills/standup-post/SKILL.md`'s Gotchas).
+5. **Output:** one Telegram message per night — either the delta lines, or a one-line "quiet night, no
+   change" post. **No PR, no comment, no code change.**
+
 ---
 
 ## Daily-cap budget (Pro)
@@ -97,8 +130,9 @@ have their **own separate per-routine/per-account hourly caps**, not the schedul
 | A — review-on-PR | GitHub `pull_request.opened` | **No** — GitHub-event, separate hourly caps |
 | C — roadmap hygiene | Schedule, weekly | Yes, but ~0.14/day |
 | B — smoke triage | Schedule, nightly | Yes, 1/day |
+| ops-nightly — daily standup | Schedule, nightly | Yes, 1/day |
 
-- **Scheduled load = B (1/day) + C (~0/day) ≈ 1/day** — nowhere near the 5/day cap.
+- **Scheduled load = B (1/day) + ops-nightly (1/day) + C (~0/day) ≈ 2/day** — still well under the 5/day cap.
 - **A is effectively uncapped for our volume** (GitHub events, hourly caps only); it does **not** eat
   the scheduled budget. On a busy day it's bounded by the preview hourly cap, not the daily 5.
 - **No upgrade pressure:** everything here runs on **Pro**. Higher daily run counts are the only
@@ -119,6 +153,11 @@ without an infrastructure error. It does not mean the task succeeded"* ([docs](h
 Your **actionable output is already visible via GitHub** (A's PR comment, B/C's `claude/` PRs all
 trigger GitHub notifications). The gap is a **run that fails to complete** (network blocked, auth,
 hourly cap) — that shows only on `claude.ai/code/routines` / the transcript unless you check.
+
+This section is about that **optional** ping for A/B/C — none of them has a Telegram post as its actual
+output. **ops-nightly is the one exception**: its Telegram post IS the routine's output, so its
+Telegram setup is load-bearing, not optional (see its own section above for the full env list). It
+still uses this same failure-ping *pattern* for the "couldn't even attempt the standup" case.
 
 To close it without checking the app daily, each prompt has an **optional, best-effort Telegram
 ping-on-failure** step, gated on two env vars being present (so it degrades to a no-op where unset).
