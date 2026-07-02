@@ -1,9 +1,10 @@
 # Seller agent connect — Sprint 1: a setup prompt that actually helps (skateboard, ships alone)
 
-**Status:** 📋 planned (approved 2026-07-01) · branch `feat/seller-agent-connect-mcp-url` off latest `main`
+**Status:** ✅ built 2026-07-02 · branch `feat/seller-agent-connect-mcp-url` off latest `main` ·
+[PR #158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158) `3e244b7` · awaiting merge
 **Risk:** low (copy only) — reviewer may auto-merge on a green gate.
 
-## Story 1.1 — Rewrite `buildSetupPrompt` to read context + interview
+## Story 1.1 — Rewrite `buildSetupPrompt` to read context + interview ✅
 **As a** prospective seller, **I want** the setup prompt to give my agent Miyagi context and interview me when
 I share little, **so that** it produces a real shop instead of an empty `{"miyagi_setup_version":"1"}`.
 **Root cause:** `buildSetupPrompt()` (`lib/setup-spec.ts`) instructs "from what the seller shares, generate ONE
@@ -40,13 +41,23 @@ markers, not natural-language words like "TODO".)
 Env: production · https://miyagisanchez.com   (or the branch preview URL while testing pre-merge)
 
 1. Open `https://miyagisanchez.com/sell/setup`, expand "Prompt para tu agente", **Copiar prompt**.
-   → The copied prompt tells the agent to read Miyagi context and to interview you if you give nothing.
+   → The copied prompt opens with an **OBJETIVO** line, then **PASO 1 — CONTEXTO** (read
+   `/api/ucp/setup-spec`, `/vende`, `/acerca`), **PASO 2 — ENTREVISTA** (ask questions if you gave
+   nothing), and **PASO 3 — EMITIR** (the JSON-only output — unchanged contract).
 2. Paste it into Claude (or ChatGPT) and send **nothing else** (no catalog).
-   → The agent **asks you questions** (what you sell, prices, payment, shop name) instead of returning
-   `{"miyagi_setup_version":"1"}`. **[agent-quality — owed to Daniel]**
+   → The agent **asks you questions** (what you sell, prices, delivery, payment, shop name/location)
+   instead of returning `{"miyagi_setup_version":"1"}`. **[agent-quality — owed to Daniel]**
 3. Answer with a couple of products; let it produce the file. Paste that file back into `/sell/setup` → **Revisar**.
    → It validates (products staged, no "archivo no válido") — proving the emitted shape still round-trips.
-4. Open `https://miyagisanchez.com/agent` and find the "Copyable emit prompt".
-   → It matches the improved prompt (same source).
+4. Open `https://miyagisanchez.com/agent` and find the "Prompt para copiar (es-MX)" block.
+   → It matches the improved prompt (same source — `buildSetupPrompt()`).
+5. `curl -s https://miyagisanchez.com/api/ucp/setup-spec | jq -r .prompt` (or open the URL directly).
+   → The `prompt` field carries the same OBJETIVO/PASO 1/PASO 2/PASO 3 text as steps 1 and 4.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Verified pre-merge (this session, local dev server):** steps 1, 4, and 5's rendered content confirmed
+byte-consistent across `/sell/setup` (redirect-gated, anon 307 to sign-up — expected), `/agent`
+(public, 200), and `/api/ucp/setup-spec` (public, 200) — all three call the one `buildSetupPrompt()`.
+Step 2 (does the agent actually interview well) is **owed to Daniel** — pasting into a live agent is
+outside what an `api` spec or a local render check can judge.
