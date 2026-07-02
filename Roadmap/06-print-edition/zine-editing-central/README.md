@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 built (S1.1+S1.3 done, S1.2 PR #161 awaiting Daniel's merge — HIGH risk).
 slug: zine-editing-central
 ---
 

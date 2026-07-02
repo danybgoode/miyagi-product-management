@@ -10,13 +10,12 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (0)
+## 🏗️ Building now (1)
 
-_None._
+- [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 3/9 stories
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-- [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 0/9 stories
 - [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 0/19 stories
 
 ## ✅ Shipped (76)
