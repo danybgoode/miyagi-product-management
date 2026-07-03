@@ -74,15 +74,41 @@ badge in `OrdersInbox.tsx`'s list + a detail section in `OrderDetail.tsx` with t
   `decideMlOrderApply`'s unit spec (an existing row always skips regardless of the flag) plus the
   unchanged `safeDecrement`/`decrementProductStock` path.
 - Deterministic gate, both repos, all green locally before PR: backend `medusa build` → `tsc --noEmit`
-  → `npm run test:unit` (115/115); frontend `tsc --noEmit` → `next build` → `playwright test
+  → `npm run test:unit` (117/117); frontend `tsc --noEmit` → `next build` → `playwright test
   --project=api` (1296/1297 passing — the one failure, `not-found-shape.spec.ts`'s `/l/wp-admin` check,
   is a pre-existing, previously-documented Vercel Bot Protection false-positive unrelated to this work).
+- **Cross-agent review (`scripts/cross-review.mjs`), backend PR #57, 4 rounds** — codex's token was
+  revoked mid-run; the script auto-fell-back to Antigravity for rounds 2–4. Real bugs found and fixed:
+  (1) `decideMlOrderApply` treated any existing `ml_applied_order` row as a permanent skip — a
+  transient materialization failure would silently strand the sale order-less forever with no
+  recovery path; added a `retry-materialize` decision that retries ONLY materialization, never a
+  second stock decrement. (2) The `shipped` transition only called `createOrderFulfillmentWorkflow`,
+  which advances `fulfillment_status` to `fulfilled`, not `shipped` — confirmed against Medusa's own
+  docs and the real order-module source; fixed by also calling `createOrderShipmentWorkflow` (and
+  reusing an existing fulfillment id on retry, to avoid re-fulfilling already-fulfilled items). (3)
+  `buildMlOrderLineItems` blended multiple ML lines for the same item into one combined-quantity/
+  last-price line — a real order-total bug if ML ever splits an item across differently-priced lines;
+  now emits one Medusa line item per ML line. (4) `materializeMlOrder` could throw uncaught inside the
+  lock, skipping `recordAppliedOrder` entirely for a decrement that already committed — wrapped in a
+  `safeMaterialize` helper that never throws.
+  **Deliberately deferred, not fixed:** if the Redis lock service itself is down AND two deliveries
+  race in that exact window, both could decrement stock before either's `ml_applied_order` insert
+  resolves the unique-constraint race — the constraint prevents a duplicate DB row/order, not a
+  double decrement in that specific failure mode. This is an architectural characteristic inherited
+  from the original S4 stock-sync design (not a Sprint 1 regression — the ring-based predecessor had
+  the identical exposure, with a weaker guarantee). Fixing it properly means reordering to
+  insert-then-decrement (reserving the row via the DB constraint before any inventory write), which
+  is a real design change deserving its own pass, not a rushed fix under review pressure. Two other
+  claims were checked against Medusa's actual source/types and found FALSE (order totals compute
+  correctly from line items via `decorateCartTotals`/`calculateOrderChange`; the delivered-workflow's
+  real input type is genuinely camelCase, not snake_case) — declined with the verification, not
+  argument. Final state: 117/117 backend tests green.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 
 **Deterministic (agent-run, done pre-merge):**
 1. Backend: `cd apps/backend && npm run build && npx tsc --noEmit && npm run test:unit` → build succeeds,
-   `tsc` clean, 14/14 suites · 115/115 tests green (includes the new `ml-sync.unit.spec.ts`
+   `tsc` clean, 14/14 suites · 117/117 tests green (includes the new `ml-sync.unit.spec.ts`
    idempotency/mapping tests and `ml-order-materialize.unit.spec.ts`).
 2. Frontend: `cd apps/miyagisanchez && npx tsc --noEmit && npm run build && npx playwright test
    --project=api` → clean typecheck, build succeeds, `e2e/ml-order-badge.spec.ts` +
