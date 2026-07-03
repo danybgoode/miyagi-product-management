@@ -13,11 +13,12 @@
 ## 🏗️ Building now (2)
 
 - [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 6/9 stories
-- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 5/19 stories
+- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 7/19 stories
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (2)
 
-_None._
+- [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 0/10 stories
+- [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 0/6 stories
 
 ## ✅ Shipped (76)
 
@@ -110,4 +111,4 @@ _None._
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 79 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 81 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
