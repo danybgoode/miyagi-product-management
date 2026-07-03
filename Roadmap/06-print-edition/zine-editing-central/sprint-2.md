@@ -86,15 +86,29 @@ correctly through the type refactor.
   page blocking shrink · a schema round-trip regression test (caught a real bug, see Story 2.1's
   done-note). 52/52 green across the sprint's 3 commits.
 - **api spec(s):** extended (not new, per this doc's original plan) — Story 2.3's backend PR adds
-  401/wrong-token coverage + the `isValidStudioSocialTransition` truth table to Sprint 1's
-  `e2e/print-studio-api.spec.ts`. 15/15 green (13 passed, 2 skipped pending owed token/id
-  provisioning) on that spec; full `api` suite 1211/1224 (13 pre-existing "no local Medusa backend"
-  failures, unrelated).
-- **browser smoke:** live-verified in this sprint (grow/shrink round-trips, imposition guide
-  recompute, both drawers rendering) — see each story's done-note. **Still owed to Daniel:** the
-  actual place-a-real-ad/listing/submission-into-a-real-slot round trip (needs a real open edition
-  with real approved content in prod, same gap Sprint 1 had) + a physical fold-and-check of an
-  exported PDF at a non-12pp size.
+  401/wrong-token coverage + the `isValidStudioSocialTransition` truth table + a PII-projection test
+  to Sprint 1's `e2e/print-studio-api.spec.ts` (grew across 7 rounds of cross-review fixes to 14
+  passed / 5 skipped-pending-provisioning on that spec, final state); full `api` suite 1211/1224 (13
+  pre-existing "no local Medusa backend" failures, unrelated). The skipped round-trip tests are now
+  runnable — `PRINT_STUDIO_TOKEN`/`MS_TEST_PRINT_STUDIO_SUBMISSION_ID`/
+  `MS_TEST_PRINT_STUDIO_SOCIAL_ID`/`MS_TEST_PRINT_STUDIO_EDITION_ID` just need setting as CI secrets
+  (the token itself is already live in prod).
+- **browser smoke — the full round trip is now live-verified, not just owed.** After merge, Daniel
+  provisioned `PRINT_STUDIO_TOKEN` (Vercel Production + Preview, via REST API, then a redeploy of the
+  same merged commit to pick it up) and pointed us at a real open edition ("Mundial Miyagi") with real
+  approved content. Ran the actual place → verify → un-place round trip against production for all
+  three drawers: (1) **Anuncios pagados** — placed a real paid submission into the cover corner slot,
+  confirmed the rendered content + the marketplace status flip to `placed`, un-placed, confirmed it
+  reverted to `approved`; (2) **Catálogo** — searched a real live listing, placed it with a real QR
+  code rendering (first-ever live confirmation of Story 2.2's QR feature — no ad slot had ever
+  rendered one before this sprint), un-placed; (3) **Comunidad** — grew the booklet 12→16pp, placed a
+  real approved social submission onto the resulting extra page (confirmed `edition_id` was correctly
+  recorded — the exact bug a codex cross-review round caught), confirmed the rendered caption/body/
+  photo/zone content, un-placed, shrank back to 12pp. Verified zero residual state on both sides
+  (local sample edition back to its exact pre-smoke JSON; all three marketplace submissions back to
+  `approved`) after every step. **Still owed:** a physical fold-and-check of an exported PDF at a
+  non-12pp size (the imposition math itself is vitest-proven and the on-screen guide was visually
+  confirmed at 16pp; only the literal paper fold is untested).
 - **deterministic gate:** `tsc --noEmit` + builds + suites green before merge — confirmed for both
   repos (zine locally, marketplace via PR #164's CI).
 
