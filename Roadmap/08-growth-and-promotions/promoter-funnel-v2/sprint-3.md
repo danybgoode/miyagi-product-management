@@ -1,7 +1,7 @@
 # Sprint 3 · The offer — bundle pricing, free-first-year subdomain, 2x1 print ad
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: MED/**HIGH** (entitlements + comped money) —
-> HIGH stories **Daniel merges** · Status: 🚧 built, PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165) open — awaiting Daniel merge
+> HIGH stories **Daniel merges** · Status: ✅ merged 2026-07-03, PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165) → `3f25623`
 > Backend-first where grants are touched (merge → deploy → seed/config → flip, per LEARNINGS).
 > No backend (Medusa) changes needed — entitlement/grant writers live in the frontend repo's
 > Supabase-backed `marketplace_shops` mirror, same as the existing custom-domain/subdomain grants.
@@ -51,18 +51,37 @@ documented admin-manual fallback); both visible to the merchant; the clone is ex
 commission; `api` spec on the clone/comp pure logic.
 
 ## Sprint QA
-- Deterministic gate green (`tsc` + `build` + `test:e2e`); 21 new spec assertions across
-  `promoter-pricing.spec.ts` (13), `promoter-print-2x1.spec.ts` (8), plus `promoter-close.spec.ts`
+- Deterministic gate green (`tsc` + `build` + `test:e2e`); 23 new spec assertions across
+  `promoter-pricing.spec.ts` (13), `promoter-print-2x1.spec.ts` (10), plus `promoter-close.spec.ts`
   extended with the new `/api/promoter/close/subdomain` route guard.
-- **Migration not applied from the build session** (shared dev/prod Supabase — LEARNINGS): apply
-  `supabase/migrations/20260703120000_promoter_sku_pricing.sql` at normal deploy time.
-- **Money-path smokes owed to Daniel:** a real one-time checkout charging an admin-set per-SKU price
-  (US-3.1), live promoter-attributed subdomain activation (US-3.2), and a real 2x1 print-ad close
-  (US-3.3). PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165), HIGH risk —
-  Daniel merges.
+- **Both migrations applied to prod Supabase** (Daniel authorized, 2026-07-03):
+  `20260703120000_promoter_sku_pricing.sql` (US-3.1) and `20260703130000_promoter_2x1_clone_uniq.sql`
+  (a race-safety index added during review, US-3.3 — see below).
+- **Two review passes, both with real findings, both fixed before merge:**
+  1. Cross-agent (Codex, `scripts/cross-review.mjs`) — fixed: the 2x1 auto-clone had no DB-level
+     race guard (two concurrent paid-confirmations for the same submission could double-clone) →
+     added a partial UNIQUE index + swallowed the resulting 23505; the admin-manual clone fallback
+     accepted any target edition id (wrong provider, closed edition) → validated same-provider +
+     draft/open; `decideNextEditionForClone` only checked the single closest candidate instead of
+     falling through → now iterates all candidates; admin console left a stale unrounded price in
+     the input after save → resynced to the server value. Two "blocking" findings evaluated and
+     NOT changed as deliberate calls matching existing shipped precedent (SKU pricing config in
+     Supabase, matching `marketplace_promoter_settings`/commission-rate tables; unchecked
+     `markAttributionPaid` return, matching every other paid-close handler in the Stripe webhook).
+  2. Fresh Claude subagent (different agent than the builder, per WAYS-OF-WORKING) — fixed: the
+     admin-manual clone-2x1 route was DEAD ON ARRIVAL (it gated on a predicate requiring the exact
+     flag FALSE that the UI only shows the button for when TRUE — every real click 422'd); the free
+     subdomain grant had no "already entitled" guard, unlike its paid sibling checkout, so a
+     promoter could silently overwrite a paying shop's grant metadata → now refuses with 409 when
+     the shop already holds a live grant or an active subscription.
+- **Money-path smokes still owed to Daniel** (code is live, real transactions untested): a real
+  one-time checkout charging an admin-set per-SKU price (US-3.1), a live promoter-attributed
+  subdomain close producing a real `$0` activation (US-3.2), and a real 2x1 print-ad close
+  (US-3.3). Merged via PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165) →
+  `3f25623` (HIGH risk, Daniel-authorized merge 2026-07-03).
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com (after merge + migration applied)
+Env: production · https://miyagisanchez.com (merged + migrations applied — live now)
 
 1. In `/admin/promoter`, under "Precio por SKU + paquete", set the subdomain's promoter price to
    `0` and Guardar → check `/vende/promotor` shows the bundle/price numbers matching the admin
