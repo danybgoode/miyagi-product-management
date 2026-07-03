@@ -1,5 +1,5 @@
 ---
-status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 built (S1.1+S1.3 done, S1.2 PR #161 awaiting Daniel's merge — HIGH risk).
+status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped (PR #161 merged 5583bf9). Sprint 2 built — 2.1/2.2/2.3 committed in apps/zine; 2.3's backend is PR #164 (LOW risk, awaiting review/merge). Sprint 3 not started.
 slug: zine-editing-central
 ---
 
