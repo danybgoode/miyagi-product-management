@@ -1,9 +1,9 @@
 # Sprint 2 · Become a promoter — self-serve application flow
 
-> Epic: [Promoter Funnel v2](README.md) · Risk: LOW/MED · Status: 🚧 built, PR open
+> Epic: [Promoter Funnel v2](README.md) · Risk: LOW/MED · Status: ✅ merged 2026-07-03
 > New Supabase state (applications — non-commerce, rule #2). Hand-minting keeps working unchanged.
-> PR: [#163](https://github.com/danybgoode/miyagisanchezcommerce/pull/163) (draft) · preview:
-> https://miyagisanchez-git-feat-promoter-fun-b26dc9-danybgoodes-projects.vercel.app
+> PR: [#163](https://github.com/danybgoode/miyagisanchezcommerce/pull/163) squash-merged to `main`
+> as `de56db3`.
 
 ## US-2.1 — Public application form + admin notification ✅
 **As** someone who wants to be a promoter, **I want** to apply from `/vende/promotor` (name, email,
@@ -49,13 +49,19 @@ transition (pure seam). **Commit:** `8fc2472`.
   Sprint 1 (confirmed byte-identical at the squash-merge commit `8513fee`, before any Sprint 2 work):
   the S1.3 apply-teaser hides the `/promotor/cerrar` CTA for unbound visitors even when that route is
   reachable, which the test's older invariant doesn't account for. Flagged as a separate follow-up
-  task, not fixed in this PR.
-- PR: [#163](https://github.com/danybgoode/miyagisanchezcommerce/pull/163) (draft).
+  task (in progress in a sibling session as of this writing), not fixed in this PR.
+- **Cross-agent review (Antigravity — codex was token-revoked, script fell back automatically):**
+  caught a real race in `approvePromoterApplication` (minted the code BEFORE the atomic
+  `pending`-status claim, so two concurrent approves could both mint and orphan a code) — fixed to
+  claim-first, mint-second, with a release-back-to-pending compensating action on mint failure. Also
+  fixed a hardcoded prod `SITE` URL (now `NEXT_PUBLIC_SITE_URL`-derived) and hardened the honeypot's
+  DOM name/label away from common autofill tokens. A second, fresh Claude reviewer independently
+  confirmed the fixes (commit `3e9bc00`) before merge.
+- PR: [#163](https://github.com/danybgoode/miyagisanchezcommerce/pull/163) squash-merged → `de56db3`.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: preview (pre-merge) ·
-https://miyagisanchez-git-feat-promoter-fun-b26dc9-danybgoodes-projects.vercel.app — swap in
-`https://miyagisanchez.com` once merged.
+Env: production · https://miyagisanchez.com (merged 2026-07-03; allow ~time for the Vercel prod
+deploy from `de56db3` to finish before running this).
 
 1. Open `<env>/vende/promotor` → tap "Aplica para ser promotor" (or scroll to the form at the
    bottom) → fill name, email, WhatsApp, ciudad/zona, motivación → submit.
