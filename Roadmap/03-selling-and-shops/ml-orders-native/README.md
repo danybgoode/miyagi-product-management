@@ -1,5 +1,5 @@
 ---
-status: ready
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 built (backend 473b632+22b797e, frontend 0c735b9), draft PRs open, HIGH risk — awaiting Daniel merge.
 slug: ml-orders-native
 archetype: Builder
 ---
@@ -8,7 +8,7 @@ archetype: Builder
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/ml-orders-native.md`](../../00-ideas/2.%20readyforscope/ml-orders-native.md)
 > (Epic A of the Merchant Ops PRD; approved by Daniel 2026-07-02).
-> **Status: READY — scaffolded, not started.** Risk **HIGH** (order/fulfillment core + inventory
+> **Status: Sprint 1 built, draft PRs open.** Risk **HIGH** (order/fulfillment core + inventory
 > interaction with the live S4 stock sync). Daniel merges HIGH stories.
 > **Companion:** [`profit-analyzer`](../profit-analyzer/README.md) (Epic B) builds on this epic's order
 > data — **this epic ships first.**
@@ -102,6 +102,6 @@ touches.
 
 ## Sprints
 
-- [sprint-1.md](sprint-1.md) — The spine: idempotency table + order materialization + state mapping + badge.
+- [sprint-1.md](sprint-1.md) — ✅ built. The spine: idempotency table + order materialization + state mapping + badge (backend `473b632`+`22b797e`, frontend `0c735b9`). Draft PRs open — awaiting Daniel merge (HIGH).
 - [sprint-2.md](sprint-2.md) — Full lifecycle: cancel/refund, notifications, entitlement + kill-switch.
 - [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity.
