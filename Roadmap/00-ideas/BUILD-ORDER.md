@@ -65,7 +65,7 @@
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 0/3 stories · risk: Low
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
-- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 7/19 stories
+- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 7/19 stories
 - [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 0/12 stories
 - [Referral Program](../../08-growth-and-promotions/referral-program/README.md) — 08 Growth · 5/5 stories · risk: Low
 - [Seasonal Theme Engine](../../08-growth-and-promotions/seasonal-theme-engine/README.md) — 08 Growth · 0/9 stories

@@ -102,7 +102,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 
 ### 06 · Print Edition — *"Sal en la edición impresa"*
 The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's first and only monetization channel. Tenants pay to feature their shop/listings; QR + WhatsApp bridge print → marketplace.
-- ✅ Buy an ad placement (full / half / quarter / card tiers)
+- ✅ Buy an ad placement (full / half / quarter / card tiers) — a **2x1 promoter close** (pay 1 edition, appear in 2, auto-cloned into the next open edition) is one path to this; see 08 · Promoter program
 - ✅ Self-serve ad builder for advertisers (copy, photos, QR target)
 - ✅ Community / social section (recommendations, events, shout-outs)
 - ✅ Editorial review & approval queue
@@ -113,7 +113,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ### 07 · Agentic & Federated Commerce
 - ✅ **Pick & change your shop URL** — sellers choose a clean `miyagisanchez.com/s/[slug]` at creation and edit it later (live availability, reserved words); the old slug 301s for 90 days, with a copy button + upsell to a full custom domain. *(Free tier of shop addressing.)*
-- ✅ **The white-label subdomain is a paid SKU** — `shopname.miyagisanchez.com` serves the whole storefront white-label (a real `*.miyagisanchez.com` wildcard cert; apex on Vercel nameservers, sales attributed to the `subdomain` channel), but it's now the platform's **cheaper** paid SKU: **$199 MXN/yr or $25 MXN/mo** (switch between them anytime, no double charge), gated behind the fail-open `subdomain.paywall_enabled` flag (ON). Existing shops (179) are **grandfathered free forever**; a new unpaid shop's subdomain **301-redirects to the free `/s/slug`**. Buy + cadence-switch are reachable over MCP (`get_subdomain_entitlement`, `start_subdomain_subscription`, `switch_subdomain_cadence`). **The free `/s/slug` shop URL stays free.** *(Prod monthly seed + money-path smoke owed to Daniel.)*
+- ✅ **The white-label subdomain is a paid SKU** — `shopname.miyagisanchez.com` serves the whole storefront white-label (a real `*.miyagisanchez.com` wildcard cert; apex on Vercel nameservers, sales attributed to the `subdomain` channel), but it's now the platform's **cheaper** paid SKU: **$199 MXN/yr or $25 MXN/mo** (switch between them anytime, no double charge), gated behind the fail-open `subdomain.paywall_enabled` flag (ON). Existing shops (179) are **grandfathered free forever**; a new unpaid shop's subdomain **301-redirects to the free `/s/slug`**. Buy + cadence-switch are reachable over MCP (`get_subdomain_entitlement`, `start_subdomain_subscription`, `switch_subdomain_cadence`). **The free `/s/slug` shop URL stays free.** A merchant enrolled via a promoter can also get the **first year free** (a one-time grant, no checkout at all) when the admin prices that SKU at $0 for promoters — see 08 · Promoter program. *(Prod monthly seed + money-path smoke owed to Daniel.)*
 - ✅ **Ultra-short branded links** — `mschz.org/[shop]` and `mschz.org/[product-code]` 301-redirect to the canonical storefront URL (case-insensitive; unknown → branded 404). Every listing auto-gets a short code. *(Completes the addressing ladder: free slug → subdomain → short link → custom domain.)*
 - ✅ Sell on the marketplace or your **own custom domain** — the **whole storefront** (home, product pages, cart) renders white-label under the tenant domain, scoped to that one shop, with SEO consolidated there (canonical/OG + per-host robots/sitemap + legacy 301s).
 - ✅ **Buy on a custom domain too** — tapping buy hops the buyer to the platform's secure sign-in + payment (pragmatic; Clerk is platform-only), then **returns them to the tenant domain** on success; the sale is attributed `custom_domain` and the buyer's confirmation email is **branded to the seller's domain**, with a "Dominio propio" badge on the order. *(All 3 sprints shipped 2026-06-05, PRs #12/#13/#14; live custom-domain smoke owed to Daniel.)*
@@ -130,7 +130,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ### 08 · Growth & Promotions
 - ✅ Referral program: invite friends, earn print-ad credit on their first purchase
 - ✅ Platform / admin promo codes (redeemable on print-ad checkout)
-- ✅ **Promoter program** — a commission-paid, in-person seller-acquisition force. A promoter has a personal `PRM-` code that unlocks a seller discount; from an authed close workspace (`/promotor/cerrar`) they stand a merchant's shop up on Miyagi (unclaimed), **close the sale in person even for cash-only merchants** (pay the SKU on the merchant's behalf with their own card — attributed to their code, entitlement lands on the merchant's shop), and hand off with a one-tap **WhatsApp claim link** (the gem-claim loop transfers ownership; attribution survives). Backed by a **one-time payment cadence** (pay a year up front, no recurring mandate) and a **commission ledger** (per-SKU %, first-payment-only, offline settlement). Resources mini-site + printable sell-sheet at `/vende/promotor`. Behind `promoter.enabled` (ON). *(money/auth browser smokes owed to Daniel.)*
+- ✅ **Promoter program (v2 — the full self-serve funnel)** — a commission-paid, in-person seller-acquisition force, now legible and self-serve end to end. **Apply → approve → close:** anyone applies at `/vende/promotor`; admin approve/reject mints + sends the `PRM-` code (no more hand-minting). **Real offer:** the landing shows genuine per-SKU earnings and a bundle/per-SKU promoter price table sourced from one admin config (no more empty `%`). **The close (`/promotor/cerrar`):** a promoter stands a merchant's shop up on Miyagi (unclaimed) with a **real, published listing** (photos, price, category — indistinguishable from self-serve) and a **structured, CP-first location** (estado/municipio/colonia, not free text); closes the sale in person **even for cash-only merchants** — pay a SKU on the merchant's behalf with a card, or **net-remittance transfer** (SPEI/DiMo/CoDi, admin-approved, owed = price − commission) for promoters who won't front their own card — attributed to the promoter's code, entitlement lands on the merchant's shop. Sells a **printed ad in the same close**, designed on the spot (or deferred to the merchant's own panel later), with an **honesty notice** when the shop falls outside the active edition's distribution zones. A **branded merchant receipt email** lands after every completed close (items, amounts, claim link), and the handbook (`/vende/promotor/sell-sheet`) links a **downloadable ad-rate PDF** with live tier pricing. Hands off with a one-tap **WhatsApp claim link** (gem-claim loop; attribution survives). Backed by a **one-time payment cadence** and a **commission ledger** (per-SKU %, first-payment-only). Perks: **free first year of the subdomain SKU** via promoter attribution, and a **2x1 printed ad** (pay 1 edition, appear in 2, auto-cloned). Behind `promoter.enabled` (ON) + `promoter.transfer_enabled` (fail-open OFF — net remittance merged dark, activation owed to Daniel). *(Money/auth browser smokes owed to Daniel.)*
 - ✅ **Seller-acquisition landing pages** — a supply-side recruitment funnel that pitches *selling on Miyagi* and routes into `/sell`: an anchor `/vende` page + a persona router with tailored es-MX pitches (`/vende/creadores`, `/vende/negocios`, `/vende/servicios`) and a World-Cup wedge (`/vende/mundial`), per-persona SEO/OG, Clarity + UTM attribution, and A/B hooks. **Content overhaul (v2, 2026-06-26):** real intentional es-MX copy (distrust framing + internal jargon killed; correct accents/ñ/¿¡, CI-guarded), a directive copy-paste "ask your agent" prompt, a truthful **Miyagi vs Mercado Libre vs Shopify benchmark** (0%-platform-commission framing, sourced + date-stamped), a **UCP/MCP AI-channel** value-prop section, and a **mobile-responsive sweep** (no overflow at 360/390/414px). Frontend-only.
 - ✅ **Marketplace positioning metadata** — the browser/Google title, meta description, OpenGraph/Twitter tags, and generated social card now say what Miyagi is in plain es-MX: a marketplace to buy, sell, and open your own shop in Mexico, keeping the **segundamano** recognition in the description/keywords/card instead of leading with "infraestructura."
 - ✅ **Sweepstakes** — a tenant runs a compliant giveaway: a SEGOB-aware campaign gate, a public entry page (`/g/[slug]`) + QR, email-code-verified entries, optional purchase-bonus tickets, an automated backend draw, and winner/consolation notifications. A global kill-switch lets Miyagi suspend all sweepstakes.
@@ -145,6 +145,39 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-03 — Promoter Funnel v2 SHIPPED (6 sprints; mixed LOW→HIGH — a follow-up to Promoter
+  Program).** Makes the v1 promoter funnel legible, self-serve, and street-real. **S0** ([#160](https://github.com/danybgoode/miyagisanchezcommerce/pull/160)) investigated a
+  reported subdomain-paywall gating bug — closed **not reproducible** (test-only PR, no runtime
+  change). **S1** ([#162](https://github.com/danybgoode/miyagisanchezcommerce/pull/162) `8513fee`) made the landing tell the truth: the hero prompt single-sources from the
+  same agent-prompt builder the promoter's own tools use, and real per-SKU earnings replace the
+  empty `%`. **S2** ([#163](https://github.com/danybgoode/miyagisanchezcommerce/pull/163) `de56db3`) added the self-serve **application → admin approve/reject → code**
+  flow, ending Daniel-in-the-loop hand-minting. **S3** ([#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165) `3f25623`, HIGH) added admin-configured
+  **bundle + per-SKU promoter pricing**, a **free first-year subdomain** via promoter attribution (a
+  direct $0 grant, no checkout), and a **2x1 printed ad** (pay 1 edition, auto-cloned into the
+  next). **S4** ([#167](https://github.com/danybgoode/miyagisanchezcommerce/pull/167) `f81a41a`, HIGH) added **net-remittance transfer** (SPEI/DiMo/CoDi) for
+  promoters who won't front their own card — owed = price − commission, admin-approved — behind the
+  fail-open `promoter.transfer_enabled` flag (merged dark, activation owed to Daniel). **S5**
+  ([#168](https://github.com/danybgoode/miyagisanchezcommerce/pull/168) `26f4506`) closed the remaining close-flow gaps in one session: a **real, published
+  listing** during the close (force-published for unclaimed shops — `isShopClaimed()` already blocks
+  checkout regardless of publish status, so the usual delivery/payment gate was redundant there),
+  **CP-first structured locations** replacing free text, a pure **zine coverage-honesty matcher**
+  (informative-only notice when a shop falls outside a print edition's distribution zones), **ad
+  design in the close flow** (reusing the existing content-accepting checkout route unchanged), a
+  **branded merchant receipt email** fired from all six real completion paths, and a **downloadable
+  ad-rate PDF** generated fresh via the existing layout/Puppeteer pipeline (no dependency on any
+  baseline artwork file). Two review passes on S5 (cross-agent + a fresh reviewer) each found real
+  bugs fixed pre-merge (an unescaped shop name in the receipt HTML; silent photo-upload failures) and
+  correctly declined two false positives matching established precedent (the MCP `create_listing`
+  tool already uses the identical custom-Next-route-into-Medusa shape; every promoter `close/*` route
+  is deliberately never UCP-exposed). Durable learnings promoted to LEARNINGS: **read the actual close
+  workspace's current shape before adding a step, not the shape a prior sprint's doc described** (a
+  stale local checkout would have silently reverted Sprint 4's transfer sub-flow); **a shared
+  "reference file" a scope doc names may have moved to a separate, un-deployed repo** — verify before
+  assuming a rate-card/asset generator needs runtime access to it. See [08 · Growth & Promotions ›
+  Promoter Funnel v2](08-growth-and-promotions/promoter-funnel-v2/). Owed to Daniel: the full authed
+  in-store-close browser smoke (S5, real device), the net-remittance flag flip + live money smoke
+  (S4), and the full application-approval browser smoke (S2).
 
 - **2026-07-02 — Groom archetype-lens wiring SHIPPED (1 sprint; chore + LOW).** Wires the
   `spike-role-archetypes` WRITTEN DECISION into the `groom` skill: `skills/groom/SKILL.md` Stage 2 gains an

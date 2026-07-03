@@ -92,6 +92,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   a stale local `origin/main` misreads it as "unmerged." Confirm with `gh pr view <#> --json state,mergeCommit`
   + `gh api repos/<o>/<r>/contents/<path>?ref=main`, or `git fetch` then `git grep <x> origin/main` — an
   `ls`/working-tree read is not evidence about `main`. *(2026-07-01, feature-flags-inhouse S3.)*
+  **Corollary — a stale local checkout can also hide an entire prior sprint's UI SHAPE during planning,
+  not just its merge status.** Promoter Funnel v2 Sprint 5's planning session found `apps/miyagisanchez`
+  one commit behind `origin/main`, missing the immediately-prior Sprint 4 merge — the local
+  `PromoterCloseClient.tsx` still showed the pre-S4 shape, silently missing an entire prop + UI sub-flow
+  S4 had added. Caught by reading `git show origin/main:<path>` for the specific files a plan will touch,
+  *before* trusting "what already exists" from a local `Read`; fast-forwarded before branching. Any
+  multi-sprint epic where sessions hand off cold should diff against `origin/main` before planning, not
+  only before merging. *(2026-07-03, promoter-funnel-v2 S5.)*
 - **Decommissioning a dependency is bigger than the `package.json` line — the acceptance grep is the real
   bar, and post-swap comments go stale.** Removing Flagsmith meant an acceptance of `grep -ri flagsmith apps/`
   clean, which forced scrubbing ~30 comment/spec/script/migration mentions, not just the two `flags.ts`.
@@ -366,6 +374,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `lib/x.ts` reference is relative to one of *them*, not the monorepo root — checking only the root
   produced ~50 false "dead path" positives before the fix; checking all known app roots dropped it to a
   handful of genuine edge cases. *(2026-07-02, doc-hygiene-learnings-sweep S1.2 — `scripts/doc-hygiene.mjs`.)*
+  **Corollary — a scope doc's named "baseline reference file" can have moved to an entirely SEPARATE,
+  un-deployed repo since the doc was written, not just a different app root.** Promoter Funnel v2 Sprint
+  5's rate-card story assumed a baseline zine PDF + matching JSON (named in the epic's own "what already
+  exists" list) would be readable by the PDF generator at runtime; both had actually moved into
+  `apps/zine` — a separate local-only git repo with no CI and no deploy — unreachable from the Cloud Run
+  render service regardless of path. Surfaced as a clarifying question before writing code (`git status`
+  showed the files untracked; `find` across app roots showed the real JSON living elsewhere), not
+  discovered mid-build — the generator was designed to build fresh from existing primitives instead, with
+  zero runtime dependency on either file. Before designing a generator/importer around a scope doc's named
+  reference asset, confirm it still exists where the doc says AND that the runtime that needs it can
+  actually reach it. *(2026-07-03, promoter-funnel-v2 S5.)*
 - **A git-log pickaxe scan is a cheap, dependency-free way to detect a specific frontmatter field's flip
   within a date window — no new metadata field needed.** `git log --since=<date> -p -- <pathspec>`,
   regex-matching added (`+`-prefixed) lines against the preceding `diff --git a/<file> b/…` header to
@@ -953,6 +972,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (removal) ungated**: removal moves *away* from the gated "has a connected domain" state, so gating it
   adds no protection and would trap a lapsed seller's escape hatch. Enumerate mutations by *which direction*
   they move the protected state. *(2026-06-11, custom-domain-paywall S1.)*
+  **Corollary — when a SECOND, independent gate already blocks the outcome a first gate exists to
+  prevent, recognize the first gate is redundant for that case rather than layering more state to
+  satisfy it.** The shared listing-activation gate (no delivery/payment config ⇒ force-draft) exists so
+  no buyer hits a live listing they can't check out on — but a promoter-created shop is always
+  *unclaimed*, and `isShopClaimed()` already blocks checkout entirely regardless of publish status.
+  Skipping the redundant gate specifically for the unclaimed-shop case (never touching it for claimed
+  self-serve shops, where it still matters) let a promoter's listing publish immediately instead of
+  needing an invented delivery/payment stub just to satisfy an already-moot check. Before adding state to
+  satisfy a gate, check whether a DIFFERENT existing gate already makes it a no-op for your specific case.
+  *(2026-07-03, promoter-funnel-v2 S5.)*
 - **A lifecycle/state machine lives best as a pure, next-free `lib/` helper** (derivation + transition
   guards + copy), mirrored once in the backend normalizer for agents — a pure-logic spec proves invariants
   for free (e.g. an illegal transition like `pending_payment → processing` is rejected by the guard).

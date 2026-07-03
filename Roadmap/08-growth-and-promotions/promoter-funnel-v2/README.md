@@ -1,14 +1,15 @@
 ---
-status: planned
+status: shipped
 slug: promoter-funnel-v2
 archetype: Grower
 ---
 
-# Epic · Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close
+# Epic · Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/promoter-funnel-v2.md`](../../00-ideas/2.%20readyforscope/promoter-funnel-v2.md)
 > (approved by Daniel 2026-07-02). Follow-up to `promoter-program` (shipped 2026-06-30) and
-> `promoter-funnel-fixes` (shipped 2026-07-02).
+> `promoter-funnel-fixes` (shipped 2026-07-02). **Shipped 2026-07-03** — all 6 sprints merged; see
+> [RETROSPECTIVE.md](RETROSPECTIVE.md).
 
 **Tagline:** *El promotor sabe exactamente qué ofrece, cuánto gana y cómo cobrar — y cualquiera puede aplicar para serlo.*
 
@@ -100,15 +101,15 @@ additive. HIGH stories → **Daniel merges**. Every frontend PR gets a Vercel pr
 `middleware.ts`/shared-surface touch.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (money/auth smokes owed to Daniel, declared per sprint)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (08 promoter line + 06/07 lines where behavior changed)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] `build-order.mjs` regenerated in the same PR as any `status:` flip
-- [ ] Feature branch deleted; scope-doc frontmatter flipped to `status: shipped`
+- [x] All sprints merged to `main` + smoke-tested (money/auth smokes owed to Daniel, declared per sprint)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (08 promoter line + 06/07 lines where behavior changed)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] `build-order.mjs` regenerated in the same PR as any `status:` flip
+- [x] Feature branch deleted; scope-doc frontmatter flipped to `status: shipped`
 
 ## Sprints
 - [sprint-0.md](sprint-0.md) — ✅ closed 2026-07-02, not reproducible (PR #160) — Bug: subdomain paywall not gating new sellers.
