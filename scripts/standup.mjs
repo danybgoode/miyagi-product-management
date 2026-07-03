@@ -32,7 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
 import { formatPrList, truncateForTelegram } from './lib/telegram-format.mjs';
-import { readLogFromBranch, writeLogToBranch } from './lib/log-branch.mjs';
+import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -305,13 +305,11 @@ async function sendTelegram(chatId, text) {
 // ---- log persistence (scripts/lib/log-branch.mjs — a dedicated claude/-prefixed branch) ----
 
 function appendRunAndPush(snapshot) {
-  const existing = readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH }) || '';
-  const updated = `${existing}${JSON.stringify(snapshot)}\n`;
-  const ok = writeLogToBranch({
+  const ok = appendLineToBranch({
     cwd: ROOT,
     branch: LOG_BRANCH,
     path: LOG_BRANCH_PATH,
-    content: updated,
+    line: `${JSON.stringify(snapshot)}\n`,
     message: `chore(standup): log ${new Date().toISOString().slice(0, 10)}`,
   });
   if (!ok) {

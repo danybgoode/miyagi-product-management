@@ -23,12 +23,23 @@ export function formatPrList(prs, maxItems) {
 // HTML-safety steps, since the only tags these scripts emit are `<b>`/`</b>` and an unbalanced/incomplete
 // one would make Telegram reject the whole message as invalid HTML — defeating the safety net's purpose:
 // (1) strip a trailing PARTIAL tag first (the cut landing mid-`<b>`/`</b>` itself, e.g. a dangling `<b`),
-// (2) then close any remaining fully-formed-but-unclosed `<b>`.
+// (2) then close any remaining fully-formed-but-unclosed `<b>`. Appending closing tags can itself push
+// the result back OVER `limit` — iterate, shrinking the cut point by however much was appended, until the
+// FINAL (post-closing-tags) length actually fits. Bounded to a few iterations (closing tags are 4 chars
+// each, so this converges immediately in every realistic case); a hard fallback strips all tags entirely
+// if it somehow doesn't, guaranteeing the contract ("result never exceeds limit") holds regardless.
 export function truncateForTelegram(text, limit) {
   if (text.length <= limit) return text;
-  const sliced = text.slice(0, limit - 1).replace(/<[^>]*$/, '');
-  const truncated = `${sliced.trim()}…`;
-  const opens = (truncated.match(/<b>/g) || []).length;
-  const closes = (truncated.match(/<\/b>/g) || []).length;
-  return opens > closes ? `${truncated}${'</b>'.repeat(opens - closes)}` : truncated;
+  let cut = limit - 1; // room for the ellipsis
+  for (let i = 0; i < 10; i += 1) {
+    const sliced = text.slice(0, cut).replace(/<[^>]*$/, '');
+    const candidate = `${sliced.trim()}…`;
+    const opens = (candidate.match(/<b>/g) || []).length;
+    const closes = (candidate.match(/<\/b>/g) || []).length;
+    const closingTags = opens > closes ? '</b>'.repeat(opens - closes) : '';
+    const final = `${candidate}${closingTags}`;
+    if (final.length <= limit) return final;
+    cut -= Math.max(closingTags.length, 1);
+  }
+  return `${text.replace(/<[^>]*>/g, '').slice(0, limit - 1).trim()}…`;
 }

@@ -17,10 +17,18 @@ function git(args, opts = {}) {
 }
 
 // Reads `path`'s content from the tip of `branch` on `origin`, without any checkout. Returns null if the
-// branch doesn't exist yet (first run) or the file isn't present on it.
+// branch doesn't exist yet (first run) or the file isn't present on it. Only logs the fetch failure when
+// it ISN'T the benign "branch doesn't exist yet" case (git's own "couldn't find remote ref" message) — an
+// auth/network failure would otherwise look identical to a normal first run in routine transcripts.
 export function readLogFromBranch({ cwd, branch, path }) {
   const fetch = git(['fetch', 'origin', `+refs/heads/${branch}:refs/remotes/origin/${branch}`], { cwd });
-  if (fetch.status !== 0) return null; // branch doesn't exist remotely yet, or fetch failed — first run
+  if (fetch.status !== 0) {
+    const stderr = (fetch.stderr || '').trim();
+    if (!/couldn't find remote ref/i.test(stderr)) {
+      console.error(`log-branch: git fetch ${branch} failed (not just "doesn't exist yet"): ${stderr}`);
+    }
+    return null;
+  }
   const show = git(['show', `origin/${branch}:${path}`], { cwd });
   return show.status === 0 ? show.stdout : null;
 }
@@ -73,4 +81,22 @@ export function writeLogToBranch({ cwd, branch, path, content, message }) {
     return false;
   }
   return true;
+}
+
+// Read-modify-write with a bounded retry-on-conflict: appends `line` to the file's current content,
+// re-reading the branch's CURRENT tip fresh on each attempt. Without this, a concurrent write to the same
+// branch between our read and our push (a non-fast-forward push failure) would silently drop this run's
+// snapshot entirely — this system has no realistic concurrent-execution path today (nightly/weekly,
+// single-fire cron triggers), but the fix is cheap and removes the risk outright rather than assuming it
+// away. Returns true only if a write eventually succeeded.
+export function appendLineToBranch({ cwd, branch, path, line, message, retries = 2 }) {
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const existing = readLogFromBranch({ cwd, branch, path }) || '';
+    const updated = `${existing}${line}`;
+    if (writeLogToBranch({ cwd, branch, path, content: updated, message })) return true;
+    if (attempt < retries) {
+      console.error(`log-branch: append attempt ${attempt + 1} failed for ${branch} — retrying with a fresh read.`);
+    }
+  }
+  return false;
 }

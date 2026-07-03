@@ -32,9 +32,22 @@ test('truncateForTelegram: over the limit → cut with an ellipsis, length bound
   assert.ok(out.endsWith('…'));
 });
 
-test('truncateForTelegram: an unclosed <b> after truncation gets auto-closed (valid HTML)', () => {
+test('truncateForTelegram: an unclosed <b> after truncation gets auto-closed (valid HTML), and the FINAL length (incl. the closing tag) still respects the limit', () => {
   const text = `${'x'.repeat(90)}<b>${'y'.repeat(90)}`; // <b> opened, never closed, spans the cut
   const out = truncateForTelegram(text, 100);
+  const opens = (out.match(/<b>/g) || []).length;
+  const closes = (out.match(/<\/b>/g) || []).length;
+  assert.equal(opens, closes);
+  assert.ok(out.length <= 100, `expected <=100 chars (incl. the appended </b>), got ${out.length}`);
+});
+
+test('truncateForTelegram: appending closing tags must never push the result back OVER the limit — the exact overflow the naive version had', () => {
+  // Every character up to the limit is inside an unclosed <b> — the naive "slice then append </b>"
+  // approach would land at exactly `limit` chars BEFORE the closing tag, then overshoot by 4 once
+  // "</b>" is appended. The fix must shrink the cut point so the room for "</b>" is reserved up front.
+  const text = `<b>${'y'.repeat(5000)}`;
+  const out = truncateForTelegram(text, 100);
+  assert.ok(out.length <= 100, `expected <=100 chars, got ${out.length}`);
   const opens = (out.match(/<b>/g) || []).length;
   const closes = (out.match(/<\/b>/g) || []).length;
   assert.equal(opens, closes);
