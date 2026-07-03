@@ -11,6 +11,7 @@ epic: "09-platform-infra/dobby-foundation"   # S0 workstream; engine epic scaffo
 build_order: null
 updated: 2026-07-03
 prd: "../1. raw/golden-beans.md"
+prd_addendum: "../1. raw/golden-beans-prd-g-chaos.md"   # PRD-G: chaos + SecOps — deferred to v2, see Addendum section
 ---
 
 # Scope — Golden Beans: Unified Growth Engine + portable ways-of-work
@@ -103,7 +104,8 @@ real Miyagi feature instrumented behind a kill-switch.
 **Out (named later epics, not creep):** flag-serving gateway + Miyagi `isEnabled()` migration ·
 Pub/Sub broker + GA4/vendor fanout · `triggerSatisfaction()` micro-surveys · p99 < 5 ms SLO · Redis
 cache-aside · multi-tenant auth hardening · statistical-significance engine (basic lift only in v1) ·
-all PRD design/branding notes (per Daniel).
+all PRD design/branding notes (per Daniel) · **PRD-G Modules E + F** (chaos engineering · SecOps
+simulation · circuit breakers — the v2 epic, see Addendum below).
 
 ## Slicing (skateboard → car)
 
@@ -118,8 +120,8 @@ all PRD design/branding notes (per Daniel).
 ### S1 — skateboard: events flow end-to-end *(this + later sprints: golden-beans' own Roadmap)*
 | Story | Ships | Risk |
 |---|---|---|
-| S1.1 As a builder I want `POST /v1/track` rejecting malformed events (projectId/userId/event; featureId optional) and persisting to Postgres, so funnels stay accurate. Acceptance: bad payload → 4xx; good → row queryable. | ingest + store (own Supabase) | LOW |
-| S1.2 As an app builder I want a TS SDK (`track`, `trackAdoption(featureKey)`) auto-appending context, so integration is minutes. Acceptance: fresh Next.js app fires an event with ≤5 lines. | SDK package | LOW |
+| S1.1 As a builder I want `POST /v1/track` rejecting malformed events (projectId/userId/event; featureId optional) and persisting to Postgres, so funnels stay accurate. Acceptance: bad payload → 4xx; good → row queryable. **Forward-compat (PRD-G):** the event schema carries an extensible `tags`/`metadata` object from day one, so v2 friction/chaos tagging (F2) needs no migration. | ingest + store (own Supabase) | LOW |
+| S1.2 As an app builder I want a TS SDK (`track`, `trackAdoption(featureKey)`) auto-appending context, so integration is minutes. Acceptance: fresh Next.js app fires an event with ≤5 lines. **Forward-compat (PRD-G):** any SDK resolve/config call returns an extensible **payload envelope** (not a bare boolean), so v2 fault injection (`delay_ms`, `force_error_code`) is additive, never a breaking SDK change. | SDK package | LOW |
 | S1.3 As a PM I want one real Miyagi feature instrumented behind `growth.telemetry_enabled` (enablement, default **OFF**, in `platform_flags`), so real traffic proves the loop with an instant off-switch. Acceptance: flag ON → events land; OFF → zero calls. | first consumer | LOW — **touches marketplace FE, additive, announce** |
 
 ### S2 — TARS funnel v1
@@ -133,6 +135,25 @@ Define metric + leading inputs · link feature→input · per-feature input-impa
 ### S4 — A/B v1
 Deterministic hash bucketing in the SDK (same user → same variant, no lookup) · exposure events ·
 side-by-side variant comparison (basic lift; significance = later epic). LOW.
+**Forward-compat (PRD-G):** variant resolution returns the S1.2 payload envelope; targeting rules
+stored as data (cohort %, region) — v2 chaos scenarios (E2 blast radius) reuse this rules shape.
+
+## Addendum — PRD-G: Bottom-line optimization (chaos + SecOps) — deferred to v2 (Daniel, 2026-07-03)
+PRD addendum at `../1. raw/golden-beans-prd-g-chaos.md` (Modules E + F). **Decision: v1 (S0–S4)
+unchanged except the three forward-compat constraints marked above; PRD-G grooms as its own epic in
+golden-beans' Roadmap after S4.** Why deferral is structural, not preference:
+- **Dependencies point one way.** E3's target-vs-control post-mortems need S2 (TARS) + S4
+  (bucketing); E1/E2 need the payload-resolving SDK seam + targeting rules S1/S4 lay down.
+- **F3 circuit breakers need the engine to *write* flags** — v1 flags live in Miyagi's
+  `platform_flags` (telemetry-first decision). Sequencing for v2: **E (chaos) → flag-serving
+  migration epic → F3 circuit breakers.** F3 is now the strongest motivation for that migration.
+- **Risk callouts for the v2 grooming (recorded now so they're not rediscovered):** F3 auto-toggling
+  flags like `checkout.stripe_enabled` is money-path-adjacent → **HIGH**, Daniel merges, needs its
+  own kill-switch + an allow-list of breaker-eligible flags (money/auth flags likely excluded or
+  human-confirmed). F1 attack simulations (credential stuffing, rate abuse) against live surfaces
+  touch **Clerk (third-party ToS)** and real buyers → v2 must decide staging-vs-prod + blast-radius
+  policy before any simulation runs; client-side-SDK-level injection first (per Daniel's note),
+  deep backend fault injection later still.
 
 **Sequencing:** S0 strictly first (golden-beans must be spawned *from* the template — dogfood or the
 foundation is fiction). Then S1→S4 linear. Kill-switch decided here per Stage 6b: `growth.telemetry_enabled`.
