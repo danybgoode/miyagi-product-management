@@ -1,9 +1,10 @@
 # Sprint 4 · Street money — net remittance + admin approval
 
-> Epic: [Promoter Funnel v2](README.md) · Risk: **HIGH** (money path) — **Daniel merges** · Status: 🚧 built,
-> PR [#167](https://github.com/danybgoode/miyagisanchezcommerce/pull/167) open (awaiting Daniel's merge)
-> Behind new flag `promoter.transfer_enabled` (fail-open **OFF** — merges dark; run-order per
-> LEARNINGS: merge → deploy → seed/config → flip). Stripe path never removed.
+> Epic: [Promoter Funnel v2](README.md) · Risk: **HIGH** (money path) — **Daniel merges** · Status: ✅ merged
+> 2026-07-03, PR [#167](https://github.com/danybgoode/miyagisanchezcommerce/pull/167) → `f81a41a`
+> Behind new flag `promoter.transfer_enabled` (fail-open **OFF** — merged dark; both migrations
+> already applied to prod Supabase — seed/flip + the live smoke below are owed to Daniel).
+> Stripe path never removed.
 
 **The model (epic decision #1):** for cash closes, the promoter collects the merchant's cash and
 transfers the platform **(price − commission)** via SPEI/DiMo/CoDi to Daniel's account — commission
@@ -40,8 +41,37 @@ state + notification; every transition spec'd on the pure state machine; no acti
 that skips approval.
 
 ## Sprint QA
-- **Deterministic gate green** (local, pre-merge): `tsc --noEmit`, `next build`, `npm run test:e2e`
-  (`api` project). New pure-seam specs in `e2e/promoter-transfer.spec.ts` (22 assertions): owed-amount
+- **Two review passes, both with real findings, both fixed before merge:**
+  1. Cross-agent (Codex, `scripts/cross-review.mjs`) — fixed: a promoter could be shown "Transferir
+     a Miyagi" via a method (SPEI/DiMo/CoDi) the admin never actually configured a destination for;
+     added `hasRequiredTransferDetail()` refusing (422) before a transfer request is created. Also
+     tightened the `promoter.transfer_enabled` doc comment — it gates transfer creation only, not
+     admin review of an already-reported transfer (real cash already collected must stay resolvable
+     even if intake is later paused). Two "blocking" findings evaluated and NOT changed as deliberate
+     calls matching established precedent: the Medusa/Supabase split (the existing Stripe path for
+     these exact SKUs already bypasses Medusa's cart/order system entirely via a direct Stripe
+     Checkout Session — confirmed by reading `lib/domain-subscription-checkout.ts` +
+     `lib/stripe-subscriptions.ts`) and UCP/MCP exposure (the promoter-close flow is a Clerk-authed,
+     human-only in-person-sale tool, never buyer-facing, and was never UCP-exposed before this
+     sprint either). A third finding (unchecked `markAttributionPaid` return) matches
+     `grantFreeSubdomainYear`'s exact existing shape, already reviewed and declined for the same
+     reason in Sprint 3.
+  2. A fresh Claude subagent (different agent than the builder) independently re-derived the claim/
+     activate ordering, the owed-math parity against the live Stripe path, `skipAccrual` scoping,
+     flag gating, ownership checks, and the new `hasRequiredTransferDetail` guard — and independently
+     re-verified (by reading the cited code itself, not taking the reply on faith) that the declined
+     Medusa/UCP findings hold up. No blocking bugs found. Flagged two pre-existing, non-blocking
+     architecture notes for the retro: `getPromoterSettings`'s single-query column read means a
+     late-applied migration would silently reset live discount/bundle config (mitigated
+     procedurally — migrations applied before merge here); and a non-atomic
+     read-modify-write race on `marketplace_shops.metadata` if two SKUs for the same shop are
+     approved in quick succession (identical to the pre-existing Stripe-webhook pattern, not
+     introduced by this sprint).
+- **Both migrations applied to prod Supabase** (Daniel authorized, 2026-07-03):
+  `20260703140000_promoter_transfers.sql` and `20260703150000_promoter_transfer_flag.sql` — confirmed
+  live (table + column + partial unique index + the flag row seeded OFF).
+- **Deterministic gate green** (local, pre-merge + CI green on the PR): `tsc --noEmit`, `next build`,
+  `npm run test:e2e` (`api` project). New pure-seam specs in `e2e/promoter-transfer.spec.ts` (24 assertions): owed-amount
   math (matches `computeCommissionCents` exactly; the $0-subdomain case owes $0 with no
   special-casing; never negative), the remittance state machine (`pending → reported → approved |
   rejected`; no skip-ahead; no backward moves; terminal states enforced), the per-SKU activation
@@ -54,12 +84,9 @@ that skips approval.
   existing `/admin/print` approve flow) and isn't in the close-workspace picker until Sprint 5
   (US-5.4). The three SKUs this sprint covers (`custom_domain`/`subdomain`/`ml_sync`) are exactly the
   ones already in `CLOSE_SKUS`.
-- **Owed to Daniel:** applying the two new migrations
-  (`20260703140000_promoter_transfers.sql`, `20260703150000_promoter_transfer_flag.sql`) to prod
-  Supabase, the merge itself (HIGH risk), confirming the deploy, seeding/flipping
-  `promoter.transfer_enabled`, entering real transfer-details config (CLABE etc.) in
-  `/admin/promoter`, and the live end-to-end money smoke below (real transfer → approve →
-  activation).
+- **Owed to Daniel:** flipping `promoter.transfer_enabled` ON in `/admin/flags`, entering real
+  transfer-details config (CLABE etc.) in `/admin/promoter`, and the live end-to-end money smoke
+  below (real transfer → approve → activation). Migrations + merge are already done (2026-07-03).
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com — run after merge + deploy + migrations applied.
