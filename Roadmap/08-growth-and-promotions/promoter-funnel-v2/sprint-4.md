@@ -1,6 +1,6 @@
 # Sprint 4 · Street money — net remittance + admin approval
 
-> Epic: [Promoter Funnel v2](README.md) · Risk: **HIGH** (money path) — **Daniel merges** · Status: 📋 planned
+> Epic: [Promoter Funnel v2](README.md) · Risk: **HIGH** (money path) — **Daniel merges** · Status: 🚧 in progress
 > Behind new flag `promoter.transfer_enabled` (fail-open **OFF** — merges dark; run-order per
 > LEARNINGS: merge → deploy → seed/config → flip). Stripe path never removed.
 
