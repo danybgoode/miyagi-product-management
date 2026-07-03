@@ -2,6 +2,14 @@
 
 > Epic: [ml-orders-native](README.md) · Risk: **HIGH** (Daniel merges) · Backend-first; dark behind
 > `ml.orders_enabled` (default OFF).
+>
+> **✅ MERGED 2026-07-03** — backend PR [#57](https://github.com/danybgoode/medusa-bonsai-backend/pull/57)
+> squashed to `28f4e15` (the per-story commits below, `473b632`/`22b797e`/`860175e` + 4 cross-review fix
+> commits, are now superseded by the squash — kept here as the build history); frontend PR
+> [#170](https://github.com/danybgoode/miyagisanchezcommerce/pull/170) squashed to `c77a63c`. Daniel
+> authorized the merge in-conversation after CI green + 4 rounds of cross-agent review (see Sprint QA
+> below). **Still owed before the flag can safely flip ON:** prod `medusa db:migrate` for the new
+> `ml_applied_order` table, then the live ML-sandbox smoke (steps 7–12 below).
 > **Plan-mode prerequisite:** read the S4 stock-sync code on fresh `origin/main` (local backend
 > checkout is stale) and decide the inventory seam: order-creation-with-reservation supersedes the S4
 > delta for linked products, or order created inventory-neutral with the delta kept. One ML order =

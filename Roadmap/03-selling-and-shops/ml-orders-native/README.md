@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 built (backend 473b632+22b797e, frontend 0c735b9), draft PRs open, HIGH risk — awaiting Daniel merge.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 merged (backend 28f4e15, frontend c77a63c); prod migration + live flag flip still owed.
 slug: ml-orders-native
 archetype: Builder
 ---
@@ -8,8 +8,9 @@ archetype: Builder
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/ml-orders-native.md`](../../00-ideas/2.%20readyforscope/ml-orders-native.md)
 > (Epic A of the Merchant Ops PRD; approved by Daniel 2026-07-02).
-> **Status: Sprint 1 built, draft PRs open.** Risk **HIGH** (order/fulfillment core + inventory
-> interaction with the live S4 stock sync). Daniel merges HIGH stories.
+> **Status: Sprint 1 merged to `main` on both repos.** Risk **HIGH** (order/fulfillment core + inventory
+> interaction with the live S4 stock sync) — Daniel authorized the merge in-conversation after 4 rounds
+> of cross-agent review; still dark behind `ml.orders_enabled` pending the prod migration + live smoke.
 > **Companion:** [`profit-analyzer`](../profit-analyzer/README.md) (Epic B) builds on this epic's order
 > data — **this epic ships first.**
 
@@ -102,6 +103,11 @@ touches.
 
 ## Sprints
 
-- [sprint-1.md](sprint-1.md) — ✅ built. The spine: idempotency table + order materialization + state mapping + badge (backend `473b632`+`22b797e`, frontend `0c735b9`). Draft PRs open — awaiting Daniel merge (HIGH).
+- [sprint-1.md](sprint-1.md) — ✅ merged. The spine: idempotency table + order materialization + state
+  mapping + badge. Backend PR [#57](https://github.com/danybgoode/medusa-bonsai-backend/pull/57)
+  → `28f4e15`; frontend PR [#170](https://github.com/danybgoode/miyagisanchezcommerce/pull/170) →
+  `c77a63c`. Deployed dark behind `ml.orders_enabled` (default OFF). **Owed before flag flip:** prod
+  `medusa db:migrate` for `ml_applied_order` (Cloud Run image-only deploy doesn't auto-migrate), then
+  the live ML-sandbox smoke (sprint-1.md steps 7–12).
 - [sprint-2.md](sprint-2.md) — Full lifecycle: cancel/refund, notifications, entitlement + kill-switch.
 - [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity.
