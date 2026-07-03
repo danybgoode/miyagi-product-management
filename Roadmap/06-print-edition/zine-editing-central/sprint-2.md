@@ -53,22 +53,31 @@ section fills from real submissions instead of hand-typing.
 social section blocks (caption, body, photos, zone, type label); placement snapshots content.
 **Risk:** LOW
 **Done:** backend-first. **PR #164**:
-https://github.com/danybgoode/miyagisanchezcommerce/pull/164 (branch `feat/zine-editing-central-s2`,
-built in an isolated worktree — the shared checkout was on a sibling epic's branch) — CI green
-(`Type-check + build`, `Playwright vs preview`). Sprint 1's own route comments assumed a
-`studio/social/[id]` write-back existed; it didn't — this PR adds it (`isValidStudioSocialTransition`
-+ `toStudioSafeSocialSubmission`, modeled byte-for-byte on the ad-submission sibling), plus fixes a
-PII leak on `studio/social` GET (bare `select('*')` → the safe projection) and adds `?editionId=`
-filtering (assigned-to-this-edition OR approved-but-unassigned, confirmed with Daniel). zine-side:
-commit `de413ca`. **`BookletData.extraAdPages` became a discriminated union**
-(`{kind:"ad",slot}|{kind:"social",item}`) rather than a separate "community section" — a placed
-social submission occupies the same generic extra page Story 2.1 introduced, reverting to a neutral
-ad slot when un-placed (no neutral "social" state, so no repeat of 2.1's empty-body bug).
-`lib/social-mapping.ts` (content-lossless, 7 vitest cases) + `SocialDrawer.tsx` (edition-scoped list,
-page-number slot picker, shows "agrega un pliego" at 12pp per Decision 3 — a 12pp booklet has no
-community-capable page yet). 52/52 vitest green. Live-verified: the "agrega un pliego" message
-disappears exactly when growing past 12pp, and the extra pages keep rendering correctly through the
-type refactor.
+https://github.com/danybgoode/miyagisanchezcommerce/pull/164 — **merged** (squash `55bdce9`,
+branch `feat/zine-editing-central-s2` deleted), built in an isolated worktree (the shared checkout
+was on a sibling epic's branch). CI green (`Type-check + build`, `Playwright vs preview`). Sprint 1's
+own route comments assumed a `studio/social/[id]` write-back existed; it didn't — this PR adds it
+(`isValidStudioSocialTransition` + `toStudioSafeSocialSubmission`, modeled on the ad-submission
+sibling), fixes a PII leak on `studio/social` GET (bare `select('*')` → the safe projection), and
+adds `?editionId=` filtering. **7 rounds of advisory codex cross-review** (`scripts/cross-review.mjs`,
+posted as a PR comment) surfaced real issues beyond the initial build, all fixed before merge: a
+read-then-write race on the PATCH (guarded on prior status/edition_id), an unvalidated `editionId`
+reaching a raw PostgREST filter, `studio/social` GET excluding `placed` rows (a submission the
+studio just placed would vanish from its own list), a placed-but-unassigned row leaking into every
+edition's queue once `placed` was included, placing being able to silently reassign an already-
+assigned row to a different edition, a JSON `null` body 500ing instead of 400ing, plus a PII-safe-
+projection regression test that didn't exist before. zine-side: commits `de413ca` + `d638e73` (a
+matching round of zine-side cross-review fixes — see below). **`BookletData.extraAdPages` became a
+discriminated union** (`{kind:"ad",slot}|{kind:"social",item}`) rather than a separate "community
+section" — a placed social submission occupies the same generic extra page Story 2.1 introduced,
+reverting to a neutral ad slot when un-placed (no neutral "social" state — the schema now enforces
+this too, `source` is required on a social item, not nullable). `lib/social-mapping.ts`
+(content-lossless + write-time slot-occupancy validation, 9 vitest cases) + `SocialDrawer.tsx`
+(edition-scoped list, page-number slot picker, shows "agrega un pliego" at 12pp per Decision 3;
+place/unplace confirm the remote write-back before mutating local state, so a network failure can't
+leave a page occupied with no way to undo it). 57/57 vitest green. Live-verified: the "agrega un
+pliego" message disappears exactly when growing past 12pp, and the extra pages keep rendering
+correctly through the type refactor.
 
 ## Sprint QA
 - **unit (apps/zine vitest):** imposition pairs for 8/12/16/20 pages (regression-pinned against the
