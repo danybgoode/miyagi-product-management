@@ -1,6 +1,6 @@
 # Sprint 5 · Close-flow completeness — listings, locations, coverage, ad design, receipt, rate card
 
-> Epic: [Promoter Funnel v2](README.md) · Risk: MED (no new money paths) · Status: ✅ built, PR [#168](https://github.com/danybgoode/miyagisanchezcommerce/pull/168) open (draft, MED risk)
+> Epic: [Promoter Funnel v2](README.md) · Risk: MED (no new money paths) · Status: ✅ merged 2026-07-03, PR [#168](https://github.com/danybgoode/miyagisanchezcommerce/pull/168) → `26f4506`
 > Surfaces: `/promotor/cerrar`, merchant panel, email, `/vende/promotor/sell-sheet`.
 
 ## Build notes
@@ -29,8 +29,8 @@ webhook-retry dedup (a rare redelivery could double-send the receipt) — accept
 rather than fixed now, since it extends a pre-existing, already-accepted retry-tolerance gap in the
 same webhook (the Telegram alerts on the same code paths already double-fire on retry today).
 
-**Owed to Daniel:** the full authed browser smoke below (money-adjacent steps flagged), and merging
-this MED-risk PR.
+**Merged 2026-07-03** (Daniel authorized: mark ready + merge on green). **Still owed to Daniel:** the
+full authed browser smoke below on the now-live production surface (money/auth-adjacent steps flagged).
 
 ## US-5.1 — Photos + real listings in the close workspace *(MED)*
 **As** a promoter standing up a shop, **I want** to add photos and at least one real listing (title,
@@ -94,10 +94,8 @@ regenerating after a price change updates the PDF (or renders prices at request 
   notice → ad design → receipt) on a real device.
 
 ## Sprint 5 — Smoke walkthrough (do these in order)
-Env: **PR #168 preview** (SSO-gated — sign in as yourself first):
-`https://miyagisanchez-21t2op5hg-danybgoodes-projects.vercel.app` — re-derive the current preview URL
-from the PR's Vercel check if this one has rotated (a new push regenerates it). Re-run against
-**production** (`https://miyagisanchez.com`) once merged.
+Env: **production** · `https://miyagisanchez.com` (merged 2026-07-03, `26f4506` — allow the ~few
+minutes for the Vercel production deploy to finish before running this).
 
 1. As an enrolled promoter open `/promotor/cerrar` → bind your PRM- code → fill in the shop name +
    a postal code, click "Buscar" → optionally enter a merchant email → "Crear tienda".

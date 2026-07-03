@@ -116,4 +116,4 @@ additive. HIGH stories → **Daniel merges**. Every frontend PR gets a Vercel pr
 - [sprint-2.md](sprint-2.md) — ✅ merged 2026-07-03, PR [#163](https://github.com/danybgoode/miyagisanchezcommerce/pull/163) → `de56db3` — Become a promoter: self-serve application flow.
 - [sprint-3.md](sprint-3.md) — ✅ merged 2026-07-03, PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165) → `3f25623` — The offer: bundle pricing, free-first-year subdomain, 2x1 print ad.
 - [sprint-4.md](sprint-4.md) — ✅ merged 2026-07-03, PR [#167](https://github.com/danybgoode/miyagisanchezcommerce/pull/167) → `f81a41a` — Street money: net remittance + admin approval.
-- [sprint-5.md](sprint-5.md) — Close-flow completeness: listings, locations, coverage, ad design, receipt, rate card.
+- [sprint-5.md](sprint-5.md) — ✅ merged 2026-07-03, PR [#168](https://github.com/danybgoode/miyagisanchezcommerce/pull/168) → `26f4506` — Close-flow completeness: listings, locations, coverage, ad design, receipt, rate card.
