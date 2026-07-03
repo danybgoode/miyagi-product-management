@@ -10,9 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (0)
 
-- [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 6/9 stories
+_None._
 
 ## 📋 Ready to build (scaffolded, not started) (3)
 
@@ -20,7 +20,7 @@
 - [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 0/6 stories
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
-## ✅ Shipped (77)
+## ✅ Shipped (78)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -47,6 +47,7 @@
 - [Granular Multi-Channel Notifications (Email + Telegram)](../../05-trust-offers-and-messaging/granular-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Trust & Messaging Polish](../../05-trust-offers-and-messaging/trust-messaging-polish/README.md) — 05 Trust/Offers/Messaging · 5/5 stories · risk: Low · Wave 3
 - [Printed-Edition Builder ("Maqueta")](../../06-print-edition/printed-edition-builder/README.md) — 06 Print · 0/8 stories
+- [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 9/9 stories
 - [Agent Connection & Discoverability](../../07-agentic-and-federated-commerce/agent-connection/README.md) — 07 Agentic/Federated · 6/6 stories · risk: High
 - [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 3/3 stories
 - [Agent-readable why-sell / about surface](../../07-agentic-and-federated-commerce/agent-readable-about-surface/README.md) — 07 Agentic/Federated · 6/6 stories · risk: Low

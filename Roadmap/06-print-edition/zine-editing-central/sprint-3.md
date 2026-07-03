@@ -1,7 +1,8 @@
 # Zine editing central — Sprint 3: consolidation
 
-**Status:** ✅ built + locally verified — Story 3.1's PR is open, pending Daniel's merge
-announcement/confirmation (see below); apps/zine's Story 3.2 is committed to its own local `main`.
+**Status:** ✅ Sprint 3 complete — all 3 stories shipped. Story 3.1 merged via PR #169 (squash
+`ede0d70`) after Daniel's explicit confirmation; apps/zine's Story 3.2 committed to its own local
+`main` (`f43967e`).
 
 > **Gate:** ships only after Daniel has produced a real placement end-to-end via zine (Sprints 1–2
 > smoke-tested). Don't remove the old tool before the new one is proven.
@@ -31,8 +32,9 @@ banner reads the `notice` param. New Playwright spec `e2e/admin-print-maqueta-re
 `/admin/print` still resolves. `tsc --noEmit` + `npm run build` + the full local `api` suite (31
 passed, 5 pre-existing skips) all green. Live-verified in a local anonymous browser session: hitting
 the old builder URL correctly chains builder→`/admin/print?notice=...`→(anonymous)`requireAdmin`
-redirect→home, no crash, no 404. **PR not yet opened/merged** — announcing to Daniel before pushing
-per this story's own gate.
+redirect→home, no crash, no 404. **Merged** via PR #169 (squash `ede0d70`) — announced to Daniel per
+this story's own gate; he confirmed before merge. Branch `feat/zine-editing-central-s3` deleted
+(local + remote).
 
 ### Story 3.2 — Fine-tune guardrails on merchant-ad blocks ✅
 **As** Daniel (editor), **I want** merchant-ad blocks in zine to expose style overrides only
@@ -68,9 +70,8 @@ same PR as the `status: shipped` flip, **so that** the docs stay truthful and CI
 3 durable learnings promoted to `LEARNINGS.md` (gate re-confirmation at sprint start; verify shared
 surface before deprecating; content-lock as a UI concern not a data one); team memory updated
 (`zine-editing-central-epic.md` + `print-edition-builder.md` retirement note + `MEMORY.md` index).
-`node scripts/build-order.mjs` regen + the epic README's `status: shipped` flip land together once
-Story 3.1's PR is confirmed/merged (see Story 3.1's "not yet merged" note above — the regen is
-deliberately held until the actual deploy state is real, not asserted early).
+`node scripts/build-order.mjs` regen + the epic README's `status: shipped` flip landed together
+after PR #169 actually merged — held until the real deploy state, not asserted early.
 
 ## Sprint QA
 - **api spec(s):** 3.1 → assert admin print pages still serve + builder route gone/redirects
