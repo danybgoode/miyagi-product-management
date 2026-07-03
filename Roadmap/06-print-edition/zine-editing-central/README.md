@@ -1,5 +1,5 @@
 ---
-status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped (PR #161 merged 5583bf9). Sprint 2 shipped — 2.1/2.2/2.3 committed in apps/zine; 2.3's backend PR #164 merged (squash 55bdce9) after 7 rounds of cross-review fixes. Sprint 3 not started.
+status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped (PR #161 merged 5583bf9). Sprint 2 shipped — 2.1/2.2/2.3 committed in apps/zine; 2.3's backend PR #164 merged (squash 55bdce9) after 7 rounds of cross-review fixes. Sprint 3: apps/zine S3.2 committed to its local main (f43967e, no further deploy step); apps/miyagisanchez S3.1 built + locally verified (e97627d on feat/zine-editing-central-s3) but PR not yet opened/merged — retires a shipped admin surface, so this flips to `shipped` only after Daniel confirms and the PR merges (Vercel deploy), per WAYS-OF-WORKING/LEARNINGS on not asserting a status flip ahead of the actual deploy.
 slug: zine-editing-central
 ---
 
@@ -7,6 +7,13 @@ slug: zine-editing-central
 
 > **Area:** 06 · Print Edition · **Risk:** HIGH (one story) / LOW (rest) · **Archetype:** Builder
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/zine-editing-central.md`](../../00-ideas/2.%20readyforscope/zine-editing-central.md) (approved by Daniel 2026-07-02).
+> **Status:** 🚧 S1+S2 shipped · S1 [#161](https://github.com/danybgoode/miyagisanchezcommerce/pull/161) ·
+> S2 [#164](https://github.com/danybgoode/miyagisanchezcommerce/pull/164). S3 built + locally verified
+> 2026-07-03 — apps/zine commit `f43967e` (merchant-ad style guardrails, committed to its own local
+> `main`); apps/miyagisanchez commit `e97627d` (Maqueta retired, branch `feat/zine-editing-central-s3`,
+> **PR [#169](https://github.com/danybgoode/miyagisanchezcommerce/pull/169) open** — Daniel confirmed
+> the retirement in conversation; merging once CI is green). Flips to ✅ SHIPPED once that PR merges. **Owed:** physical PDF fold-check at a non-12pp size +
+> the admin-surface click-through smoke of the retired builder route.
 
 ## Why
 The real editorial + design of the printed magazine lives in the standalone **zine studio**
@@ -67,11 +74,23 @@ changes. Maqueta deprecation (S3.1) merges last, only after Daniel has produced 
 via zine (don't remove the old tool before the new one is proven).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (06 section: Maqueta line → zine central)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [~] All sprints merged to `main` + smoke-tested (gaps stated) — S1/S2 merged + prod round-trip
+      confirmed live 2026-07-02. S3.2 (apps/zine) committed to its local `main`. **S3.1
+      (apps/miyagisanchez) built + verified locally but not yet merged** (tsc/build/vitest/Playwright
+      green, lock UI + redirect live-checked in browser) — pending Daniel's merge confirmation;
+      admin-surface click-through also owed to him once live.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs) — `sprint-3.md` rewritten with actual
+      verified results before close.
+- [~] This README marked 🚧 pending S3.1's merge (see status line above); every sprint status ticked
+      with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (06 section: Maqueta line → zine central)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [ ] Feature branch deleted (apps/miyagisanchez `feat/zine-editing-central-s3`) — **pending: PR not
+      yet opened/merged.** Story 3.1 retires a shipped admin surface Daniel uses daily; per this
+      epic's own sprint doc, that merge needs an explicit announce-and-confirm, not just a green CI
+      auto-merge. apps/zine's S3.2 is already committed to its own local `main` (no further deploy
+      step exists for that repo). **This README's frontmatter stays `status: in-progress`** until
+      that PR merges (the frontend deploy) — flip to `shipped` + regenerate
+      `node scripts/build-order.mjs` in that same landing commit, not before.

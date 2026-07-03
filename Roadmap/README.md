@@ -107,7 +107,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 - ✅ Community / social section (recommendations, events, shout-outs)
 - ✅ Editorial review & approval queue
 - ✅ Production export pack for the designer
-- ✅ **Layout builder ("Maqueta")** — compose the magazine on a visual canvas → **[Epic ›](06-print-edition/printed-edition-builder/)** *(shipped this session)*
+- ✅ **The zine studio is the editing central** — the real editorial + design layer (`apps/zine`) pulls paid ad submissions, live catalog listings, and approved social posts straight from the marketplace, with a variable-length booklet (pliegos of 4) and placed-ad fine-tuning locked to fit-only (never content) → **[Epic ›](06-print-edition/zine-editing-central/)**. The prior "Maqueta" visual-canvas builder is retired (redirects to a pointer note); its saved layouts/export pipeline for existing editions keep working.
 - ✅ **One-click print-ready PDF** (Carta / Media Carta, bleed, crop marks, QR)
 - 📋 Subscriptions ("cada edición") · self-serve print providers · QR-scan analytics
 
@@ -145,6 +145,22 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-03 — Zine editing central SHIPPED (3 sprints, mixed LOW→HIGH).** The standalone zine
+  studio (`apps/zine`) becomes the marketplace's real print-layout editor, retiring the duplicate
+  "Maqueta" visual-canvas builder. **S1** (PR [#161](https://github.com/danybgoode/miyagisanchezcommerce/pull/161)) moved zine into the monorepo and shipped a
+  token-gated `withPrintStudio` read/write-back API (paid ads, `placed` status flip) plus an
+  "Anuncios pagados" drawer placing a real submission verbatim into a slot. **S2** (PR [#164](https://github.com/danybgoode/miyagisanchezcommerce/pull/164))
+  made the booklet grow/shrink in pliegos of 4 (variable sheet count, editorial sections pinned)
+  and added catalog pull (live listings as house-ads with a real QR) + social pull (approved
+  community submissions into the booklet). A real place→verify→un-place round trip for all three
+  sources was confirmed live in prod. **S3** retired the interactive Maqueta builder (redirects
+  with a pointer note; the print/export pipeline for existing saved layouts is untouched) and added
+  merchant-ad guardrails: a placed paid ad's headline/body/price lock behind a "diseño del
+  anunciante" note in the editor, exposing only fit-only style overrides (background/border/text
+  size/hidden fields) — a pure `setAdSlotStyle` setter proven never to touch content. Owed: a
+  physical fold-and-check of an exported PDF at a non-12pp size; an admin-surface click-through
+  smoke of the retired builder route.
 
 - **2026-07-03 — Promoter Funnel v2 SHIPPED (6 sprints; mixed LOW→HIGH — a follow-up to Promoter
   Program).** Makes the v1 promoter funnel legible, self-serve, and street-real. **S0** ([#160](https://github.com/danybgoode/miyagisanchezcommerce/pull/160)) investigated a

@@ -119,6 +119,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   to GitHub 403s through the sandbox proxy — planning commits land locally on `main`, and the **human
   pushes** from their own terminal; the agent can't push or fetch itself. *(2026-06-12, doc-drift
   reconciliation.)*
+- **A sprint doc's own gate is worth re-confirming explicitly at the start of the NEXT sprint, even when
+  the repo already records it having been met.** A prior sprint's commit trail can show the exact evidence
+  a gate demands (e.g. a live round-trip smoke), but a HIGH-consequence action gated on it (deprecating a
+  daily-used admin tool) still warrants an explicit in-conversation yes before acting — don't let "it's
+  already in the git log" substitute for asking. *(2026-07-03, zine-editing-central S3.)*
+- **Before touching a surface a scope doc calls "duplicate" or "deprecated," verify by direct read which
+  code paths it actually shares with the surfaces the acceptance requires to keep working.** Two routes can
+  look like one feature in prose but be separate code reading the same underlying table — confirming that
+  (not just trusting the doc's phrasing) is what keeps a deprecation from over-removing. *(2026-07-03,
+  zine-editing-central S3.1 — the Maqueta "builder" and the "print/export" pipeline read the same
+  `print_layouts` table but are different routes; only the builder was in scope.)*
 
 ## Tooling gotchas
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
@@ -1131,6 +1142,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   target: if the webhook + entitlement seam are already interval-agnostic, "reuse the lapse logic" needs
   zero code — the whole sprint becomes a price + the switch. *(2026-07-01, subdomain-pricing S3 — `metadata.monthly_stripe_price_id` on the one
   `subdomain_plan`; `lib/subdomain-switch.ts`; webhook `handleSubdomainSubscriptionComplete` resolves by kind.)*
+- **A content-lock ("don't let X edit this field") is a UI concern, not a data one — keep the underlying
+  pure setter usable on any record.** A merchant-ad style setter stayed unaware of the record's provenance
+  (`source.type`); the lock is enforced only in the one editor component that reads it, so a future caller
+  (a bulk tool, a different screen) isn't blocked by a rule that belongs to a single screen. Push the
+  "who's allowed to see this control" decision to the render layer, not into the data-mutation function.
+  *(2026-07-03, zine-editing-central S3.2 — `setAdSlotStyle` vs `isContentLocked`.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole
