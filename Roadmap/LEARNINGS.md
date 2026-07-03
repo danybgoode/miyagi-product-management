@@ -128,6 +128,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   own framing) as pre-authorization for an agent to push `main` directly without asking — confirm with
   Daniel first, even for a trivial status-tick commit; queue any further doc commits unpushed until he
   says go. *(2026-07-02, seller-agent-connect-mcp-url S2.)*
+- **A script with a co-located pure-logic test file MUST guard its `main()` call with an `isMain` check —
+  this bit two separate scripts in the same epic before it was caught.** S2's `build-order-sync.mjs`
+  incident (unconditional `main()` executed for real when imported for its pure helpers) recorded the fix
+  but never got promoted here as its own generalizable rule — and `standup.mjs` had the exact same gap
+  the whole epic (S1 through S3), undetected simply because nobody had written `standup.test.mjs` yet.
+  When adding a test file for ANY script, check for `const isMain = process.argv[1] && …; if (isMain)
+  main()` FIRST, before importing anything from it for pure-function testing — importing a script that
+  calls `main()` unconditionally at module scope re-executes the whole script for real (shell-outs,
+  Telegram posts, git pushes, all of it) the moment `node --test` loads the file. *(2026-07-03,
+  ops-routines-reporting — found while adding `standup.test.mjs`.)*
 - **Run the repo binaries directly when `npm`/`npx` chokes.** A sibling worktree that reuses the same
   package name (e.g. `apps/miyagisanchez-seasonal-theme`) breaks npm **workspace resolution** at the
   monorepo root. Use `node /…/node_modules/typescript/bin/tsc --noEmit -p tsconfig.json` and
@@ -317,6 +327,31 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   first (the right mechanism for a local/interactive run) and falls back to `process.env.TELEGRAM_CHAT_ID`
   — reusing the same var the routines' optional failure-ping already required, so provisioning it once
   covers both call sites. *(2026-07-02, ops-routines-reporting.)*
+  **Corollary — a delta-only tool must special-case a missing/wiped baseline as a bounded no-op, never as
+  "everything happened."** Diffing the current state against an empty/`null` previous snapshot makes
+  every historical item look "new" — `standup.mjs` had no such guard, so a never-committed
+  `scripts/standups.log` made it enumerate `gh`'s entire recent-PR history (100+ titles across 3 repos) as
+  one night's delta, overflowing Telegram's 4096-char limit and dying before ever posting **or**
+  persisting a log — guaranteeing the identical failure every subsequent night (confirmed live,
+  2026-07-02/03). The fix: when there's no prior snapshot for a given key (a repo, a window), emit ONE
+  bounded "baseline established" summary (counts only) instead of enumerating history, and always keep a
+  Telegram-length safety net (`formatPrList`/`truncateForTelegram`, now shared in
+  `scripts/lib/telegram-format.mjs`) as defense in depth regardless. Add the regression test for the exact
+  reported failure, not just the generic case — `standup.test.mjs`'s bootstrap tests assert directly on a
+  120-PR-history fixture. *(2026-07-03, ops-routines-reporting.)*
+  **Corollary — when a routine-account permission toggle won't save, design the persistence mechanism to
+  not need that permission at all, rather than escalating the toggle.** `standup.mjs`/`weekly-recap.mjs`
+  originally committed their delta logs straight to `main`, which needs "Allow unrestricted branch
+  pushes" — live 2026-07-02/03, that toggle's Save button failed in the claude.ai Routines UI ("Failed to
+  save changes") with no further diagnosis available from outside the UI. Redesigned instead: persist the
+  log on a dedicated `claude/`-prefixed branch via git PLUMBING only (`hash-object` → `mktree` →
+  `commit-tree` → `push <sha>:refs/heads/<branch>`, in `scripts/lib/log-branch.mjs`) — no checkout, no
+  working-tree/index touch, and already inside a routine's **default** push scope, so the broken toggle
+  becomes moot. Two plumbing gotchas hit live: (1) `git mktree` builds a single-level tree, so a path
+  containing `/` fails with "path contains slash" — use a flat filename on a single-purpose log branch,
+  not the original nested `scripts/`-prefixed path; (2) an I/O wrapper that swallows a git subprocess's
+  stderr on failure turns a one-line, obvious fix into an unexplained `false` — log the stderr at every
+  plumbing step, not just at the top level. *(2026-07-03, ops-routines-reporting.)*
   **A second single-purpose cross-agent script should share the rail, not fork it.** The planning-panel
   script (a second opinion on a *plan* instead of a PR) reused ~90% of cross-review by extracting the
   family-agnostic plumbing (version checks, the per-CLI runners, the agy argv size-cap) into one shared

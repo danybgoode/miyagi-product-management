@@ -29,15 +29,23 @@
 // node_modules/TS build here). Zero npm deps — Node >=20 (global fetch, spawnSync).
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, appendFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
 import { searchMergedPrs } from './lib/gh-rest.mjs';
+import { formatPrList, truncateForTelegram } from './lib/telegram-format.mjs';
+import { readLogFromBranch, writeLogToBranch } from './lib/log-branch.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const LOG_PATH = join(__dirname, 'weekly-recaps.log');
+
+// The window-tracking log lives on a dedicated `claude/`-prefixed branch, not committed to `main` — a
+// routine's DEFAULT push scope already covers `claude/`-prefixed branches, so this needs no extra
+// permission (see scripts/lib/log-branch.mjs for why: the "Allow unrestricted branch pushes" toggle
+// failed to save live, 2026-07-02/03).
+const LOG_BRANCH = 'claude/weekly-recap-log';
+const LOG_BRANCH_PATH = 'weekly-recaps.log'; // flat filename — git mktree needs a single-level tree
 const CONFIG_PATH = join(ROOT, 'skills/weekly-recap/config.json');
 
 const argv = process.argv.slice(2);
@@ -71,11 +79,12 @@ function shortRepo(repo) {
   return repo.split('/')[1] || repo;
 }
 
-// ---- window / memory log (scripts/weekly-recaps.log — JSONL, one line per run) ----
+// ---- window / memory log (JSONL, one line per run — lives on a dedicated branch, see above) ----
 
 function loadLastRun() {
-  if (!existsSync(LOG_PATH)) return null;
-  const lines = readFileSync(LOG_PATH, 'utf8').trim().split('\n').filter(Boolean);
+  const content = readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH });
+  if (!content) return null;
+  const lines = content.trim().split('\n').filter(Boolean);
   if (!lines.length) return null;
   try {
     return JSON.parse(lines[lines.length - 1]);
@@ -97,9 +106,6 @@ export function computeWindow(lastLogLine, now, overrideSinceISO, overrideUntilI
   return { sinceISO: fallback.toISOString(), untilISO };
 }
 
-function appendRun(entry) {
-  appendFileSync(LOG_PATH, `${JSON.stringify(entry)}\n`);
-}
 
 // ---- gather: merged PRs per repo (REST-only — scripts/lib/gh-rest.mjs) ----
 //
@@ -245,31 +251,8 @@ function loadChatId() {
 }
 
 // ---- message ----
-
-// Pure — caps a repo's PR list to MAX_PRS_SHOWN_PER_REPO titles before it can dominate the message on a
-// busy week, folding the rest into a "…and N more" tail. Keeps the count in the section header exact
-// (the count is never capped, only the listed titles are).
-export function formatPrList(prs, maxItems) {
-  const shown = prs.slice(0, maxItems).map((p) => `#${p.number} ${esc(p.title)}`).join('; ');
-  const rest = prs.length - maxItems;
-  return rest > 0 ? `${shown}; …and ${rest} more` : shown;
-}
-
-// Pure — a last-resort safety net for Telegram's hard 4096-char sendMessage limit. formatPrList already
-// keeps a normal week well under this; this only bites an extreme outlier (e.g. an unusually long run of
-// epic retro digests) so the API call never gets rejected outright instead of silently never posting. Two
-// HTML-safety steps, since the only tags this script emits are `<b>`/`</b>` and an unbalanced/incomplete
-// one would make Telegram reject the whole message as invalid HTML — defeating the safety net's purpose:
-// (1) strip a trailing PARTIAL tag first (the cut landing mid-`<b>`/`</b>` itself, e.g. a dangling `<b`),
-// (2) then close any remaining fully-formed-but-unclosed `<b>`.
-export function truncateForTelegram(text, limit) {
-  if (text.length <= limit) return text;
-  const sliced = text.slice(0, limit - 1).replace(/<[^>]*$/, '');
-  const truncated = `${sliced.trim()}…`;
-  const opens = (truncated.match(/<b>/g) || []).length;
-  const closes = (truncated.match(/<\/b>/g) || []).length;
-  return opens > closes ? `${truncated}${'</b>'.repeat(opens - closes)}` : truncated;
-}
+// formatPrList/truncateForTelegram now live in scripts/lib/telegram-format.mjs (shared with
+// standup.mjs, which hit the exact same message-length failure mode live).
 
 // Pure — builds the Telegram message from already-gathered data. No I/O.
 // `shippedEpics` is `{ available, epics }` — `available: false` (a git-log read failure) must render as
@@ -347,31 +330,22 @@ async function sendTelegram(chatId, text) {
   if (!res.ok) die(`Telegram sendMessage failed: ${res.status} ${JSON.stringify(body).slice(0, 300)}`);
 }
 
-// ---- git persistence of the log ----
+// ---- log persistence (scripts/lib/log-branch.mjs — a dedicated claude/-prefixed branch) ----
 
-function commitAndPushLog() {
-  const add = spawnSync('git', ['add', 'scripts/weekly-recaps.log'], { cwd: ROOT, encoding: 'utf8' });
-  if (add.status !== 0) {
-    console.error(`weekly-recap: git add failed — log won't persist to the next run: ${add.stderr}`);
-    return;
-  }
-  const commit = spawnSync(
-    'git',
-    ['commit', '-m', `chore(weekly-recap): log ${new Date().toISOString().slice(0, 10)}`, '--', 'scripts/weekly-recaps.log'],
-    { cwd: ROOT, encoding: 'utf8' }
-  );
-  if (commit.status !== 0) {
-    if (!/nothing to commit/i.test(commit.stdout || '')) {
-      console.error(`weekly-recap: git commit failed — log won't persist to the next run: ${commit.stderr}`);
-    }
-    return;
-  }
-  const push = spawnSync('git', ['push'], { cwd: ROOT, encoding: 'utf8' });
-  if (push.status !== 0) {
+function appendRunAndPush(entry) {
+  const existing = readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH }) || '';
+  const updated = `${existing}${JSON.stringify(entry)}\n`;
+  const ok = writeLogToBranch({
+    cwd: ROOT,
+    branch: LOG_BRANCH,
+    path: LOG_BRANCH_PATH,
+    content: updated,
+    message: `chore(weekly-recap): log ${new Date().toISOString().slice(0, 10)}`,
+  });
+  if (!ok) {
     console.error(
-      `weekly-recap: git push failed — the log commit is local only, so the next run (esp. a fresh ` +
-        `routine session) won't see it and will re-derive its window from a stale/missing log. Needs ` +
-        `push enabled beyond the claude/-prefix default. ${push.stderr}`
+      `weekly-recap: writing the updated log to ${LOG_BRANCH} failed — the next run (esp. a fresh ` +
+        `routine session) won't see it and will re-derive its window from a stale/missing log.`
     );
   }
 }
@@ -401,14 +375,13 @@ async function main() {
     }
     await sendTelegram(chatId, message);
 
-    appendRun({
+    appendRunAndPush({
       ts: now.toISOString(),
       windowStart: sinceISO,
       windowEnd: untilISO,
       prCount: repoResults.reduce((n, r) => n + (r.available ? r.prs.length : 0), 0),
       shippedCount: shippedEpics.available ? shippedEpics.epics.length : null,
     });
-    commitAndPushLog();
   }
 }
 

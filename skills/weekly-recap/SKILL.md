@@ -82,12 +82,14 @@ API error). Don't retry blindly; a repeated failure on the same cause is a confi
   docs-only or config-only merge still counts as one, same as it would in a manual tally. This is
   intentional (it avoids a new Vercel-API/gcloud dependency this script would need real credentials for),
   not a bug to "fix" by wiring up a live deploy-status API.
-- **The log-commit-and-push step needs push enabled beyond the routine's default `claude/`-prefix
-  restriction** — same requirement `standup-post`'s Gotchas already documents for `standups.log`. If it
-  isn't granted, the Telegram post still goes out fine, but `scripts/weekly-recaps.log` never persists to
-  `main`, and the *next* run — especially a fresh routine session — falls back to a plain trailing-7-days
-  window instead of picking up exactly where the last one left off. If two consecutive weekly runs
-  report overlapping PRs/epics, check for a `git push failed` line in the routine transcript first.
+- **The window log lives on a dedicated `claude/weekly-recap-log` branch** (`scripts/lib/log-branch.mjs`,
+  git plumbing only), not committed to `main` — needs **no special push permission** (same reasoning as
+  `standup-post`'s Gotchas: `claude/`-prefixed branches are already inside a routine's default push
+  scope; an earlier `main`-committing version needed "Allow unrestricted branch pushes," which failed to
+  save live in the claude.ai Routines UI, 2026-07-02/03). If the log write fails for some other reason,
+  it's logged to stderr only — the *next* run falls back to a plain trailing-7-days window instead of
+  picking up exactly where the last one left off; if two consecutive weekly runs report overlapping PRs/
+  epics, check for a `log-branch: git push failed` line in the routine transcript first.
 - **A retro digest is pulled verbatim from the sibling `RETROSPECTIVE.md`'s "## What shipped" section**
   (first paragraph, capped ~320 chars) — it can include raw markdown (bold, links, a commit hash in
   backticks) since it isn't re-rendered, just HTML-escaped for Telegram. That's expected, not a bug; if a
