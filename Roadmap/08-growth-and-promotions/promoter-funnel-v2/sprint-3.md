@@ -1,10 +1,12 @@
 # Sprint 3 · The offer — bundle pricing, free-first-year subdomain, 2x1 print ad
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: MED/**HIGH** (entitlements + comped money) —
-> HIGH stories **Daniel merges** · Status: 📋 planned
+> HIGH stories **Daniel merges** · Status: 🚧 built, PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165) open — awaiting Daniel merge
 > Backend-first where grants are touched (merge → deploy → seed/config → flip, per LEARNINGS).
+> No backend (Medusa) changes needed — entitlement/grant writers live in the frontend repo's
+> Supabase-backed `marketplace_shops` mirror, same as the existing custom-domain/subdomain grants.
 
-## US-3.1 — Bundle + per-SKU promoter pricing config + display *(MED)*
+## US-3.1 — Bundle + per-SKU promoter pricing config + display *(MED)* ✅
 **As** Daniel, **I want** admin-configurable per-SKU promoter prices and a bundle price (discount
 biggest on the full bundle, shrinking as items drop), **so that** the landing, handbook, and close
 workspace all show "todo esto cuesta $X — con tu promotor $Y" plus the per-item regular-vs-code
@@ -19,7 +21,7 @@ we advertise and what we charge).
 deploy; checkout discount matches the advertised number; `api` specs on the deriver (bundle >
 sum-of-parts savings; shrinking bundle ⇒ shrinking discount; never negative).
 
-## US-3.2 — Subdomain first-year-free via promoter attribution *(HIGH)*
+## US-3.2 — Subdomain first-year-free via promoter attribution *(HIGH)* ✅
 **As** a merchant enrolled through a promoter, **I want** the subdomain free for my first year
 (100% off, then the normal $199/yr with a graceful lapse), **so that** signing with a promoter has
 an unmistakable perk.
@@ -34,7 +36,7 @@ this explicit, not implicit.
 immediately, no charge; entitlement shows the year-1 grant + expiry in settings; after expiry
 (simulated) the upsell returns; grandfathered/comp shops unaffected; regression specs on the deriver.
 
-## US-3.3 — 2x1 printed ad: pay 1 edition, get 2 *(MED/HIGH)*
+## US-3.3 — 2x1 printed ad: pay 1 edition, get 2 *(MED/HIGH)* ✅
 **As** a merchant buying a printed ad at close, **I want** to pay one edition and appear in two
 consecutive ones, **so that** trying the zine is easy.
 **Build note:** **research first** — check how much the existing platform-coupon + submission
@@ -49,22 +51,36 @@ documented admin-manual fallback); both visible to the merchant; the clone is ex
 commission; `api` spec on the clone/comp pure logic.
 
 ## Sprint QA
-- Deterministic gate green; specs per story.
-- **Money-path smokes owed to Daniel:** live promoter-attributed subdomain activation (US-3.2) and a
-  real 2x1 print-ad close (US-3.3).
+- Deterministic gate green (`tsc` + `build` + `test:e2e`); 21 new spec assertions across
+  `promoter-pricing.spec.ts` (13), `promoter-print-2x1.spec.ts` (8), plus `promoter-close.spec.ts`
+  extended with the new `/api/promoter/close/subdomain` route guard.
+- **Migration not applied from the build session** (shared dev/prod Supabase — LEARNINGS): apply
+  `supabase/migrations/20260703120000_promoter_sku_pricing.sql` at normal deploy time.
+- **Money-path smokes owed to Daniel:** a real one-time checkout charging an admin-set per-SKU price
+  (US-3.1), live promoter-attributed subdomain activation (US-3.2), and a real 2x1 print-ad close
+  (US-3.3). PR [#165](https://github.com/danybgoode/miyagisanchezcommerce/pull/165), HIGH risk —
+  Daniel merges.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-*(placeholder — fill with real URLs at build time)*
-Env: production · https://miyagisanchez.com
+Env: production · https://miyagisanchez.com (after merge + migration applied)
 
-1. In /admin/promoter set per-SKU prices + bundle → open /vende/promotor and /promotor/cerrar.
-   → Same numbers on both; bundle savings > per-item savings.
-2. (money path) Close a test merchant with a promoter code including the subdomain.
-   → https://<slug>.miyagisanchez.com serves immediately; settings shows "GRATIS el primer año" +
-   expiry; no Stripe charge for the subdomain.
-3. (money path) Close a 2x1 printed ad on a test merchant.
-   → Edition N submission paid + attributed; edition N+1 has the comped clone in the editorial queue;
-   the merchant's panel lists both.
-4. Check the commission ledger: the 2x1 clone and the $0 subdomain year accrue no phantom commission.
+1. In `/admin/promoter`, under "Precio por SKU + paquete", set the subdomain's promoter price to
+   `0` and Guardar → check `/vende/promotor` shows the bundle/price numbers matching the admin
+   preview panel.
+2. (money path) In `/promotor/cerrar`, close a test merchant selecting "Subdominio propio".
+   → Confirms inline "primer año GRATIS" with **no redirect to Stripe**; `https://<slug>.miyagisanchez.com`
+   serves the white-label shop immediately; the shop's `subdomain_grant` metadata shows a live
+   one-year `one_time` grant (readable via `/api/admin/tenants` or the shop settings page).
+3. Reset the subdomain price override to blank (falls back to the global discount) → close another
+   test merchant → confirms it now redirects to a real (discounted) Stripe checkout instead.
+4. (money path) In `/admin/print`, mark a submission's `content.is_2x1` (via `/api/promoter/close/print`
+   with `is2x1:true` at close time — no UI yet, print isn't in the close-workspace picker until
+   Sprint 5 · US-5.4) then confirm the payment → the next same-provider edition gets a comped clone
+   (status `paid`) in its editorial queue; `GET /api/print/submissions` for that seller lists both.
+5. If no next edition exists yet, confirm the original submission shows "2x1 sin edición siguiente
+   disponible — clonar a mano" in `/admin/print`'s submission row, and that pasting a target edition
+   id + "Clonar" creates the clone.
+6. Check `/admin/promoter`'s commission settlement list: neither the $0 subdomain year nor the 2x1
+   clone appear as pending commission (both accrue nothing, by construction).
 
 If any step fails, note the step number + what you saw — that's the bug report.
