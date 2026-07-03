@@ -10,17 +10,17 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (1)
 
 - [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 6/9 stories
-- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 7/19 stories
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 0/10 stories
 - [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 0/6 stories
+- [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
-## ✅ Shipped (76)
+## ✅ Shipped (77)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 1/11 stories · risk: Low
@@ -65,6 +65,7 @@
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 0/3 stories · risk: Low
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 0/3 stories
+- [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 7/19 stories
 - [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 0/12 stories
 - [Referral Program](../../08-growth-and-promotions/referral-program/README.md) — 08 Growth · 5/5 stories · risk: Low
 - [Seasonal Theme Engine](../../08-growth-and-promotions/seasonal-theme-engine/README.md) — 08 Growth · 0/9 stories
@@ -111,4 +112,4 @@
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 81 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 82 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

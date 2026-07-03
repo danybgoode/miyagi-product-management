@@ -7,7 +7,7 @@ type: feature                   # one epic, two workstreams (S0 foundation is a 
 archetype: Builder              # S0: Maintainer
 priority: null
 risk: low                       # no money/auth/commerce paths; shared-surface stories flagged below
-epic: null
+epic: "09-platform-infra/dobby-foundation"   # S0 workstream; engine epic scaffolds in golden-beans/Roadmap after S0.4
 build_order: null
 updated: 2026-07-03
 prd: "../1. raw/golden-beans.md"
