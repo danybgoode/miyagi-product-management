@@ -153,17 +153,15 @@ routine (cap-safe) — see the budget table below.
      Steps 1 and 3 write (build-order-sync opens a docs PR; babysit-pr re-runs failed workflow runs and
      posts a PR comment) — both stay inside the routine's **default** `claude/`-prefix push scope (step
      1's branch is `claude/build-order-sync-<date>`; step 3 never pushes a branch at all, only comments
-     + re-runs). **No broader push grant is needed for steps 1 or 3** — that's a deliberate contrast
-     with the requirement just below, which is about `standup.mjs`'s *own* log-persistence commit, not
-     these two.
-   - **Push enabled beyond the `claude/`-prefix default.** `scripts/standup.mjs` (step 4) commits +
-     pushes `scripts/standups.log` directly to `main` after every successful post (a path-scoped,
-     data-only commit) so the *next* run — a fresh routine session with no local state — has
-     yesterday's snapshot to diff against. Without this, the standup still posts fine, but the delta
-     silently degrades to a full re-dump every night (see `skills/standup-post/SKILL.md`'s Gotchas).
-     **This is a different setting than the environment dialog above** — it's on the routine itself:
-     Edit routine → **Permissions** tab → enable **"Allow unrestricted branch pushes"** for
-     `miyagi-product-management`.
+     + re-runs).
+   - **No "Allow unrestricted branch pushes" permission is needed for ANY step, including the standup's
+     own log persistence.** `scripts/standup.mjs` (step 4) used to commit `scripts/standups.log` straight
+     to `main`, which needed that broader permission — live 2026-07-02/03, its Save button failed
+     ("Failed to save changes") in the claude.ai Routines UI. Fixed by moving the log onto a dedicated
+     `claude/standup-log` branch instead (`scripts/lib/log-branch.mjs`, git plumbing only — hash-object/
+     mktree/commit-tree/push, no checkout), which is already inside the routine's **default** push scope.
+     Nothing to configure here anymore; if that Permissions-tab toggle still won't save for you, it no
+     longer matters for this routine.
    - **`VERCEL_API_TOKEN`** so step 2's richer per-branch report actually resolves. Not load-bearing —
      `standup.mjs`'s own simpler stale-preview count (step 4) already degrades gracefully to
      "unavailable" without it (confirmed live in S1), same fallback the standup has always had; this is
@@ -210,15 +208,9 @@ and a short retro digest per shipped epic — then posts one Telegram message.
      already needed).
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other routines).
-   - **Push enabled beyond the `claude/`-prefix default** — same UI location as `ops-nightly`'s (Edit
-     routine → **Permissions** tab → **"Allow unrestricted branch pushes"** for `miyagi-product-management`).
-     `scripts/weekly-recap.mjs` commits + pushes `scripts/weekly-recaps.log` directly to `main` after
-     every successful post (a path-scoped, data-only commit), so the *next* run — a fresh routine
-     session with no local state — knows where the last window ended. Without this, the recap still
-     posts fine, but the window silently falls back to a plain trailing-7-days read every time instead
-     of picking up exactly where the last run left off (see `skills/weekly-recap/SKILL.md`'s Gotchas).
-     This is the **same** grant `ops-nightly` already needs for
-     `standup.mjs` — if that's already enabled account-wide, nothing new to configure here.
+   - **No "Allow unrestricted branch pushes" permission needed** — same as `ops-nightly`'s. The window
+     log lives on a dedicated `claude/weekly-recap-log` branch (`scripts/lib/log-branch.mjs`), already
+     inside the routine's default `claude/`-prefix push scope, so there's nothing to configure here.
 5. **Output:** one Telegram message per week — merged PRs, deploys (merge counts), shipped/closed epics,
    and a short retro digest per shipped epic, or a one-line "quiet week" post when there's nothing to
    report. **Never** a PR, **never** a code change, **never** a required check.

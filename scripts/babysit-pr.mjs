@@ -83,17 +83,26 @@ function fetchPr(pr, repo) {
 
 function rerun(repo, runId) {
   const r = gh(['run', 'rerun', String(runId), '--failed', '--repo', repo]);
-  return r.status === 0;
+  return { ok: r.status === 0, error: r.status === 0 ? null : (r.stderr || r.stdout || '').trim().split('\n')[0] };
 }
 
-function buildComment({ conflict, retried, dryRun, noAutoRetryNames, stillPendingNames }) {
+// A failing-check run whose rerun attempt ITSELF errored (e.g. "already running", a permissions issue)
+// is a DIFFERENT fact than "nothing needed a retry" — conflating them under one "no failing CI runs
+// needed a retry" line is actively misleading (confirmed live, 2026-07-02/03: PR #23's rerun attempt
+// errored, but the surfaced signal didn't distinguish that from "clean"). `retryFailures` is
+// `[{runId, error}]` for exactly this case.
+export function buildComment({ conflict, retried, retryFailures, dryRun, noAutoRetryNames, stillPendingNames }) {
   const lines = [BANNER, ''];
   lines.push(conflict ? '⚠️ Merge conflict detected — needs a human rebase/resolve; not something this tool does.' : '✅ No merge conflict.');
   if (retried.length) {
     const verb = dryRun ? 'Would retry' : 'Retried';
     lines.push(`🔁 ${verb} failing Actions run(s): ${retried.map((id) => `#${id}`).join(', ')}.`);
-  } else {
+  } else if (!retryFailures.length) {
     lines.push('🔁 No failing CI runs needed a retry.');
+  }
+  if (retryFailures.length) {
+    const detail = retryFailures.map(({ runId, error }) => `#${runId} (${error || 'unknown error'})`).join(', ');
+    lines.push(`❗ Retry attempt itself failed for: ${detail} — worth a manual look, this tool won't retry it again tonight.`);
   }
   if (noAutoRetryNames.length) {
     lines.push(`🛑 No automated retry available (not a GitHub Actions run): ${noAutoRetryNames.join(', ')}.`);
@@ -139,19 +148,24 @@ function main() {
     .filter(Boolean);
 
   const retried = [];
+  const retryFailures = [];
   for (const runId of runIds) {
     if (dryRun) {
       console.log(`DRY-RUN — would rerun failed run #${runId} in ${repo}.`);
       retried.push(runId);
       continue;
     }
-    const ok = rerun(repo, runId);
-    if (ok) retried.push(runId);
-    else console.error(`babysit-pr: rerun failed for run #${runId} in ${repo} — continuing.`);
+    const { ok, error } = rerun(repo, runId);
+    if (ok) {
+      retried.push(runId);
+    } else {
+      console.error(`babysit-pr: rerun failed for run #${runId} in ${repo} — continuing. (${error})`);
+      retryFailures.push({ runId, error });
+    }
   }
 
   const stillPendingNames = decision.pendingChecks.map((c) => c.name).filter(Boolean);
-  const body = buildComment({ conflict: decision.conflict, retried, dryRun, noAutoRetryNames, stillPendingNames });
+  const body = buildComment({ conflict: decision.conflict, retried, retryFailures, dryRun, noAutoRetryNames, stillPendingNames });
 
   if (dryRun) {
     console.log('DRY-RUN — would post this advisory comment:\n');

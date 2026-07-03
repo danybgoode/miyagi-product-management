@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decideBabysitActions, actionsRunIdFromDetailsUrl } from './babysit-pr.mjs';
+import { decideBabysitActions, actionsRunIdFromDetailsUrl, buildComment } from './babysit-pr.mjs';
 
 test('clean PR (mergeable, no failing/pending checks) → allClean true, nothing to do', () => {
   const d = decideBabysitActions({
@@ -85,4 +85,48 @@ test('actionsRunIdFromDetailsUrl returns null for a non-Actions / missing URL', 
   assert.equal(actionsRunIdFromDetailsUrl('https://circleci.com/gh/o/r/123'), null);
   assert.equal(actionsRunIdFromDetailsUrl(undefined), null);
   assert.equal(actionsRunIdFromDetailsUrl(''), null);
+});
+
+// ---- buildComment ----
+// A run whose rerun attempt ITSELF errored (e.g. "already running") is a DIFFERENT fact from "nothing
+// needed a retry" — confirmed live, 2026-07-02/03: a rerun attempt on PR #23 errored, and the two cases
+// need to read differently to a human deciding whether to look closer.
+
+test('buildComment: nothing failed, no retry attempted → the plain "no retry needed" line', () => {
+  const body = buildComment({ conflict: false, retried: [], retryFailures: [], dryRun: false, noAutoRetryNames: [], stillPendingNames: [] });
+  assert.match(body, /No failing CI runs needed a retry/);
+  assert.doesNotMatch(body, /Retry attempt itself failed/);
+});
+
+test('buildComment: a successful retry is reported, not the "no retry needed" line', () => {
+  const body = buildComment({ conflict: false, retried: [123], retryFailures: [], dryRun: false, noAutoRetryNames: [], stillPendingNames: [] });
+  assert.match(body, /Retried failing Actions run\(s\): #123/);
+  assert.doesNotMatch(body, /No failing CI runs needed a retry/);
+});
+
+test('buildComment: a retry attempt that itself errored is surfaced distinctly, not folded into "no retry needed"', () => {
+  const body = buildComment({
+    conflict: false,
+    retried: [],
+    retryFailures: [{ runId: 456, error: 'run 456 cannot be rerun; This workflow is already running' }],
+    dryRun: false,
+    noAutoRetryNames: [],
+    stillPendingNames: [],
+  });
+  assert.match(body, /Retry attempt itself failed for: #456/);
+  assert.match(body, /already running/);
+  assert.doesNotMatch(body, /No failing CI runs needed a retry/);
+});
+
+test('buildComment: a mix of successful and failed retries reports both', () => {
+  const body = buildComment({
+    conflict: false,
+    retried: [1],
+    retryFailures: [{ runId: 2, error: 'some error' }],
+    dryRun: false,
+    noAutoRetryNames: [],
+    stillPendingNames: [],
+  });
+  assert.match(body, /Retried failing Actions run\(s\): #1/);
+  assert.match(body, /Retry attempt itself failed for: #2/);
 });

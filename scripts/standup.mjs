@@ -26,16 +26,26 @@
 // node_modules/TS build). Zero npm deps — Node >=20 (global fetch, spawnSync).
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, appendFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
+import { formatPrList, truncateForTelegram } from './lib/telegram-format.mjs';
+import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const LOG_PATH = join(__dirname, 'standups.log');
 const CONFIG_PATH = join(ROOT, 'skills/standup-post/config.json');
+
+// The delta log lives on a dedicated `claude/`-prefixed branch, not committed to `main` — a routine's
+// DEFAULT push scope already covers `claude/`-prefixed branches, so this needs no extra permission (see
+// scripts/lib/log-branch.mjs for why: the "Allow unrestricted branch pushes" toggle failed to save live,
+// 2026-07-02/03).
+const LOG_BRANCH = 'claude/standup-log';
+// Flat filename (no directory) — git mktree builds a single-level tree, and this branch holds nothing
+// else, so there's no reason to nest it under scripts/.
+const LOG_BRANCH_PATH = 'standups.log';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
@@ -51,6 +61,9 @@ const SMOKE_WORKFLOW = 'browser-smoke.yml';
 // vercel-prune-previews.mjs' own default is `--age 0` (flags EVERY non-production preview, including one
 // from a PR opened yesterday) — not a meaningful "stale" signal for a standup. 7 days is our own choice.
 const STALE_PREVIEW_AGE_DAYS = 7;
+
+const MAX_PRS_SHOWN_PER_REPO = 12; // caps a busy-night delta listing before it dominates the message
+const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a safety net, not the primary control
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -156,21 +169,18 @@ function loadChatId() {
   return process.env.TELEGRAM_CHAT_ID || null;
 }
 
-// ---- delta log (scripts/standups.log — JSONL, one line per run) ----
+// ---- delta log (JSONL, one line per run — lives on a dedicated branch, see below) ----
 
 function loadLastRun() {
-  if (!existsSync(LOG_PATH)) return null;
-  const lines = readFileSync(LOG_PATH, 'utf8').trim().split('\n').filter(Boolean);
+  const content = readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH });
+  if (!content) return null;
+  const lines = content.trim().split('\n').filter(Boolean);
   if (!lines.length) return null;
   try {
     return JSON.parse(lines[lines.length - 1]);
   } catch {
     return null;
   }
-}
-
-function appendRun(snapshot) {
-  appendFileSync(LOG_PATH, `${JSON.stringify(snapshot)}\n`);
 }
 
 function buildSnapshot({ repoSignals, smoke, buildOrder, previews }) {
@@ -196,7 +206,13 @@ function buildSnapshot({ repoSignals, smoke, buildOrder, previews }) {
 }
 
 // Pure — the unit that matters for "run twice, second run says no change". No I/O.
-function diffSnapshots(prev, cur, repoSignals) {
+//
+// A missing/wiped `prevRepo` baseline is NOT the same as "everything happened last night" — enumerating
+// gh's entire recent-PR window as "new" overflows Telegram's 4096-char limit and crashes before ever
+// posting or persisting a log (confirmed live, 2026-07-02/03: standups.log had never been committed, so
+// every run re-derived a from-scratch "merged: <100+ PR titles>" dump and died). On a missing baseline,
+// emit ONE bounded summary line per repo (counts only, no per-PR title enumeration) instead.
+export function diffSnapshots(prev, cur, repoSignals) {
   const lines = [];
   const byNumberByRepo = Object.fromEntries(repoSignals.map((r) => [r.repo, r.byNumber || {}]));
 
@@ -206,29 +222,37 @@ function diffSnapshots(prev, cur, repoSignals) {
     const prevRepo = prev?.repos?.[repo] || null;
     const byNumber = byNumberByRepo[repo] || {};
 
-    const prevMerged = new Set(prevRepo?.mergedNumbers || []);
+    if (!prevRepo) {
+      lines.push(
+        `📋 <b>${label}</b> baseline established (${curRepo.openNumbers.length} open, ` +
+          `${curRepo.mergedNumbers.length} recently merged) — deltas start next run.`
+      );
+      continue;
+    }
+
+    const prevMerged = new Set(prevRepo.mergedNumbers || []);
     const newMerged = curRepo.mergedNumbers.filter((n) => !prevMerged.has(n));
     if (newMerged.length) {
-      const titles = newMerged.map((n) => `#${n} ${esc(byNumber[n]?.title || '')}`.trim()).join('; ');
-      lines.push(`✅ <b>${label}</b> merged: ${titles}`);
+      const titled = newMerged.map((n) => ({ number: n, title: byNumber[n]?.title || '' }));
+      lines.push(`✅ <b>${label}</b> merged: ${formatPrList(titled, MAX_PRS_SHOWN_PER_REPO)}`);
     }
 
-    const prevOpenSet = new Set(prevRepo?.openNumbers || []);
+    const prevOpenSet = new Set(prevRepo.openNumbers || []);
     const newOpened = curRepo.openNumbers.filter((n) => !prevOpenSet.has(n));
     if (newOpened.length) {
-      const titles = newOpened.map((n) => `#${n} ${esc(byNumber[n]?.title || '')}`.trim()).join('; ');
-      lines.push(`🆕 <b>${label}</b> opened: ${titles}`);
+      const titled = newOpened.map((n) => ({ number: n, title: byNumber[n]?.title || '' }));
+      lines.push(`🆕 <b>${label}</b> opened: ${formatPrList(titled, MAX_PRS_SHOWN_PER_REPO)}`);
     }
 
-    const prevFailing = new Set(prevRepo?.failingOpenNumbers || []);
+    const prevFailing = new Set(prevRepo.failingOpenNumbers || []);
     const newFailing = curRepo.failingOpenNumbers.filter((n) => !prevFailing.has(n));
     if (newFailing.length) lines.push(`🔴 <b>${label}</b> CI red on open PR: ${newFailing.map((n) => `#${n}`).join(', ')}`);
 
-    const prevConflicting = new Set(prevRepo?.conflictingOpenNumbers || []);
+    const prevConflicting = new Set(prevRepo.conflictingOpenNumbers || []);
     const newConflicting = (curRepo.conflictingOpenNumbers || []).filter((n) => !prevConflicting.has(n));
     if (newConflicting.length) lines.push(`⚠️ <b>${label}</b> merge conflict on open PR: ${newConflicting.map((n) => `#${n}`).join(', ')}`);
 
-    if (!prevRepo || prevRepo.openNumbers?.length !== curRepo.openNumbers.length) {
+    if (prevRepo.openNumbers?.length !== curRepo.openNumbers.length) {
       lines.push(`📋 <b>${label}</b> open PRs: ${curRepo.openNumbers.length}`);
     }
   }
@@ -278,30 +302,20 @@ async function sendTelegram(chatId, text) {
   if (!res.ok) die(`Telegram sendMessage failed: ${res.status} ${JSON.stringify(body).slice(0, 300)}`);
 }
 
-// ---- git persistence of the log ----
+// ---- log persistence (scripts/lib/log-branch.mjs — a dedicated claude/-prefixed branch) ----
 
-function commitAndPushLog() {
-  const add = spawnSync('git', ['add', 'scripts/standups.log'], { cwd: ROOT, encoding: 'utf8' });
-  if (add.status !== 0) {
-    console.error(`standup: git add failed — log won't persist to the next run: ${add.stderr}`);
-    return;
-  }
-  const commit = spawnSync(
-    'git',
-    ['commit', '-m', `chore(standup): log ${new Date().toISOString().slice(0, 10)}`, '--', 'scripts/standups.log'],
-    { cwd: ROOT, encoding: 'utf8' }
-  );
-  if (commit.status !== 0) {
-    if (!/nothing to commit/i.test(commit.stdout || '')) {
-      console.error(`standup: git commit failed — log won't persist to the next run: ${commit.stderr}`);
-    }
-    return;
-  }
-  const push = spawnSync('git', ['push'], { cwd: ROOT, encoding: 'utf8' });
-  if (push.status !== 0) {
+function appendRunAndPush(snapshot) {
+  const ok = appendLineToBranch({
+    cwd: ROOT,
+    branch: LOG_BRANCH,
+    path: LOG_BRANCH_PATH,
+    line: `${JSON.stringify(snapshot)}\n`,
+    message: `chore(standup): log ${new Date().toISOString().slice(0, 10)}`,
+  });
+  if (!ok) {
     console.error(
-      `standup: git push failed — the log commit is local only, so the next run (esp. a fresh routine ` +
-        `session) won't see it. Needs push enabled beyond the claude/-prefix default. ${push.stderr}`
+      `standup: writing the updated log to ${LOG_BRANCH} failed — the next run (esp. a fresh routine ` +
+        `session) won't see today's snapshot and will re-derive its baseline.`
     );
   }
 }
@@ -321,7 +335,10 @@ async function main() {
   const deltaLines = diffSnapshots(prev, cur, repoSignals);
 
   const header = `<b>Standup · ${cur.ts.slice(0, 10)}</b>`;
-  const message = deltaLines.length ? [header, ...deltaLines].join('\n') : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
+  const rawMessage = deltaLines.length ? [header, ...deltaLines].join('\n') : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
+  // Last-resort safety net for Telegram's hard 4096-char limit — the per-repo caps above (baseline
+  // summary lines, formatPrList) should already keep any normal night well under this.
+  const message = truncateForTelegram(rawMessage, TELEGRAM_MAX_CHARS);
 
   console.log(message.replace(/<\/?[^>]+>/g, ''));
 
@@ -337,12 +354,14 @@ async function main() {
   }
 
   if (!DRY_RUN) {
-    appendRun(cur);
-    commitAndPushLog();
+    appendRunAndPush(cur);
   }
 }
 
-main().catch((e) => {
-  console.error(e.message || e);
-  process.exit(1);
-});
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) {
+  main().catch((e) => {
+    console.error(e.message || e);
+    process.exit(1);
+  });
+}

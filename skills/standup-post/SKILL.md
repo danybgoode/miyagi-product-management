@@ -82,10 +82,17 @@ problem, not a flake.
   non-production preview, including one from a PR opened yesterday — not a meaningful "stale" signal.
   `standup.mjs` deliberately passes `--age 7`. If you invoke the prune script directly for something
   else, remember its bare default differs from what the standup reports.
-- **The log-commit-and-push step needs push enabled beyond the routine's default `claude/`-prefix
-  restriction.** If it isn't, the Telegram post still goes out fine, but the log commit fails silently
-  from Daniel's point of view (it's logged to stderr only) and the *next* run — especially a fresh
-  nightly-routine session with no local state — has nothing to diff against, so standups quietly
-  degrade into full re-dumps every night. If a standup starts looking like it's reporting "everything is
-  new" repeatedly, check for a `git push failed` line in the routine transcript before assuming the
-  underlying signals actually changed that much.
+- **The delta log lives on a dedicated `claude/standup-log` branch** (`scripts/lib/log-branch.mjs`, git
+  plumbing only), not committed to `main` — needs **no special push permission**, since `claude/`-prefixed
+  branches are already inside a routine's default push scope. (An earlier version committed straight to
+  `main`, which needed "Allow unrestricted branch pushes" — that toggle's Save button failed live in the
+  claude.ai Routines UI, 2026-07-02/03, so the log moved off `main` entirely instead of depending on a fix
+  for it.) If the log write still fails for some other reason, it's logged to stderr only — the Telegram
+  post still goes out fine, but the *next* run has nothing to diff against, so a standup quietly degrading
+  into a "baseline established" bootstrap message repeatedly (instead of real deltas) is the tell; check
+  for a `log-branch: git push failed` line in the routine transcript.
+- **A missing/wiped log is NOT the same as "everything happened last night."** On a missing baseline,
+  the standup posts one bounded "baseline established (N open, M recently merged)" line per repo instead
+  of enumerating gh's entire recent-PR history — the previous behavior tried to diff against nothing,
+  which meant every historical PR looked "new," and the resulting message overflowed Telegram's 4096-char
+  limit and crashed before ever posting or persisting a log (confirmed live, 2026-07-02/03).
