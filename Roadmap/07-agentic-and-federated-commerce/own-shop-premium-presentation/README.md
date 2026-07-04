@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 built (commits 0c135cb, 885c843 on feat/own-shop-premium-presentation) — PR + Daniel's smoke owed before merge. S2/S3 open.
 slug: own-shop-premium-presentation
 ---
 
