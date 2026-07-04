@@ -28,14 +28,23 @@ export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 // version and FAIL LOUD on a mismatch (checkAgyVersion). 1.0.7→1.0.10 silently changed `--print` so it
 // emits NOTHING without an explicit --model, which a soft warn let ship as empty reviews; a hard fail forces
 // a human to re-verify the invocation below and bump this deliberately. Bumping = re-test runAntigravity().
-export const AGY_PINNED = '1.0.10';
+//
+// Re-verified 2026-07-03 against 1.0.16 (jump from 1.0.10; changelogs 1.0.11-1.0.16 show no print/--model
+// changes): `agy -p "<prompt>" --model "<valid model>"` still exits 0 with real stdout — the exact call
+// runAntigravity makes. One thing DID get more lenient: omitting --model, or passing an unrecognized model
+// name, no longer prints nothing — agy now silently substitutes a default model and still returns output.
+// Harmless here since AGY_MODEL/AGY_FALLBACK_MODEL below are always valid, listed model names (checked via
+// `agy models`), but it means a future typo in either constant would silently review with the WRONG model
+// instead of failing loud — watch for that if either constant is ever edited.
+export const AGY_PINNED = '1.0.16';
 
-// agy 1.0.10 `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
-// nothing (exit 0, empty stdout — the error lands only in agy's log) when the model is quota-exhausted or
-// unreachable. Gemini is the ideal reviewer (a different family from BOTH the Claude host and the GPT-family
-// codex), so it's the default — but its per-subscription quota is tight and exhausts ("RESOURCE_EXHAUSTED
-// 429: Individual quota reached"), so runAntigravity AUTO-FALLS-BACK to AGY_FALLBACK_MODEL (GPT-OSS, a
-// separate quota pool that worked on the dev machine) when the primary yields empty. Override either via env.
+// agy's `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
+// nothing (exit 0, empty stdout — the error lands only in agy's log, see --log-file) when the model is
+// quota-exhausted or unreachable. Gemini is the ideal reviewer (a different family from BOTH the Claude host
+// and the GPT-family codex), so it's the default — but its per-subscription quota is tight and exhausts
+// ("RESOURCE_EXHAUSTED 429: Individual quota reached"), so runAntigravity AUTO-FALLS-BACK to
+// AGY_FALLBACK_MODEL (GPT-OSS, a separate quota pool that worked on the dev machine) when the primary yields
+// empty. Override either via env.
 export const AGY_MODEL = process.env.AGY_MODEL || 'Gemini 3.1 Pro (High)';
 export const AGY_FALLBACK_MODEL = process.env.AGY_FALLBACK_MODEL || 'GPT-OSS 120B (Medium)';
 

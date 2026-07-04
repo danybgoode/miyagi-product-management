@@ -170,9 +170,10 @@ the shared rail `scripts/lib/cross-agent-cli.mjs` (covered by its `node:test`); 
 (alias `--no-comment`) · `--help`. `<PR#>` is optional (omit → current branch). **Dependencies:** `gh`
 (authed), plus `codex` for `--agent codex` and `agy`
 for `--agent antigravity` — each degrades with a clear, fix-naming message if missing/unauthed. `agy` is
-pinned to **1.0.10** and the version check **fails loudly** on a mismatch (a silent warn is what let the
-1.0.7→1.0.10 print-contract change ship empty reviews). The 1.0.10 invocation is
-`agy -p "<prompt+diff>" --model "<MODEL>"`: `--print` now emits **nothing** without an explicit `--model`,
+pinned to **1.0.16** and the version check **fails loudly** on a mismatch (a silent warn is what let the
+1.0.7→1.0.10 print-contract change ship empty reviews; re-verified against 1.0.16 on 2026-07-03 — no further
+contract break, see `cross-agent-cli.mjs` for what changed). The invocation is
+`agy -p "<prompt+diff>" --model "<MODEL>"`: `--print` emits **nothing** without an explicit `--model`,
 and it *also* emits nothing (exit 0!) when the model is **quota-exhausted** (`RESOURCE_EXHAUSTED 429`) — the
 error only lands in agy's log. So the script passes a model and treats empty output as a failure. The default
 is **`Gemini 3.1 Pro (High)`** (a different family from *both* the Claude host and the GPT-family Codex), with

@@ -270,7 +270,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   non-zero-exit check can't catch it, and the reviewer silently returned empty for weeks. Fixes that
   generalize: pass `--model` explicitly, treat **empty output as failure** (not success), give the model a
   primary→fallback pair, and make the version check **fail loud** (a stderr-only warn gets ignored, which
-  is how the bad bump shipped). *(2026-06-23, devops-reliability-cleanup S4 — pinned `agy` 1.0.10.)*
+  is how the bad bump shipped). *(2026-06-23, devops-reliability-cleanup S4 — pinned `agy` 1.0.10; re-verified
+  and bumped to 1.0.16 on 2026-07-03 — the guard did its job, forced a manual re-check before bumping, no
+  further contract break found. One new wrinkle: an omitted/unrecognized `--model` no longer prints nothing —
+  it now silently substitutes a default model, harmless since the pinned model constants are always valid.)*
   **A CLI authed by an interactive/OAuth login is NOT free to run in CI — confirm a portable
   non-interactive credential path AND its cost before automating it in a runner.** `codex` can auth
   headlessly with a token-billed API key; `agy` has **no headless auth at all**. Automating a root-repo
