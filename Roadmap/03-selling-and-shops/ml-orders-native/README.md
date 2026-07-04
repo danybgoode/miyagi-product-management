@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 merged (backend 28f4e15, frontend c77a63c); Sprint 2 merged 2026-07-04 (backend 6b4e8dc, frontend 5623f97); prod migration + live flag flip + Daniel's live smoke still owed. S3 open.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 merged (backend 28f4e15, frontend c77a63c); Sprint 2 merged 2026-07-04 (backend 6b4e8dc, frontend 5623f97); prod migration + live flag flip + Daniel's live smoke still owed. S3 built, draft PRs open (backend #59, frontend #174), awaiting Daniel merge.
 slug: ml-orders-native
 archetype: Builder
 ---
@@ -14,7 +14,10 @@ archetype: Builder
 > (order/fulfillment core + inventory interaction with the live S4 stock sync) — both sprints' merges
 > were authorized in-conversation after cross-agent review (Sprint 1: 4 rounds; Sprint 2: 2 local
 > cross-review rounds + an independent fresh-reviewer agent pass, per WAYS-OF-WORKING); still dark behind
-> `ml.orders_enabled` pending the prod migration + live smoke.
+> `ml.orders_enabled` pending the prod migration + live smoke. **Sprint 3 (tags, bulk actions, agent
+> parity) is built** — backend PR [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) +
+> frontend PR [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174), both draft, green on
+> the deterministic gate, awaiting Daniel's merge (risk **HIGH** for merge purposes — see sprint-3.md).
 > **Companion:** [`profit-analyzer`](../profit-analyzer/README.md) (Epic B) builds on this epic's order
 > data — **this epic ships first.**
 
@@ -120,4 +123,9 @@ touches.
   [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) → `5623f97`. Dark behind
   `ml.orders_enabled`. **Owed:** the live ML-sandbox cancel/refund + notification + entitlement-upsell
   walkthrough (sprint-2.md steps 7–12) — Daniel is running this on prod himself.
-- [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity.
+- [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity. Built; backend PR
+  [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) (draft) + frontend PR
+  [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174) (draft), both green on the
+  deterministic gate. Risk **HIGH** for merge (US-8's `[id]/route.ts` extraction is fulfillment-adjacent)
+  — Daniel merge required. **Owed:** batch-day live walkthrough + `list_orders` agent round-trip
+  (sprint-3.md steps 10–12).
