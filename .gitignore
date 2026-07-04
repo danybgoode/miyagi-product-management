@@ -74,3 +74,9 @@ Thumbs.db
 # Python bytecode (infra predicates)
 __pycache__/
 *.pyc
+
+# references/despachobonsai — local-only reference clone (ML-sync impl). It has its own
+# .git, node_modules, .next builds and .env secrets inside; git add silently no-ops on
+# nested-repo files, so it stays untracked like design_handoff. To adopt the SOURCE into
+# this repo: mv its .git to .git.local, then git add (junk dirs would need re-ignoring).
+references/despachobonsai/
