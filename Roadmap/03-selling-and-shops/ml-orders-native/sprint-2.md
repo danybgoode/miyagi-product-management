@@ -3,11 +3,14 @@
 > Epic: [ml-orders-native](README.md) · Risk: **HIGH** (US-4) · Backend-first; still dark behind
 > `ml.orders_enabled` until this sprint completes the lifecycle.
 >
-> **Built, PRs open (draft):** backend
-> [#58](https://github.com/danybgoode/medusa-bonsai-backend/pull/58) (branch
-> `feat/ml-orders-native-s2`, fresh off `origin/main` — S1's branch was squash-merged); frontend
-> [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) (same branch name, own repo).
-> CI running as of this writing. **Daniel merges** (risk tier HIGH, per WAYS-OF-WORKING).
+> **✅ MERGED 2026-07-04** — backend PR
+> [#58](https://github.com/danybgoode/medusa-bonsai-backend/pull/58) squashed to `6b4e8dc`; frontend PR
+> [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) squashed to `5623f97`. Daniel
+> authorized the merge in-conversation ("can merge on green, I'll run smoke on prod") after CI green +
+> two rounds of local cross-agent review (Antigravity, re-run after an `agy` pin bump mid-sprint) + an
+> independent fresh-reviewer agent pass — see Sprint QA below for the real findings from all three
+> passes and how each was verified before being fixed or declined. Both feature branches deleted after
+> merge. Still dark behind `ml.orders_enabled`.
 >
 > **Plan-mode findings that sharpened the scope doc below (see the plan file for full rationale):**
 > - US-6's *flag* half was already live from Sprint 1 (`decideMlOrderApply`, the webhook, both reconcile
@@ -79,51 +82,68 @@ order import alongside stock sync (same SKU/grant), not a second paywall surface
   `decideMlOrderCancel` through a full apply → cancel → replay sequence, both flag states — proves one
   decrement, one matching restock (net stock unchanged), and no double-move on either a cancel replay or
   the ORIGINAL sale notification replaying after cancellation.
-- **Deterministic gate, both repos, green locally before PR:** backend `medusa build` → `tsc --noEmit` →
-  `npm run test:unit` — **135/135 tests, 15/15 suites** (was 117/14 at Sprint 1 close: +5 US-4, +10 US-6,
-  +3 signature-smoke additions). Frontend `tsc --noEmit` → `next build` → `playwright test --project=api`
-  — **1292 passed**; 6 failures are pre-existing live-prod rate-limiting/bot-protection flakiness
-  (`promoter-applications`, `not-found-shape`, `mobile-filter` — none touch this sprint's surfaces),
-  consistent with WAYS-OF-WORKING's note that a local run against prod isn't the authoritative gate.
-- **Cross-agent review — unavailable this session, noted on both PRs, not silently skipped.** codex is
-  over its usage cap (resets Aug 1, 2026); antigravity drifted to `1.0.16` vs the pinned `1.0.10`, and
-  `scripts/cross-review.mjs` correctly refused to run rather than risk a bad read against an unverified
-  CLI contract change (per the LEARNINGS entry on exactly this failure mode). Advisory-only — doesn't
-  block review/merge — but flagged explicitly rather than gone unmentioned.
+- **Deterministic gate, both repos, green at merge:** backend `medusa build` → `tsc --noEmit` →
+  `npm run test:unit` — **136/136 tests, 15/15 suites** (was 117/14 at Sprint 1 close). Frontend
+  `tsc --noEmit` → `next build` → `playwright test --project=api` — **1292 passed**; 6 failures are
+  pre-existing live-prod rate-limiting/bot-protection flakiness (`promoter-applications`,
+  `not-found-shape`, `mobile-filter` — none touch this sprint's surfaces), consistent with
+  WAYS-OF-WORKING's note that a local run against prod isn't the authoritative gate.
+- **Cross-agent review — codex unavailable all sprint (usage cap, resets Aug 1, 2026); antigravity ran
+  twice after Daniel bumped the pin to `1.0.16` mid-sprint.** Round 1 (backend PR #58) found 2 real
+  issues, both verified against real source and fixed: (1) `ml-notify-seller.ts`'s `fetch()` didn't
+  check `res.ok`, silently swallowing a non-2xx notify-bridge response; (2) the post-fulfillment
+  `log-edge` cancel case had no idempotency marker, so the reconcile job would re-log the identical
+  "needs manual review" note every 30-minute pass forever — new `edge_logged_at` column fixes it. A
+  third finding (a `cancelOrdersStep` name/shape mismatch) was checked against the actual installed
+  `@medusajs/core-flows` source and found FALSE — declined with the verification. Round 2 (after the
+  fix commit) surfaced 3 more claims, all checked and found FALSE or matching an already-accepted
+  codebase pattern (a Supabase-grant-read "rule 2" question that mirrors 3 already-shipped epics'
+  identical precedent; a hallucinated "`link_id` doesn't exist on the model" claim, contradicted by the
+  model file itself; a hallucinated Next.js-serverless-suspension claim applied to code that actually
+  runs on the persistent Medusa/Cloud-Run backend, not Vercel). Frontend PR #172's own cross-review
+  round found one real issue (a `v in COPY` type-guard vulnerable to prototype-chain keys like
+  `"toString"` — fixed with `hasOwnProperty`) and declined two non-issues after verification.
+  All verification replies are on the PRs themselves, not just summarized here.
+- **Independent fresh-reviewer agent (WAYS-OF-WORKING's required pre-merge judgment pass, distinct from
+  the advisory cross-review above)** did a cold read of both diffs against the five AGENTS.md rules,
+  independently re-verifying the `cancelOrdersStep` shape and the exactly-once cancel/entitlement logic
+  against real `@medusajs` source. Verdict: safe to merge, with 2 more real findings (both fixed): the
+  reconcile job's candidate SQL only excluded terminal `fulfillment_status` values, but
+  `cancelOrdersStep` only ever sets `order.status` (confirmed against `@medusajs/order`'s `cancel_()`) —
+  so a cancelled ML order never left the 500-row candidate pool and would be re-polled every 30 min
+  forever; fixed by also filtering `status != 'canceled'`. Also added a missing index on
+  `ml_applied_order.medusa_order_id`, a new hot lookup key with no index. Two more low-severity notes
+  (a silent-skip-with-no-alert on unresolved inventory during cancel; a log write outside the lock) were
+  declined as matching already-accepted patterns elsewhere in this codebase (the forward-apply path and
+  `applyMlOrderToLink`'s own documented log-after-lock-release design, respectively).
 - **Owed to Daniel:** live ML-sandbox cancel/refund walkthrough + Telegram notification receipt + the
-  entitlement upsell check on a non-entitled shop — see the numbered walkthrough below. (Also still owed
-  from Sprint 1, unrelated to this sprint's changes: the prod `ml_applied_order` migration double-check
-  and its own live-sandbox smoke, sprint-1.md steps 7–12.)
+  entitlement upsell check on a non-entitled shop — see the numbered walkthrough below (Daniel is running
+  this on prod himself). (Also still owed from Sprint 1, unrelated to this sprint's changes: the prod
+  `ml_applied_order` migration double-check and its own live-sandbox smoke, sprint-1.md steps 7–12.)
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 
-**Deterministic (agent-run, done pre-merge):**
+**Deterministic (agent-run, ✅ done pre-merge):**
 1. Backend: `cd apps/backend && npx medusa build && npx tsc --noEmit && npm run test:unit` → build
-   succeeds, `tsc` clean, 15/15 suites · 135/135 tests green (includes the new
+   succeeds, `tsc` clean, 15/15 suites · 136/136 tests green (includes the new
    `decideMlOrderCancel`/`ml-orders-entitlement` specs and the signature-regression scenario).
 2. Frontend: `cd apps/miyagisanchez && npx tsc --noEmit && npx next build && npx playwright test
    --project=api` → clean typecheck, build succeeds, `e2e/notification-preferences.spec.ts`'s
    event→group map covers all four new `ml_order_*` events.
-
-**Post-CI, both repos:**
-3. Confirm GitHub Actions CI is green on backend
-   [PR #58](https://github.com/danybgoode/medusa-bonsai-backend/pull/58) (`Type-check + build + unit`)
-   and frontend [PR #172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) (`Type-check +
-   build`, `Playwright vs preview`) before requesting merge.
+3. ✅ CI green on both PRs at merge time — backend #58 (`Type-check + build + unit`), frontend #172
+   (`Type-check + build`, `Playwright vs preview`). Both squash-merged 2026-07-04 (`6b4e8dc` / `5623f97`).
 
 **Post-merge, backend (Cloud Run, ~12 min, no preview) — agent-run API smoke:**
 4. `curl https://medusa-web-91083034475.us-east4.run.app/health` → `200 OK` on the revision matching
-   this PR's merge commit.
+   `6b4e8dc`.
 5. `curl -X POST .../internal/ml/notify-seller -H "x-internal-secret: wrong"` on the **frontend** origin
    → `401` (route exists, auth gate holds) — mirrors Sprint 1's `materialize-order` auth check.
 
 **Post-merge, frontend (Vercel preview on the PR, then prod):**
-6. On the PR's Vercel preview (currently
-   `https://miyagisanchez-cylc94lyn-danybgoodes-projects.vercel.app` — a fresh push rebuilds a new
-   preview URL, use the PR's latest): sign in as a seller connected to Mercado Libre with
-   `ml.sync_enabled` ON
-   but the `ml_sync` grant absent/lapsed (paywall on) → `/shop/manage/mercadolibre` shows the upsell card
-   with the updated copy mentioning both stock sync AND order import (US-6's presentational check — no
+6. Now live on `https://miyagisanchez.com`: sign in as a seller connected to Mercado Libre with
+   `ml.sync_enabled` ON but the `ml_sync` grant absent/lapsed (paywall on) →
+   `/shop/manage/mercadolibre` shows the upsell card with the updated copy mentioning both stock sync
+   AND order import (US-6's presentational check — no
    backend/ML sandbox needed for this step).
 
 **Owed to Daniel (money/auth/live-ML-sandbox — cannot be automated from this session):**
