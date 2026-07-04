@@ -122,17 +122,22 @@ badge in `OrdersInbox.tsx`'s list + a detail section in `OrderDetail.tsx` with t
    --project=api` → clean typecheck, build succeeds, `e2e/ml-order-badge.spec.ts` +
    `e2e/flags-admin.spec.ts` (15 known flags, including `ml.orders_enabled`) green.
 
-**Post-merge, backend (Cloud Run, ~12 min, no preview) — agent-run API smoke:**
-3. `curl -sf https://<prod-backend-url>/health` → `200`, confirms the new revision is live and boots
-   clean with the `ml_applied_order` model registered (a broken model registration fails boot, not a
-   500 at request time).
-4. `curl -i -X POST https://<prod-backend-url>/internal/ml/materialize-order -H "x-internal-secret:
-   wrong"` → `401` (route exists, auth gate holds).
-5. Confirm the new migration applied: `medusa db:migrate` ran as part of the standard Cloud Run deploy
-   (image-only deploys don't run migrations automatically for this backend — **REQUIRED, same pattern
-   as the S5 `ml_sync_event` migration**: run it via the connector-attached Cloud Run Job, or the
-   deploy runbook's migrate step, before the flag is ever flipped ON). Verify with `\d ml_applied_order`
-   against prod Postgres.
+**Post-merge, backend (Cloud Run, ~12 min, no preview) — agent-run API smoke, DONE 2026-07-04:**
+3. ✅ `curl https://medusa-web-91083034475.us-east4.run.app/health` → `200 OK`. Revision
+   `medusa-web-00132-zmz` (image tag `28f4e15`, matching the squash-merge commit) live, serving 100%
+   traffic since 2026-07-03 23:16, healthy for 2+ hours since.
+4. ✅ `curl -X POST .../internal/ml/materialize-order -H "x-internal-secret: wrong"` → `401` (route
+   exists, auth gate holds).
+5. ✅ Migration confirmed applied — **correction to this walkthrough's original assumption**:
+   `docker-entrypoint.sh` runs `npx medusa db:migrate` automatically on every boot (`MEDUSA_WORKER_MODE
+   != worker`, and `medusa-web` runs `shared`), not a separate manual step. Confirmed via Cloud Run
+   stdout logs on `medusa-web-00132-zmz`: `[entrypoint] running migrations…` at `23:17:21` →
+   `[entrypoint] starting medusa (worker mode: shared)…` at `23:17:51` with zero errors between (the
+   script runs `set -e`, so a failed migration would have aborted before "starting medusa" ever
+   printed, and the revision would never have gone healthy). The `ml_applied_order` table is live in
+   prod. (The S5 `ml_sync_event` migration's "needed a manual Cloud Run Job" note was evidently about
+   something else that session hit — `docker-entrypoint.sh`'s auto-migrate has been in place since the
+   very first containerization commit, confirmed via `git log -- docker-entrypoint.sh`.)
 
 **Post-merge, frontend (Vercel, has a preview per PR):**
 6. On the PR's Vercel preview: sign in as any seller, open `/shop/manage/orders` → page renders

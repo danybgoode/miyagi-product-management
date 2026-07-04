@@ -103,11 +103,12 @@ touches.
 
 ## Sprints
 
-- [sprint-1.md](sprint-1.md) — ✅ merged. The spine: idempotency table + order materialization + state
-  mapping + badge. Backend PR [#57](https://github.com/danybgoode/medusa-bonsai-backend/pull/57)
-  → `28f4e15`; frontend PR [#170](https://github.com/danybgoode/miyagisanchezcommerce/pull/170) →
-  `c77a63c`. Deployed dark behind `ml.orders_enabled` (default OFF). **Owed before flag flip:** prod
-  `medusa db:migrate` for `ml_applied_order` (Cloud Run image-only deploy doesn't auto-migrate), then
-  the live ML-sandbox smoke (sprint-1.md steps 7–12).
+- [sprint-1.md](sprint-1.md) — ✅ merged + deployed. The spine: idempotency table + order
+  materialization + state mapping + badge. Backend PR
+  [#57](https://github.com/danybgoode/medusa-bonsai-backend/pull/57) → `28f4e15` (live on Cloud Run,
+  migration confirmed applied); frontend PR
+  [#170](https://github.com/danybgoode/miyagisanchezcommerce/pull/170) → `c77a63c`. Dark behind
+  `ml.orders_enabled` (default OFF). **Owed before flag flip:** the live ML-sandbox smoke only
+  (sprint-1.md steps 7–12) — Daniel runs it once the flag is on.
 - [sprint-2.md](sprint-2.md) — Full lifecycle: cancel/refund, notifications, entitlement + kill-switch.
 - [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity.
