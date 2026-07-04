@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 built (commits 0c135cb, 885c843 on feat/own-shop-premium-presentation) — PR + Daniel's smoke owed before merge. S2/S3 open.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped — PR #173 merged to main (squash 8b1abb1), 2026-07-04; cross-agent review findings fixed pre-merge (f02403d). Owed: Daniel's click-through smoke + real-device contrast eyeball (sprint-1.md). S2/S3 open.
 slug: own-shop-premium-presentation
 ---
 
