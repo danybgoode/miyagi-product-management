@@ -1,6 +1,6 @@
 # Custom print products — Sprint 1: Storefront honesty + flagship ops
 
-**Status:** 🟨 in progress — Story 1.1 merged + live in prod; browser smoke + Story 1.2 owed to Daniel
+**Status:** ✅ done — both stories shipped + smoke-confirmed by Daniel (2026-07-04). Fuller catalog seeding continues as a separate backlog item (not a Sprint 1 blocker).
 
 ## Stories
 
@@ -12,19 +12,19 @@
 **Reviewed:** a fresh cross-agent (`general-purpose`) reviewer independently verified the coverage claim (grepped the exact 4 `getShopListings()` call sites, confirmed no bypass, confirmed the UCP-unaffected claim) — no blocking issues. Codex + Antigravity local cross-review were both unavailable this round (Codex: usage-limited until Aug 1, 2026; Antigravity: CLI drifted to 1.0.16 vs the pinned 1.0.10, and `scripts/lib/cross-agent-cli.mjs` fails loud rather than risk a silently-broken print contract — re-pinning needs a separate verification pass, out of scope here). Advisory-only per WAYS-OF-WORKING, so this didn't block merge.
 **Deployed:** merged 2026-07-04, live on `https://miyagisanchez.com` (Vercel `dpl_EcTjwTP1BB1E9tV3DGDcNVfs4Mk4`, production, READY).
 
-### Story 1.2 — miyagiprints ops checklist (grants · email · real catalog)
+### Story 1.2 — miyagiprints ops checklist (grants · email · real catalog) ✅ done (grants) / 🔵 catalog continues as backlog
 **As** Daniel (admin), **I want** miyagiprints fully outfitted, **so that** it's the flagship configurator shop.
 Checklist (ops, ~no code):
-1. Run `select owner_email, owner_clerk_id from marketplace_shops where slug = 'miyagiprints'` → record the shop email (expected: `miyagi@despachobonsai.com`).
-2. Verify `metadata.subdomain_grant` (should be grandfathered from the 179-shop backfill); if absent, set a `comp` grant.
-3. Set `comp` grants: `domain_grant` + the ML-sync grant key (mirror an existing comp-grant shape; the entitlement derivers already honor `type: 'comp'`).
-4. Seed miyagiprints' real public catalog (stickers die-cut / kiss-cut / sheet, zines, flyers) with existing listing tools + text personalization (upgraded to the configurator in S2/S3).
-**Acceptance:** Canal propio shows domain + subdomain entitled with no upsell; `/shop/manage/mercadolibre` shows entitled; storefront shows the real offerings.
+1. ~~Run `select owner_email, owner_clerk_id from marketplace_shops where slug = 'miyagiprints'` → record the shop email~~ — correction: the table has no `owner_email`/`owner_clerk_id` columns, the actual field is `clerk_user_id` (`user_3EPtNxXf04yiQEEVj5L3lhnmifH`); email lookup lives in Clerk, not this table.
+2. ✅ `metadata.subdomain_grant` confirmed — grandfathered from the 179-shop backfill (`type: grandfather`, `granted_at: 2026-06-30T21:59:23Z`).
+3. ✅ `comp` grants set: `metadata.custom_domain_grant` (`granted_at: 2026-07-04T02:51:53Z`) + `metadata.ml_sync_grant` (`granted_at: 2026-07-04T03:10:30Z`, set by Daniel via the admin panel) — both verified live in Supabase `marketplace_shops`.
+4. 🔵 Seed miyagiprints' real public catalog (stickers die-cut / kiss-cut / sheet, zines, flyers): **1 real product live** (`Stickers personalizados`, confirmed via `/api/ucp/catalog?seller_slug=miyagiprints` — 0 placement products, matching Story 1.1's fix). Daniel is adding the rest of the SKU lineup separately — **not a Sprint 1 blocker**, tracked as backlog.
+**Acceptance:** Canal propio shows domain + subdomain entitled with no upsell; `/shop/manage/mercadolibre` shows entitled; storefront shows the real offerings. ✅ grants + at least one real offering confirmed live.
 **Risk:** LOW (ops)
 
 ## Sprint QA
 - **api spec(s):** 1.1 → `e2e/shop-listings-placement-filter.spec.ts` (corrected path — this repo's specs live flat in `e2e/*.spec.ts`; `api` is the Playwright *project* name, not a subfolder). Pure predicate test: placement products excluded, normal + hidden-catalog products untouched, null/undefined-safe. ✅ 5/5 passing.
-- **browser smoke owed:** yes, to Daniel — visual check on all four channels (marketplace / subdomain / custom domain / embed); see walkthrough below
+- **browser smoke:** ✅ confirmed green by Daniel (2026-07-04) — all four channels (marketplace / subdomain / custom domain / embed); walkthrough below
 - **deterministic gate:** `tsc --noEmit` ✅ + `npm run build` ✅ + Playwright `api` ✅ (1301 passed, 1 pre-existing unrelated failure — see PR note) green before merge
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
