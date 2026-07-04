@@ -1,14 +1,16 @@
 # Custom print products — Sprint 1: Storefront honesty + flagship ops
 
-**Status:** 🟨 in progress — Story 1.1 built + gate green, smoke + Story 1.2 owed to Daniel
+**Status:** 🟨 in progress — Story 1.1 merged + live in prod; browser smoke + Story 1.2 owed to Daniel
 
 ## Stories
 
-### Story 1.1 — Hide print placements from every shop-storefront surface ✅ (`f51df27`, branch `feat/custom-print-products`, apps/miyagisanchez)
+### Story 1.1 — Hide print placements from every shop-storefront surface ✅ merged (PR [#171](https://github.com/danybgoode/miyagisanchezcommerce/pull/171), squash-merged as `8552974` to `main`, apps/miyagisanchez) — live in prod
 **As a** buyer on any shop storefront (marketplace `/s/[slug]`, subdomain, custom domain, embed, UCP shop catalog), **I want** to never see `is_print_placement` products, **so that** miyagiprints (and any future print provider) shows only real, buyable offerings.
 **Acceptance:** https://miyagiprints.miyagisanchez.com and https://miyagisanchez.com/s/miyagiprints show zero ad-placement listings; the listing count on the shop header matches; general browse/search exclusion (already live in `apps/backend/src/api/store/listings/route.ts`) untouched; placements still purchasable via the backoffice ad flow. Filter lives in ONE shared seam (`getShopListings()` in `lib/listings.ts` — check the embed + UCP shop-catalog paths hit it too), with a regression spec.
 **Risk:** LOW
 **Built:** root cause was `getShopListings()` reading `GET /store/sellers/:slug/products` (backend `apps/backend/src/api/store/sellers/[slug]/products/route.ts`), which only filtered `isHiddenCatalogProduct()` — never `is_print_placement`, unlike the general-catalog `/store/listings` route. Added a pure `isPrintPlacementListing()` predicate to `lib/listing-query.ts` (kept `next/*`-free so it's unit-testable) and applied it inside `getShopListings()` before mapping — this single seam covers marketplace `/s/[slug]`, subdomain + custom domain (same route), embed (`/embed/s/[slug]`), `sitemap.ts`, and the PDP "more from this shop" block. The UCP shop catalog forwards to `/store/listings` directly, already filtered — confirmed no change needed there. No backend changes.
+**Reviewed:** a fresh cross-agent (`general-purpose`) reviewer independently verified the coverage claim (grepped the exact 4 `getShopListings()` call sites, confirmed no bypass, confirmed the UCP-unaffected claim) — no blocking issues. Codex + Antigravity local cross-review were both unavailable this round (Codex: usage-limited until Aug 1, 2026; Antigravity: CLI drifted to 1.0.16 vs the pinned 1.0.10, and `scripts/lib/cross-agent-cli.mjs` fails loud rather than risk a silently-broken print contract — re-pinning needs a separate verification pass, out of scope here). Advisory-only per WAYS-OF-WORKING, so this didn't block merge.
+**Deployed:** merged 2026-07-04, live on `https://miyagisanchez.com` (Vercel `dpl_EcTjwTP1BB1E9tV3DGDcNVfs4Mk4`, production, READY).
 
 ### Story 1.2 — miyagiprints ops checklist (grants · email · real catalog)
 **As** Daniel (admin), **I want** miyagiprints fully outfitted, **so that** it's the flagship configurator shop.
