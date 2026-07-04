@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 merged (backend 28f4e15, frontend c77a63c); prod migration + live flag flip still owed.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 merged (backend 28f4e15, frontend c77a63c); Sprint 2 built, CI green, draft PRs #58/#172 awaiting Daniel's merge; prod migration + live flag flip still owed.
 slug: ml-orders-native
 archetype: Builder
 ---
@@ -8,9 +8,12 @@ archetype: Builder
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/ml-orders-native.md`](../../00-ideas/2.%20readyforscope/ml-orders-native.md)
 > (Epic A of the Merchant Ops PRD; approved by Daniel 2026-07-02).
-> **Status: Sprint 1 merged to `main` on both repos.** Risk **HIGH** (order/fulfillment core + inventory
-> interaction with the live S4 stock sync) — Daniel authorized the merge in-conversation after 4 rounds
-> of cross-agent review; still dark behind `ml.orders_enabled` pending the prod migration + live smoke.
+> **Status: Sprint 1 merged to `main` on both repos; Sprint 2 built with CI green, draft PRs
+> [#58](https://github.com/danybgoode/medusa-bonsai-backend/pull/58) /
+> [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) awaiting Daniel's merge.** Risk
+> **HIGH** (order/fulfillment core + inventory interaction with the live S4 stock sync) — Sprint 1's merge
+> was authorized in-conversation after 4 rounds of cross-agent review; still dark behind
+> `ml.orders_enabled` pending the prod migration + live smoke.
 > **Companion:** [`profit-analyzer`](../profit-analyzer/README.md) (Epic B) builds on this epic's order
 > data — **this epic ships first.**
 
@@ -111,4 +114,9 @@ touches.
   `ml.orders_enabled` (default OFF). **Owed before flag flip:** the live ML-sandbox smoke only
   (sprint-1.md steps 7–12) — Daniel runs it once the flag is on.
 - [sprint-2.md](sprint-2.md) — Full lifecycle: cancel/refund, notifications, entitlement + kill-switch.
+  Built, CI green, draft PRs open: backend
+  [#58](https://github.com/danybgoode/medusa-bonsai-backend/pull/58), frontend
+  [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172). **Owed before merge:** Daniel's
+  go-ahead (risk tier HIGH); owed after merge/flag-flip: the live ML-sandbox cancel/refund + notification
+  + entitlement-upsell walkthrough (sprint-2.md steps 7–12).
 - [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity.
