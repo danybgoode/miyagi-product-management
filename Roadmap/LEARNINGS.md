@@ -608,6 +608,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   then run `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npm run test:e2e`. Otherwise catalog/homepage
   tests fail with `fetch failed` / `ECONNREFUSED`, which looks like a regression but is just Medusa
   not running. *(Support Widget epic, 2026-06-05.)*
+  **Corollary — the missing-env failure mode is the SAFE one; the dangerous one is a silent PASS.**
+  `playwright.config.ts`'s default `baseURL` is **production** (`https://miyagisanchez.com`) when
+  `PLAYWRIGHT_BASE_URL` is unset — so a brand-new API spec for a route/tool that doesn't exist yet on
+  prod doesn't error, it just exercises PROD's current (different) behavior and can still report green,
+  proving nothing about the local change under test. Two specs in this sprint (`orders-bulk-status`,
+  `mcp-order-read`) "passed" against prod on the first run purely by accident (Clerk's blanket
+  `/api/orders/*` 401 happened to match the expected status either way) — only caught by deliberately
+  re-running with `PLAYWRIGHT_BASE_URL=http://localhost:3001` against a live local `medusa develop` +
+  `next dev` pair and seeing the SAME specs exercise the actual new code. Always set
+  `PLAYWRIGHT_BASE_URL` explicitly for any spec that hits a route/tool added or changed in the current
+  session — don't trust a green run against the default baseURL to mean "my change works."
+  *(2026-07-04, ml-orders-native S3.)*
 - **A raw-color guard keeps a tokenized surface tokenized.** Once components move onto semantic CSS
   tokens, add a pure-logic `api` spec that scans customer-facing dirs and **fails CI on a newly-introduced
   raw hex** (allow-list legit hardcoded contexts: email, print/PDF, OG image, admin, sandbox) — cheapest
