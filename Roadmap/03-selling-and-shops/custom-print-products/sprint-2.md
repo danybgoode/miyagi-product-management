@@ -1,12 +1,30 @@
 # Custom print products — Sprint 2: Priced options + quantity tiers (commerce core)
 
-**Status:** ⬜ not started
+**Status:** 🟡 in progress
 
-> ⚠️ **Verify-first:** before building 2.2/2.3, confirm on our Medusa version that cart price
-> calculation resolves quantity into `min_quantity`/`max_quantity` tier prices
-> ([medusa#12706](https://github.com/medusajs/medusa/issues/12706)). If broken, the documented
-> fallback is resolving the tier price at the start-checkout seam
-> (`apps/backend/src/api/store/carts/[id]/start-checkout/route.ts`). Write the finding into this doc.
+> ✅ **Verify-first finding (2026-07-05):** confirmed on our installed Medusa v2.15.3
+> (`apps/backend/package.json`) that cart price calculation **does** resolve quantity into
+> `min_quantity`/`max_quantity` tier prices — [medusa#12706](https://github.com/medusajs/medusa/issues/12706)
+> does not apply to us. No start-checkout fallback needed.
+>
+> Evidence:
+> - `node_modules/@medusajs/pricing/dist/repositories/pricing.js:22-80` — `calculatePrices` extracts
+>   `quantity` from the pricing context and adds SQL `WHERE min_quantity <= quantity AND max_quantity >=
+>   quantity` when quantity is present; only falls back to the base (no-tier) price when quantity is
+>   omitted entirely from the context.
+> - `node_modules/@medusajs/core-flows/dist/cart/workflows/get-variants-and-items-with-prices.js:33-46` —
+>   builds a **per-line-item** pricing context including `item.quantity` (not one shared cart-wide
+>   context), confirmed wired into `refresh-cart-items.js`, `add-to-cart.js`, and
+>   `update-line-item-in-cart.js` — the real cart paths.
+> - The GitHub issue itself (filed against v2.7.1, closed "not planned") describes quantity being
+>   unavailable when a cart holds multiple items — our installed version's per-item context construction
+>   doesn't have that gap.
+> - No `CHANGELOG.md` entry between 2.8 and 2.15 mentions a fix in this area; the code has simply always
+>   worked correctly on the version we run. No existing manual tier-price workaround was found anywhere in
+>   `apps/backend/src`.
+> - Consequence: `start-checkout` (`apps/backend/src/api/store/carts/[id]/start-checkout/route.ts:~327-330`)
+>   already manually sums `unit_price * quantity` across `cart.items` as a `cart.total` fallback — since
+>   each item's `unit_price` is already tier-resolved by Medusa, this seam needs **no new logic**.
 
 ## Stories
 
