@@ -6,7 +6,8 @@ area: "04"
 type: spike
 priority: tbd
 risk: high
-updated: 2026-06-25
+updated: 2026-07-05
+epic: "04-shipping-and-delivery/shipping-provider-expansion"
 ---
 
 # Spike — BYO Envía accounts (sellers fund + connect their own Envía)
