@@ -1,6 +1,6 @@
 # Custom print products — Sprint 2: Priced options + quantity tiers (commerce core)
 
-**Status:** 🟡 in progress
+**Status:** 🟡 built, draft PRs open (backend + frontend) — deterministic gate green. Owed: seller-facing "Opciones" UI (see Story 2.1), Daniel's money-path browser smoke, Daniel's merge (HIGH risk).
 
 > ✅ **Verify-first finding (2026-07-05):** confirmed on our installed Medusa v2.15.3
 > (`apps/backend/package.json`) that cart price calculation **does** resolve quantity into
@@ -32,34 +32,46 @@
 **As a** print-shop seller, **I want** to add option dimensions (Tamaño / Material / Acabado, up to ~3) with per-combination pricing to a listing (create + edit), **so that** a 7.5cm holográfico costs what it should without chat back-and-forth.
 **Acceptance:** options persist as native Medusa options/variants; existing single-variant listings and their edit flow are untouched (sweep the `variants[0]` call sites: `_utils/seller-product-update.ts`, inventory summing, offers, ML link); deleting a dimension is safe on a listing with orders.
 **Risk:** HIGH
+**Built:** `option_dimensions`/`variant_prices` accepted by both `POST /store/sellers/me/products` (create) and `PATCH /store/sellers/me/products/:id` (`applyOptionDimensions()` — additive-only workflows, never `updateProductsWorkflow`'s array-replace, which was verified against the installed MikroORM source to hard-delete anything omitted with no cross-module link cleanup). Order-safety guard: the old Default variant is deleted only when `orderModuleService.listOrderLineItems` finds zero references; otherwise disabled, never deleted. Full `variants[0]` sweep done (`listing.ts`, `lib/listings.ts`, `envia/rates`, 3 ML-sync fallback sites — now fail loud instead of silently guessing on a multi-variant product).
+**⚠️ Owed — no seller-facing UI yet:** there is no `/shop/manage` screen to enter dimensions/tiers through a form. This sprint shipped the *backend capability* (correct Medusa data model + API) and the *buyer-facing consumption* (PDP configurator buy box + checkout), verified by direct API calls — but a seller today can only set `option_dimensions`/`variant_prices`/`variant_tiers` via a direct API call (e.g. through the seller's own MCP agent, which already has API access) or `curl`, not through a settings page. **A seller-facing "Opciones" UI is a real gap against this story's plain-language acceptance** and should be its own story before this is fully "done" from a seller's perspective.
 
 ### Story 2.2 — Quantity price breaks per variant
 **As a** seller, **I want** quantity tiers (e.g. 10 / 25 / 50 / 100+) per variant, **so that** bulk pricing works like Sticker Mule's automatic discounts.
 **Acceptance:** tiers stored as Medusa `min_quantity`/`max_quantity` prices; overlapping/gapped tiers rejected with a clear es-MX message; a listing without tiers behaves exactly as today.
 **Risk:** HIGH
+**Built:** `src/lib/price-tiers.ts` `validateTierLadder()` (pure, 9 unit tests) + a `variant_tiers` write path in `seller-product-update.ts` (soft-deletes the variant's existing MXN prices, then writes the full ladder via `pricingService.addPrices()` with `min_quantity`/`max_quantity`). Same "owed" seller-UI gap as 2.1 — configured via API only.
 
 ### Story 2.3 — Correct variant × quantity pricing through PDP → cart → checkout
 **As a** buyer, **I want** the price I see at every step to match the variant + quantity I chose, **so that** the pay button never lies (house rule: pay-button total always equals the summary).
 **Acceptance:** pure price-grid deriver extracted to `lib/` (unit-tested: tier boundaries, currency, MXN rounding); changing quantity in the cart re-resolves the tier; coupons and negotiation offers apply to the resolved variant+qty price (spec this explicitly).
 **Risk:** HIGH
+**Built:** new `GET /store/listings/:id/price-grid` (reads Medusa's own Price rows, not a metadata mirror) + `lib/price-grid.ts` (pure deriver, 14 unit tests) + `ConfiguratorBuyBox.tsx` (variant selector + live qty stepper on the PDP, wired into both buy-CTA trees) + `variantId` threaded end-to-end into checkout (`CheckoutPayButton`/`CheckoutExperience`/`startCheckout()`) + the checkout page re-resolving the exact tier-correct price server-side before display. **Scope call confirmed with Daniel (2026-07-05):** negotiation/offers do **not** apply to multi-variant/tiered listings this sprint — those stay cash/card-only; single-variant/no-tier listings keep negotiation exactly as today. **Cart clarification:** the multi-seller bundle `CartDrawer` (`CartContext.tsx`) has no per-item quantity concept at all (add/remove only, confirmed by reading its reducer) — "cart quantity re-resolves the tier" is satisfied by `ConfiguratorBuyBox`'s own qty stepper (live client recompute) + checkout's server-side re-resolution, not a `CartDrawer` change.
 
 ## Sprint QA
-- **api spec(s):** 2.2/2.3 → `e2e/api/price-grid-deriver.spec.ts` (tier resolution: boundaries, gaps, no-tier fallback) + a cart-recompute spec on the checkout seam
-- **browser smoke owed:** yes, to Daniel — **money path**: configure variant + qty ≥ a tier break → checkout with Stripe test card → order total matches the grid
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge
+- **api spec(s):** `e2e/price-grid.spec.ts` (frontend, 14 tests — tier boundaries, gap/overlap-safe sanitisation, no-tier fallback, MXN rounding, qty-stepper re-resolution across a tier boundary, pay-button-equals-summary) + `src/lib/__tests__/price-tiers.unit.spec.ts` (backend, 9 tests — ladder validation)
+- **deterministic gate:** green — backend `npx medusa build` + `tsc --noEmit` + `npm run test:unit` (145/145); frontend `tsc --noEmit` + `npm run build` (exit 0) + `npm run test:e2e` (1331 passed; 2 pre-existing failures unrelated to this diff — `embed-shop.spec.ts` + `not-found-shape.spec.ts` both hit live `https://miyagisanchez.com` directly per `playwright.config.ts`'s no-override default, same pattern Sprint 1's PR already noted)
+- **browser smoke owed:** yes, to Daniel — **money path**, see walkthrough below. Configuring the test listing's dimensions/tiers requires a direct API call (no seller UI yet, see Story 2.1's owed note) — steps 1-2 below give the exact request shape.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+Env: the branch's Vercel preview (frontend) + prod backend (no per-branch backend preview, per WAYS-OF-WORKING) — swap in `https://miyagisanchez.com` once merged.
 
-1. Go to https://miyagisanchez.com/shop/manage (as miyagiprints) → edit a sticker listing → "Opciones".
-   → You can add Tamaño (5cm/7.5cm/10cm) + Material (vinil/holográfico) with prices per combination.
-2. Add quantity tiers on the 7.5cm/vinil variant: 10 → $X, 50 → $Y (Y unit price < X).
-   → Tiers save; entering an overlapping tier shows a clear es-MX error.
-3. Open the listing's public page, pick 7.5cm/vinil, set quantity 50.
-   → Displayed unit price drops to the 50-tier; total = 50 × tier price.
-4. (money path) Add to cart → in cart, change quantity 50 → 10.
-   → Line total re-resolves to the 10-tier. Checkout with Stripe test card 4242… → order confirmation total equals the cart summary exactly.
-5. Open an old single-variant listing (any other shop) and buy-flow it to the payment screen.
-   → Behaves exactly as before this sprint (regression).
+1. **(setup, API — no seller UI yet)** As the miyagiprints seller (Clerk session token), `PATCH /store/sellers/me/products/:id` for an existing single-variant sticker listing with:
+   ```json
+   {
+     "option_dimensions": [{"title": "Tamaño", "values": ["5cm", "7.5cm", "10cm"]}, {"title": "Material", "values": ["vinil", "holográfico"]}],
+     "variant_prices": {"Material:vinil|Tamaño:5cm": 1500, "Material:vinil|Tamaño:7.5cm": 2000, "Material:holográfico|Tamaño:7.5cm": 2500, "...": "…all 6 combos"}
+   }
+   ```
+   → 200 OK; the listing now has 6 real Medusa variants (confirm via `GET /store/listings/:id/price-grid` — 6 entries, each with one flat tier).
+2. **(setup, API)** `PATCH` again targeting the 7.5cm/vinil `variant_id` with `variant_tiers`: `[{"min_quantity":1,"max_quantity":9,"amount":2000},{"min_quantity":10,"max_quantity":49,"amount":1600},{"min_quantity":50,"max_quantity":null,"amount":1200}]`.
+   → 200 OK; re-fetching the price-grid shows 3 tiers on that variant. Submitting an overlapping/gapped ladder returns a 422 with the es-MX message.
+3. Open the listing's public PDP. Pick Tamaño=7.5cm, Material=vinil, set quantity to 50.
+   → The `ConfiguratorBuyBox` shows unit price dropping to the 50-tier ($12.00); "Comprar ahora — $600.00" (50 × $12).
+4. **(money path)** Click "Comprar ahora" → on the checkout page, change nothing (or note the total) → pay with Stripe test card `4242 4242 4242 4242`.
+   → Order confirmation total equals exactly what the PDP showed ($600.00) — the checkout page independently re-resolved the same tier server-side.
+5. Repeat step 3-4 at quantity 5 (crosses back below the first tier boundary).
+   → Unit price shows $20.00 (the 1-9 tier); checkout total = $100.00 — proves the boundary crossing re-resolves correctly both directions.
+6. Open an old single-variant listing (any other shop, untouched by this sprint) and buy-flow it to the payment screen.
+   → Behaves exactly as before this sprint (regression) — no variant selector, same flat price throughout.
 
 If any step fails, note the step number + what you saw — that's the bug report.
