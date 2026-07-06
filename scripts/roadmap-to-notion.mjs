@@ -13,9 +13,14 @@
 //
 // Status derivation (docs win, re-derived every run):
 //   EPIC: the AUTHORITATIVE source is the epic README's frontmatter `status:` field
-//     (shipped|in-progress|scaffolded|archived), set at epic close. Sprint/retro derivation is kept
-//     ONLY as a fallback when the frontmatter field is absent, and is also emitted as `status_derived`
+//     (shipped|in-progress|scaffolded|queued|archived), set at epic close. Sprint/retro derivation is
+//     kept ONLY as a fallback when the frontmatter field is ABSENT, and is also emitted as `status_derived`
 //     so the board can flag an advisory drift (frontmatter vs derived) when a close-out forgets to set it.
+//     A PRESENT but unrecognized value HARD-FAILS the run — it used to silently fall back to the derived
+//     status, which made status === status_derived by construction, so the drift check structurally could
+//     not fire on invalid enum values (how `mercadolibre-sync` sat at `status: ready` while fully live;
+//     Roadmap/00-ideas/audits/roadmap-grooming-audit-2026-07-06.md §1). Seed `status:` is enforced the
+//     same way against its own enum.
 //   SPRINT: read its `Status:` line (controlled vocab below) → else count story ticks.
 //     Planned (none started) · In progress (some stories ✅) · In review (all ✅, not yet closed out /
 //     "built — awaiting review/draft PR") · Shipped (✅ merged/shipped, or all ✅ + smoke walkthrough written).
@@ -79,8 +84,22 @@ function readSeeds() {
   if (!existsSync(SEEDS)) return [];
   return readdirSync(SEEDS).filter((f) => f.endsWith('.md')).map((f) => {
     const fm = parseFrontmatter(readFileSync(join(SEEDS, f), 'utf8'));
+    seedStatusLabel(fm.status, `Roadmap/00-ideas/seeds/${f}`); // hard-fail on an invalid enum value
     return { ...fm, _file: `Roadmap/00-ideas/seeds/${f}` };
   });
+}
+
+// Seed frontmatter `status:` → board label. Absent → 'Raw' (legacy tolerance); a PRESENT but
+// unrecognized value THROWS — a typo'd status would otherwise silently land the seed in the wrong
+// funnel bucket (e.g. `status: seed` read as Raw). Validated for EVERY seed, funnel-only ones
+// included, so the documented enum holds repo-wide.
+export function seedStatusLabel(status, file = 'seed') {
+  if (status == null) return 'Raw';
+  const label = SEED_STATUS_LABEL[status];
+  if (!label) {
+    throw new Error(`${file}: unrecognized seed frontmatter status "${status}" — valid values: ${Object.keys(SEED_STATUS_LABEL).join(' | ')}`);
+  }
+  return label;
 }
 
 function listEpicDirs() {
@@ -192,13 +211,22 @@ export function deriveEpicStatus(sprints, retroShipped, epicFmStatus) {
 }
 
 // AUTHORITATIVE epic status: the README frontmatter `status:` field (set at epic close). Returns the
-// board bucket, or null when the README has no frontmatter status (→ caller falls back to derivation).
+// board bucket, or null when the README has NO frontmatter status (→ caller falls back to derivation).
+// A PRESENT but unrecognized value THROWS: it used to return null and silently fall back to the derived
+// status, which made `status === status_derived` by construction — so the advisory drift check could
+// never fire on exactly the class of error it exists to catch (an epic mislabeled with an out-of-enum
+// value, e.g. `mercadolibre-sync` at `status: ready` while fully shipped; audit 2026-07-06 §1).
 const EPIC_FM_TO_BUCKET = { shipped: 'Shipped', 'in-progress': 'In progress', scaffolded: 'Scaffolded', queued: 'Scaffolded', archived: 'Archived' };
 function epicFrontmatter(epicPath) {
   return parseFrontmatter(readFileSync(join(epicPath, 'README.md'), 'utf8'));
 }
-function frontmatterStatusBucket(fm) {
-  return fm.status ? (EPIC_FM_TO_BUCKET[fm.status] || null) : null;
+export function frontmatterStatusBucket(fm, doc = 'epic README') {
+  if (!fm.status) return null;
+  const bucket = EPIC_FM_TO_BUCKET[fm.status];
+  if (!bucket) {
+    throw new Error(`${doc}: unrecognized epic frontmatter status "${fm.status}" — valid values: ${Object.keys(EPIC_FM_TO_BUCKET).join(' | ')}`);
+  }
+  return bucket;
 }
 
 // Coerce a `build_order` frontmatter value: numeric → Number (so the Notion views sort right), a legacy
@@ -220,6 +248,17 @@ export function floorSprintStatus(epicStatus, sprintStatus) {
   if (epicStatus === 'Archived') return 'Archived';
   if (epicStatus === 'Shipped') return 'Shipped';
   return sprintStatus;
+}
+
+// A sprint whose (floored) status is Shipped has shipped ALL its stories. Completion is very often
+// recorded in the sprint's `Status:` line or a per-story summary table instead of a ✅ on each story
+// heading — countStories() only sees heading ticks, which understated progress for ~20 epics (a fully
+// shipped epic read "0/15 stories"; audit 2026-07-06 §6). Applied to the FLOORED status (not the raw
+// derivation) so both undercount patterns heal: sprints that declare ✅ merged themselves, and
+// stale-Planned sprints inside a frontmatter-`shipped` epic. Archived is NOT floored — archived
+// stories were dropped, not done.
+export function floorSprintDone(sprintStatus, total, done) {
+  return sprintStatus === 'Shipped' && total > 0 ? total : done;
 }
 
 // Decide the live PR overlay label from the PR state — the SINGLE source the workflow (`--lifecycle`)
@@ -262,10 +301,17 @@ function buildRows() {
     const retroShipped = epicShippedByRetro(e.path);
     const epicFm = epicFrontmatter(e.path);                          // read README frontmatter once
     const statusDerived = deriveEpicStatus(sprints, retroShipped, epicFm.status); // prose/retro fallback + drift signal (archived short-circuits)
-    const status = frontmatterStatusBucket(epicFm) || statusDerived; // README frontmatter is authoritative
+    const status = frontmatterStatusBucket(epicFm, `Roadmap/${epicKey}/README.md`) || statusDerived; // README frontmatter is authoritative; invalid value throws
     const buildOrder = normalizeBuildOrder(epicFm.build_order ?? seed.build_order); // epic FM is SSOT, seed fallback
-    const totStories = sprints.reduce((a, s) => a + s.total, 0);
-    const doneStories = sprints.reduce((a, s) => a + s.done, 0);
+    // Board view of each sprint: status floored against the authoritative epic status, done-count
+    // floored against THAT (a Shipped sprint shipped all its stories — see floorSprintDone). The raw
+    // `sprints` array stays untouched above so statusDerived / the drift signal never feed on the floor.
+    const boardSprints = sprints.map((sp) => {
+      const st = floorSprintStatus(status, sp.status);
+      return { ...sp, status: st, done: floorSprintDone(st, sp.total, sp.done) };
+    });
+    const totStories = boardSprints.reduce((a, s) => a + s.total, 0);
+    const doneStories = boardSprints.reduce((a, s) => a + s.done, 0);
     const area = AREA_NAMES[e.area] || e.area;
     const priority = seed.priority ? PRIORITY_LABEL[seed.priority] || seed.priority : null;
     const risk = seed.risk ? (seed.risk === 'high' ? 'High' : 'Low') : null;
@@ -287,17 +333,16 @@ function buildRows() {
       epic_slug: null,
     });
 
-    // Sprint rows (one per sprint-N.md), related to the Epic by slug
-    for (const sp of sprints) {
-      // Floor the sprint's derived status against the AUTHORITATIVE epic status (frontmatter): an
-      // archived epic ⇒ Archived sprints; a Shipped epic's stale "Planned" sprints ⇒ Shipped. Real
-      // in-flight signals (In progress / In review) are preserved. See floorSprintStatus().
-      const sprintStatus = floorSprintStatus(status, sp.status);
+    // Sprint rows (one per sprint-N.md), related to the Epic by slug. boardSprints already carries
+    // the floored status (archived epic ⇒ Archived sprints; Shipped epic's stale "Planned" sprints ⇒
+    // Shipped; real in-flight signals preserved — floorSprintStatus) and the floored done-count
+    // (Shipped sprint ⇒ all stories done — floorSprintDone).
+    for (const sp of boardSprints) {
       rows.push({
         name: `${epicTitle(e.path, e.slug)} — S${sp.n}: ${sp.title}`,
         slug: `${e.slug}--s${sp.n}`,
         grain: 'Sprint',
-        status: sprintStatus,
+        status: sp.status,
         area,
         priority,
         type: 'Sprint',
@@ -317,7 +362,7 @@ function buildRows() {
       name: s.title || s.slug,
       slug: s.slug,
       grain: 'Seed',
-      status: SEED_STATUS_LABEL[s.status] || 'Raw',
+      status: seedStatusLabel(s.status, s._file),
       area: AREA_NAMES[s.area] || s.area || null,
       priority: s.priority ? PRIORITY_LABEL[s.priority] || s.priority : null,
       type: TYPE_LABEL[s.type] || 'Feature',

@@ -66,6 +66,12 @@ updated: 2026-06-08
 | `shipped` | epic done (epic ✅ + RETROSPECTIVE; poster ✅) |
 | `archived` | dropped or superseded |
 
+The enum is **enforced, not advisory**: a present-but-unrecognized `status:` value (on a seed, or on
+an epic README — whose enum is `scaffolded | in-progress | shipped | archived`, plus legacy `queued`)
+**hard-fails** `scripts/roadmap-to-notion.mjs`, and with it `build-order.mjs`/CI and the Notion sync.
+It used to fall back silently to the derived status, which made the drift check unable to fire on
+exactly this class of error (see `audits/roadmap-grooming-audit-2026-07-06.md` §1).
+
 ### Who owns `status` (seed vs. epic-README frontmatter)
 
 One field is authoritative at each stage — they never both drive the board:
