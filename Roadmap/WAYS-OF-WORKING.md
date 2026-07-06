@@ -77,7 +77,11 @@ do this, and they're complementary:
   gates, blocks, or authorizes a merge (CI + the Claude reviewer + the risk-tier rule below stay the sole
   sources of truth), and it is **single-pass** (no debate loop). It reads the same shared prompt the human
   reviewer does (`scripts/cross-review.prompt.md` — the five `AGENTS.md` rules + this single-pass discipline).
-  `--skip-trivial` skips docs-only / tiny diffs. *(It runs **locally**, not in CI: a GitHub runner has no
+  `--skip-trivial` skips docs-only / tiny diffs. The agy path is **version-pinned and fail-loud**
+  (a young CLI's print contract breaks on minor bumps); when the pin check dies, agents are
+  **pre-authorized** to run `node scripts/agy-doctor.mjs --fix` — it re-verifies the live contract and
+  bumps the pin only on a green probe — and commit the one-line bump (LOW tier). Model swaps or a
+  failed probe still escalate to Daniel. *(It runs **locally**, not in CI: a GitHub runner has no
   codex/agy auth — codex needs a token-billed API key + a cross-repo PAT and agy has no headless auth at all,
   not worth it for an advisory aid; epic `09-platform-infra/cross-agent-review-always` chose local-only.)*
 
