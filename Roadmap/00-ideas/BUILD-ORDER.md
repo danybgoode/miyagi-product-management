@@ -14,7 +14,7 @@
 
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 10/13 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
-- [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 0/6 stories
+- [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 3/6 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 4/10 stories
 
 ## 📋 Ready to build (scaffolded, not started) (9)
@@ -119,7 +119,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -128,7 +128,6 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | ML orders, native — Mercado Libre sales land as real Medusa orders | In progress | Shipped |
-| Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices | In progress | Scaffolded |
 
 ---
-_Epics: 93 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 93 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
