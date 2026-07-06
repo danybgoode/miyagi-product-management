@@ -16,7 +16,10 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { floorSprintStatus, lifecycleForPr, normalizeBuildOrder, deriveEpicStatus } from './roadmap-to-notion.mjs';
+import {
+  floorSprintStatus, lifecycleForPr, normalizeBuildOrder, deriveEpicStatus,
+  frontmatterStatusBucket, seedStatusLabel, floorSprintDone,
+} from './roadmap-to-notion.mjs';
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'roadmap-to-notion.mjs');
 
@@ -119,4 +122,78 @@ test('--lifecycle: reads PR_ACTION + PR_DRAFT env and prints the label the workf
   assert.equal(run({ PR_ACTION: 'ready_for_review', PR_DRAFT: 'false' }), 'In review');
   assert.equal(run({ PR_ACTION: 'opened', PR_DRAFT: 'false' }), 'In review');
   assert.equal(run({ PR_ACTION: 'closed', PR_DRAFT: 'false' }), 'clear');
+});
+
+// --- Status-enum hard-fail + story-count floor (grooming-audit 2026-07-06 follow-up) --------------
+// The blind spot being closed: an epic README with a PRESENT but out-of-enum `status:` used to fall
+// back to the sprint/retro derivation, making status === status_derived by construction — so the
+// board's advisory drift check could never fire on exactly the class of error it exists to catch
+// (mercadolibre-sync sat at `status: ready` while fully shipped, invisible to the check).
+
+test('frontmatterStatusBucket: canonical values map to their buckets; absent → null (fallback allowed)', () => {
+  assert.equal(frontmatterStatusBucket({ status: 'shipped' }), 'Shipped');
+  assert.equal(frontmatterStatusBucket({ status: 'in-progress' }), 'In progress');
+  assert.equal(frontmatterStatusBucket({ status: 'scaffolded' }), 'Scaffolded');
+  assert.equal(frontmatterStatusBucket({ status: 'queued' }), 'Scaffolded');
+  assert.equal(frontmatterStatusBucket({ status: 'archived' }), 'Archived');
+  assert.equal(frontmatterStatusBucket({}), null);                 // no frontmatter status at all
+  assert.equal(frontmatterStatusBucket({ status: null }), null);   // parsed-empty value
+});
+
+test('frontmatterStatusBucket: a present-but-unrecognized value THROWS naming the doc and the value', () => {
+  // 'ready', 'Done', 'complete' are the exact invalid spellings the 2026-07-06 audit found in the wild;
+  // the enum is case-sensitive by design ('Shipped' is not 'shipped').
+  for (const bad of ['ready', 'Done', 'complete', 'Shipped']) {
+    assert.throws(
+      () => frontmatterStatusBucket({ status: bad }, 'Roadmap/03-selling-and-shops/x/README.md'),
+      new RegExp(`Roadmap/03-selling-and-shops/x/README\\.md.*unrecognized epic frontmatter status "${bad}"`),
+    );
+  }
+});
+
+test('seedStatusLabel: the 7 documented seed values map; absent → Raw; invalid THROWS with the file name', () => {
+  assert.equal(seedStatusLabel('raw'), 'Raw');
+  assert.equal(seedStatusLabel('ready'), 'Ready');       // 'ready' IS valid for seeds (unlike epics)
+  assert.equal(seedStatusLabel('queued'), 'Queued');
+  assert.equal(seedStatusLabel('scaffolded'), 'Scaffolded');
+  assert.equal(seedStatusLabel('in-progress'), 'In progress');
+  assert.equal(seedStatusLabel('shipped'), 'Shipped');
+  assert.equal(seedStatusLabel('archived'), 'Archived');
+  assert.equal(seedStatusLabel(null), 'Raw');
+  assert.equal(seedStatusLabel(undefined), 'Raw');
+  // 'seed' is the invalid value the audit found live (spike-envia-byo).
+  assert.throws(() => seedStatusLabel('seed', 'Roadmap/00-ideas/seeds/x.md'),
+    /seeds\/x\.md.*unrecognized seed frontmatter status "seed"/);
+});
+
+test('floorSprintDone: a Shipped sprint counts ALL its stories done; other statuses keep raw ticks', () => {
+  assert.equal(floorSprintDone('Shipped', 5, 0), 5);   // Status-line-only completion (e.g. ml-sync sprints)
+  assert.equal(floorSprintDone('Shipped', 5, 3), 5);
+  assert.equal(floorSprintDone('Shipped', 0, 0), 0);   // no detectable stories → nothing to floor
+  assert.equal(floorSprintDone('In review', 4, 0), 0); // built-not-merged stays honest
+  assert.equal(floorSprintDone('In progress', 4, 2), 2);
+  assert.equal(floorSprintDone('Planned', 4, 0), 0);
+  assert.equal(floorSprintDone('Archived', 4, 1), 1);  // archived stories were dropped, not done
+});
+
+test('--extract: fully-shipped epics report FULL story completion (the audit §6 undercount)', () => {
+  const out = execFileSync('node', [SCRIPT, '--extract'], { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+  const rows = JSON.parse(out);
+  // Both undercount patterns: mercadolibre-sync's sprints declare "✅ MERGED" on their own Status line
+  // (was 0/15); promoter-funnel-v2's use a mid-line blockquote form the Status regex never matches, so
+  // the floor comes from the frontmatter-`shipped` epic (was 7/19).
+  for (const slug of ['mercadolibre-sync', 'promoter-funnel-v2']) {
+    const epic = rows.find((r) => r.grain === 'Epic' && r.slug === slug);
+    assert.ok(epic, `expected epic row for ${slug}`);
+    assert.match(epic.sprint_progress, /^(\d+)\/\1 stories$/, `${slug} should read N/N, got "${epic.sprint_progress}"`);
+    for (const s of rows.filter((r) => r.grain === 'Sprint' && r.slug.startsWith(`${slug}--`))) {
+      assert.ok(s.sprint_progress === '—' || /^(\d+)\/\1 stories$/.test(s.sprint_progress),
+        `${s.slug} should read N/N or —, got "${s.sprint_progress}"`);
+    }
+  }
+  // An in-flight epic must NOT be inflated: ml-orders-native has draft-PR sprints — its done count is
+  // whatever the docs really tick, and at least one non-shipped sprint keeps a sub-total fraction.
+  const inflight = rows.find((r) => r.grain === 'Epic' && r.slug === 'ml-orders-native');
+  assert.ok(inflight, 'expected ml-orders-native epic row');
+  assert.equal(inflight.status, 'In progress');
 });
