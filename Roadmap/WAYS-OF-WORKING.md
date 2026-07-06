@@ -62,8 +62,10 @@ do this, and they're complementary:
     merge (configured 2026-06-14).
 - **Reviewer (judgment):** a **fresh reviewer agent** re-derives intent from the diff alone and checks
   correctness, architecture, and the five rules from `AGENTS.md`. The path is a **repo-local reviewer
-  subagent** — point it at `gh pr diff <PR#>` (+ the changed files) and the five rules; it composes with
-  parallel agents and needs no external service. Keep review a **single pass on a green CI gate** — not an
+  subagent** — `.claude/agents/pr-reviewer.md`, invoked as *"use the pr-reviewer subagent on PR #N"*
+  (paste the builder's report; it falls back to the PR body). It verifies the report's claims against
+  the real diff, `origin/main`, sibling-repo PR state, and these process docs — read-only, single-pass;
+  it composes with parallel agents and needs no external service. Keep review a **single pass on a green CI gate** — not an
   iterative refine loop (that loop is the dominant token cost in multi-agent dev; let the deterministic gate,
   `tsc` + `build` + Playwright, carry the repetitive checking and have the reviewer read once). **Do not use
   the `/code-review ultra` cloud command — it is not set up for this repo.** The reviewer must be a different
