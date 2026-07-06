@@ -121,7 +121,10 @@ function observe() {
 async function main() {
   const fix = process.argv.includes('--fix');
   const obs = observe();
-  // 'skipped' fallback with an ok primary counts as green for the decision: treat as 'ok'.
+  // 'skipped' → 'ok' is safe BY CONSTRUCTION, not convention: observe() skips the fallback probe only
+  // when the primary probed 'ok' AND installed === pinned — and with installed === pinned the decision
+  // can never reach 'bump', so a bump is never blessed on an unprobed fallback. (If observe()'s skip
+  // condition ever changes, revisit this substitution.)
   const decision = decideDoctorAction({
     ...obs,
     probes: { primary: obs.probes.primary, fallback: obs.probes.fallback === 'skipped' ? 'ok' : obs.probes.fallback },
