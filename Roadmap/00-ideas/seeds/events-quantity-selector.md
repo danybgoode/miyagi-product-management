@@ -1,19 +1,20 @@
 ---
 title: "Events — quantity selector on a paid GA listing"
 slug: events-quantity-selector
-status: scaffolded
+status: shipped
 area: "10"
 type: feature
 priority: backlog
 risk: high
 epic: "10-events-and-ticketing/events-quantity-selector"
 build_order: null
-updated: 2026-06-21
+updated: 2026-07-06
 ---
 
 # Seed — Events quantity selector (buy N GA tickets)
 
-> **Class:** Feature (light). **Status: READY — not scaffolded.** Routed out of the
+> **Class:** Feature (light). **Status: ✅ SHIPPED (2026-06-22) — see the
+> [epic README](../../10-events-and-ticketing/events-quantity-selector/README.md); flag `events.quantity_enabled` still OFF.** Routed out of the
 > [PDP follow-ups cleanup](../2.%20readyforscope/pdp-followups-cleanup.md) groom (2026-06-21) as the
 > near-term piece of the S5 "events aforo / ticket tiers / quantity" follow-up.
 > **Stage-2.5 bucket:** mostly orientation — aforo + single-unit purchase already exist; the only gap is a

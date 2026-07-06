@@ -1,5 +1,5 @@
 ---
-status: complete
+status: shipped
 slug: feature-flags-inhouse
 ---
 

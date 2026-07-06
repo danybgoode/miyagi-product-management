@@ -1,5 +1,8 @@
 # Envía — platform Flagsmith kill-switch (disable/enable Envía without a deploy)
 
+> **⚠️ Legacy scope doc — this shipped.** See the epic:
+> [`04-shipping-and-delivery/envia-killswitch`](../../04-shipping-and-delivery/envia-killswitch/README.md) (✅ shipped 2026-06-26; live smoke owed).
+
 **Status: awaiting Daniel approval — no code yet.**
 Source: Daniel's ask (2026-06-25) — "wrap the Envía feature in a Flagsmith flag so I can disable/enable it"
 while the platform Envía account is **unfunded**, plus a request to **evaluate BYO Envía accounts** and

@@ -1,5 +1,5 @@
 ---
-status: ready
+status: scaffolded
 slug: profit-analyzer
 archetype: Builder
 ---
@@ -8,7 +8,7 @@ archetype: Builder
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/profit-analyzer.md`](../../00-ideas/2.%20readyforscope/profit-analyzer.md)
 > (Epic B of the Merchant Ops PRD; approved by Daniel 2026-07-02).
-> **Status: READY — scaffolded, not started. Builds AFTER [`ml-orders-native`](../ml-orders-native/README.md)
+> **Status: SCAFFOLDED — not started. Builds AFTER [`ml-orders-native`](../ml-orders-native/README.md)
 > ships** (Epic A lands the realized per-order fee/shipping data this epic's ledger consumes).
 > Risk **HIGH** (financial data model + live price writes). Daniel merges HIGH stories.
 

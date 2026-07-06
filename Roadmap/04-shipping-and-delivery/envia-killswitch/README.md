@@ -1,9 +1,14 @@
+---
+status: shipped
+slug: envia-killswitch
+---
+
 # Envía — platform Flagsmith kill-switch
 
 **Domain: [04 · Shipping & Delivery](../README.md).** Reuses the shipped Flagsmith flag layer from
 [09 · feature-flags-killswitches](../../09-platform-infra/feature-flags-killswitches/README.md).
 
-**Status: merged — deploying, awaiting Daniel's live smoke (2026-06-26).** Both PRs merged (squash):
+**Status: ✅ shipped (merged 2026-06-26) — Daniel's live smoke + `RETROSPECTIVE.md` still owed.** Both PRs merged (squash):
 backend `medusa-bonsai-backend` **#41** `d2b7c1a` (S1.1, S1.2) · frontend `miyagisanchezcommerce` **#131**
 `87baff9` (S1.3, S1.4). Cross-agent reviewed (codex, no blocking). Flag `shipping.envia_enabled` created in
 Flagsmith **Production OFF** (feature 219454).

@@ -1,5 +1,8 @@
 # Events — quantity selector (buy N admissions in one order)
 
+> **⚠️ Legacy scope doc — this shipped.** See the epic:
+> [`10-events-and-ticketing/events-quantity-selector`](../../10-events-and-ticketing/events-quantity-selector/README.md) (✅ shipped 2026-06-22).
+
 **Status: awaiting Daniel approval — no code yet.**
 Source: the [events-quantity-selector seed](../seeds/events-quantity-selector.md), itself routed out of the
 [PDP follow-ups cleanup](pdp-followups-cleanup.md) groom (the S5 "events aforo / ticket tiers / quantity"

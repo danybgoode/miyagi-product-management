@@ -1,5 +1,5 @@
 ---
-status: Done
+status: shipped
 slug: seller-landing-launch-polish
 ---
 
