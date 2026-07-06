@@ -1,14 +1,14 @@
 ---
 title: "Rental backend line-item pricing (charge nights × rate + deposit online)"
 slug: rental-backend-line-item-pricing
-status: ready
+status: scaffolded
 area: "02"
 type: feature
 priority: backlog
 risk: high
-epic: null
+epic: "02-checkout-and-payments/rental-backend-line-item-pricing"
 build_order: null
-updated: 2026-06-21
+updated: 2026-07-06
 ---
 
 # Seed — Rental backend line-item pricing
