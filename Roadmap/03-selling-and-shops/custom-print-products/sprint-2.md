@@ -56,7 +56,12 @@
 - A clear, honest state for "this product already has real dimensions — editing them isn't supported yet" (matches `applyOptionDimensions()`'s current 422 for that case) and for "this listing has order history — can't convert" (matches the new refusal message).
 - Reads the same `GET /store/listings/:id/price-grid` route the PDP already uses, so the editor and the buyer-facing display are provably showing the same data.
 **Risk:** HIGH (writes to the same commerce-core paths as 2.1/2.2 — no new backend risk, but a new UI surface touching them)
-**Status:** ⬜ not started — next story to pick up for this epic.
+**Status:** 🔨 built 2026-07-05 (frontend-only, 3 sub-stories on `feat/custom-print-products-s2-4`) — PR pending Daniel merge.
+**Built:** an "Opciones" section on `/sell/edit/[id]` (controlled-child idiom like `PersonalizationSection`, own save actions since `option_dimensions` can't ride the form's single PUT):
+- **Read state (S1):** `page.tsx` fetches the price-grid fresh (same route the PDP reads; published listings only — a paused/draft listing gets an honest "activa el anuncio primero" state, Daniel-confirmed call). Legacy flat price/quantity inputs are hidden on multi-variant (and tiered sole-variant) listings, where the backend would 422 them.
+- **Convert (S2):** dimension/value editor (3-dim/40-char/60-combo caps mirrored client-side), generated per-combo price grid (pesos → integer cents), inline confirm step stating irreversibility + the stock-0 start on managed inventory; ONE bounded `PUT {option_dimensions, variant_prices}`; backend es-MX 422s (order-history refusal, already-configured, missing combo price) surface verbatim; grid refetched via new Clerk-gated `/api/sell/listing/[id]/price-grid` pass-through. The Supabase mirror's `price_cents` syncs to the cheapest combination on convert.
+- **Per-variant editor (S3):** tier ladder rows that only set where a tier STARTS (`max_quantity` derived from the next row — structurally can't produce the gaps/overlaps the backend 422s on; one row = flat price, so ALL price edits go through `variant_tiers`), plus a write-only stock input when `manage_inventory` (no store route exposes per-variant stock; closes the stock-0-after-convert trap in the same screen).
+- **QA:** `e2e/opciones-helpers.spec.ts` (15 pure-logic tests — combo-key byte-parity with the backend, ladder valid-by-construction incl. contiguity invariant, round-trip). Proxy PUT now preserves backend 4xx statuses/messages instead of flattening to 500.
 
 ## Sprint QA
 - **api spec(s):** `e2e/price-grid.spec.ts` (frontend, 14 tests — tier boundaries, gap/overlap-safe sanitisation, no-tier fallback, MXN rounding, qty-stepper re-resolution across a tier boundary, pay-button-equals-summary) + `src/lib/__tests__/price-tiers.unit.spec.ts` (backend, 9 tests — ladder validation)
@@ -74,16 +79,11 @@
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: the branch's Vercel preview (frontend) + prod backend (no per-branch backend preview, per WAYS-OF-WORKING) — swap in `https://miyagisanchez.com` once merged.
 
-1. **(setup, API — no seller UI yet)** As the miyagiprints seller (Clerk session token), `PATCH /store/sellers/me/products/:id` for an existing single-variant sticker listing with:
-   ```json
-   {
-     "option_dimensions": [{"title": "Tamaño", "values": ["5cm", "7.5cm", "10cm"]}, {"title": "Material", "values": ["vinil", "holográfico"]}],
-     "variant_prices": {"Material:vinil|Tamaño:5cm": 1500, "Material:vinil|Tamaño:7.5cm": 2000, "Material:holográfico|Tamaño:7.5cm": 2500, "...": "…all 6 combos"}
-   }
-   ```
-   → 200 OK; the listing now has 6 real Medusa variants (confirm via `GET /store/listings/:id/price-grid` — 6 entries, each with one flat tier).
-2. **(setup, API)** `PATCH` again targeting the 7.5cm/vinil `variant_id` with `variant_tiers`: `[{"min_quantity":1,"max_quantity":9,"amount":2000},{"min_quantity":10,"max_quantity":49,"amount":1600},{"min_quantity":50,"max_quantity":null,"amount":1200}]`.
-   → 200 OK; re-fetching the price-grid shows 3 tiers on that variant. Submitting an overlapping/gapped ladder returns a 422 with the es-MX message.
+1. **(setup — now via the Story 2.4 UI, replacing the original API-only step)** As the miyagiprints seller, open `/sell/edit/<listing-id>` for an existing **active** single-variant sticker listing → the "Opciones y precios por combinación" section shows "Sin opciones configuradas" → "+ Agregar opciones con precio". Add Tamaño = 5cm / 7.5cm / 10cm and Material = vinil / holográfico (the counter reads 6/60), enter a price for each of the 6 combinations ($15 / $20 / $25 …), click "Crear 6 combinaciones" → the amber confirm panel states it can't be undone (+ stock starts at 0 if managed) → "Confirmar y crear".
+   → The section switches to 6 combination cards; `GET /store/listings/:id/price-grid` shows the same 6 entries, each one flat tier. (Also check: the form's flat Precio/Cantidad inputs are now gone.)
+2. **(setup, UI)** Expand the 7.5cm / vinil card → "Precio por cantidad": edit the first row to $20, "+ Agregar nivel" desde 10 → $16, desde 50 → $12 (labels read 1–9 / 10–49 / 50+) → "Guardar niveles". If the listing manages stock, set "Stock de esta combinación" to e.g. 100 on the combos you'll buy in steps 3-5.
+   → "✓ Niveles guardados."; re-expanding shows the 3 rows; the price-grid route returns the same 3 tiers. (The editor can't produce an overlapping/gapped ladder — maxes are derived — but a doomed save, e.g. duplicate "desde", is blocked client-side with the es-MX message.)
+   → **Edge states to eyeball while here:** a paused listing shows "Activa el anuncio primero…" instead of the editor; converting a listing that already has orders is refused with "Este anuncio ya tiene pedidos…" verbatim from the backend.
 3. Open the listing's public PDP. Pick Tamaño=7.5cm, Material=vinil, set quantity to 50.
    → The `ConfiguratorBuyBox` shows unit price dropping to the 50-tier ($12.00); "Comprar ahora — $600.00" (50 × $12).
 4. **(money path)** Click "Comprar ahora" → on the checkout page, change nothing (or note the total) → pay with Stripe test card `4242 4242 4242 4242`.
