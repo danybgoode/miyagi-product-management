@@ -1,19 +1,20 @@
 ---
 title: "Spike — BYO Envía accounts (per-seller shipping credentials)"
 slug: spike-envia-byo
-status: seed
+status: scaffolded
 area: "04"
 type: spike
 priority: tbd
 risk: high
-updated: 2026-07-05
+updated: 2026-07-06
 epic: "04-shipping-and-delivery/shipping-provider-expansion"
 ---
 
 # Spike — BYO Envía accounts (sellers fund + connect their own Envía)
 
 > **Class:** Spike (time-boxed investigation → a **written decision**, no code, no slicing until the decision lands).
-> **Status:** Seed, awaiting groom. Routed out of the 2026-06-25 Envía kill-switch groom (see
+> **Status:** Scaffolded — folded into [`shipping-provider-expansion`](../../04-shipping-and-delivery/shipping-provider-expansion/README.md)
+> as its Sprint 1 (2026-07-05). Routed out of the 2026-06-25 Envía kill-switch groom (see
 > [`envia-flagsmith-killswitch.md`](../2.%20readyforscope/envia-flagsmith-killswitch.md) appendix). **Build the
 > kill-switch epic first** ([`04-shipping-and-delivery/envia-killswitch`](../../04-shipping-and-delivery/envia-killswitch/README.md)) — BYO reuses its gating + fallback.
 
