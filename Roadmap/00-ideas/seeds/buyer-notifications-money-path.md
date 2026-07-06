@@ -1,12 +1,12 @@
 ---
 title: "Buyer notifications — money-path addendum"
 slug: buyer-notifications-money-path
-status: ready
+status: scaffolded
 area: "05"
 type: feature
 priority: wave-2
 risk: high
-epic: null
+epic: "05-trust-offers-and-messaging/buyer-notifications-money-path"
 build_order: "#5b"
 updated: 2026-07-06
 ---
@@ -64,3 +64,14 @@ has no effect, and Compras never reaches Push/Telegram. This idea closes both ga
 
 ## Out
 - New channels (WhatsApp/SMS); agent (MCP) pref read/write; digest/quiet-hours.
+
+## Kill-switch (Stage 6b — decided at grooming 2026-07-06)
+**Yes — flagged.** `notifications.buyer_moneypath_enabled` · polarity **kill-switch** (default `true`,
+created **ENABLED** via a seed migration riding the PR — never a local flip; Supabase local IS prod, per
+LEARNINGS) · seam: one `isEnabled()` check wrapping the Medusa-order buyer-resolution and the
+webhook/finalize-manual Compras dispatch — disabled ⇒ byte-for-byte today's behavior · mechanism:
+in-house `lib/flags.ts` / `platform_flags` (node runtime; Flagsmith is decommissioned).
+
+## Scaffolded
+Epic: [`05-trust-offers-and-messaging/buyer-notifications-money-path`](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md)
+(2 sprints, scaffolded 2026-07-06 — this seed is now funnel-only; the epic README frontmatter is the status SSOT).
