@@ -7,7 +7,7 @@ slug: mercadolibre-sync
 
 > Scoped 2026-06-29 from [`00-ideas/2. readyforscope/mercadolibre-sync.md`](../../00-ideas/2.%20readyforscope/mercadolibre-sync.md).
 > **Status: ✅ SHIPPED — all 6 sprints merged + deployed, S6 LIVE 2026-07-01 (self-serve ML sync
-> purchasable; `ml.*` flags ON). Owed: Daniel's live purchase smokes + `RETROSPECTIVE.md`.** **Reclassified spike → Feature** (Daniel dropped the
+> purchasable; `ml.*` flags ON). Owed: Daniel's live purchase smokes. Retro: [`RETROSPECTIVE.md`](RETROSPECTIVE.md).** **Reclassified spike → Feature** (Daniel dropped the
 > estimate/time-box dependency; build for quality). Risk **HIGH** (the stock-sync core mutates inventory
 > + writes to an external marketplace — oversell risk). Daniel merges HIGH stories. The despachobonsai
 > code is a **reference** (OAuth + ML API shapes), not a drop-in.
