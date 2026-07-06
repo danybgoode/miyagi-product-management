@@ -36,6 +36,9 @@ export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 // Harmless here since AGY_MODEL/AGY_FALLBACK_MODEL below are always valid, listed model names (checked via
 // `agy models`), but it means a future typo in either constant would silently review with the WRONG model
 // instead of failing loud — watch for that if either constant is ever edited.
+// agy-doctor: last verified 2026-07-06 against 1.0.16.
+//   ^ machine-managed marker — `node scripts/agy-doctor.mjs --fix` rewrites it (with the constant
+//   below) after a green live contract probe. Don't hand-edit the marker's shape.
 export const AGY_PINNED = '1.0.16';
 
 // agy's `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
@@ -201,7 +204,9 @@ export function checkAgyVersion(deps = {}) {
   if (m[0] !== pinned)
     return failFn(
       `agy ${m[0]} != pinned ${pinned} — the print/--model contract may have shifted. ` +
-        `Re-verify runAntigravity() against \`agy --help\`, then bump AGY_PINNED to ${m[0]}.`
+        `Run \`node scripts/agy-doctor.mjs --fix\` (authorized for agents: it re-verifies the live ` +
+        `contract and bumps the pin only on a green probe), then commit the bump. ` +
+        `Manual path: re-verify runAntigravity() against \`agy --help\`, then bump AGY_PINNED to ${m[0]}.`
     );
 }
 

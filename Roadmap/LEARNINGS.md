@@ -273,7 +273,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   is how the bad bump shipped). *(2026-06-23, devops-reliability-cleanup S4 — pinned `agy` 1.0.10; re-verified
   and bumped to 1.0.16 on 2026-07-03 — the guard did its job, forced a manual re-check before bumping, no
   further contract break found. One new wrinkle: an omitted/unrecognized `--model` no longer prints nothing —
-  it now silently substitutes a default model, harmless since the pinned model constants are always valid.)*
+  it now silently substitutes a default model, harmless since the pinned model constants are always valid.
+  **The manual re-check is now a script** — `scripts/agy-doctor.mjs` re-verifies the live contract
+  (help flags, `agy models`, real `-p`/`--model` probes) and `--fix` bumps the pin only on a green
+  probe; the pin's own die message names it, and agents are pre-authorized to run it (WAYS-OF-WORKING
+  → cross-agent bullet). Two probe gotchas from building it: agy prints `--help` to **stderr** (read
+  both streams when probing a foreign CLI), and a listed-but-quota-empty model is a transient warn,
+  not drift. 2026-07-06.)*
   **A CLI authed by an interactive/OAuth login is NOT free to run in CI — confirm a portable
   non-interactive credential path AND its cost before automating it in a runner.** `codex` can auth
   headlessly with a token-billed API key; `agy` has **no headless auth at all**. Automating a root-repo

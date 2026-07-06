@@ -27,7 +27,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (78)
+## ✅ Shipped (79)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
@@ -82,6 +82,7 @@
 - [Seller-Acquisition Landing Pages (BUILD-ORDER #6)](../../08-growth-and-promotions/seller-acquisition-landing-pages/README.md) — 08 Growth · 9/9 stories · risk: Low · Wave 3
 - [Sweepstakes](../../08-growth-and-promotions/sweepstakes/README.md) — 08 Growth · 9/9 stories · risk: Low
 - [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 9/9 stories
+- [agy drift doctor — self-healing for the Antigravity CLI pin](../../09-platform-infra/agy-drift-doctor/README.md) — 09 Platform-infra · 2/2 stories
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 6/6 stories · risk: High
 - [Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)](../../09-platform-infra/routines-enablement/README.md) — 09 Platform-infra · 1 sprints
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
@@ -129,4 +130,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | ML orders, native — Mercado Libre sales land as real Medusa orders | In progress | Shipped |
 
 ---
-_Epics: 90 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 91 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
