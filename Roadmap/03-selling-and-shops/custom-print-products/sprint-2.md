@@ -1,6 +1,6 @@
 # Custom print products — Sprint 2: Priced options + quantity tiers (commerce core)
 
-**Status:** 🟡 built + cross-reviewed, PRs ready for review (backend [#60](https://github.com/danybgoode/medusa-bonsai-backend/pull/60), frontend [#175](https://github.com/danybgoode/miyagisanchezcommerce/pull/175)) — deterministic gate green. Owed: seller-facing "Opciones" UI (see Story 2.1), Daniel's money-path browser smoke, Daniel's merge (HIGH risk).
+**Status:** ✅ merged 2026-07-06 — backend [#60](https://github.com/danybgoode/medusa-bonsai-backend/pull/60) (`d22fb29`), frontend [#175](https://github.com/danybgoode/miyagisanchezcommerce/pull/175) (`7009895`), both cross-reviewed (8 rounds) + Daniel-authorized merge. Owed: seller-facing "Opciones" UI (new Story 2.4, added below), Daniel's money-path browser smoke.
 
 > ✅ **Verify-first finding (2026-07-05):** confirmed on our installed Medusa v2.15.3
 > (`apps/backend/package.json`) that cart price calculation **does** resolve quantity into
@@ -46,6 +46,17 @@
 **Acceptance:** pure price-grid deriver extracted to `lib/` (unit-tested: tier boundaries, currency, MXN rounding); changing quantity in the cart re-resolves the tier; coupons and negotiation offers apply to the resolved variant+qty price (spec this explicitly).
 **Risk:** HIGH
 **Built:** new `GET /store/listings/:id/price-grid` (reads Medusa's own Price rows, not a metadata mirror) + `lib/price-grid.ts` (pure deriver, 14 unit tests) + `ConfiguratorBuyBox.tsx` (variant selector + live qty stepper on the PDP, wired into both buy-CTA trees) + `variantId` threaded end-to-end into checkout (`CheckoutPayButton`/`CheckoutExperience`/`startCheckout()`) + the checkout page re-resolving the exact tier-correct price server-side before display. **Scope call confirmed with Daniel (2026-07-05):** negotiation/offers do **not** apply to multi-variant/tiered listings this sprint — those stay cash/card-only; single-variant/no-tier listings keep negotiation exactly as today. **Cart clarification:** the multi-seller bundle `CartDrawer` (`CartContext.tsx`) has no per-item quantity concept at all (add/remove only, confirmed by reading its reducer) — "cart quantity re-resolves the tier" is satisfied by `ConfiguratorBuyBox`'s own qty stepper (live client recompute) + checkout's server-side re-resolution, not a `CartDrawer` change.
+
+### Story 2.4 — Seller-facing "Opciones" UI (NEW — added 2026-07-06, not yet built)
+**As a** print-shop seller, **I want** a settings screen to add dimensions, per-combination prices, and quantity tiers to my listing, **so that** I don't need a direct API call or my agent to configure a configurator product.
+**Why this exists:** Stories 2.1/2.2's own acceptance ("Seller defines...", "Seller sets...") implies a UI action, but Sprint 2 shipped only the backend capability (`option_dimensions`/`variant_prices`/`variant_tiers` API fields) + the buyer-facing PDP/checkout consumption — verified working via direct API calls, never through a form. Checked against the epic's full scope table: **not covered by any Sprint 3/4 story** — Sprint 3 is entirely buyer-facing (artwork upload, preflight, the buy box already built early as part of 2.3); Sprint 4 is proof/agent-parity/reorder. This is a genuine gap, not deferred scope, so it's added here as its own story rather than assumed to land later.
+**Acceptance (draft, to be refined at build time):**
+- A section on the listing edit flow (`/shop/manage` or `/sell/edit/[id]`) where a seller with no existing dimensions can add up to 3 (title + values), see the generated combo grid, and enter a price per combination (calls `option_dimensions`+`variant_prices`) — one bounded action, matching the mutual-exclusivity guard `applyOptionDimensions()` already enforces (no combining with `price_cents`/`quantity`/`variant_tiers` in the same request).
+- Once dimensions exist, a per-variant tier editor (min/max quantity + price rows) that calls `variant_tiers` with `variant_id`, surfacing the exact es-MX validation message on overlap/gap.
+- A clear, honest state for "this product already has real dimensions — editing them isn't supported yet" (matches `applyOptionDimensions()`'s current 422 for that case) and for "this listing has order history — can't convert" (matches the new refusal message).
+- Reads the same `GET /store/listings/:id/price-grid` route the PDP already uses, so the editor and the buyer-facing display are provably showing the same data.
+**Risk:** HIGH (writes to the same commerce-core paths as 2.1/2.2 — no new backend risk, but a new UI surface touching them)
+**Status:** ⬜ not started — next story to pick up for this epic.
 
 ## Sprint QA
 - **api spec(s):** `e2e/price-grid.spec.ts` (frontend, 14 tests — tier boundaries, gap/overlap-safe sanitisation, no-tier fallback, MXN rounding, qty-stepper re-resolution across a tier boundary, pay-button-equals-summary) + `src/lib/__tests__/price-tiers.unit.spec.ts` (backend, 9 tests — ladder validation)

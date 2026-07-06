@@ -55,10 +55,11 @@ start-checkout seam we already own.
 | 2 | 2.1 Seller defines priced option dimensions → real Medusa options/variants (create + edit) | HIGH |
 | 2 | 2.2 Seller sets quantity price breaks per variant (`min_quantity`/`max_quantity`; #12706 verify-first) | HIGH |
 | 2 | 2.3 PDP/cart/checkout price correctly for variant × quantity (pure price-grid deriver in `lib/`) | HIGH |
+| 2 | 2.4 Seller-facing "Opciones" UI — dimension/value editor, per-combo price grid, tier editor (added 2026-07-06; 2.1-2.3 shipped API-only, no form) | HIGH |
 | 3 | 3.1 New `file` CustomFieldType (required flag, format allowlist, max size) | LOW |
 | 3 | 3.2 Buyer (incl. guest) uploads artwork → R2; thumb echoes cart→checkout→order→emails; seller downloads original | HIGH |
 | 3 | 3.3 Low-res preflight warning (pixels vs cm @ ~300 PPI; warn, never block) | LOW |
-| 3 | 3.4 Configurator buy box: options → upload → live price grid → total (es-MX, mobile-first) | LOW |
+| 3 | 3.4 Configurator buy box: options → upload → live price grid → total (es-MX, mobile-first) — **variant selector + live price grid already shipped in Sprint 2's `ConfiguratorBuyBox.tsx`**; this story narrows to wiring in the artwork upload (3.2) once that lands | LOW |
 | 4 | 4.1 Lightweight proof via messaging (auto-restates size/qty/price; "Aprobar prueba" lands on the ledger) | MED |
 | 4 | 4.2 Agent parity: options/tiers/upload contract in UCP catalog; MCP order with artwork URL | MED |
 | 4 | 4.3 "Volver a pedir" re-adds same variant/qty/artwork to cart | LOW |
