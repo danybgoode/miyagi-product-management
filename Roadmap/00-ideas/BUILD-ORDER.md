@@ -12,7 +12,7 @@
 
 ## 🏗️ Building now (4)
 
-- [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 6/13 stories
+- [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 10/13 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 0/6 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 4/10 stories
