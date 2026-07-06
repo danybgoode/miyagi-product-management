@@ -16,13 +16,14 @@
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 4/10 stories
 
-## 📋 Ready to build (scaffolded, not started) (8)
+## 📋 Ready to build (scaffolded, not started) (9)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 0/8 stories
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 0/8 stories
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 0/11 stories
 - [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 0/6 stories
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 0/10 stories · risk: High · tbd
+- [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 0/7 stories · risk: High · Wave 2
 - [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 0/8 stories
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
@@ -109,11 +110,10 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (6)
 
 - [Rental backend line-item pricing (charge nights × rate + deposit online)](seeds/rental-backend-line-item-pricing.md) — Ready · Feature · backlog
-- [Buyer notifications — money-path addendum](seeds/buyer-notifications-money-path.md) — Ready · Feature · Wave 2
-- [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Ready · Spike · Wave 3
+- [Spike — arranged-only delivery policy (#3c Spike 0)](seeds/spike-arranged-only-delivery.md) — Queued · Spike · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
@@ -130,4 +130,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | ML orders, native — Mercado Libre sales land as real Medusa orders | In progress | Shipped |
 
 ---
-_Epics: 91 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 92 · seeds in funnel: 6 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
