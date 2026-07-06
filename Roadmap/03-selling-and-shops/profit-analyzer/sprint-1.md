@@ -69,6 +69,11 @@ hand math on the smoke data (✅ spec-proven hand math; live check owed); flag O
 - Cross-review (antigravity, advisory): ran on both PRs; all claims triaged against real source —
   2 "blocking" claims refuted with code evidence (array graph filters precedented; ML currency already
   stamped at materialization; Rule-1/Rule-5 misreads), no code changes warranted.
+- **Fresh-reviewer pass (pr-reviewer subagent, both PRs):** frontend clean (approve, no changes).
+  Backend found **one real HIGH leak** — the public `GET /store/sellers/:slug/products` returned raw
+  `variants[].metadata`, exposing `unit_cost_cents` to anyone with the publishable key — **fixed**
+  (`16dc7a9`: `stripPrivateVariantMetadata` scrub + 3 unit specs; the other public variant routes
+  verified safe via `toListingShape`). Smoke step 7 below exercises exactly this surface.
 - **Owed to Daniel:** the COGS → sandbox ML sale → margin-row live walkthrough; prod migration confirm.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
@@ -93,8 +98,9 @@ run them. Prod URLs assume both PRs merged (backend first) and the Cloud Run dep
 6. **[owed to Daniel] Bulk CSV.** In https://miyagisanchez.com/shop/manage/import upload a ~20-row CSV
    with a `costo_unitario` column, one row with `-5` and one with `gratis` → those **two rows report
    per-row errors**; the rest import; spot-check one imported listing's editor shows its cost.
-7. **Public reads stay clean.** Anonymous `curl https://miyagisanchez.com/api/... /store/listings/<id>`
-   (or view the PDP) for a listing with COGS set → response contains **no `unit_cost_cents`** anywhere.
+7. **Public reads stay clean.** For a listing with COGS set, anonymous `curl` (with the publishable
+   key) of `<medusa>/store/listings/<id>` **and** `<medusa>/store/sellers/<slug>/products` (the raw
+   route the reviewer caught leaking) → **no `unit_cost_cents`** anywhere in either response.
 8. **[owed to Daniel] Flag flip.** In https://miyagisanchez.com/admin/flags flip `ops.profit_enabled`
    ON → https://miyagisanchez.com/shop/manage/profit now renders the **Ganancias** dashboard (empty
    state if no ledger rows yet).
