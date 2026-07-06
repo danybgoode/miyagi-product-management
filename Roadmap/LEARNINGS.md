@@ -951,7 +951,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   the buyer-facing timeout belongs on **that fetch in the component**, not the lib the spec pointed at —
   timing out `lib/envia.ts` would have shipped a no-op against the actual hang. Before wiring a fix to a
   file a plan names, `grep -rl` its importers and confirm it's on the path the user actually exercises.
-  *(2026-06-09, delivery-money-polish S3 — quote timeout in `CheckoutExperience`, pure `lib/fetch-timeout.ts`.)*
+  *(2026-06-09, delivery-money-polish S3 — quote timeout in `CheckoutExperience`, pure `lib/fetch-timeout.ts`.
+  Reconfirmed 2026-06-26, envia-killswitch S1.4: the same pre-build importer trace surfaced a SECOND ungated
+  seam — the legacy seller ship route calling `lib/envia.ts` directly — which became its own gated story
+  instead of shipping a kill-switch with a live bypass.)*
 - **For a cross-origin redirect built from order/cart data, the backend STORES the origin and the frontend
   VALIDATES it against the verified-domain set before redirecting — never have the backend construct the
   `success_url`.** The custom-domain checkout "hop" round-trips the buyer through the platform for

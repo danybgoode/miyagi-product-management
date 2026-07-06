@@ -8,12 +8,20 @@ priority: wave-2
 risk: high
 epic: null
 build_order: "#5b"
-updated: 2026-06-14
+updated: 2026-07-06
 ---
 
 # Idea — Buyer notifications: money-path + Medusa-order gating (follow-up to #5b)
 
-**Status:** ready for scope. **Macro-section:** 05 · Trust, Offers & Messaging. **Risk: HIGH** (touches the
+**Status:** ready for scope. **Macro-section:** 05 · Trust, Offers & Messaging.
+
+> **Validated still-open 2026-07-06** (grooming close-out, re-checked against `origin/main` of
+> `apps/miyagisanchez`): the Stripe webhook still imports only `dispatchToSeller` (no buyer dispatch);
+> the buyer grid's Compras × Push/Telegram cells are still hardcoded locked-"pronto"
+> (`BuyerNotificationPreferences.tsx` `lockedS2`); `lib/order-mirror.ts` still doesn't persist the buyer's
+> Clerk id. Both gaps below remain exactly as scoped — **not** implemented in another form (the plumbing
+> #5b built — `buyer.compras` group + `order_confirmed`/`payment_confirmed` mappings in
+> `lib/notifications/preferences.ts` — is in place and waiting). **Risk: HIGH** (touches the
 live Stripe/MP payment webhooks + a backend change). Follow-up to the completed 2-sprint epic
 [Buyer Telegram channel + Buyer preference center (#5b)](../../05-trust-offers-and-messaging/buyer-notifications/).
 

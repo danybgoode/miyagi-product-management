@@ -8,7 +8,7 @@ priority: wave-3
 risk: high
 epic: null
 build_order: "#3c-S0"
-updated: 2026-06-08
+updated: 2026-07-06
 ---
 
 # Spike — Arranged-only delivery policy (BUILD-ORDER #3c · Spike 0)
@@ -26,6 +26,17 @@ listings — items delivered in person / by coordination, with **no shippable ca
 the delivery work in #3c (Epic B) can slice correctly instead of guessing. Today
 `backend …/checkout-options/route.ts:160` hardcodes `const onlyCoordinated = false`, so every listing
 must offer a carrier quote and "entrega acordada" is only ever an *add-on*, never the sole method.
+
+> **Validated still-open 2026-07-06** (grooming close-out): `onlyCoordinated = false` is still hardcoded
+> (`checkout-options/route.ts:161` on backend `origin/main`), so the spike's core question — may a seller
+> *intentionally* publish an arranged-only listing — remains undecided and this spike stands. **Partially
+> superseded since scoping:** delivery-money-polish S3.2 (2026-06-09) shipped a selectable "Entrega
+> acordada" fallback when quoting fails or returns no coverage (`lib/checkout-fallback.ts`), so the third
+> current-state bullet below is stale — the fallback CAN now complete checkout, paid via pago directo. That
+> also answers question 4's payment coupling in code: the backend rejects card + coordinated delivery ⇒
+> manual payment only. Remaining blast radius = questions 1–3 (demand, `checkout-options` consumers incl.
+> UCP, per-listing vs per-shop model). The poster's 04 section tracks this as "arranged-*only* enforcement
+> pending Spike 0".
 
 ## Current state (audit finding 04-#4, re-verified on `main`)
 - `checkout-options/route.ts:160` — `onlyCoordinated = false` is hardcoded; the branch that would
