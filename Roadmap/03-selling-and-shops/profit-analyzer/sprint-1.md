@@ -11,9 +11,16 @@
 
 ## Status
 
-Built 2026-07-06 · draft PRs open, risk **HIGH — Daniel merges, backend first**:
-backend [medusa-bonsai-backend#61](https://github.com/danybgoode/medusa-bonsai-backend/pull/61) ·
-frontend [miyagisanchezcommerce#178](https://github.com/danybgoode/miyagisanchezcommerce/pull/178)
+✅ **MERGED 2026-07-06** (Daniel authorized "merge on green, required order" in-conversation) —
+backend [#61](https://github.com/danybgoode/medusa-bonsai-backend/pull/61) → `9967adb` first, then
+frontend [#178](https://github.com/danybgoode/miyagisanchezcommerce/pull/178) → `86a06ea`; branches
+deleted. Prod deploy live (Cloud Run rev `medusa-web-00135-j88`; Vercel prod at `86a06ea`).
+**Walkthrough steps 1–3 + 7 CONFIRMED live** (agent, 2026-07-06, via a connector-attached Cloud Run
+job for the DB steps): trigger + table + unique index exist; append-only proven on prod (INSERT ok,
+UPDATE/DELETE both raise, the inert `fev_smoke_trigger_proof` row survives — permanent by design);
+`/shop/manage/profit` → 404 flag-OFF; profit API → 404; public seller-products response for a real
+variant-bearing shop carries zero `unit_cost_cents`. **Remaining: steps 4–6, 8–13 (Daniel — sessions/
+money), then the `ops.profit_enabled` flip (Daniel).**
 
 Plan-mode decisions (Daniel, 2026-07-06): COGS lives on `variant.metadata.unit_cost_cents`; free
 dashboard for all sellers with ML-fee analytics riding the `ml_sync` entitlement; Envia label cost
