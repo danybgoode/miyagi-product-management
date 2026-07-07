@@ -1,8 +1,8 @@
 # Cars vertical — Sprint 1: Facet browse for autos
 
-**Status:** 🏗️ BUILT 2026-07-07 — draft PRs open, backend-first; mobile-sheet smoke owed to Daniel.
-- Backend: [medusa-bonsai-backend#66](https://github.com/danybgoode/medusa-bonsai-backend/pull/66) · branch `feat/cars-vertical` · `25714d9`, `098861d`
-- Frontend: [miyagisanchezcommerce#185](https://github.com/danybgoode/miyagisanchezcommerce/pull/185) · branch `feat/cars-vertical` · `e592d32`, `fddc1a2`
+**Status:** ✅ MERGED 2026-07-07 — backend-first; both PRs had clean gating pr-reviews + codex advisories addressed. Mobile-sheet real-phone smoke owed to Daniel; BE prod smoke owed post-deploy.
+- Backend: [medusa-bonsai-backend#66](https://github.com/danybgoode/medusa-bonsai-backend/pull/66) **squash `bf923ad`** (built `25714d9`, `098861d`; review fix `bd29ae4` — drop redundant land-rover self-alias so the brand map is a literal FE mirror)
+- Frontend: [miyagisanchezcommerce#185](https://github.com/danybgoode/miyagisanchezcommerce/pull/185) **squash `d5e41f9`** (built `e592d32`, `fddc1a2`; review fixes `1f0902f` plain datalist options + alias drift-guard, `7a98fb4` pin every shared alias)
 
 > **Reshaped during build (the real substance).** Exploration found an autos filter panel already
 > existed on `/l`, but it filtered the wrong metadata namespace. Autos specs live under **two

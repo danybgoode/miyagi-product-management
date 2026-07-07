@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (facet browse) MERGED 2026-07-07: BE #66 squash bf923ad, FE #185 squash d5e41f9, backend-first; both had clean gating pr-reviews + codex advisories addressed. S2/S3 open.
 slug: cars-vertical-tratocar-parity
 ---
 

@@ -10,14 +10,14 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (3)
 
+- [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 3/8 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
 
-## 📋 Ready to build (scaffolded, not started) (10)
+## 📋 Ready to build (scaffolded, not started) (9)
 
-- [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 3/8 stories
 - [Rental line-item pricing — charge nights × rate + deposit online](../../02-checkout-and-payments/rental-backend-line-item-pricing/README.md) — 02 Checkout & Payments · 3/6 stories · risk: High · backlog
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 3/8 stories
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 0/11 stories
@@ -119,7 +119,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (5)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (4)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -127,11 +127,10 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Cars vertical — tratocar-grade browse & trust | Scaffolded | In progress |
 | Rental line-item pricing — charge nights × rate + deposit online | Scaffolded | In progress |
 | Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock | Scaffolded | In progress |
 | ML orders, native — Mercado Libre sales land as real Medusa orders | In progress | Shipped |
 | Own-shop premium presentation — "stepping into StickerJunkie" | In progress | Shipped |
 
 ---
-_Epics: 94 · seeds in funnel: 4 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 94 · seeds in funnel: 4 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._
