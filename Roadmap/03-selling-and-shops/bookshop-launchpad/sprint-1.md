@@ -1,6 +1,9 @@
 # Bookshop launchpad — Sprint 1: Submissions in, works published
 
-**Status:** ⬜ not started
+**Status:** 🚧 built, awaiting Daniel's merge + money smoke (branch `feat/bookshop-launchpad`)
+- Story 1.1 ✅ built — `f0cc56c` (public portal + upload + email-code verify + opt-in + terms, behind `launchpad.enabled`)
+- Story 1.2 ✅ built — `dcd63a3` (review queue + transitions + writer emails + MCP read parity)
+- Story 1.3 ✅ built — `dcd63a3` (publish approved → draft digital product; live-URL email on activation)
 
 ## Stories
 
@@ -25,17 +28,28 @@
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+Env: production · https://miyagisanchez.com   (or the branch preview URL while testing pre-merge)
+**Precondition (owed to Daniel):** flip `launchpad.enabled` **ON** in `/admin/flags` first — the whole
+surface 404s/423s while it's OFF (fail-safe). Flip it back OFF after the smoke until launch, if desired.
 
-1. Enable "Recibir manuscritos" in the shop settings; open https://miyagisanchez.com/s/<bookshop>/convocatoria in a private window.
-   → Guidelines + submission form render.
-2. Submit a PDF manuscript with a real email; enter the emailed code.
-   → "Recibido" confirmation; oversized/wrong-format file is rejected with clear es-MX copy.
-3. In the seller shell, open the Convocatoria queue → read → "Solicitar cambios".
-   → Writer receives the change-request email.
-4. Re-submit → approve → "Publicar como producto digital".
-   → Draft listing minted with synopsis/genre; set price + cover → activate.
-5. (money path) Buy it as a guest with a test card.
-   → Digital delivery email arrives; re-download works; writer got the "ya está publicado" email with the URL.
+1. As the seller: open **Configuración → Convocatoria de manuscritos** (the card appears once the flag is
+   ON), toggle **"Recibir manuscritos"** ON, optionally add guidelines, **Guardar**.
+   → The page also links "Ver mi página de convocatoria".
+2. In a private window open `https://miyagisanchez.com/s/<bookshop>/convocatoria`.
+   → Guidelines + submission form render (título, nombre, género, sinopsis, archivo, correo, código, términos).
+3. Fill the form, attach a **PDF**, click **"Enviar código"**, enter the emailed 6-char code, accept the
+   terms, click **"Enviar manuscrito"**.
+   → "¡Recibido!" confirmation. Retry with a `.zip`/renamed file → rejected with clear es-MX copy; a file
+     over 40 MB → rejected before upload.
+4. Back in the seller shell → **Convocatoria** → the new submission appears under "Manuscritos recibidos".
+   Click the **PDF download** chip (opens a signed URL), then **"Pedir cambios"** and type a note.
+   → The writer receives the change-request email with your note.
+5. Re-submit from the public page → **"Empezar revisión"** → **"Aprobar"** → **"Publicar como producto
+   digital"**.
+   → A **draft** digital listing is minted (synopsis → description, genre → category); you're taken to
+     Anuncios. Set price + cover and **activate** it.
+   → On activation the writer gets the **"ya está publicado"** email with the live `/l/<id>` URL.
+6. **(money path — owed to Daniel)** As a guest, buy the listing with a **test card**.
+   → Order completes; the digital-delivery email arrives with the manuscript; re-download works.
 
 If any step fails, note the step number + what you saw — that's the bug report.
