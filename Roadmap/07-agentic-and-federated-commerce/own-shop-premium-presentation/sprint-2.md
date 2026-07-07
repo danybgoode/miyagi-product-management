@@ -1,12 +1,38 @@
 # Own-shop premium presentation — Sprint 2: Collections + in-shop navigation
 
-**Status:** ✅ built 2026-07-06, all 4 stories committed on `feat/own-shop-premium-presentation` in
-both repos. Backend PR [#65](https://github.com/danybgoode/medusa-bonsai-backend/pull/65) (draft,
-HIGH) — `cc0424c` (2.1a) + `d75b654` (2.1b) + `148f7f2` (2.2 fix: reorder partial-list guard).
-Frontend PR [#182](https://github.com/danybgoode/miyagisanchezcommerce/pull/182) (draft, HIGH) —
-`38ba3c0` (2.1a) + `32c577e` (2.1b) + `31270cd` (2.2) + `e53fc88` (2.3). Gate green on both
-(`tsc`/`build`/unit+Playwright `api`). **Owed to Daniel:** review + merge (HIGH tier) + the
-real-domain hostname-branch smoke below.
+**Status:** ✅ MERGED 2026-07-07. Backend PR [#65](https://github.com/danybgoode/medusa-bonsai-backend/pull/65)
+squashed to `main` (`667c607`). Frontend PR [#182](https://github.com/danybgoode/miyagisanchezcommerce/pull/182)
+squashed to `main` (`ed905d7`), backend merged first per the async-deploy convention. Both branches
+deleted. Cross-agent review (codex) ran on both PRs; a fresh Claude reviewer pass ran on both,
+independently re-verified after fixes, gave "safe to merge" on both. Daniel authorized merge-on-green
+for this sprint. **Owed to Daniel:** the real-domain hostname-branch smoke below (the one slice no
+preview/local run can exercise) + confirming the backend Cloud Run deploy rolled (image-only deploy,
+~12 min, no GitHub Actions visibility).
+
+**Bugs found and fixed post-build, pre-merge** (cross-review + a fresh reviewer pass, all
+independently re-verified against the final commits — not just traced by hand):
+- Backend: handle-collision-suffix loop had an off-by-one (adopted the 20th candidate without ever
+  checking it was free) — fixed, new unit test constructs 19 real collisions and asserts the 20th
+  candidate was actually queried, not just that the result happens to match.
+- Backend: `collection_ids` silently dropped unknown/foreign ids instead of rejecting — fixed to
+  reject the whole write (422); live-verified against a throwaway local Postgres (valid write
+  succeeds, mixed valid+unknown rejects, product categories confirmed unchanged after the reject).
+- Frontend: `deriveShopCollections`'s sort was a silent no-op — it read `.metadata.sort_order`, but
+  its real caller always passes the flattened shape with `sort_order` as a top-level field, so the
+  sort always saw `undefined` and degenerated to array-arrival order (invisible in practice only
+  because the backend happens to pre-sort). Fixed with a correctly-typed parameter + a regression
+  test feeding a genuinely unsorted array.
+- Frontend: a real MCP agent-parity gap — `update_listing` never actually forwarded collection
+  assignment to the backend (despite the PR description's claim), and there was no way for an agent
+  to discover a shop's collections. Added `list_my_collections` + `update_listing.collection_names`.
+- Frontend: the new `list_my_collections` MCP tool was declared + had a complete handler but was
+  never wired into the `tools/call` dispatch switch — calling it returned MethodNotFound, and
+  `update_listing`'s own description told agents to use it. Fixed; new static-source regression spec
+  (`mcp-tool-dispatch-parity.spec.ts`) asserts every declared tool has a dispatch case — verified live
+  to actually catch this exact bug before committing.
+- Also merged `origin/main` into the frontend branch mid-review (it was 2 commits behind, including
+  a same-file MCP `isError`-propagation fix) — one real merge conflict in `lib/ucp/schema.ts`
+  (two independent new imports), resolved additively, re-verified clean by the fresh reviewer.
 
 > ⚠️ **Plan-mode gate — RESOLVED 2026-07-06.** The gate's premise was wrong: there is no
 > `@medusajs/marketplace` plugin anywhere in this codebase (confirmed against `package.json`,
@@ -94,8 +120,9 @@ assume otherwise about.
   the one genuinely unverifiable-pre-merge slice, exactly as this sprint's plan anticipated.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: the branch's Vercel preview (frontend PR #182) once deployed, or production after merge —
-these steps are written against `miyagiprints`, the epic's flagship dogfood shop.
+Env: production · https://miyagisanchez.com (merged and live once the backend Cloud Run deploy
+rolls, ~12 min post-merge) — these steps are written against `miyagiprints`, the epic's flagship
+dogfood shop.
 
 1. As miyagiprints, open the new Colecciones manage surface (`/shop/manage/collections`) → create
    "Die-cut", "Zines"; assign listings via the per-listing edit surface; reorder with the ↑/↓
