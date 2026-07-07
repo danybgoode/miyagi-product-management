@@ -90,7 +90,10 @@ this repo's `lib/ucp/capabilities.ts` is the single source of truth for agent-fa
 4. CI green on both draft PRs before requesting a Daniel merge — backend #59
    (`Type-check + build + unit`), frontend #174 (`Type-check + build`, `Playwright vs preview`).
 
-**Post-merge, backend (Cloud Run, ~12 min, no preview) — agent-run API smoke:**
+**Post-merge, backend (Cloud Run, ~12 min, no preview) — agent-run API smoke (✅ run 2026-07-06,
+revision `medusa-web-00136-jfh`): step 5 health → 200; step 6 bulk-status unauthenticated → 401;
+step 9 manifest `endpoints.seller_orders` + `"seller_orders"` capability → live. Steps 7–8 (authed
+browser) fold into Daniel's batch-day walkthrough below.**
 5. `curl https://medusa-web-91083034475.us-east4.run.app/health` → `200 OK` on the revision matching
    this sprint's merge commit.
 6. `curl -X PATCH https://medusa-web-91083034475.us-east4.run.app/store/sellers/me/orders/bulk-status`
