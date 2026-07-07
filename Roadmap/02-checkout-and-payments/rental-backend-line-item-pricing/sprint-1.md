@@ -1,8 +1,10 @@
 # Rental line-item pricing — Sprint 1: the backend charge rail
 
-**Status:** ✅ Built — awaiting Daniel merge (HIGH-risk). Branch `feat/rental-backend-line-item-pricing`.
-Commits: 1.1 `4a797a1` · 1.2 `3a0eb8c` · 1.3 `31e9bbe`. Gate green (`medusa build` → `tsc --noEmit`
-→ `test:unit`, 238 tests). Post-merge prod API smoke + flag flip owed (below).
+**Status:** ✅ MERGED to `main` 2026-07-07 — squash `8e41d18` (PR #67, HIGH-risk, Daniel-authorized
+merge-on-green). Stories: 1.1 `4a797a1` · 1.2 `3a0eb8c` · 1.3 `31e9bbe` · cross-review hardening
+`ad90a71`. CI green (`Type-check + build + unit`, 243 unit tests). Ships **dark**
+(`checkout.rental_pricing_enabled` default `false`) — post-merge prod API smoke (flag-OFF) + the flag
+flip are owed (Daniel flips the flag; walkthrough below).
 
 > Backend-only sprint (`apps/backend`). Backend-first deploy: merges + finishes rolling on Cloud Run
 > (~12 min, no per-branch preview) before Sprint 2 starts. Everything lands behind

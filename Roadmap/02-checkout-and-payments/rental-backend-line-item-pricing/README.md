@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (backend charge rail) MERGED 2026-07-07: PR #67 squash 8e41d18, HIGH-risk Daniel-authorized merge-on-green, ships dark behind checkout.rental_pricing_enabled (default false). Clean gating pr-review + codex advisory addressed pre-merge (ad90a71). S2 (web checkout + PDP flip) + S3 (agent parity) open. Flag flip + flag-ON money smoke owed (Daniel).
 slug: rental-backend-line-item-pricing
 ---
 
