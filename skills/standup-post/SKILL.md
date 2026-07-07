@@ -56,7 +56,7 @@ or set it on the routine's environment (for the nightly run) — don't try to ca
 ## Stage 3 — run it
 `node scripts/standup.mjs`. Report back what posted — either the delta lines, or the "quiet night, no
 change" case — so whoever invoked this (Daniel or the routine transcript) has a summary even without
-opening Telegram.
+opening Telegram. Write it in prose as if reporting to executive level.
 
 ## Stage 4 — on failure
 Surface `standup.mjs`'s stderr verbatim (it dies loud with a specific message — missing token, missing
