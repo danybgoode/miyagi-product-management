@@ -1,9 +1,10 @@
 # Bookshop launchpad — Sprint 1: Submissions in, works published
 
-**Status:** 🚧 built, awaiting Daniel's merge + money smoke (branch `feat/bookshop-launchpad`)
-- Story 1.1 ✅ built — `f0cc56c` (public portal + upload + email-code verify + opt-in + terms, behind `launchpad.enabled`)
-- Story 1.2 ✅ built — `dcd63a3` (review queue + transitions + writer emails + MCP read parity)
-- Story 1.3 ✅ built — `dcd63a3` (publish approved → draft digital product; live-URL email on activation)
+**Status:** ✅ merged to `main` 2026-07-07 — squash `b6eca090` (PR #184). Owed: Daniel's money smoke + `launchpad.enabled` flip.
+- Story 1.1 ✅ (public portal + upload + email-code verify + opt-in + terms, behind `launchpad.enabled`)
+- Story 1.2 ✅ (review queue + transitions + writer emails + MCP read parity)
+- Story 1.3 ✅ (publish approved → draft digital product; live-URL email on activation)
+- Cross-review (Codex) done — 3 findings fixed pre-merge; merged conflict-free after OSPP S3 landed.
 
 ## Stories
 
