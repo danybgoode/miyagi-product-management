@@ -1,6 +1,6 @@
 # Own-shop premium presentation — Sprint 3: Content pages + flagship dogfood
 
-**Status:** ✅ built (frontend-only, no backend touch) — PR open, awaiting Daniel's live smoke + merge.
+**Status:** ✅ merged 2026-07-07 (frontend-only, no backend touch) — PR #183, squash `a72bde8`. Cross-agent (codex) review + a fresh pr-reviewer pass both clean (3 codex findings fixed pre-merge: hardcoded "FAQ" English copy, a defensive gap in FAQ authored-state checks, one unused import). Owed: Daniel's live smoke + the miyagiprints dress-up (Story 3.3 checklist above).
 
 ## Stories
 
