@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped — PR #173 merged to main (squash 8b1abb1), 2026-07-04; cross-agent review findings fixed pre-merge (f02403d). Owed: Daniel's click-through smoke + real-device contrast eyeball (sprint-1.md). S2/S3 open.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped — PR #173 merged to main (squash 8b1abb1), 2026-07-04; cross-agent review findings fixed pre-merge (f02403d). Sprint 2 shipped — backend PR #65 (squash 667c607) + frontend PR #182 (squash ed905d7), 2026-07-07; 6 real bugs found (cross-review + fresh reviewer) and fixed pre-merge, both PRs independently re-verified safe-to-merge. Owed: Daniel's click-through smoke + real-device contrast eyeball (sprint-1.md), and the real-domain hostname-branch smoke + backend Cloud Run deploy confirmation (sprint-2.md). S3 open.
 slug: own-shop-premium-presentation
 ---
 
