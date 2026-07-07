@@ -2,9 +2,11 @@
 
 > Epic: [profit-analyzer](README.md) · Risk: **HIGH** (US-5 live price writes; Daniel merges) ·
 > Apply-price respects the existing `ml.publish_enabled` rail.
-> **Status: BUILT 2026-07-06** — backend `f23ffca`, frontend `6157f02` (branch `feat/profit-analyzer-s2`
-> in both repos, PR not yet opened). Deterministic gate green in both repos (below). Live money-path
-> smoke and the flag-flip decision remain owed to Daniel per the plan.
+> **Status: BUILT 2026-07-06** — backend PR [#62](https://github.com/danybgoode/medusa-bonsai-backend/pull/62)
+> @ `b3ea8d7`, frontend PR [#180](https://github.com/danybgoode/miyagisanchezcommerce/pull/180) @ `dac4e71`
+> (both `feat/profit-analyzer-s2`, ready for review). Deterministic gate green in both repos; a real
+> local Postgres smoke validated the US-5 write path (below) — the ML-sandbox leg + a Clerk-authenticated
+> browser click-through remain owed to Daniel.
 
 ## Stories
 
@@ -75,11 +77,39 @@ frontend `99dc2bc` (classifiers) + `6157f02` (rendering).
     (`e2e/not-found-shape.spec.ts` — a junk short-link 404 check; `git diff origin/main..HEAD` touches
     neither `middleware.ts` nor that spec, so this is a pre-existing flake, not a regression); the design-
     token raw-hex guard (`e2e/design-token-foundation.spec.ts`) passes clean on the new UI.
-- **Owed to Daniel:** the live apply-price money path (Miyagi + ML both change, ideally against the ML
-  sandbox), and confirming `ops.profit_enabled` + `ml.publish_enabled` still read correctly for these new
-  surfaces (both flags already exist and are live from Sprint 1 / mercadolibre-sync — this is a
-  confirmation, not a fresh flip). No local DB/Medusa instance was available in the build session to run a
-  live API-level smoke against real data, so that step could not be self-served this sprint.
+- **Cross-agent review (codex, both PRs):** advisory findings addressed —
+  fee-estimate cache-key nit (backend `b3ea8d7`); Apply now re-verifies the fee rate at the ACTUAL
+  candidate price right before confirming (not just the cached rate from the row's average price),
+  `apply()` checks `res.ok` explicitly, and `classifyUnderpriced` rounds cost-per-unit (frontend
+  `dac4e71`). Two "blocking" findings assessed as not applicable to this PR: the two new
+  `app/api/sell/profit/*` routes are Clerk-authed proxies to the Medusa Store API — the same shape as
+  every existing `/api/sell/*` route in the app (AGENTS rule #1 prohibits custom Supabase/business logic
+  for commerce, not a thin proxy to Medusa); and the UCP/MCP capability manifest was not extended for
+  this seller-only repricing action — a real architectural question (rule #3), but out of this sprint's
+  approved scope (the epic's US-4/5/6 stories never mention MCP), left as a named follow-up rather than a
+  silent scope expansion.
+- **Real local smoke, this session (after cross-review fixes):** provisioned a throwaway local Postgres
+  (Homebrew `postgresql@14`, `initdb`+`pg_ctl`, torn down after) and booted the actual backend
+  (`medusa develop`) against it. `medusa db:migrate` applied ALL migrations cleanly on a fresh DB,
+  including this epic's `financial_event` (Sprint 1) and no new migration needed for Sprint 2. Confirmed
+  live: (1) all three `/store/sellers/me/profit*` routes 404 by default with no Supabase credentials
+  configured (`ops.profit_enabled` fails open to `false` — exactly the documented contract, and the exact
+  gate Sprint 1's launch bug was about); (2) calling `updateSellerProduct()` directly (the same function
+  `POST /store/sellers/me/profit/apply-price` calls) against a real seeded product moved its price
+  10000→15000 centavos, confirmed by re-reading the row; (3) `recordSyncEvent`/`listSyncEvents` round-
+  tripped a real `price_apply` event with `{variant_id, old_price_cents, new_price_cents,
+  target_margin_pct}` metadata — the NEW activity-log kind is accepted with zero DB changes needed (kind
+  is `text`, not an enum); (4) `getFeeEstimateForProduct` gracefully returned `null` (no crash) for a
+  product with no ML link, exactly the designed degrade path. **Not testable locally** (no real Clerk or
+  Mercado Libre sandbox credentials in this environment): the actual Clerk-authenticated HTTP round-trip
+  through the two new frontend/backend proxy routes, and any real Mercado Libre API call (fee lookup or
+  price push) — both remain genuinely owed to Daniel, narrower than before this local smoke.
+- **Owed to Daniel:** the live apply-price money path end-to-end (Miyagi + ML both change, against the ML
+  sandbox, through the real Clerk-authed UI) — the Miyagi-side write itself is now locally proven, so this
+  is specifically the ML-integration leg + the real browser click-through; and confirming
+  `ops.profit_enabled` + `ml.publish_enabled` still read correctly for these new surfaces in prod (both
+  flags already exist and are live from Sprint 1 / mercadolibre-sync — this is a confirmation, not a
+  fresh flip).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 
