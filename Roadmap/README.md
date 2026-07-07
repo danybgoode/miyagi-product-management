@@ -83,6 +83,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ Gem → claimable shop loop (supply import + claim, fixed end-to-end) — a curated hidden gem imported through `/supply` becomes a **real Medusa-backed unclaimed shop** that renders live at `/s/[slug]` ("Sin reclamar" badge + claim CTA), its listing fully populated (title, description, location, category, type, price, photo) and surfaced in marketplace search; an admin/agent can host listing photos with **no Clerk login** (`POST /api/supply/upload`); and the claim email flow now genuinely transfers the shop (Medusa seller + mirror) to the claimer — magazine-ready: stable shop URL for a QR + auto-minted `mschz.org` short link
 - ✅ Unclaimed shops are contact-only & delete actually deletes (seller bug sweep) — an unclaimed (gem) listing's PDP suppresses Buy/Offer/Cart/Bundle and shows direct-contact + "Reclama esta tienda" instead, with the offer/cart/checkout server-gated on one shared `isShopClaimed()` (no more silent-fail offers); and deleting a listing is a **native Medusa soft-delete** — gone from the manage grid, catalog, and edit, with order history intact (no more "Borrador" / edit-404 mismatch). Plus legible accent buttons + a mobile-responsive manage sub-nav
 - ✅ **Mercado Libre sync** — a seller connects their ML account (OAuth, encrypted tokens, auto-refresh + re-auth recovery), **imports** their ML catalog into Miyagi through the existing supply pipeline, **publishes** Miyagi listings out to ML (explicit "Sincronizar"; the platform never guesses a category), and keeps **stock in sync both ways** (the oversell-safe core, behind a fail-closed kill-switch) — with an activity log on the status page. Obtainable **self-serve as a paid SKU ($299/año o $30/mes)**, promoter-closeable, admin-grantable *(live purchase smokes owed to Daniel)*
+- ✅ **Profit Analyzer ("Ganancias")** — an append-only per-sale financial ledger (revenue − ML fee − shipping − COGS, snapshotted at sale time, native + Mercado Libre orders both) drives a margin dashboard at `/shop/manage/profit`: per-order and per-SKU realized margin, "margin killer" and underpriced-SKU call-outs, and a **solve-for-price suggester** (target a margin, see the price ML's own fee actually requires) with **one-click Apply** — a confirmed price change that updates Miyagi and pushes to the linked ML listing, logged to the activity feed. COGS lives on the variant (bulk-CSV settable). Behind `ops.profit_enabled` *(live money-path apply-price smoke against a real ML sandbox owed to Daniel)*
 
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
@@ -147,6 +148,26 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-06 — Profit Analyzer SHIPPED (2 sprints, HIGH — Epic B of the Merchant Ops PRD).** True
+  SKU margins after fees/COGS/shipping, plus a price suggester. **S1** (backend
+  [#61](https://github.com/danybgoode/medusa-bonsai-backend/pull/61) `9967adb`, frontend
+  [#178](https://github.com/danybgoode/miyagisanchezcommerce/pull/178) `86a06ea`, same-day fix
+  [#179](https://github.com/danybgoode/miyagisanchezcommerce/pull/179) `45a10e6`) landed COGS on the
+  variant, an append-only `financial_event` ledger (Postgres-trigger-enforced, native + ML orders
+  both), and the dark `/shop/manage/profit` dashboard — caught + fixed a real launch bug same-day
+  (a flag-gated *page* baked its build-time flag value into a static prerender; needs
+  `dynamic = 'force-dynamic'`, now a cross-cutting LEARNINGS entry). **S2** (backend
+  [#62](https://github.com/danybgoode/medusa-bonsai-backend/pull/62) `8c53702`, frontend
+  [#180](https://github.com/danybgoode/miyagisanchezcommerce/pull/180) `38f8944`) added the fee
+  estimator (ML's own `listing_prices` rate, cached), the corrected solve-for-price formula, one-click
+  **Apply** (writes Miyagi + the linked ML listing via the existing publish parity, activity-logged,
+  ML rejections surfaced honestly), and margin-killer/underpriced insight call-outs. A cross-agent
+  (codex) review caught a real staleness bug before merge — Apply now re-verifies the fee rate at the
+  actual candidate price, not just the cached row-average rate. A real local Postgres smoke (this
+  session's own throwaway instance, no shared infra touched) proved the price-write + activity-log
+  path end-to-end. Owed: the live ML-sandbox money-path smoke + a Clerk-authenticated browser
+  click-through (both need real credentials this build session didn't have).
 
 - **2026-07-03 — Zine editing central SHIPPED (3 sprints, mixed LOW→HIGH).** The standalone zine
   studio (`apps/zine`) becomes the marketplace's real print-layout editor, retiring the duplicate

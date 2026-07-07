@@ -10,11 +10,10 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 10/13 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
-- [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 3/6 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 4/10 stories
 
 ## 📋 Ready to build (scaffolded, not started) (9)
@@ -29,7 +28,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (79)
+## ✅ Shipped (80)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
@@ -46,6 +45,7 @@
 - [Configurable & Personalized Products](../../03-selling-and-shops/configurable-personalized-products/README.md) — 03 Selling & Shops · 10/10 stories · risk: High
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 9/9 stories
 - [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 15/15 stories
+- [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10](../../03-selling-and-shops/seller-unclaimed-bug-sweep/README.md) — 03 Selling & Shops · 7/7 stories · risk: High
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 4/4 stories
 - [Seller Agent Operations](../../03-selling-and-shops/seller-agent-operations/README.md) — 03 Selling & Shops · 6/6 stories

@@ -466,6 +466,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   in before printing the upbeat "nothing happened" framing — an unavailable read is a different fact from
   a genuinely quiet one, and a fixture test catches the conflation before it reaches a real message.
   *(2026-07-02, ops-routines-reporting S3 — `scripts/weekly-recap.mjs`.)*
+- **When the checked-out backend `.env`'s DATABASE_URL turns out to be stale/read-only/wrong (e.g. the
+  RETIRED pre-Cloud-SQL Neon instance), provision a fresh THROWAWAY local Postgres instead of giving up
+  on a live smoke.** Homebrew `postgresql@14`'s `initdb` + `pg_ctl -o "-p <port> -k /tmp"` (no Docker
+  needed) stands up a real cluster in seconds; `medusa db:migrate` against it applies every migration
+  from scratch (a strong test in its own right — confirms a new migration is genuinely clean, not just
+  additive on an already-migrated DB); a tiny `medusa exec` script can seed a publishable API key + a
+  throwaway seller/product when no seed script covers it. When real Clerk/third-party (ML, Stripe)
+  credentials aren't available to fake a full authenticated HTTP round-trip, call the shared function
+  the route itself calls (e.g. `updateSellerProduct()`) directly via another `medusa exec` script —
+  this proves the real write path against a real database, which pure unit tests (mocking nothing,
+  since they're pure functions) don't. Tear the whole cluster down after (`pg_ctl stop` + `rm -rf` the
+  data dir); never point ANY write at the shared/retired instance to "test" against it — it's read-only
+  by design precisely to prevent that. *(2026-07-06, profit-analyzer S2 — validated the Apply-price
+  write path + the new `price_apply` activity-log kind this way.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
@@ -812,6 +826,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   webhook's legacy branch and issuing **0 tickets even at qty 1**. Re-scoped to surface parity
   (echo/clamp quantity) with issuance deferred, not silently built on sand. *(2026-06-22,
   events-quantity-selector S1.3.)*
+- **An "is there room to push this further" classifier must compare against a reference STRICTLY on the
+  far side of its own gate, or the math can never fire.** If the gate is "already at/above margin X" (a
+  floor), the headroom check's reference target must be > X, never ≤ X — when the reference price is
+  computed by a formula that's monotonic in the target (higher target margin ⇒ higher achievable price,
+  same cost/fee), comparing against a target at-or-below the floor a row already clears means the
+  reference price can never exceed the row's current price, so "is there headroom" is vacuously false
+  100% of the time. Caught by writing the boundary unit tests for a NEW "underpriced" classifier before
+  trusting its numbers — the first draft used a target margin of 25% while the gate itself required
+  realized margin ≥ 40%. *(2026-07-06, profit-analyzer S2 — `classifyUnderpriced` in `lib/profit.ts`.)*
+- **A cache keyed on a stable "rate" dimension still needs re-validation at the actual reference-input
+  right before a money-affecting write, not just at whatever input triggered the cache fill.** Caching a
+  fee RATE (percentage + fixed fee) by category/listing-type is fine for live/interactive UI feedback
+  (a margin slider recomputing locally, no network call per tick) — but if the write that eventually
+  happens targets a price far from the one the cache was warmed with, and the underlying rate can
+  legitimately vary by price bracket, the cached number can silently mismatch the price actually being
+  written. Fix: re-fetch fresh, ONE more time, at the specific candidate value, in the moment right
+  before confirming the write — never inherit a cached estimate straight into a mutating action. Caught
+  by a cross-agent (codex) review, not the unit suite (which only tested the pure math, not the
+  cache-freshness assumption). *(2026-07-06, profit-analyzer S2 — the fee-estimate cache + `PricingCard`'s
+  Apply flow.)*
 
 ## Medusa gotchas
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**

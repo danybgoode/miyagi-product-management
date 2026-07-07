@@ -2,9 +2,10 @@
 
 > Epic: [profit-analyzer](README.md) · Risk: **HIGH** (US-5 live price writes; Daniel merges) ·
 > Apply-price respects the existing `ml.publish_enabled` rail.
-> **Status: BUILT 2026-07-06** — backend PR [#62](https://github.com/danybgoode/medusa-bonsai-backend/pull/62)
-> @ `b3ea8d7`, frontend PR [#180](https://github.com/danybgoode/miyagisanchezcommerce/pull/180) @ `dac4e71`
-> (both `feat/profit-analyzer-s2`, ready for review). Deterministic gate green in both repos; a real
+> **Status: ✅ MERGED 2026-07-06** — Daniel authorized merge-on-green. Backend PR
+> [#62](https://github.com/danybgoode/medusa-bonsai-backend/pull/62) → `8c53702`, frontend PR
+> [#180](https://github.com/danybgoode/miyagisanchezcommerce/pull/180) → `38f8944` (branches deleted,
+> both `feat/profit-analyzer-s2`). Deterministic gate green in both repos; a real
 > local Postgres smoke validated the US-5 write path (below) — the ML-sandbox leg + a Clerk-authenticated
 > browser click-through remain owed to Daniel.
 
@@ -23,7 +24,7 @@ listing-type TTL cache (`listing-price-cache.ts`, mirrors `flags-cache.ts`'s sha
 `getFeeRate`/`getFeeEstimateForProduct` (resolves the category from the product's existing ML link, so
 callers never need an ML category id) + `GET /store/sellers/me/profit/fee-estimate?product_id=&price_cents=`.
 Pure `solveForPrice()` + degenerate-case handling in `lib/profit.ts`, pinned by
-`e2e/profit-pricing.spec.ts` (7 specs). Commits: backend `549394a`/`7aacd06`; frontend `99dc2bc`.
+`e2e/profit-pricing.spec.ts` (7 specs). Squash-merged into backend `8c53702` / frontend `38f8944`.
 
 ### US-5 · Target-margin control + one-click Apply — high ✅
 **As a** seller, **I want** to set my target margin, see the suggested price, and apply it with one
@@ -42,7 +43,7 @@ block) instead of a generic failure. Added `ml.publish_enabled` to the backend's
 (previously frontend-only) since this route calls the ML write in-process. Frontend: `PricingCard.tsx`
 (slider + one cached fee-rate fetch + local `solveForPrice` + confirm dialog copying `DeleteDialog`'s
 shape) rendered per addressable SKU on `/shop/manage/profit`; the two proxy routes
-(`app/api/sell/profit/{fee-estimate,apply-price}`). Commits: backend `557d1b7`/`f23ffca`; frontend `6157f02`.
+(`app/api/sell/profit/{fee-estimate,apply-price}`). Squash-merged into backend `8c53702` / frontend `38f8944`.
 **Known approximation (owed follow-up, not a blocker):** the "current price" shown is the SKU's realized
 average unit price (`revenue_cents / units`), not a live catalog-price read — the ledger has no such read
 today. Labeled honestly in the UI ("precio actual (promedio reciente)"). Also: the ML link's `listing_type`
@@ -63,7 +64,7 @@ underpriced = realized margin ≥ 40% **and** current price > 10% below the pric
 target can never show headroom, since the achievable-price formula is monotonic in margin%; caught and
 fixed during this sprint's own unit-testing, not shipped with the bug). Rows with any pending piece are
 excluded from both buckets. Rendered as two call-out sections above the per-SKU pricing cards. Commit:
-frontend `99dc2bc` (classifiers) + `6157f02` (rendering).
+squash-merged into frontend `38f8944` (classifiers + rendering).
 
 ## Sprint QA
 
@@ -77,11 +78,11 @@ frontend `99dc2bc` (classifiers) + `6157f02` (rendering).
     (`e2e/not-found-shape.spec.ts` — a junk short-link 404 check; `git diff origin/main..HEAD` touches
     neither `middleware.ts` nor that spec, so this is a pre-existing flake, not a regression); the design-
     token raw-hex guard (`e2e/design-token-foundation.spec.ts`) passes clean on the new UI.
-- **Cross-agent review (codex, both PRs):** advisory findings addressed —
-  fee-estimate cache-key nit (backend `b3ea8d7`); Apply now re-verifies the fee rate at the ACTUAL
-  candidate price right before confirming (not just the cached rate from the row's average price),
-  `apply()` checks `res.ok` explicitly, and `classifyUnderpriced` rounds cost-per-unit (frontend
-  `dac4e71`). Two "blocking" findings assessed as not applicable to this PR: the two new
+- **Cross-agent review (codex, both PRs):** advisory findings addressed — the fee-estimate cache-key nit;
+  Apply now re-verifies the fee rate at the ACTUAL candidate price right before confirming (not just the
+  cached rate from the row's average price); `apply()` checks `res.ok` explicitly; and
+  `classifyUnderpriced` rounds cost-per-unit (all squash-merged into the final commits above). Two
+  "blocking" findings assessed as not applicable to this PR: the two new
   `app/api/sell/profit/*` routes are Clerk-authed proxies to the Medusa Store API — the same shape as
   every existing `/api/sell/*` route in the app (AGENTS rule #1 prohibits custom Supabase/business logic
   for commerce, not a thin proxy to Medusa); and the UCP/MCP capability manifest was not extended for

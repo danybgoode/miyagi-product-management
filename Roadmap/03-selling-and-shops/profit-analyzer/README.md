@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: profit-analyzer
 archetype: Builder
 ---
@@ -8,9 +8,14 @@ archetype: Builder
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/profit-analyzer.md`](../../00-ideas/2.%20readyforscope/profit-analyzer.md)
 > (Epic B of the Merchant Ops PRD; approved by Daniel 2026-07-02).
-> **Status: SCAFFOLDED — not started. Builds AFTER [`ml-orders-native`](../ml-orders-native/README.md)
-> ships** (Epic A lands the realized per-order fee/shipping data this epic's ledger consumes).
-> Risk **HIGH** (financial data model + live price writes). Daniel merges HIGH stories.
+> **Status: ✅ SHIPPED 2026-07-06 — both sprints merged.** S1: backend
+> [#61](https://github.com/danybgoode/medusa-bonsai-backend/pull/61) `9967adb`, frontend
+> [#178](https://github.com/danybgoode/miyagisanchezcommerce/pull/178) `86a06ea`. S2: backend
+> [#62](https://github.com/danybgoode/medusa-bonsai-backend/pull/62) `8c53702`, frontend
+> [#180](https://github.com/danybgoode/miyagisanchezcommerce/pull/180) `38f8944`.
+> Risk was **HIGH** (financial data model + live price writes) — Daniel merged both sprints.
+> See [RETROSPECTIVE.md](RETROSPECTIVE.md). Owed: live ML-sandbox money-path smoke + S1's remaining
+> walkthrough steps (both named in the respective sprint docs).
 
 **Tagline:** *Sabe cuánto ganas de verdad en cada venta — y a qué precio deberías vender.*
 
@@ -78,17 +83,21 @@ rewrite history (tested). Announce shared-surface touches.
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (COGS→sale→margin and apply-price live walkthroughs owed to Daniel).
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs / real ML sandbox).
-- [ ] This README marked ✅; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated (profit analytics + price suggestions).
-- [ ] Team memory + `MEMORY.md` updated (ledger module, suggester seam, flags).
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] Kill-switch verified: `ops.profit_enabled` exists, default OFF, per scope doc polarity.
-- [ ] Feature branch deleted; scope-doc frontmatter `status: shipped`.
+- [x] All sprints merged to `main` (gaps stated): COGS→sale→margin (S1) and the live apply-price money
+      path against a real ML sandbox (S2) remain **owed to Daniel** — a real local-Postgres smoke this
+      session proved the Apply write path against a live database, short of the ML-sandbox leg itself.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real prod URLs once deployed).
+- [x] This README marked ✅; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated (profit analytics + price suggestions).
+- [x] Team memory + `MEMORY.md` updated (ledger module, suggester seam, flags).
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
+- [x] Kill-switch verified: `ops.profit_enabled` exists, flipped ON in prod by Daniel 2026-07-06 (S1);
+      `ml.publish_enabled` (reused from mercadolibre-sync) gates Apply's ML push — both live, no new flag
+      needed for S2.
+- [x] Feature branches deleted (both repos, both sprints); scope-doc frontmatter `status: shipped`.
 
 ## Sprints
 
-- [sprint-1.md](sprint-1.md) — Data foundation: COGS + append-only ledger + margin dashboard (dark).
-- [sprint-2.md](sprint-2.md) — Intelligence: fee estimator, solve-for-price suggester, one-click apply, insights.
+- [sprint-1.md](sprint-1.md) — ✅ Data foundation: COGS + append-only ledger + margin dashboard (dark).
+- [sprint-2.md](sprint-2.md) — ✅ Intelligence: fee estimator, solve-for-price suggester, one-click apply, insights.
