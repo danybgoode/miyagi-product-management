@@ -67,4 +67,82 @@ as its input. On a "No-go", Epic B keeps `onlyCoordinated=false` and only fixes 
 copy + quote-failure recovery.
 
 ## Decision
-_(to be filled by the investigation — pending.)_
+
+**Verdict: GO — with constraints.** Investigated on backend + frontend `origin/main` 2026-07-07.
+Model: **per-listing `delivery_mode` on Medusa product metadata**. Payment coupling: **manual only,
+already enforced in code**. This unblocks Epic B's B.5.
+
+### Why Go (Q1 — demand + model)
+The capability is genuinely wanted and already **half-built** — this is a policy + wiring decision, not
+a greenfield build.
+- **Who needs it (per-listing, not per-shop):** services (repair, haircut, install), rentals,
+  bulky/local goods handed off in person (fridge, furniture) where the seller wants **no carrier and no
+  named pickup spot**, perishables, and in-person deals. Demand is inferred from catalog composition +
+  the fact that `listing_type` already carries `service`/`rental` as first-class types — not from hard
+  usage data (a spike-honest gap; B.5 grooming can sample the live catalog).
+- **Per-listing wins decisively.** A single shop routinely mixes shippable goods with a local-only item,
+  so a per-shop toggle would be surprising and wrong. `listing_type` + `is_digital` **already flow
+  per-listing** as query params through the whole stack (PDP → `checkout/page.tsx` →
+  `app/api/checkout/options` → backend `checkout-options` → `start-checkout`); a new
+  `delivery_mode: 'carrier' | 'arranged' | 'both'` on **product metadata** follows that exact grain and
+  is the Medusa-first home (the route already reads product/seller metadata). A per-shop *default* is a
+  post-v1 nicety, not v1.
+
+### Blast radius (Q2 — every consumer of `checkout-options`, traced on `origin/main`)
+The `coord` delivery primitive **already exists end-to-end** — seeded shipping option
+`miyagi-entrega-acordada` (`_utils/fulfillment.ts:18`), `OPTION_KEY_BY_METHOD` maps
+`coord`/`service`/`rental`/`none`→`coord` (`start-checkout/route.ts:33-40`), and the FE already renders
+`only_coordinated` copy (`CheckoutExperience.tsx:631`) + an S3.2 coordinated-fallback selector. What's
+missing is only the **intent signal** and the branch that emits it. Consumers that must change:
+1. **`backend .../checkout-options/route.ts`** — replace the hardcoded `const onlyCoordinated = false`
+   (:160) with a read of the new per-listing `delivery_mode` (passed like `is_digital`). When
+   `arranged`: **push a `coord` delivery method** (today *nothing* ever pushes `coord` — the `DeliveryMethod`
+   type allows it but no code path creates it), suppress the carrier `shipping` method, and set
+   `onlyCoordinated = true` (which already filters the instant/card payments, :185-186 & :217). This also
+   removes the false "delivery not configured" dead-end for an *intentional* arranged listing.
+2. **`app/api/checkout/options/route.ts`** (proxy) + **`app/(shell)/checkout/page.tsx`** — derive
+   `delivery_mode` from the listing metadata and pass it through as a new query param.
+3. **`CheckoutExperience.tsx`** — render the `coord` method as a **first-class** delivery option for an
+   arranged listing (today `coord` only appears via the S3.2 quote-failure *fallback*, `coordinatedActive`);
+   the `only_coordinated` empty-payment copy (:631) becomes reachable for the first time. It already sends
+   `fulfillment_method: 'coord'` on that path (:811), so the money path is wired.
+4. **`start-checkout/route.ts`** — the card+coordinated **422 guard already exists and is correct**
+   (:237-247, trips on `none`/`coord` + non-manual). ⚠️ **Latent inconsistency to fold into B.5:**
+   `service`/`rental` listings send `fulfillment_method:'service'|'rental'`, which the guard does **not**
+   catch, so they can currently be **card-paid** even though `OPTION_KEY_BY_METHOD` routes them to `coord`
+   fulfillment. If `delivery_mode:'arranged'` is the new canonical arranged signal, either map
+   service/rental → arranged, or extend the guard — decide in grooming.
+5. **`app/api/ucp/checkout-session/route.ts` (agent/UCP)** — `fetchBackendPaymentMethods` reads
+   `checkout-options` but **ignores `only_coordinated` and `delivery_methods` entirely**. For an arranged
+   listing the backend already drops the instant methods, so `mpAvailable`/`stripeAvailable` compute
+   `false` and the agent correctly sees only `bank_transfer`/`cash` — **payment degrades gracefully with
+   no change.** But the agent gets **no delivery signal**, so it could still imply shipping. v1 must add a
+   small `delivery: { arranged: true }` hint to the UCP session so an agent presents "coordina la entrega
+   con el vendedor" instead of a carrier flow. (Agent-initiated *issuance* stays deferred — the UCP
+   session is surface-parity only, per its own `quantity` note.)
+6. **Recovery copy** — the "coordina con el vendedor" empty-state (`CheckoutExperience.tsx:631` and the
+   `delivery_methods.length === 0` notice :395-408) already exists; for arranged-only it must read as the
+   *intended* state, not a misconfiguration.
+7. **Seller listing editor + publish gate (net-new, out of spike scope):** a per-listing toggle to declare
+   `delivery_mode`, and relaxing the publish gate so "no carrier + no pickup" is a **valid** published
+   state when `arranged` (today it's treated as misconfigured).
+
+### Payment coupling (Q4 — confirmed, already coded)
+Arranged-only ⇒ **manual payment only (SPEI / efectivo)**; card is rejected. This is already the intended
+and *enforced* pairing: `start-checkout/route.ts:237-247` 422s on `coord`/`none` + non-manual, and
+`lib/checkout-fallback.ts` (S3.2) steers the buyer to a manual method when coordinated is active. **v1
+keeps this coupling — no online pre-pay for arranged listings** (no card capture before an in-person
+handoff). Online pre-pay for arranged is explicitly out of scope.
+
+### v1 boundary
+- **In:** per-listing `delivery_mode` on product metadata (values `carrier` | `arranged` | `both`;
+  **default = today's behavior**, so every existing listing is unaffected — backwards-compatible);
+  `checkout-options` emits `coord` + `onlyCoordinated` for `arranged`; web checkout renders it first-class;
+  UCP session carries a delivery hint; the service/rental payment-guard inconsistency resolved; publish
+  gate accepts arranged as valid; manual-only payment (already coded).
+- **Out (post-v1):** per-shop default `delivery_mode`; any online pre-pay for arranged listings;
+  agent-initiated arranged-order *issuance* (Medusa cart open from UCP); `both` may ship in v1 only if the
+  multi-method compose in `checkout-options` makes it near-free — otherwise defer.
+
+_Investigated by Claude (Opus 4.8), 2026-07-07, against backend + frontend `origin/main`. No code, no
+branch — on this Go, Epic B's B.5 gets deep-groomed with this decision as input._
