@@ -1,14 +1,14 @@
 ---
 title: "Spike — arranged-only delivery policy (#3c Spike 0)"
 slug: spike-arranged-only-delivery
-status: queued
+status: shipped
 area: "04"
 type: spike
 priority: wave-3
 risk: high
 epic: null
 build_order: "#3c-S0"
-updated: 2026-07-06
+updated: 2026-07-07
 ---
 
 # Spike — Arranged-only delivery policy (BUILD-ORDER #3c · Spike 0)
