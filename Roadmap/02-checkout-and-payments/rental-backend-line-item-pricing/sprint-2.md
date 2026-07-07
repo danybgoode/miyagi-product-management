@@ -5,6 +5,16 @@
 > Frontend sprint (`apps/miyagisanchez`). Requires Sprint 1 live on Cloud Run. Both stories are
 > flag-gated (`checkout.rental_pricing_enabled`) and degrade to today's AskSeller coordination.
 
+> **↩ Handoff from Sprint 1 (order-surface rendering).** S1.3 shipped the **backend half** only —
+> the order normalizer (`normalizeMedusaOrder`) now exposes `rental_booking` (raw block) +
+> `rental_booking_state` on every order read (null / `'none'` for non-rental). The **frontend
+> rendering** of those five surfaces — buyer order page, seller order screen, both confirmation
+> emails, and the in-chat transaction ledger — was deliberately moved into this sprint (it lives in
+> `apps/miyagisanchez`, so it couldn't ship in the backend-only S1). Reuse `lib/rental-pricing.ts`
+> (`formatRentalCents`, `rentalUnitsLabel`, `ratePeriodLabel`) for the breakdown and the
+> pickup-appointment rendering precedent for the block. The step-2 walkthrough below already asserts
+> these surfaces render, so wire them as part of 2.1/2.2 (or add a Story 2.3 if scoped separately).
+
 ## Stories
 
 ### Story 2.1 — `/checkout` rental mode

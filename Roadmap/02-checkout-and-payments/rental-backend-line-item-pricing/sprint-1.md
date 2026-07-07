@@ -1,14 +1,31 @@
 # Rental line-item pricing — Sprint 1: the backend charge rail
 
-**Status:** ⬜ not started
+**Status:** ✅ Built — awaiting Daniel merge (HIGH-risk). Branch `feat/rental-backend-line-item-pricing`.
+Commits: 1.1 `4a797a1` · 1.2 `3a0eb8c` · 1.3 `31e9bbe`. Gate green (`medusa build` → `tsc --noEmit`
+→ `test:unit`, 238 tests). Post-merge prod API smoke + flag flip owed (below).
 
 > Backend-only sprint (`apps/backend`). Backend-first deploy: merges + finishes rolling on Cloud Run
 > (~12 min, no per-branch preview) before Sprint 2 starts. Everything lands behind
 > `checkout.rental_pricing_enabled` (default `false`, created disabled), so this sprint is dark in prod.
 
+## Build notes / deltas from the scaffold
+- **Unit specs are Jest, not `node:test`.** The scaffold said "node:test"; the backend's actual
+  convention is Jest (`*.unit.spec.ts` in `__tests__/`, run by `npm run test:unit`). Followed the
+  repo's real convention (WoW: docs track code). Three new specs: `rental-pricing` (17),
+  `rental-checkout` incl. tamper (10), `rental-booking` (6).
+- **Story 1.3 is the backend half only** (confirmed with Daniel). The order normalizer now exposes
+  `rental_booking` + `rental_booking_state`; the **frontend rendering** of the 5 order surfaces moved
+  to Sprint 2 (they live in `apps/miyagisanchez` — a backend-only sprint can't ship them). Handoff
+  note added to `sprint-2.md`.
+- **Rate source:** the per-period rate is the cart line item's `unit_price` (already integer cents) —
+  no product-price fetch needed. Only the **deposit** (`metadata.attrs.deposit`, in **pesos**) is
+  converted to cents, at one seam (`readDepositCents`).
+- **Rental-listing gate:** `loadProductForCheckout` was widened to fetch `type.value`; the branch
+  requires the resolved listing type (`type.value ?? metadata.listing_type`) to be `'rental'`.
+
 ## Stories
 
-### Story 1.1 — Backend pure pricing seam + unit specs
+### Story 1.1 — Backend pure pricing seam + unit specs — ✅ `4a797a1`
 **As a** developer (and every later story), **I want** the rental math to exist in the backend as
 one pure, unit-tested module — ported from `apps/miyagisanchez/lib/rental-pricing.ts`, including
 the **pesos→cents** normalization for `metadata.attrs.deposit` — **so that** the charged total is
@@ -21,7 +38,7 @@ pesos→cents edge cases (string values, decimals, negatives, absent). Guard `ma
 **Risk:** LOW
 **QA:** pure-logic unit specs in the backend CI gate (`medusa build` → `tsc` → `test:unit`).
 
-### Story 1.2 — `start-checkout` rental branch: dates in, server-computed total charged
+### Story 1.2 — `start-checkout` rental branch: dates in, server-computed total charged — ✅ `3a0eb8c`
 **As a** buyer of a rental, **I want** the checkout charge to be exactly nights × rate + deposit
 for my chosen dates, **so that** what the PDP showed is what I pay — on Stripe, MercadoPago, or
 Pago directo alike.
@@ -46,7 +63,7 @@ Pago directo alike.
 post-merge prod API smoke (flag still OFF: assert the 422 shape; flag-ON charge smoke happens at
 epic activation) — stated explicitly in the PR per WAYS-OF-WORKING (backend has no preview).
 
-### Story 1.3 — Order surfaces: dates + itemized deposit everywhere the order shows
+### Story 1.3 — Order surfaces: expose rental_booking on the order read (backend half) — ✅ `31e9bbe`
 **As a** rental seller (and buyer), **I want** the order to show the booked dates and the breakdown
 (noches × tarifa · depósito reembolsable · total), **so that** confirming — or refunding — needs no
 arithmetic in chat.
@@ -64,7 +81,37 @@ deposit line; regression spec that a non-rental order payload is unchanged.
 - **post-merge:** agent-owned prod API smoke (422 shape, flag OFF); route-deployed probe. Browser/money smoke N/A this sprint (feature dark).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-*(placeholder — written by the building agent before the sprint is called done; real prod URLs;
-flag-OFF assertions only, since the feature ships dark)*
+
+Run **after the backend PR merges and Cloud Run finishes rolling** (`SUCCESS` build ≠ live revision —
+confirm the new revision is serving first). The feature is **dark** (`checkout.rental_pricing_enabled`
+absent → default `false`), so every assertion here is a **flag-OFF** assertion. Prod backend base:
+`https://medusa-web-91083034475.us-east4.run.app`. Store calls need the prod publishable key header
+`x-publishable-api-key: <MEDUSA_PUBLISHABLE_KEY>` (same value the storefront uses).
+
+Agent-runnable (no login):
+
+1. **Deploy is live.** `curl -s https://medusa-web-91083034475.us-east4.run.app/health` → `200`/OK.
+   *Expected:* the new revision is serving.
+2. **Rental listings are unaffected (no regression).** `GET /store/sellers/<a-rental-seller-slug>/checkout-options?listing_type=rental`
+   (with the publishable-key header). *Expected:* the response still includes a delivery method
+   `{ id: 'rental', label: 'Renta', … }` — the deploy didn't disturb today's rental flow.
+3. **Dark-path 422 (the core flag-OFF assertion).** Create a cart with one rental listing's variant
+   (`POST /store/carts`, `POST /store/carts/:id/line-items`), then
+   `POST /store/carts/:id/start-checkout` with body
+   `{"provider":"manual","fulfillment_method":"rental","rental":{"check_in":"2026-08-01","check_out":"2026-08-04"}}`.
+   *Expected:* **HTTP 422** with `{"code":"RENTAL_PRICING_UNAVAILABLE"}` and an es-MX message telling
+   the buyer to coordinate with the seller. (Proves the branch is wired but dark — no charge is created.)
+4. **Tamper is inert while dark.** Repeat step 3 adding `"offer_amount_cents":1` to the body.
+   *Expected:* identical **422 `RENTAL_PRICING_UNAVAILABLE`** — the client amount changes nothing
+   (and, once the flag is ON, the tamper spec proves it still can't change the computed charge).
+5. **Non-rental checkout unchanged.** Start a normal (non-rental) checkout on a disposable test cart
+   as usual. *Expected:* behaves exactly as before this sprint (no `rental` key sent → the branch is
+   never entered).
+
+**Owed to Daniel — flag-ON money smoke (epic activation, NOT this sprint):** after the deliberate
+flag flip, a real dated booking must charge `nights × rate + deposit` on Stripe (test card) **and**
+Pago directo/SPEI, and the resulting order's `rental_booking` block must carry the itemized deposit.
+This is a real-money path an automated smoke can't cover — it happens at epic activation, once
+Sprints 2–3 are live and Daniel flips `checkout.rental_pricing_enabled` on.
 
 If any step fails, note the step number + what you saw — that's the bug report.
