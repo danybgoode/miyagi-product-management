@@ -1,6 +1,8 @@
 # Custom print products — Sprint 4: Lightweight proof, agent parity + reorder
 
-**Status:** 🚧 in progress — 4.1 built (frontend `c0c271f`/`d77ba62`/`e7107f2`, backend `6248ba5`/`a86ba15`)
+**Status:** 🚧 built, PRs open — all 3 stories complete, gate green, cross-reviewed.
+Frontend PR [#177](https://github.com/danybgoode/miyagisanchezcommerce/pull/177) (continues S3, now titled "Sprint 3+4") · backend PR [#63](https://github.com/danybgoode/medusa-bonsai-backend/pull/63).
+Owed to Daniel: real-device proof round-trip + one full MCP agent order with real artwork (see walkthrough below) + merge decision (draft PRs, MED risk banner on the S4-only stories).
 
 ## Stories
 
@@ -20,22 +22,27 @@
 **Risk:** LOW
 
 ## Sprint QA
-- **api spec(s):** 4.1 → proof-restatement builder spec (pure seam: size/qty/price always present); 4.2 → UCP catalog contract spec + MCP order-with-artwork spec; 4.3 → reorder payload spec
-- **browser smoke owed:** yes, to Daniel — proof round-trip on a real device (seller sends → buyer approves → ledger updates), and one full MCP agent order with an artwork URL
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge
+- **api specs (all green):**
+  - 4.1 → `src/lib/__tests__/proof-restatement.unit.spec.ts` (backend, 5 specs — `deriveProofRestatement` always derives size/qty/price from the order's own line item, never a caller)
+  - 4.2 → `e2e/mcp-configured-checkout.spec.ts` (frontend, 4 specs — `create_checkout`'s new schema + branching against the live MCP JSON-RPC endpoint)
+  - 4.3 → `e2e/reorder.spec.ts` (frontend, 10 specs — `resolveReorderTarget`/`buildReorderCheckoutPath`/`reorderPriceChangeNote`, the pure reorder seam)
+- **deterministic gate:** `tsc --noEmit` + `npm run build`/`medusa build` + Playwright `api` (frontend) / `test:unit` (backend) — all green, confirmed both locally and in CI against the real Vercel preview (PR #177: 1431 passed, 2 pre-existing/unrelated failures, 13 skipped; PR #63: 22 suites, 185 tests).
+- **cross-agent review (Codex, both PRs) caught real findings, all fixed:** frontend — two DB writes whose errors were silently swallowed (proof-approve, proof-send), `ProofApproveButton` not checking fetch status, and `medusa_order_id` staying pinned to a conversation's FIRST order (would show the wrong order's state once "Volver a pedir" creates a second order for the same listing). Backend — a seller-ownership check that was skippable entirely when an order's items had no resolvable `product_id` (auth bypass), now rejected outright.
+- **browser smoke owed:** yes, to Daniel — proof round-trip on a real device (seller sends → buyer approves → ledger updates), and one full MCP agent order with a real artwork URL. This local dev environment has no configurator product seeded, so only the tool's validation/branching paths — not a real successful checkout — could be verified here.
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+Env: preview (pre-merge) · https://miyagisanchez-git-feat-custom-print-c4b507-danybgoodes-projects.vercel.app
+Once merged, re-run against production · https://miyagisanchez.com
 
-1. As miyagiprints, open a paid configurator order in https://miyagisanchez.com/shop/manage/orders → "Enviar prueba" → attach an image.
-   → The conversation gets the proof message with size + quantity + price restated automatically.
-2. As the buyer (second browser), open the conversation → "Aprobar prueba".
-   → The order-ledger card in chat and the order screens (both sides) show "Prueba aprobada" within a reload.
-3. Connect a seller agent via the personal MCP URL (Configuración → Agentes) and ask it to read the sticker listing.
-   → The agent sees options, tiers, and the artwork requirement.
-4. (money/agent path) Have the agent place an order: 7.5cm × 25 + a hosted artwork URL, through MCP checkout.
-   → Order lands with the correct tier price and the artwork attached; seller sees it like any web order.
-5. As the buyer, open the fulfilled order → "Volver a pedir".
-   → Cart contains the same variant/qty/artwork; total matches current tiers.
+1. As miyagiprints, open a paid configurator order in `/shop/manage/orders` → "Enviar prueba" → attach an image.
+   → The conversation gets the proof message with size + quantity + price restated automatically; the order screen shows "Esperando aprobación".
+2. As the buyer (second browser/session), open the conversation → "Aprobar prueba".
+   → The proof bubble shows "✓ Aprobada"; the order-ledger card in chat and both order screens show "Prueba aprobada" within a reload.
+3. Connect a seller agent via the personal MCP URL (Configuración → Agentes) and ask it to read the sticker listing (`get_listing`).
+   → The agent's response spells out each variant's `variant_id` + tier prices, and the artwork requirement (required/formats/size cap) if the listing has one.
+4. (money/agent path) Have the agent place an order via `create_checkout` with `variant_id` + `quantity: 25` + a hosted `artwork_url`.
+   → Order lands with the correct tier price and the artwork attached (re-fetched + validated server-side, never the raw external URL); seller sees it like any web order.
+5. As the buyer, open the fulfilled (delivered) order → "Volver a pedir".
+   → Cart contains the same variant/qty/artwork; total matches current tiers (a "Precio actualizado" note appears if the tier price changed since the original order).
 
 If any step fails, note the step number + what you saw — that's the bug report.
