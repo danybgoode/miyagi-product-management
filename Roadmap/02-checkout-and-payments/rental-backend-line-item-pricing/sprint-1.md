@@ -22,6 +22,13 @@ Commits: 1.1 `4a797a1` · 1.2 `3a0eb8c` · 1.3 `31e9bbe`. Gate green (`medusa bu
   converted to cents, at one seam (`readDepositCents`).
 - **Rental-listing gate:** `loadProductForCheckout` was widened to fetch `type.value`; the branch
   requires the resolved listing type (`type.value ?? metadata.listing_type`) to be `'rental'`.
+- **Cross-review hardening (`ad90a71`, from PR #67 codex + pr-reviewer):** (1) strict `isValidYmd`
+  calendar check (rejects `2026-06-31`-style dates `Date.parse` would silently roll over →
+  `RENTAL_INVALID_DATES`); (2) the branch triggers on `fulfillment_method === 'rental'` (not mere
+  `body.rental` presence) so a stray field can't divert a normal checkout; (3) `RENTAL_CART_UNSUPPORTED`
+  guard rejects multi-item / multi-quantity rental carts rather than mischarging. pr-reviewer
+  independently CONFIRMED the tamper guarantee, deposit conversion, fail-open polarity, and the
+  non-rental regression.
 
 ## Stories
 
