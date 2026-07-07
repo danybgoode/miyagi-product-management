@@ -4,10 +4,12 @@
 > fulfillment-adjacent endpoint) · Mostly frontend; flag-flip candidacy after this sprint's smokes are
 > green.
 >
-> **Backend PR** [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) (draft) · **Frontend
-> PR** [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174) (draft). Branch
-> `feat/ml-orders-native-s3` off `origin/main`, fresh in both repos (S1/S2 branches were squash-merged,
-> per LEARNINGS).
+> ✅ **MERGED 2026-07-06** (Daniel authorized "merge on green, same order" in-conversation): **backend
+> [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) → `0611d73`** first, then
+> **frontend [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174) → `bef747d`**;
+> branches deleted. Pre-merge both branches were refreshed against latest `main` (clean merges), gates
+> re-run green, and the owed cross-review ran (antigravity — no real findings; triage on both PRs).
+> `ml.orders_enabled` + `ops.profit_enabled` were flipped ON by Daniel 2026-07-06 (00:26 UTC).
 >
 > **Scope-doc correction found during planning:** US-9 was framed as "verify-not-build" — the epic
 > README's "what already exists" line claims seller MCP order tools already exist. Direct code research

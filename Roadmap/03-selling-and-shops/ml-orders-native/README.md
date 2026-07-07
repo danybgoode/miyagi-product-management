@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 merged (backend 28f4e15, frontend c77a63c); Sprint 2 merged 2026-07-04 (backend 6b4e8dc, frontend 5623f97); prod migration + live flag flip + Daniel's live smoke still owed. S3 built, draft PRs open (backend #59, frontend #174), awaiting Daniel merge.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. All 3 sprints merged: S1 (BE 28f4e15/FE c77a63c), S2 (BE 6b4e8dc/FE 5623f97), S3 merged 2026-07-06 (BE 0611d73/FE bef747d). ml.orders_enabled flipped ON 2026-07-06. Epic close-out owed: Daniel's live smokes (S1 steps 7-12 sandbox order; S3 steps 10-12 batch-day + agent round-trip) + retro/poster.
 slug: ml-orders-native
 archetype: Builder
 ---
