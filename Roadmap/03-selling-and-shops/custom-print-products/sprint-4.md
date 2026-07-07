@@ -1,8 +1,9 @@
 # Custom print products — Sprint 4: Lightweight proof, agent parity + reorder
 
-**Status:** 🚧 built, PRs open — all 3 stories complete, gate green, cross-reviewed.
-Frontend PR [#177](https://github.com/danybgoode/miyagisanchezcommerce/pull/177) (continues S3, now titled "Sprint 3+4") · backend PR [#63](https://github.com/danybgoode/medusa-bonsai-backend/pull/63).
-Owed to Daniel: real-device proof round-trip + one full MCP agent order with real artwork (see walkthrough below) + merge decision (draft PRs, MED risk banner on the S4-only stories).
+**Status:** ✅ merged — all 3 stories live in production.
+Frontend PR [#177](https://github.com/danybgoode/miyagisanchezcommerce/pull/177) ("Sprint 3+4") merged 2026-07-07 · backend PR [#63](https://github.com/danybgoode/medusa-bonsai-backend/pull/63) merged 2026-07-07.
+Two same-day hardening PRs from cross-review also merged: backend [#64](https://github.com/danybgoode/medusa-bonsai-backend/pull/64) (seller-ownership auth-bypass fix) · frontend [#181](https://github.com/danybgoode/miyagisanchezcommerce/pull/181) (MCP `isError` propagation). Backend Cloud Run deploy confirmed live (new route responds correctly, not 404).
+Owed to Daniel: real-device proof round-trip + one full MCP agent order with real artwork (see walkthrough below) + `configurator.enabled` flag flip decision.
 
 ## Stories
 
