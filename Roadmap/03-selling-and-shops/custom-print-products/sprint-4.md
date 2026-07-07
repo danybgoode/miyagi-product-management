@@ -1,6 +1,6 @@
 # Custom print products — Sprint 4: Lightweight proof, agent parity + reorder
 
-**Status:** ⬜ not started
+**Status:** 🚧 in progress — 4.1 built (frontend `c0c271f`/`d77ba62`/`e7107f2`, backend `6248ba5`/`a86ba15`)
 
 ## Stories
 
