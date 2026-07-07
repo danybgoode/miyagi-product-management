@@ -550,6 +550,25 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A synthetic "oversize" test payload must be sized relative to BOTH the app's own cap and the real
+  deployment platform's ceiling, not just the app's.** A payload comfortably above the app's own limit
+  can still be ABOVE the platform's real body-size ceiling (Vercel Node.js Serverless Functions: ~4.5MB),
+  so it only ever exercises the platform's error path in production, never the app-level validation the
+  test was written to prove — and this is invisible in local dev (`next dev` enforces no such platform
+  limit), so it can pass locally for the life of an epic until it runs against a real deployed preview.
+  When a spec asserts "our app-level cap fires," pick a size strictly between the app cap and the
+  platform ceiling, and say so explicitly in the test's own comment. *(2026-07-07,
+  custom-print-products S4 — `e2e/artwork-upload.spec.ts` sent 5MB against a 4MB app cap, actually
+  above Vercel's ~4.5MB ceiling; dropped to 4.2MB.)*
+- **Extracting a validate-and-store helper out of a single-caller route can silently reorder a
+  fast-fail relative to the expensive operation it exists to short-circuit.** The extracted function's
+  own internal checks can look complete in isolation while the NEW caller has already paid for the
+  expensive step (e.g. materializing a request body via `.arrayBuffer()`) before ever calling it — the
+  cheap check that used to gate that step gets lost in translation. When lifting shared logic out of a
+  route with an existing cheap-check-before-expensive-operation shape, explicitly verify the new
+  caller preserves that ordering, not just that the extracted function's own checks still exist.
+  *(2026-07-07, custom-print-products S4 — `lib/artwork-ingest.ts`'s extraction from
+  `/api/artwork/upload`, caught by cross-review.)*
 - **The deterministic gate is non-negotiable and cheap:** `tsc --noEmit` + `next build` + the
   Playwright suite must be green before merge. Pure-logic specs (no auth, no network) on a shared
   `lib/` helper give real coverage for free — extract the seam, test the seam. *(Personalized
@@ -868,6 +887,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   pages. **Read the normalizer's actual output** and surface what you need as an explicit top-level field
   (the normalizer already does this for `payment_method`, `payment_received`, `fulfillment_state`, etc.);
   don't reach for raw metadata client-side. *(2026-06-07, checkout-state-hardening S1/S2.)*
+- **A seller-order-scoped write's ownership check must require the seller own EVERY item on the order
+  (`.every()`), not just one (`.some()`) — even when a cart-construction invariant makes them equivalent
+  today.** Several `resolveOrderForSeller`-shaped helpers (`tags`, `confirm-payment`, and a new `proof`
+  route all copied the same pattern) checked `productIds.some(pid => sellerOwns(pid))` before allowing
+  an order-level metadata write or payment capture — safe only because a cart can never mix sellers'
+  items in this marketplace (enforced at cart-construction time on the frontend, not in these routes).
+  Two independent cross-review passes flagged the same class of gap here: once as an outright bypass
+  (the check was skipped ENTIRELY when `productIds.length === 0` — no resolvable product ids on the
+  order), once as the `.some()`-vs-`.every()` distinction itself. Write it as `.every()` from the start
+  — it's a no-op for every real order today, and it's the only version that stays correct if the
+  cart-construction invariant it depends on ever weakens elsewhere in the codebase. Treat "ownership
+  check on an order-level write" as a checklist item whenever copying an existing
+  `resolveOrderForSeller`-shaped helper into a new route. *(2026-07-07, custom-print-products S4 —
+  `proof`/`tags`/`confirm-payment` routes, caught across two Codex cross-review rounds.)*
 
 ## Architecture
 - **A shared app shell can be dynamic for *routing*, not just auth — making a page static needs a route
@@ -1213,6 +1246,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (a bulk tool, a different screen) isn't blocked by a rule that belongs to a single screen. Push the
   "who's allowed to see this control" decision to the render layer, not into the data-mutation function.
   *(2026-07-03, zine-editing-central S3.2 — `setAdSlotStyle` vs `isContentLocked`.)*
+- **A conversation-to-domain-object link scoped narrower than 1:1 must repoint to the LATEST linked
+  object on every use, never pin to the first.** A buy-now (non-negotiated) purchase gets no `offer_id`
+  at all, so a durable `medusa_order_id` column on the conversation was the only way its ledger/proof
+  state could resolve — but the first design ("stamp once, never overwrite") breaks the instant a
+  SECOND order reuses that same `(buyer, listing)` conversation (exactly what a reorder feature
+  enables), permanently showing the first order's state instead of the current one's. Caught by
+  cross-review before merge; the fix is "always repoint on write," not "stamp once." Before shipping
+  any conversation/thread → order/domain-object link that isn't guaranteed 1:1, ask "what happens on
+  the SECOND link-worthy event," not just the first. *(2026-07-07, custom-print-products S4 —
+  `lib/conversations.ts`'s `findOrCreateConversation`, feeding the transaction ledger's
+  `medusa_order_id` fallback resolution.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole

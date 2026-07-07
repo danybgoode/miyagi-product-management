@@ -1,11 +1,13 @@
 ---
-status: in-progress
+status: shipped
 slug: custom-print-products
 ---
 
 # Epic: Custom print products — the sticker-shop buy experience
 
 > **Area:** 03 · Selling & Shops · **Risk:** HIGH (multi-variant commerce core + tiered pricing + buyer file upload; S1 LOW) · **Archetype:** Builder · **Scope doc:** [`00-ideas/2. readyforscope/custom-print-products.md`](../../00-ideas/2.%20readyforscope/custom-print-products.md)
+>
+> **✅ SHIPPED 2026-07-07 — all 4 sprints merged.** See [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
 **Tagline:** *Sube tu arte, elige tamaño y cantidad, ve el precio al instante — en la tienda de cualquier imprenta de Miyagi.*
 
@@ -48,34 +50,44 @@ start-checkout seam we already own.
 - **UCP/MCP** — `app/api/ucp/*` catalog + checkout; personalization already ships to agents.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | 1.1 Hide `is_print_placement` products from every shop-storefront surface | LOW |
-| 1 | 1.2 miyagiprints ops checklist (comp grants · owner-email query · seed real catalog) | LOW (ops) |
-| 2 | 2.1 Seller defines priced option dimensions → real Medusa options/variants (create + edit) | HIGH |
-| 2 | 2.2 Seller sets quantity price breaks per variant (`min_quantity`/`max_quantity`; #12706 verify-first) | HIGH |
-| 2 | 2.3 PDP/cart/checkout price correctly for variant × quantity (pure price-grid deriver in `lib/`) | HIGH |
-| 2 | 2.4 Seller-facing "Opciones" UI — dimension/value editor, per-combo price grid, tier editor (added 2026-07-06; 2.1-2.3 shipped API-only, no form) | HIGH |
-| 3 | 3.1 New `file` CustomFieldType (required flag, format allowlist, max size) | LOW |
-| 3 | 3.2 Buyer (incl. guest) uploads artwork → R2; thumb echoes cart→checkout→order→emails; seller downloads original | HIGH |
-| 3 | 3.3 Low-res preflight warning (pixels vs cm @ ~300 PPI; warn, never block) | LOW |
-| 3 | 3.4 Configurator buy box: options → upload → live price grid → total (es-MX, mobile-first) — **variant selector + live price grid already shipped in Sprint 2's `ConfiguratorBuyBox.tsx`**; this story narrows to wiring in the artwork upload (3.2) once that lands | LOW |
-| 4 | 4.1 Lightweight proof via messaging (auto-restates size/qty/price; "Aprobar prueba" lands on the ledger) | MED |
-| 4 | 4.2 Agent parity: options/tiers/upload contract in UCP catalog; MCP order with artwork URL | MED |
-| 4 | 4.3 "Volver a pedir" re-adds same variant/qty/artwork to cart | LOW |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | 1.1 Hide `is_print_placement` products from every shop-storefront surface | LOW | ✅ [#171](https://github.com/danybgoode/miyagisanchezcommerce/pull/171) `8552974` |
+| 1 | 1.2 miyagiprints ops checklist (comp grants · owner-email query · seed real catalog) | LOW (ops) | ✅ grants done; catalog seeding continues as backlog |
+| 2 | 2.1 Seller defines priced option dimensions → real Medusa options/variants (create + edit) | HIGH | ✅ backend [#60](https://github.com/danybgoode/medusa-bonsai-backend/pull/60) `d22fb29` |
+| 2 | 2.2 Seller sets quantity price breaks per variant (`min_quantity`/`max_quantity`; #12706 verify-first) | HIGH | ✅ same as 2.1 (verify-first confirmed #12706 doesn't apply to our Medusa version) |
+| 2 | 2.3 PDP/cart/checkout price correctly for variant × quantity (pure price-grid deriver in `lib/`) | HIGH | ✅ frontend [#175](https://github.com/danybgoode/miyagisanchezcommerce/pull/175) `7009895` |
+| 2 | 2.4 Seller-facing "Opciones" UI — dimension/value editor, per-combo price grid, tier editor (added 2026-07-06; 2.1-2.3 shipped API-only, no form) | HIGH | ✅ [#176](https://github.com/danybgoode/miyagisanchezcommerce/pull/176) `d6d457b` |
+| 3 | 3.1 New `file` CustomFieldType (required flag, format allowlist, max size) | LOW | ✅ `4f6b859` |
+| 3 | 3.2 Buyer (incl. guest) uploads artwork → R2; thumb echoes cart→checkout→order→emails; seller downloads original | HIGH | ✅ `bf769c3` |
+| 3 | 3.3 Low-res preflight warning (pixels vs cm @ ~300 PPI; warn, never block) | LOW | ✅ `4f6b859`/`8e348cc` |
+| 3 | 3.4 Configurator buy box: options → upload → live price grid → total (es-MX, mobile-first) | LOW | ✅ `8e348cc` — all of S3 landed via [#177](https://github.com/danybgoode/miyagisanchezcommerce/pull/177) `bfd28de` |
+| 4 | 4.1 Lightweight proof via messaging (auto-restates size/qty/price; "Aprobar prueba" lands on the ledger) | MED | ✅ frontend (same #177) + backend [#63](https://github.com/danybgoode/medusa-bonsai-backend/pull/63) `6d982ff` |
+| 4 | 4.2 Agent parity: options/tiers/upload contract in UCP catalog; MCP order with artwork URL | MED | ✅ same #177/#63 |
+| 4 | 4.3 "Volver a pedir" re-adds same variant/qty/artwork to cart | LOW | ✅ same #177 |
+
+Same-day hardening from cross-review, merged with S4: backend
+[#64](https://github.com/danybgoode/medusa-bonsai-backend/pull/64) `fc6d867` (seller-ownership
+auth-bypass fix), frontend [#181](https://github.com/danybgoode/miyagisanchezcommerce/pull/181)
+`9465120` (MCP `isError` propagation).
 
 ## Deploy order
 S1 independent, ship anytime. Then S2 → S3 → S4. Within S2/S3: **backend first** (variants/tiers,
 then upload contract), frontend degrades gracefully (single-variant products keep today's PDP; the
 configurator only renders when a product has options/tiers). Daniel merges all HIGH stories.
 
+**As deployed:** exactly this order — S1 (2026-07-04) → S2 incl. 2.4 (2026-07-05/06) → S3+S4 together
+(2026-07-07, continued on the same branch/PR since S3 was still unmerged when S4 was built) → same-day
+hardening fixes #64/#181. Backend merged before frontend at every step; Cloud Run deploy confirmed
+live (not just build success) before the dependent frontend PR merged.
+
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Kill-switch: `configurator.enabled` exists with stated polarity (fail-safe to today's PDP)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated — see `RETROSPECTIVE.md` → Gaps/follow-ups)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Kill-switch: `configurator.enabled` exists, kill-switch polarity (fail-open `true`, matches `pdp_redesign`), scoped narrowly to S3's buy-box addition only (not S2's underlying variant/tier buy box) after a cross-review catch
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`**

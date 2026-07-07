@@ -84,6 +84,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ Unclaimed shops are contact-only & delete actually deletes (seller bug sweep) — an unclaimed (gem) listing's PDP suppresses Buy/Offer/Cart/Bundle and shows direct-contact + "Reclama esta tienda" instead, with the offer/cart/checkout server-gated on one shared `isShopClaimed()` (no more silent-fail offers); and deleting a listing is a **native Medusa soft-delete** — gone from the manage grid, catalog, and edit, with order history intact (no more "Borrador" / edit-404 mismatch). Plus legible accent buttons + a mobile-responsive manage sub-nav
 - ✅ **Mercado Libre sync** — a seller connects their ML account (OAuth, encrypted tokens, auto-refresh + re-auth recovery), **imports** their ML catalog into Miyagi through the existing supply pipeline, **publishes** Miyagi listings out to ML (explicit "Sincronizar"; the platform never guesses a category), and keeps **stock in sync both ways** (the oversell-safe core, behind a fail-closed kill-switch) — with an activity log on the status page. Obtainable **self-serve as a paid SKU ($299/año o $30/mes)**, promoter-closeable, admin-grantable *(live purchase smokes owed to Daniel)*
 - ✅ **Profit Analyzer ("Ganancias")** — an append-only per-sale financial ledger (revenue − ML fee − shipping − COGS, snapshotted at sale time, native + Mercado Libre orders both) drives a margin dashboard at `/shop/manage/profit`: per-order and per-SKU realized margin, "margin killer" and underpriced-SKU call-outs, and a **solve-for-price suggester** (target a margin, see the price ML's own fee actually requires) with **one-click Apply** — a confirmed price change that updates Miyagi and pushes to the linked ML listing, logged to the activity feed. COGS lives on the variant (bulk-CSV settable). Behind `ops.profit_enabled` *(live money-path apply-price smoke against a real ML sandbox owed to Daniel)*
+- ✅ **Custom print products (the sticker-shop buy experience)** — a print shop (miyagiprints first) sells a real StickerJunkie/Sticker-Mule-grade configured product: priced size/material options with automatic **quantity-break pricing** (a pure price-grid deriver keeps PDP/cart/checkout in sync with Medusa's own price resolution), a seller-facing "Opciones" editor, buyer artwork upload (real magic-byte format sniffing, a low-res print-quality preflight warning) that rides the order end-to-end, a lightweight **print-proof sign-off** over the existing buyer-seller chat (size/qty/price always server-restated — never a silent seller-proposed change), full **AI-agent parity** (an agent reads a listing's options/tiers/artwork contract via UCP/MCP and places a fully configured order, artwork included), and one-tap **reorder**. Behind `configurator.enabled` (kill-switch, fail-open ON, scoped to the buy-box artwork addition only) *(live proof round-trip + one real MCP agent order owed to Daniel)*
 
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
@@ -149,6 +150,28 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-07 — Custom print products SHIPPED (4 sprints, HIGH overall — S2 mutates the commerce core, S3 opens a guest upload surface).** The sticker-shop configurator, end to end. **S1**
+  (frontend [#171](https://github.com/danybgoode/miyagisanchezcommerce/pull/171) `8552974`) fixed
+  `getShopListings()` so print-ad placements never leak onto any storefront channel. **S2** (backend
+  [#60](https://github.com/danybgoode/medusa-bonsai-backend/pull/60) `d22fb29`, frontend
+  [#175](https://github.com/danybgoode/miyagisanchezcommerce/pull/175) `7009895` +
+  [#176](https://github.com/danybgoode/miyagisanchezcommerce/pull/176) `d6d457b`) shipped real Medusa
+  options/variants + quantity price tiers, a pure `lib/price-grid.ts` deriver, and — added mid-epic
+  once the acceptance-vs-build gap was caught — the seller-facing "Opciones" editor. **S3+S4**
+  (frontend [#177](https://github.com/danybgoode/miyagisanchezcommerce/pull/177) `bfd28de`, backend
+  [#63](https://github.com/danybgoode/medusa-bonsai-backend/pull/63) `6d982ff`, continued on the same
+  PR since S3 was still open when S4 was built) landed the artwork-upload buy box, a lightweight
+  print-proof sign-off over the existing chat (server-restated size/qty/price — the StickerJunkie-
+  pitfall guard), full AI-agent parity (UCP price-grid exposure + an MCP `create_checkout` that
+  resolves a real variant/tier and validates an agent-supplied artwork URL through the same path the
+  human upload uses), and one-tap reorder. Same-day cross-review hardening: backend
+  [#64](https://github.com/danybgoode/medusa-bonsai-backend/pull/64) `fc6d867` closed a
+  seller-ownership auth-bypass gap (found on S4's own new route, then generalized to two pre-existing
+  routes carrying the identical shape), frontend
+  [#181](https://github.com/danybgoode/miyagisanchezcommerce/pull/181) `9465120` fixed a silently-dropped
+  `isError` across most MCP tool responses. Behind `configurator.enabled` (kill-switch, fail-open ON).
+  Owed to Daniel: the live proof round-trip + one real MCP agent order + the flag-flip decision. See
+  [03 · Selling & Shops › Custom print products](03-selling-and-shops/custom-print-products/).
 - **2026-07-06 — Profit Analyzer SHIPPED (2 sprints, HIGH — Epic B of the Merchant Ops PRD).** True
   SKU margins after fees/COGS/shipping, plus a price suggester. **S1** (backend
   [#61](https://github.com/danybgoode/medusa-bonsai-backend/pull/61) `9967adb`, frontend
