@@ -19,8 +19,14 @@ deleted. Prod deploy live (Cloud Run rev `medusa-web-00135-j88`; Vercel prod at 
 job for the DB steps): trigger + table + unique index exist; append-only proven on prod (INSERT ok,
 UPDATE/DELETE both raise, the inert `fev_smoke_trigger_proof` row survives — permanent by design);
 `/shop/manage/profit` → 404 flag-OFF; profit API → 404; public seller-products response for a real
-variant-bearing shop carries zero `unit_cost_cents`. **Remaining: steps 4–6, 8–13 (Daniel — sessions/
-money), then the `ops.profit_enabled` flip (Daniel).**
+variant-bearing shop carries zero `unit_cost_cents`. **Flag flipped ON by Daniel 2026-07-06 00:26 UTC — which
+caught a real launch bug:** the page's `flag → notFound()` ran before any dynamic API, so Next had
+prerendered it with the build-time flag value (OFF) — a baked static 404 no flip could change. Fixed
+same-day (FE [#179](https://github.com/danybgoode/miyagisanchezcommerce/pull/179) → `45a10e6`,
+`force-dynamic`, route `○ → ƒ`, merged + deployed; LEARNINGS updated). Anonymous probes of any
+`/shop/manage/*` page 404 via Clerk's protect-rewrite regardless — the signed-in render is the real
+check. **Remaining: steps 4–6, 8–13 (Daniel — sessions/money; step 8 is now just "open Ganancias
+signed-in → dashboard renders").**
 
 Plan-mode decisions (Daniel, 2026-07-06): COGS lives on `variant.metadata.unit_cost_cents`; free
 dashboard for all sellers with ML-fee analytics riding the `ml_sync` entitlement; Envia label cost
