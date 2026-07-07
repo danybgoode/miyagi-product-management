@@ -659,7 +659,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   got `429` instead of a deterministic `404` — same underlying bug as the secret-before-auth case (a
   non-auth gate answering before the flag decides the route "exists" at all), just with a different second
   gate. A cross-review (codex) caught it pre-merge. *(2026-07-02, seller-agent-connect-mcp-url S2 —
-  `app/api/ucp/mcp/c/[slug]/route.ts`.)*
+  `app/api/ucp/mcp/c/[slug]/route.ts`.)* **Counter-corollary — on a PAGE (not an API route), flag →
+  `notFound()` before ANY dynamic API bakes the flag's BUILD-TIME value into a static prerender.** A
+  flag-gated page whose first await is `isEnabled()` (with `currentUser()`/`headers()` only after) is
+  static-eligible, so Next prerenders the `notFound()` — and the launch flag-flip then serves the baked
+  404 forever (`x-vercel-cache: HIT` is the tell; a sibling page that awaits `searchParams` first dodges
+  it invisibly). Pair the gate order with `export const dynamic = 'force-dynamic'` on any flag-gated
+  page, and make the flag-flip smoke assert the POST-flip status, not just the dark state. *(2026-07-06,
+  profit-analyzer S1 — `/shop/manage/profit` caught live at the `ops.profit_enabled` flip; FE #179.)*
 - **Split "coerce a blank input to a default" vs "reject it" by whether the action is a PURCHASE or a
   MUTATION.** The same field (a billing `interval`) wants opposite defaulting on two money paths: a *buy* can
   safely back-compat a missing/blank interval to the discounted default (buying yearly is harmless), but a
