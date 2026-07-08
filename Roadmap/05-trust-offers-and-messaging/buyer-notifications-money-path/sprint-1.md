@@ -1,6 +1,9 @@
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 1: Medusa-order buyer identity — gating bites
 
-**Status:** ⬜ not started
+**Status:** ✅ built, PRs open (draft) — [backend #70](https://github.com/danybgoode/medusa-bonsai-backend/pull/70)
+(1.1 `55e5b06`) · [frontend #194](https://github.com/danybgoode/miyagisanchezcommerce/pull/194)
+(1.3 `cfe005f`, 1.2 `f8a940b`). Deterministic gate green both repos. Owed: Daniel's merge + the
+money-path smoke below.
 
 > Two repos: 1.1 is `apps/backend` (Cloud Run, no preview, ~12 min); 1.2/1.3 are `apps/miyagisanchez`.
 > Deploy order: backend-first, and the frontend is null-safe regardless (unresolved buyer → today's
@@ -8,7 +11,7 @@
 
 ## Stories
 
-### Story 1.1 — Backend: `normalizeMedusaOrder` returns the buyer's Clerk id
+### Story 1.1 — Backend: `normalizeMedusaOrder` returns the buyer's Clerk id ✅ `55e5b06`
 **As a** buyer with a Medusa order, **I want** the platform to know the order is mine, **so that** my
 notification preferences can apply to it.
 **Acceptance:** `GET /store/sellers/me/orders` returns `buyer_clerk_user_id` populated (not `null`) for a
@@ -16,7 +19,7 @@ new Medusa order placed while signed in; a guest order still returns `null`; res
 unchanged (existing consumers unaffected).
 **Risk:** high (backend, order surface)
 
-### Story 1.2 — Resolve the buyer id at dispatch time so Envíos/Devoluciones gating bites on Medusa orders
+### Story 1.2 — Resolve the buyer id at dispatch time so Envíos/Devoluciones gating bites on Medusa orders ✅ `f8a940b`
 **As a** buyer who toggled Envíos or Devoluciones, **I want** those choices to apply to my Medusa orders,
 **so that** the toggles I already have stop being inert for the majority order type.
 **Acceptance:** `ship-manual`, `ship`, and `return-request/[requestId]` already re-fetch the order from
@@ -30,7 +33,7 @@ edits the same Stripe/MP webhook files for Compras dispatch — one round of web
 This story's acceptance (gating bites on ship/return) is fully met without touching the webhooks at all.
 **Risk:** high (fulfillment dispatch routes touched)
 
-### Story 1.3 — Kill-switch flag `notifications.buyer_moneypath_enabled`
+### Story 1.3 — Kill-switch flag `notifications.buyer_moneypath_enabled` ✅ `cfe005f`
 **As** the product owner, **I want** one flag that instantly reverts both new paths to today's behavior,
 **so that** a money-path regression is a flag flip, not a deploy.
 **Acceptance:** flag added to `lib/flags.ts` `DEFAULT_FLAGS`, default `true`; seed migration riding the
