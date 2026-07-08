@@ -1,9 +1,11 @@
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 1: Medusa-order buyer identity — gating bites
 
-**Status:** ✅ built, cross-reviewed, PRs open (draft) — [backend #70](https://github.com/danybgoode/medusa-bonsai-backend/pull/70)
-(1.1 `55e5b06`, review-fix `143f28e`) · [frontend #194](https://github.com/danybgoode/miyagisanchezcommerce/pull/194)
-(1.3 `cfe005f`, 1.2 `f8a940b`, review-fix `0f62bfb`). Deterministic gate green both repos. Owed:
-Daniel's merge + the money-path smoke below.
+**Status:** ✅ MERGED + LIVE 2026-07-08 — [backend #70](https://github.com/danybgoode/medusa-bonsai-backend/pull/70)
+squash `90a9ac2` (1.1 `55e5b06`, review-fix `143f28e`) · [frontend #194](https://github.com/danybgoode/miyagisanchezcommerce/pull/194)
+squash `2c7a004` (1.3 `cfe005f`, 1.2 `f8a940b`, review-fix `0f62bfb`). Backend Cloud Build
+(`backend-main-deploy`, build `4964047b`) confirmed SUCCESS — live Cloud Run revision
+`medusa-web-00145-dxv` at 100% traffic. Both branches deleted. Owed: Daniel's money-path smoke
+below (can't be self-run — real signed-in purchase + Telegram delivery).
 
 **Cross-agent review (Codex, both PRs) — one real finding, fixed:** the seller orders list/detail
 server components (`app/(shell)/shop/manage/orders/{page.tsx,[id]/page.tsx}`) were spreading the
