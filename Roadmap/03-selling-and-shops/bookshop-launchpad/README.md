@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: bookshop-launchpad
 ---
 
@@ -65,10 +65,12 @@ S1 → S2 → S3. `launchpad.enabled` OFF until Daniel's S1 smoke; campaign surf
 until the S3 smoke. Cross-epic: CPP S2/S3 merged before S3 links a print product; OSPP S2 before S2.2.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; sprints ticked with commit refs
-- [ ] `RETROSPECTIVE.md` · poster · memory · learnings all updated
-- [ ] Kill-switch `launchpad.enabled` exists with stated polarity
-- [ ] Legal framing of vote-unlock confirmed (plan-mode note recorded)
-- [ ] Feature branch deleted; frontmatter `status: shipped` (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` (S1 `b6eca090` · S2 `a398d98` · S3 BE `3c0b8c7` + FE `02e12db`) — **smoke owed** to Daniel (real-device vote→coupon→redeem money path; flag OFF so nothing is live-facing)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; sprints ticked with commit refs
+- [x] `RETROSPECTIVE.md` · poster · memory · learnings all updated
+- [x] Kill-switch `launchpad.enabled` exists with stated polarity (enablement, default OFF; fail-safe)
+- [x] Legal framing of vote-unlock confirmed (threshold ≠ chance → not a SEGOB sweepstake; conservative posture kept — see sprint-3.md)
+- [x] Feature branches deleted (BE + FE); frontmatter `status: shipped` (ran `node scripts/build-order.mjs`)
+
+> **Owed at close (not blocking merge — feature is dark):** Daniel's real-device money smoke (sprint-3.md walkthrough) + flip `launchpad.enabled` ON in `/admin/flags` after it passes.

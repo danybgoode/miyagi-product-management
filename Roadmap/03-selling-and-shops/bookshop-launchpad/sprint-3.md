@@ -1,9 +1,9 @@
 # Bookshop launchpad — Sprint 3: Voting campaigns + the 50% unlock
 
-**Status:** 🚧 built — draft PRs open, not merged (FE [#189](https://github.com/danybgoode/miyagisanchezcommerce/pull/189), BE [#68](https://github.com/danybgoode/medusa-bonsai-backend/pull/68)). Behind `launchpad.enabled` (OFF). Owed: BE merge+deploy first (Daniel), then FE merge; Daniel's real-device money smoke (below) + flag flip.
-- Story 3.1 ✅ built (`ae9ad0d`) — campaign builder + state machine + activation gate + `list_launchpad_campaigns` MCP tool
-- Story 3.2 ✅ built (`2c80142`) — public `/v/[slug]` + email-verified votes (one per email per work) + honest progress + QR
-- Story 3.3 ✅ built (`ecd2801` FE + `601433b` BE) — threshold→mint automation + close cron + **product-scoped** coupon money path
+**Status:** ✅ MERGED 2026-07-08 — BE [#68](https://github.com/danybgoode/medusa-bonsai-backend/pull/68) squash `3c0b8c7` (merged + deployed first, Cloud Run us-east4), then FE [#189](https://github.com/danybgoode/miyagisanchezcommerce/pull/189) squash `02e12db`. Behind `launchpad.enabled` (**OFF**); public `/v/[slug]` additionally dark. Owed: Daniel's real-device money smoke (below) + flag flip. Codex cross-review ran on both PRs pre-merge and caught real hardening gaps (fail-open internal mint route, code-burn-before-dedup, cron null-`ends_at` recovery gap) — all fixed before merge.
+- Story 3.1 ✅ (`ae9ad0d`) — campaign builder + state machine + activation gate + `list_launchpad_campaigns` MCP tool
+- Story 3.2 ✅ (`2c80142`) — public `/v/[slug]` + email-verified votes (one per email per work) + honest progress + QR
+- Story 3.3 ✅ (`ecd2801`/`2aa3372` FE + `601433b`/`3cf946d` BE) — threshold→mint automation + close cron + **product-scoped** coupon money path (fail-closed, idempotent-by-code)
 
 **Plan-mode legal framing (recorded):** a vote **threshold** unlocking a **fixed, known** discount is **not** a chance-based prize → **not a SEGOB sweepstake** (no random draw, no chance element — every voter who helps hit the threshold gets the identical, known reward). We nonetheless adopt the sweepstakes spine's conservative posture: email-verified one-vote-per-work, honest live counts, explicit terms, a global kill-switch, and no inflated progress. The reward coupon is **product-scoped** to one CPP listing — never shop-wide (enforced at checkout by the backend `resolveCouponForCheckout`, `foreign_product` fail-closed).
 

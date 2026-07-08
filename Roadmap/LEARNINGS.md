@@ -665,7 +665,9 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   way to stop the foundation eroding. **It bites brand-new client islands too, and only CI catches it:** a
   fresh `#fff` in a new PDP lightbox passed local tsc/build but failed CI; reuse the existing token
   (`var(--fg-inverse)`) instead. *(design-token-foundation, 2026-06-07 — reconfirmed on new client islands
-  each of 2026-06-10, 2026-06-22, 2026-06-30.)* **It also false-positives a `#`-prefixed NUMBER that isn't
+  each of 2026-06-10, 2026-06-22, 2026-06-30; and 2026-07-08 bookshop-launchpad S3, where a whole new
+  `/v/[slug]` public page + 4 seller-shell files shipped with inline hex — the guard scans the ENTIRE
+  `app/(shell)` tree, so any new customer-facing page needs tokens from line one.)* **It also false-positives a `#`-prefixed NUMBER that isn't
   a color** (e.g. a bug id like "WebKit #279904") — write external bug ids without the `#` in
   customer-facing source. *(2026-06-22, pwa-glass-nav S2.1.)*
   **The same shape generalizes beyond color, to an anti-monolith guard:** a pure offender-finder `lib/`
@@ -903,6 +905,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `proof`/`tags`/`confirm-payment` routes, caught across two Codex cross-review rounds.)*
 
 ## Architecture
+- **A secret-auth internal route must fail CLOSED when its secret env is UNSET — and check idempotency
+  BEFORE consuming a single-use credential.** Two money-route defects a cross-agent (Codex) pass caught on
+  the launchpad coupon-mint path, both worth generalizing: (1) an `unauthorized()` that returns
+  `!!expected && got !== expected` **authorizes everyone when `expected` is unset** — a coupon-minting
+  route callable with no secret in a misconfigured env. Invert to `!expected || got !== expected` (missing
+  secret ⇒ unauthorized). This shape was copy-pasted from an existing route, so grep siblings when you find
+  one. (2) A verify-then-act flow that **consumes** a one-time code before the duplicate check burns a fresh
+  code on every retry of an already-done action — do the cheap idempotency read (has this vote/row already
+  landed?) *first*, and only spend the credential on a genuinely new write. Make internal mints idempotent
+  by the **globally-unique business key** (the coupon code), not just a per-owner index, so a partial write
+  (resource created, index append failed) is repaired on replay instead of stranding behind a permanent 409.
+  *(2026-07-08, bookshop-launchpad S3.3 — /internal/launchpad-campaign-coupon + castVote.)*
 - **A shared app shell can be dynamic for *routing*, not just auth — making a page static needs a route
   split, not just removing its `currentUser()`.** The marketplace homepage cold-started ~30s as a
   per-request Vercel function; dropping `currentUser()` was necessary but not sufficient, because the
