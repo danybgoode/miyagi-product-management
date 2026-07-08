@@ -1,6 +1,6 @@
 # Rental line-item pricing — Sprint 3: agent parity (UCP/MCP)
 
-**Status:** ✅ built — PR pending (`feat/rental-backend-line-item-pricing-s3`, commit `f00b1c3`)
+**Status:** ✅ built — PR [#191](https://github.com/danybgoode/miyagisanchezcommerce/pull/191) pending Daniel merge (`feat/rental-backend-line-item-pricing-s3`, `f00b1c3` + `94f1691`)
 
 > Frontend/API sprint (`apps/miyagisanchez` — the UCP layer). Requires Sprints 1–2. AGENTS rule #3:
 > agents are first-class — web and agent must quote and charge the same number.
@@ -33,6 +33,13 @@ end-to-end and never quotes the per-period rate as the full price.
   `/api/mp/checkout`/`/api/stripe/checkout` endpoints still have zero rental awareness for a
   **date-less** call on a rental listing — they'd charge a bare one-unit rate. Currently
   unreachable (no rental listing exists in prod). Flagged in the PR for Daniel.
+- **Codex cross-review caught 2 real gaps pre-merge (commit `94f1691`):** (1) when a dated request
+  was explicitly rejected (bad range/flag off), the instant MP/Stripe options still fell back to
+  the date-blind legacy endpoints — an agent whose booking was just refused could still "succeed"
+  at a one-unit mischarge for those exact dates; now gated `available: false` with a
+  `reason_unavailable` pointing at `rental_pricing_hint`. (2) `create_checkout` was callable on a
+  rental listing despite its description warning against it — now looks up the listing and refuses
+  with a pointer to `get_checkout_options` (fail-open on lookup failure).
 
 **Acceptance:**
 - With dates: response gains `rental_quote: { check_in, check_out, nights, units, rate_period,

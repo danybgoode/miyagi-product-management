@@ -58,7 +58,7 @@ amount is ignored.
 | 2 | ✅ 2.1 `/checkout` rental mode: `checkIn/checkOut` params → same breakdown the PDP showed → dates threaded through `startCheckout`; invalid dates redirect to PDP (`f128ca4`) | HIGH |
 | 2 | ✅ 2.2 PDP flip behind the flag: ON → "Reservar estas fechas" deep-links to checkout with dates; OFF (or seller has no payment method) → today's AskSeller, byte-for-byte (`98dd625`) | LOW |
 | 2 | ✅ 2.3 Order-surface rendering (added at S2 kickoff, closes the S1.3 handoff): buyer/seller order pages, both emails, in-chat ledger show rental dates + itemized deposit (`9316c42`) | LOW |
-| 3 | ✅ 3.1 Agent parity: `checkout-session` accepts `check_in`/`check_out` → `rental_quote` breakdown + dated checkout URLs; MCP `get_checkout_options` parity; date-less calls keep rate+deposit clearly labeled (`f00b1c3`) | LOW |
+| 3 | ✅ 3.1 Agent parity: `checkout-session` accepts `check_in`/`check_out` → `rental_quote` breakdown + dated checkout URLs; MCP `get_checkout_options` parity; date-less calls keep rate+deposit clearly labeled (`f00b1c3`, PR #191) | LOW |
 
 ## Deploy order
 Sprint 1 (backend) merges + **finishes rolling** first — no per-branch backend preview, so the
