@@ -814,6 +814,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   gate. **A "blocking" item that contradicts a green `tsc`/`build` is almost always the reviewer's miss, not
   a real bug** — apply only the genuine should-fix, and record the triage in the PR comment. Lower-
   capability fallback models raise the false-positive rate. *(2026-06-26, seller-landing-launch-polish S2.)*
+  **A story's own LOW-risk tier doesn't exempt its gating/availability logic from the same scrutiny as
+  charge code — "read-only quoting" can still decide which checkout URL an agent sees as usable.** A
+  rental-quoting sprint correctly scoped itself LOW ("the charge stays on the prior sprint's server rail,"
+  no new charge code touched) — true, but the *response* still decided which payment options came back
+  `available:true`, and the first pass left a date-blind fallback URL reachable exactly when a dated
+  booking request had just been rejected (an agent could "succeed" at a one-unit mischarge for the dates
+  it was just refused). Codex caught it on a green PR. The risk **tier** label describes how much money
+  code changed, not how much the surrounding decision logic deserves review — don't let a LOW tier lower
+  the bar on getting a second pass. *(2026-07-08, rental-backend-line-item-pricing S3.1.)*
 - **To make a curated/explicit subset authoritative over a "freshest-N" read without un-static-ing an ISR
   page, fetch the subset via its own metadata filter and UNION it into the pool** (dedupe by id, degrade
   per-fetch), mirroring the route's existing filter convention. The homepage Selección showed admin pins
@@ -847,6 +856,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   webhook's legacy branch and issuing **0 tickets even at qty 1**. Re-scoped to surface parity
   (echo/clamp quantity) with issuance deferred, not silently built on sand. *(2026-06-22,
   events-quantity-selector S1.3.)*
+  **Corollary — the same "two front doors, one aware / one not" split recurred with the SAME legacy raw
+  Stripe/MP endpoints, this time as a MISCHARGE risk rather than a 0-issuance one.** Building rental-aware
+  quoting for the UCP `checkout-session` endpoint surfaced that `/api/mp/checkout`/`/api/stripe/checkout`
+  are a wholly separate rail from `/checkout`→`startCheckout`, with zero awareness of rental date/deposit
+  math — they'd silently charge a bare one-unit rate on any rental listing that reached them, ignoring the
+  date range entirely. Currently unreachable (no rental listing in prod yet) but a live landmine once one
+  exists. When a listing type gains date/quantity-sensitive pricing, grep for **every** route that resolves
+  a charge amount for that type — not just the primary rail the epic is building — before declaring the
+  work done; a second "looks equivalent" checkout front door is a recurring shape in this codebase, not a
+  one-off. *(2026-07-08, rental-backend-line-item-pricing S3.1.)*
 - **An "is there room to push this further" classifier must compare against a reference STRICTLY on the
   far side of its own gate, or the math can never fire.** If the gate is "already at/above margin X" (a
   floor), the headroom check's reference target must be > X, never ≤ X — when the reference price is

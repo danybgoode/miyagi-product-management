@@ -1,6 +1,6 @@
 # Rental line-item pricing — Sprint 3: agent parity (UCP/MCP)
 
-**Status:** ✅ built — PR [#191](https://github.com/danybgoode/miyagisanchezcommerce/pull/191) pending Daniel merge (`feat/rental-backend-line-item-pricing-s3`, `f00b1c3` + `94f1691`)
+**Status:** ✅ MERGED 2026-07-08 — PR [#191](https://github.com/danybgoode/miyagisanchezcommerce/pull/191) squash `a2a2cf5`, LOW-risk Daniel-authorized merge-on-green (CI green: `tsc`+build, Playwright vs preview both passed)
 
 > Frontend/API sprint (`apps/miyagisanchez` — the UCP layer). Requires Sprints 1–2. AGENTS rule #3:
 > agents are first-class — web and agent must quote and charge the same number.

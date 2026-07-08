@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (backend charge rail) MERGED 2026-07-07: PR #67 squash 8e41d18, HIGH-risk Daniel-authorized merge-on-green, ships dark behind checkout.rental_pricing_enabled (default false). Clean gating pr-review + codex advisory addressed pre-merge (ad90a71). Flag-OFF prod smoke PASSED 2026-07-08. Sprint 2 (web checkout rental mode + PDP flag flip + order-surface rendering, 3 stories incl. Story 2.3 added at kickoff) MERGED 2026-07-08: PR #190 squash c5c25a3 (danybgoode/miyagisanchezcommerce), HIGH-risk Daniel-authorized merge-on-green. Codex cross-review caught + fixed a real MX-timezone past-date bug + a URL-encoding nit pre-merge (267143e); fresh pr-reviewer approved with no further changes. Sprint 3 (agent parity — checkout-session + MCP get_checkout_options accept check_in/check_out → rental_quote + dated checkout URLs; date-less calls labeled per-period) BUILT 2026-07-08 on feat/rental-backend-line-item-pricing-s3 (f00b1c3), LOW-risk quoting-only (no charge code touched) — PR pending. Flag flip + flag-ON money smoke still owed (Daniel) — needs a disposable test rental listing first (none in prod); S3's own MCP round-trip smoke shares this same gap.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (backend charge rail) MERGED 2026-07-07: PR #67 squash 8e41d18, HIGH-risk Daniel-authorized merge-on-green, ships dark behind checkout.rental_pricing_enabled (default false). Clean gating pr-review + codex advisory addressed pre-merge (ad90a71). Flag-OFF prod smoke PASSED 2026-07-08. Sprint 2 (web checkout rental mode + PDP flag flip + order-surface rendering, 3 stories incl. Story 2.3 added at kickoff) MERGED 2026-07-08: PR #190 squash c5c25a3 (danybgoode/miyagisanchezcommerce), HIGH-risk Daniel-authorized merge-on-green. Codex cross-review caught + fixed a real MX-timezone past-date bug + a URL-encoding nit pre-merge (267143e); fresh pr-reviewer approved with no further changes. Sprint 3 (agent parity — checkout-session + MCP get_checkout_options accept check_in/check_out → rental_quote + dated checkout URLs; date-less calls labeled per-period) MERGED 2026-07-08: PR #191 squash a2a2cf5 (danybgoode/miyagisanchezcommerce), LOW-risk Daniel-authorized merge-on-green, quoting-only (no charge code touched). Codex cross-review caught + fixed 2 real gaps pre-merge (94f1691): a rejected dated request still exposing a date-blind MP/Stripe mischarge path, and create_checkout callable on a rental despite its doc warning. **EPIC SHIPPED 2026-07-08 — all 3 sprints merged.** Kill-switch `checkout.rental_pricing_enabled` verified: enablement flag, default `false`, created disabled — confirmed on current main. Owed (Daniel): flag-ON money smoke — needs a disposable test rental listing first (none in prod); S3's own MCP round-trip smoke + fixture-gated specs share this same gap.
 slug: rental-backend-line-item-pricing
 ---
 
@@ -68,12 +68,12 @@ merges every sprint (HIGH-risk epic). Flag flip is a deliberate post-verify step
 merge.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs; money/auth steps owed to Daniel by name)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated — 02 · Checkout & Payments gains the rental line; the 01 PDP rental bullet's "coordinate" phrasing corrected
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Kill-switch: `checkout.rental_pricing_enabled` exists as an **enablement** flag (default `false`, created disabled), verified per WoW DoD
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — S1 #67/8e41d18, S2 #190/c5c25a3, S3 #191/a2a2cf5. Flag-OFF prod smoke passed (S1); flag-ON money smoke + S3's live MCP round-trip remain **owed to Daniel** (no test rental listing in prod yet) — stated, not silently dropped.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs; money/auth steps owed to Daniel by name)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated — 02 · Checkout & Payments gains the rental line; the 01 PDP rental bullet's "coordinate" phrasing corrected
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Kill-switch: `checkout.rental_pricing_enabled` exists as an **enablement** flag (default `false`, created disabled), verified per WoW DoD
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
