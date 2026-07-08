@@ -1,7 +1,11 @@
 # Rental line-item pricing — Sprint 2: web checkout + the PDP flip
 
-**Status:** 🟡 built, PR open — awaiting Daniel's merge (HIGH-risk epic). All 3
-stories ship dark behind `checkout.rental_pricing_enabled` (still `false`).
+**Status:** ✅ MERGED 2026-07-08 — squash `c5c25a3`, PR #190 (danybgoode/miyagisanchezcommerce),
+HIGH-risk Daniel-authorized merge-on-green. All 3 stories live in prod, ships dark behind
+`checkout.rental_pricing_enabled` (still `false`). Cross-agent review (codex) caught + fixed a
+real MX-timezone past-date bug + a URL-encoding nit before merge (`267143e`); fresh pr-reviewer
+pass approved with no further changes. Flag flip + flag-ON money smoke still owed (Daniel) — see
+walkthrough below.
 
 > Frontend sprint (`apps/miyagisanchez`). Requires Sprint 1 live on Cloud Run. Both stories are
 > flag-gated (`checkout.rental_pricing_enabled`) and degrade to today's AskSeller coordination.
@@ -18,7 +22,7 @@ stories ship dark behind `checkout.rental_pricing_enabled` (still `false`).
 
 ## Stories
 
-### Story 2.1 — `/checkout` rental mode ✅ built (`f128ca4`)
+### Story 2.1 — `/checkout` rental mode ✅ MERGED (`f128ca4`, squash `c5c25a3`)
 **As a** buyer who picked dates on a rental PDP, **I want** the checkout page to show the identical
 breakdown (noches × tarifa + depósito) and charge exactly that, **so that** the pay-button total
 always equals the summary (house rule) and both equal what the backend charges.
@@ -37,7 +41,7 @@ always equals the summary (house rule) and both equal what the backend charges.
 invalid dates; tamper spec — crafted `?amount=`-style params are inert; existing checkout specs
 stay green (non-rental unchanged).
 
-### Story 2.2 — PDP flip: "Reservar estas fechas" goes to checkout (flag ON) ✅ built (`98dd625`)
+### Story 2.2 — PDP flip: "Reservar estas fechas" goes to checkout (flag ON) ✅ MERGED (`98dd625`, squash `c5c25a3`)
 **As a** buyer on a rental PDP, **I want** the reserve button to take me straight to checkout with
 my dates, **so that** booking is one step — while the platform can revert to coordination with one
 flag flip.
@@ -50,7 +54,7 @@ copy only (no allow-list change).
 **QA:** api spec on both flag states (pure decision-function spec — see note below); the existing
 rental PDP specs stay green.
 
-### Story 2.3 — Order-surface rendering: rental dates + deposit on 5 surfaces ✅ built (`9316c42`)
+### Story 2.3 — Order-surface rendering: rental dates + deposit on 5 surfaces ✅ MERGED (`9316c42`, squash `c5c25a3`)
 **As a** buyer or seller with a booked rental order, **I want** to see the dates and itemized
 deposit on my order, in my email, and in the chat ledger, **so that** the charge is legible
 everywhere the order appears.
