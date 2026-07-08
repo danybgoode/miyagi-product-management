@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. All 3 sprints merged: S1 (BE 28f4e15/FE c77a63c), S2 (BE 6b4e8dc/FE 5623f97), S3 merged 2026-07-06 (BE 0611d73/FE bef747d). ml.orders_enabled flipped ON 2026-07-06. Epic close-out owed: Daniel's live smokes (S1 steps 7-12 sandbox order; S3 steps 10-12 batch-day + agent round-trip) + retro/poster.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. All 3 sprints merged: S1 (BE 28f4e15/FE c77a63c), S2 (BE 6b4e8dc/FE 5623f97), S3 merged 2026-07-06 (BE 0611d73/FE bef747d). ml.orders_enabled flipped ON 2026-07-06. EPIC SHIPPED 2026-07-08 — RETROSPECTIVE.md + poster + memory done; DoD closed with the live ML-sandbox smokes stated as owed (S1 steps 7-12, S3 steps 10-12 batch-day + agent round-trip), not blocking, per the epic-close convention this codebase otherwise uses everywhere else.
 slug: ml-orders-native
 archetype: Builder
 ---
@@ -8,18 +8,19 @@ archetype: Builder
 
 > Scoped 2026-07-02 from [`00-ideas/2. readyforscope/ml-orders-native.md`](../../00-ideas/2.%20readyforscope/ml-orders-native.md)
 > (Epic A of the Merchant Ops PRD; approved by Daniel 2026-07-02).
-> **Status: Sprint 1 + Sprint 2 merged to `main` on both repos** — backend
+> **✅ EPIC SHIPPED — all 3 sprints merged to `main` on both repos.** S1: backend
+> [#57](https://github.com/danybgoode/medusa-bonsai-backend/pull/57) → `28f4e15`; frontend
+> [#170](https://github.com/danybgoode/miyagisanchezcommerce/pull/170) → `c77a63c`. S2: backend
 > [#58](https://github.com/danybgoode/medusa-bonsai-backend/pull/58) → `6b4e8dc`; frontend
-> [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) → `5623f97`. Risk **HIGH**
-> (order/fulfillment core + inventory interaction with the live S4 stock sync) — both sprints' merges
-> were authorized in-conversation after cross-agent review (Sprint 1: 4 rounds; Sprint 2: 2 local
-> cross-review rounds + an independent fresh-reviewer agent pass, per WAYS-OF-WORKING); still dark behind
-> `ml.orders_enabled` pending the prod migration + live smoke. **Sprint 3 (tags, bulk actions, agent
-> parity) is built** — backend PR [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) +
-> frontend PR [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174), both draft, green on
-> the deterministic gate, awaiting Daniel's merge (risk **HIGH** for merge purposes — see sprint-3.md).
-> **Companion:** [`profit-analyzer`](../profit-analyzer/README.md) (Epic B) builds on this epic's order
-> data — **this epic ships first.**
+> [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) → `5623f97`. S3 (tags, bulk
+> actions, agent parity): backend [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) →
+> `0611d73`; frontend [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174) → `bef747d`,
+> merged 2026-07-06 (Daniel-authorized "merge on green, same order"). Risk **HIGH** throughout
+> (order/fulfillment core + inventory interaction with the live S4 stock sync) — every sprint's merge
+> was authorized in-conversation after cross-agent review. **`ml.orders_enabled` flipped ON by Daniel
+> 2026-07-06** (00:26 UTC) — the feature is LIVE, not dark. **Companion:**
+> [`profit-analyzer`](../profit-analyzer/README.md) (Epic B) builds on this epic's order data — this
+> epic shipped first, as planned.
 
 **Tagline:** *Todas tus ventas — Mercado Libre y Miyagi — en una sola bandeja de pedidos.*
 
@@ -98,15 +99,15 @@ touches.
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (ML-sandbox order walkthroughs owed to Daniel, per sprint).
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs / real ML sandbox).
-- [ ] This README marked ✅; every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md`) updated (unified ML order workflow).
-- [ ] Team memory + `MEMORY.md` updated (order materialization seam, channel, flag).
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
-- [ ] Kill-switch verified: `ml.orders_enabled` exists, default OFF, per scope doc polarity.
-- [ ] Feature branch deleted; scope-doc frontmatter `status: shipped`.
+- [x] All sprints merged to `main` + smoke-tested (ML-sandbox order walkthroughs owed to Daniel, per sprint — stated, not blocking).
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs / real ML sandbox).
+- [x] This README marked ✅; every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md`) updated (unified ML order workflow).
+- [x] Team memory + `MEMORY.md` updated (order materialization seam, channel, flag).
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append).
+- [x] Kill-switch verified: `ml.orders_enabled` exists — enablement flag, flipped **ON** by Daniel 2026-07-06.
+- [x] Feature branch deleted; scope-doc frontmatter `status: shipped`.
 
 ## Sprints
 
@@ -123,9 +124,7 @@ touches.
   [#172](https://github.com/danybgoode/miyagisanchezcommerce/pull/172) → `5623f97`. Dark behind
   `ml.orders_enabled`. **Owed:** the live ML-sandbox cancel/refund + notification + entitlement-upsell
   walkthrough (sprint-2.md steps 7–12) — Daniel is running this on prod himself.
-- [sprint-3.md](sprint-3.md) — Workflow: tags, bulk actions, agent parity. Built; backend PR
-  [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) (draft) + frontend PR
-  [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174) (draft), both green on the
-  deterministic gate. Risk **HIGH** for merge (US-8's `[id]/route.ts` extraction is fulfillment-adjacent)
-  — Daniel merge required. **Owed:** batch-day live walkthrough + `list_orders` agent round-trip
-  (sprint-3.md steps 10–12).
+- [sprint-3.md](sprint-3.md) — ✅ merged 2026-07-06. Workflow: tags, bulk actions, agent parity.
+  Backend PR [#59](https://github.com/danybgoode/medusa-bonsai-backend/pull/59) → `0611d73`; frontend
+  PR [#174](https://github.com/danybgoode/miyagisanchezcommerce/pull/174) → `bef747d`. **Owed:**
+  batch-day live walkthrough + `list_orders` agent round-trip (sprint-3.md steps 10–12).

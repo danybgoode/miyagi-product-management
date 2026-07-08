@@ -10,10 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (2)
 
-- [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 6/8 stories
-- [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
+- [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 7/8 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
 
 ## 📋 Ready to build (scaffolded, not started) (7)
@@ -26,7 +25,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (83)
+## ✅ Shipped (84)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
@@ -46,6 +45,7 @@
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 13/13 stories
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 9/9 stories
 - [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 15/15 stories
+- [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10](../../03-selling-and-shops/seller-unclaimed-bug-sweep/README.md) — 03 Selling & Shops · 7/7 stories · risk: High
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 4/4 stories
@@ -119,7 +119,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -127,8 +127,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| ML orders, native — Mercado Libre sales land as real Medusa orders | In progress | Shipped |
 | Own-shop premium presentation — "stepping into StickerJunkie" | In progress | Shipped |
 
 ---
-_Epics: 94 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 94 · seeds in funnel: 4 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
