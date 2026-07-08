@@ -97,6 +97,15 @@ absent → default `false`), so every assertion here is a **flag-OFF** assertion
 `https://medusa-web-91083034475.us-east4.run.app`. Store calls need the prod publishable key header
 `x-publishable-api-key: <MEDUSA_PUBLISHABLE_KEY>` (same value the storefront uses).
 
+**✅ Ran 2026-07-08 (agent, flag OFF) — steps 1, 3, 4 PASS.** Prod `/health` → 200. On an MXN cart
+(region `reg_01KSK1…`, a priced $100 item), `POST /store/carts/:id/start-checkout` with
+`fulfillment_method:'rental'` + a `rental` date block returned **422 `RENTAL_PRICING_UNAVAILABLE`**
+with the es-MX coordinate message; adding `offer_amount_cents:1` returned the **identical 422** (tamper
+inert while dark). Confirms the S1 branch is deployed and reading the flag OFF. (Note: the prod store
+is priced in **MXN** — region `reg_01KSK1HZAWN5ZCSPZ74ER97HD9`, not the EUR region; use MXN for a
+priced cart. Step 5 non-rental not re-run to avoid creating a real payment session; covered by the
+unit regression + the `fulfillment_method==='rental'` gate.)
+
 Agent-runnable (no login):
 
 1. **Deploy is live.** `curl -s https://medusa-web-91083034475.us-east4.run.app/health` → `200`/OK.
