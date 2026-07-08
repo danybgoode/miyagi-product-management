@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (facet browse) MERGED 2026-07-07: BE #66 squash bf923ad, FE #185 squash d5e41f9, backend-first; both had clean gating pr-reviews + codex advisories addressed. Sprint 2 (PDP trust + $/mes) MERGED 2026-07-08: FE #188 squash b522511, frontend-only (no BE change), clean gating pr-review + codex advisory addressed. Owed: real-device smoke + disclaimer copy sign-off. Sprint 3 in progress: 3.2 (`/vende/autos` seller page, generalized beyond tratocar per Daniel's steer) built on `feat/cars-vertical-tratocar-parity-s3`; 3.1 (demo shop dry-run) blocked on Daniel's account/agent-token handoff.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (facet browse) MERGED 2026-07-07: BE #66 squash bf923ad, FE #185 squash d5e41f9, backend-first; both had clean gating pr-reviews + codex advisories addressed. Sprint 2 (PDP trust + $/mes) MERGED 2026-07-08: FE #188 squash b522511, frontend-only (no BE change), clean gating pr-review + codex advisory addressed. Sprint 3 (outreach readiness) MERGED 2026-07-08: FE #192 squash 90897e47 — /vende/autos seller page (generalized beyond tratocar per Daniel's steer) + a real create_listing MCP bug fix found during the demo-catalog dry-run (autos attrs were silently dropped). 10-car demo catalog + OSPP dressing applied live to /s/autos-demo-miyagi-sanchez via the seller MCP tools. Owed (all sprints): real-device smoke + $/mes disclaimer copy sign-off (S2); Daniel connects a payment method to flip the demo catalog publicly visible (S3).
 slug: cars-vertical-tratocar-parity
 ---
 
@@ -56,15 +56,15 @@ upload. Rules #3/#5 hold.
 | 2 | 2.2 PDP renders them: $/mes beside price, "Inspeccionado — ver reporte", warranty chip; $/mes chip on cards | LOW-MED |
 | 2 | 2.3 Import mapping: bulk-import/agent-setup accept + normalize the new fields | LOW |
 | 3 | 3.1 Dry-run: 10-car demo catalog via the agent path; fix friction; dress the demo shop | LOW |
-| 3 | 3.2 BD one-pager for tratocar (es-MX), `/vende` funnel patterns; Daniel sends it | LOW (ops) |
+| 3 | 3.2 `/vende/autos` seller page (reframed from a tratocar-only one-pager to a general car-seller pitch, per Daniel's steer) | LOW |
 
 ## Deploy order
 S1 → S2 → S3 (S3 is ops-heavy). No flags; additive. Keep `/l` performance (no static-shell regression).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; sprints ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written · poster updated · memory updated · learnings promoted
-- [ ] $/mes disclaimer copy read + approved by Daniel pre-merge (legal sensitivity)
-- [ ] Feature branch deleted; frontmatter `status: shipped` (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; sprints ticked with commit refs
+- [x] `RETROSPECTIVE.md` written · poster updated · memory updated · learnings promoted
+- [ ] $/mes disclaimer copy read + approved by Daniel pre-merge (legal sensitivity) — **owed**, from S2
+- [x] Feature branch deleted; frontmatter `status: shipped` (run `node scripts/build-order.mjs`)

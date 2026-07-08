@@ -886,6 +886,39 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   by a cross-agent (codex) review, not the unit suite (which only tested the pure math, not the
   cache-freshness assumption). *(2026-07-06, profit-analyzer S2 — the fee-estimate cache + `PricingCard`'s
   Apply flow.)*
+- **A single-item MCP tool and the bulk-import engine it's supposed to reuse can silently diverge on
+  field coverage — a schema/contract test alone won't catch it, only actually calling the tool does.**
+  `create_listing` (single-listing MCP tool) and `catalog-import.ts`'s `stageRow()`/`validateRows()`
+  (bulk-import engine) both existed and both "supported" autos vehicle-spec + financing/trust fields on
+  paper, but `create_listing`'s handler built its internal `raw` object from a hand-maintained field
+  list that predated those columns — so every car created via the agent tool silently landed with none
+  of them (no facets, no $/mes, no inspection/warranty). This was found only by actually driving the
+  demo-catalog dry-run against a real shop with a real agent token, not by reading the code or trusting
+  the tool's own inputSchema. When a shared validator/engine gains a new field, grep every OTHER caller
+  of it (not just the one you're actively extending) to confirm each caller's own field-forwarding list
+  was updated too. *(2026-07-08, cars-vertical-tratocar-parity S3 — `handleCreateListing` in
+  `app/api/ucp/mcp/route.ts`.)*
+- **An MCP tool's declared `inputSchema`/description can under-document a capability the handler
+  already implements — confirm with a real live call before writing new pass-through code.**
+  `patch_store_configuration`'s `profile` block description didn't mention `theme_preset`/
+  `announcement`/`hero` at all, but the handler forwards the *entire* `configuration` object
+  unfiltered to `applyStoreConfig()` — so those fields already worked functionally the moment they were
+  added elsewhere (own-shop-premium-presentation S1). A single `curl` round-trip against the real tool
+  (not just reading the schema or the handler in isolation) distinguished "needs a doc fix" (extend the
+  description) from "needs a code fix" (add new forwarding logic) — writing the latter when only the
+  former was needed would have been pure duplication. *(2026-07-08, cars-vertical-tratocar-parity S3.)*
+- **A shop with zero PUBLISHED listings won't render its own storefront dressing (hero/announcement/
+  theme), and a platform's payment-method gate is correctly NOT agent-bypassable — budget "make it
+  publicly visible" as a human step, not something an agent-populated demo can finish alone.** Creating
+  10 demo products + a full OSPP config (theme/hero/announcement) via MCP on a fresh shop all persisted
+  correctly (confirmed via `get_store_configuration`), but every physical listing landed `paused`
+  because `listingActivationBlock`'s sale-readiness guardrail needs BOTH a delivery method AND a
+  payment method configured, and payment is deliberately OAuth/manual-only with zero MCP path (as it
+  should be — an agent token should never be able to touch payment credentials). With zero published
+  listings, the shop page shows an honest empty state instead of the configured dressing. When planning
+  an "agent populates a demo/test shop" story, the final "flip it publicly visible" step is a human
+  action to name explicitly up front, not a gap to discover at the end. *(2026-07-08,
+  cars-vertical-tratocar-parity S3.1.)*
 
 ## Medusa gotchas
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the

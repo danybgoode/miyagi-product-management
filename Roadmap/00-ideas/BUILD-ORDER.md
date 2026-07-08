@@ -10,9 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (0)
 
-- [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 7/8 stories
+_None._
 
 ## 📋 Ready to build (scaffolded, not started) (7)
 
@@ -24,8 +24,9 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (85)
+## ✅ Shipped (86)
 
+- [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
 - [Homepage Selección: bug sweep + admin curation + dynamic rotation](../../01-discovery-and-shopping/homepage-seleccion-curation/README.md) — 01 Discovery · 8/8 stories
