@@ -10,10 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (1)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 7/8 stories
-- [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
 
 ## 📋 Ready to build (scaffolded, not started) (7)
 
@@ -25,7 +24,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (84)
+## ✅ Shipped (85)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
@@ -70,6 +69,7 @@
 - [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 7/7 stories
 - [Own channel: custom-domain polish (custom-domain-polish)](../../07-agentic-and-federated-commerce/custom-domain-polish/README.md) — 07 Agentic/Federated · 7/7 stories · risk: Low
 - [Own channel: full shop experience (own-shop-experience)](../../07-agentic-and-federated-commerce/own-shop-experience/README.md) — 07 Agentic/Federated · 8/8 stories · risk: Low · Wave 3
+- [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
 - [Pretty URL: customizable shop slug (custom-slugs)](../../07-agentic-and-federated-commerce/custom-slugs/README.md) — 07 Agentic/Federated · 5/5 stories
 - [Short links (`mschz.org/shop` and `mschz.org/product`)](../../07-agentic-and-federated-commerce/short-links/README.md) — 07 Agentic/Federated · 4/4 stories
 - [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 6/6 stories
@@ -119,15 +119,5 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
-
-These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
-derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
-forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
-
-| Epic | frontmatter (used) | sprint/retro-derived |
-|---|---|---|
-| Own-shop premium presentation — "stepping into StickerJunkie" | In progress | Shipped |
-
 ---
-_Epics: 94 · seeds in funnel: 4 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 94 · seeds in funnel: 4 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

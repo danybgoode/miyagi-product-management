@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped — PR #173 merged to main (squash 8b1abb1), 2026-07-04; cross-agent review findings fixed pre-merge (f02403d). Sprint 2 shipped — backend PR #65 (squash 667c607) + frontend PR #182 (squash ed905d7), 2026-07-07; 6 real bugs found (cross-review + fresh reviewer) and fixed pre-merge, both PRs independently re-verified safe-to-merge. Sprint 3 shipped — frontend PR #183 (squash a72bde8), 2026-07-07, frontend-only (no backend touch); 3 findings from cross-agent review fixed pre-merge (hardcoded English copy, a FAQ authored-state defensive gap, one unused import), fresh pr-reviewer pass clean. Owed: Daniel's click-through smoke + real-device contrast eyeball (sprint-1.md), the real-domain hostname-branch smoke + backend Cloud Run deploy confirmation (sprint-2.md), and the miyagiprints dress-up + full flagship real-device walkthrough + before/after screenshots (sprint-3.md — Story 3.3 checklist). All 3 sprints now merged; epic close (retro + poster + LEARNINGS) awaits those live smokes.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped — PR #173 merged to main (squash 8b1abb1), 2026-07-04; cross-agent review findings fixed pre-merge (f02403d). Sprint 2 shipped — backend PR #65 (squash 667c607) + frontend PR #182 (squash ed905d7), 2026-07-07; 6 real bugs found (cross-review + fresh reviewer) and fixed pre-merge, both PRs independently re-verified safe-to-merge. Sprint 3 shipped — frontend PR #183 (squash a72bde8), 2026-07-07, frontend-only (no backend touch); 3 findings from cross-agent review fixed pre-merge (hardcoded English copy, a FAQ authored-state defensive gap, one unused import), fresh pr-reviewer pass clean. EPIC SHIPPED 2026-07-08 — RETROSPECTIVE.md + poster + memory done; DoD closed with Daniel's live smokes stated as owed (S1 click-through/contrast eyeball, S2 real-domain hostname smoke + Cloud Run confirmation, S3 miyagiprints dress-up + before/after screenshots), not blocking — no flag gates any of this feature (additive-by-construction), so these are visual confirmations, not activation gates.
 slug: own-shop-premium-presentation
 ---
 
@@ -66,11 +66,11 @@ S1 → S2 → S3. Within S2: backend grouping before the frontend nav; the middl
 at every step, no flag needed.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)

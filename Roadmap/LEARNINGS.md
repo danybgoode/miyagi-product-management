@@ -888,6 +888,22 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Apply flow.)*
 
 ## Medusa gotchas
+- **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the
+  wrong one structurally fails a "belongs to several groups" acceptance, and don't guess which is which
+  from the name.** Reading `@medusajs/product`'s installed model source directly (not documentation
+  memory) settled it in plan mode, before any code — Category was the only primitive that could satisfy
+  "a listing lives in multiple seller-defined collections" at all. *(2026-07-07, own-shop-premium-
+  presentation S2 — seller-defined collections.)*
+  **Corollary — a positional read on a to-many relationship (`arr[0]`) that "works" today because of an
+  unstated cardinality assumption becomes a silent-failure landmine the moment a SECOND feature starts
+  writing to that same relationship.** The app already derived "the" product category positionally
+  (`categories?.[0]?.handle`) — correct only because every product had 0-or-1 category at the time.
+  Attaching seller collections to the identical many-to-many pivot would have let `[0]` silently return
+  a seller collection instead of the platform category, breaking the site's main category filter — caught
+  in the SAME plan-mode source-read above, fixed as a standalone preliminary story (explicit
+  platform-vs-collection split) that shipped *before* the feature that would have triggered it. When
+  extending a data model another feature already reads positionally, grep for every `[0]`/`.first()`-style
+  read on that relationship before assuming the existing code stays safe. *(2026-07-07, same sprint.)*
 - **`productModuleService.updateProducts` is `(id|selector, data)` — never pass one merged object.**
   A single-arg call `updateProducts({id, title, metadata})` is read as a **selector**: Medusa builds a
   `WHERE` from every field (incl. the whole `metadata` jsonb) and matches 0 rows → the write 500s
