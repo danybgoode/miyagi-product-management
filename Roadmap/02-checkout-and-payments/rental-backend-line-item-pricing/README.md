@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (backend charge rail) MERGED 2026-07-07: PR #67 squash 8e41d18, HIGH-risk Daniel-authorized merge-on-green, ships dark behind checkout.rental_pricing_enabled (default false). Clean gating pr-review + codex advisory addressed pre-merge (ad90a71). S2 (web checkout + PDP flip) + S3 (agent parity) open. Flag flip + flag-ON money smoke owed (Daniel).
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (backend charge rail) MERGED 2026-07-07: PR #67 squash 8e41d18, HIGH-risk Daniel-authorized merge-on-green, ships dark behind checkout.rental_pricing_enabled (default false). Clean gating pr-review + codex advisory addressed pre-merge (ad90a71). Flag-OFF prod smoke PASSED 2026-07-08. S2 (web checkout + PDP flip + order-surface rendering, 3 stories incl. Story 2.3 added at kickoff) BUILT — 3 commits (f128ca4/98dd625/9316c42) on feat/rental-backend-line-item-pricing-s2, PR open, awaiting Daniel merge (HIGH-risk). S3 (agent parity) open. Flag flip + flag-ON money smoke still owed (Daniel).
 slug: rental-backend-line-item-pricing
 ---
 
@@ -54,9 +54,10 @@ amount is ignored.
 |---|---|---|
 | 1 | 1.1 Backend pure pricing seam (port `rental-pricing` + pesos→cents deposit normalization) + unit specs | LOW |
 | 1 | 1.2 `start-checkout` rental branch behind the flag: dates in → server-recomputed total charged (all providers) → `rental_booking` metadata block on cart→order; 422 on invalid/malformed/flag-OFF; tamper spec | HIGH |
-| 1 | 1.3 Order surfaces: buyer + seller order pages, both emails, in-chat ledger show dates + itemized deposit (normalizer-derived); deposit line sits next to the existing refund action | LOW |
-| 2 | 2.1 `/checkout` rental mode: `checkIn/checkOut` params → same breakdown the PDP showed → dates threaded through `startCheckout`; invalid dates redirect to PDP | HIGH |
-| 2 | 2.2 PDP flip behind the flag: ON → "Reservar estas fechas" deep-links to checkout with dates; OFF (or seller has no payment method) → today's AskSeller, byte-for-byte | LOW |
+| 1 | 1.3 Order surfaces: buyer + seller order pages, both emails, in-chat ledger show dates + itemized deposit (normalizer-derived); deposit line sits next to the existing refund action — backend half shipped in S1 (`31e9bbe`), frontend rendering deliberately deferred → done as Story 2.3 below | LOW |
+| 2 | ✅ 2.1 `/checkout` rental mode: `checkIn/checkOut` params → same breakdown the PDP showed → dates threaded through `startCheckout`; invalid dates redirect to PDP (`f128ca4`) | HIGH |
+| 2 | ✅ 2.2 PDP flip behind the flag: ON → "Reservar estas fechas" deep-links to checkout with dates; OFF (or seller has no payment method) → today's AskSeller, byte-for-byte (`98dd625`) | LOW |
+| 2 | ✅ 2.3 Order-surface rendering (added at S2 kickoff, closes the S1.3 handoff): buyer/seller order pages, both emails, in-chat ledger show rental dates + itemized deposit (`9316c42`) | LOW |
 | 3 | 3.1 Agent parity: `checkout-session` accepts `check_in`/`check_out` → `rental_quote` breakdown + dated checkout URLs; MCP `get_checkout_options` parity; date-less calls keep rate+deposit clearly labeled | LOW |
 
 ## Deploy order
