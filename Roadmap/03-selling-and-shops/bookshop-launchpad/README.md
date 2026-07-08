@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress
 slug: bookshop-launchpad
 ---
 

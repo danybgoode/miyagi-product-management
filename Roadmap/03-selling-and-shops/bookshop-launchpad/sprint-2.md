@@ -1,10 +1,11 @@
 # Bookshop launchpad — Sprint 2: The excerpt + the shelf
 
-**Status:** ✅ built on `feat/bookshop-launchpad` (frontend-only) — awaiting PR review + merge.
-- Story 2.1 ✅ — excerpt "Lee un adelanto" on digital PDPs (commit `29eafe1`)
-- Story 2.2 ✅ — the "Convocatoria" launchpad shelf (commit `3dc9e26`)
-- Gate green: `tsc --noEmit` + `next build` + Playwright `api` (excerpt.spec.ts + launchpad-shelf.spec.ts, 23 pure tests).
-- Behind `launchpad.enabled` (default OFF). Real-phone reading UX + the money path are **owed to Daniel**.
+**Status:** ✅ MERGED to `main` 2026-07-07 (squash `a398d98`, PR #187, frontend-only, LOW).
+- Story 2.1 ✅ — excerpt "Lee un adelanto" on digital PDPs (`29eafe1`)
+- Story 2.2 ✅ — the "Convocatoria" launchpad shelf (`3dc9e26`); cross-review fixes (`40d7a3c`)
+- Gate green in CI: `tsc --noEmit` + `next build` + Playwright `api` vs preview (excerpt.spec.ts + launchpad-shelf.spec.ts, 23 pure tests).
+- Codex cross-review: 2 real should-fixes applied (published-only shelf filter · honest partial-assignment); 1 "blocking" declined as a verified false positive.
+- Behind `launchpad.enabled` (default OFF). Real-phone reading UX + the shelf-confirm on a live shop are **owed to Daniel** (see walkthrough); Daniel flips the flag ON in prod.
 
 **Plan-mode decisions (2026-07-07):**
 - **Excerpt = text only.** Best mobile-data UX — no pdf.js, no binary, no server rasterization. Stored inline
