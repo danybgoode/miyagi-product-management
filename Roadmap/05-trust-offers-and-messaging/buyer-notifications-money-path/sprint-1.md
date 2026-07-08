@@ -1,9 +1,20 @@
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 1: Medusa-order buyer identity — gating bites
 
-**Status:** ✅ built, PRs open (draft) — [backend #70](https://github.com/danybgoode/medusa-bonsai-backend/pull/70)
-(1.1 `55e5b06`) · [frontend #194](https://github.com/danybgoode/miyagisanchezcommerce/pull/194)
-(1.3 `cfe005f`, 1.2 `f8a940b`). Deterministic gate green both repos. Owed: Daniel's merge + the
-money-path smoke below.
+**Status:** ✅ built, cross-reviewed, PRs open (draft) — [backend #70](https://github.com/danybgoode/medusa-bonsai-backend/pull/70)
+(1.1 `55e5b06`, review-fix `143f28e`) · [frontend #194](https://github.com/danybgoode/miyagisanchezcommerce/pull/194)
+(1.3 `cfe005f`, 1.2 `f8a940b`, review-fix `0f62bfb`). Deterministic gate green both repos. Owed:
+Daniel's merge + the money-path smoke below.
+
+**Cross-agent review (Codex, both PRs) — one real finding, fixed:** the seller orders list/detail
+server components (`app/(shell)/shop/manage/orders/{page.tsx,[id]/page.tsx}`) were spreading the
+full `normalizeMedusaOrder` object — including `buyer_clerk_user_id`, a stable Clerk auth
+identifier — into `'use client'` component props via RSC serialization. Fixed with a new
+`stripBuyerClerkId()` helper in `lib/order-buyer.ts`, applied at both call sites, with new
+Playwright coverage. Also fixed two smaller findings: the flag-seed migration's `polarity` string
+didn't match the rest of the codebase's `'killswitch'` spelling, and a dispatch-site comment was
+ambiguous about whether "absent" meant the flag or the buyer id. One claimed blocking finding
+(missing `isEnabled` import) was a false positive — `tsc` was clean before and after. Full detail
+in the PR comment threads.
 
 > Two repos: 1.1 is `apps/backend` (Cloud Run, no preview, ~12 min); 1.2/1.3 are `apps/miyagisanchez`.
 > Deploy order: backend-first, and the frontend is null-safe regardless (unresolved buyer → today's
