@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress   # Sprint 1 (nav group + catalog table) built, PR open: BE c28a6c3+d50c65a, FE f3e9f86+9e55ffd+ba3dc70. Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3. Owed: Daniel's real-phone table smoke. S2-S4 not yet started.
 slug: catalog-management
 ---
 
@@ -51,9 +51,9 @@ Medusa price sets (CPP S2's qty tiers included). No Supabase catalog tables.
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| 1 | 1.1 Seller-nav restructure: Catálogo group (Anuncios · Colecciones · Canales · Precios · Importar); rail = Operar / Catálogo / Crecer / Configuración | LOW |
-| 1 | 1.2 `/shop/manage/catalogo` server-filtered paginated table (search/status/channel/stock/category; saved views; sort) | MED |
-| 1 | 1.3 Status model surfaced: activo / borrador / pausado / agotado as first-class filters | LOW |
+| 1 | ✅ 1.1 Seller-nav restructure: Catálogo group (Anuncios · Colecciones · Canales · Precios · Importar); rail = Operar / Catálogo / Crecer / Configuración | LOW |
+| 1 | ✅ 1.2 `/shop/manage/catalogo` server-filtered paginated table (search/status/channel/stock/category; saved views; sort) | MED |
+| 1 | ✅ 1.3 Status model surfaced: activo / borrador / pausado / agotado as first-class filters | LOW |
 | 2 | 2.1 Inventory modes: tracked (available vs reservado) / sin límite / sobre pedido — editor + table + buy-box/checkout honor them | HIGH |
 | 2 | 2.2 Per-channel publish toggles (Miyagi / ML) + channel badges; UCP respects marketplace visibility | HIGH |
 | 2 | 2.3 ML price override per product (publish parity carries it); both prices in the table | MED |
