@@ -13,7 +13,7 @@
 ## 🏗️ Building now (5)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 6/8 stories
-- [Rental line-item pricing — charge nights × rate + deposit online](../../02-checkout-and-payments/rental-backend-line-item-pricing/README.md) — 02 Checkout & Payments · 3/6 stories · risk: High · backlog
+- [Rental line-item pricing — charge nights × rate + deposit online](../../02-checkout-and-payments/rental-backend-line-item-pricing/README.md) — 02 Checkout & Payments · 6/7 stories · risk: High · backlog
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 5/8 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
