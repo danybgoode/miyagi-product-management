@@ -16,15 +16,19 @@ new Medusa order placed while signed in; a guest order still returns `null`; res
 unchanged (existing consumers unaffected).
 **Risk:** high (backend, order surface)
 
-### Story 1.2 — Persist + resolve the buyer id so Envíos/Devoluciones gating bites on Medusa orders
+### Story 1.2 — Resolve the buyer id at dispatch time so Envíos/Devoluciones gating bites on Medusa orders
 **As a** buyer who toggled Envíos or Devoluciones, **I want** those choices to apply to my Medusa orders,
 **so that** the toggles I already have stop being inert for the majority order type.
-**Acceptance:** after a new signed-in Medusa order, the mirror row carries the buyer's Clerk id
-(webhooks pass `session.metadata.buyer_clerk_id` → `upsertOrderMirror`; lookup keys
-`metadata->>medusa_order_id`, not row `id`); when the seller marks it shipped, the buyer's Envíos prefs
-gate the send (Push/TG if opted in; email off if they turned it off); an old order without a persisted id
-behaves exactly as today (email fall-through — **no backfill**); guest orders unchanged.
-**Risk:** high (order webhooks touched, fulfillment dispatch)
+**Acceptance:** `ship-manual`, `ship`, and `return-request/[requestId]` already re-fetch the order from
+`GET /store/sellers/me/orders/:id` (the Medusa-order branch) for other fields — once Story 1.1 ships, each
+reads the now-populated `buyer_clerk_user_id` off that same response (gated by the Story 1.3 flag) instead
+of hardcoding/discarding it; when the seller marks it shipped, the buyer's Envíos prefs gate the send
+(Push/TG if opted in; email off if they turned it off); guest orders unchanged.
+**Revised from the original scope** (2026-07-08, in-session with Daniel): persisting the buyer id onto the
+Supabase order-mirror row (webhooks → `upsertOrderMirror`) moves to **Sprint 2**, since Sprint 2 already
+edits the same Stripe/MP webhook files for Compras dispatch — one round of webhook surgery instead of two.
+This story's acceptance (gating bites on ship/return) is fully met without touching the webhooks at all.
+**Risk:** high (fulfillment dispatch routes touched)
 
 ### Story 1.3 — Kill-switch flag `notifications.buyer_moneypath_enabled`
 **As** the product owner, **I want** one flag that instantly reverts both new paths to today's behavior,
@@ -36,9 +40,9 @@ is byte-for-byte today's.
 **Risk:** high (shared flag infra, money seam)
 
 ## Sprint QA
-- **api spec(s):** pure-logic spec on the extracted buyer-resolution seam (e.g. `lib/order-buyer.ts` —
-  mirror-row/normalizer-field precedence, null-safety, flag-off short-circuit); backend unit test for the
-  `normalizeMedusaOrder` mapping (rides `npm run test:unit` in the backend CI gate).
+- **api spec(s):** pure-logic spec on the extracted buyer-resolution seam (`lib/order-buyer.ts` —
+  null-safety, flag-off short-circuit); backend unit test for the `normalizeMedusaOrder` mapping (rides
+  `npm run test:unit` in the backend CI gate).
 - **browser smoke owed:** yes, to **Daniel** — real signed-in Medusa purchase + seller ship + buyer
   Envíos toggle (money/auth path; no per-branch backend preview).
 - **deterministic gate:** frontend `tsc --noEmit` + `npm run build` + Playwright `api`; backend

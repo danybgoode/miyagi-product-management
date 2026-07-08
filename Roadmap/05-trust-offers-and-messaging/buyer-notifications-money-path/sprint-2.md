@@ -16,6 +16,16 @@ the receipt reaches me in real time, not only by email.
 arrive iff opted in; the confirmation email is unchanged byte-for-byte and cannot be turned off (resolver
 forces Compras email on); webhook idempotency + the guest fall-through preserved (guest ⇒ email only,
 nothing new fires); fire-and-forget — a dispatch failure never breaks the webhook response.
+**Inherited from Sprint 1** (rescoped 2026-07-08): this story also does the mirror-row persistence
+originally slated for S1.2 — add an explicit `fields` param to the `/store/carts/:id/complete` call in
+`completeMedusaCart`/`handleMedusaCheckoutComplete` (`app/api/webhooks/stripe/route.ts`) that preserves
+every field the handler already consumes off `data.order` **plus** `customer.metadata`, extract
+`data.order.customer?.metadata?.clerk_user_id`, add `buyerClerkId?: string | null` to `OrderMirrorInput`
+(`lib/order-mirror.ts` — the underlying `marketplace_orders.buyer_clerk_user_id` column already exists,
+no migration needed) and thread it through the `upsertOrderMirror` call, gated by
+`notifications.buyer_moneypath_enabled` (else pass `null`, reproducing today's row exactly). Remember:
+Medusa's `fields` param *replaces* the default field list, not appends — enumerate the full list actually
+read off `data.order` before finalizing the string.
 **Risk:** high (live Stripe webhook)
 
 ### Story 2.2 — MP webhook + `finalize-manual` route Compras the same way
@@ -23,6 +33,9 @@ nothing new fires); fire-and-forget — a dispatch failure never breaks the webh
 **so that** Compras behaves identically across payment rails.
 **Acceptance:** same checks as 2.1 on the MP webhook and on `finalize-manual` (Clerk-authed — buyer id
 from `auth()`); manual-order pending-payment email unchanged.
+**Inherited from Sprint 1** (rescoped 2026-07-08): same `fields`+`customer.metadata` + `OrderMirrorInput`
+treatment as 2.1, applied to **both** completion helpers in `app/api/webhooks/mercadopago/route.ts`
+(`completeMedusaCartWithMp` and `completeMedusaCart`).
 **Risk:** high (live MP webhook + manual money path)
 
 ### Story 2.3 — Grid: Compras × Push/Telegram cells go live
