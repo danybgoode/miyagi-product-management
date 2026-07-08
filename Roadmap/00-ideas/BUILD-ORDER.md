@@ -10,10 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 6/8 stories
-- [Rental line-item pricing — charge nights × rate + deposit online](../../02-checkout-and-payments/rental-backend-line-item-pricing/README.md) — 02 Checkout & Payments · 6/7 stories · risk: High · backlog
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
 
@@ -27,7 +26,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (82)
+## ✅ Shipped (83)
 
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
@@ -39,6 +38,7 @@
 - [Selección: make admin pins authoritative](../../01-discovery-and-shopping/seleccion-pins-authoritative/README.md) — 01 Discovery · 5/5 stories
 - [Checkout & Manual-Payment State Hardening](../../02-checkout-and-payments/checkout-state-hardening/README.md) — 02 Checkout & Payments · 9/9 stories · risk: High · Wave 2
 - [Delivery & Manual-Money Polish](../../02-checkout-and-payments/delivery-money-polish/README.md) — 02 Checkout & Payments · 8/8 stories · risk: High · Wave 3
+- [Rental line-item pricing — charge nights × rate + deposit online](../../02-checkout-and-payments/rental-backend-line-item-pricing/README.md) — 02 Checkout & Payments · 7/7 stories · risk: High · backlog
 - [Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)](../../03-selling-and-shops/agent-native-setup/README.md) — 03 Selling & Shops · 7/7 stories · risk: High
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 8/8 stories
 - [Bulk Import & Express Migration](../../03-selling-and-shops/bulk-import-migration/README.md) — 03 Selling & Shops · 17/17 stories · risk: High
