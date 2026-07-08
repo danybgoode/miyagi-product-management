@@ -1,5 +1,5 @@
 ---
-status: in-progress   # Sprint 1 (nav group + catalog table) built, PR open: BE c28a6c3+d50c65a, FE f3e9f86+9e55ffd+ba3dc70. Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3. Owed: Daniel's real-phone table smoke. S2-S4 not yet started.
+status: in-progress   # Sprint 1 (nav group + catalog table) MERGED 2026-07-08: BE PR#69 squash 84ee9bd, FE PR#193 squash eada2a0. Both live in prod (Cloud Run medusa-web-00144-h5s; Vercel dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2). Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3; codex cross-review caught + fixed a real status_counts scoping bug pre-merge. Owed: Daniel's real-phone table smoke. S2-S4 not yet started.
 slug: catalog-management
 ---
 

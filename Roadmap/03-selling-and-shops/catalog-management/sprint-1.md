@@ -1,6 +1,6 @@
 # Catalog management — Sprint 1: The Catálogo home (nav group + table)
 
-**Status:** ✅ built, PR open (real-phone table smoke owed to Daniel)
+**Status:** ✅ MERGED 2026-07-08 — BE PR [#69](https://github.com/danybgoode/medusa-bonsai-backend/pull/69) squash `84ee9bd`, FE PR [#193](https://github.com/danybgoode/miyagisanchezcommerce/pull/193) squash `eada2a0`. Both deployed and confirmed live (Cloud Run revision `medusa-web-00144-h5s`; Vercel prod `dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2`). Real-phone table smoke still owed to Daniel.
 
 ## Stories
 
@@ -22,13 +22,44 @@
 **Risk:** LOW
 **Built:** ✅ BE `c28a6c3`, FE `9e55ffd`. Discovered during build: "pausado" and "borrador" were previously **indistinguishable** — the PATCH route mapped both to Medusa's native `status: 'draft'`, and the only place the distinction lived (a Supabase mirror column) got silently overwritten back to the Medusa-derived value on every dashboard reload. Fixed at the root: the PATCH route now also sets `metadata.paused` on the Medusa product in the same call that flips status; `toListingShape` (the one shared listing normalizer) derives `'paused'` from it. `lib/catalog-status.ts`'s `deriveCatalogStatus()` is the pure, unit-tested four-state deriver (agotado takes precedence over activo for a sold-out managed item); status chips show live counts per state.
 
+## Cross-agent review (codex) — real findings, fixed pre-merge
+`node scripts/cross-review.mjs` ran on both PRs. Two real bugs caught and fixed before merge
+(commits on top of the story commits above):
+- **BE, blocking:** `status_counts` was computed AFTER a coarse native-status pushdown
+  (`dbFilters.status`) had already narrowed the DB fetch — filtering by e.g. `status=activo`
+  zeroed out the other buckets instead of reflecting every status for the active
+  q/category/channel/stock filters. Fixed: `status` is no longer pushed to the DB filter at all;
+  the full split stays in-memory, computed before the `statusParam` filter narrows the set.
+- **FE, should-fix ×3:** `?page=<non-numeric>` produced `NaN` (propagating as `offset=NaN` to the
+  backend); a failed `/store/sellers/me/products` call silently rendered as an empty catalog
+  instead of surfacing an error; `hasAnyFilter` counted the `page` param itself, showing a
+  misleading "Limpiar filtros" on page 2 with no real filters. All three fixed.
+- **FE, self-caught during merge sequencing (not from codex):** `CatalogTable`'s `listing.channels.includes(...)`
+  would throw if `channels` were ever absent — a real risk since backend (Cloud Run) has no
+  per-branch preview and deploys ~12min after merge with no gap-covering mechanism. Guarded with
+  a `['miyagi']` fallback so the page degrades instead of crashing during that window.
+- **Dismissed as not applicable** (reasoned through, not blindly accepted): a UCP/MCP
+  capability-manifest concern (this is a Clerk-authed seller-management endpoint, never part of
+  the buyer-facing UCP surface; MCP parity is the epic's own explicit Sprint 3.3, not an oversight);
+  a "commerce mutation via a custom Next route" concern (the PATCH/DELETE route is pre-existing,
+  not introduced this sprint, and delegates the actual mutation to the real Medusa Store API); the
+  pre-existing 2000-product ceiling (not a regression — matches the codebase-wide accepted
+  tolerance already documented in `toListingShape`'s own top comment).
+- **Known, accepted gap (documented, not fixed):** a soft-deleted-but-not-yet-natively-deleted
+  listing (the deploy-lag window before backend soft-delete ships) can still count toward the
+  backend's `count`/`status_counts` even though the frontend hides it from the rendered rows — a
+  narrow, self-resolving edge case (permanent no-op once backend soft-delete is live).
+- The fresh `pr-reviewer` subagent pass (the other half of the two-layer review process) hit an
+  account session-limit mid-run on both PRs and didn't complete — merge proceeded on the
+  completed cross-agent pass + this builder's own verification, per Daniel's explicit go-ahead.
+
 ## Sprint QA
 - **api spec(s):** `e2e/catalog-query.spec.ts` (filter-query builder — params → query, URL round-trip), `e2e/catalog-status.spec.ts` (status deriver — all four states + the fixed pausado/borrador regression), `e2e/seller-mode.spec.ts` (updated for the four-group nav)
 - **browser smoke owed:** yes, to Daniel — table on a real phone (miyagiprints + one large-catalog test shop), including the pause→reload→still-shows-Pausado check
 - **deterministic gate:** frontend `tsc --noEmit` + `npm run build` + Playwright `api` green; backend `medusa build` → `tsc --noEmit` → `npm run test:unit` green (264/264)
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: the branch's Vercel preview (pre-merge) · production https://miyagisanchez.com (post-merge)
+Env: production https://miyagisanchez.com (merged and live)
 
 1. Open `<preview-or-prod>/shop/manage` (as miyagiprints or another seller with products).
    → Rail shows Operar / Catálogo / Crecer / Configuración; dashboard shows a compact "Mis anuncios" card (thumbnails + count) instead of the old full grid.
