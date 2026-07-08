@@ -1,14 +1,26 @@
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 2: Compras on the money path + grid unlock
 
-**Status:** ⬜ not started
+**Status:** 🟡 Built — [PR #195](https://github.com/danybgoode/miyagisanchezcommerce/pull/195) open
+(draft), deterministic gate green (`tsc`+`build`+Playwright `api`). Commits: 2.1 `b2dab4b` · 2.2
+`2ff7f1c` · 2.3 `550c779` · 2.4 `4cbfff9` · specs `9112c99`. Owed: Daniel's money-path smoke below
+(steps 3-6, can't be self-run — real Stripe/MP/pago-directo purchases + Telegram delivery) + merge
+(HIGH — live payment webhooks).
 
 > Frontend-only (`apps/miyagisanchez`); follows Sprint 1. 2.1/2.2 edit the **live payment webhooks** —
 > HIGH, Daniel merges. **Compras email behavior stays byte-for-byte** (it already always fires; this
 > sprint only *adds* Push + Telegram behind the buyer's toggles and the Sprint-1 kill-switch).
 
+**Implementation note (found while building, not assumed):** the `fields` query param on Medusa's
+`/store/carts/:id/complete` supports a `+` prefix that **adds** to the default field set instead of
+replacing it (confirmed by reading the installed `@medusajs/framework` field-parser source, since
+mutating a real cart isn't a safe way to probe it) — so `fields=+customer.metadata` was enough to
+surface `customer.metadata.clerk_user_id` without needing to enumerate/replace every other field the
+webhook handlers already read off `data.order`. Simpler and lower-risk than the enumerate-and-replace
+approach this doc originally sketched.
+
 ## Stories
 
-### Story 2.1 — Stripe webhook routes Compras through `dispatchToBuyer`
+### Story 2.1 — Stripe webhook routes Compras through `dispatchToBuyer` ✅ `b2dab4b`
 **As a** signed-in buyer, **I want** my order/payment confirmations on the channels I chose, **so that**
 the receipt reaches me in real time, not only by email.
 **Acceptance:** after a Stripe purchase, `order_confirmed`/`payment_confirmed` fire through
@@ -23,12 +35,13 @@ every field the handler already consumes off `data.order` **plus** `customer.met
 `data.order.customer?.metadata?.clerk_user_id`, add `buyerClerkId?: string | null` to `OrderMirrorInput`
 (`lib/order-mirror.ts` — the underlying `marketplace_orders.buyer_clerk_user_id` column already exists,
 no migration needed) and thread it through the `upsertOrderMirror` call, gated by
-`notifications.buyer_moneypath_enabled` (else pass `null`, reproducing today's row exactly). Remember:
-Medusa's `fields` param *replaces* the default field list, not appends — enumerate the full list actually
-read off `data.order` before finalizing the string.
+`notifications.buyer_moneypath_enabled` (else pass `null`, reproducing today's row exactly). **Built as
+`fields=+customer.metadata`** (see the implementation note above) — the `+` prefix appends to Medusa's
+default field set instead of replacing it, so every field the handler already read off `data.order`
+stayed untouched with zero risk of dropping one.
 **Risk:** high (live Stripe webhook)
 
-### Story 2.2 — MP webhook + `finalize-manual` route Compras the same way
+### Story 2.2 — MP webhook + `finalize-manual` route Compras the same way ✅ `2ff7f1c`
 **As a** buyer paying via Mercado Pago or pago directo, **I want** the same channel choices to apply,
 **so that** Compras behaves identically across payment rails.
 **Acceptance:** same checks as 2.1 on the MP webhook and on `finalize-manual` (Clerk-authed — buyer id
@@ -38,14 +51,14 @@ treatment as 2.1, applied to **both** completion helpers in `app/api/webhooks/me
 (`completeMedusaCartWithMp` and `completeMedusaCart`).
 **Risk:** high (live MP webhook + manual money path)
 
-### Story 2.3 — Grid: Compras × Push/Telegram cells go live
+### Story 2.3 — Grid: Compras × Push/Telegram cells go live ✅ `550c779`
 **As a** buyer, **I want** the Compras Push/Telegram toggles to actually work, **so that** the grid stops
 promising "pronto".
 **Acceptance:** in `BuyerNotificationPreferences.tsx` the `lockedS2` lock is removed from Compras ×
 Push/Telegram (Compras × Email stays locked-on); toggles persist and are honored by 2.1/2.2 sends.
 **Risk:** low (non-commerce UI on an existing authed page)
 
-### Story 2.4 — Pref centers consume `{ rowDeleted }` on disconnect
+### Story 2.4 — Pref centers consume `{ rowDeleted }` on disconnect ✅ `4cbfff9`
 **As a** buyer/seller disconnecting Telegram for one audience, **I want** the center to say whether the
 link was removed or kept for my other role, **so that** the UI reflects reality instead of optimistically
 showing disconnected.
@@ -55,12 +68,20 @@ correctly (es-MX copy).
 **Risk:** low
 
 ## Sprint QA
-- **api spec(s):** pure-logic specs on the new `order_confirmed`/`payment_confirmed` builders in
-  `buyer-messages.ts` (extracted seam, no network); one authed api spec asserting the grid renders Compras
-  Push/Telegram as live toggles (reads `MS_TEST_*` secrets, **skips gracefully** when unset).
+- **api spec(s):** pure-logic completeness spec on the new `order_confirmed`/`payment_confirmed`
+  builders in `buyer-messages.ts` (extended the existing `BUYER_MESSAGE_KINDS`-driven loop in
+  `e2e/buyer-messages.spec.ts` + a dedicated amount-copy assertion — extracted seam, no network).
+- **browser spec (not api, revised from the original sketch):** `e2e/buyer-notification-prefs-compras.browser.spec.ts`
+  asserts the grid actually **renders** Compras × Push/Telegram as live toggles (and the old "pronto"
+  text is gone) — a rendered-DOM claim the network-only `api` project can't observe, so it lives in
+  the `browser` project per repo convention (gated `MS_TEST_BROWSER_AUTH`, **skips gracefully** when
+  unset), not as an api spec.
 - **browser smoke owed:** yes, to **Daniel** — the Stripe test-card + MP + pago-directo purchases below
   (money path; automated smoke can't cover capture → receipt).
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green — confirmed. 9
+  pre-existing failures (launchpad flag-state, promoter-applications rate-limiting, not-found-shape)
+  reproduce identically on unmodified `main` with this sprint's changes stashed — ruled out as
+  unrelated before opening the PR.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
