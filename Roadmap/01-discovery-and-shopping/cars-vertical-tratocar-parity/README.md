@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (facet browse) MERGED 2026-07-07: BE #66 squash bf923ad, FE #185 squash d5e41f9, backend-first; both had clean gating pr-reviews + codex advisories addressed. S2/S3 open.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (facet browse) MERGED 2026-07-07: BE #66 squash bf923ad, FE #185 squash d5e41f9, backend-first; both had clean gating pr-reviews + codex advisories addressed. Sprint 2 (PDP trust + $/mes) MERGED 2026-07-08: FE #188 squash b522511, frontend-only (no BE change), clean gating pr-review + codex advisory addressed. Owed: real-device smoke + disclaimer copy sign-off. S3 open.
 slug: cars-vertical-tratocar-parity
 ---
 
