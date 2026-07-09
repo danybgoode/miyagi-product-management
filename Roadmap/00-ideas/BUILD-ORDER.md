@@ -12,7 +12,7 @@
 
 ## 🏗️ Building now (3)
 
-- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 6/11 stories
+- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 9/11 stories
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
 - [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 5/8 stories
 
@@ -112,9 +112,8 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (5)
+## ⬜ Funnel — seeds not yet scaffolded (4)
 
-- [Seller-portal UX audit — apply the July-2026 refresh](seeds/seller-portal-ux-audit.md) — Ready · Epic · Wave 1
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
@@ -131,4 +130,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Buyer notifications — money path (Compras dispatch + Medusa-order gating) | Scaffolded | Shipped |
 
 ---
-_Epics: 94 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 94 · seeds in funnel: 4 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
