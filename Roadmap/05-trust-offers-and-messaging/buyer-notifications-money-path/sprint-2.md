@@ -1,10 +1,16 @@
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 2: Compras on the money path + grid unlock
 
-**Status:** 🟡 Built — [PR #195](https://github.com/danybgoode/miyagisanchezcommerce/pull/195) open
-(draft), deterministic gate green (`tsc`+`build`+Playwright `api`). Commits: 2.1 `b2dab4b` · 2.2
-`2ff7f1c` · 2.3 `550c779` · 2.4 `4cbfff9` · specs `9112c99`. Owed: Daniel's money-path smoke below
-(steps 3-6, can't be self-run — real Stripe/MP/pago-directo purchases + Telegram delivery) + merge
-(HIGH — live payment webhooks).
+**Status:** ✅ MERGED + LIVE 2026-07-08 — [PR #195](https://github.com/danybgoode/miyagisanchezcommerce/pull/195)
+squash `6a88810`. Deterministic gate green (`tsc`+`build`+Playwright `api`); pre-story commits: 2.1
+`b2dab4b` · 2.2 `2ff7f1c` · 2.3 `550c779` · 2.4 `4cbfff9` · specs `9112c99`. Cross-agent review
+(Codex) + the fresh `pr-reviewer` subagent both ran clean — Codex's one "Blocking" finding
+(claimed a missing DB migration for `buyer_clerk_user_id`) was a **false positive**: that column
+was added by `20260526000000_order_management_shipping.sql` over a month before this epic and is
+already used by the legacy Stripe flow — verified against `origin/main` before merging past it, not
+assumed. Vercel prod deploy confirmed rolled (commit status `success`) before this doc was updated.
+Owed: Daniel's money-path smoke below (steps 3-6, can't be self-run — real Stripe/MP/pago-directo
+purchases + Telegram delivery). This was the epic's **last scoped sprint** — epic close-out (poster,
+retro, LEARNINGS) is a separate follow-up once the smoke confirms the money path live.
 
 > Frontend-only (`apps/miyagisanchez`); follows Sprint 1. 2.1/2.2 edit the **live payment webhooks** —
 > HIGH, Daniel merges. **Compras email behavior stays byte-for-byte** (it already always fires; this
