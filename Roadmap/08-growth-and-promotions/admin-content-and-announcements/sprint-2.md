@@ -1,6 +1,6 @@
 # Admin content & announcements — Sprint 2: Key the uncovered surfaces (homepage + acerca)
 
-**Status:** ⬜ not started
+**Status:** 🟡 in progress — Story 2.1 audit doc landed, awaiting Daniel's confirmation; Story 2.2 blocked on it
 
 > Daniel's "many sections may be uncovered" — confirmed at grooming: the dictionary has NO `home`
 > namespace; homepage editorial copy and `/acerca` content are hardcoded. This sprint keys them so
@@ -18,6 +18,13 @@ marketing-editable and nothing that shouldn't — confirmed by Daniel before any
 **Acceptance:** the keying map lands in this epic folder; Daniel confirms in/out per section; the
 `sellerAcquisition` coverage is verified complete as a baseline.
 **Risk:** low (docs only)
+**Status:** 🟡 audit doc landed 2026-07-08 — [`sprint-2-keying-map.md`](./sprint-2-keying-map.md) —
+awaiting Daniel's section-by-section confirmation (checklist at the end of that doc). Story 2.2 is
+blocked until confirmed. Baseline finding: `sellerAcquisition` verified complete and correctly
+es-only-by-design (not on `BILINGUAL_NAMESPACES`; every `/vende/*` call site hardcodes `'es'`) — no
+action needed there. Notable finding: `/acerca`'s content lib (`lib/about-content.ts`) also feeds the
+MCP `about_miyagi` resource, UCP manifest, `/llms.txt`, and the `/agent` page — keying it makes all of
+those admin-editable too, flagged explicitly for confirmation, not assumed.
 
 ### Story 2.2 — Key homepage + `/acerca` editorial strings
 **As** the platform admin, **I want** the approved map applied — homepage editorial strings (value-prop
