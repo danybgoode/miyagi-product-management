@@ -919,6 +919,28 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   an "agent populates a demo/test shop" story, the final "flip it publicly visible" step is a human
   action to name explicitly up front, not a gap to discover at the end. *(2026-07-08,
   cars-vertical-tratocar-parity S3.1.)*
+- **A merged, CI-green Supabase migration is NOT evidence it was ever run against production — this
+  repo applies migrations by hand (SQL editor/MCP), not via an automated `db push` in CI, so the gap is
+  both easy to introduce and silent once introduced.** Discovered while applying Sprint 3's own
+  `platform_announcements` migration: Sprint 1's `platform_copy_overrides` table (merged cleanly in PR
+  #197, two days earlier) didn't exist live at all (`to_regclass('public.platform_copy_overrides')` →
+  `null`, confirmed via the Supabase MCP). Because the whole copy-override read path is deliberately
+  fail-open (missing table ≡ empty result ≡ "nothing overridden"), a never-created table produces
+  **zero visible symptoms** — the feature just silently never did anything, in production, since it
+  merged. **After any PR that ships a new Supabase migration, verify the table actually exists live**
+  (`to_regclass` or `list_tables` via the Supabase MCP) as part of that PR's own smoke — a green CI run
+  proves the code is correct, never that the DDL was applied to the real database.
+  *(2026-07-09, admin-content-and-announcements S3.)*
+- **A `<input type="datetime-local">` value carries NO timezone — converting it to a real ISO instant
+  must happen in the BROWSER, not the server.** The browser's own `new Date(naiveString)` parse
+  correctly uses the visitor's real local timezone (the thing you actually want), but a server-side
+  `Date.parse()` of that same naive string is parsed in the SERVER's local timezone instead (UTC on
+  Vercel) — silently shifting any schedule/date an admin outside UTC enters, by exactly their UTC
+  offset. The bug produces a *valid*, differently-wrong ISO string, so nothing type-checks or throws —
+  it was caught by a codex cross-review reasoning about the data flow, not by the local build or
+  `tsc`. Fix: always convert client-side (`new Date(value).toISOString()`) before the value ever
+  leaves the browser; never send the naive `datetime-local` string and let the server interpret it.
+  *(2026-07-09, admin-content-and-announcements S3 — the `/admin/contenido` announcement scheduler.)*
 
 ## Medusa gotchas
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the
