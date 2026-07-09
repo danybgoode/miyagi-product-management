@@ -1,5 +1,5 @@
 ---
-status: in-progress   # Sprint 1 (nav group + catalog table) MERGED 2026-07-08: BE PR#69 squash 84ee9bd, FE PR#193 squash eada2a0. Both live in prod (Cloud Run medusa-web-00144-h5s; Vercel dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2). Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3; codex cross-review caught + fixed a real status_counts scoping bug pre-merge. Sprint 2 (inventory modes + channel toggles + ML price override) MERGED 2026-07-08: BE PR#71 squash 77d121e, FE PR#196 squash 8aa3266 — behind catalog.inventory_channels_enabled (still OFF). Backend Cloud Build + frontend Vercel prod deploy triggered on merge (not yet confirmed live — ~12min Cloud Build lag). Codex cross-review caught + fixed 6 real bugs pre-merge (see sprint-2.md). Owed: Daniel's real-phone table smoke (S1) + money-path/ML-toggle smoke (S2, flag still off). Sprint 3 (staged bulk actions) MERGED 2026-07-09: BE PR#72 squash 0ff8dc36, FE PR#199 squash a0f2868b — behind new catalog.bulk_enabled (fail-closed, still OFF). Cross-agent (codex) review + an independent pr-reviewer pass caught + fixed real bugs pre-merge, incl. a genuine IDOR (bulk-apply had no per-item product-ownership check) — see sprint-3.md. Owed: Daniel's live bulk-action smoke (flag still off). S4 not yet started.
+status: in-progress   # Sprint 1 (nav group + catalog table) MERGED 2026-07-08: BE PR#69 squash 84ee9bd, FE PR#193 squash eada2a0. Both live in prod (Cloud Run medusa-web-00144-h5s; Vercel dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2). Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3; codex cross-review caught + fixed a real status_counts scoping bug pre-merge. Sprint 2 (inventory modes + channel toggles + ML price override) MERGED 2026-07-08: BE PR#71 squash 77d121e, FE PR#196 squash 8aa3266 — `catalog.inventory_channels_enabled` now ON in prod. Codex cross-review caught + fixed 6 real bugs pre-merge (see sprint-2.md). Sprint 3 (staged bulk actions) MERGED 2026-07-09: BE PR#72 squash 0ff8dc36, FE PR#199 squash a0f2868b — `catalog.bulk_enabled` now ON in prod after Daniel's live smoke passed (all 11 steps incl. MCP agent flow). Cross-agent (codex) review + an independent pr-reviewer pass caught + fixed real bugs pre-merge, incl. a genuine IDOR (bulk-apply had no per-item product-ownership check). The smoke test itself surfaced a 2nd live incident (null-slot crash on `resolveSellerProductIds()` right after any soft-delete) — fixed same-day, BE PR#74 squash 62f32c1b, independently reviewed; a ~18-site sweep of the same latent pattern (incl. money-path order routes) is owed as a follow-up, not yet scoped. S4 not yet started.
 slug: catalog-management
 ---
 
@@ -62,10 +62,22 @@ Medusa price sets (CPP S2's qty tiers included). No Supabase catalog tables.
 | 3 | ✅ 3.3 MCP parity: staged bulk ops as agent tools (propose → confirm → apply) | MED |
 | 4 | 4.1 Estimated margin per product/channel columns (profit-analyzer seams); margin-killer flags | MED |
 | 4 | 4.2 Bulk "apply suggested price" through the S3 staged pipeline + PA apply path | HIGH |
+| 5 | 5.1 Flag-safe nav parity (R13): SELLER_NAV entries carry optional `flag`; nav filters on the same `isEnabled()` pages use — Ganancias hidden (not 404) when `ops.profit_enabled` off | LOW |
+| 5 | 5.2 Mobile bar (F5): Resumen · Pedidos(badge) · ⊕ Publicar FAB → `/sell` · Catálogo · Más(badge relay); grouped "Más" sheet with headers | LOW–MED |
+| 5 | 5.3 One import door + mobile restore (F7): dashboard + settings banner → links into `/shop/manage/import`; remove `hidden sm:inline-block` | LOW |
+| 6 | 6.1 Seller shell over `/sell` + `/sell/setup` for owners (F6); signed-out keeps buyer chrome. Owner-aware branch in shared `layout.tsx` + shared shell component. Kill-switch `seller.shell_on_sell_enabled` (default true, created enabled) | MED |
+| 6 | 6.2 Split 62KB `Canal.tsx` (F7): federation → Canales page under Catálogo; support widget → own settings card; anti-monolith guard | MED |
+
+> **S5 + S6 = P1·C IA restructure remainder (F5/F6/F7)** — the seller-portal UX audit fold-in
+> ([scope seed](../../00-ideas/seeds/catalog-management-ia-remainder.md), signed off 2026-07-09). Rides the
+> `lib/seller-nav.ts` SSOT + the seller shell. Sequenced **after S3 merges** so nav/shell work doesn't
+> collide with S3's open PRs. Intrinsic risk LOW–MED; folds into this HIGH epic ⇒ **Daniel merges**.
 
 ## Deploy order
-S1 → S2 → S3 → S4 (S4 only after profit-analyzer US-4). Backend-first in S2/S3. OSPP S2 merges
-before S3 ships collection-assign. `catalog.bulk_enabled` stays OFF until Daniel's S3 smoke.
+S1 → S2 → S3 → S4 (S4 only after profit-analyzer US-4) → **S5 → S6 (both after S3 merges — nav/shell
+work must not collide with S3's open PRs; S5/S6 are independent of S4's table columns)**. Backend-first
+in S2/S3. OSPP S2 merges before S3 ships collection-assign. `catalog.bulk_enabled` stays OFF until
+Daniel's S3 smoke. S5/S6 are frontend/chrome only (no backend).
 
 ## Definition of Done (epic)
 - [ ] All sprints merged to `main` + smoke-tested (gaps stated)
@@ -75,5 +87,5 @@ before S3 ships collection-assign. `catalog.bulk_enabled` stays OFF until Daniel
 - [ ] Product poster (`Roadmap/README.md`) updated
 - [ ] Team memory + `MEMORY.md` index updated
 - [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md`
-- [ ] Kill-switch `catalog.bulk_enabled` exists with stated polarity
+- [ ] Kill-switches exist with stated polarity: `catalog.bulk_enabled` (S3, fail-closed OFF) and `seller.shell_on_sell_enabled` (S6.1, kill-switch — default true, created ENABLED in every env)
 - [ ] Feature branch deleted; frontmatter `status: shipped` (run `node scripts/build-order.mjs`)
