@@ -1,9 +1,9 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: admin-content-and-announcements
 ---
 
-# Epic: Admin content & announcements — runtime marketing copy + platform banners
+# Epic: Admin content & announcements — runtime marketing copy + platform banners ✅ shipped 2026-07-09
 
 > **Area:** 08 · Growth & Promotions · **Risk:** LOW (copy + non-commerce UI; no money path)
 > **Scope doc:** [`00-ideas/2. readyforscope/admin-content-and-announcements.md`](../../00-ideas/2.%20readyforscope/admin-content-and-announcements.md) (approved 2026-07-05)
@@ -58,23 +58,34 @@ revalidate on save, never a per-request dynamic API (see the static-shell LEARNI
 | 1 | S1.3 Bulk export/import — CSV/XLSX + JSON, scoped, diff preview, unknown keys skipped | low | ✅ merged (PR #197) |
 | 2 | S2.1 Coverage audit + keying map (homepage, `/vende` family, `/acerca`) — doc-first, Daniel-confirmed | low | ✅ done 2026-07-08 |
 | 2 | S2.2 Key homepage editorial strings (`home.*`) + `/acerca` without un-static-ing `/` | low | ✅ merged 2026-07-08 (PR #198, `0fd667d`) |
-| 3 | S3.1 Announcement CRUD (audience, copy+CTA, schedule, one-active-per-audience) | low | not started |
-| 3 | S3.2 Seller slim dismissable strip atop the seller shell | low | not started |
-| 3 | S3.3 Buyer understated dismissable homepage card (static `/` preserved) | low | not started |
+| 3 | S3.1 Announcement CRUD (audience, copy+CTA, schedule, one-active-per-audience) | low | ✅ merged 2026-07-09 (PR #200, `78b1430`) |
+| 3 | S3.2 Seller slim dismissable strip atop the seller shell | low | ✅ merged 2026-07-09 (PR #200, `78b1430`) |
+| 3 | S3.3 Buyer understated dismissable homepage card (static `/` preserved) | low | ✅ merged 2026-07-09 (PR #200, `78b1430`) |
 
 ## Deploy order
 Frontend-only epic (plus Supabase DDL — additive editorial tables). Sprints independently shippable in
 order S1 → S2 → S3; S3 may swap ahead of S2 if a campaign is urgent (S3 needs only S3.1's table).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (08 domain — new capability line)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** `content.overrides_enabled` exists (kill-switch polarity, default ON, created enabled); OFF ⇒ compile-time copy + no banners, cleanly
-- [ ] `/` still `○` static in the build route table (CI-asserted)
-- [ ] es-MX copy-complete; `en` only via the allow-list; orphaned overrides flagged in the editor
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — **gap:** the live activate-a-campaign
+      + dismiss-persistence + aesthetic-sign-off browser smoke is owed to Daniel (no money path, so not
+      blocking merge per this epic's own risk tier; see sprint-3.md's walkthrough).
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (08 domain — new capability line)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** `content.overrides_enabled` exists (kill-switch polarity, default ON, created enabled); OFF ⇒ compile-time copy + no banners, cleanly
+- [x] `/` still `○` static in the build route table (CI-asserted)
+- [x] es-MX copy-complete; `en` only via the allow-list; orphaned overrides flagged in the editor
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+
+**Known gap carried out of this epic, not blocking its own close:** the live Supabase project is
+missing `platform_copy_overrides` (S1's own table) entirely — discovered while applying this sprint's
+migration (`to_regclass('public.platform_copy_overrides')` → `null`). S1's migration merged in PR #197
+but was apparently never actually run against production, so the copy-override layer (S1+S2's whole
+feature) has been silently fail-open-to-compile-time-copy in prod this whole time. `platform_announcements`
+(this sprint's own table) **was** applied live and confirmed present. Flagged for Daniel to apply the
+missing S1 migration — a one-line DDL, same additive/reviewed pattern, but a decision that touches
+another sprint's already-signed-off state, so not auto-applied here.

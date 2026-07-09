@@ -1,6 +1,6 @@
 # Admin content & announcements — Sprint 3: Announcements — seller strip + homepage card
 
-**Status:** 🟡 built, pending PR merge — `feat/admin-content-and-announcements-s3`
+**Status:** ✅ merged + live 2026-07-09 — PR #200 (`78b1430`)
 
 > One primitive, two placements: `platform_announcements` (audience: seller|buyer, copy + optional CTA,
 > starts/ends, active; one active per audience). Seller = slim dismissable strip atop the seller shell.
@@ -77,6 +77,13 @@ motion) styling. Verified via `next build`: `/` is still `┌ ○ /` with a 1-mi
   audited Clerk-gated admin API, which needs a real admin session.
 - **deterministic gate:** `tsc --noEmit` clean, `npm run build` green (route-table `/` = `┌ ○ /`,
   1m revalidate — confirmed unchanged), Playwright `api` project green on every new spec.
+- **Cross-agent review (codex, 2 passes) + independent `pr-reviewer` subagent, both on PR #200:**
+  codex caught (and fixes landed for) a real timezone bug in the admin schedule picker, missing
+  render-time CTA-link re-validation, half-filled-CTA acceptance, a non-atomic replace-swap (added a
+  best-effort reactivate-on-failure rollback), a silent-success DELETE on an unknown id, and duplicated
+  status logic. The independent `pr-reviewer` subagent then verified every PR claim against the diff
+  and approved — CI green, all fixes present and correct.
+- **Merged 2026-07-09** — PR #200, squash commit `78b1430`, branch deleted (local + remote).
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
