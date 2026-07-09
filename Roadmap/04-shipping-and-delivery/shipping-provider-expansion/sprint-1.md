@@ -1,6 +1,6 @@
 # Shipping provider expansion — Sprint 1: Spike — shipping funding model (written decision, NO code)
 
-**Status:** ⬜ not started
+**Status:** 🟡 decision written 2026-07-08 (all seven sections + aggregator comparison in the seed file; summary in the scope doc) — **awaiting Daniel sign-off** (the story's acceptance gate)
 
 > **Spike discipline:** time-boxed investigation → a **written decision**. No branch, no build, no code.
 > The decision lands in [`00-ideas/seeds/spike-envia-byo.md`](../../00-ideas/seeds/spike-envia-byo.md)

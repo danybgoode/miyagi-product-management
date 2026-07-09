@@ -5,21 +5,21 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-08 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-09 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
 ## 🏗️ Building now (1)
 
-- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 3/11 stories
+- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 6/11 stories
 
 ## 📋 Ready to build (scaffolded, not started) (6)
 
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 0/10 stories · risk: High · tbd
-- [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 3/7 stories · risk: High · Wave 2
-- [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 0/8 stories
+- [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
+- [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 1/8 stories
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
@@ -119,7 +119,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -127,7 +127,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Buyer notifications — money path (Compras dispatch + Medusa-order gating) | Scaffolded | In progress |
+| Buyer notifications — money path (Compras dispatch + Medusa-order gating) | Scaffolded | Shipped |
+| Admin content & announcements — runtime marketing copy + platform banners | Scaffolded | In progress |
 
 ---
-_Epics: 94 · seeds in funnel: 4 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 94 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

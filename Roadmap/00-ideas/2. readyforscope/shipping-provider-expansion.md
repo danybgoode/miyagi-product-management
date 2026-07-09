@@ -59,6 +59,29 @@ every slice composes with its gate.
   <https://docs.envia.com/docs/marketplace-multi-seller>. Spike must still land the funding-model call.
   Comparable Mexican aggregators to weigh in the same spike: Skydropx, Pakke, Mienvío, EnvíoClick.
 
+### Sprint 1 (spike) outcome — funding-model decision (2026-07-08, awaiting Daniel sign-off)
+Full written decision (all seven sections + aggregator table + sources):
+[`00-ideas/seeds/spike-envia-byo.md`](../seeds/spike-envia-byo.md). Summary:
+- **Recommendation: HYBRID.** (a) Admin **comp-grant** = the curated platform-funded tier (Sprint 2,
+  unchanged); (b) **BYO Envía token** = the self-serve scalable tier — seller funds their own account,
+  platform never touches shipping money; (c) arranged/manual fallback for everyone else. **Rejected:**
+  platform+markup for all (needs a settlement/billing build we don't have — Envía's own multi-seller doc
+  assumes "charge sellers via your platform settlement process" — plus unbounded platform cash fronting);
+  BYO-only (friction strands small sellers on the fallback).
+- **Stay on Envía; no aggregator switch.** Skydropx's API keys are support-gated (legacy self-serve API
+  deprecated → Pro) — a BYO dead end. Pakke (self-serve per-account keys) is the named fallback if Envía
+  ever fails; Mienvío pivoted enterprise ("Control Tower"); EnvíoClick viable but docs-opaque. None beats
+  a validated, already-integrated Envía (client + provider + webhook rail + Geocodes UX).
+- **Credentials:** dedicated `envia_connection` on the Medusa seller module (ML-connection precedent,
+  AES-256-GCM `*_enc`, fail-closed to fallback) — never seller `metadata` (it serializes to API surfaces),
+  never Supabase, never FE. Validate-then-save; write-only after save; instant revoke.
+- **Flags:** `shipping.envia_enabled` stays master of the *platform-funded* path only; **new
+  `shipping.envia_byo_enabled`** (enablement, default OFF) so BYO can run while platform funding stays OFF.
+- **Agents:** zero agent-specific build — backend seams stay SSOT; no MCP tool ever accepts a raw token.
+- **GO, sequenced:** S2/S3 first; slice BYO on a real demand signal. Thin slice 1 = backend-only dark
+  (credential model + pure resolution seam + quote path). BYO forces retiring the FE legacy ship route
+  (tokens must not leave the backend) — a wanted consolidation.
+
 ## What already exists (reuse, don't rebuild) — verified 2026-07-05
 | Capability | Where | Reuse for |
 |---|---|---|
