@@ -1,12 +1,12 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 1: Containerize + shadow rail
 
-**Status:** ⬜ not started
+**Status:** 🚧 in progress — Story 1.1 merged to branch, PR #201 (draft)
 
 All stories deployable dark — Vercel keeps serving 100% of traffic this sprint.
 
 ## Stories
 
-### Story 1.1 — Convert the two edge-runtime routes to Node
+### Story 1.1 — Convert the two edge-runtime routes to Node ✅
 **As a** platform operator, **I want** `/api/splash` and `/api/icon` off `runtime = 'edge'`,
 **so that** no route depends on a Vercel-only runtime before the container ships.
 **Acceptance:** both routes return byte-identical output (headers included) on the Vercel preview;
@@ -14,6 +14,17 @@ All stories deployable dark — Vercel keeps serving 100% of traffic this sprint
 **Risk:** low
 *(Deliberately first: reversible, Vercel-compatible, flushes hidden runtime assumptions before any
 infra spend — planning-panel note.)*
+
+**Done 2026-07-09** — commit `e906e74` on `feat/frontend-vercel-to-cloudrun` (PR #201, draft). Both
+routes only used `next/og` `ImageResponse` + `NextRequest` — nothing edge-exclusive — so the runtime
+line was dropped with no other code change. `grep -rn "runtime = 'edge'" app/` confirmed clean.
+Since removing the line leaves no edge deployment to diff byte-for-byte against, the acceptance was
+interpreted (confirmed with Daniel) as: PNG validity + correct `content-type`, requested `w`/`h`/`size`
+dimensions honored, and two consecutive requests to the same URL producing byte-identical output
+(deterministic Node rendering) — asserted in new spec `e2e/edge-route-parity.spec.ts`. Verified
+locally (`tsc --noEmit`, `npm run build`, `npm run test:e2e` — 6/6 passed against a local `next start`
+on the built output) and again in CI against the live Vercel preview (`Type-check + build` +
+`Playwright vs preview` both green, PR #201).
 
 ### Story 1.2 — Standalone build + Dockerfile
 **As a** platform operator, **I want** `output: 'standalone'` + a multi-stage Dockerfile
