@@ -1,6 +1,11 @@
 # Admin content & announcements — Sprint 1: Copy override layer + admin editor + bulk round-trip
 
-**Status:** ✅ all 3 stories built on branch `feat/admin-content-and-announcements` — PR pending
+**Status:** ✅ merged + live — PR #197 squash `c7e32d2` on `main`. **Owed before this sprint's stories
+actually work in prod:** the Supabase migration (`supabase/migrations/20260708150000_platform_copy_overrides.sql`)
+must be applied manually (per its own header comment) — it's additive/idempotent and the fail-open reader
+degrades gracefully (empty overrides ⇒ pure compile-time copy) if it's not yet applied, so this is safe to
+defer but blocks the smoke walkthrough below from actually showing an override taking effect. Also owed:
+Daniel's `/admin/contenido` browser click-through (no money path — not a merge blocker).
 
 > The skateboard: after this sprint, every ALREADY-KEYED marketing surface (`sellerAcquisition` → the
 > `/vende` family) is runtime-editable, per key and in bulk, with no deploy. Uncovered surfaces
@@ -8,7 +13,7 @@
 
 ## Stories
 
-### Story 1.1 — Override store + pure merge seam ✅ (`a452a37`, branch `feat/admin-content-and-announcements`)
+### Story 1.1 — Override store + pure merge seam ✅ (squashed into PR #197 `c7e32d2` on `main`)
 **As** the platform admin, **I want** a `platform_copy_overrides` Supabase table (namespace, key,
 locale, value, updated_at/by) and a pure, flag-gated, fail-open merge seam
 `applyCopyOverrides(dict, overrides)` layered onto `getDictionary()`, **so that** any keyed surface can
@@ -19,7 +24,7 @@ render edited copy with no deploy — and a Supabase outage can never break a pa
 fallback on missing/unknown, locale handling).
 **Risk:** low
 
-### Story 1.2 — `/admin/contenido` per-key editor ✅ (`5c1b1df`, branch `feat/admin-content-and-announcements`)
+### Story 1.2 — `/admin/contenido` per-key editor ✅ (squashed into PR #197 `c7e32d2` on `main`)
 **As** the platform admin, **I want** an admin section listing pages → sections → keys (grouped by
 namespace path) with inline editing — the compile-time default always visible, «restaurar» per key
 (deletes the override), `en` fields shown ONLY on bilingual-allow-listed namespaces — and save triggering
@@ -29,7 +34,7 @@ non-allow-listed namespaces show no `en` field; orphaned overrides (key no longe
 flagged in the list.
 **Risk:** low
 
-### Story 1.3 — Bulk export/import with diff preview ✅ (`9f82227` + `3829656`, branch `feat/admin-content-and-announcements`)
+### Story 1.3 — Bulk export/import with diff preview ✅ (squashed into PR #197 `c7e32d2` on `main`)
 **As** the platform admin, **I want** to export a page/section/namespace as CSV/XLSX (flattened key
 paths) or JSON (structure-true), work the copy externally, and import either format back through a
 **diff preview** (added/changed/skipped-unknown) before a scoped apply, **so that** I can do copywriting
@@ -44,7 +49,20 @@ Import parser unit-specced (both formats, flattening round-trip).
   admin save→rendered-override path + one asserting the flag-OFF fallback.
 - **browser smoke owed:** yes, to Daniel — the admin editor click-through (edit, restore, bulk round-trip).
 - **deterministic gate:** `tsc --noEmit` + `npm run build` (route table asserted: `/` still `○`) +
-  Playwright `api` green before merge.
+  Playwright `api` green before merge. All green on PR #197 (CI: type-check+build, Playwright vs preview,
+  Vercel deploy).
+- **Cross-agent review (Codex, advisory):** caught 1 real blocking issue pre-merge — `lib/copy-overrides-import.ts`
+  had 4 literal NUL bytes embedded in a template literal (a write-tool artifact), making the file show as a
+  binary diff; fixed to plain UTF-8. Also caught a Rule #5 slip (hardcoded English "Locale" table header →
+  "Idioma") and 3 should-fix items, all applied: bulk-apply now deletes an override (instead of freezing a
+  copy of today's text) when the imported value equals the current compile-time default; a raw-upload size
+  guard before parsing; the per-key editor now refreshes after a bulk apply. A fresh Claude reviewer then
+  independently verified all fixes + the five AGENTS rules + the static-`/` invariant — approved clean.
+- **Non-blocking note for Daniel:** `xlsx@0.18.5` (SheetJS, added this sprint) carries known npm-registry
+  CVEs (prototype pollution, ReDoS) from before SheetJS moved distribution off npm. The parse path is
+  Clerk-admin-gated (not public), so exploitation requires an already-authenticated platform admin — low
+  practical risk, not blocking at LOW tier — but worth knowing a flagged package entered `package.json`. A
+  future follow-up could pin SheetJS from their own CDN tarball instead of npm.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
