@@ -1,5 +1,5 @@
 ---
-status: in-progress   # Sprint 1 (nav group + catalog table) MERGED 2026-07-08: BE PR#69 squash 84ee9bd, FE PR#193 squash eada2a0. Both live in prod (Cloud Run medusa-web-00144-h5s; Vercel dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2). Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3; codex cross-review caught + fixed a real status_counts scoping bug pre-merge. Owed: Daniel's real-phone table smoke. S2-S4 not yet started.
+status: in-progress   # Sprint 1 (nav group + catalog table) MERGED 2026-07-08: BE PR#69 squash 84ee9bd, FE PR#193 squash eada2a0. Both live in prod (Cloud Run medusa-web-00144-h5s; Vercel dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2). Fixed a discovered pausado/borrador gap (metadata.paused) as part of S1.3; codex cross-review caught + fixed a real status_counts scoping bug pre-merge. Sprint 2 (inventory modes + channel toggles + ML price override) MERGED 2026-07-08: BE PR#71 squash 77d121e, FE PR#196 squash 8aa3266 — behind catalog.inventory_channels_enabled (still OFF). Backend Cloud Build + frontend Vercel prod deploy triggered on merge (not yet confirmed live — ~12min Cloud Build lag). Codex cross-review caught + fixed 6 real bugs pre-merge (see sprint-2.md). Owed: Daniel's real-phone table smoke (S1) + money-path/ML-toggle smoke (S2, flag still off). S3-S4 not yet started.
 slug: catalog-management
 ---
 
@@ -54,9 +54,9 @@ Medusa price sets (CPP S2's qty tiers included). No Supabase catalog tables.
 | 1 | ✅ 1.1 Seller-nav restructure: Catálogo group (Anuncios · Colecciones · Canales · Precios · Importar); rail = Operar / Catálogo / Crecer / Configuración | LOW |
 | 1 | ✅ 1.2 `/shop/manage/catalogo` server-filtered paginated table (search/status/channel/stock/category; saved views; sort) | MED |
 | 1 | ✅ 1.3 Status model surfaced: activo / borrador / pausado / agotado as first-class filters | LOW |
-| 2 | 2.1 Inventory modes: tracked (available vs reservado) / sin límite / sobre pedido — editor + table + buy-box/checkout honor them | HIGH |
-| 2 | 2.2 Per-channel publish toggles (Miyagi / ML) + channel badges; UCP respects marketplace visibility | HIGH |
-| 2 | 2.3 ML price override per product (publish parity carries it); both prices in the table | MED |
+| 2 | ✅ 2.1 Inventory modes: tracked (available vs reservado) / sin límite / sobre pedido — editor + table + buy-box/checkout honor them | HIGH |
+| 2 | ✅ 2.2 Per-channel publish toggles (Miyagi / ML) + channel badges; UCP respects marketplace visibility | HIGH |
+| 2 | ✅ 2.3 ML price override per product (publish parity carries it); both prices in the table | MED |
 | 3 | 3.1 Select-across-filter → staged diff preview (old→new, inline validation) → apply; per-row failures; idempotent; audited | HIGH |
 | 3 | 3.2 Action set: price set/±%, publish/unpublish per channel, category, collection, inventory mode, pause/activate, soft-delete | HIGH |
 | 3 | 3.3 MCP parity: staged bulk ops as agent tools (propose → confirm → apply) | MED |
