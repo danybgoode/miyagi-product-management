@@ -13,12 +13,20 @@ updated: 2026-07-08
 
 # Scope — Seller-portal UX audit (apply the July-2026 refresh)
 
-> **Status: ✅ SIGNED OFF (Daniel, 2026-07-08) — P0·A SCAFFOLDED.** Gate passed. **Scaffolded + committed:**
+> **Status: ✅ SIGNED OFF (Daniel, 2026-07-08) — P0·A + P0·B SCAFFOLDED.** Gate passed. **Scaffolded + committed:**
 > [`09-platform-infra/seller-portal-rails-foundation/`](../../09-platform-infra/seller-portal-rails-foundation/README.md)
-> (README + sprint-1..2 + retro; kickoffs emitted). **Workstreams B/C/D/E are scope-defined below and get
-> their own fresh groom session** as they reach the queue (P1·C folds into `catalog-management`; F1 emoji
-> folds into `emoji-to-iconoir-sweep`). `epic: null` stays — this is a multi-epic umbrella (same as
-> `remaining-audit-polish.md`); the rails-foundation epic README is the SSOT for the scaffolded part.
+> (P0·A; README + sprint-1..2 + retro; kickoffs emitted) and
+> [`03-selling-and-shops/seller-portal-setup-guide/`](../../03-selling-and-shops/seller-portal-setup-guide/README.md)
+> (P0·B; README + sprint-1 + retro; commit `ad6102e`; kickoff emitted). `epic: null` stays — this is a
+> multi-epic umbrella; each scaffolded epic README is the SSOT for its part.
+>
+> **Remaining groom sequence (one fresh session each — Daniel, 2026-07-09):** **P1·D onboarding three-doors**
+> (next; fresh deep-groom) → **P1·C IA remainder** (folds into `catalog-management`; groom *after* its S3
+> merges to avoid nav collision — that epic is HIGH, S3 PRs open, S4 hard-gated on `profit-analyzer` US-4) →
+> **P2·E depth pass** (last; reuses catalog-management S3 staging + soft-delete precedent). F1 emoji dialect
+> already scoped in the scaffolded `emoji-to-iconoir-sweep` (no fresh groom). **Build path:** P0·A → P0·B
+> (needs A's primitives) → D/C/E follow their grooms. **Risk-tiers to confirm at each groom:** P1·D
+> cobros-wizard OAuth (LOW vs HIGH money-path); P2·E order-bulk staged-apply (MED vs HIGH fulfillment gating).
 >
 > Groomed 2026-07-08 off `references/MiyagiAdminUXAudit/` (built via Claude design). Class: **umbrella /
 > wave** — one audit, five workstreams, sliced like the shipped `remaining-audit-polish.md` (#3c) precedent.
