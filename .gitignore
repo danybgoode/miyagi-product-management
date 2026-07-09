@@ -61,6 +61,7 @@ skills/*/config.json
 # Staging / reference asset drops (binaries; not repo history)
 gems/
 references/design_handoff_mexico26_trifold/
+references/MiyagiAdminUXAudit/
 
 # macOS system files
 .DS_Store

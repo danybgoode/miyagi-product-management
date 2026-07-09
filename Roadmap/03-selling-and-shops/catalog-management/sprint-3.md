@@ -1,11 +1,13 @@
 # Catalog management — Sprint 3: Staged bulk actions
 
-**Status:** ✅ MERGED + deployed 2026-07-09 — backend PR [#72](https://github.com/danybgoode/medusa-bonsai-backend/pull/72)
-squash `0ff8dc36`, frontend PR [#199](https://github.com/danybgoode/miyagisanchezcommerce/pull/199)
-squash `a0f2868b`. Backend Cloud Build + frontend Vercel prod deploy triggered on merge (not yet
-confirmed live — ~12min Cloud Build lag for the backend). All of it behind a new fail-closed
-kill-switch `catalog.bulk_enabled` (default `false`, mirrors `ml.sync_enabled`'s polarity) — **OFF
-in prod**, flip only after Daniel's smoke below.
+**Status:** ✅ MERGED + deployed + **smoked (all 11 steps pass)** — backend PR
+[#72](https://github.com/danybgoode/medusa-bonsai-backend/pull/72) squash `0ff8dc36`, frontend PR
+[#199](https://github.com/danybgoode/miyagisanchezcommerce/pull/199) squash `a0f2868b`, both live in
+prod 2026-07-09. `catalog.bulk_enabled` flipped **ON** in prod 2026-07-09 after Daniel's live smoke
+walkthrough passed in full (see results below). The smoke test itself surfaced a second live
+incident — see "Second incident" below, backend PR
+[#74](https://github.com/danybgoode/medusa-bonsai-backend/pull/74) squash `62f32c1b`, also merged +
+deployed + verified same day.
 
 > ⚠️ **Plan-mode gate — resolved during planning, confirmed against source:** "Medusa workflow /
 > batch endpoint, never N sequential route calls" is satisfied by ONE new backend route
@@ -88,35 +90,62 @@ subagent pass** (a fresh agent, no context from the build). Real findings, all f
   before merge (clean auto-merge, both sides' additions verified intact) to avoid a real conflict
   risk, not just a hypothetical one.
 
+## Second incident — found live during the smoke test itself, fixed same day
+
+Step 10 (bulk soft-delete) triggered a **real production incident**: right after the delete
+succeeded, the seller's whole `/shop/manage/catalogo` page started crashing on every load ("This
+page couldn't load / A server error occurred"). Diagnosed via Vercel `get_runtime_errors` +
+`gcloud logging read`: `remoteQuery`'s `seller → products.id` link returns a sparse/null array slot
+for a product right after `productService.softDeleteProducts()` sets its `deleted_at` — the
+module-link row survives, the joined product resolves to null, and the pre-existing
+`.map((p) => p.id)` threw `Cannot read properties of undefined (reading 'id')` on every subsequent
+fetch. Pre-existing since Sprint 1 in three separate call sites (this sprint's own
+`resolveSellerProductIds()` extraction centralized the bug into one function without curing it).
+
+Fixed same day, backend PR [#74](https://github.com/danybgoode/medusa-bonsai-backend/pull/74) squash
+`62f32c1b`: `resolveSellerProductIds()` now filters null/undefined product slots before mapping to
+ids; both single-row ownership routes (`sellers/me/products/[id]`, `internal/seller-products/[id]`)
+refactored to reuse the fixed shared function instead of duplicating the vulnerable inline query. New
+regression test (`seller-catalog-query.unit.spec.ts`) covers the null-slot case explicitly.
+Independently reviewed (`pr-reviewer` subagent) — approved (fail-closed direction, cannot introduce
+an IDOR, no authorization-semantics change) but flagged that the same unfixed `.map()` shape exists
+in roughly **18 other routes**, including money-path seller-order routes (`release-escrow`,
+`confirm-payment`, `return-request`, `ship`, `bulk-status`). Daniel's call: track as a follow-up
+sweep story rather than expand this hotfix — **owed, not yet scoped**, prioritize the money-path
+routes.
+
+Verified live: reloaded the crashed page after deploy (confirmed fixed), then re-ran a real 7-product
+bulk soft-delete through the same code path as the original incident (via the smoke test's own
+Step 10 cleanup) — page loaded cleanly at zero-state both immediately after and on a later reload.
+
 ## Stories
 
 ### Story 3.1 — Select-across-filter → staged diff → apply
 **As a** seller, **I want** to select all products matching my filter, build a bulk change, and see a **preview diff (old → new per row, validation errors inline)** before anything applies, **so that** a bulk edit can never silently wreck my live catalog (the eBay failure mode).
 **Acceptance:** selection persists server-side per staged batch (survives refresh — the Shopify failure mode); apply is idempotent (re-apply skips done rows); per-row failures reported individually, partial apply never silent; every batch lands in the audit log with actor + before/after.
 **Risk:** HIGH
-**Built:** ✅ Backend — `seller-catalog-query.ts`'s `querySellerCatalog()` extracted from the S1 GET route (behavior-preserving refactor) so bulk-stage resolves "everything matching the seller's active filter" through the identical code path the table itself uses; `catalog-bulk.ts`'s `computeBulkDiff()` (pure, price_set/price_pct/pause_activate for this story) + `MAX_BULK_ITEMS=1000`; two new routes `POST /store/sellers/me/products/bulk-stage` (resolve+validate+diff, writes nothing) and `bulk-apply` (loops `updateSellerProduct()` per item, per-row try/catch, ownership-checked). Frontend — new Supabase tables `catalog_bulk_batches`/`catalog_bulk_batch_items`/`catalog_bulk_audit_log` (staging state, not commerce truth — AGENTS rule 2; RLS-on-no-policies), three API routes (`POST /api/sell/catalog/bulk`, `GET .../[batchId]`, `POST .../[batchId]/apply`); `CatalogTable.tsx` gains row checkboxes + "seleccionar todos (N) across filter"; `BulkActionBar.tsx` + `BulkDiffPreview.tsx` (old→new table, refresh-safe via a `?batch=` URL param); `lib/listing-status.ts`'s `setListingStatus()` extraction (see "Mid-build finding" above).
+**Built:** ✅ Backend `0849d16` — `seller-catalog-query.ts`'s `querySellerCatalog()` extracted from the S1 GET route (behavior-preserving refactor) so bulk-stage resolves "everything matching the seller's active filter" through the identical code path the table itself uses; `catalog-bulk.ts`'s `computeBulkDiff()` (pure, price_set/price_pct/pause_activate for this story) + `MAX_BULK_ITEMS=1000`; two new routes `POST /store/sellers/me/products/bulk-stage` (resolve+validate+diff, writes nothing) and `bulk-apply` (loops `updateSellerProduct()` per item, per-row try/catch, ownership-checked). Frontend `ec0417c` — new Supabase tables `catalog_bulk_batches`/`catalog_bulk_batch_items`/`catalog_bulk_audit_log` (staging state, not commerce truth — AGENTS rule 2; RLS-on-no-policies), three API routes (`POST /api/sell/catalog/bulk`, `GET .../[batchId]`, `POST .../[batchId]/apply`); `CatalogTable.tsx` gains row checkboxes + "seleccionar todos (N) across filter"; `BulkActionBar.tsx` + `BulkDiffPreview.tsx` (old→new table, refresh-safe via a `?batch=` URL param); `lib/listing-status.ts`'s `setListingStatus()` extraction (see "Mid-build finding" above).
 
 ### Story 3.2 — Action set v1
 **As a** seller, **I want** bulk: price set / ±% , publish/unpublish per channel, category change, collection assign, inventory mode, pause/activate, delete (soft), **so that** the daily catalog chores are minutes, not afternoons.
 **Acceptance:** each action validates per row through the same staged pipeline (price floor > 0, ML entitlement for ML actions, collection exists); delete uses the native soft-delete precedent; variant-aware (price actions apply across a product's variants explicitly, stated in the preview — the "no update-all-variants" Shopify gap, closed).
 **Risk:** HIGH
-**Built:** ✅ Backend — `computeBulkDiff()` extended with `publish_channel`/`category`/`collection_assign`/`inventory_mode`/`delete`; new `SellerProductUpdateBody.category_handle` field (every product has at most ONE platform category, addressed by HANDLE like everywhere else in this codebase — not an internal Medusa id); `CatalogPair` now carries `mlLinked` so the channel-toggle diff shows an accurate before-state. Frontend — `BulkActionBar.tsx` gets the full action picker (channel toggle, category select, collection multi-select fetched live, inventory mode + dispatch estimate, delete); `lib/listing-status.ts` gains `deleteListing()` (extracted from the DELETE handler, same Supabase-mirror + ML-close cascade a single-row delete always ran); new `lib/ml-channel-toggle.ts`'s `toggleMlChannel()` (entitlement check + publish/close reconcile, extracted from the PUT handler's `ml_enabled` path) — reused so a bulk ML-channel toggle can't flip the stored flag without actually publishing/closing the real Mercado Libre listing.
+**Built:** ✅ Backend `4f9231c` + `e3e55ee` — `computeBulkDiff()` extended with `publish_channel`/`category`/`collection_assign`/`inventory_mode`/`delete`; new `SellerProductUpdateBody.category_handle` field (the gap found in 3.1 planning — only `collection_ids` existed; every product has at most ONE platform category, addressed by HANDLE like everywhere else in this codebase, not by internal Medusa id — fixed in a follow-up commit after the first pass wrongly used an id); `CatalogPair` now carries `mlLinked` so the channel-toggle diff shows an accurate before-state. Frontend `8c337ef` — `BulkActionBar.tsx` gets the full action picker (channel toggle, category select, collection multi-select fetched live, inventory mode + dispatch estimate, delete); `lib/listing-status.ts` gains `deleteListing()` (extracted from the DELETE handler, same Supabase-mirror + ML-close cascade a single-row delete always ran); new `lib/ml-channel-toggle.ts`'s `toggleMlChannel()` (entitlement check + publish/close reconcile, extracted from the PUT handler's `ml_enabled` path) — reused so a bulk ML-channel toggle can't flip the stored flag without actually publishing/closing the real Mercado Libre listing.
 
 ### Story 3.3 — MCP parity: agent bulk ops
 **As a** seller's agent, **I want** the same propose → confirm → apply flow over MCP, **so that** "sube 10% los precios de la colección Zines solo en ML" is one instruction with a human-visible confirmation.
 **Acceptance:** agent tools stage a batch and return the diff summary; apply requires the confirm token; audited identically; respects `catalog.bulk_enabled`.
 **Risk:** MED
-**Built:** ✅ Backend — `/internal/seller-products/bulk-stage` + `bulk-apply` (x-internal-secret + `seller_slug`, the existing internal-route family's auth shape — sibling of `/internal/seller-products/:id` PATCH), calling the identical `querySellerCatalog`/`computeBulkDiff`/`updateSellerProduct` the Clerk-authed routes use, so an agent can never see a different diff than a seller would. Frontend — two new MCP tools, `stage_bulk_action` (propose) + `apply_bulk_action` (confirm — the `batch_id` itself is the confirm token, since the agent already saw the diff); `lib/catalog-bulk.ts`'s `stageBulkActionAsAgent()`/`applyBulkBatchAsAgent()` mirror `lib/seller-products.ts`'s `patchSellerProductViaInternal` pattern; batches share the same Supabase tables as the web path, audited with `actor_type:'agent'`.
+**Built:** ✅ Backend `03d2d9d` — `/internal/seller-products/bulk-stage` + `bulk-apply` (x-internal-secret + `seller_slug`, the existing internal-route family's auth shape — sibling of `/internal/seller-products/:id` PATCH), calling the identical `querySellerCatalog`/`computeBulkDiff`/`updateSellerProduct` the Clerk-authed routes use, so an agent can never see a different diff than a seller would. Frontend `ae669dd` — two new MCP tools, `stage_bulk_action` (propose) + `apply_bulk_action` (confirm — the `batch_id` itself is the confirm token, since the agent already saw the diff); `lib/catalog-bulk.ts`'s `stageBulkActionAsAgent()`/`applyBulkBatchAsAgent()` mirror `lib/seller-products.ts`'s `patchSellerProductViaInternal` pattern; batches share the same Supabase tables as the web path, audited with `actor_type:'agent'`.
 **Scope cut, stated not glossed:** the agent tools deliberately do NOT cover `pause_activate`, `delete`, or `publish_channel` targeting `ml` — those need the frontend-only orchestration (Supabase mirror, ML cascade, checkout-viability gate) the internal-secret layer has no access to; both the tool's `inputSchema` (enum excludes them) and a runtime check reject them with a clear message rather than silently skipping those side effects. An agent uses the existing single-item `set_listing_status`/`update_listing` tools for those, or the seller uses the web portal for the bulk case.
 
 ## Sprint QA
-- **api spec(s):** `src/api/store/_utils/__tests__/catalog-bulk.unit.spec.ts` (backend Jest — `computeBulkDiff` + `rejectOrchestrationOnlyPatch` per action type, 33 cases: price floor validation, NaN/Infinity rejection, no-op detection, ml-link-aware channel diff, category/collection/inventory-mode patches, delete's null-patch signal, orchestration-guard coverage) · `e2e/catalog-bulk.spec.ts` (frontend Playwright `api` — auth-gate coverage on all three new routes; the full stage→preview→apply round trip needs a live seller session + the flag ON, neither available to the no-browser `api` project, so it's the smoke below instead)
-- **browser smoke owed:** yes, to Daniel — bulk price change on 50+ products **including one deliberately invalid row** (verify per-row failure + the rest applied), refresh mid-preview (confirms the batch persists), idempotent re-apply, one action per remaining type (category/collection/inventory-mode/channel-toggle/delete) on a disposable test listing, the MCP agent flow end-to-end, then flag flip `catalog.bulk_enabled` ON in prod
+- **api spec(s):** `src/api/store/_utils/__tests__/catalog-bulk.unit.spec.ts` (backend Jest — `computeBulkDiff` + `rejectOrchestrationOnlyPatch` per action type, 33 cases: price floor validation, NaN/Infinity rejection, no-op detection, ml-link-aware channel diff, category/collection/inventory-mode patches, delete's null-patch signal, orchestration-guard coverage) · `e2e/catalog-bulk.spec.ts` (frontend Playwright `api` — auth-gate coverage on all three new routes)
+- **browser smoke: ✅ DONE** (Daniel + Claude, 2026-07-09) — all 11 steps below executed against real production data (8 disposable "TEST BULK zine" listings + 1 test collection in Daniel's own live shop); every step passed, see per-step results inline below. `catalog.bulk_enabled` flipped ON in prod immediately after.
 - **deterministic gate:** backend `medusa build` → `tsc --noEmit` → `npm run test:unit` green (304/304, up from 278 at S1 baseline); frontend `tsc --noEmit` + `npm run build` + Playwright `api` green (46/46) — verified against a local `next dev` server (the `api` project's default `baseURL` is prod, which 404s on routes an unmerged branch hasn't shipped yet — known, documented gotcha from S2) and confirmed green again on CI's real preview run before merge
 
-## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com (once the ~12min Cloud Build lag clears).
-**Prerequisite:** `catalog.bulk_enabled` must be ON (Supabase `platform_flags`) — every step below is invisible/inert while it's OFF (the deliberate kill-switch default).
+## Sprint 3 — Smoke walkthrough (do these in order) — ✅ all steps passed, 2026-07-09
+Env: production · https://miyagisanchez.com. `catalog.bulk_enabled` is now **ON**.
 
 1. In `/shop/manage/catalogo`, filter categoría=libros, check the "select all visible" header checkbox, then click "Seleccionar todos (N) que coinciden con el filtro".
    → Selection banner shows the across-filter count, not just the visible page.
@@ -138,7 +167,20 @@ Env: production · https://miyagisanchez.com (once the ~12min Cloud Build lag cl
    → PDP shows the sobre-pedido pill; buy box never blocks even at qty 0.
 10. Bulk action → Eliminar → apply on one disposable test listing.
     → Listing soft-deletes (drops from the table + `/l` browse); its ML item closes if it had one.
+    → **Result: passed, but surfaced the second incident** (see above) — right after this delete, the
+      Catálogo page crashed on every load. Fixed same day (PR #74); re-verified by re-running a real
+      7-listing bulk soft-delete through the same path post-fix (see "Second incident" for detail).
 11. Ask your agent via MCP: "sube 10% los precios de la colección X" (or similar) using `stage_bulk_action`, review the diff summary it returns, then confirm with `apply_bulk_action` passing the returned `batch_id`.
     → Batch stages, diff shown, apply confirms; audit shows `actor_type: agent`. Ask it to "pausa todos los productos de la colección X" instead — expect a clear refusal pointing at `set_listing_status` (bulk pause is web-portal-only by design, see Story 3.3's scope cut).
+    → **Result: passed.** No agent token existed yet for the test shop — provisioned one via the
+      shop's own "Agentes e integraciones" settings (Daniel's explicit go-ahead), then called the
+      real personal MCP connector URL directly: staged a +10% price bump on one listing ($110→$121),
+      applied it, re-applied the same `batch_id` (idempotent — "0 aplicado(s) · 1 ya aplicado(s)
+      previamente"), confirmed the storefront table reflected the new price, and confirmed
+      `catalog_bulk_audit_log` recorded `actor_type: 'agent'` with the correct before/after. A bulk
+      `pause` action attempt was refused exactly as designed: "type de acción no reconocido o no
+      disponible por el agente (usa la app web para pausar/activar, eliminar, o publicar en Mercado
+      Libre en bloque)."
 
-If any step fails, note the step number + what you saw — that's the bug report.
+All 11 steps passed. Test data (7 remaining "TEST BULK zine" listings + "TEST BULK collection")
+cleaned up via a real bulk-delete through the web portal after the walkthrough completed.
