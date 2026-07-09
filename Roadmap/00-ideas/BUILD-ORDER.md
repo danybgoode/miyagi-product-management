@@ -10,14 +10,14 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (2)
 
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 6/11 stories
+- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
 
-## 📋 Ready to build (scaffolded, not started) (6)
+## 📋 Ready to build (scaffolded, not started) (5)
 
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
-- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 0/10 stories · risk: High · tbd
 - [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 1/8 stories
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories

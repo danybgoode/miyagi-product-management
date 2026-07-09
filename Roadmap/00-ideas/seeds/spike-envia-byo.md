@@ -13,7 +13,7 @@ epic: "04-shipping-and-delivery/shipping-provider-expansion"
 # Spike — BYO Envía accounts (sellers fund + connect their own Envía)
 
 > **Class:** Spike (time-boxed investigation → a **written decision**, no code, no slicing until the decision lands).
-> **Status:** 🟡 **Spike executed 2026-07-08 — written decision below, awaiting Daniel sign-off.** Folded into
+> **Status:** ✅ **Decision landed + Daniel-approved 2026-07-08** (HYBRID; see DECISION below). Folded into
 > [`shipping-provider-expansion`](../../04-shipping-and-delivery/shipping-provider-expansion/README.md)
 > as its Sprint 1 (2026-07-05). Routed out of the 2026-06-25 Envía kill-switch groom (see
 > [`envia-flagsmith-killswitch.md`](../2.%20readyforscope/envia-flagsmith-killswitch.md) appendix). **Build the
@@ -179,7 +179,8 @@ useful under it.
 - Honesty note: Pakke/EnvíoClick webhook docs and Mienvío's full API reference are JS-/app-gated and were
   **not** independently verifiable this spike; marked ⚠️ above rather than assumed.
 
-**Daniel sign-off:** ☐ approve / ☐ request changes — record here.
+**Daniel sign-off:** ☑ **APPROVED 2026-07-08** (in-session). The HYBRID funding model + stay-on-Envía
+decision is authorized; BYO build remains sequenced behind S2/S3 + a real demand signal.
 
 ## In / out (spike)
 **In:** funding-model recommendation · credential/storage/encryption decision · client-refactor + onboarding
