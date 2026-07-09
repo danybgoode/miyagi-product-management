@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: admin-content-and-announcements
 ---
 
@@ -40,8 +40,8 @@ technical constraint: **`/` stays static (`○`)** — overrides are read within
 revalidate on save, never a per-request dynamic API (see the static-shell LEARNINGS).
 
 ## What already exists (reuse, don't rebuild) — verified 2026-07-05
-- Compile-time dictionary + types: `locales/{es,en}.json` (697 leaf keys) + `lib/dictionary.ts` — the key universe + fallback values; **no `home` namespace exists** (homepage copy is hardcoded — Sprint 2's job).
-- Keyed marketing pages: `sellerAcquisition` namespace → `app/(shell)/vende/*` via `page-config.ts` — override-ready once the merge seam exists.
+- Compile-time dictionary + types: `locales/{es,en}.json` (697 leaf keys pre-Sprint-2) + `lib/dictionary.ts` — the key universe + fallback values. **Sprint 2 added `home.*` (homepage) and `acerca.*` (bilingual, `/acerca` + the MCP/UCP-manifest/llms.txt/`/agent` agent-facing fan-out via `lib/about-content-overrides.ts`)** — both now flow through the merge seam.
+- Keyed marketing pages: `sellerAcquisition` namespace → `app/(shell)/vende/*` via `page-config.ts` — override-ready once the merge seam exists (verified es-only-by-design, complete, in Sprint 2's audit).
 - Supabase editorial store + fail-open read + in-process cache: the `platform_flags` pattern (`lib/flags.ts`, feature-flags-inhouse).
 - Admin shell + auth: `app/(shell)/admin` (`AdminShell.tsx`; seleccion/flags/tenants precedents) → new `/admin/contenido` section.
 - Static-shell + ISR discipline: `lib/cache-policy.ts` SSOT + LEARNINGS (route-group split; time-bucket rotation).
@@ -51,16 +51,16 @@ revalidate on save, never a per-request dynamic API (see the static-shell LEARNI
 - Bulk-import UX shape (upload → staging/diff → apply): bulk-import-migration epic.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | S1.1 Override store + pure fail-open merge seam (`applyCopyOverrides`), flag-gated, cached | low |
-| 1 | S1.2 `/admin/contenido` per-key editor (default shown, restore-per-key, allow-list-aware, save → revalidate) | low |
-| 1 | S1.3 Bulk export/import — CSV/XLSX + JSON, scoped, diff preview, unknown keys skipped | low |
-| 2 | S2.1 Coverage audit + keying map (homepage, `/vende` family, `/acerca`) — doc-first, Daniel-confirmed | low |
-| 2 | S2.2 Key homepage editorial strings (`home.*`) + `/acerca` without un-static-ing `/` | low |
-| 3 | S3.1 Announcement CRUD (audience, copy+CTA, schedule, one-active-per-audience) | low |
-| 3 | S3.2 Seller slim dismissable strip atop the seller shell | low |
-| 3 | S3.3 Buyer understated dismissable homepage card (static `/` preserved) | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | S1.1 Override store + pure fail-open merge seam (`applyCopyOverrides`), flag-gated, cached | low | ✅ merged (PR #197) |
+| 1 | S1.2 `/admin/contenido` per-key editor (default shown, restore-per-key, allow-list-aware, save → revalidate) | low | ✅ merged (PR #197) |
+| 1 | S1.3 Bulk export/import — CSV/XLSX + JSON, scoped, diff preview, unknown keys skipped | low | ✅ merged (PR #197) |
+| 2 | S2.1 Coverage audit + keying map (homepage, `/vende` family, `/acerca`) — doc-first, Daniel-confirmed | low | ✅ done 2026-07-08 |
+| 2 | S2.2 Key homepage editorial strings (`home.*`) + `/acerca` without un-static-ing `/` | low | ✅ merged 2026-07-08 (PR #198, `0fd667d`) |
+| 3 | S3.1 Announcement CRUD (audience, copy+CTA, schedule, one-active-per-audience) | low | not started |
+| 3 | S3.2 Seller slim dismissable strip atop the seller shell | low | not started |
+| 3 | S3.3 Buyer understated dismissable homepage card (static `/` preserved) | low | not started |
 
 ## Deploy order
 Frontend-only epic (plus Supabase DDL — additive editorial tables). Sprints independently shippable in

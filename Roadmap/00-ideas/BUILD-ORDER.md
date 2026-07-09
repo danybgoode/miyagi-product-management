@@ -10,16 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (3)
 
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 6/11 stories
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
+- [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 5/8 stories
 
-## 📋 Ready to build (scaffolded, not started) (5)
+## 📋 Ready to build (scaffolded, not started) (4)
 
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
-- [Admin content & announcements — runtime marketing copy + platform banners](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 3/8 stories
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
@@ -112,14 +112,15 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (4)
+## ⬜ Funnel — seeds not yet scaffolded (5)
 
+- [Seller-portal UX audit — apply the July-2026 refresh](seeds/seller-portal-ux-audit.md) — Ready · Epic · Wave 1
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -128,7 +129,6 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Buyer notifications — money path (Compras dispatch + Medusa-order gating) | Scaffolded | Shipped |
-| Admin content & announcements — runtime marketing copy + platform banners | Scaffolded | In progress |
 
 ---
-_Epics: 94 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 94 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._

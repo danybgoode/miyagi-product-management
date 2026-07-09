@@ -1,7 +1,10 @@
 # Admin content & announcements — Sprint 2: Key the uncovered surfaces (homepage + acerca)
 
-**Status:** 🟡 in progress — Story 2.1 done (audit doc + Daniel's approval); Story 2.2 built on
-`feat/admin-content-and-announcements-s2`, gate green, awaiting PR + merge
+**Status:** ✅ done 2026-07-08 — both stories merged. Story 2.1: audit doc + Daniel's approval.
+Story 2.2: [PR #198](https://github.com/danybgoode/miyagisanchezcommerce/pull/198) squash-merged to
+`main` (`0fd667d`), reviewer-approved on green CI (LOW risk tier — no Daniel gate required), branch
+deleted. Live in prod (Vercel). Owed: Daniel's browser smoke (walkthrough below) — not blocking, this
+was a copy/non-commerce-UI change.
 
 > Daniel's "many sections may be uncovered" — confirmed at grooming: the dictionary has NO `home`
 > namespace; homepage editorial copy and `/acerca` content are hardcoded. This sprint keys them so
@@ -36,8 +39,12 @@ guard green (no orphan strings introduced); `/acerca` bilingual behavior unchang
 allow-list — now via `locales/*.json`'s `acerca` namespace instead of its standalone `about-content.ts`
 data, added to `BILINGUAL_NAMESPACES`).
 **Risk:** low (wide-but-shallow diff; audit-first contained it)
-**Status:** ✅ built 2026-07-08 on `feat/admin-content-and-announcements-s2` (off latest `main`, past
-the `catalog-management` S2 + `admin-content-and-announcements` S1 merges). What shipped:
+**Status:** ✅ merged 2026-07-08 — [PR #198](https://github.com/danybgoode/miyagisanchezcommerce/pull/198),
+squash commit `0fd667d`, built on `feat/admin-content-and-announcements-s2` (off latest `main`, past
+the `catalog-management` S2 + `admin-content-and-announcements` S1 merges). Independent review
+(`pr-reviewer` subagent) verified every claim below against the diff and **approved**; one cosmetic
+finding (a second stale `stub: boolean` doc comment repeating the same founder/pricing inaccuracy the
+header comment already fixed) was applied as a same-PR follow-up commit before merge. What shipped:
 - `home.*` namespace (`ribbon`, `selection`, `categories`, `featured.badge`, `emptyState`,
   `terminalCta`) added to `locales/{es,en}.json`; `app/(site)/page.tsx` reads it via
   `getOverriddenDictionary('es').home` — `/` stays `○` static (confirmed in the build's route table).
@@ -57,6 +64,18 @@ the `catalog-management` S2 + `admin-content-and-announcements` S1 merges). What
 - Fixed `e2e/static-shell-split.spec.ts`'s S1 "regression tripwire" (it explicitly anticipated this
   moment): the shared `(site)`/root layouts still must never import `lib/copy-overrides` or read
   headers, but `app/(site)/page.tsx` importing it is now the sanctioned pattern, not a violation.
+
+**Known gaps (non-blocking, flagged by the independent review, not by this sprint's own acceptance):**
+- `/acerca`'s `generateMetadata()` (`<title>`/meta description, `app/(shell)/acerca/page.tsx`) still
+  reads the literal `ABOUT_PAGE.es` constant, not the admin-overridden dictionary — so an edit to
+  `acerca.page.metaTitle`/`metaDescription` reaches the visible page body but not the document head.
+  Pre-existing behavior, not a regression; not one of the five surfaces this story's acceptance named.
+- The seed values in `locales/{es,en}.json`'s `acerca.*` and `lib/about-content.ts`'s literal
+  `ABOUT_PAGE`/`ABOUT_SECTIONS` are kept in sync **by hand**, with no automated drift guard — a future
+  code edit to only one side (most likely the `pricing` section, since `e2e/subdomain-checkout.spec.ts`
+  / `subdomain-monthly.spec.ts` assert against the TS literal while the live surfaces render the JSON)
+  would ship divergent copy with those specs still green. Worth a follow-up guard if `pricing` content
+  changes again.
 
 ## Sprint QA
 - **api spec(s):** `e2e/copy-overrides-merge.spec.ts` gained a test proving a `home.*` override applies
