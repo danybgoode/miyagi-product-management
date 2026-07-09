@@ -26,13 +26,36 @@ locally (`tsc --noEmit`, `npm run build`, `npm run test:e2e` — 6/6 passed agai
 on the built output) and again in CI against the live Vercel preview (`Type-check + build` +
 `Playwright vs preview` both green, PR #201).
 
-### Story 1.2 — Standalone build + Dockerfile
+### Story 1.2 — Standalone build + Dockerfile ✅
 **As a** platform operator, **I want** `output: 'standalone'` + a multi-stage Dockerfile
 (deps/builder/runner; `sharp` installed in the runner stage, arch-matched; `public/` +
 `.next/static` copied explicitly), **so that** the frontend runs as a self-contained container.
 **Acceptance:** `docker build` + `docker run` locally serves the app incl. an optimized
 `/_next/image` request; `next build` still green on Vercel (standalone must not break the preview rail).
 **Risk:** low
+
+**Done 2026-07-09.** `output: 'standalone'` added to `next.config.ts` (no-op on Vercel — confirmed
+`next build` still green). New `Dockerfile` (deps/builder/runner, `node:20-slim` to match the
+backend's existing image convention) + `.dockerignore`. `sharp` added as a `package.json` dependency
+so the standalone dependency-tracer includes it — but the trace only copies stub files for it (no
+native binary, no JS lib: Next's image optimizer requires `sharp` dynamically at runtime, which
+static tracing can't see), so the runner stage explicitly reinstalls it fresh (`npm install sharp`,
+verified with a direct `sharp()` call inside the running container). `docker build` + `docker run`
+locally serve `/`, `/api/splash`, `/api/icon` correctly (200s, real bytes) with `.env.local`-sourced
+env vars (same file local `npm run dev` already uses).
+
+**Acceptance amended (confirmed with Daniel):** dropped the "optimized `/_next/image` request" check.
+Every relative-path `/_next/image` request (tested against both `/api/icon` and a plain static
+`public/next.svg`) 500/400s with `isn't a valid image… received null` — traced to a confirmed, open
+upstream Next.js regression in `output: 'standalone'` mode ([vercel/next.js#82610](https://github.com/vercel/next.js/issues/82610),
+from PR #82114/#82175): the optimizer's internal self-fetch for a relative image path doesn't replay
+correctly through middleware. Not our code's bug and not actually reachable in this app — `grep -rn
+"from 'next/image'"` across the codebase returns zero hits; real product images go through
+`images.remotePatterns` (external R2/https URLs), a completely different, unaffected fetch path. The
+one available workaround (excluding the affected paths from `middleware.ts`'s matcher, per the
+upstream issue) would touch a cross-cutting file — LEARNINGS flags `middleware.ts` as
+announce-before-changing — for a code path nothing in this app calls. Left as a documented open item,
+not a middleware change.
 
 ### Story 1.3 — Cloud Build → Artifact Registry → Cloud Run `miyagi-web`
 **As a** platform operator, **I want** a `cloudbuild.yaml` in `apps/miyagisanchez` (cloned from the
