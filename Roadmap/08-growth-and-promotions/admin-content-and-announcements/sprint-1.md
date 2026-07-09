@@ -1,6 +1,6 @@
 # Admin content & announcements — Sprint 1: Copy override layer + admin editor + bulk round-trip
 
-**Status:** ⬜ not started
+**Status:** 🚧 in progress — S1.1 merged to branch
 
 > The skateboard: after this sprint, every ALREADY-KEYED marketing surface (`sellerAcquisition` → the
 > `/vende` family) is runtime-editable, per key and in bulk, with no deploy. Uncovered surfaces
@@ -8,7 +8,7 @@
 
 ## Stories
 
-### Story 1.1 — Override store + pure merge seam
+### Story 1.1 — Override store + pure merge seam ✅ (`a452a37`, branch `feat/admin-content-and-announcements`)
 **As** the platform admin, **I want** a `platform_copy_overrides` Supabase table (namespace, key,
 locale, value, updated_at/by) and a pure, flag-gated, fail-open merge seam
 `applyCopyOverrides(dict, overrides)` layered onto `getDictionary()`, **so that** any keyed surface can
