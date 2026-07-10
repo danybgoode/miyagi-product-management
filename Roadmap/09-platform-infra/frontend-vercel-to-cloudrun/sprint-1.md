@@ -1,8 +1,11 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 1: Containerize + shadow rail
 
-**Status:** ✅ all 4 stories done, PR #201 (draft, CI green) — `miyagi-web` live (dark) on Cloud Run,
-shadow-soaked. Owed before merge/close: CI/CD trigger console step (S1.3), 4 pending secret values
-(S1.3), the `launchpad.enabled` live-flag question (S1.4) — see each story for detail.
+**Status:** ✅ **SHIPPED 2026-07-09.** All 4 stories merged (PR #201, `d2266db`, cross-review clean —
+1 nit fixed, no blockers). `miyagi-web` live (dark) on Cloud Run; the `frontend-main-deploy` Cloud
+Build trigger is wired and fired automatically on this exact merge (no console step remained — the
+existing backend GitHub connection already covered this repo). `launchpad.enabled`'s live-ON state
+(S1.4) confirmed intentional by Daniel; `MEMORY.md` updated. Owed forward: 4 pending secret values
+(Daniel populates when reached), Daniel's browser/money smoke on the live URLs below.
 
 All stories deployable dark — Vercel keeps serving 100% of traffic this sprint.
 
@@ -114,11 +117,13 @@ backs the startup/liveness probes so a missing secret never masquerades as a bad
 `image/png`; `/api/ucp/manifest` → 200. Drift-guard `infra/gcp/test/deploy-invariants-frontend.test.js`
 green (6/6), full `infra/gcp/test/` suite green (35/35 incl. the backend's existing guard).
 
-CI/CD trigger (`cicd-setup-frontend.sh`) **not yet run** — needs a one-time console step (connect
-`danybgoode/miyagisanchezcommerce` as a 2nd-gen Cloud Build GitHub repo, separate from the backend's
-connection). Every merge to `main` does not yet auto-deploy `miyagi-web`; today's deploys are manual
-(`deploy-frontend.sh` after a `gcloud builds submit`). Owed before this story is fully "every merge
-deploys both rails."
+**CI/CD trigger wired 2026-07-09.** Turned out no manual console OAuth step was needed — the
+backend's existing 2nd-gen `github` Cloud Build connection already covers the whole `danybgoode`
+account, so `gcloud builds repositories create` added `miyagisanchezcommerce` to it directly.
+`cicd-setup-frontend.sh` then ran with `GH_CONNECTION`/`GH_REPO` pointed at that repository resource
+— new SA `miyagi-web-cicd`, trigger `frontend-main-deploy` (push to `main` → `cloudbuild.yaml`).
+**Verified live**: merging PR #201 fired it automatically alongside the Vercel prod deploy — both
+rails now fire from a single push, closing out this story's full acceptance.
 
 ### Story 1.4 — Shadow soak: the suite against the dark URL ✅
 **As a** platform operator, **I want** the existing Playwright/API suite run against the dark URL
@@ -178,34 +183,35 @@ flagging the caveat rather than claiming full coverage.
   1.3 additionally: the `node:test` deploy-invariants guard (`deploy-invariants-frontend.test.js`).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-**Current state:** PR #201 is still a **draft** on `feat/frontend-vercel-to-cloudrun` — nothing has
-merged to `main` yet, and Vercel prod (`miyagisanchez.com`) is untouched and unaware any of this
-happened. The Cloud Run service below was deployed **manually** (`gcloud builds submit` +
-`deploy-frontend.sh`) — the CI/CD trigger that would make `git push main` auto-deploy it is not
-wired yet (S1.3, owed: a one-time Cloud Build console step). Dark URL (stable, project-hash form):
-`https://miyagi-web-oehqqtyoia-uk.a.run.app`.
+**Current state (2026-07-09, post-merge):** PR #201 merged to `main` (`d2266db`) — cross-review
+(Codex) clean, CI green. Vercel prod (`miyagisanchez.com`) deployed as normal from this merge; it is
+now serving Sprint 1's code (the edge→Node conversion + standalone/Dockerfile scaffolding, all
+no-ops for Vercel) — still 100% of real user traffic, unchanged behavior. `miyagi-web` on Cloud Run
+picked up the same merge automatically via the now-wired `frontend-main-deploy` trigger. Dark URL
+(stable, project-hash form): `https://miyagi-web-oehqqtyoia-uk.a.run.app` — no DNS points at it;
+still unreachable except by its own URL.
 
-1. Open https://miyagisanchez.com/api/splash and the same path on this PR's Vercel preview URL
-   (find it: `gh pr checks 201` → the Vercel check's link, or the PR's Checks tab).
-   → Both render the identical splash image — proves Story 1.1's edge→Node conversion is
-   Vercel-safe (this is pre-merge verification, not "already live").
+1. Open https://miyagisanchez.com/api/splash.
+   → Renders the splash image on real prod — confirms Story 1.1's edge→Node conversion shipped
+   clean to Vercel with no visible change.
 2. Open `https://miyagi-web-oehqqtyoia-uk.a.run.app/` in a private window.
    → The marketplace homepage renders fully (images optimized, no 500s).
 3. Open `https://miyagi-web-oehqqtyoia-uk.a.run.app/api/ucp/manifest`.
    → Valid JSON manifest, same shape as https://miyagisanchez.com/api/ucp/manifest.
 4. Open `https://miyagi-web-oehqqtyoia-uk.a.run.app/api/health`.
    → `{"ok":true}` — proves the container itself is healthy independent of any secret/config.
-5. **Not yet testable — owed:** "merge to `main` auto-deploys both rails." Needs (a) the
-   `cicd-setup-frontend.sh` console step done, (b) this PR actually merged. Once both are true:
-   merge any trivial PR → Vercel prod deploys as always AND a new `miyagi-web` Cloud Run revision
-   appears (`gcloud run revisions list --service=miyagi-web --region=us-east4`).
+5. Confirm both rails fired from the same merge:
+   `gcloud run revisions list --service=miyagi-web --region=us-east4 --project=miyagisanchezback-497722`
+   → A revision created at merge time, alongside the Vercel prod deployment for the same commit
+   (`d2266db`) — visible in the Vercel dashboard's Deployments tab.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-**Known gaps carried forward (not blocking, tracked above in each story):**
+**Known gaps carried forward (not blocking — Daniel's call on timing, confirmed 2026-07-09):**
 - 4 secret shells still empty (`SERPAPI_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`,
-  `TELEGRAM_CHAT_ID_APP`) — SerpAPI search, the frontend's own Stripe webhook, cron auth, and
-  admin Telegram notifications won't work on this dark URL until populated (S1.3).
-  `STRIPE_WEBHOOK_SECRET` specifically needs a webhook endpoint registered against this URL first.
-- `launchpad.enabled` is live `true` in prod (flipped 2026-07-08) — worth confirming this was
-  intentional and updating `MEMORY.md` + the stale test docstring either way (S1.4).
+  `TELEGRAM_CHAT_ID_APP`) — SerpAPI search, the frontend's own Stripe webhook, cron auth, and admin
+  Telegram notifications won't work on this dark URL until populated. Daniel will set these when
+  each is actually reached (`STRIPE_WEBHOOK_SECRET` needs a webhook endpoint registered against
+  this URL first — do that before populating it).
+- `launchpad.enabled` live `true` in prod (flipped 2026-07-08) — **confirmed intentional by
+  Daniel 2026-07-09**; `MEMORY.md` updated (`bookshop-launchpad-epic.md` + its index line).
