@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-09 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-10 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -15,15 +15,16 @@
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 9/16 stories · risk: High · Wave 1
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
 
-## 📋 Ready to build (scaffolded, not started) (8)
+## 📋 Ready to build (scaffolded, not started) (9)
 
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 0/9 stories · risk: Low · Wave 1
+- [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 0/7 stories · risk: High · Wave 1
 - [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 0/4 stories · risk: Low · Wave 1
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
-- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 0/17 stories · risk: High · Next up
+- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 2/17 stories · risk: High · Next up
 - [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
 ## ✅ Shipped (87)
@@ -116,16 +117,21 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (6)
+## ⬜ Funnel — seeds not yet scaffolded (11)
 
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~18 routes](seeds/seller-catalog-null-slot-sweep.md) — Raw · Feature · tbd
+- [mschz.org full coverage — short links for every shareable surface](seeds/mschz-full-coverage.md) — Ready · Chore · Wave 1
 - [Seller-portal UX audit — apply the July-2026 refresh](seeds/seller-portal-ux-audit.md) — Queued · Epic · Wave 1
+- [Miyagi Partners — multi-tenant MCP credential + roles](seeds/miyagi-partners-mcp.md) — Ready · Feature · Wave 2
+- [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](seeds/platform-migrations.md) — Ready · Feature · Wave 2
+- [Comparador de costos — the stacking-costs sales tool on the homepage](seeds/cost-comparator-homepage.md) — Ready · Feature · Wave 3
+- [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](seeds/repo-readmes-branding.md) — Ready · Chore · Wave 3
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -134,6 +140,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Buyer notifications — money path (Compras dispatch + Medusa-order gating) | Scaffolded | Shipped |
+| Frontend off Vercel — Cloud Run behind a Cloudflare edge | Scaffolded | In progress |
 
 ---
-_Epics: 98 · seeds in funnel: 6 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 99 · seeds in funnel: 11 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
