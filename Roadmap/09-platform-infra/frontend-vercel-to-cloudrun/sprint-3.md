@@ -70,6 +70,27 @@ serves from Cloud Run through Cloudflare.
 tenant custom domains still serve from Vercel untouched; rollback = flip the records back (minutes).
 **Risk:** high (the flip — Daniel merges + runs the walkthrough)
 
+**Groundwork done 2026-07-10 (Daniel still executes the flip itself):**
+- **New gap found + closed:** `mschz.org` is a separate Cloudflare zone, uncovered by Sprint 2's
+  Origin CA cert (hardcoded to `miyagisanchez.com`). `infra/gcp/cloudflare-origin-cert.mjs` now
+  takes `--domain`/`--hostnames` (default unchanged — regression-guarded); request the second
+  cert with `node infra/gcp/cloudflare-origin-cert.mjs --domain mschz.org --hostnames
+  mschz.org,www.mschz.org --out-dir .cf-origin-cert-mschz`, then attach it alongside the existing
+  cert on `miyagi-web-https-proxy` (`--ssl-certificates=<existing>,<new>`, comma-separated SNI
+  list) **before** flipping `mschz.org`'s DNS record — otherwise visitors get a cert mismatch.
+- New `infra/gcp/cloudflare-cutover-flip.mjs` — dry-run by default, flips the apex + wildcard
+  A records from Vercel's IPs → the ALB's static IP (resolved live) + `proxied: true`; writes a
+  pre-flip JSON snapshot so `--rollback <file>` restores content+proxied+type exactly, not just
+  the proxied flag.
+- **Real near-miss, caught by the dry-run default before any live edit:** the first version
+  selected cutover records by `name` alone (matching `miyagisanchez.com`/`*.miyagisanchez.com`),
+  which also matched **3 CAA records + 1 TXT (google-site-verification) record** sharing the same
+  apex name — `--apply` would have silently overwritten those with an A record pointing at the
+  ALB, breaking cert-issuance authorization and Google's site verification. Fixed by also
+  filtering on record type (`A`/`AAAA`/`CNAME` only); regression-tested; re-verified live via
+  dry-run — now correctly finds exactly the 4 real A records (apex ×2, wildcard ×2, Vercel's
+  dual-IP setup).
+
 ### Story 3.5 — Monitoring + deploy-finish Telegram on the new rail
 **As a** platform operator, **I want** uptime checks + alert policies on the canonical path
 (extending the idempotent provisioning script) and the frontend deploy-finish Telegram ping moved
@@ -78,6 +99,20 @@ before the soak starts.
 **Acceptance:** `node:test` config guard green (provision script vs live config); a merge produces
 the deploy-finish Telegram for the frontend.
 **Risk:** low
+
+**Done 2026-07-10** — `infra/gcp/provision-monitoring.sh` extended with a `SERVICE_NAME=backend|
+frontend` axis, orthogonal to the existing `TARGET=staging|prod` one; every existing helper
+reused verbatim. Real drift point caught + locked in the guard: the frontend's health path is
+`/api/health`, not `/health` like the backend. Backend behavior confirmed byte-for-byte
+unchanged (default `SERVICE_NAME=backend`). Config guard `infra/gcp/test/provision-monitoring-
+frontend.test.mjs` green (full suite 96/96). Telegram notifier: rather than generalizing
+`shouldNotifyBuild()`'s filter to a list, deployed a wrapper
+(`apps/backend/infra/gcp/deploy-cicd-telegram-notifier-frontend.sh`) that reuses the SAME,
+unmodified `index.js` with different env vars (`FUNCTION_NAME=cicd-telegram-build-notifier-
+frontend`, pointed at `frontend-main-deploy`) — zero code changes to a working notifier, matches
+the existing script's own parametrization. **Not run live yet** — provisions a real, billable
+Cloud Function + service account, held pending PR review (backend repo, `feat/frontend-vercel-
+to-cloudrun-s3`).
 
 ## Sprint QA
 - **api spec(s):** 3.3 → `e2e/ucp-cutover-api.spec.ts` (flat convention, not a nonexistent

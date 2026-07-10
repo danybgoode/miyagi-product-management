@@ -8,14 +8,23 @@
 // Origin CA API (confirmed live: the same CLOUDFLARE_API_TOKEN Bearer auth used elsewhere works
 // here too — no separate legacy "Origin CA Key" needed with a modern scoped token).
 //
-// Scope for THIS story: apex + wildcard only (covers gcp.miyagisanchez.com and the future full
-// cutover). The SSL-for-SaaS fallback-origin hostname is NOT included — that hostname doesn't
-// exist until Cloudflare for SaaS is enabled on the zone (Sprint 4, tenant-domain migration);
-// re-issue/extend then.
+// Scope for Sprint 2: apex + wildcard only (covers gcp.miyagisanchez.com and the full cutover).
+// The SSL-for-SaaS fallback-origin hostname is NOT included — that hostname doesn't exist until
+// Cloudflare for SaaS is enabled on the zone (Sprint 4, tenant-domain migration); re-issue/extend
+// then.
+//
+// Sprint 3 Story 3.4 extends this to a SEPARATE domain — mschz.org (the short-link redirector) —
+// which is its own zone, uncovered by the miyagisanchez.com cert above. GCP target-https-proxies
+// accept a comma-separated --ssl-certificates list (SNI-selected), so this is a SECOND cert
+// attached alongside the existing one, not a replacement. Request it with:
+//   node infra/gcp/cloudflare-origin-cert.mjs --domain mschz.org --hostnames mschz.org,www.mschz.org --out-dir .cf-origin-cert-mschz
+// (mschz.org is a redirector, not a wildcard subdomain space, so hostnames are apex+www, not a
+// wildcard — pass --hostnames explicitly rather than relying on the default [domain, *.domain].)
 //
 // Usage:
 //   node infra/gcp/cloudflare-origin-cert.mjs
 //   node infra/gcp/cloudflare-origin-cert.mjs --out-dir /path/to/scratch  # default: ./.cf-origin-cert (gitignored)
+//   node infra/gcp/cloudflare-origin-cert.mjs --domain <domain> [--hostnames h1,h2,...] --out-dir <dir>
 //
 // Outputs (gitignored — NEVER commit): <out-dir>/origin.key (private key), <out-dir>/origin.pem
 // (Cloudflare-signed cert). Feed straight into provision-alb-frontend.sh:
@@ -31,8 +40,6 @@ import { join } from 'node:path'
 
 const GCP_PROJECT = 'miyagisanchezback-497722'
 const CF_API = 'https://api.cloudflare.com/client/v4'
-const DOMAIN = 'miyagisanchez.com'
-const HOSTNAMES = [DOMAIN, `*.${DOMAIN}`]
 const VALIDITY_DAYS = 5475 // 15 years — Cloudflare's max, avoids near-term rotation
 
 function arg(name, def = undefined) {
@@ -41,6 +48,8 @@ function arg(name, def = undefined) {
   const next = process.argv[i + 1]
   return next && !next.startsWith('--') ? next : true
 }
+const DOMAIN = String(arg('domain', 'miyagisanchez.com'))
+const HOSTNAMES = String(arg('hostnames', `${DOMAIN},*.${DOMAIN}`)).split(',').map((h) => h.trim()).filter(Boolean)
 const OUT_DIR = String(arg('out-dir', join(process.cwd(), '.cf-origin-cert')))
 
 function resolveSecret(envName, secretName) {
