@@ -174,6 +174,38 @@ tenant custom domains still serve from Vercel untouched; rollback = flip the rec
   dry-run — now correctly finds exactly the 4 real A records (apex ×2, wildcard ×2, Vercel's
   dual-IP setup).
 
+**Cutover executed live 2026-07-10 (Daniel authorized):**
+- `mschz.org` Origin CA cert requested + attached alongside the existing cert on
+  `miyagi-web-https-proxy` (both certs live, SNI-selected).
+- **Second real bug, caught live mid-flip**: Vercel's real zone export carries **two A records
+  per name** (dual-IP redundancy — confirmed for both the apex and the wildcard). Retargeting
+  every record in a name-group to the same new ALB IP hit Cloudflare's API rejection ("An
+  identical record already exists", error 81058) on the second record — the script had no
+  per-name grouping, so this aborted mid-run and left a genuinely inconsistent split state (one
+  record correctly proxied to the ALB, its sibling still pointing at Vercel, unproxied) for a
+  few minutes until diagnosed against the live zone and fixed. Fix: group records by name, PATCH
+  only the first record in each group to the new target, DELETE the rest (never patch two
+  records to an identical value); the pre-flip snapshot now records each entry's action
+  (`patch`/`delete`) so `--rollback` re-CREATEs deleted records instead of PATCHing a since-gone
+  ID. Regression-tested (12/12 green), re-applied cleanly — final live state confirmed via a
+  direct Cloudflare API read: exactly one `A` record per name, both `136.68.90.56`, both proxied.
+- **Live verification** (via `curl --resolve` forcing the real Cloudflare edge IP, since this
+  session's local DNS resolver lags, same known caveat as Sprint 1/2/S3.3):
+  - `https://miyagisanchez.com/` → `200`, `server: cloudflare`, `via: 1.1 google` (confirms the
+    ALB path), `x-cloud-trace-context` present (confirms Cloud Run served it).
+  - `https://miyagisanchez.com/api/health` → `200`.
+  - `https://miyagisanchez.com/api/ucp/manifest` → `200`, `base_url: "https://miyagisanchez.com"`
+    (not a `*.run.app` URL), CORS headers present.
+  - `https://mschz.org/` → `301` → `https://miyagisanchez.com/`, `cf-ray` present, no 526
+    cert-mismatch error (the real proof the Origin CA cert attach worked — a client curl can
+    only ever see Cloudflare's own edge cert, never the origin cert, so a normal response is the
+    correct signal, not a subject/issuer match — walkthrough step 4 corrected below).
+  - `https://mschz.org/nonexistent-test-slug` → `301` → `https://miyagisanchez.com/404` (the
+    short-link-not-found path, confirmed working through the new rail).
+- **Still owed to Daniel**: the full walkthrough below on real production URLs, including the
+  money-path checkout (step 6) and a real shop-subdomain + live tenant-custom-domain spot check
+  (steps 2–3) — not run by the agent.
+
 ### Story 3.5 — Monitoring + deploy-finish Telegram on the new rail
 **As a** platform operator, **I want** uptime checks + alert policies on the canonical path
 (extending the idempotent provisioning script) and the frontend deploy-finish Telegram ping moved
@@ -233,8 +265,11 @@ Env: production · https://miyagisanchez.com (now on the new rail)
 3. Open a live tenant custom domain (e.g. the busiest seller's).
    → Still serves — **from Vercel** (unchanged this sprint).
 4. Open https://mschz.org/<a-known-short-link>.
-   → Redirects exactly as before. Also check the cert actually serving is the new one, not a
-   mismatch/fallback: `curl -vI https://mschz.org/ 2>&1 | grep -i "subject\|issuer"`.
+   → Redirects exactly as before, no cert-error interstitial. (Note: a client-side
+   `curl -vI | grep subject/issuer` only ever shows **Cloudflare's own edge cert**, never the
+   Origin CA cert — that leg is Cloudflare→ALB, invisible to the client. The real proof the
+   origin cert is correctly attached is the ABSENCE of a 526 "Invalid SSL Certificate" error;
+   a normal 301/200 response is the confirmation.)
 5. Open https://miyagisanchez.com/api/ucp/manifest.
    → URLs inside point at miyagisanchez.com (not `*.run.app`, not Vercel). Automated form:
    `npx playwright test ucp-cutover-api --project=api` (`PLAYWRIGHT_BASE_URL` defaults to prod).

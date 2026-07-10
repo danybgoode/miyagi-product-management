@@ -120,14 +120,49 @@ async function patchRecord(zoneId, record, { content, proxied, type }) {
   })
 }
 
+async function deleteRecord(zoneId, recordId) {
+  return cfApi(`/zones/${zoneId}/dns_records/${recordId}`, { method: 'DELETE' })
+}
+
+async function createRecord(zoneId, { type, name, content, proxied, ttl }) {
+  return cfApi(`/zones/${zoneId}/dns_records`, {
+    method: 'POST',
+    body: JSON.stringify({ type, name, content, proxied, ttl: ttl || 1 }),
+  })
+}
+
+// Vercel's real zone export commonly carries TWO A records per name (dual-IP redundancy — e.g.
+// both the apex and the wildcard had 2 records each here). Retargeting every one of them to the
+// SAME new ALB IP would create duplicate (type, name, content) tuples, which Cloudflare's API
+// rejects outright (error 81058 "An identical record already exists") — confirmed live
+// (2026-07-10): the first record in a name-group patched fine, the second one 400'd, leaving a
+// genuinely inconsistent split state (one record correctly pointing at the ALB, its sibling still
+// pointing at Vercel) until this was found and fixed. Fix: group by name, PATCH only the first
+// record in each group to the new target, DELETE the rest (never patch two records to an
+// identical value).
+function groupByName(records) {
+  const groups = new Map()
+  for (const r of records) {
+    if (!groups.has(r.name)) groups.set(r.name, [])
+    groups.get(r.name).push(r)
+  }
+  return groups
+}
+
 ;(async () => {
   if (ROLLBACK_FILE) {
     console.log(`▶ Rolling back from snapshot ${ROLLBACK_FILE}`)
     const snapshot = JSON.parse(readFileSync(ROLLBACK_FILE, 'utf8'))
     const zone = await resolveZone(snapshot.domain)
+    // A record marked action:"patch" still exists (same id) — PATCH it back. A record marked
+    // action:"delete" no longer exists in Cloudflare at all — it must be re-CREATED, not patched
+    // (its id is gone).
     for (const rec of snapshot.records) {
-      console.log(`  restoring ${rec.name}: content=${rec.content} proxied=${rec.proxied} type=${rec.type}`)
-      if (APPLY) await patchRecord(zone.id, { id: rec.id }, { content: rec.content, proxied: rec.proxied, type: rec.type })
+      const verb = rec.action === 'delete' ? 're-creating' : 'restoring'
+      console.log(`  ${verb} ${rec.name}: content=${rec.content} proxied=${rec.proxied} type=${rec.type}`)
+      if (!APPLY) continue
+      if (rec.action === 'delete') await createRecord(zone.id, { type: rec.type, name: rec.name, content: rec.content, proxied: rec.proxied })
+      else await patchRecord(zone.id, { id: rec.id }, { content: rec.content, proxied: rec.proxied, type: rec.type })
     }
     if (!APPLY) console.log('\nDRY-RUN — re-run with --apply to actually restore the above.')
     else console.log('\n✓ Rollback applied.')
@@ -148,9 +183,14 @@ async function patchRecord(zoneId, record, { content, proxied, type }) {
     return
   }
 
-  console.log(`  found ${targets.length} record(s) to flip:`)
-  for (const r of targets) {
-    console.log(`    ${r.type} ${r.name} → ${r.content} (proxied: ${r.proxied}) ⇒ A ${r.name} → ${albIp} (proxied: true)`)
+  const groups = groupByName(targets)
+  console.log(`  found ${targets.length} record(s) across ${groups.size} name(s) to flip:`)
+  for (const [name, recs] of groups) {
+    const [keep, ...drop] = recs
+    console.log(`    ${keep.type} ${name} → ${keep.content} (proxied: ${keep.proxied}) ⇒ A ${name} → ${albIp} (proxied: true)`)
+    for (const d of drop) {
+      console.log(`    ${d.type} ${name} → ${d.content} (proxied: ${d.proxied}) ⇒ DELETE (duplicate name — Cloudflare rejects 2 identical records)`)
+    }
   }
 
   if (!APPLY) {
@@ -158,18 +198,26 @@ async function patchRecord(zoneId, record, { content, proxied, type }) {
     return
   }
 
+  const snapshotRecords = []
+  for (const recs of groups.values()) {
+    const [keep, ...drop] = recs
+    snapshotRecords.push({ id: keep.id, name: keep.name, type: keep.type, content: keep.content, proxied: keep.proxied, action: 'patch' })
+    for (const d of drop) snapshotRecords.push({ id: d.id, name: d.name, type: d.type, content: d.content, proxied: d.proxied, action: 'delete' })
+  }
+
   mkdirSync(SNAPSHOT_DIR, { recursive: true, mode: 0o700 })
   const snapshotPath = join(SNAPSHOT_DIR, `${DOMAIN}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`)
-  writeFileSync(snapshotPath, JSON.stringify({
-    domain: DOMAIN,
-    flippedAt: new Date().toISOString(),
-    records: targets.map((r) => ({ id: r.id, name: r.name, type: r.type, content: r.content, proxied: r.proxied })),
-  }, null, 2))
+  writeFileSync(snapshotPath, JSON.stringify({ domain: DOMAIN, flippedAt: new Date().toISOString(), records: snapshotRecords }, null, 2))
   console.log(`  ▶ pre-flip snapshot saved: ${snapshotPath} (rollback with --rollback ${snapshotPath})`)
 
-  for (const r of targets) {
-    await patchRecord(zone.id, r, { content: albIp, proxied: true, type: 'A' })
-    console.log(`  ✓ flipped ${r.name} → A ${albIp} (proxied)`)
+  for (const [name, recs] of groups) {
+    const [keep, ...drop] = recs
+    await patchRecord(zone.id, keep, { content: albIp, proxied: true, type: 'A' })
+    console.log(`  ✓ flipped ${name} → A ${albIp} (proxied)`)
+    for (const d of drop) {
+      await deleteRecord(zone.id, d.id)
+      console.log(`  ✓ deleted duplicate ${d.type} ${name} → ${d.content}`)
+    }
   }
   console.log(`\n✓ Cutover flip applied for ${DOMAIN}. Verify: https://${DOMAIN}/ should now show a cf-ray header AND serve from Cloud Run.`)
 })().catch((e) => { console.error(e.message || e); process.exit(1) })

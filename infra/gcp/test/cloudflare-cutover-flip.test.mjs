@@ -33,15 +33,52 @@ test('cloudflare-cutover-flip.mjs: filters by ROUTING record type too, not name 
 
 test('cloudflare-cutover-flip.mjs: writes a pre-flip snapshot BEFORE patching any record', () => {
   const snapshotIdx = src.indexOf('writeFileSync(snapshotPath')
-  const patchIdx = src.indexOf('await patchRecord(zone.id, r, { content: albIp')
+  const patchIdx = src.indexOf('await patchRecord(zone.id, keep, { content: albIp')
   assert.ok(snapshotIdx !== -1, 'expected a pre-flip snapshot write')
   assert.ok(patchIdx !== -1, 'expected the actual flip PATCH call')
   assert.ok(snapshotIdx < patchIdx, 'the snapshot must be written before any record is patched — rollback safety')
 })
 
 test('cloudflare-cutover-flip.mjs: rollback restores content + proxied + type, not just proxied', () => {
-  const rollbackBlock = src.slice(src.indexOf('if (ROLLBACK_FILE)'), src.indexOf('if (ROLLBACK_FILE)') + 800)
+  const rollbackBlock = src.slice(src.indexOf('if (ROLLBACK_FILE)'), src.indexOf('if (ROLLBACK_FILE)') + 1000)
   assert.match(rollbackBlock, /content: rec\.content, proxied: rec\.proxied, type: rec\.type/)
+})
+
+// --- duplicate-name handling: Cloudflare rejects two identical (type,name,content) records -----
+// Regression for a real bug found live 2026-07-10: Vercel's real zone export carries TWO A
+// records per name (dual-IP redundancy) for both the apex and the wildcard. Retargeting every
+// one of them to the same new ALB IP left the SECOND record's PATCH 400ing with "An identical
+// record already exists" (error 81058) -- and because the loop had no per-name grouping, this
+// aborted the whole run partway through, leaving a genuinely inconsistent split state (one
+// record correctly pointing at the ALB, its sibling still on Vercel) until this was caught,
+// diagnosed against the live zone, and fixed.
+
+test('cloudflare-cutover-flip.mjs: groups records by name before deciding patch vs delete', () => {
+  assert.match(src, /function groupByName/)
+  assert.match(src, /const \[keep, \.\.\.drop\] = recs/)
+})
+
+test('cloudflare-cutover-flip.mjs: only the first record per name is PATCHed, the rest are DELETEd', () => {
+  assert.match(src, /await patchRecord\(zone\.id, keep, \{ content: albIp, proxied: true, type: 'A' \}\)/)
+  assert.match(src, /await deleteRecord\(zone\.id, d\.id\)/)
+})
+
+test('cloudflare-cutover-flip.mjs: never PATCHes more than one record to the same (name) target', () => {
+  // The only patchRecord call inside the per-group loop must operate on `keep`, never iterate
+  // over the full `drop` array with a patch (that's exactly the bug that 400'd live).
+  assert.doesNotMatch(src, /for \(const d of drop\) \{\s*\n\s*await patchRecord/, 'drop-list records must be deleted, never patched to an identical value')
+})
+
+test('cloudflare-cutover-flip.mjs: snapshot records each entry\'s action (patch vs delete) for correct rollback', () => {
+  assert.match(src, /action: 'patch'/)
+  assert.match(src, /action: 'delete'/)
+})
+
+test('cloudflare-cutover-flip.mjs: rollback re-CREATEs deleted records (their id no longer exists), only PATCHes patched ones', () => {
+  const rollbackBlock = src.slice(src.indexOf('if (ROLLBACK_FILE)'), src.indexOf('if (ROLLBACK_FILE)') + 1000)
+  assert.match(rollbackBlock, /rec\.action === 'delete'/)
+  assert.match(rollbackBlock, /await createRecord\(zone\.id,/)
+  assert.match(rollbackBlock, /await patchRecord\(zone\.id, \{ id: rec\.id \}/)
 })
 
 test('cloudflare-cutover-flip.mjs: resolves the ALB static IP live via gcloud, never hardcodes an IP literal', () => {

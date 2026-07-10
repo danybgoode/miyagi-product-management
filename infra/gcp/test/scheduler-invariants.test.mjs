@@ -11,18 +11,19 @@ import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const src = readFileSync(join(__dirname, '..', 'provision-scheduler-frontend.sh'), 'utf8')
-const vercelJson = JSON.parse(
-  readFileSync(join(__dirname, '..', '..', '..', 'apps', 'miyagisanchez', 'vercel.json'), 'utf8'),
-)
 
+// The swap is done (Story 3.1 shipped 2026-07-10) — apps/miyagisanchez/vercel.json's `crons`
+// block has been removed entirely, so these schedules are hardcoded here as the sole source of
+// truth going forward (they were cross-checked against vercel.json's verbatim values before the
+// swap; that comparison is now moot since there's nothing left in vercel.json to compare against).
 const EXPECTED_JOBS = [
-  { name: 'frontend-order-autoconfirm', path: '/api/cron/order-autoconfirm', headerShape: 'x-cron-secret' },
-  { name: 'frontend-print-pending', path: '/api/cron/print-pending', headerShape: 'x-cron-secret' },
-  { name: 'frontend-domain-lapse-sweep', path: '/api/cron/domain-lapse-sweep', headerShape: 'bearer' },
-  { name: 'frontend-launchpad-campaigns', path: '/api/cron/launchpad-campaigns', headerShape: 'x-cron-secret' },
+  { name: 'frontend-order-autoconfirm', path: '/api/cron/order-autoconfirm', schedule: '0 9 * * *', headerShape: 'x-cron-secret' },
+  { name: 'frontend-print-pending', path: '/api/cron/print-pending', schedule: '0 8 * * *', headerShape: 'x-cron-secret' },
+  { name: 'frontend-domain-lapse-sweep', path: '/api/cron/domain-lapse-sweep', schedule: '0 7 * * *', headerShape: 'bearer' },
+  { name: 'frontend-launchpad-campaigns', path: '/api/cron/launchpad-campaigns', schedule: '0 6 * * *', headerShape: 'x-cron-secret' },
 ]
 
-// --- all 4 jobs present, one per vercel.json cron -------------------------------------------
+// --- all 4 jobs present -----------------------------------------------------------------------
 
 for (const job of EXPECTED_JOBS) {
   test(`provision-scheduler-frontend.sh: declares job ${job.name}`, () => {
@@ -30,23 +31,15 @@ for (const job of EXPECTED_JOBS) {
   })
 }
 
-test('provision-scheduler-frontend.sh: covers exactly the 4 crons vercel.json declares', () => {
-  const vercelPaths = new Set((vercelJson.crons ?? []).map((c) => c.path))
-  assert.equal(vercelPaths.size, 4, 'expected vercel.json to still declare exactly 4 crons at this point in the migration')
+// --- schedules match the original vercel.json values verbatim (now hardcoded above) -----------
+
+test('provision-scheduler-frontend.sh: every schedule matches the original vercel.json values', () => {
   for (const job of EXPECTED_JOBS) {
-    assert.ok(vercelPaths.has(job.path), `expected vercel.json to declare a cron for ${job.path}`)
-  }
-})
-
-// --- schedules match vercel.json's verbatim (regression: a change to one and not the other) --
-
-test('provision-scheduler-frontend.sh: every schedule matches vercel.json verbatim', () => {
-  for (const cron of vercelJson.crons) {
-    const escaped = cron.schedule.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escaped = job.schedule.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     assert.match(
       src,
-      new RegExp(`\\|${escaped}\\|${cron.path.replace(/\//g, '\\/')}\\|`),
-      `expected schedule "${cron.schedule}" paired with path "${cron.path}" in the script`,
+      new RegExp(`\\|${escaped}\\|${job.path.replace(/\//g, '\\/')}\\|`),
+      `expected schedule "${job.schedule}" paired with path "${job.path}" in the script`,
     )
   }
 })
