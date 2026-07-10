@@ -1,6 +1,6 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 1: Containerize + shadow rail
 
-**Status:** 🚧 in progress — Story 1.1 merged to branch, PR #201 (draft)
+**Status:** 🚧 in progress — Stories 1.1–1.3 done, PR #201 (draft), `miyagi-web` live (dark) on Cloud Run
 
 All stories deployable dark — Vercel keeps serving 100% of traffic this sprint.
 
@@ -57,7 +57,7 @@ upstream issue) would touch a cross-cutting file — LEARNINGS flags `middleware
 announce-before-changing — for a code path nothing in this app calls. Left as a documented open item,
 not a middleware change.
 
-### Story 1.3 — Cloud Build → Artifact Registry → Cloud Run `miyagi-web`
+### Story 1.3 — Cloud Build → Artifact Registry → Cloud Run `miyagi-web` ✅
 **As a** platform operator, **I want** a `cloudbuild.yaml` in `apps/miyagisanchez` (cloned from the
 backend trigger shape) deploying to a Cloud Run service `miyagi-web` in us-east4, with env/secrets
 provisioned by an idempotent script + a `node:test` drift guard (the `deploy-invariants` pattern),
@@ -66,6 +66,57 @@ provisioned by an idempotent script + a `node:test` drift guard (the `deploy-inv
 `*.run.app` URL. Secrets re-minted from provider dashboards (Vercel Sensitive vars are write-only —
 LEARNINGS), never "copied". Drift-guard test green.
 **Risk:** high (shared infra — announce; new deploy rail)
+
+**Done 2026-07-09.** Announced + confirmed with Daniel before any live provisioning (per the
+escalation rule). Design decisions confirmed: new dedicated Artifact Registry repo `frontend`
+(matches the per-service convention `medusa`/`medusa-ops`/`print` already use); ~7 secrets
+**reused** from the backend's existing GCP Secret Manager entries via an IAM grant on the new
+`miyagi-web-run` service account (same live Clerk/Stripe/Supabase/MercadoPago/Telegram-bot/ML-app
+credential — no new value, no "copying," genuinely the same secret both services now read); ~15
+new secret shells created for frontend-only credentials.
+
+Live now: Artifact Registry repo `frontend`, service account `miyagi-web-run`, Cloud Run service
+`miyagi-web` (us-east4, same GCP project as the backend, `--min-instances=0`, no VPC connector —
+the frontend never talks to Cloud SQL/Redis directly). New `app/api/health` route (dependency-free)
+backs the startup/liveness probes so a missing secret never masquerades as a bad image.
+
+**Secret handling, in detail:**
+- Fresh VAPID keypair generated this session (Daniel's call — existing push subscriptions can't
+  survive a rotation regardless, so a placeholder value would be no better; this is the one
+  deliberate exception to "always re-mint, never copy").
+- R2 image-bucket + digital-bucket credentials (2 separate Cloudflare accounts), Resend, Upstash,
+  Vercel API token, and the admin/claim/encryption secrets (`ADMIN_SECRET`, `CLAIM_JWT_SECRET`,
+  `ENCRYPTION_KEY`, `ENCRYPTION_SECRET`) all populated with values Daniel confirmed are identical
+  to what's live on Vercel today (explicitly confirmed before writing — these four were flagged in
+  `provision-frontend.sh` as not safely auto-rotatable, since a fresh value could invalidate
+  outstanding claim links or corrupt already-encrypted data).
+- **Owed — still empty secret shells, no live traffic depends on them yet:** `SERPAPI_KEY`,
+  `STRIPE_WEBHOOK_SECRET` (needs its own webhook endpoint registered against the Cloud Run URL
+  first — chicken-and-egg with the URL existing), `CRON_SECRET`, `TELEGRAM_CHAT_ID_APP` (a separate
+  Telegram chat from the backend's CI/CD notification chat). The live deploy currently omits these
+  4 bindings; `infra/gcp/deploy-frontend.sh`'s committed shape still references all of them (the
+  intended end-state, matching `provision-frontend.sh`'s full secret list) — re-run it once these
+  4 have real values.
+
+**Two bugs found + fixed live while verifying the first deploy** (both committed):
+1. `deploy-frontend.sh`'s `--set-env-vars` used the backend's `^@^` delimiter, which collided with
+   the literal `@` in `VAPID_SUBJECT` (a `mailto:` URI) and `MIYAGI_ADMIN_EMAIL` — `gcloud` split
+   mid-value ("Bad syntax for dict arg"). Switched the delimiter to `~`.
+2. Every request to the dark URL 404'd with "Shop not found" — `middleware.ts`'s `isPlatformHost()`
+   allowlists `*.vercel.app` as a platform-served preview host (not a tenant custom domain) but
+   didn't know about `*.run.app`, so it fell through to the custom-domain lookup path. Added the
+   identical allowance for `.run.app`, same reasoning as the existing `.vercel.app` line.
+
+**Verified live** (curled directly against `https://miyagi-web-91083034475.us-east4.run.app`):
+`/api/health` → `{"ok":true}`; `/` → 200 (homepage renders); `/api/splash` + `/api/icon` → 200,
+`image/png`; `/api/ucp/manifest` → 200. Drift-guard `infra/gcp/test/deploy-invariants-frontend.test.js`
+green (6/6), full `infra/gcp/test/` suite green (35/35 incl. the backend's existing guard).
+
+CI/CD trigger (`cicd-setup-frontend.sh`) **not yet run** — needs a one-time console step (connect
+`danybgoode/miyagisanchezcommerce` as a 2nd-gen Cloud Build GitHub repo, separate from the backend's
+connection). Every merge to `main` does not yet auto-deploy `miyagi-web`; today's deploys are manual
+(`deploy-frontend.sh` after a `gcloud builds submit`). Owed before this story is fully "every merge
+deploys both rails."
 
 ### Story 1.4 — Shadow soak: the suite against the dark URL
 **As a** platform operator, **I want** the existing Playwright/API suite run against the dark URL
