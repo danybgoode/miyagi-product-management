@@ -169,12 +169,28 @@ Env: production · https://miyagisanchez.com (now on the new rail)
 3. Open a live tenant custom domain (e.g. the busiest seller's).
    → Still serves — **from Vercel** (unchanged this sprint).
 4. Open https://mschz.org/<a-known-short-link>.
-   → Redirects exactly as before.
+   → Redirects exactly as before. Also check the cert actually serving is the new one, not a
+   mismatch/fallback: `curl -vI https://mschz.org/ 2>&1 | grep -i "subject\|issuer"`.
 5. Open https://miyagisanchez.com/api/ucp/manifest.
-   → URLs inside point at miyagisanchez.com (not `*.run.app`, not Vercel).
+   → URLs inside point at miyagisanchez.com (not `*.run.app`, not Vercel). Automated form:
+   `npx playwright test ucp-cutover-api --project=api` (`PLAYWRIGHT_BASE_URL` defaults to prod).
+   Also confirm agent-origin CORS survived the new edge/ALB hop:
+   `curl -X OPTIONS -H "Origin: https://claude.ai" https://miyagisanchez.com/api/ucp/mcp -i`
+   → `Access-Control-Allow-Origin: *`.
 6. **(money path — Daniel)** Add an item to cart → checkout as guest → pay with Stripe test card 4242….
    → Order confirmation email arrives; the seller's order screen shows the order.
-7. Next morning: check Cloud Run logs for `order-autoconfirm`.
-   → Exactly one invocation at the scheduled time; no Vercel cron fired.
+7. Next morning: check Cloud Run logs for `order-autoconfirm` fired exactly once, at the
+   scheduled time:
+   ```
+   gcloud logging read '
+     resource.type="cloud_run_revision" AND resource.labels.service_name="miyagi-web"
+     AND resource.labels.location="us-east4"
+     AND httpRequest.requestUrl:"/api/cron/order-autoconfirm"
+     AND timestamp>="<date>T08:55:00Z" AND timestamp<="<date>T09:10:00Z"
+   ' --project=miyagisanchezback-497722 \
+     --format='table(timestamp, httpRequest.status, httpRequest.requestUrl, resource.labels.revision_name)'
+   ```
+   → Expect exactly one `200` row at `09:00 UTC`. Cross-check Vercel's dashboard (Cron Jobs →
+   Execution history for `order-autoconfirm`) shows **zero** invocations after the swap.
 
 If any step fails, note the step number + what you saw — that's the bug report.
