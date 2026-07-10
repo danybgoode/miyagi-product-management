@@ -27,7 +27,7 @@
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
-- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 4/17 stories · risk: High · Next up
+- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 7/17 stories · risk: High · Next up
 - [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
 ## ✅ Shipped (87)
