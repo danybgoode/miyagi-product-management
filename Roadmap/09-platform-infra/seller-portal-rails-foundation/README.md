@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress   # Sprint 1 (StatusBadge/Button/Card + Toast/Banner) MERGED 2026-07-10: PR #208 squash 3bb5fb7. Deterministic gate green (tsc+build+Playwright, 23 tests); cross-agent (antigravity) review caught + fixed 2 real bugs pre-merge (toast action not dismissing, missing timer cleanup) + a test-durability gap in the R2 .btn-primary scan. Found 6 duplicate toast implementations, not the 4 the scope doc named (OfferInbox.tsx + OrderDetail.tsx's own bespoke toasts were undiscovered). Owed: Daniel's live visual smoke (light/dark/calm + undo path). Sprint 2 (adoption sweep + CI token-lint) not started.
 slug: seller-portal-rails-foundation
 ---
 
