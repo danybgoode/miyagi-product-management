@@ -57,7 +57,7 @@ non-commerce channel plumbing, not commerce data).
 | 2 | 2.1 Cloudflare zone staged from Vercel export → NS flip (records still → Vercel) | high |
 | 2 | 2.2 External ALB + serverless NEG + Origin CA certs + header passthrough | high |
 | 2 | 2.3 WAF/bot parity with Vercel Bot Protection | low |
-| 3 | 3.1 Cron swap — Cloud Scheduler OIDC, rehearsed, exactly-once | high |
+| 3 | 3.1 Cron swap — Cloud Scheduler (reuses the existing `CRON_SECRET` shared-secret, not OIDC — decided 2026-07-10), rehearsed, exactly-once | high |
 | 3 | 3.2 Webhook/CORS allow-lists + full-path staging smoke (Stripe test checkout) | high |
 | 3 | 3.3 UCP/MCP cutover checklist (manifest, base URLs, checkout-session, CORS) | high |
 | 3 | 3.4 Cutover: apex + wildcard + `mschz.org` → ALB (tenant domains stay on Vercel) | high |

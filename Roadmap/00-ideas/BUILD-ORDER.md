@@ -14,7 +14,7 @@
 
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 9/16 stories · risk: High · Wave 1
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
-- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 7/17 stories · risk: High · Next up
+- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 12/17 stories · risk: High · Next up
 
 ## 📋 Ready to build (scaffolded, not started) (13)
 

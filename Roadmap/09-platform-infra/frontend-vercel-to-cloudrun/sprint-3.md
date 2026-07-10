@@ -1,13 +1,19 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 3: Canonical cutover (crons, UCP checklist, apex/wildcard)
 
-**Status:** 🚧 in progress
+**Status:** ✅ **All 5 stories shipped 2026-07-10.** Cutover is live: `miyagisanchez.com`,
+`*.miyagisanchez.com`, and `mschz.org` serve from Cloud Run through Cloudflare; the 4 crons run
+on Cloud Scheduler (Vercel's crons removed). Cross-review + CI green on every PR (#203, #204,
+#75, #76, #205). Three real bugs and one unrelated prod bug were found and fixed live along the
+way (detailed per-story below). Owed forward: Daniel's live walkthrough below — the money-path
+checkout (step 6), a real shop-subdomain + live-tenant-domain spot check (steps 2–3), and
+tomorrow's exactly-once cron check (step 7) — none of these are agent-completable.
 
 The skateboard ships: apex + wildcard + UCP + crons move to the new rail. **Live tenant custom
 domains stay on Vercel** (whose prod deploys stay ON) until Sprint 4 — the panel re-slice.
 
 ## Stories
 
-### Story 3.1 — Cron swap: Cloud Scheduler, rehearsed, exactly-once
+### Story 3.1 — Cron swap: Cloud Scheduler, rehearsed, exactly-once ✅
 **As a** platform operator, **I want** the 4 vercel.json crons (`order-autoconfirm`,
 `print-pending`, `domain-lapse-sweep`, `launchpad-campaigns`) as Cloud Scheduler jobs invoking the
 same `/api/cron/*` routes **directly against the dark Cloud Run URL** (outside the public edge
@@ -25,7 +31,7 @@ after the swap, `order-autoconfirm` observed firing exactly once per schedule (C
 absence of a Vercel cron invocation). Rollback documented: re-add vercel.json block + pause jobs.
 **Risk:** high (money-path cron; ships as its own release before cutover day)
 
-**In progress 2026-07-10** — `infra/gcp/provision-scheduler-frontend.sh` (idempotent create/update,
+**Built 2026-07-10** — `infra/gcp/provision-scheduler-frontend.sh` (idempotent create/update,
 every job auto-paused right after provisioning; `--enable`/`--disable` flags are the only path to
 change state, kept apart from the one swap commit) + drift guard
 `infra/gcp/test/scheduler-invariants.test.mjs` (14/14 green) committed to root `main` (`2dfaf1c`).
@@ -71,11 +77,20 @@ launchpad-campaigns (1st) {"ok":true,"scanned":0,"met":0,"unmet":0,"errors":0}
 launchpad-campaigns (2nd) {"ok":true,"scanned":0,"met":0,"unmet":0,"errors":0}
 print-pending        (1x) {"ok":true,"released":0,"reminded":0,"scanned":0}
 ```
-All 4 jobs left `PAUSED` after rehearsal (safe state). **Next — owed to Daniel:** review this
-rehearsal output, then approve the one swap commit (`vercel.json` crons block removed +
-`provision-scheduler-frontend.sh --enable` run together, same deploy window).
+All 4 jobs left `PAUSED` after rehearsal (safe state).
 
-### Story 3.2 — Webhook/CORS allow-lists + full-path staging smoke
+**Swap executed 2026-07-10 (Daniel authorized).** `vercel.json`'s `crons` block removed
+(frontend PR #205, cross-review clean — one advisory finding, correctly scoped to the
+cross-repo dependency the reviewer couldn't see from this repo's diff alone; addressed via a PR
+comment, not a code change — merged after CI green), deployed to Vercel prod (confirmed `READY`
+via the Vercel API), then all 4 Scheduler jobs enabled in the same window
+(`provision-scheduler-frontend.sh --enable`) — done at 16:17 UTC, well clear of any of the 4
+scheduled times (06:00–09:00 UTC), so there was zero risk of a double-fire or a missed fire
+during the transition. Vercel's crons are now fully retired; Cloud Scheduler is the sole source
+of truth going forward. **Owed to Daniel:** tomorrow morning's exactly-once check (walkthrough
+step 7) — the first real unattended firing hasn't happened yet.
+
+### Story 3.2 — Webhook/CORS allow-lists + full-path staging smoke ✅ (research done; live smoke owed)
 **As a** platform operator, **I want** Clerk, Stripe and MercadoPago webhook/CORS settings
 allow-listing the new infrastructure, proven by a full-path staging smoke on
 `gcp.miyagisanchez.com` including a Stripe test-card checkout, **so that** money and auth flows are
@@ -115,7 +130,7 @@ the order reaches the seller's order screen; Clerk session works through the ful
     --update-env-vars="STORE_CORS=https://miyagisanchez.com,https://www.miyagisanchez.com"
   ```
 
-### Story 3.3 — UCP/MCP cutover checklist (named, asserted — not smoke luck)
+### Story 3.3 — UCP/MCP cutover checklist (named, asserted — not smoke luck) ✅
 **As an** AI agent shopping the marketplace, **I want** the UCP surface fully correct on the new
 rail — capability manifest accurate, advertised base/origin URLs, checkout-session links, CORS,
 canonical-domain behavior — **so that** Rule 3 (agents are first-class) survives the migration.
@@ -145,7 +160,7 @@ on the wrong host); and `expectedOrigin()` trusting `baseURL`'s literal protocol
 mirroring the route's own `host.includes('localhost')` derivation exactly. Final pass clean
 (CI green: type-check + build + Playwright `api` all pass).
 
-### Story 3.4 — Cutover: apex + wildcard + `mschz.org` → the new rail
+### Story 3.4 — Cutover: apex + wildcard + `mschz.org` → the new rail ✅ (walkthrough owed)
 **As a** platform operator, **I want** `miyagisanchez.com`, `*.miyagisanchez.com` and the
 `mschz.org` redirector flipped to proxied records targeting the ALB, **so that** canonical traffic
 serves from Cloud Run through Cloudflare.
@@ -206,7 +221,7 @@ tenant custom domains still serve from Vercel untouched; rollback = flip the rec
   money-path checkout (step 6) and a real shop-subdomain + live tenant-custom-domain spot check
   (steps 2–3) — not run by the agent.
 
-### Story 3.5 — Monitoring + deploy-finish Telegram on the new rail
+### Story 3.5 — Monitoring + deploy-finish Telegram on the new rail ✅
 **As a** platform operator, **I want** uptime checks + alert policies on the canonical path
 (extending the idempotent provisioning script) and the frontend deploy-finish Telegram ping moved
 onto the Cloud Build Pub/Sub rail the backend already uses, **so that** the new rail is observable
