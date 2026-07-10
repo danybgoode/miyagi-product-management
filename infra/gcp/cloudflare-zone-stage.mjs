@@ -61,6 +61,19 @@ async function vercelApi(path) {
   return j
 }
 
+// The domain-records endpoint is account-level and 403s on a bare project-scoped call
+// (LEARNINGS: "Vercel API tokens are scoped + team-aware") — resolve the team id and
+// append it to every call. VERCEL_TEAM_ID env overrides; otherwise auto-detect via /v2/teams
+// (same pattern as scripts/vercel-prune-previews.mjs).
+let vercelTeamId
+async function resolveVercelTeamId() {
+  if (vercelTeamId !== undefined) return vercelTeamId
+  if (process.env.VERCEL_TEAM_ID) { vercelTeamId = process.env.VERCEL_TEAM_ID; return vercelTeamId }
+  const j = await vercelApi('/v2/teams')
+  vercelTeamId = (j.teams && j.teams[0] && j.teams[0].id) || ''
+  return vercelTeamId
+}
+
 async function cfApi(path, opts = {}) {
   const r = await fetch(`${CF_API}${path}`, {
     ...opts,
@@ -79,10 +92,12 @@ async function cfApi(path, opts = {}) {
 
 // --- Vercel real zone export -------------------------------------------------
 async function fetchVercelRecords(domain) {
+  const teamId = await resolveVercelTeamId()
+  const tq = teamId ? `&teamId=${teamId}` : ''
   let records = []
   let next
   do {
-    const j = await vercelApi(`/v4/domains/${domain}/records?limit=100${next ? `&next=${next}` : ''}`)
+    const j = await vercelApi(`/v4/domains/${domain}/records?limit=100${tq}${next ? `&next=${next}` : ''}`)
     records = records.concat(j.records || [])
     next = j.pagination && j.pagination.next
   } while (next)

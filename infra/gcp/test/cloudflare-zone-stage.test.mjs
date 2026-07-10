@@ -91,6 +91,22 @@ test('diffRecords: flags a genuinely missing record (the auth/email blast-radius
   assert.ok(diff.missing.some((r) => r.name === 'resend._domainkey'))
 })
 
+test('normalizeCloudflareRecord: strips a Cloudflare-echoed quote-wrapped TXT content so it matches the unquoted Vercel value (live incident 2026-07-10 — this exact mismatch created 4 duplicate TXT records)', () => {
+  const v = normalizeVercelRecord({ type: 'TXT', name: '_dmarc', value: 'v=DMARC1; p=quarantine;' })
+  const cUnquoted = normalizeCloudflareRecord({ type: 'TXT', name: `_dmarc.${ZONE_APEX}`, content: 'v=DMARC1; p=quarantine;' }, ZONE_APEX)
+  const cQuoted = normalizeCloudflareRecord({ type: 'TXT', name: `_dmarc.${ZONE_APEX}`, content: '"v=DMARC1; p=quarantine;"' }, ZONE_APEX)
+  assert.equal(v.key, cUnquoted.key)
+  assert.equal(v.key, cQuoted.key)
+})
+
+test('diffRecords: a quote-wrapped Cloudflare TXT record is recognized as already-present, not missing', () => {
+  const vercelRecords = [{ type: 'TXT', name: 'resend._domainkey', value: 'p=abc123' }]
+  const cfRecords = [{ type: 'TXT', name: `resend._domainkey.${ZONE_APEX}`, content: '"p=abc123"' }]
+  const diff = diffRecords(vercelRecords, cfRecords, ZONE_APEX)
+  assert.deepEqual(diff.missing, [])
+  assert.equal(diff.matched, 1)
+})
+
 test('diffRecords: extra Cloudflare-only records (e.g. a default NS) never fail the gate', () => {
   const vercelRecords = [{ type: 'A', name: '', value: '216.198.79.1' }]
   const cfRecords = [

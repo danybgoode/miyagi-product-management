@@ -14,6 +14,18 @@ function trimTrailingDot(s) {
   return typeof s === 'string' && s.endsWith('.') ? s.slice(0, -1) : s
 }
 
+// Cloudflare echoes TXT `content` back wrapped in a literal quote pair for records created via
+// the API, but unquoted for records it auto-imported when the zone was added — cosmetically
+// different, semantically identical DNS content. Strip one enclosing pair before keying so both
+// shapes compare equal (found live: an unstripped quote caused the stage script to treat an
+// already-present record as missing and create a duplicate — 09-platform-infra
+// frontend-vercel-to-cloudrun S2.1, live incident 2026-07-10).
+function stripWrappingQuotes(s) {
+  return typeof s === 'string' && s.length >= 2 && s.startsWith('"') && s.endsWith('"')
+    ? s.slice(1, -1)
+    : s
+}
+
 function recordKey(type, name, content, priority) {
   return [type, name, content, priority ?? ''].join('|').toLowerCase()
 }
@@ -25,7 +37,7 @@ function recordKey(type, name, content, priority) {
  */
 export function normalizeVercelRecord(r) {
   if (!r || SKIP_TYPES.has(r.type)) return null
-  const content = trimTrailingDot(String(r.value ?? ''))
+  const content = stripWrappingQuotes(trimTrailingDot(String(r.value ?? '')))
   if (!content) return null
   const name = r.name === '' ? '@' : r.name
   const priority = r.mxPriority ?? r.priority ?? undefined
@@ -43,7 +55,7 @@ export function normalizeCloudflareRecord(r, zoneApex) {
     if (name === zoneApex) name = '@'
     else if (name.endsWith(`.${zoneApex}`)) name = name.slice(0, -(zoneApex.length + 1))
   }
-  const content = trimTrailingDot(String(r.content ?? ''))
+  const content = stripWrappingQuotes(trimTrailingDot(String(r.content ?? '')))
   const priority = r.priority
   return { type: r.type, name, content, priority, key: recordKey(r.type, name, content, priority) }
 }
