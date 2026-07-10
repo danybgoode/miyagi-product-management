@@ -26,6 +26,9 @@ coverage
 
 # Misc
 *.pem
+*.key
+*.csr
+infra/gcp/.cf-origin-cert/
 
 # Debug
 npm-debug.log*
