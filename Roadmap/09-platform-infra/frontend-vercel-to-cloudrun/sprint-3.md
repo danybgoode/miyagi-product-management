@@ -57,9 +57,8 @@ change state, kept apart from the one swap commit) + drift guard
    **production on Vercel** since late May, unrelated to this migration. Fixed with a new,
    freshly-timestamped migration (`20260710154932_return_requests_backfill.sql`, all
    `IF NOT EXISTS`/idempotent) applied live via the Supabase MCP; confirmed both the column and
-   table now exist. Migration file committed to the repo separately (frontend PR #204, to bring
-   the repo's migration history back in sync with what's already live — cross-review clean,
-   **held for Daniel to merge** given DB-migration risk).
+   table now exist. Migration file committed to the repo separately — **frontend PR #204 merged
+   2026-07-10** (cross-review clean; Daniel merged given DB-migration risk).
 
 **Rehearsal result, post-fixes — all 4 routes 200, idempotency confirmed via identical repeat
 responses** (direct curl with the correct secret, never printed):
