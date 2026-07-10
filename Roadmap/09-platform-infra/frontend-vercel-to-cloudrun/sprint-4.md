@@ -1,8 +1,11 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 4: Tenant domain rewrite + migration + Vercel sunset
 
-**Status:** 🚧 Stories 4.1–4.4 built 2026-07-10 (code + infra scripts + specs; live provisioning still
-owed to Daniel — see each story). **Story 4.5 (Vercel sunset) deliberately NOT started** — Daniel's
-explicit instruction: don't touch it until he separately calls the post-migration soak over.
+**Status:** ✅ Stories 4.1–4.4 built AND live-provisioned 2026-07-10 (code merged — PR #206 — and the
+Cloudflare-for-SaaS infra actually stood up in production: fallback origin created, origin cert
+reissued, ALB updated, `CLOUDFLARE_ZONE_ID`/`CLOUDFLARE_API_TOKEN` bound to `miyagi-web`, and the
+S4.3 migration run for real against the one live tenant domain). **Story 4.5 (Vercel sunset)
+deliberately NOT started** — Daniel's explicit instruction: don't touch it until he separately
+calls the post-migration soak over.
 
 Earned after platform proof (the S3 soak — confirmed done by Daniel 2026-07-10, bar tomorrow's
 cron exactly-once check). The paid custom-domain SKU moves provider: Vercel Domains API →
@@ -32,15 +35,23 @@ Postgres itself, and `lib/types.ts` carries the same note. 15 pure-logic specs
 
 Infra: `infra/gcp/cloudflare-saas-fallback-provision.mjs` (root repo commit `5cfc5ed`) — one-time
 zone setup creating the `cname.miyagisanchez.com` fallback-origin record + registering it via
-Cloudflare's `fallback_origin` endpoint. **Owed to Daniel before this can run live:** (1) confirm
-Cloudflare for SaaS / Custom Hostnames is enabled on the zone (paid feature), (2) grant
-`CLOUDFLARE_API_TOKEN` the Custom Hostnames / SSL-for-SaaS permission group (same
-403-on-missing-scope shape as S2.1/S2.3), (3) after the fallback record exists, reissue the Origin
-CA cert to cover it (`node infra/gcp/cloudflare-origin-cert.mjs --hostnames
-miyagisanchez.com,*.miyagisanchez.com,cname.miyagisanchez.com`) and update the ALB's
-`--ssl-certificates`. None of these were run live in this session — no Cloudflare/Supabase write
-credentials were available to the building agent; the code + scripts are prepared and reviewed,
-not yet executed against production.
+Cloudflare's `fallback_origin` endpoint.
+
+**Live-provisioned 2026-07-10 (Daniel enabled Cloudflare for SaaS on the account/zone + confirmed
+the existing token's SSL-and-Certificates scope was sufficient — no new permission group needed):**
+- `node infra/gcp/cloudflare-saas-fallback-provision.mjs` run for real — `cname.miyagisanchez.com`
+  A record created (proxied, → ALB `136.68.90.56`) and registered as the zone's fallback origin.
+- Origin CA cert reissued (`miyagi-web-origin-cert-20260710-s4`, SANs: apex + wildcard + the new
+  fallback hostname) and attached to `miyagi-web-https-proxy` alongside the untouched `mschz.org`
+  cert. Verified live via `curl --resolve` against Cloudflare's real edge IP: `cf-ray`/
+  `server: cloudflare`/`via: 1.1 google` present, no 526 cert-mismatch; apex site and `mschz.org`
+  both re-confirmed unaffected.
+- **Real gap found + fixed live**: the merged code reads `CLOUDFLARE_API_TOKEN`/
+  `CLOUDFLARE_ZONE_ID` at runtime, but neither was bound to `miyagi-web` — any seller hitting the
+  domain routes would have 500'd. Fixed: granted the runtime SA (`miyagi-web-run@...`)
+  `secretAccessor` on `CLOUDFLARE_API_TOKEN`, bound it + `CLOUDFLARE_ZONE_ID` (the zone id resolved
+  live) via `gcloud run services update`, deployed as revision `miyagi-web-00017-4tn`, confirmed
+  serving 100% of traffic.
 
 ### Story 4.2 — Retarget `CNAME_TARGET` + the one-click route + seller copy ✅
 **As a** seller adding a domain, **I want** `dnsRecordFor`/`CNAME_TARGET`, the one-click Cloudflare
@@ -59,11 +70,14 @@ UI copy). `APEX_A_RECORD` is retired. The existing `e2e/domain-dns-record.spec.t
 this intentional behavior change. The one-click Cloudflare route, its OAuth callback, and the main
 domain route all repointed to `lib/cloudflare-domains`; seller copy (`Canal.tsx`) now interpolates
 the shared constant instead of 5 hardcoded copies of the old Vercel target — es-MX only, unchanged.
-**Owed:** live confirmation that Cloudflare for SaaS actually issues SSL for a root-CNAME/
-ALIAS-flattened apex domain — this is a real product-behavior assumption, not yet proven against
-the live API (needs Story 4.1's infra prerequisites done first).
+**Still owed:** confirming Cloudflare for SaaS actually issues SSL once a real apex domain is
+CNAME/ALIAS-flattened to us end-to-end. `panfleto.com.mx` (the one live tenant domain, itself an
+apex — S4.3 below) is pre-provisioned but still `pending`, since its seller hasn't repointed DNS
+yet — that's the one live case that will actually prove this once they do. A UI click-through with
+a fresh test domain wasn't run this session (would have required entitlement-mutating a real shop
+to get past the paywall — see S4.3's note); Daniel declined that path.
 
-### Story 4.3 — Migrate every live tenant custom domain ✅ (pre-provision + report — live run owed)
+### Story 4.3 — Migrate every live tenant custom domain ✅ (pre-provision + report — live-applied)
 **As a** platform operator, **I want** a dry-run-by-default migration script (the `vercel-prune`
 pattern): enumerate live domains from the Vercel project → pre-provision as Cloudflare custom
 hostnames → per-domain validation report → flip per domain, **so that** no seller's domain drops.
@@ -85,9 +99,15 @@ re-run the one-click connect button"). **Traffic only actually moves once each s
 their own DNS** — Vercel keeps serving every domain unchanged throughout, which is exactly why
 `--rollback <domain>` is low-stakes: it only ever deletes the Cloudflare-side custom hostname,
 never touches the seller's live DNS. `--status` gives a read-only report with zero writes.
-10-case config guard green (131/131 across `infra/gcp/test/`). **Owed:** the actual live run
-(needs Story 4.1's infra prerequisites first) — Daniel reviews the dry-run report before `--apply`,
-per the standing instruction.
+10-case config guard green (131/131 across `infra/gcp/test/`).
+
+**Live-run 2026-07-10 (Daniel reviewed the dry-run report, authorized `--apply`):** exactly 1 live
+tenant domain exists in prod — `panfleto.com.mx` (shop `miyagiprints`), an apex domain. Zero drift
+between Supabase and Vercel's live project list. `--apply` pre-provisioned its Cloudflare custom
+hostname (TXT validation) successfully; `--status` confirms `cf_status: pending` — expected, since
+the seller hasn't repointed their DNS yet (Vercel keeps serving them unchanged in the meantime).
+**Owed:** notify that seller with the new CNAME target (or have them re-run the one-click connect
+button) — the actual repoint, and the resulting SSL issuance, is theirs to do, not scriptable.
 
 ### Story 4.4 — Lapse-sweep + tenant-directory domain health read Cloudflare status ✅
 **As a** platform operator, **I want** `lib/domain-lapse-server.ts` and the DNS-doctor checks
@@ -133,11 +153,21 @@ so nothing here forces this story before its own gate opens.
   CNAME-everywhere contract; 4.4 → covered by the same 4.1 specs (no separate spec needed — see
   Story 4.4 above). Infra config guards: 18 new `node:test` cases across the 2 new scripts
   (fallback-provision: 8, tenant-migrate: 10), 131/131 green in `infra/gcp/test/`.
-- **browser smoke owed:** **yes, to Daniel — this whole sprint's live provisioning.** Nothing in
-  4.1–4.3 was run against real Cloudflare/Supabase credentials in this building session (none were
-  available); the code, infra scripts, and config guards are prepared and reviewed, not yet
-  executed live. Also owed: 4.3's dry-run report review before `--apply`, and (separately, later)
-  the 4.5 sunset call itself.
+- **Cross-agent review (Codex, PR #206):** found 3 real issues, all fixed before merge — a stale
+  AAAA record could block the one-click route's CNAME creation (now clears A/AAAA/CNAME); `dns_ok`
+  conflated Cloudflare's hostname `status:active` (ownership+SSL proven) with "seller's DNS
+  actually points at us" — a real gap, since Story 4.3's whole design pre-provisions BEFORE the
+  seller's DNS changes (now `dns_ok` requires both); `cfApi()` could throw an unhandled parse error
+  on a non-JSON edge response (now handled).
+- **Live-provisioned + merged 2026-07-10:** PR #206 merged to `main` (frontend); Cloud Run deploy
+  succeeded (revision `miyagi-web-00016` → `00017` after the env-var fix below). Fallback-origin
+  DNS + Cloudflare-for-SaaS zone setup, origin cert reissue + ALB update, and the S4.3 migration
+  `--apply` were all run for real against production (see each story above for specifics) — nothing
+  here is simulated or "owed" anymore except the two items below.
+- **Still owed (not scriptable, not run this session):** (1) the seller behind `panfleto.com.mx`
+  actually repointing their DNS — proves apex CNAME-flattening + SSL issuance end-to-end; (2) a
+  fresh-domain UI click-through — needs an entitled test shop, and mutating a real shop's paid
+  entitlement to get one wasn't authorized this session (Daniel declined when asked).
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` all green on this
   branch 2026-07-10 (pre-existing, unrelated flakiness in `launchpad-*`/`not-found-shape`/
   `own-shop-seo`/`promoter-applications` confirmed via `git stash` to predate this branch).
@@ -145,39 +175,42 @@ so nothing here forces this story before its own gate opens.
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
 
-**Step 0 — infra prerequisites (Daniel, before step 1 can work at all):**
-- Confirm Cloudflare for SaaS / Custom Hostnames is enabled on the `miyagisanchez.com` zone
-  (paid feature — dashboard).
-- Grant `CLOUDFLARE_API_TOKEN` the Custom Hostnames / SSL-for-SaaS permission group.
-- Run `node infra/gcp/cloudflare-saas-fallback-provision.mjs` (creates the
-  `cname.miyagisanchez.com` fallback-origin record + registers it with Cloudflare).
-- Reissue the Origin CA cert to cover it (`node infra/gcp/cloudflare-origin-cert.mjs --hostnames
-  miyagisanchez.com,*.miyagisanchez.com,cname.miyagisanchez.com`) and update the ALB's
-  `--ssl-certificates`.
-- Populate `CLOUDFLARE_ZONE_ID` in the frontend's Cloud Run env/secrets (new — read by
-  `lib/cloudflare-domains.ts`).
+**Step 0 — infra prerequisites — ✅ DONE 2026-07-10:**
+- ✅ Cloudflare for SaaS / Custom Hostnames enabled on the `miyagisanchez.com` zone/account
+  (Daniel, dashboard) — the existing token's SSL-and-Certificates scope was sufficient, no new
+  permission group needed (unlike the S2.1/S2.3 precedent this sprint doc originally expected).
+- ✅ `node infra/gcp/cloudflare-saas-fallback-provision.mjs` run — `cname.miyagisanchez.com` live.
+- ✅ Origin CA cert reissued (`miyagi-web-origin-cert-20260710-s4`) and attached to
+  `miyagi-web-https-proxy` alongside the untouched `mschz.org` cert.
+- ✅ `CLOUDFLARE_ZONE_ID` (`0091f4f96b3c474293bb025635d18e0d`) + `CLOUDFLARE_API_TOKEN` bound to
+  `miyagi-web` (new secret IAM grant + `gcloud run services update`, revision `miyagi-web-00017-4tn`).
 
 1. Go to https://miyagisanchez.com/s/<test-shop>/manage — add a brand-new custom test domain.
    → Instructions show the NEW CNAME target (`cname.miyagisanchez.com`); a Cloudflare custom
    hostname is created behind the scenes (check via `node
    infra/gcp/cloudflare-tenant-domain-migrate.mjs --domain <test-domain> --status`).
+   **Owed** — needs an entitled test shop; not run this session (would have required
+   entitlement-mutating a real shop, which Daniel declined when asked).
 2. Point the test domain's real DNS (a domain you control) at the shown CNAME target, wait for
    propagation.
    → Status reaches "verificado" with SSL; the shop renders on the test domain, `cf-ray` header
-   present, white-label intact.
+   present, white-label intact. **Owed**, same reason as step 1.
 3. Run the migration script's dry-run against every live tenant domain:
    `node infra/gcp/cloudflare-tenant-domain-migrate.mjs`.
-   → **(Daniel reviews this report before anyone runs `--apply`.)** Confirms no drift between
-   Supabase and Vercel's live domain list, and shows each domain's Cloudflare readiness.
-4. **(money path — Daniel, on the test domain from step 1-2)** Add to cart → guest checkout →
-   Stripe test card.
-   → Order completes; confirmation email branded to the shop.
+   → **✅ done 2026-07-10** — Daniel reviewed the report (1 live domain, `panfleto.com.mx`, zero
+   drift vs Vercel) and authorized `--apply`; the Cloudflare custom hostname was created
+   (`cf_status: pending`, confirmed via `--status`).
+4. **(money path — Daniel, on a test domain)** Add to cart → guest checkout → Stripe test card.
+   → Order completes; confirmation email branded to the shop. **Owed** — no test domain reached
+   "verificado" this session (step 1-2 not run).
 5. Remove the test domain from step 1.
    → It stops resolving to the shop; the shop's subdomain still works; the Cloudflare custom
    hostname is cleaned up (`--rollback <test-domain> --apply`, or automatically via the DELETE route).
+   **Owed**, same reason as step 1.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-**Not this sprint** — a live tenant-domain repoint + the Vercel-sunset walkthrough (both gated on
-Story 4.3's `--apply` being run for real and Story 4.5 starting, respectively) will get their own
-walkthrough steps when those are actually executed.
+**Not this sprint** — the Vercel-sunset walkthrough (Story 4.5) will get its own steps when Daniel
+separately starts that story. `panfleto.com.mx`'s actual DNS repoint is the seller's own action,
+not something scriptable from here — its outcome (does apex CNAME-flattening + Cloudflare SSL
+issuance genuinely work?) is the real remaining unknown this sprint leaves open.
