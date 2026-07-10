@@ -118,10 +118,9 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (10)
+## ⬜ Funnel — seeds not yet scaffolded (9)
 
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~18 routes](seeds/seller-catalog-null-slot-sweep.md) — Raw · Feature · tbd
-- [Seller-portal UX audit — apply the July-2026 refresh](seeds/seller-portal-ux-audit.md) — Queued · Epic · Wave 1
 - [Miyagi Partners — multi-tenant MCP credential + roles](seeds/miyagi-partners-mcp.md) — Ready · Feature · Wave 2
 - [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](seeds/platform-migrations.md) — Ready · Feature · Wave 2
 - [Comparador de costos — the stacking-costs sales tool on the homepage](seeds/cost-comparator-homepage.md) — Ready · Feature · Wave 3
@@ -143,4 +142,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Frontend off Vercel — Cloud Run behind a Cloudflare edge | Scaffolded | In progress |
 
 ---
-_Epics: 100 · seeds in funnel: 10 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 100 · seeds in funnel: 9 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

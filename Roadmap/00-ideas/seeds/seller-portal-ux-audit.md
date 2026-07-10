@@ -1,14 +1,14 @@
 ---
 title: "Seller-portal UX audit — apply the July-2026 refresh"
 slug: seller-portal-ux-audit
-status: queued
+status: scaffolded
 area: "03"
 type: epic
 priority: wave-1
 risk: low
 epic: null
 build_order: null
-updated: 2026-07-08
+updated: 2026-07-09
 ---
 
 # Scope — Seller-portal UX audit (apply the July-2026 refresh)
@@ -19,6 +19,12 @@ updated: 2026-07-08
 > [`03-selling-and-shops/seller-portal-setup-guide/`](../../03-selling-and-shops/seller-portal-setup-guide/README.md)
 > (P0·B; README + sprint-1 + retro; commit `ad6102e`; kickoff emitted). `epic: null` stays — this is a
 > multi-epic umbrella; each scaffolded epic README is the SSOT for its part.
+>
+> **Board-drift fix (2026-07-09):** frontmatter flipped `queued → scaffolded` so this umbrella leaves the
+> generated funnel — its dispersal is complete (P0·A, P0·B, and P1·D `onboarding-three-doors` are scaffolded
+> epics on the board; P1·C folded into `catalog-management` S5/S6). The one un-groomed remainder, **P2·E
+> depth pass**, gets its **own seed** when it reaches the queue (per decision 2 below) — it is not blocked
+> by this flip.
 >
 > **Remaining groom sequence (one fresh session each — Daniel, 2026-07-09):** **P1·D onboarding three-doors**
 > (next; fresh deep-groom) → **P1·C IA remainder** (folds into `catalog-management`; groom *after* its S3
