@@ -1,8 +1,7 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 2: Cloudflare edge + GCP origin
 
-**Status:** 🚧 in progress — Story 2.1 zone staged + verified zero-diff live 2026-07-10. NS already
-changed at the registrar by Daniel; propagation pending. Stories 2.2/2.3 not started (wait on
-Daniel's post-propagation auth/email confirmation).
+**Status:** 🚧 in progress — Story 2.1 ✅ **done and confirmed 2026-07-10** (zone staged, NS live,
+Clerk + email verified by Daniel). Story 2.2 (ALB) starting now; 2.3 not started.
 
 Traffic still 100% on Vercel. This sprint stands up the new edge + origin path and proves it on a
 staging hostname. The NS flip happens here — decoupled from the traffic cutover (records keep
@@ -10,7 +9,7 @@ pointing at Vercel).
 
 ## Stories
 
-### Story 2.1 — Cloudflare zone staged from the real Vercel zone export → NS flip
+### Story 2.1 — Cloudflare zone staged from the real Vercel zone export → NS flip ✅
 **As a** platform operator, **I want** the `miyagisanchez.com` zone staged in Cloudflare from the
 real Vercel zone export — Clerk + all 3 email systems verified record-by-record — then the NS
 flipped with every record still targeting Vercel (apex/wildcard **DNS-only**, not proxied),
@@ -71,6 +70,21 @@ real Vercel records matched, 0 proxied records in the zone. Nameservers:
 @amalia.ns.cloudflare.com miyagisanchez.com` (querying Cloudflare directly) already returns the
 correct, complete record set.
 
+**Daniel's confirmation, 2026-07-10 — all green:**
+- NS confirmed live from GoDaddy's own UI + external resolvers (this session's terminal resolver
+  just had a stale cache — expected, not a bug).
+- Clerk sign-in/out: OK — and the sign-in used an emailed magic link, which round-tripped through
+  `clkmail.miyagisanchez.com`, confirming Clerk's custom mail domain survived the flip.
+- Email system #2: a Resend test send, triggered programmatically via a direct `POST
+  /emails` call to the Resend API (not through app code — a clean, side-effect-free probe) from
+  `noreply@miyagisanchez.com` to Daniel, confirmed received. DKIM/SPF/DMARC all functioning.
+- There is no third mail system — the sprint doc's "3 mail systems" framing from grooming was
+  imprecise; it's Clerk + Resend, both confirmed.
+- `api.miyagisanchez.com` (the record found proxied and fixed) — `/health` returns `200 OK` directly
+  from Google's frontend, confirming the un-proxy fix didn't break the backend's custom domain.
+
+**Story 2.1 is done.**
+
 ### Story 2.2 — External ALB + serverless NEG + origin certs + header passthrough
 **As a** platform operator, **I want** a GCP external ALB (serverless NEG → `miyagi-web`, **no
 Cloud CDN**) terminating TLS with one-time Cloudflare Origin CA certs (apex + `*.miyagisanchez.com`
@@ -94,29 +108,20 @@ new mitigation evidence (Cloudflare's equivalent of `x-vercel-mitigated`).
 ## Sprint QA
 - **api spec(s):** 2.2 → `e2e/api/origin-header-passthrough.spec.ts` (channel detection per host);
   2.3 → update the bot-probe spec for the new edge.
-- **browser smoke owed:** **yes, to Daniel — Story 2.1 is the auth/email blast-radius step**
-  (Clerk login + email round-trip after the NS flip).
+- **browser smoke:** Story 2.1's auth/email blast-radius smoke (Clerk login + Resend round-trip)
+  **confirmed by Daniel 2026-07-10** — see the walkthrough below. 2.2/2.3 smokes still owed once built.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green; infra stories
   gated by idempotent-script + `node:test` config guard (not Playwright — LEARNINGS pattern).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: staging hostname https://gcp.miyagisanchez.com · prod traffic still on Vercel.
 
-**Story 2.1 — owed to Daniel now (NS already changed at the registrar; propagation in flight):**
-1. Run `dig NS miyagisanchez.com`.
-   → The two assigned Cloudflare nameservers (`amalia.ns.cloudflare.com`, `ganz.ns.cloudflare.com`);
-   no Vercel NS. If it still shows the old Vercel NS, propagation hasn't finished — wait and re-check
-   (querying `dig @amalia.ns.cloudflare.com miyagisanchez.com` directly confirms Cloudflare already
-   has the correct records regardless of propagation state).
-2. Sign out and back in at https://miyagisanchez.com. **(auth path — Daniel personally)**
-   → Clerk login works exactly as before the NS flip.
-3. Send yourself a test email through each of the 3 mail systems. **(email path — Daniel personally)**
-   → All three deliver.
-4. Confirm `api.miyagisanchez.com` (the Medusa backend) still resolves and serves correctly —
-   this CNAME was found proxied by Cloudflare's auto-import and flipped to DNS-only during staging;
-   worth an explicit check since it's the one record whose provider (Google, not Vercel) makes it
-   least forgiving of a routing change.
-   → `curl -sI https://api.miyagisanchez.com/health` (or equivalent) returns 200.
+**Story 2.1 — ✅ confirmed done by Daniel, 2026-07-10:**
+1. `dig NS miyagisanchez.com` → `amalia.ns.cloudflare.com` / `ganz.ns.cloudflare.com` — confirmed
+   via GoDaddy's own UI + external resolvers.
+2. Clerk sign-in/out → OK (magic link, confirming `clkmail.miyagisanchez.com` too).
+3. Resend test email (sent programmatically to Daniel) → received, DKIM/SPF/DMARC intact.
+4. `api.miyagisanchez.com/health` → `200 OK` directly from Google's frontend.
 
 **Story 2.2 (not started — after the above is confirmed):**
 5. Open https://gcp.miyagisanchez.com in a private window.
