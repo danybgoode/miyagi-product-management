@@ -69,6 +69,22 @@ test('provision-scheduler-frontend.sh: Bearer-shaped jobs build an Authorization
   assert.match(src, /HEADERS="Authorization=Bearer \$\{CRON_SECRET_VALUE\}"/)
 })
 
+// --- create vs update use the CORRECT headers flag name -----------------------------------
+// Regression guard: `gcloud scheduler jobs update http` takes --update-headers, NOT --headers
+// (create-only flag) -- passing the wrong one on update errors "unrecognized arguments" and
+// gcloud echoes the full invocation, INCLUDING THE SECRET VALUE, back in that error text. This
+// bit live during Sprint 3.1's rehearsal (2026-07-10) and forced a secret rotation.
+
+test('provision-scheduler-frontend.sh: switches to --update-headers on the update path, not --headers', () => {
+  assert.match(src, /HEADERS_FLAG="--headers"/)
+  assert.match(src, /\[ "\$ACTION" = "update" \] && HEADERS_FLAG="--update-headers"/)
+})
+
+test('provision-scheduler-frontend.sh: the gcloud invocation uses the resolved HEADERS_FLAG variable, not a hardcoded --headers', () => {
+  assert.match(src, /"\$\{HEADERS_FLAG\}=\$\{HEADERS\}"/)
+  assert.doesNotMatch(src, /--headers="\$HEADERS"/, 'a hardcoded --headers would break the update path again')
+})
+
 // --- every job is paused right after create/update — never silently left enabled -------------
 
 test('provision-scheduler-frontend.sh: create/update is followed by an unconditional pause in the same loop body', () => {

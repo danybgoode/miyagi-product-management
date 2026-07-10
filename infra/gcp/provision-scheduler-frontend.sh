@@ -92,13 +92,21 @@ for entry in "${JOBS[@]}"; do
   ACTION=create
   gcloud scheduler jobs describe "$NAME" --location="$REGION" "${P[@]}" >/dev/null 2>&1 && ACTION=update
 
+  # `create http` takes --headers; `update http` takes --update-headers instead (confirmed via
+  # `gcloud scheduler jobs update http --help` — the only flag name that differs between the two
+  # subcommands). Using the wrong one on update errors "unrecognized arguments" and gcloud echoes
+  # the full invocation — including the secret value — back in that error text, so getting this
+  # right isn't just a functionality fix, it avoids a credential-exposure footgun.
+  HEADERS_FLAG="--headers"
+  [ "$ACTION" = "update" ] && HEADERS_FLAG="--update-headers"
+
   gcloud scheduler jobs "$ACTION" http "$NAME" --location="$REGION" "${P[@]}" \
     --schedule="$SCHEDULE" \
     --uri="$URI" \
     --http-method=GET \
     --time-zone="Etc/UTC" \
     --attempt-deadline=300s \
-    --headers="$HEADERS" >/dev/null
+    "${HEADERS_FLAG}=${HEADERS}" >/dev/null
   echo "  + ${ACTION}d: $NAME ($SCHEDULE UTC → $PATH_)"
 
   # Always pause right after create/update — this script never enables on its own.

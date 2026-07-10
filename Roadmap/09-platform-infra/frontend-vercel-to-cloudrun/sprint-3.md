@@ -29,10 +29,50 @@ absence of a Vercel cron invocation). Rollback documented: re-add vercel.json bl
 every job auto-paused right after provisioning; `--enable`/`--disable` flags are the only path to
 change state, kept apart from the one swap commit) + drift guard
 `infra/gcp/test/scheduler-invariants.test.mjs` (14/14 green) committed to root `main` (`2dfaf1c`).
-**`CRON_SECRET` populated 2026-07-10** (Daniel authorized, agent-generated `openssl rand -hex 32`,
-value never printed — Secret Manager version 1). **Next:** run the manual-trigger rehearsal
-(script section above) against the dark URL, review the idempotency-recheck output with Daniel,
-then the one swap commit.
+**`CRON_SECRET` populated 2026-07-10** (Daniel authorized, agent-generated `openssl rand -hex 32`).
+
+**Rehearsal run 2026-07-10 — three real findings along the way, all fixed:**
+1. **`openssl rand -hex 32`'s trailing newline got baked into the stored secret** (65 bytes, not
+   64) — bash's `$(...)` capture strips it when the provisioning script reads the value back, but
+   Cloud Run's env-var binding doesn't, so the Scheduler-sent header never matched what the app
+   compared against → first trigger 401'd. Fixed by re-adding the secret via
+   `openssl rand -hex 32 | tr -d '\n' | gcloud secrets versions add ...` (confirmed 64 bytes) and
+   force-deploying a new Cloud Run revision (`:latest` only re-resolves on a fresh revision, not
+   an existing warm instance — LEARNINGS scar tissue, reconfirmed live).
+2. **`gcloud scheduler jobs update http` takes `--update-headers`, not `--headers`** (that flag
+   name is `create`-only) — passing the wrong one on the update path errored "unrecognized
+   arguments" and **gcloud echoed the full invocation, including the secret value, back in that
+   error text** — a real credential-exposure footgun, not just a functionality bug. The exposed
+   secret version was immediately rotated (destroyed) before continuing. Fixed:
+   `provision-scheduler-frontend.sh` now switches the flag name based on create-vs-update;
+   regression-tested (`infra/gcp/test/scheduler-invariants.test.mjs`, now 109/109 across the
+   suite).
+3. **Unrelated production bug surfaced by the rehearsal itself**: `order-autoconfirm` 500'd on
+   `column marketplace_orders.return_requested_at does not exist`. Investigation (Supabase MCP,
+   read-only) found the `20260526100000_return_requests` migration is recorded as **applied** in
+   Supabase's migration history, but its DDL never actually landed — neither the column nor
+   `marketplace_return_requests` existed. Likely cause: the migration file was edited *after*
+   being marked applied (Supabase dedupes by version, not content, so `migration up` silently
+   skipped it). This means `order-autoconfirm` has likely been failing the same way in
+   **production on Vercel** since late May, unrelated to this migration. Fixed with a new,
+   freshly-timestamped migration (`20260710154932_return_requests_backfill.sql`, all
+   `IF NOT EXISTS`/idempotent) applied live via the Supabase MCP; confirmed both the column and
+   table now exist.
+
+**Rehearsal result, post-fixes — all 4 routes 200, idempotency confirmed via identical repeat
+responses** (direct curl with the correct secret, never printed):
+```
+order-autoconfirm   (1st) {"confirmed":0,"medusaConfirmed":0,"message":"No Supabase orders to auto-confirm."}
+order-autoconfirm   (2nd) {"confirmed":0,"medusaConfirmed":0,"message":"No Supabase orders to auto-confirm."}
+domain-lapse-sweep  (1st) {"ok":true,"released":0}
+domain-lapse-sweep  (2nd) {"ok":true,"released":0}
+launchpad-campaigns (1st) {"ok":true,"scanned":0,"met":0,"unmet":0,"errors":0}
+launchpad-campaigns (2nd) {"ok":true,"scanned":0,"met":0,"unmet":0,"errors":0}
+print-pending        (1x) {"ok":true,"released":0,"reminded":0,"scanned":0}
+```
+All 4 jobs left `PAUSED` after rehearsal (safe state). **Next — owed to Daniel:** review this
+rehearsal output, then approve the one swap commit (`vercel.json` crons block removed +
+`provision-scheduler-frontend.sh --enable` run together, same deploy window).
 
 ### Story 3.2 — Webhook/CORS allow-lists + full-path staging smoke
 **As a** platform operator, **I want** Clerk, Stripe and MercadoPago webhook/CORS settings
