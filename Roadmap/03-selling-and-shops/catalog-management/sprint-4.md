@@ -1,11 +1,57 @@
 # Catalog management — Sprint 4: Profit columns (gated on profit-analyzer)
 
-**Status:** 🚧 built, pre-review/pre-merge · profit-analyzer's US-4 (fee estimator + `lib/profit.ts`) shipped
-2026-07-06 (epic ✅) — the hard gate is satisfied. Backend `a3b8efe` (branch `feat/catalog-management`,
-worktree `apps/.worktrees/catalog-management-s4-backend`), frontend `8cb0d77`+`194845e` (branch
-`feat/catalog-management`, worktree `apps/.worktrees/catalog-management-s4`). Both stories built +
-deterministic gate green; **owed: Daniel's money-path smoke** (Story 4.2's live bulk-apply) before merge —
-PR risk tier is **HIGH** per the epic's own risk tier (S4 "price writes w/ profit-analyzer").
+**Status:** ✅ MERGED 2026-07-10 — backend PR [#77](https://github.com/danybgoode/medusa-bonsai-backend/pull/77)
+squash `d094129`, frontend PR [#209](https://github.com/danybgoode/miyagisanchezcommerce/pull/209) squash
+`469f6f4`. Both branches cut fresh off `origin/main` in `apps/.worktrees/catalog-management-s4{,-backend}`
+(worktrees removed post-merge). Cross-agent (Antigravity/agy) review on both PRs caught and fixed 4 real
+issues pre-merge (see below); an independent `pr-reviewer` pass on the frontend PR caught a 5th
+(unconditional `delta_cents` write — a deploy-ordering hazard that would have broken the already-live
+`catalog.bulk_enabled` feature, not just this sprint's new action type). Mid-merge, a sibling PR
+(`#208`, Seller-portal rails foundation) landed on `main` and introduced a real conflict in
+`CatalogTable.tsx` (a shared `Toast`/`useToast` extraction) — resolved via a 3-way `git merge-file`,
+verified green (tsc + build + specs) before pushing. **Risk tier: HIGH** (Story 4.2 is a live price
+mutation + Mercado Libre push) — Daniel explicitly authorized merging on green CI + clean review, with
+the **live money-path smoke owed post-merge** (not a pre-merge blocker for this pair, by his explicit
+call — see the walkthrough below).
+
+### Review findings — caught and fixed pre-merge
+Both PRs went through cross-agent (Antigravity/agy) advisory review + an independent `pr-reviewer`
+subagent pass (fresh agent, no build context). Real findings, fixed before merge:
+- **Backend `1ef9f95`:** `computeBulkDiff`'s `apply_suggested_price` case called `action.items.find()`
+  with no guard against a non-array/missing `items` on a malformed request body — the TS type guarantees
+  it, but an actual HTTP body isn't runtime-checked. Would have thrown an unhandled `TypeError` instead of
+  a clean per-row invalid result.
+- **Frontend `ab92629`:** `BulkActionBar`'s suggested-price solve fetched the ML fee estimate at the
+  *current* price only — if the solved candidate price crosses a fee bracket threshold, the actually-
+  charged fee differs and the seller's target margin silently misses. Added a second solve pass that
+  re-fetches the fee estimate AT the candidate price before staging, mirroring `PricingCard`'s own
+  `startConfirm()` re-verification precedent.
+- **Frontend `ab92629`:** `profit-bulk-apply.ts` swallowed a non-JSON gateway response (e.g. a 502/504
+  HTML error page) into the same generic message a real business rejection gets. Now surfaces the HTTP
+  status so an infrastructure drop is distinguishable from an honest apply-price rejection.
+- **Frontend `2d0732d` (the real one — caught by the independent `pr-reviewer` pass, not agy):**
+  `stageBulkAction`/`stageBulkActionAsAgent` wrote `delta_cents` into **every** batch-item insert
+  regardless of action type. A Supabase INSERT referencing an unknown column errors regardless of the
+  value — if the frontend deploys before the `delta_cents` migration lands on a given environment, every
+  bulk action (not just this sprint's new one) would 500. Fixed to only include the key when the action
+  type actually populated it, so the other 7 types' insert payload is byte-identical to before this
+  column existed — deploy order between the frontend and the migration no longer matters for them.
+- **Dismissed after verification** (both review passes independently confirmed these are non-issues or
+  out of scope, not glossed): the "Rule 3 agent-accessibility violation" finding on both PRs (deferring
+  `apply_suggested_price` from MCP) — re-derived against the actual codebase, there is no cheap way to
+  expose this to agents without either forking the pricing formula server-side (explicitly forbidden by
+  this story's own acceptance) or building a full agent-facing equivalent of the ledger + live ML
+  fee-estimate compute seam; mirrors 3 existing precedent exclusions from Sprint 3
+  (`pause_activate`/`delete`/`publish_channel(ml)`). A "quantity undercounting" finding on
+  `computeSkuMarginsByChannel`'s line-attribution fallback — confirmed to be copied verbatim from the
+  already-shipped (2026-07-06) `computeSkuMargins`, not introduced by this PR; flagged as a real,
+  pre-existing, out-of-scope issue worth a future follow-up seed, not this PR's fix. A "fragile
+  signature-based routing" finding on `rejectOrchestrationOnlyPatch`'s new guard — re-verified against
+  all 8 `computeBulkDiff` cases: zero collision risk today (no other action type sets `variant_id` in its
+  patch), consistent with the codebase's existing `ml_enabled`/`metadata.paused` presence-based guards.
+  A "timeout hazard on sequential batch apply" finding — confirmed to be a pre-existing architectural
+  characteristic shared by all 4 frontend-orchestrated `applyBulkBatch()` branches
+  (`pause_activate`/`delete`/`publish_channel(ml)`/`apply_suggested_price`), not newly introduced.
 
 ## Design notes (from planning + build)
 - **4.1's per-channel margin** needed a new additive pure function,
@@ -51,25 +97,28 @@ PR risk tier is **HIGH** per the epic's own risk tier (S4 "price writes w/ profi
 **As a** seller, **I want** estimated margin per product per channel in the catalog table (Miyagi vs ML, after fees/shipping/COGS), with margin-killer flags, **so that** the table tells me where I'm silently losing money.
 **Acceptance:** consumes profit-analyzer's `lib/profit.ts` + fee estimator (no forked formula); products without COGS show "sin COGS" (link to set it), never a fake margin; behind `ops.profit_enabled`; sortable by margin.
 **Risk:** MED
-**Built:** frontend `8cb0d77` — `computeSkuMarginsByChannel()` (`lib/profit.ts`), `lib/catalog-margin.ts`'s
-`deriveProductMargin()` (three-state cells, killer-flag delegated to `classifyMarginKillers`), `CatalogTable.tsx`'s
-Margen column + client-only "ordenar por margen (esta página)" toggle, `page.tsx`'s flag-gated ledger fetch
-+ `force-dynamic`. No backend changes.
+**Built:** frontend, part of PR #209 (squash `469f6f4`) — `computeSkuMarginsByChannel()` (`lib/profit.ts`),
+`lib/catalog-margin.ts`'s `deriveProductMargin()` (three-state cells, killer-flag delegated to
+`classifyMarginKillers`), `CatalogTable.tsx`'s Margen column + client-only "ordenar por margen (esta
+página)" toggle, `page.tsx`'s flag-gated ledger fetch + `force-dynamic`. No backend changes.
 
 ### Story 4.2 — Bulk apply suggested prices ✅ built
 **As a** seller, **I want** to select underpriced products and bulk-apply the suggested price through the staged pipeline, **so that** repricing is one reviewed action.
 **Acceptance:** rides S3's staged diff (old price → suggested price per row); applies via profit-analyzer's apply path (Miyagi price + ML via publish parity, respecting `ml.publish_enabled`); confirm dialog totals the change; audited.
 **Risk:** HIGH
-**Built:** backend `a3b8efe` — `BulkActionPayload`'s new `apply_suggested_price` variant + `computeBulkDiff`'s
-new case (multi-variant rejection, ownership via the existing `pairs` resolution, `delta_cents`),
-`rejectOrchestrationOnlyPatch()`'s new guard, `ops.profit_enabled` gate on this action type specifically
-(both `bulk-stage` routes), MCP internal route explicitly refuses it. Frontend `194845e` —
-`BulkActionBar.tsx`'s "Aplicar precio sugerido" (client-side `resolveSuggestedPriceCandidate` +
-per-product fee-estimate fetch + `solveForPrice`, small-batch concurrency), `lib/profit-bulk-apply.ts`'s
-`applySuggestedPriceItem()` (one HTTP call per item to the existing apply-price route, mirrors
-`listing-status.ts`'s style), `applyBulkBatch()`'s 4th branch, `isAgentUnsupportedAction()` entry,
-`BulkDiffPreview.tsx`'s totals line, new `delta_cents` migration (not yet applied to prod — lands at
-normal deploy time per the merge).
+**Built:** backend PR #77 (squash `d094129`) — `BulkActionPayload`'s new `apply_suggested_price` variant +
+`computeBulkDiff`'s new case (multi-variant rejection, ownership via the existing `pairs` resolution,
+`delta_cents`), `rejectOrchestrationOnlyPatch()`'s new guard, `ops.profit_enabled` gate on this action
+type specifically (store route flag-gates; internal/agent route refuses it outright), MCP internal route
+explicitly refuses it. Frontend PR #209 (squash `469f6f4`) — `BulkActionBar.tsx`'s "Aplicar precio
+sugerido" (client-side `resolveSuggestedPriceCandidate` + a two-pass fee-estimate fetch + `solveForPrice`,
+small-batch concurrency — re-verifies the fee AT the candidate price before staging),
+`lib/profit-bulk-apply.ts`'s `applySuggestedPriceItem()` (one HTTP call per item to the existing
+apply-price route, mirrors `listing-status.ts`'s style), `applyBulkBatch()`'s 4th branch,
+`isAgentUnsupportedAction()` entry, `BulkDiffPreview.tsx`'s totals line, new `delta_cents` migration
+(`supabase/migrations/20260710170000_catalog_bulk_delta_cents.sql`, additive/nullable — **owed: apply to
+prod Supabase before or alongside flipping this feature on**; the write path degrades gracefully if it
+hasn't landed yet, since `delta_cents` is only included in the insert for this one action type).
 
 ## Sprint QA
 - **api spec(s):**
@@ -83,17 +132,22 @@ normal deploy time per the merge).
     null-delta when no current price) + `rejectOrchestrationOnlyPatch`'s new guard.
   - `e2e/catalog-bulk-apply-suggested-price.spec.ts` — auth-gate coverage on the three bulk routes for a
     body shaped like this action type specifically.
-- **browser smoke owed:** yes, to Daniel — **money path**: bulk-apply suggested prices on 3 test products, verify Miyagi PDP + ML listing both update
-- **deterministic gate:** backend `medusa build` → `tsc --noEmit` → `npm run test:unit` green (350/350, up
-  from 317 baseline this session); frontend `tsc --noEmit` + `npm run build` + Playwright `api` green
-  locally (1500/1803, matching the pre-existing baseline's pass count — the ~303 failures are a
-  pre-existing, unrelated-to-this-branch environmental gap against the `api` project's default prod
-  `baseURL`, confirmed via `git status` showing zero changes to any of the affected routes; CI's run
-  against the real branch preview is the authoritative gate before merge)
+- **browser smoke owed:** yes, to Daniel, **post-merge** (explicit call, HIGH-tier gate consciously
+  deferred rather than blocking this merge) — **money path**: apply the `delta_cents` migration to prod
+  Supabase, then bulk-apply suggested prices on 3 test products, verify Miyagi PDP + ML listing both
+  update, per the walkthrough below.
+- **deterministic gate:** backend `medusa build` → `tsc --noEmit` → `npm run test:unit` green (318/318
+  locally pre-merge, CI green on the merged PR); frontend `tsc --noEmit` + `npm run build` + Playwright
+  `api` green both locally and on CI against the real branch preview (the merge commit's own CI run
+  — `29130705888` — passed after resolving a real conflict with a same-day sibling PR, #208)
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+Env: production · https://miyagisanchez.com. **Both PRs merged 2026-07-10 (code is live) — the steps below
+are the smoke owed post-merge, not yet run.**
 
+0. Apply the `delta_cents` migration (`supabase/migrations/20260710170000_catalog_bulk_delta_cents.sql`) to
+   the prod Supabase project — nullable/additive, safe at any time, but step 3 below needs it for the
+   confirm-dialog total to actually populate (it degrades gracefully without it, just shows no total line).
 1. With `ops.profit_enabled` ON and COGS set on 3 products (at least one never sold, one sold with no
    COGS, one sold with COGS), open `/shop/manage/catalogo`.
    → Margen column renders per channel: the never-sold product shows "sin ventas", the sold-no-COGS one
