@@ -1,6 +1,7 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 2: Cloudflare edge + GCP origin
 
-**Status:** 🚧 in progress — Stories 2.1 + 2.2 ✅ **done 2026-07-10**. Story 2.3 (WAF) not started.
+**Status:** ✅ **All 3 stories done 2026-07-10.** Traffic still 100% on Vercel — Sprint 2 proved the
+edge + origin path on a staging hostname only, exactly as scoped.
 
 Traffic still 100% on Vercel. This sprint stands up the new edge + origin path and proves it on a
 staging hostname. The NS flip happens here — decoupled from the traffic cutover (records keep
@@ -169,7 +170,7 @@ Armor entirely) — kept for Sprint 1.4's shadow-soak testing. Full lockdown
 (`--ingress=internal-and-cloud-load-balancing`) is a later-sprint decision once the dark URL is no
 longer needed directly.
 
-### Story 2.3 — WAF/bot parity with Vercel Bot Protection
+### Story 2.3 — WAF/bot parity with Vercel Bot Protection ✅
 **As a** platform operator, **I want** Cloudflare WAF/bot rules matching what Vercel's firewall
 mitigates today (probe paths like `/l/wp-admin` → 403 at the edge), **so that** cutover doesn't
 newly expose the app to bot traffic Vercel was absorbing.
@@ -177,21 +178,46 @@ newly expose the app to bot traffic Vercel was absorbing.
 new mitigation evidence (Cloudflare's equivalent of `x-vercel-mitigated`).
 **Risk:** low
 
+**Done 2026-07-10.** `infra/gcp/cloudflare-waf-provision.mjs` (idempotent, Rulesets API) creates one
+custom WAF rule at the `http_request_firewall_custom` phase blocking the same probe-path shapes
+Vercel's Bot Protection mitigated (`wp-admin`, `wp-login.php`, `xmlrpc.php`, `.env`, `.git`,
+`admin.php`) with a `block` action — re-runs merge additively (filtered by the rule's own fixed
+`description`, so a human-added dashboard rule is never clobbered). Also attempts to enable Bot
+Fight Mode (free-tier bot mitigation); that call needs a third, separate Cloudflare token
+permission group beyond the two Story 2.2 needed, so it **soft-fails and logs rather than blocking**
+— the custom WAF rule alone already satisfies this story's literal acceptance test. **Owed**: add
+that third permission + re-run to also flip Bot Fight Mode on (belt-and-suspenders, not required).
+
+**Cloudflare's actual mitigation evidence, confirmed live** (no `x-vercel-mitigated`-style custom
+header exists on a free-plan WAF block response — the acceptance line above's phrasing assumed one
+would; the real, verified evidence is the response shape itself): `GET
+https://gcp.miyagisanchez.com/l/wp-admin` → **`403`**, `server: cloudflare`, body title `"Attention
+Required! | Cloudflare"` (Cloudflare's own block page, never reaching the app). A normal path
+(`GET /`) through the same rule → unaffected, still `200` — confirms no over-blocking.
+
+New spec `e2e/edge-bot-mitigation-api.spec.ts` (same manual-run convention as Story 2.2's spec —
+targets `gcp.miyagisanchez.com`, not the CI-gated Vercel preview) asserts exactly this: `403` +
+`server: cloudflare` + the block-page marker on the probe path, `200` on `/`. Config-guard
+`infra/gcp/test/cloudflare-waf-provision.test.mjs` (4 tests) locks the probe-path list, the
+`block` action, additive-merge behavior, and the Bot-Fight-Mode soft-fail shape.
+
 ## Sprint QA
-- **api spec(s):** 2.2 → `e2e/origin-header-passthrough-api.spec.ts` (flat `e2e/` convention, not
-  a nonexistent `e2e/api/` subdir) — written, curl-verified equivalent, **owed**: a real run from an
-  environment with normal DNS resolution (blocked in this session only by local resolver lag).
-  2.3 → new bot-mitigation spec, not started.
-- **browser smoke:** Story 2.1's auth/email blast-radius smoke (Clerk login + Resend round-trip)
-  **confirmed by Daniel 2026-07-10**; Story 2.2's `gcp.miyagisanchez.com` full-path smoke
-  **curl-verified 2026-07-10** (200s + `cf-ray` + Cloud Armor 403 on direct-to-LB) — see the
-  walkthrough below. 2.3 smoke still owed once built.
+- **api spec(s):** 2.2 → `e2e/origin-header-passthrough-api.spec.ts`; 2.3 →
+  `e2e/edge-bot-mitigation-api.spec.ts`. Both written, both flat `e2e/` convention (not a
+  nonexistent `e2e/api/` subdir), both curl-verified equivalent live. **Owed**: the actual
+  Playwright runs, blocked in this building session only by the sandbox's stale local DNS resolver
+  (Playwright's `request` fixture has no `--resolve` equivalent, and a system-level `/etc/hosts`
+  override wasn't authorized) — not a real defect, same requests/responses already curl-confirmed.
+- **browser smoke:** Story 2.1's auth/email blast-radius smoke **confirmed by Daniel 2026-07-10**;
+  Story 2.2's full-path smoke and Story 2.3's WAF block **both curl-verified 2026-07-10** — see the
+  walkthrough below.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green (both passed
-  2026-07-10 on this branch); infra stories gated by idempotent-script + `node:test` config guard
-  (65/65 green, incl. the new `cloudflare-zone-stage` + `alb-invariants` suites — LEARNINGS pattern).
+  2026-07-10 on this branch); infra stories gated by idempotent-script + `node:test` config guard —
+  **69/69 green** (`cloudflare-zone-stage`, `alb-invariants`, `cloudflare-waf-provision`, plus the
+  pre-existing suites — LEARNINGS pattern).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: staging hostname https://gcp.miyagisanchez.com · prod traffic still on Vercel.
+Env: staging hostname https://gcp.miyagisanchez.com · prod traffic still on Vercel throughout.
 
 **Story 2.1 — ✅ confirmed done by Daniel, 2026-07-10:**
 1. `dig NS miyagisanchez.com` → `amalia.ns.cloudflare.com` / `ganz.ns.cloudflare.com` — confirmed
@@ -200,12 +226,25 @@ Env: staging hostname https://gcp.miyagisanchez.com · prod traffic still on Ver
 3. Resend test email (sent programmatically to Daniel) → received, DKIM/SPF/DMARC intact.
 4. `api.miyagisanchez.com/health` → `200 OK` directly from Google's frontend.
 
-**Story 2.2 — ✅ curl-verified 2026-07-10 (Playwright run still owed — see Sprint QA):**
+**Story 2.2 — ✅ curl-verified 2026-07-10 (Playwright run itself still owed — see Sprint QA):**
 5. Open https://gcp.miyagisanchez.com in a private window.
    → The marketplace renders through Cloudflare→ALB→Cloud Run (check `cf-ray` header present).
+6. `curl -sI https://gcp.miyagisanchez.com/api/health` → `200`, `{"ok":true}`, `cf-ray` present.
+7. `curl -o /dev/null -w '%{http_code}' https://136.68.90.56/` (the ALB's static IP, direct, no Host
+   spoofing needed to demonstrate the block) → `403` — Cloud Armor refuses non-Cloudflare traffic.
 
-**Story 2.3 (not started):**
-6. `curl -s -o /dev/null -w '%{http_code}' https://gcp.miyagisanchez.com/l/wp-admin`
-   → 403 (edge mitigation active).
+**Story 2.3 — ✅ curl-verified 2026-07-10:**
+8. `curl -s -o /dev/null -w '%{http_code}' https://gcp.miyagisanchez.com/l/wp-admin`
+   → `403` (Cloudflare's own block page — "Attention Required! | Cloudflare" — never reaches the app).
+9. `curl -s -o /dev/null -w '%{http_code}' https://gcp.miyagisanchez.com/`
+   → `200` — confirms the WAF rule doesn't over-block legitimate traffic.
+
+If any step fails, note the step number + what you saw — that's the bug report.
+
+**Not covered by this sprint (deliberately, per scope):** no real traffic moves — the apex/wildcard
+cutover, tenant custom-domain migration, and cron swap are Sprints 3–4. `miyagi-web`'s Cloud Run
+ingress stays publicly reachable via its own `*.run.app` URL (Sprint 1.4's shadow-soak need); Bot
+Fight Mode needs one more Cloudflare token permission (owed, non-blocking — the WAF custom rule
+already covers this story's acceptance).
 
 If any step fails, note the step number + what you saw — that's the bug report.
