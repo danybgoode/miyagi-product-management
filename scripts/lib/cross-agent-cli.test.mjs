@@ -293,8 +293,8 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // fixed). These lock the new invocation (a stubbed agy → non-empty capture, the --model + argv framing present,
 // empty stdout treated as failure, the size cap intact) and the fail-loud version gate.
 
-test('AGY_PINNED bumped to the verified 1.0.16 (guards the deliberate bump)', () => {
-  assert.equal(AGY_PINNED, '1.0.16');
+test('AGY_PINNED bumped to the verified 1.1.1 (guards the deliberate bump)', () => {
+  assert.equal(AGY_PINNED, '1.1.1');
   assert.equal(typeof AGY_MODEL, 'string');
   assert.ok(AGY_MODEL.length > 0, 'AGY_MODEL must default to a non-empty model name');
   assert.ok(AGY_FALLBACK_MODEL.length > 0, 'AGY_FALLBACK_MODEL must default to a non-empty model name');
