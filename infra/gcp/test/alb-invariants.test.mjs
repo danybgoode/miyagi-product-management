@@ -60,6 +60,23 @@ test('provision-alb-frontend.sh: fetches Cloudflare\'s ranges from BOTH ips-v4 a
   assert.match(src, /cloudflare\.com\/ips-v6/)
 })
 
+test('provision-alb-frontend.sh: Cloud Armor reconciliation keys off CIDR content, not bare priority index', () => {
+  // Regression for a real bug found in cross-agent review (2026-07-10): a priority-keyed
+  // `describe "$PRIORITY" || create` silently skips reconciling a stale rule if Cloudflare's
+  // published list ever changes membership, since the sorted array shifts. The fix reads every
+  // existing rule's "cloudflare:<cidr>" description and diffs on CIDR content instead.
+  assert.match(src, /EXISTING_CF_CIDRS/, 'expected the script to read existing rules by CIDR content')
+  assert.doesNotMatch(
+    src,
+    /rules describe "\$PRIORITY"[\s\S]{0,80}\|\|[\s\S]{0,80}rules create "\$PRIORITY"/,
+    'must not fall back to the priority-keyed create-if-absent anti-pattern',
+  )
+})
+
+test('provision-alb-frontend.sh: removes a stale Cloudflare-CIDR rule no longer published (reconciliation, not just additive)', () => {
+  assert.match(src, /rules delete "\$PRIO"/, 'expected a removal pass for CIDRs Cloudflare no longer publishes')
+})
+
 test('provision-alb-frontend.sh: sorts the Cloudflare CIDR list before assigning priorities (re-run stability)', () => {
   assert.match(src, /\|\s*sort/, 'an unsorted list would drift rule priorities across re-runs as Cloudflare reorders its published list')
 })

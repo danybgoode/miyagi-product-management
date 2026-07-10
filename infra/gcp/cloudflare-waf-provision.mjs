@@ -38,7 +38,13 @@ async function cfApi(path, opts = {}) {
     ...opts,
     headers: { Authorization: `Bearer ${CF_TOKEN}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
   })
-  const j = await r.json()
+  // Read as text first — an outage/edge error (502/504) returns an HTML page, not JSON, and
+  // parsing that directly throws a SyntaxError that masks the real HTTP status (cross-review nit).
+  const body = await r.text()
+  let j
+  try { j = JSON.parse(body) } catch {
+    throw new Error(`Cloudflare ${path} → ${r.status} (non-JSON response): ${body.slice(0, 300)}`)
+  }
   if (!r.ok || j.success === false) {
     throw new Error(`Cloudflare ${path} → ${r.status} ${JSON.stringify(j.errors || j).slice(0, 400)}`)
   }

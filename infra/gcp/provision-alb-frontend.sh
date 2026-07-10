@@ -88,21 +88,75 @@ gcloud compute security-policies describe "$ARMOR_POLICY" --global "${P[@]}" >/d
 CF_RANGES="$(printf '%s\n%s\n' \
   "$(curl -fsSL https://www.cloudflare.com/ips-v4)" \
   "$(curl -fsSL https://www.cloudflare.com/ips-v6)" \
-  | grep -v '^$' | sort)"   # deterministic order → stable priority assignment across re-runs
+  | grep -v '^$' | sort)"
 
-PRIORITY=1000
+# Reconcile by CIDR content (each rule's fixed "cloudflare:<cidr>" description), NOT by priority
+# index. A priority-keyed check (describe "$PRIORITY" || create) silently skips reconciling a
+# stale rule if Cloudflare's published list ever changes membership — the sorted array shifts,
+# so "priority N already exists" no longer means "priority N holds the CIDR we expect there."
+# One describe fetches every existing rule; the add-loop and the stale-removal pass below both
+# key strictly off CIDR content. (Found in cross-agent review, 2026-07-10.)
+# `describe --format=json` for this resource returns a single-element LIST, not a bare object —
+# unwrap once via a shared helper rather than repeating the `[0] if isinstance(..., list)` check
+# in every inline python block below.
+PY_LOAD_POLICY='
+import json, sys
+def load_policy():
+    d = json.load(sys.stdin)
+    return d[0] if isinstance(d, list) else d
+'
+EXISTING_JSON="$(gcloud compute security-policies describe "$ARMOR_POLICY" --global "${P[@]}" --format=json)"
+EXISTING_CF_CIDRS="$(printf '%s' "$EXISTING_JSON" | python3 -c "
+$PY_LOAD_POLICY
+for r in load_policy().get('rules', []):
+    d = r.get('description', '')
+    if d.startswith('cloudflare:'):
+        print(d[len('cloudflare:'):])
+")"
+USED_PRIORITIES="$(printf '%s' "$EXISTING_JSON" | python3 -c "
+$PY_LOAD_POLICY
+print(' '.join(str(r['priority']) for r in load_policy().get('rules', [])))
+")"
+
+# Add any CIDR Cloudflare publishes now that the policy doesn't already allow.
+ADDED=0
+NEXT_PRIORITY=1000
 while IFS= read -r CIDR; do
-  gcloud compute security-policies rules describe "$PRIORITY" \
-    --security-policy="$ARMOR_POLICY" "${P[@]}" >/dev/null 2>&1 || \
-  gcloud compute security-policies rules create "$PRIORITY" \
+  [ -z "$CIDR" ] && continue
+  printf '%s\n' "$EXISTING_CF_CIDRS" | grep -qxF "$CIDR" && continue   # already allowed
+  while printf '%s\n' "$USED_PRIORITIES" | grep -qxF "$NEXT_PRIORITY"; do
+    NEXT_PRIORITY=$((NEXT_PRIORITY + 1))
+  done
+  gcloud compute security-policies rules create "$NEXT_PRIORITY" \
     --security-policy="$ARMOR_POLICY" \
     --action=allow \
     --src-ip-ranges="$CIDR" \
     --description="cloudflare:${CIDR}" \
     "${P[@]}"
-  PRIORITY=$((PRIORITY + 1))
+  USED_PRIORITIES="$USED_PRIORITIES $NEXT_PRIORITY"
+  NEXT_PRIORITY=$((NEXT_PRIORITY + 1))
+  ADDED=$((ADDED + 1))
 done <<< "$CF_RANGES"
-echo "  = Cloud Armor policy: $ARMOR_POLICY ($(printf '%s\n' "$CF_RANGES" | grep -c .) Cloudflare CIDRs allowed)"
+
+# Remove any cloudflare:*-tagged rule whose CIDR Cloudflare no longer publishes — the
+# reconciliation half of the same fix (without it, a shrunk list leaves a stale allow forever).
+REMOVED=0
+while IFS='|' read -r PRIO CIDR; do
+  [ -z "$PRIO" ] && continue
+  if ! printf '%s\n' "$CF_RANGES" | grep -qxF "$CIDR"; then
+    echo "  - removing stale Cloudflare allow: priority $PRIO ($CIDR, no longer published)"
+    gcloud compute security-policies rules delete "$PRIO" --security-policy="$ARMOR_POLICY" "${P[@]}" --quiet
+    REMOVED=$((REMOVED + 1))
+  fi
+done <<< "$(printf '%s' "$EXISTING_JSON" | python3 -c "
+$PY_LOAD_POLICY
+for r in load_policy().get('rules', []):
+    d = r.get('description', '')
+    if d.startswith('cloudflare:'):
+        print(f\"{r['priority']}|{d[len('cloudflare:'):]}\")
+")"
+
+echo "  = Cloud Armor policy: $ARMOR_POLICY ($(printf '%s\n' "$CF_RANGES" | grep -c .) Cloudflare CIDRs current; +$ADDED added, -$REMOVED removed this run)"
 
 # --- 5 · backend service (global, serverless-NEG backend, NO Cloud CDN) -----------------------
 # Gotcha (found live, 09-platform-infra frontend-vercel-to-cloudrun S2.2): `gcloud ... create
