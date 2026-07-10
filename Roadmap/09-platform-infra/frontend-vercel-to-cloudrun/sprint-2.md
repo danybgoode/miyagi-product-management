@@ -1,6 +1,7 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 2: Cloudflare edge + GCP origin
 
-**Status:** ⬜ not started
+**Status:** 🚧 in progress — Story 2.1 built + unit-tested, live staging run pending a Cloudflare
+API token from Daniel.
 
 Traffic still 100% on Vercel. This sprint stands up the new edge + origin path and proves it on a
 staging hostname. The NS flip happens here — decoupled from the traffic cutover (records keep
@@ -18,6 +19,26 @@ flipped with every record still targeting Vercel (apex/wildcard **DNS-only**, no
 round-trips on each mail system. *(LEARNINGS scar tissue: the zone does NOT auto-import; a `dig`
 export misses DKIM/SPF — use the provider's zone export.)*
 **Risk:** high (DNS/auth/email blast radius — Daniel executes the walkthrough personally)
+
+**Built 2026-07-09** — `infra/gcp/cloudflare-zone-stage.mjs` (+ pure diff/normalize logic in
+`infra/gcp/lib/cloudflare-zone-diff.mjs`, unit-tested in
+`infra/gcp/test/cloudflare-zone-stage.test.mjs`, 11/11 green, no live API calls). Pulls the REAL
+Vercel export via `GET /v4/domains/miyagisanchez.com/records` (not `dig`), create-if-absent zone +
+create-if-absent per-record into Cloudflare (`proxied: false` — DNS-only, matches the story's
+scope), then re-fetches and diffs record-for-record — exits non-zero on any missing record before
+ever printing nameservers.
+
+**Blocked on a live credential, not yet run live**: `CLOUDFLARE_API_TOKEN` +
+`CLOUDFLARE_ACCOUNT_ID` Secret Manager shells created empty in `miyagisanchezback-497722` — Daniel
+confirmed he already has a Cloudflare account for the domain but the actual scoped token hasn't
+been generated/stored yet. Needed scopes: **Zone → DNS → Edit**, **Zone → Zone → Read**,
+**Zone → SSL and Certificates → Edit** (the last one is for Story 2.2's Origin CA cert, not needed
+until then, but simplest to provision once). Once the token is in Secret Manager, run:
+```
+node infra/gcp/cloudflare-zone-stage.mjs
+```
+— it stages the zone, prints the diff result, and prints the two assigned nameservers for the walk
+through below. **Only after that succeeds** does Daniel run the NS-flip steps personally.
 
 ### Story 2.2 — External ALB + serverless NEG + origin certs + header passthrough
 **As a** platform operator, **I want** a GCP external ALB (serverless NEG → `miyagi-web`, **no
