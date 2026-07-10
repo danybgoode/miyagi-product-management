@@ -41,6 +41,37 @@ verified on the new path before any real traffic rides it.
 the order reaches the seller's order screen; Clerk session works through the full path.
 **Risk:** high (payments/auth)
 
+**Findings 2026-07-10 (research done; the live smoke stays Daniel's, per the gate):**
+- Stripe/MP webhook handlers are host-agnostic by construction (Stripe verifies by HMAC
+  signature over the raw body; MP re-fetches the payment/preapproval by ID from MP's own API) —
+  neither reads `Host`. Clerk's dashboard domain allow-list already covers `miyagisanchez.com`,
+  proven live in Sprint 2.1. Backend `STORE_CORS`/`ADMIN_CORS`/`AUTH_CORS` already include
+  `https://miyagisanchez.com` (confirmed live) — no change needed for the canonical domain, since
+  it never changes this sprint.
+- **Correction to this story's original framing:** Sprint 1's doc assumed
+  `STRIPE_WEBHOOK_SECRET` needs "its own webhook endpoint registered against the Cloud Run URL
+  first." That's not right — Stripe's webhook signing secret is tied to the *registered public
+  URL* (`https://miyagisanchez.com/api/webhooks/stripe`), which **does not change** in this
+  migration (only the infra serving it does). No new Stripe webhook endpoint registration is
+  needed at all. The only real open question: does the value already bound to `miyagi-web`'s
+  `STRIPE_WEBHOOK_SECRET` (confirmed live: 3 enabled versions, oldest from 2026-05-29, predating
+  this epic) match what's actually live/working on Vercel today? Can't verify by reading the
+  secret (would print it) — **owed to Daniel to confirm** before/at cutover.
+- **CORS gap confirmed live** (read, not written): `gcp.miyagisanchez.com` is NOT in the
+  backend's live `STORE_CORS`. If the staging smoke drives a real *browser* checkout on
+  `gcp.miyagisanchez.com` (Stripe Checkout session creation calls Medusa's Store API with that
+  page's Origin), it needs a temporary allowance. This is a live PRODUCTION backend env change
+  (money-path shared infra) — not run by the agent; prepared here for Daniel to run as part of
+  his own smoke:
+  ```
+  # before the smoke:
+  gcloud run services update medusa-web --region=us-east4 --project=miyagisanchezback-497722 \
+    --update-env-vars="STORE_CORS=https://miyagisanchez.com,https://www.miyagisanchez.com,https://gcp.miyagisanchez.com"
+  # after the smoke passes, revert:
+  gcloud run services update medusa-web --region=us-east4 --project=miyagisanchezback-497722 \
+    --update-env-vars="STORE_CORS=https://miyagisanchez.com,https://www.miyagisanchez.com"
+  ```
+
 ### Story 3.3 — UCP/MCP cutover checklist (named, asserted — not smoke luck)
 **As an** AI agent shopping the marketplace, **I want** the UCP surface fully correct on the new
 rail — capability manifest accurate, advertised base/origin URLs, checkout-session links, CORS,
