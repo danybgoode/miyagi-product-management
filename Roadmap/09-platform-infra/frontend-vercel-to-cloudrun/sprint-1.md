@@ -1,6 +1,8 @@
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 1: Containerize + shadow rail
 
-**Status:** 🚧 in progress — Stories 1.1–1.3 done, PR #201 (draft), `miyagi-web` live (dark) on Cloud Run
+**Status:** ✅ all 4 stories done, PR #201 (draft, CI green) — `miyagi-web` live (dark) on Cloud Run,
+shadow-soaked. Owed before merge/close: CI/CD trigger console step (S1.3), 4 pending secret values
+(S1.3), the `launchpad.enabled` live-flag question (S1.4) — see each story for detail.
 
 All stories deployable dark — Vercel keeps serving 100% of traffic this sprint.
 
@@ -118,7 +120,7 @@ connection). Every merge to `main` does not yet auto-deploy `miyagi-web`; today'
 (`deploy-frontend.sh` after a `gcloud builds submit`). Owed before this story is fully "every merge
 deploys both rails."
 
-### Story 1.4 — Shadow soak: the suite against the dark URL
+### Story 1.4 — Shadow soak: the suite against the dark URL ✅
 **As a** platform operator, **I want** the existing Playwright/API suite run against the dark URL
 with canonical host headers, plus `/api/ucp/manifest` + `/api/ucp/mcp` probes, **so that** the
 panel's checkable claim ("canonical app, subdomains, checkout, UCP and crons can run from Cloud
@@ -128,24 +130,82 @@ Run") is proven before any DNS work.
 this doc.
 **Risk:** low
 
+**Done 2026-07-09.** Full `npm run test:e2e` (`api` project, 1759 tests) run with
+`PLAYWRIGHT_BASE_URL=https://miyagi-web-oehqqtyoia-uk.a.run.app` — **1754 passed, 5 failed, 19
+skipped** (the same fixture-gated skips CI shows). No canonical-Host-header trick was needed: S1.3's
+`isPlatformHost()` fix already makes the real `*.run.app` hostname resolve as `marketplace` on its
+own (a Host-header override against the bare `*.run.app` URL doesn't even reach the container —
+Google's front-end 404s it before the request arrives, since Cloud Run's default domain enforces
+Host/SNI matching; confirmed live while investigating the S1.3 middleware fix).
+
+**The 5 failures are a genuine, valuable finding — not a Cloud Run bug.** All 5 are
+`launchpad-campaign-vote.spec.ts` / `launchpad-submission.spec.ts`'s "public routes are dark while
+the flag is OFF" assertions, expecting 423 but getting 404 (shop-not-found, i.e. the code ran PAST
+the flag check). Traced to the actual live Supabase row: `select * from platform_flags where key =
+'launchpad.enabled'` → `{enabled: true, updated_at: 2026-07-08, updated_by: user_3EO7iwpx1mG4aIKF0N5qq8glAA0}`
+— **the flag was flipped ON in prod 2 days ago**, contradicting both this test's own docstring
+("dark while the flag is OFF") and `MEMORY.md`'s epic note ("Behind `launchpad.enabled` (OFF)").
+Cross-checking why CI's Vercel-preview run passes the identical assertion: per the
+`ci-preview-bypass` team memory, `SUPABASE_SERVICE_ROLE_KEY` is **deliberately kept prod-only**,
+never widened to `preview` scope — so the Vercel preview can never actually read the live flag row;
+every preview run only ever exercises `lib/flags.ts`'s fail-open-to-`DEFAULT_FLAGS` path
+(`launchpad.enabled: false`), regardless of what's really live. Cloud Run reused the backend's real
+`SUPABASE_SERVICE_ROLE_KEY` (S1.3, by design), so it's the more faithful signal here — a CI-preview
+blind spot for any similarly-shaped flag-off assertion, not a Cloud Run regression. **Owed:** confirm
+with Daniel whether `launchpad.enabled` was deliberately flipped live (Launchpad epic's own owed
+money-smoke?) — if so, update the stale `MEMORY.md` line and this test's assumption; if not, it's a
+live incident to investigate separately from this migration.
+
+**UCP/MCP probes:** `GET /api/ucp/manifest` → 200, valid manifest JSON. `POST /api/ucp/mcp`
+(`tools/list`) → 200, valid JSON-RPC 2.0 response listing `search_listings` and siblings with full
+`inputSchema`s.
+
+**ISR concurrency check:** 8 concurrent `GET /` requests → all 200, byte-identical bodies (105280
+bytes each, no divergence). Caveat: with `--min-instances=0` and a small quick burst, these likely
+all landed on one warm instance rather than genuinely exercising ≥2 concurrent instances — a
+conclusive multi-instance ISR test would need sustained concurrent load to force Cloud Run's
+autoscaler to spin up a second instance. No inconsistency observed in this lighter-weight pass;
+flagging the caveat rather than claiming full coverage.
+
 ## Sprint QA
-- **api spec(s):** 1.1 → `e2e/api/edge-route-parity.spec.ts` (bytes/headers of `/api/splash`,
-  `/api/icon`); 1.4 reuses the existing suite + a UCP manifest/mcp probe spec.
+- **api spec(s):** 1.1 → `e2e/edge-route-parity.spec.ts` (bytes/headers of `/api/splash`,
+  `/api/icon`). 1.4 needed no new spec — the existing suite already has broad UCP/MCP coverage
+  (`agent-discovery.spec.ts`, `mcp-tool-dispatch-parity.spec.ts`, `agent-connector.spec.ts`, and
+  others), all of which passed running against the dark URL; a manual curl of `/api/ucp/manifest`
+  + `/api/ucp/mcp` cross-checked the same result directly.
 - **browser smoke owed:** no (all dark; no money/auth surface changes)
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge;
-  1.3 additionally: the `node:test` deploy-invariants guard.
+  1.3 additionally: the `node:test` deploy-invariants guard (`deploy-invariants-frontend.test.js`).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: dark Cloud Run URL (from `gcloud run services describe miyagi-web --format='value(status.url)'`)
-· Vercel prod untouched.
+**Current state:** PR #201 is still a **draft** on `feat/frontend-vercel-to-cloudrun` — nothing has
+merged to `main` yet, and Vercel prod (`miyagisanchez.com`) is untouched and unaware any of this
+happened. The Cloud Run service below was deployed **manually** (`gcloud builds submit` +
+`deploy-frontend.sh`) — the CI/CD trigger that would make `git push main` auto-deploy it is not
+wired yet (S1.3, owed: a one-time Cloud Build console step). Dark URL (stable, project-hash form):
+`https://miyagi-web-oehqqtyoia-uk.a.run.app`.
 
-1. Open https://miyagisanchez.com/api/splash and the same path on the Vercel preview branch.
-   → Both render the identical splash image (Story 1.1 shipped to Vercel too).
-2. Open `<dark-url>/` in a private window.
+1. Open https://miyagisanchez.com/api/splash and the same path on this PR's Vercel preview URL
+   (find it: `gh pr checks 201` → the Vercel check's link, or the PR's Checks tab).
+   → Both render the identical splash image — proves Story 1.1's edge→Node conversion is
+   Vercel-safe (this is pre-merge verification, not "already live").
+2. Open `https://miyagi-web-oehqqtyoia-uk.a.run.app/` in a private window.
    → The marketplace homepage renders fully (images optimized, no 500s).
-3. Open `<dark-url>/api/ucp/manifest`.
+3. Open `https://miyagi-web-oehqqtyoia-uk.a.run.app/api/ucp/manifest`.
    → Valid JSON manifest, same shape as https://miyagisanchez.com/api/ucp/manifest.
-4. Merge any trivial PR to `main`.
-   → Vercel prod deploys as always AND a new `miyagi-web` revision appears — both rails fired.
+4. Open `https://miyagi-web-oehqqtyoia-uk.a.run.app/api/health`.
+   → `{"ok":true}` — proves the container itself is healthy independent of any secret/config.
+5. **Not yet testable — owed:** "merge to `main` auto-deploys both rails." Needs (a) the
+   `cicd-setup-frontend.sh` console step done, (b) this PR actually merged. Once both are true:
+   merge any trivial PR → Vercel prod deploys as always AND a new `miyagi-web` Cloud Run revision
+   appears (`gcloud run revisions list --service=miyagi-web --region=us-east4`).
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Known gaps carried forward (not blocking, tracked above in each story):**
+- 4 secret shells still empty (`SERPAPI_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`,
+  `TELEGRAM_CHAT_ID_APP`) — SerpAPI search, the frontend's own Stripe webhook, cron auth, and
+  admin Telegram notifications won't work on this dark URL until populated (S1.3).
+  `STRIPE_WEBHOOK_SECRET` specifically needs a webhook endpoint registered against this URL first.
+- `launchpad.enabled` is live `true` in prod (flipped 2026-07-08) — worth confirming this was
+  intentional and updating `MEMORY.md` + the stale test docstring either way (S1.4).
