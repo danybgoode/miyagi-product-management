@@ -29,8 +29,10 @@ absence of a Vercel cron invocation). Rollback documented: re-add vercel.json bl
 every job auto-paused right after provisioning; `--enable`/`--disable` flags are the only path to
 change state, kept apart from the one swap commit) + drift guard
 `infra/gcp/test/scheduler-invariants.test.mjs` (14/14 green) committed to root `main` (`2dfaf1c`).
-**Blocked on Daniel:** `CRON_SECRET` is confirmed still an empty Secret Manager shell (0 versions)
-— populate it before the manual-trigger rehearsal can run for real.
+**`CRON_SECRET` populated 2026-07-10** (Daniel authorized, agent-generated `openssl rand -hex 32`,
+value never printed — Secret Manager version 1). **Next:** run the manual-trigger rehearsal
+(script section above) against the dark URL, review the idempotency-recheck output with Daniel,
+then the one swap commit.
 
 ### Story 3.2 — Webhook/CORS allow-lists + full-path staging smoke
 **As a** platform operator, **I want** Clerk, Stripe and MercadoPago webhook/CORS settings
@@ -93,6 +95,15 @@ local DNS resolver was stale (resolved to Vercel, not Cloudflare) — cross-chec
 correct; the one locally-failing assertion (`cf-ray` via the plain hostname) is this sandbox's DNS
 cache, the same caveat Sprint 1/2 already documented, not a regression.
 
+**PR #203 merged 2026-07-10** (frontend repo) after 4 rounds of Codex cross-review, each finding
+real, fixed issues: missing success-status assertions before the negative (`no run.app`) checks;
+a checkout-session test that made zero assertions when `payment_options` came back empty
+(silently passing on a broken response); the staging spec not verifying it was actually pointed
+at `gcp.miyagisanchez.com` (fixed with a file-wide `beforeEach` guard, live-verified to fail loud
+on the wrong host); and `expectedOrigin()` trusting `baseURL`'s literal protocol instead of
+mirroring the route's own `host.includes('localhost')` derivation exactly. Final pass clean
+(CI green: type-check + build + Playwright `api` all pass).
+
 ### Story 3.4 — Cutover: apex + wildcard + `mschz.org` → the new rail
 **As a** platform operator, **I want** `miyagisanchez.com`, `*.miyagisanchez.com` and the
 `mschz.org` redirector flipped to proxied records targeting the ALB, **so that** canonical traffic
@@ -141,9 +152,15 @@ frontend.test.mjs` green (full suite 96/96). Telegram notifier: rather than gene
 (`apps/backend/infra/gcp/deploy-cicd-telegram-notifier-frontend.sh`) that reuses the SAME,
 unmodified `index.js` with different env vars (`FUNCTION_NAME=cicd-telegram-build-notifier-
 frontend`, pointed at `frontend-main-deploy`) — zero code changes to a working notifier, matches
-the existing script's own parametrization. **Not run live yet** — provisions a real, billable
-Cloud Function + service account, held pending PR review (backend repo, `feat/frontend-vercel-
-to-cloudrun-s3`).
+the existing script's own parametrization. **PR #75 merged 2026-07-10** (backend repo) after
+Codex cross-review found a real bug: `BACKEND_TRIGGER_ID`'s default in the shared script is a
+live lookup, but a value left exported in the calling shell from an earlier backend-deploy
+invocation would silently win over the lookup and point the frontend-named function at the
+BACKEND's trigger instead — fixed with an explicit `unset BACKEND_TRIGGER_ID` before invocation,
+regression-tested. Also fixed a stale `apps/backend/`-prefixed path in both files' usage comments
+(misleading since they live inside that repo, where the correct relative path has no prefix).
+**Still owed:** actually run `bash infra/gcp/deploy-cicd-telegram-notifier-frontend.sh` live —
+provisions a real, billable Cloud Function + service account, not yet executed.
 
 ## Sprint QA
 - **api spec(s):** 3.3 → `e2e/ucp-cutover-api.spec.ts` (flat convention, not a nonexistent
