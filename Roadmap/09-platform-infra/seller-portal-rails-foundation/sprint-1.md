@@ -1,6 +1,8 @@
 # Seller-portal rails foundation — Sprint 1: Shared primitives + feedback contract
 
-**Status:** ⬜ not started
+**Status:** ✅ built 2026-07-10 — PR #208 (`feat/seller-portal-rails-foundation`), commits `c7c7b29` (S1.1)
++ `b075522` (S1.2). Deterministic gate green (`tsc` + `npm run build` + `npm run test:e2e`, 23 tests).
+Daniel's live visual smoke (light/dark/calm + undo path) still owed — no money/auth path.
 
 > Builds the primitives everything else adopts. No call-site sweep yet (that's Sprint 2) — here we create
 > the components + the one feedback contract, and wire them into 1–2 reference call-sites to prove them.
@@ -36,6 +38,19 @@ correct `aria-live`). Implement the **R6 before/during/after** contract incl. th
 + **"Deshacer"** → revert-on-error path — lift the proven pattern from `ManageDashboard.tsx`'s optimistic
 toggle. **Delete the 4 existing implementations** (ManageDashboard bespoke, `settings/_components/Toast.tsx`,
 OrdersInbox gray result box, wizard inline banners) and re-point them at the shared primitive.
+
+> **Built-vs-planned corrections (found during S1.1/S1.2, confirmed with Daniel before proceeding):**
+> - The optimistic-toggle+revert pattern and its bespoke Toast are **not** in `ManageDashboard.tsx` — the
+>   catalog-management epic's own Sprint 1 already moved the pause/activate grid into
+>   `app/(shell)/shop/manage/catalogo/CatalogTable.tsx`. That's the real S1.2 delete/reference target;
+>   `ManageDashboard.tsx` is now just a summary card + link.
+> - There turned out to be **6 duplicate implementations, not 4**: `OfferInbox.tsx` and `OrderDetail.tsx`
+>   each had their own bespoke toast the sprint doc didn't name — found and converted while wiring
+>   `<StatusBadge>` into those same files.
+> - `--color-subtle` had **3 call sites, not 1** (`OrdersInbox.tsx` ×2, `OrderDetail.tsx` ×1) — all generic
+>   tag/pill chips, fixed with one `--bg-sunk` alias in `globals.css`.
+> - All 3 toggle handlers in `CatalogTable.tsx` gained a genuine new "Deshacer" action on success (they
+>   only had revert-on-error before) — a real behavior addition, not just a visual refactor.
 **Acceptance (Daniel-runnable):**
 1. Pause a listing on the dashboard → a single toast reads "«‹título›» — pausado · Deshacer"; clicking
    Deshacer restores it within ~2s.
@@ -60,11 +75,15 @@ Env: production · https://miyagisanchez.com   (or the Vercel preview URL while 
      source badge is azafrán (promo), not yellow.
 2. Switch the device/app to dark mode, reload the same page.
    → No white cards, no invisible text; chips and buttons keep their contrast.
-3. Go to https://miyagisanchez.com/shop/manage and click Pausar on any active listing.
-   → One toast appears: "«‹título›» — pausado · Deshacer".
-4. Click "Deshacer" in that toast within 10s.
+3. Go to https://miyagisanchez.com/shop/manage/catalogo (the pause/activate toggle lives in the Catálogo
+   table, not the `/shop/manage` dashboard summary card) and click the pause icon on any active listing.
+   → One toast appears: "Anuncio pausado. · Deshacer".
+4. Click "Deshacer" in that toast within 4s (auto-dismiss window).
    → The listing returns to Activo within ~2s; no page reload needed.
 5. (Optional, forces the failure path) Turn on airplane mode, pause a listing.
    → The change reverts and a message in es-MX says what happened and what to do — no silent failure, no dead end.
+6. Go to https://miyagisanchez.com/shop/manage/offers and accept or decline any pending offer.
+   → A toast confirms the result (this surface's own bespoke toast was found + converted mid-sprint, not
+     originally in scope — same shared `<Toast>` now).
 
 If any step fails, note the step number + what you saw — that's the bug report.
