@@ -130,7 +130,7 @@ status-mapping decision itself (`active`/`active_redeploying`) is already covere
 `e2e/cloudflare-domains.spec.ts`'s `normalizeHostname` specs from Story 4.1 — a separate spec here
 would only duplicate that logic.
 
-### Story 4.5 — Vercel sunset (previews kept) — ⬜ NOT STARTED, deliberately
+### Story 4.5 — Vercel sunset (previews kept) ✅
 **As a** platform operator, **I want** — after Daniel calls the soak — Vercel prod deploys
 disabled (`git.deploymentEnabled.main: false`), production domains removed from the Vercel
 project, `VERCEL_API_TOKEN` de-scoped to preview needs, and the docs updated (AGENTS.md workflow
@@ -142,10 +142,33 @@ run; the rollback runbook records that DNS-flip-back now requires re-enabling Ve
 first.
 **Risk:** low (docs/config) — but the *sunset decision* is Daniel's, gated on the soak.
 
-**Not started, per Daniel's explicit instruction this sprint** — don't touch Vercel sunset until he
-separately says the post-migration soak is over. Stories 4.1–4.4 keep Vercel serving every tenant
-domain unchanged throughout (that's the whole point of the pre-provision-not-flip design in 4.3),
-so nothing here forces this story before its own gate opens.
+**Daniel called the soak done 2026-07-10** and explicitly authorized the sunset in the same
+session. Built + executed same-day:
+- `vercel.json`: `git.deploymentEnabled.main` → `false` (PR #207, frontend repo). Cross-agent
+  review (Codex) found zero issues — docs/config only, no app logic touched.
+- `AGENTS.md` workflow section updated: merging to `main` now deploys Cloud Run only for the
+  frontend; Vercel survives solely as the per-PR preview + CI target.
+- **Live, before the PR**: removed the 3 fully-migrated domains from the Vercel project
+  (`miyagisanchez.com`, `*.miyagisanchez.com`, `mschz.org`) — all confirmed already serving
+  entirely from Cloud Run/Cloudflare, so this was inert cleanup, verified with before/after curl.
+- **Real gap found + fixed live, previously undiscovered**: `www.miyagisanchez.com` was never
+  migrated in S3.4's cutover — its literal DNS-only A records (pointing straight at Vercel's
+  anycast IPs) fell outside that flip script's exact-name matching (which only matched the apex
+  and the literal wildcard name, never a differently-named record like `www`). Flipped it the same
+  way apex/wildcard were (patch one record → proxied + ALB IP, delete the duplicate), snapshot
+  saved to `.cf-cutover-snapshots/` for rollback, verified live (`cf-ray` + Cloud Run headers, 200
+  on `/api/health`).
+- **Deliberate deviation from the literal acceptance line**: `panfleto.com.mx` (the one live
+  tenant domain from S4.3, still pending its seller's own DNS repoint) was **kept** attached to the
+  Vercel project — removing it would break that seller's live site outright, since Vercel is still
+  its real traffic path. Disabling prod deploys doesn't touch this: Vercel keeps serving the last
+  deployment indefinitely once deploys are off, it just won't get further code updates until the
+  seller migrates.
+- **Not done, flagged rather than attempted**: `VERCEL_API_TOKEN` de-scoping. Vercel's API has no
+  endpoint to narrow an *existing* token's scope — permission is set only at creation time (`vercel
+  tokens add --project` scopes a *new* token). Narrowing this one means Daniel creating a new
+  project-scoped token via the dashboard and rotating the GitHub Actions secret — a credential
+  action outside what this session should do unilaterally.
 
 ## Sprint QA
 - **api spec(s):** 4.1 → 15 pure specs on the hostname-status/conflict/error-mapping seam
@@ -164,13 +187,19 @@ so nothing here forces this story before its own gate opens.
   DNS + Cloudflare-for-SaaS zone setup, origin cert reissue + ALB update, and the S4.3 migration
   `--apply` were all run for real against production (see each story above for specifics) — nothing
   here is simulated or "owed" anymore except the two items below.
+- **Cross-agent review (Codex, PR #207):** zero findings — docs/config only, no app logic touched.
+- **4.5 executed 2026-07-10** — PR #207 (frontend). See Story 4.5 above for the full live-change
+  list (domain cleanup, the `www` gap found + fixed, Vercel prod deploys disabled).
 - **Still owed (not scriptable, not run this session):** (1) the seller behind `panfleto.com.mx`
   actually repointing their DNS — proves apex CNAME-flattening + SSL issuance end-to-end; (2) a
   fresh-domain UI click-through — needs an entitled test shop, and mutating a real shop's paid
-  entitlement to get one wasn't authorized this session (Daniel declined when asked).
+  entitlement to get one wasn't authorized this session (Daniel declined when asked); (3)
+  `VERCEL_API_TOKEN` de-scoping — needs Daniel to create a new project-scoped token + rotate the
+  GitHub Actions secret (not API-automatable, see Story 4.5).
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` all green on this
   branch 2026-07-10 (pre-existing, unrelated flakiness in `launchpad-*`/`not-found-shape`/
-  `own-shop-seo`/`promoter-applications` confirmed via `git stash` to predate this branch).
+  `own-shop-seo`/`promoter-applications` confirmed via `git stash` to predate this branch). PR #207
+  touched no app code — `tsc --noEmit` clean, CI running.
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
@@ -210,7 +239,20 @@ Env: production · https://miyagisanchez.com
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-**Not this sprint** — the Vercel-sunset walkthrough (Story 4.5) will get its own steps when Daniel
-separately starts that story. `panfleto.com.mx`'s actual DNS repoint is the seller's own action,
-not something scriptable from here — its outcome (does apex CNAME-flattening + Cloudflare SSL
-issuance genuinely work?) is the real remaining unknown this sprint leaves open.
+**Story 4.5 — Vercel sunset walkthrough (do these once PR #207 merges)**
+6. Open any PR against `apps/miyagisanchez`.
+   → A Vercel preview still appears and CI still runs Playwright against it (unaffected — only
+   `main` had deploys disabled).
+7. Merge that PR (or PR #207 itself) to `main`.
+   → Only Cloud Build/Cloud Run deploys; check the Vercel dashboard's Deployments tab for the
+   project — no new "Production" deployment should appear for this commit.
+8. `curl -sI https://miyagisanchez.com/api/health` (from a normal, non-stale DNS resolver).
+   → `200`, `cf-ray` present — still served by Cloud Run/Cloudflare, untouched by the sunset.
+9. `curl -sI https://www.miyagisanchez.com/api/health`.
+   → `200`, `cf-ray` present — confirms the previously-undiscovered `www` gap found and fixed this
+   sprint stayed fixed.
+
+`panfleto.com.mx`'s actual DNS repoint is the seller's own action, not something scriptable from
+here — its outcome (does apex CNAME-flattening + Cloudflare SSL issuance genuinely work?) is the
+real remaining unknown this epic leaves open. `VERCEL_API_TOKEN` de-scoping is a separate,
+Daniel-owned follow-up (see Story 4.5) — not part of this walkthrough.

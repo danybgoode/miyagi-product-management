@@ -10,11 +10,10 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (2)
 
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 9/16 stories · risk: High · Wave 1
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
-- [Frontend off Vercel — Cloud Run behind a Cloudflare edge](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 12/17 stories · risk: High · Next up
 
 ## 📋 Ready to build (scaffolded, not started) (13)
 
@@ -32,7 +31,7 @@
 - [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](../../09-platform-infra/repo-readmes-branding/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 3
 - [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
-## ✅ Shipped (87)
+## ✅ Shipped (88)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -106,6 +105,7 @@
 - [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 4/4 stories
 - [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 2/2 stories
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · Wave 0 Enablers
+- [Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 17/17 stories · risk: High · Next up
 - [Groom archetype-lens wiring — optional Stage-2 archetype tag](../../09-platform-infra/groom-archetype-lens/README.md) — 09 Platform-infra · 2/2 stories
 - [In-house feature flags (replace Flagsmith)](../../09-platform-infra/feature-flags-inhouse/README.md) — 09 Platform-infra · 7/7 stories
 - [Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess ✅ COMPLETE 2026-07-01](../../09-platform-infra/model-split-sonnet5-execution/README.md) — 09 Platform-infra · 1/1 stories

@@ -139,6 +139,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   own framing) as pre-authorization for an agent to push `main` directly without asking — confirm with
   Daniel first, even for a trivial status-tick commit; queue any further doc commits unpushed until he
   says go. *(2026-07-02, seller-agent-connect-mcp-url S2.)*
+  **Corollary — a broad "carry on, you're authorized" phrase covers continuing an already-discussed plan,
+  not a brand-new CATEGORY of production mutation.** The permission classifier correctly blocked two
+  distinct actions under that umbrella in the same session: reissuing a production TLS Origin CA cert on
+  shared ALB infra (a real, globally-effective cert change the plan itself had flagged as a separate,
+  deliberate step), and a Supabase PATCH that would have both re-embedded a real shop's live payment
+  credentials in the command/transcript AND fabricated a paid-SKU entitlement grant on a real seller's
+  shop. Both times, stopping and naming the exact action got a fast, specific yes/no — cheaper than
+  guessing wrong either direction. Before acting under a broad-authorization umbrella, ask whether *this
+  specific category* (TLS/cert changes, IAM/secret bindings, DB writes touching money/entitlement/
+  credentials) was actually named or clearly implied by what was discussed — if not, name it in one
+  focused question rather than reaching for broader phrasing or a workaround.
+  *(2026-07-10, frontend-vercel-to-cloudrun S4.)*
 - **A script with a co-located pure-logic test file MUST guard its `main()` call with an `isMain` check —
   this bit two separate scripts in the same epic before it was caught.** S2's `build-order-sync.mjs`
   incident (unconditional `main()` executed for real when imported for its pure helpers) recorded the fix
@@ -514,6 +526,39 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   dev IP only proves the app doesn't branch on UA — it cannot prove Vercel Bot/Firewall Protection wouldn't
   challenge a real Googlebot IP;** that gap closes only with Search Console URL-Inspection Live Test.
   *(2026-07-02, agent-discovery-and-indexing S0.)*
+- **A DNS-cutover script that selects records by exact name (apex, or the literal wildcard string) can
+  silently skip a differently-named record in the same "obviously covered" family.** Sprint 3's
+  apex/wildcard/`mschz.org` flip script matched records by `name === domain` or `name === '*.'+domain`
+  only — `www.miyagisanchez.com` is neither, so it sat unmigrated, still resolving straight to Vercel,
+  for two full sprints until Sprint 4.5 checked it explicitly with a plain `dig`. Before declaring a
+  domain family "fully cut over," enumerate every actual DNS record for that zone matching the domain's
+  root, not just the ones the flip script's own selector logic explicitly named.
+  *(2026-07-10, frontend-vercel-to-cloudrun S4.5.)*
+- **A provider-swap's "is it live" check must not conflate the new provider's readiness signal with the
+  live-routing fact the OLD provider's equivalent signal implied.** Vercel's `misconfigured: false` only
+  ever went true once DNS genuinely pointed at Vercel. Cloudflare for SaaS's custom-hostname
+  `status: active` can be reached via TXT ownership validation **before** the seller's DNS changes at
+  all — that's what makes pre-provisioning migrations safe by design (see S4.3 below), but it also means
+  code ported from the old seam (`checkDns()`'s `dns_ok` decision) silently carried forward the old
+  provider's assumption as a latent bug: a domain could read "live!" while actually still serving from
+  elsewhere. Caught by cross-agent review, not by the deterministic gate — this class of gap (a new
+  provider's status field meaning something narrower than the old one's) doesn't show up in a type-check
+  or a green Playwright run against fixture data. *(2026-07-10, frontend-vercel-to-cloudrun S4.1/S4.2.)*
+- **Vercel API tokens cannot have their scope narrowed after creation — scope is set only at MINT time.**
+  There is no PATCH-style endpoint to reduce an existing token's permissions; `vercel tokens add --project`
+  only scopes a **new** token. "De-scope this token to preview-only needs" as a stated acceptance
+  criterion is not API-automatable from the token side — it requires minting a new, narrower token and
+  rotating every consumer (here: two GitHub Actions secrets) to point at it, then revoking the old one.
+  *(2026-07-10, frontend-vercel-to-cloudrun S4.5.)*
+- **Tenant-owned DNS cannot be migrated the same way platform-owned DNS is.** Sprint 3's apex/wildcard/
+  `mschz.org` cutover worked because the platform controls that zone directly — a single API flip moved
+  real traffic in minutes. A seller's own custom domain lives in **their** zone/registrar, which the
+  platform doesn't control and (via the one-click OAuth connect flow) has no durable credential to write
+  to later — the OAuth token is single-use, never persisted. So a tenant-domain "migration" script can only
+  ever pre-provision (TXT ownership validation, no seller DNS change required) + report; the actual traffic
+  move is the seller's own action, on their own timeline, and isn't scriptable from the platform side at
+  all. Design any future tenant-DNS migration around this from the start, not as a discovered constraint
+  mid-build. *(2026-07-10, frontend-vercel-to-cloudrun S4.3.)*
 
 ## Repo & deploy hygiene
 - **Deleting a git branch does NOT delete its Vercel preview deployments — Vercel retains every deployment

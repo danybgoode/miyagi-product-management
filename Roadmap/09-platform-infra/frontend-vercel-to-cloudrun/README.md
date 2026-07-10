@@ -1,9 +1,9 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: frontend-vercel-to-cloudrun
 ---
 
-# Epic: Frontend off Vercel — Cloud Run behind a Cloudflare edge
+# Epic: Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10
 
 > **Area:** 09-platform-infra · **Risk:** high · **Scope seed:** [`00-ideas/seeds/frontend-vercel-to-cloudrun.md`](../../00-ideas/seeds/frontend-vercel-to-cloudrun.md) · **Archetype:** Maintainer
 
@@ -72,19 +72,28 @@ non-commerce channel plumbing, not commerce data).
 
 Shadow-first: S1–S2 are additive and dark (Vercel serves all traffic). S3.1 (crons) ships as its
 own release before DNS cutover day; S3.4 is the traffic flip — reversible in minutes via Cloudflare
-records. Live tenant custom domains keep pointing at Vercel (whose prod deploys stay ON) until S4.3
-migrates them post-soak; S4.5 sunsets Vercel prod only after Daniel calls the soak done.
+records. Live tenant custom domains kept pointing at Vercel (whose prod deploys stayed ON) until
+S4.3 migrated them post-soak; **S4.5 sunset Vercel prod 2026-07-10**, the same day Daniel called
+the soak done and authorized it.
 Kill-switch decision (Stage 6b): **carve-out** — the gate is DNS/edge routing, no runtime flag seam;
-rollback = record flip back + re-enable vercel.json crons / disable Scheduler.
+rollback = record flip back + re-enable vercel.json crons / disable Scheduler (or, post-S4.5,
+re-enable `vercel.json`'s `git.deploymentEnabled.main` too).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated (deploy topology note: frontend rail changes!)
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** carve-out recorded at grooming (DNS seam, no runtime flag) — verify the
-      rollback path stayed real through S4.5 (Vercel prod re-enable documented in the runbook)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — S1-S4 all merged; gaps stated
+      per-sprint (panfleto.com.mx's own DNS repoint, `VERCEL_API_TOKEN` de-scoping, no fresh-domain
+      UI click-through — all in RETROSPECTIVE.md's Gaps section)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated — Recent highlights entry added 2026-07-10
+- [x] Team memory + `MEMORY.md` index updated (deploy topology note: frontend rail changes!) —
+      `frontend-vercel-to-cloudrun-epic.md` + `deploy-topology.md` updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append) — the
+      `www`-gap lesson, the provider-swap status-signal lesson, the tenant-DNS-can't-be-migrated
+      lesson, the Vercel-token-scope lesson, and the broad-authorization-scope corollary
+- [x] **Kill-switch:** carve-out recorded at grooming (DNS seam, no runtime flag) — rollback path
+      confirmed real through S4.5: re-enabling Vercel prod deploys is a one-line `vercel.json`
+      revert (`git.deploymentEnabled.main: true`), and every domain removed from the Vercel project
+      was confirmed already fully served elsewhere before removal (reversible by re-adding)
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
