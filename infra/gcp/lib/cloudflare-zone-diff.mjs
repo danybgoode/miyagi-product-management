@@ -16,14 +16,21 @@ function trimTrailingDot(s) {
 
 // Cloudflare echoes TXT `content` back wrapped in a literal quote pair for records created via
 // the API, but unquoted for records it auto-imported when the zone was added — cosmetically
-// different, semantically identical DNS content. Strip one enclosing pair before keying so both
-// shapes compare equal (found live: an unstripped quote caused the stage script to treat an
+// different, semantically identical DNS content. Strip the quoting before keying so both shapes
+// compare equal (found live: an unstripped quote caused the stage script to treat an
 // already-present record as missing and create a duplicate — 09-platform-infra
 // frontend-vercel-to-cloudrun S2.1, live incident 2026-07-10).
+//
+// A long TXT (>255 bytes — common for DKIM keys) is split into MULTIPLE quoted segments,
+// `"first 255 bytes" "remaining bytes"` — join every segment into one continuous string rather
+// than stripping only the outer pair (a single `s.slice(1,-1)` would leave the inner `" "`
+// separator embedded, permanently mismatching Vercel's single unquoted value). A plain
+// single-quoted string is just the one-segment case of the same pattern; an already-unquoted
+// string (no `"..."` found) passes through unchanged. Found in cross-agent review, 2026-07-10.
 function stripWrappingQuotes(s) {
-  return typeof s === 'string' && s.length >= 2 && s.startsWith('"') && s.endsWith('"')
-    ? s.slice(1, -1)
-    : s
+  if (typeof s !== 'string') return s
+  const segments = [...s.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1])
+  return segments.length > 0 ? segments.join('') : s
 }
 
 function recordKey(type, name, content, priority) {

@@ -54,6 +54,25 @@ test('normalizeVercelRecord and normalizeCloudflareRecord produce the SAME key f
   assert.equal(v.key, c.key)
 })
 
+test('normalizeCloudflareRecord: a long TXT split into MULTIPLE quoted segments joins into one continuous string (DKIM edge case)', () => {
+  // A >255-byte TXT is zone-file-split into multiple "..." segments — a naive single
+  // slice(1,-1) would leave the inner `" "` separator embedded and never match Vercel's
+  // single unquoted value.
+  const c = normalizeCloudflareRecord(
+    { type: 'TXT', name: `resend._domainkey.${ZONE_APEX}`, content: '"p=MIGfMA0GCSqGSIb3DQEB" "AQUAA4GNADCBiQKBgQDS570BrQ=="' },
+    ZONE_APEX,
+  )
+  assert.equal(c.content, 'p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDS570BrQ==')
+})
+
+test('diffRecords: a multi-segment-quoted Cloudflare TXT is recognized as already-present, not a duplicate', () => {
+  const vercelRecords = [{ type: 'TXT', name: 'resend._domainkey', value: 'p=abc123def456' }]
+  const cfRecords = [{ type: 'TXT', name: `resend._domainkey.${ZONE_APEX}`, content: '"p=abc123" "def456"' }]
+  const diff = diffRecords(vercelRecords, cfRecords, ZONE_APEX)
+  assert.deepEqual(diff.missing, [])
+  assert.equal(diff.matched, 1)
+})
+
 // ---- diffRecords ----
 
 test('diffRecords: zero-diff when every Vercel record is staged in Cloudflare', () => {
