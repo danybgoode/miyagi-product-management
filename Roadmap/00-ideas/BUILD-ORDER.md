@@ -15,13 +15,14 @@
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 9/16 stories · risk: High · Wave 1
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
 
-## 📋 Ready to build (scaffolded, not started) (10)
+## 📋 Ready to build (scaffolded, not started) (11)
 
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 0/9 stories · risk: Low · Wave 1
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 0/7 stories · risk: High · Wave 1
 - [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 0/4 stories · risk: Low · Wave 1
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
+- [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
@@ -118,10 +119,9 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (9)
+## ⬜ Funnel — seeds not yet scaffolded (8)
 
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~18 routes](seeds/seller-catalog-null-slot-sweep.md) — Raw · Feature · tbd
-- [Miyagi Partners — multi-tenant MCP credential + roles](seeds/miyagi-partners-mcp.md) — Ready · Feature · Wave 2
 - [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](seeds/platform-migrations.md) — Ready · Feature · Wave 2
 - [Comparador de costos — the stacking-costs sales tool on the homepage](seeds/cost-comparator-homepage.md) — Ready · Feature · Wave 3
 - [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](seeds/repo-readmes-branding.md) — Ready · Chore · Wave 3
@@ -142,4 +142,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Frontend off Vercel — Cloud Run behind a Cloudflare edge | Scaffolded | In progress |
 
 ---
-_Epics: 100 · seeds in funnel: 9 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 101 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
