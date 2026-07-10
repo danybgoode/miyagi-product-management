@@ -1,12 +1,12 @@
 ---
 title: "mschz.org full coverage — short links for every shareable surface"
 slug: mschz-full-coverage
-status: ready
+status: scaffolded
 area: "07"
 type: chore
 priority: wave-1
 risk: high
-epic: null
+epic: "07-agentic-and-federated-commerce/mschz-full-coverage"
 build_order: null
 updated: 2026-07-09
 ---
@@ -42,11 +42,36 @@ Flat single-segment resolution keeps working unchanged — it stays first in the
 
 ## What already exists (reuse, don't rebuild)
 - `middleware.ts` short-link branch (`isShortLinkHost`, `firstSegment`, flat resolver, branded 404,
-  never-500 catch) — the passthrough is a ~15-line addition *before* the flat lookup.
-- `lib/shortlink.ts` / `lib/shortlink-server.ts` — namespace-taken check; note `g`, `e`, `v`, `s`, `l`
-  must be added to reserved words so no shop/product can ever claim them as a flat segment.
+  never-500 catch; lines ~158–202) — the passthrough is a ~15-line addition *before* the flat lookup.
+- `lib/shortlink.ts` (pure helpers, unit-tested in `e2e/shortlink.spec.ts`) — the prefix matcher
+  extracts here for free pure-logic coverage. `lib/shortlink-server.ts` — the namespace-taken check.
+- **Reserved words live in `lib/slug.ts` `RESERVED_SLUGS` + the backend mirror**
+  (`apps/backend/src/api/store/sellers/me/route.ts` `RESERVED_SLUGS` — separate repo, keep in sync):
+  both already contain `s`, `l`, `mschz`; **`g`, `e`, `v` must be added to both**.
 - Sweepstakes QR generation (`/g/[slug]`) — once the passthrough lands, campaign QRs can mint
   `mschz.org/g/…` instead of the long domain (copy-length win on print materials).
+- Share-link surfaces (where the mschz form gets shown): `lib/sweepstakes.ts:71` (QR URL builder) +
+  `SweepstakesManager.tsx:206` (copy link); `lib/events.ts:24` + `EventsManager.tsx:225`;
+  launchpad `campaigns/[id]/qr/route.ts:26` + `CampaignsManager.tsx:224`.
+
+## Groom verification (2026-07-09)
+- **All five prefixes are real, shareable route families** in `app/(shell)`: `g/[slug]`, `e/[slug]`,
+  `v/[slug]`, `s/[slug]` (+ `/c/[collection]`, `/convocatoria`, `/faq`, `/politicas`, `/acerca`),
+  `l/[id]`.
+- **Reserved-word collisions are structurally impossible today**: every flat-segment write path
+  (backend shop-slug PUT, listing `short_slug` PUT, both availability checks) runs `validateSlug`
+  with `SLUG_MIN = 3`, so single-char segments can't be claimed; `short_code` is 6-char base36;
+  90-day aliases derive from previously-validated slugs. Adding `g`/`e`/`v` to both reserved lists
+  is defense-in-depth against a future format relaxation, not a data migration. Acceptance still
+  includes a one-off prod SQL sanity check (no `marketplace_shops.slug`, alias key, `short_slug`,
+  or `short_code` equal to a single reserved letter) — cheap, closes the legacy-data question.
+- **Backend touch = a second small PR** in the backend repo (reserved-list sync); no preview rail —
+  post-merge API smoke only, per WAYS-OF-WORKING.
+- **Preserve path + query on passthrough**: the flat resolver drops the query string (fine for flat
+  codes), but `/e/…?lang=en` is a real, shipped toggle (`lib/events.ts:29`) — the passthrough 301
+  must carry `pathname + search` verbatim (lowercase only the matched prefix, not the remainder).
+- **Single-segment behavior unchanged**: `mschz.org/g` (no second segment) stays on the flat
+  resolver → branded 404; passthrough triggers only for multi-segment paths, per the decision.
 
 ## Scope boundary
 **In:** prefix passthrough; reserved-word guard; the sweepstakes/event share UI showing the mschz form
@@ -61,8 +86,12 @@ minting UI; coverage of non-listed prefixes.
    flat namespace unchanged.
 
 ## Kill-switch decision (risk: high)
-**Carve-out** — the seam is `middleware.ts` (Edge), where the Flagsmith-successor reader doesn't run;
-the change is a pure additive 301 map with a fail-through to today's behavior. A bad deploy reverts
-with `git revert`; no runtime flag warranted for a redirect table.
+**Carve-out — rationale corrected at groom (2026-07-09).** The original "middleware is Edge, the
+flag reader can't run there" reason is **stale**: `middleware.ts` now runs `runtime: 'nodejs'` and
+the in-house `lib/flags.ts` reader is already used inside it (subdomain-pricing US-1), so a runtime
+flag IS technically possible. The carve-out stands on the remaining ground: a pure additive 301
+allowlist with fail-through to today's behavior, no money/auth path, reverted with `git revert` —
+a redirect table doesn't warrant a flag. *(Daniel re-confirms this at the scope-doc gate, since the
+option he ruled out on Edge grounds is now cheap.)*
 
 ## Smoke walkthrough owner: Daniel (production URLs: one `/g/`, one `/e/`, one `/s/<shop>/c/<collection>`, one flat shop + product, one garbage path).
