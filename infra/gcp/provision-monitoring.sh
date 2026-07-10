@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
-# provision-monitoring.sh — Backend Production Readiness, Sprint 4 (Story 4.1).
+# provision-monitoring.sh — Backend Production Readiness, Sprint 4 (Story 4.1);
+# extended for the frontend in frontend-vercel-to-cloudrun Sprint 3 (Story 3.5).
 #
 # Stands up the proactive observability the backend lacked (audit gaps #2/#7): an
 # uptime check + Cloud Run alert policies (5xx, p95 latency, memory, saturation) +
 # an ERROR-log alert (Error Reporting auto-groups the same logs), ALL routed to the
 # existing MiyagiDevopsTele notification channel. Deploy-event pings already ship via
-# the cicd-telegram-build-notifier Cloud Function (verified ACTIVE — not rebuilt here).
+# the cicd-telegram-build-notifier Cloud Function (verified ACTIVE — not rebuilt here;
+# the frontend gets its OWN second instance, see deploy-cicd-telegram-notifier-frontend.sh).
 #
 # Idempotent: every resource is create-if-absent (matched by displayName), so a re-run
 # is safe and only fills gaps. To change a threshold, delete the policy and re-run.
 #
+# TWO orthogonal axes: SERVICE_NAME (which app) × TARGET (which environment) — not a single
+# combined switch, so every existing helper (policy_id/apply_policy/threshold_json/
+# matched_log_json) stays shared verbatim between backend and frontend.
+#
 # Rehearse on staging FIRST, then prod (prod run + live alert delivery owed to Daniel):
-#   TARGET=staging bash infra/gcp/provision-monitoring.sh
-#   TARGET=prod    bash infra/gcp/provision-monitoring.sh
+#   SERVICE_NAME=backend  TARGET=staging bash infra/gcp/provision-monitoring.sh   # default
+#   SERVICE_NAME=backend  TARGET=prod    bash infra/gcp/provision-monitoring.sh
+#   SERVICE_NAME=frontend TARGET=staging bash infra/gcp/provision-monitoring.sh   # dark *.run.app URL
+#   SERVICE_NAME=frontend TARGET=prod    bash infra/gcp/provision-monitoring.sh   # miyagisanchez.com (post-cutover)
 #
 # Thresholds are deliberately conservative (avoid flapping); tune after observing live.
 # Needs: gcloud + python3 (JSON assembly only — handles filter-string escaping).
@@ -21,27 +29,52 @@ set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
 REGION="${REGION:-us-east4}"
+SERVICE_NAME="${SERVICE_NAME:-backend}"   # backend | frontend
 TARGET="${TARGET:-staging}"
 CHANNEL_DISPLAY="${CHANNEL_DISPLAY:-MiyagiDevopsTele}"
 P=(--project="$PROJECT_ID")   # passed to every gcloud call (no global `config set`)
 
-case "$TARGET" in
-  prod)
-    SERVICE="medusa-web"
-    UPTIME_HOST="${UPTIME_HOST:-api.miyagisanchez.com}"
-    MAX_INSTANCES=4          # matches deploy.sh --max-instances
+case "$SERVICE_NAME" in
+  backend)
+    UPTIME_PATH="/health"
+    case "$TARGET" in
+      prod)
+        SERVICE="medusa-web"
+        UPTIME_HOST="${UPTIME_HOST:-api.miyagisanchez.com}"
+        MAX_INSTANCES=4          # matches deploy.sh --max-instances
+        ;;
+      staging)
+        SERVICE="medusa-web-staging"
+        # staging has no custom domain → resolve the run.app host live (min=0, may cold-start)
+        UPTIME_HOST="${UPTIME_HOST:-$(gcloud run services describe medusa-web-staging \
+          --region="$REGION" "${P[@]}" --format='value(status.url)' | sed 's#^https://##')}"
+        MAX_INSTANCES=2          # matches deploy-staging.sh --max-instances
+        ;;
+      *) echo "TARGET must be 'staging' or 'prod' (got '$TARGET')" >&2; exit 1;;
+    esac
     ;;
-  staging)
-    SERVICE="medusa-web-staging"
-    # staging has no custom domain → resolve the run.app host live (min=0, may cold-start)
-    UPTIME_HOST="${UPTIME_HOST:-$(gcloud run services describe medusa-web-staging \
-      --region="$REGION" "${P[@]}" --format='value(status.url)' | sed 's#^https://##')}"
-    MAX_INSTANCES=2          # matches deploy-staging.sh --max-instances
+  frontend)
+    SERVICE="miyagi-web"          # one Cloud Run service for both TARGETs — no separate
+    UPTIME_PATH="/api/health"     # frontend staging deployment exists (unlike the backend)
+    case "$TARGET" in
+      prod)
+        # Only meaningful once Sprint 3 Story 3.4 cuts miyagisanchez.com over to this rail.
+        UPTIME_HOST="${UPTIME_HOST:-miyagisanchez.com}"
+        MAX_INSTANCES=4          # matches deploy-frontend.sh --max-instances
+        ;;
+      staging)
+        # Pre-cutover: the dark *.run.app URL is the only live host (min=0, may cold-start).
+        UPTIME_HOST="${UPTIME_HOST:-$(gcloud run services describe miyagi-web \
+          --region="$REGION" "${P[@]}" --format='value(status.url)' | sed 's#^https://##')}"
+        MAX_INSTANCES=4          # matches deploy-frontend.sh --max-instances
+        ;;
+      *) echo "TARGET must be 'staging' or 'prod' (got '$TARGET')" >&2; exit 1;;
+    esac
     ;;
-  *) echo "TARGET must be 'staging' or 'prod' (got '$TARGET')" >&2; exit 1;;
+  *) echo "SERVICE_NAME must be 'backend' or 'frontend' (got '$SERVICE_NAME')" >&2; exit 1;;
 esac
 
-echo "▶ Provisioning monitoring for $SERVICE (target=$TARGET, host=$UPTIME_HOST)"
+echo "▶ Provisioning monitoring for $SERVICE (service_name=$SERVICE_NAME, target=$TARGET, host=$UPTIME_HOST, path=$UPTIME_PATH)"
 
 # Resolve the notification channel id by display name (don't hardcode the numeric id).
 # Require EXACTLY ONE match — refuse to silently guess if the name is duplicated
@@ -133,7 +166,7 @@ else
   gcloud monitoring uptime create "$UPTIME_NAME" "${P[@]}" \
     --resource-type=uptime-url \
     --resource-labels=host="$UPTIME_HOST",project_id="$PROJECT_ID" \
-    --protocol=https --path=/health --port=443 \
+    --protocol=https --path="$UPTIME_PATH" --port=443 \
     --validate-ssl=true \
     --period=5 --timeout=10 >/dev/null
   echo "  + created: uptime $UPTIME_NAME"
@@ -172,7 +205,12 @@ apply_policy "${PFX} instance saturation" < <(threshold_json \
   "${RES_FILTER} AND metric.type=\"run.googleapis.com/container/instance_count\" AND metric.labels.state=\"active\"" \
   "ALIGN_MAX" "REDUCE_SUM" "COMPARISON_GT" "$((MAX_INSTANCES - 1))")
 
-# --- 4 · backend error-log alert (Error Reporting groups the same ERROR logs) ---
+# --- 4 · error-log alert (Error Reporting groups the same ERROR logs) ---
+# NOTE: keep this displayName string EXACTLY as-is ("backend errors") even for
+# SERVICE_NAME=frontend — apply_policy's idempotency matches on displayName, so
+# renaming it would orphan the already-live backend policy in prod and create a
+# duplicate rather than reconcile it. PFX already makes the full name service-unique
+# ("[miyagi-web] backend errors (logs)" vs "[medusa-web] backend errors (logs)").
 apply_policy "${PFX} backend errors (logs)" < <(matched_log_json \
   "${PFX} backend errors (logs)" "Cloud Run severity>=ERROR" \
   "${RES_FILTER} AND severity>=ERROR")
