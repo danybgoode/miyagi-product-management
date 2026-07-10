@@ -57,7 +57,9 @@ change state, kept apart from the one swap commit) + drift guard
    **production on Vercel** since late May, unrelated to this migration. Fixed with a new,
    freshly-timestamped migration (`20260710154932_return_requests_backfill.sql`, all
    `IF NOT EXISTS`/idempotent) applied live via the Supabase MCP; confirmed both the column and
-   table now exist.
+   table now exist. Migration file committed to the repo separately (frontend PR #204, to bring
+   the repo's migration history back in sync with what's already live — cross-review clean,
+   **held for Daniel to merge** given DB-migration risk).
 
 **Rehearsal result, post-fixes — all 4 routes 200, idempotency confirmed via identical repeat
 responses** (direct curl with the correct secret, never printed):
@@ -199,8 +201,14 @@ invocation would silently win over the lookup and point the frontend-named funct
 BACKEND's trigger instead — fixed with an explicit `unset BACKEND_TRIGGER_ID` before invocation,
 regression-tested. Also fixed a stale `apps/backend/`-prefixed path in both files' usage comments
 (misleading since they live inside that repo, where the correct relative path has no prefix).
-**Still owed:** actually run `bash infra/gcp/deploy-cicd-telegram-notifier-frontend.sh` live —
-provisions a real, billable Cloud Function + service account, not yet executed.
+**Deployed live 2026-07-10** — first run hit a real bug: `SERVICE_ACCOUNT_NAME="cicd-telegram-
+notifier-frontend"` is 31 characters, exceeding GCP's 30-char service-account-ID limit
+(`gcloud iam service-accounts create` returned `INVALID_ARGUMENT`). Shortened to
+`cicd-telegram-notif-frontend` (28 chars), a length assertion added to the drift guard, fixed
+live and PR'd separately (backend PR #76, cross-review clean, merged). Function
+`cicd-telegram-build-notifier-frontend` is now `ACTIVE`, correctly bound to the
+`frontend-main-deploy` trigger (`BACKEND_TRIGGER_ID` resolved dynamically and correctly,
+confirming PR #75's env-leak fix works as intended). Story 3.5 is fully done.
 
 ## Sprint QA
 - **api spec(s):** 3.3 → `e2e/ucp-cutover-api.spec.ts` (flat convention, not a nonexistent
