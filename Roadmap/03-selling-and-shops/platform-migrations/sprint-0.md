@@ -1,7 +1,10 @@
 # Platform migrations — Sprint 0: Bug: ML re-auth churn
 
-**Status:** ⬜ not started
-**Risk:** HIGH (auth — Daniel merges). *Do first: live customer pain; blocks nothing in this epic.*
+**Status:** ✅ fix merged + deployed 2026-07-11 (backend PR [#82](https://github.com/danybgoode/medusa-bonsai-backend/pull/82),
+squash-merged `dbe484b`, live on Cloud Run revision `medusa-web-00158-8pt`). **Owed to Daniel: the
+≥48h live-connection browser smoke** (see note in the post-merge section below on picking a
+meaningful test seller).
+**Risk:** HIGH (auth — Daniel merged). *Do first: live customer pain; blocks nothing in this epic.*
 
 ## Context
 ML access tokens live 6 h; refresh tokens are **6 months, single-use, latest-only valid** (research
@@ -68,6 +71,43 @@ route/job caller — too wide a blast radius for a HIGH-risk auth path fixing on
 
 ## Stories
 
+## Post-merge prod smoke (agent, 2026-07-11)
+Daniel authorized live prod DB access for this check (a connector-attached Cloud Run Job on
+`postgres:17-alpine`, torn down after — same pattern as `Roadmap/LEARNINGS.md`'s in-VPC ops note).
+
+**Deploy confirmed live:** `medusa-web-00158-8pt` serving 100% traffic (rolled ~06:09 UTC, Cloud
+Build `SUCCESS` ~06:11 UTC); `/health` → 200; zero ML-related log lines (error or otherwise) on the
+new revision since deploy.
+
+**Live data — honest finding, not a clean confirmation either way:**
+- `ml_sync_event` has **12 rows total, ever** (`close`×10, `publish`×2, earliest 2026-07-04) — **zero
+  `token_refresh` rows**, before or after this deploy.
+- Only **2** `ml_connection` rows exist in prod, both `status: connected`, neither ever
+  `needs_reauth`. But both have `expires_at` already **in the past** (one 7 days ago, one 3 days
+  ago) with `last_refreshed_at` unchanged since `created_at` — i.e. neither connection's token has
+  ever been refreshed, successfully or not.
+- `product_ml_link` has **zero rows** — neither connected seller has a linked product.
+
+**Why:** both reconcile cron jobs only call `getAccessTokenForSeller` for sellers they have work for
+— `reconcile-ml-inventory` builds its per-seller set from `product_ml_link` rows,
+`reconcile-ml-order-status` from ML-sourced Medusa orders. With no links and no ML orders, **neither
+job has ever touched either connection**, so the refresh path (and therefore the race this fix
+targets) has simply never fired in prod to date. This is consistent with — not contradicted by —
+the code-level reproduction above; there just isn't enough live ML-sync traffic yet to have produced
+a race one way or the other. It also means today's live state can't distinguish "fixed" from
+"never exercised."
+
+**Also surfaced (pre-existing, not part of this fix's scope):** a *successful* refresh was never
+event-logged in the first place — only `flagReauth`'s failure path calls `recordSyncEvent(kind:
+'token_refresh')`. The walkthrough below is corrected to not imply an `ok` `token_refresh` row will
+appear; the log is a **failure signal only** today (a possible future enhancement, out of scope
+here).
+
+**Implication for Daniel's owed 48h smoke:** for it to actually exercise the fixed code path, the
+test connection needs at least one **linked, sync-enabled product** (or an open ML order) — an
+idle connection with nothing linked won't touch `getAccessTokenForSeller` at all, same as the two
+prod connections above, and would smoke-test nothing.
+
 ### Story 0.1 — Reproduce, root-cause, and fix the ML re-auth churn
 **As a** connected Mercado Libre seller, **I want** my connection to survive without daily
 reconnects, **so that** sync keeps working unattended.
@@ -77,10 +117,14 @@ reconnects, **so that** sync keeps working unattended.
 token — per-link Redis lock exists for inventory, does the token refresh have one?) → fix +
 regression spec.
 **Acceptance:**
-- The reproduction and root cause are written into this doc before the fix is coded.
-- A connected account rides ≥2 consecutive refresh cycles (>12 h) with no `needs_reauth`.
-- The raced/concurrent-refresh path has a regression spec (two concurrent refreshes ⇒ exactly one
-  wins, the winning token pair persists, no stale write).
+- [x] The reproduction and root cause are written into this doc before the fix is coded (commit
+      `0e45b2e`, root repo).
+- [ ] A connected account rides ≥2 consecutive refresh cycles (>12 h) with no `needs_reauth`. —
+      **owed to Daniel**; use a seller with a linked product per the walkthrough's note above.
+- [x] The raced/concurrent-refresh path has a regression spec (two concurrent refreshes ⇒ exactly
+      one wins, the winning token pair persists, no stale write) — `ml-resilience.unit.spec.ts`,
+      backend commit `d2889bd` (PR [#82](https://github.com/danybgoode/medusa-bonsai-backend/pull/82),
+      squash-merged `dbe484b`).
 **Risk:** high
 
 ## Sprint QA
@@ -94,12 +138,24 @@ regression spec.
 ## Sprint 0 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
 
-1. Go to https://miyagisanchez.com/shop/manage (your test shop with ML connected) → the ML status
-   card shows "Conectado", no re-auth prompt.
-2. Wait >12 h (≥2 access-token cycles), with at least one sync action in between.
-   → Status still "Conectado"; the activity log shows successful `token_refresh` events, no
-   `needs_reauth`. **(auth path — owed to Daniel)**
-3. Check the `ml_sync_event` log for the window.
-   → No token-refresh failures or repeated refresh attempts within the same minute.
+**Before starting:** pick (or set up) a test seller whose ML connection has **at least one linked,
+sync-enabled product** (or an open ML order). The two-cron-job race this fix targets only ever
+fires when a reconcile job actually has work for that seller — an idle connection with nothing
+linked never calls the refresh path at all, so this walkthrough would pass trivially without
+proving anything (confirmed live on 2026-07-11: prod's only 2 connections are both unlinked).
+
+1. Go to https://miyagisanchez.com/shop/manage (the test shop above) → the ML status card shows
+   "Conectado", no re-auth prompt.
+2. Wait >12 h (≥2 access-token cycles, so at least one falls on a `:00`/`:30` reconcile tick), with
+   sync activity happening in between (stock changes / an open order) so both cron jobs actually
+   touch this seller's connection.
+   → Status still "Conectado", no re-auth prompt. **(auth path — owed to Daniel)**
+3. Check the `ml_sync_event` activity log for the window (shop status page, or
+   `GET /internal/ml/events?seller_slug=…`).
+   → **No `token_refresh` `fail` rows at all.** Note: a *successful* refresh is not separately
+   event-logged today (only failures write a `token_refresh` event, via `flagReauth`) — so "log is
+   empty" is the healthy outcome here, not evidence of absence. If a `fail` row does appear, that
+   is the bug reproducing; note its timestamp and whether another job's activity landed in the same
+   minute.
 
 If any step fails, note the step number + what you saw — that's the bug report.
