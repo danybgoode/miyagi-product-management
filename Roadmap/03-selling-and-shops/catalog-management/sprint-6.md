@@ -1,6 +1,10 @@
 # Catalog management — Sprint 6: Structural refactor (seller shell over `/sell` · Canal split)
 
-**Status:** ✅ BUILT, PR open — [FE PR #219](https://github.com/danybgoode/miyagisanchezcommerce/pull/219), branch `feat/catalog-management-s6` off `origin/main`. HIGH epic tier ⇒ **Daniel merges**, pending his live smoke (below) + review.
+**Status:** ✅ MERGED 2026-07-11 — [FE PR #219](https://github.com/danybgoode/miyagisanchezcommerce/pull/219) squash `1b9a769`, branch `feat/catalog-management-s6` (deleted post-merge). Cross-agent (codex) review clean (both should-fix items confirmed false positives against this diff — the Supabase orders-mirror pattern is pre-existing S5 code, the env var name matches the actual 71-file codebase convention over a stale AGENTS.md doc — see the PR comment thread). Independent `pr-reviewer` pass: **Approve**, two real non-blocking findings fixed pre-merge (below). Daniel authorized "merge on green" and owns the live prod smoke + flag flip post-merge.
+
+**Pre-merge findings from the independent `pr-reviewer` pass, both fixed:** (1) the initial `CanalPropioClient.tsx` split left it at 977 lines — over the anti-monolith cap — but it silently escaped the guard entirely because the guard only ever scanned `SETTINGS_DIR` and the new file lives in a sibling `canal-propio/` directory; fixed by extracting the DNS setup panels into a new `DnsSetupPanel.tsx` (→ 826 lines) **and** extending the guard itself with a `CANAL_PROPIO_DIR` second scan root, so this class of regression is caught going forward, not just patched once. (2) two Stripe checkout success/cancel URLs (domain + subdomain subscribe) still pointed at the old `/shop/manage/settings/canal` path — verified no functional regression (nothing consumes the query params), repointed directly at `/shop/manage/canal-propio` anyway rather than relying on the redirect for a money-path return leg.
+
+**Also fixed pre-merge (CI-caught, not review-caught):** the first CI run found two hardcoded assertions a plain grep for the `Canal.tsx` filename didn't surface — `e2e/shop-settings-taxonomy.spec.ts` still expected the literal `'canal'` slug (now `'apoyo'`) and four manual sections (now three), and `e2e/flags-admin.spec.ts` still expected 24 known flags (now 25 with `seller.shell_on_sell_enabled`). A lesson for the next slug/count-bearing rename: grep the literal VALUE (slug string, count), not just the FILENAME being moved.
 
 > P1·C IA restructure remainder (F6/F7) — the seller-portal UX audit fold-in. Scope seed:
 > [`00-ideas/seeds/catalog-management-ia-remainder.md`](../../00-ideas/seeds/catalog-management-ia-remainder.md).
@@ -21,7 +25,7 @@
 
 ## Stories
 
-### Story 6.1 — Seller shell over `/sell` + `/sell/setup` (F6) ✅ built
+### Story 6.1 — Seller shell over `/sell` + `/sell/setup` (F6) ✅ merged
 **As a** shop owner, **I want** publishing to happen inside the seller frame, **so that** I'm not flipped into buyer chrome (search/cart) at the moment of max concentration.
 **Acceptance:** for a **signed-in shop owner**, `/sell` and `/sell/setup` render the seller shell (dark brand top bar + `SellerNav`), no buyer search/cart. **Signed-out `/sell` keeps buyer chrome** (acquisition — owned by the `/vende` epic). The white-label double-suppression guarantee is unchanged (a manage/sell page on a custom domain/subdomain still defers to `ChannelLayout`). `isSellerModePath` stays a **pure path predicate** (its api spec stays green, unchanged — still asserts `isSellerModePath('/sell') === false`) — ownership is decided in the layout, not in the predicate.
 **Risk:** MED — touches the shared `app/(shell)/layout.tsx` chrome decision (blast radius: every page). Daniel merges.
@@ -30,7 +34,7 @@
 **Cross-panel finding, adjudicated:** both lenses flagged that the gate's own live Medusa `/store/sellers/me` ownership check would duplicate the identical call `/sell/page.tsx` already makes inline. Fixed by extracting one shared, `React.cache()`-wrapped `lib/get-my-seller.ts` — both the gate and `/sell/page.tsx` now share ONE Medusa round-trip per request instead of two.
 **Reuse:** `app/(shell)/shop/manage/layout.tsx` shell markup (now `SellerShellChrome.tsx`); `lib/seller-mode.ts` (unchanged, stays pure); the `navigation-settings-reorg` `isSellerModePath` precedent.
 
-### Story 6.2 — Split `Canal.tsx` (F7, change #7) ✅ built
+### Story 6.2 — Split `Canal.tsx` (F7, change #7) ✅ merged
 **As a** seller, **I want** channels and support to be separate homes, **so that** a 62KB mega-section isn't one wall.
 **Acceptance:** the 1074-line `settings/_sections/Canal.tsx` is split — **federation (dominio/subdominio/embed/agents) → a new `/shop/manage/canal-propio` page** under Catálogo; **the support widget → its own settings card** (`/shop/manage/settings/apoyo`). `lib/shop-settings/taxonomy.ts` updated. No behavior change (Sweeper: same behavior, less code, no regressions). The **anti-monolith guard** (already existed from `shop-settings-refactor` — this sprint tightened its cap, not built a new mechanism) fails CI if a settings component exceeds the new line cap.
 **Risk:** MED (Sweeper)
@@ -43,7 +47,7 @@
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` all green (`seller-mode.spec.ts` 32/32, `shop-settings-no-monolith.spec.ts` 5/5). Full `api` suite run: only 3 pre-existing failures, all unrelated to this sprint's files (`home-static.spec.ts`, `home-auth-leakage.spec.ts`, `launchpad-campaign-vote.spec.ts`) — confirmed present on unmodified `origin/main` before this branch touched anything.
 
 ## Sprint 6 — Smoke walkthrough (do these in order)
-Env: the branch's Vercel preview (PR #219) pre-merge · https://miyagisanchez.com once merged.
+Env: production · https://miyagisanchez.com (merged, deploying via Cloud Run/Vercel on the `main` merge).
 
 1. **(owed to Daniel — authed)** Signed in as a shop owner, open `/sell`.
    → You see the seller frame (dark "Miyagi Sánchez · Vendedor" top bar + the seller nav), **not** the buyer header/search/cart. Same on `/sell/setup`.
