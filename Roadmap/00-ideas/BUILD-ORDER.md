@@ -13,7 +13,7 @@
 ## 🏗️ Building now (2)
 
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 11/16 stories · risk: High · Wave 1
-- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 5/10 stories · risk: High · tbd
+- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 10/10 stories · risk: High · tbd
 
 ## 📋 Ready to build (scaffolded, not started) (10)
 

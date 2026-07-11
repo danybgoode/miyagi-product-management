@@ -61,11 +61,11 @@ Correos option automatically (AGENTS rule #3). All new copy es-MX (not on the bi
 | 2 | S2.2 Grant honored at **every label seam** (incl. FE legacy ship route) | **HIGH** | ✅ shipped 2026-07-11 |
 | 2 | S2.3 Admin grant/revoke toggle on `/admin/tenants` | med | ✅ shipped 2026-07-11 |
 | 2 | S2.4 Seller settings reflect granted state | low | ✅ shipped 2026-07-11 |
-| 3 | S3.1 Pure Impresos tariff lib (versioned table + `quoteCorreos(weightGrams)`) | low | not started |
-| 3 | S3.2 Seller opt-in + rate preview + drop-off explainer | low | not started |
-| 3 | S3.3 Correos option at checkout (flag + opt-in + weight-gated; backend SSOT) | **HIGH** | not started |
-| 3 | S3.4 Fulfillment via manual-carrier flow + honest sin-rastreo emails | med | not started |
-| 3 | S3.5 Agent parity + api specs + browser smoke | low | not started |
+| 3 | S3.1 Pure Impresos tariff lib (versioned table + `quoteCorreos(weightGrams)`) | low | ✅ built |
+| 3 | S3.2 Seller opt-in + rate preview + drop-off explainer | low | ✅ built |
+| 3 | S3.3 Correos option at checkout (flag + opt-in + weight-gated; backend SSOT) | **HIGH** | ✅ built, awaiting Daniel's merge |
+| 3 | S3.4 Fulfillment via manual-carrier flow + honest sin-rastreo emails | med | ✅ built |
+| 3 | S3.5 Agent parity + api specs + browser smoke | low | ✅ built (narrowed scope — see sprint-3.md) |
 
 *Sprints 2–3 do NOT block on Sprint 1's decision — the grant + Correos are useful under any funding model.*
 
