@@ -88,6 +88,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ **ML orders, native** — a paid Mercado Libre sale materializes as a real, source-tagged Medusa order on a dedicated "Mercado Libre" sales channel (one inventory effect per sale, coordinated with the stock-sync path), moves through the same fulfillment/cancel/refund/notification machinery as any native order, carries manual + automatic tags, supports bulk fulfillment-status actions across mixed native/ML selections, and is agent-readable via a `list_orders` MCP tool. `ml.orders_enabled` **ON** *(live batch-day + agent-round-trip smoke owed to Daniel)*
 - ✅ **Profit Analyzer ("Ganancias")** — an append-only per-sale financial ledger (revenue − ML fee − shipping − COGS, snapshotted at sale time, native + Mercado Libre orders both) drives a margin dashboard at `/shop/manage/profit`: per-order and per-SKU realized margin, "margin killer" and underpriced-SKU call-outs, and a **solve-for-price suggester** (target a margin, see the price ML's own fee actually requires) with **one-click Apply** — a confirmed price change that updates Miyagi and pushes to the linked ML listing, logged to the activity feed. COGS lives on the variant (bulk-CSV settable). Behind `ops.profit_enabled` *(live money-path apply-price smoke against a real ML sandbox owed to Daniel)*
 - ✅ **Custom print products (the sticker-shop buy experience)** — a print shop (miyagiprints first) sells a real StickerJunkie/Sticker-Mule-grade configured product: priced size/material options with automatic **quantity-break pricing** (a pure price-grid deriver keeps PDP/cart/checkout in sync with Medusa's own price resolution), a seller-facing "Opciones" editor, buyer artwork upload (real magic-byte format sniffing, a low-res print-quality preflight warning) that rides the order end-to-end, a lightweight **print-proof sign-off** over the existing buyer-seller chat (size/qty/price always server-restated — never a silent seller-proposed change), full **AI-agent parity** (an agent reads a listing's options/tiers/artwork contract via UCP/MCP and places a fully configured order, artwork included), and one-tap **reorder**. Behind `configurator.enabled` (kill-switch, fail-open ON, scoped to the buy-box artwork addition only) *(live proof round-trip + one real MCP agent order owed to Daniel)*
+- ✅ **Setup guide on dashboard** — a persistent "Pon tu tienda en marcha" card on Resumen (`/shop/manage`) reads the shop's real completion state and walks a merchant through 5 steps to a sellable shop, with **payments named up front** (step 3, "~4 min" estimate) rather than sprung on them after everything else looks done — one step open at a time, done steps collapse with strikethrough, dismissible with a restore toggle in Configuración, step 5 completed via a real share action. The completion logic is one shared seam (`lib/setup-guide.ts`) also driving the existing Configuración "N de X secciones configuradas" counter, so the two surfaces can't drift apart. Guide-interaction events (view/step-open/step-complete/dismiss/restore/first-share) feed the GTM `dataLayer` as the epic's Grower signal *(live card render/interaction + payments-OAuth smoke owed to Daniel)*
 
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
@@ -156,6 +157,26 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-11 — Setup guide on dashboard SHIPPED (1 sprint, 4 stories; LOW — P0·B of the July-2026
+  seller-portal UX audit).** Onboarding was a wall, not a path: after creating a shop there was no
+  setup guide, the completion counter was buried in Configuración, and payments surfaced as a manual
+  step only *after* the merchant thought they were done. **B.1** extracted the settings page's
+  value-based completion logic (verbatim, byte-identical render) into `lib/setup-guide.ts` — one
+  shared seam the settings index and the new card both read, so they can't drift apart — and added
+  `getSetupSteps()`, a 5-step curated view. **B.2** built the "Pon tu tienda en marcha" card on
+  Resumen on the already-merged P0·A `<Card>`/`<StatusBadge>` primitives. **B.3** wired dismiss
+  (persists + reverts on failure), a restore toggle in Configuración, and a real share action
+  (native share sheet, clipboard fallback) that completes step 5. **B.4** added the first reusable
+  GTM `dataLayer` event pusher (`lib/analytics-events.ts`) and wired all 6 Grower-signal events.
+  Two review passes each caught a real bug pre-merge: the `pr-reviewer` subagent found that payments
+  wasn't actually escalated ahead of the normal step order (a shop created via `/sell` only requires
+  a name, not a description, so a fresh merchant could see step 1 open instead of step 3 — exactly
+  what this epic exists to prevent); a codex cross-review found that canceling the native share sheet
+  still marked the step done. Both fixed before merge, not after. PR
+  [#215](https://github.com/danybgoode/miyagisanchezcommerce/pull/215), squash `05a8b3a`. Owed to
+  Daniel: the live card render/interaction + payments-OAuth smoke on prod (he's running it himself).
+  See [03 · Selling & Shops › Setup guide on dashboard](03-selling-and-shops/seller-portal-setup-guide/).
 
 - **2026-07-11 — Shipping provider expansion SHIPPED (3 sprints; HIGH — checkout/fulfillment money
   path, Daniel-merged throughout).** Envía was platform-disabled since the June kill-switch epic, so
