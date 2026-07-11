@@ -1,13 +1,36 @@
 # Onboarding three-doors — Sprint 2: Staging preview + shared SuccessCard
 
-**Status:** ⬜ not started
+**Status:** ✅ built — [PR #227](https://github.com/danybgoode/miyagisanchezcommerce/pull/227) on branch `feat/seller-portal-onboarding-three-doors-s2`
+(commits `5c0caa0` S6, `d19fe5c` S4+F12). CI/deterministic gate green locally
+(`tsc`, `next build`, Playwright `api` — 2000 passed; the 8 pre-existing
+failures are unrelated files needing live backend/rate-limit infra, same
+pattern Sprint 1 documented). **Live smokes owed to Daniel** (see walkthrough
+below) — not yet run.
 
 > Rails: R11 (approve-before-apply is THE pattern) · R9 (one way to say "done"). Spec: ONBOARDING-SPEC S4–S6.
 > Reuses SetupClient `stageProducts`/`configBlocks`/`aggregateSetupReport` apply path unchanged.
 
+## As-built notes
+- **Apply engine untouched, verified.** `planSetupApply`, `aggregateSetupReport`, `validateSetup`, `validateRows`
+  keep their exact signatures and bodies. S4's inline-fix patches a local `editCatalogRows`/`profileOverrides`
+  copy that's merged into the file object only at `runApply()` call time — the same principle
+  `ImportClient.tsx` already used for its own edit-then-submit flow.
+- **Known gap, not silently dropped:** no email- or background-completion mechanism exists in this codebase
+  yet (`lib/email.ts` has no "setup complete" sender, and `SetupClient`'s apply loop is a synchronous
+  client-side fetch with no server-side resume). `SuccessCardProgress`'s during-apply caption uses a safe
+  default ("Esto puede tardar unos segundos…") instead of the spec's literal "te avisamos aquí y por correo"
+  promise. Follow-up, not blocking.
+- **F12 browser spec not yet live-verified.** `e2e/onboarding-success-card.browser.spec.ts` is written
+  against the current DOM (good-faith selectors) but hasn't run against a live dev/preview — the
+  `MS_TEST_BROWSER_AUTH`/`MS_TEST_SELLER_EMAIL` secrets aren't provisioned yet (same standing gap
+  Sprint 1 and `agent-connection-epic` both note). It skips gracefully until then; selectors may need a
+  touch-up on first real run.
+- **SellWizard's `StepSuccess` per-listing photo/price preview was dropped** in favor of the identical
+  `SuccessCard` layout (F12's explicit trade-off — same layout beats a richer one-off preview here).
+
 ## Stories
 
-### Story 2.1 — S4 Revisa y aprueba (staging preview over SetupClient)
+### Story 2.1 — S4 Revisa y aprueba (staging preview over SetupClient) ✅ `d19fe5c`
 **As a** merchant who handed over my info, **I want** to see my whole store as a draft I can edit before
 anything is created, **so that** I approve reality instead of hoping the import got it right.
 **Acceptance:**
@@ -21,7 +44,7 @@ anything is created, **so that** I approve reality instead of hoping the import 
 **Risk:** low–med — reuses the **already-shipped** SetupClient commerce-write apply (not a money/fulfillment
 path). *Do not modify the apply/token paths; if a change to the apply engine becomes necessary, escalate.*
 
-### Story 2.2 — S5 `<SuccessCard>` (R9) + F12 convergence
+### Story 2.2 — S5 `<SuccessCard>` (R9) + F12 convergence ✅ `d19fe5c`
 **As a** merchant finishing any setup path, **I want** one consistent "done" screen, **so that** I always
 know what happened, can see it live, and know the next step.
 **Acceptance:**
@@ -32,7 +55,7 @@ know what happened, can see it live, and know the next step.
   layout, same next-step logic, same share affordance from all three entry points.
 **Risk:** low — presentational convergence; no commerce mutation.
 
-### Story 2.3 — S6 personalization over `lib/setup-guide.ts` (P0·B seam)
+### Story 2.3 — S6 personalization over `lib/setup-guide.ts` (P0·B seam) ✅ `5c0caa0`
 **As a** merchant landing on Resumen after setup, **I want** the guide ordered to my case, **so that** the
 next step is the one that matters for me.
 **Acceptance:**
