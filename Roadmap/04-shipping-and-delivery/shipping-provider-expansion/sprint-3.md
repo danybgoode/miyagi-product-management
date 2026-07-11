@@ -1,9 +1,14 @@
 # Shipping provider expansion — Sprint 3: Correos de México — manual economy provider (Impresos v1)
 
-**Status:** ✅ built — backend `feat/shipping-provider-expansion-s3` (commits `9d2f5cd`, `2875332`,
-`a0569c8`), frontend `feat/shipping-provider-expansion-s3` (commits `84c3b36`, `ea03889`, `e860200`,
-`a786ce3`). Deterministic gate green on both (tsc + build + unit/Playwright). PRs open, S3.3 awaiting
-Daniel's merge (HIGH risk). Live money-path smoke below still owed to Daniel.
+**Status:** ✅ built — backend PR [#80](https://github.com/danybgoode/medusa-bonsai-backend/pull/80)
+(`feat/shipping-provider-expansion-s3`), frontend PR
+[#214](https://github.com/danybgoode/miyagisanchezcommerce/pull/214) (same branch name). Deterministic
+gate green on both (tsc + build + unit/Playwright). CI running. Codex cross-review run on both — one
+real bug found and fixed (per-piece vs. combined-cart tariff weight, both apps); the two "should-fix"
+frontend findings were checked against the actual code and are non-issues (see the PR comment thread).
+**Owed:** the fresh Claude `pr-reviewer` pass — attempted, hit a session rate-limit mid-review both
+times, did not complete; re-run before Daniel merges the HIGH-risk S3.3. Live money-path smoke below
+also owed to Daniel.
 
 > New provider **class**: a manual carrier with a real, priced checkout rate — no API, no labels.
 > v1 = **Impresos en General only** (national flat weight bands, no zones, no tracking; 2026 tariff —
@@ -24,7 +29,10 @@ spec-locked against the published PDF, and a tariff republication is a one-const
 **Built:** 28 bands (not 26 — recount against the PDF), `apps/backend/src/lib/correos-tariff.ts` +
 `correos-gate.ts` (pure flag×opt-in AND, mirrors `envia-killswitch.ts`) + FE byte-for-byte twin
 `apps/miyagisanchez/lib/correos-tariff.ts` (rental-pricing.ts precedent). 39 backend Jest + 36 FE
-Playwright specs, all green.
+Playwright specs, all green. **Cross-review fix (`795c0ad` backend / `f60fcb2` frontend):** added
+`quoteCorreosForPieces` — the table prices "por pieza" (per piece), and the initial cut summed all
+cart items into one weight before quoting, which could wrongly reject an eligible multi-item order once
+the *sum* crossed 2000g even though every individual piece was within it. Now +6 specs per app (45/42).
 
 ### Story 3.2 — Seller opt-in + rate preview ✅ frontend `ea03889`
 **As a** seller, **I want** a toggle «Ofrecer Correos de México (económico)» in my shipping settings with
@@ -56,6 +64,11 @@ cheap Correos rate sorted by price would otherwise land ahead of a faster carrie
 `hasLiveShipping` widened the same way so a Correos-only seller (no Envía origin/grant) still shows the
 "shipping" category. "Backend checkout-options is the SSOT so UCP/MCP agents inherit it" holds for the
 web + the resolved rate route — see Story 3.5's correction for the buyer-side UCP gap found separately.
+**Cross-review fix (`795c0ad`):** the route originally summed all shippable items' weights into one
+cart-total before calling `quoteCorreos` — fixed to call `quoteCorreosForPieces` (S3.1) instead, quoting
+each item separately per the table's actual "por pieza" pricing; also normalized a numeric-string
+`weight_grams` metadata value, which previously coerced fine for Envía but silently failed
+`Number.isFinite()` for Correos off the identical stored value.
 
 ### Story 3.4 — Manual fulfillment + honest emails ✅ backend `a0569c8` · frontend `e860200`
 **As a** seller, **I want** Correos orders to ship through the existing manual-carrier flow — carrier
