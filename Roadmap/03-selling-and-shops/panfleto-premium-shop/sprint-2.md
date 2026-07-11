@@ -20,7 +20,7 @@ admin subdomain grant; the `mschz.org/panfleto` flat short link resolves.
 **Risk:** low
 **Execution:** both mutations require a live authenticated session (Clerk seller session for the
 slug PATCH, Clerk admin session for the subdomain grant) — **Daniel executes both directly**, no
-CLI/script/MCP tool exists or is being built for either. Exact steps below, under "Your two actions."
+CLI/script/MCP tool exists or is being built for either. Exact steps below, under "Your three actions."
 **Status:** 🚧 QA built (`e2e/panfleto-rename-alias.spec.ts` — self-activating, verified live against
 today's un-renamed prod: correctly skips all 3 assertions; caught + fixed a real bug in the process
 — `mschz.org`'s branded 404 is itself a 301, not a 404 status, so the skip condition had to key off
@@ -125,15 +125,19 @@ call):
 
 **⬜ Waiting on Daniel's read/approval of this copy block before any MCP call executes.**
 
-## Your two actions (Story 2.1 — Daniel executes these directly)
-Once the rest of the sprint is built and ready to verify against, do these two in order:
-1. **Rename the slug.** Shop settings → Canal → change the shop's slug from `miyagiprints` to
-   `panfleto`. This is the self-serve `PATCH /api/sell/shop/slug` flow — the old slug 301-aliases
-   automatically for 90 days.
-2. **Grant the subdomain.** Admin → Tenants → find the shop (now `panfleto`) → grant `subdomain`.
-   This writes the comp grant that makes `panfleto.miyagisanchez.com` route white-label.
-
-I'll tell you exactly when to do these (after the build + copy sign-off, before final verification).
+## Your three actions
+Once the PRs are merged + deployed, do these in order:
+1. **Rename the slug** (Story 2.1). Shop settings → Canal → change the shop's slug from
+   `miyagiprints` to `panfleto`. This is the self-serve `PATCH /api/sell/shop/slug` flow — the old
+   slug 301-aliases automatically for 90 days.
+2. **Grant the subdomain** (Story 2.1). Admin → Tenants → find the shop (now `panfleto`) → grant
+   `subdomain`. This writes the comp grant that makes `panfleto.miyagisanchez.com` route white-label.
+3. **Provision (or rotate) the shop's MCP agent token** (Story 2.3 — found while checking what
+   Story 2.3's execution needs). `POST /api/sell/agent-token` is Clerk-session-gated only — same as
+   the two actions above, no internal/admin path exists — and the plaintext token is returned
+   **once**, never retrievable again. Shop settings → "Agentes e integraciones" → generate (or
+   rotate, if one already exists but the plaintext is gone) → paste me the token so I can run the
+   Story 2.3 MCP calls with it.
 
 ## Sprint QA — one spec per story
 - **2.1:** extend `e2e/own-shop-seo.spec.ts` and/or `e2e/subdomain.spec.ts` with the slug-alias 301 +
