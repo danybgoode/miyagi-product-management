@@ -5,17 +5,17 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-10 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-11 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
 ## 🏗️ Building now (2)
 
-- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 9/16 stories · risk: High · Wave 1
-- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 1/10 stories · risk: High · tbd
+- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 11/16 stories · risk: High · Wave 1
+- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 5/10 stories · risk: High · tbd
 
-## 📋 Ready to build (scaffolded, not started) (12)
+## 📋 Ready to build (scaffolded, not started) (10)
 
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 0/9 stories · risk: Low · Wave 1
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 0/7 stories · risk: High · Wave 1
@@ -27,10 +27,8 @@
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
-- [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](../../09-platform-infra/repo-readmes-branding/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · Wave 3
-- [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
-## ✅ Shipped (89)
+## ✅ Shipped (91)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -114,7 +112,9 @@
 - [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 8/8 stories
 - [Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅](../../09-platform-infra/postgres-neon-to-cloudsql/README.md) — 09 Platform-infra · 8/8 stories
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 6/6 stories · risk: Low
+- [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](../../09-platform-infra/repo-readmes-branding/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · Wave 3
 - [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 6/6 stories
+- [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 4/4 stories
 - [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 3/3 stories
 - [Static marketplace shell — kill the per-request homepage function ✅](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 9/9 stories
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 3/3 stories · risk: Low · Wave 0 Enablers
@@ -130,15 +130,5 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
-
-These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
-derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
-forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
-
-| Epic | frontmatter (used) | sprint/retro-derived |
-|---|---|---|
-| Seller-portal rails foundation — one design language | Scaffolded | In progress |
-
 ---
-_Epics: 104 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 104 · seeds in funnel: 5 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
