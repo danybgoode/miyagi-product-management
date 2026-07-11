@@ -43,10 +43,19 @@ unrelated hit (`PrintAdminClient.tsx`'s "slug (ej. miyagiprints)" placeholder �
   [`medusa-bonsai-backend#81`](https://github.com/danybgoode/medusa-bonsai-backend/pull/81) ships
   first, per the epic's own documented fallback clause for this case.
 - **Config, not a code fallback.** Both apps read `PLATFORM_SELLER_SLUG` with **no** `?? 'miyagiprints'`
-  fallback in source — the dark/backward-compatible value (`miyagiprints`) is an env var, provisioned
-  in Cloud Run (backend, confirmed live) and Vercel (frontend, Production+Preview+Development,
-  confirmed present). This keeps Story 1.2's grep clean and avoids two coexisting seller-resolution
-  paths, per the epic's kill-switch note.
+  fallback in source — the dark/backward-compatible value (`miyagiprints`) is an env var. This keeps
+  Story 1.2's grep clean and avoids two coexisting seller-resolution paths, per the epic's kill-switch
+  note.
+- **Near-miss: the frontend ops action initially targeted the wrong prod runtime.** First pass
+  provisioned `PLATFORM_SELLER_SLUG` in Vercel Production — but per this org's own deploy topology,
+  Vercel prod deploys have been OFF since 2026-07-10 (`frontend-vercel-to-cloudrun` epic); the real
+  prod frontend is Cloud Run `miyagi-web`, and Vercel now serves previews only. Left as-is, every
+  placement checkout would have resolved `sellerId: undefined` the moment PR #217 merged — caught by
+  the fresh pr-reviewer pass (not CI, not the cross-agent pass) before merge. Fixed: provisioned on
+  Cloud Run `miyagi-web` directly (revision `miyagi-web-00030-gnz`); Vercel Preview/Development kept
+  for this PR's own preview verification. **Generalizable lesson**: an env var "provisioned in Vercel"
+  is not equivalent to "provisioned in prod" for this app anymore — always target Cloud Run for
+  anything that must be live, Vercel only for PR previews.
 - **Payout mechanics: transplant, not a new Connect account.** Placement checkout resolves the seller's
   Stripe Connect account via `seller.metadata.settings.stripe` → `transfer_data.destination` — the exact
   same path any merchant sale uses (confirmed: no `is_print_placement` branch exists in payment code).
