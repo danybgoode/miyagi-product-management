@@ -103,9 +103,14 @@ at grooming (the flag is decided + sliced there, verified at epic DoD — not a 
 - Acceptance criteria met and confirmed working.
 - Type-check + lint + build clean.
 - **Smoke-tested** (on the branch's preview where applicable). The story's real behaviour is exercised
-  end-to-end with an appropriate tool (Claude-in-Chrome, `curl`, Playwright spec, real artifact render, …)
-  — never "build passes, therefore done." If a live smoke test genuinely can't run (no test account,
-  money-/account-gated), that gap is stated explicitly in the PR rather than glossed.
+  end-to-end with an appropriate tool — the `live-smoke` skill (`node scripts/live-smoke.mjs`,
+  apps/miyagisanchez) is the **default** for rendered-page verification, cross-agent (Codex/Antigravity
+  can run it too, no Claude-specific tooling); `curl`, a Playwright spec, or a real artifact render fit
+  API-only/non-browser checks. **Claude-in-Chrome stays a narrow fallback** — the one thing it can do that
+  `live-smoke` structurally cannot is an *authed* check against **production** (Clerk rejects its
+  testing-token bypass for prod secret keys by design). Never "build passes, therefore done." If a live
+  smoke test genuinely can't run (no test account, money-/account-gated), that gap is stated explicitly in
+  the PR rather than glossed.
 - Committed to the feature branch; sprint doc status ticked.
 
 ## Definition of Done (an epic) — the close-out checklist
@@ -146,7 +151,11 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   ticks, a required nudge fires). Kept out of the blocking gate (binaries are heavy/slow); runs on demand and
   nightly via `.github/workflows/browser-smoke.yml`. A browser spec **replaces a browser smoke previously owed
   to Daniel** — many client-island assertions even work anonymously (no login). Authed/epic smokes read
-  `MS_TEST_*` secrets and **skip gracefully** when unset.
+  `MS_TEST_*` secrets and **skip gracefully** when unset. **`live-smoke` (skill, `scripts/live-smoke.mjs`)
+  wraps this project as the default interactive verification tool** — `--path` for an ad-hoc "does this
+  render right" check during a build (nothing permanent left behind), `--spec` to run an existing committed
+  spec by name. See `skills/live-smoke/SKILL.md` for the full env × auth matrix and the Claude-in-Chrome
+  fallback boundary.
   - *Owed (Daniel, one-time):* the `MS_TEST_*` repo secrets — buyer/seller password-auth accounts +
     `MS_TEST_PERSONALIZED_LISTING_ID` — so the credentialed/epic browser smokes light up (they skip until then).
 
