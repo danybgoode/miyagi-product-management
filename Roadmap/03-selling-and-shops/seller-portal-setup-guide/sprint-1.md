@@ -1,6 +1,6 @@
 # Setup guide on dashboard — Sprint 1: Setup guide card on Resumen (lib seam · card · dismiss/restore · metrics)
 
-**Status:** ⬜ not started
+**Status:** 🔄 in progress — B.1 ✅ (`feat/seller-portal-setup-guide`, commit `9804c98`)
 
 Build the four stories in order — B.1 is the skateboard (an invisible, regression-guarded refactor that
 de-risks everything after); B.2 is the visible win; B.3/B.4 finish the loop.
@@ -20,6 +20,11 @@ render**. Step map: 1 perfil (`name && description`) · 2 catálogo (`productCou
 `getSetupSteps` returns the right done/open state for a shop with only profile+payments set (steps 1 & 3 done,
 step 2 open).
 **Risk:** low
+**Status:** ✅ done — `lib/setup-guide.ts` (`computeShopCompletion`/`completedSectionKeys`/`getSetupSteps`),
+`settings/page.tsx` repointed (byte-identical render, diff reviewed), `e2e/setup-guide.spec.ts` (12 tests,
+`api` project). Gate green: `tsc --noEmit`, `next build`, `playwright test --project=api` (pre-existing,
+unrelated prod-hitting flakes confirmed present on unmodified `main` too — not a regression). Commit `9804c98`
+on `feat/seller-portal-setup-guide`.
 
 ### Story 1.2 — "Pon tu tienda en marcha" card on Resumen
 **As a** new merchant, **I want** a persistent setup guide on my dashboard, **so that** I know exactly what's
