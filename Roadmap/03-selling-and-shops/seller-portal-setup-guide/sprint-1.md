@@ -1,7 +1,8 @@
 # Setup guide on dashboard — Sprint 1: Setup guide card on Resumen (lib seam · card · dismiss/restore · metrics)
 
-**Status:** ✅ all 4 stories built on `feat/seller-portal-setup-guide` — deterministic gate green, PR pending
-Daniel's review + live smoke.
+**Status:** ✅ shipped — [PR #215](https://github.com/danybgoode/miyagisanchezcommerce/pull/215) merged to
+`main` (squash commit `05a8b3a`), branch deleted. Live smoke walkthrough (below) owed to Daniel on prod —
+he opted to run it himself post-merge rather than block the merge on it.
 
 Build the four stories in order — B.1 is the skateboard (an invisible, regression-guarded refactor that
 de-risks everything after); B.2 is the visible win; B.3/B.4 finish the loop.
@@ -26,6 +27,12 @@ step 2 open).
 `api` project). Gate green: `tsc --noEmit`, `next build`, `playwright test --project=api` (pre-existing,
 unrelated prod-hitting flakes confirmed present on unmodified `main` too — not a regression). Commit `9804c98`
 on `feat/seller-portal-setup-guide`.
+**Post-build review fix:** the `pr-reviewer` subagent caught that the first cut of `getSetupSteps`'s "open"
+resolution was strict first-incomplete-in-order — so a shop with an incomplete (optional) description would
+open step 1, silently burying payments exactly the way this epic exists to prevent. `/sell` only requires a
+shop *name*, not a description (verified in `SellWizard.tsx` — no length-floor on `shopDescription`), so this
+wasn't an edge case. Fixed: payments is escalated ahead of order — open whenever incomplete, regardless of
+what precedes it (commit `2046efe`, new regression test covers it directly).
 
 ### Story 1.2 — "Pon tu tienda en marcha" card on Resumen
 **As a** new merchant, **I want** a persistent setup guide on my dashboard, **so that** I know exactly what's
@@ -60,6 +67,10 @@ failure); the comparte step's CTA triggers a real share (`navigator.share`, clip
 back off. Added a typed `guide` block to the PATCH route's `ShopUpdatePayload` for consistency with the other
 sections (the route's deep-merge would have accepted it either way). Fail-safe preserved: absent/malformed
 flag reads `false` (guide shows). Commit `26987fd`.
+**Post-build review fix:** the codex cross-review (advisory) caught two real bugs in `handleShare`: canceling
+the native share sheet (`AbortError`) still unconditionally marked `share_done: true` afterward, and the
+PATCH's success/failure was never checked (unlike `handleDismiss`). Fixed: only a genuine share/copy — and a
+successful save — completes the step (commit `8d291d1`).
 
 ### Story 1.4 — Instrument guide step events (Grower signal)
 **As a** product owner, **I want** guide interaction events, **so that** I can see whether the guide moves
@@ -79,10 +90,17 @@ Node-testable the way `analytics-gating.ts`'s param-based function is — verifi
 manual code review instead). Commit `2f21e80`.
 
 ## Sprint QA
-- **api spec(s):** `e2e/setup-guide.spec.ts` (pure-logic, `api` project, 12 tests) — every step's `done`
-  predicate, the fixed 5-step ordering, one-open-at-a-time resolution (incl. the story's own "profile+payments
-  only → steps 1&3 done, step 2 open" case), the all-done/all-incomplete edges, and the exact payments body
-  copy + CTA. This is the logic B.2's render and B.3's dismiss/restore/share all sit on top of.
+- **api spec(s):** `e2e/setup-guide.spec.ts` (pure-logic, `api` project, 13 tests) — every step's `done`
+  predicate, the fixed 5-step ordering, the payments-escalation resolution (both "all incomplete" and
+  "profile+catálogo done but payments isn't" open payments, not whatever's numerically first — the case the
+  first cut got wrong), the "profile+payments only → steps 1&3 done, step 2 open" story-acceptance case, the
+  all-done/all-incomplete edges, and the exact payments body copy + CTA (now also asserting `.open`, closing
+  the gap that let the priority bug ship undetected the first time). This is the logic B.2's render and B.3's
+  dismiss/restore/share all sit on top of.
+- **Review passes (both caught real bugs, both fixed pre-merge):** the `pr-reviewer` subagent caught the
+  payments-priority gap above (Story 1.1's post-build note); a codex cross-review
+  (`node scripts/cross-review.mjs 215 --agent codex`, advisory) caught two bugs in the share-complete flow
+  (Story 1.3's post-build note). Neither review flagged the LOW risk tier itself as wrong.
   **Correction vs. the original plan:** B.2/B.3's card-render/dismiss/restore behavior was **not** added to
   `e2e/seller-mode.spec.ts` — that file's existing pattern is pure-logic (`isSellerModePath`/`SELLER_NAV`),
   unrelated to this authed, server-rendered page. `/shop/manage` requires a Clerk session (redirects

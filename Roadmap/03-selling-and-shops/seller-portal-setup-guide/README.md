@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: seller-portal-setup-guide
 ---
 
@@ -58,14 +58,19 @@ and B.2 touches `ManageDashboard.tsx`, both also touched by P0·A's sweep and in
 sequence to avoid merge noise. Vercel preview per PR; verify before merge to `main`.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch (only if one was planned at grooming — Stage 6b):** the flag slice shipped + the flag
-      exists in Flagsmith / Edge Config with the stated polarity. *Verify-only — not a new gate; whether a
-      high-risk epic needs one is decided at grooming, not here.*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated: Daniel is running the live smoke walkthrough
+      himself on prod post-merge, including the payments OAuth step — no money/checkout code was touched)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** N/A — LOW risk, no runtime seam; not planned at grooming. A bad ship reverts with
+      `git revert` (frontend-only, no data migration).
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+
+## Shipped
+[PR #215](https://github.com/danybgoode/miyagisanchezcommerce/pull/215) — all 4 stories, one sprint, squash-merged
+to `main` (`05a8b3a`), 2026-07-11. Both the `pr-reviewer` subagent and a codex cross-review caught real
+pre-merge bugs (see `sprint-1.md`'s Story 1.1/1.3 post-build notes) — fixed before merge, not after.
