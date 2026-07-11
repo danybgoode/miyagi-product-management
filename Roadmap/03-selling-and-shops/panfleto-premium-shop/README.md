@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: panfleto-premium-shop
 ---
 
@@ -38,15 +38,21 @@ is *which* seller owns placement products (S1) — a data/ownership move, not a 
 
 ## Scope — stories
 
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | Placements sell through a platform-owned seller (config-addressable) | high |
-| 1 | Old miyagiprints constant unreachable; existing orders + zine pipeline intact | high |
-| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low |
-| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low |
-| 3 | The horror convocatoria — created, copy drafted, submission window open | med |
-| 3 | Voting/excerpt launch plan + share surfaces (announcement, mschz link) | med |
-| 4 | 2–3 new premium theme presets (incl. dark/editorial for panfleto) | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | Placements sell through a platform-owned seller (config-addressable) | high | ✅ shipped + live |
+| 1 | Old miyagiprints constant unreachable; existing orders + zine pipeline intact | high | ✅ shipped + live |
+| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | ⬜ not started |
+| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | ⬜ not started |
+| 3 | The horror convocatoria — created, copy drafted, submission window open | med | ⬜ not started |
+| 3 | Voting/excerpt launch plan + share surfaces (announcement, mschz link) | med | ⬜ not started |
+| 4 | 2–3 new premium theme presets (incl. dark/editorial for panfleto) | low | ⬜ not started |
+
+**Sprint 1** (2026-07-11): backend PR [#81](https://github.com/danybgoode/medusa-bonsai-backend/pull/81)
+(squash `3b252c1`) + frontend PR [#217](https://github.com/danybgoode/miyagisanchezcommerce/pull/217)
+(squash `6c42c43`), both merged and live; cutover complete (`PLATFORM_SELLER_SLUG` →
+`miyagi-plataforma` on both Cloud Run services). Details + smoke walkthrough: `sprint-1.md`. Owed:
+Daniel's live money-step smoke (buy one real placement).
 
 **Content bar (S2/S3, every word):** es-MX, simple, concrete, direct address. Banned: time-to-complete
 promises; "esto nos recuerda…"-shaped wrap-ups; filler intensifiers. Draft copy lands in the sprint
