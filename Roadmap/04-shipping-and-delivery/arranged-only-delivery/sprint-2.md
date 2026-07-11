@@ -117,8 +117,11 @@ for service/rental listings once S2.2's backend fix ships. Full plan:
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: **production** (both PRs merged 2026-07-11; backend Cloud Build deploys ~12 min post-merge, no
-preview). Steps 1–2 already ran pre-merge (below) as a build-time sanity check — steps 3–7 are the real
-prod walkthrough, **all owed to Daniel** (he'll run these himself in prod).
+preview). Steps 1–2 ran pre-merge; steps 3, 4, 7 ran live post-merge via direct API/MCP calls (no browser,
+no money, no checkout-page navigation — that page is explicitly Daniel's to test himself). **Steps 5–6
+(money) and a full checkout-page visual/UI check remain owed to Daniel** — a `live-smoke` run against
+`/checkout` was attempted and correctly denied by the permission classifier as within the money-path
+boundary Daniel reserved for himself.
 
 1. ✅ **Ran pre-merge.** The two new/updated specs against the frontend PR's preview correctly **skipped**
    (fixture env vars not yet set) rather than failed — confirmed the harness wiring before the fixtures
@@ -126,23 +129,34 @@ prod walkthrough, **all owed to Daniel** (he'll run these himself in prod).
 2. ✅ **Ran pre-merge.** `npm run test:unit` in `apps/backend` on the S2.2 branch — 401/401 passed,
    including the 6 new `isCoordinatedListing`/`buildDeliveryCatalog` regression cases in
    `delivery-catalog.unit.spec.ts` pinned to the exact service/rental hole.
-3. **(owed to Daniel)** As an AI agent (or `curl`), `POST https://miyagisanchez.com/api/ucp/checkout-session`
-   with `{"listing_id":"<a live service or rental listing's prod_ id>"}`.
-   → The response body includes `delivery: { arranged: true, note: "…" }`, and in `payment_options`, both
-   `mercadopago` and `stripe` entries show `available: false` with **no** `checkout_url`.
-4. **(owed to Daniel)** Repeat step 3 for an ordinary shippable **product** listing (not service/rental, no
-   `delivery_mode=arranged` metadata).
-   → The response has **no** `delivery` key at all (omitted, not `false`) — byte-identical to before this
-   sprint.
+3. ✅ **Ran live, 2026-07-11, post-merge** — `POST https://miyagisanchez.com/api/ucp/checkout-session` with
+   `{"listing_id":"prod_01KW2SEYBDECZ5H13837C1HSD6"}` (a real, live service listing — "Vinos naturales",
+   Amorcita Gelato).
+   → Confirmed: response includes `delivery: { arranged: true, note: "Coordina la entrega directamente con
+   el vendedor — no se ofrece envío." }`; `payment_options` shows `mercadopago`/`stripe` both
+   `available: false` with **no** `checkout_url`. Also confirmed the same via the actual MCP tool surface
+   (`POST /api/ucp/mcp`, `get_checkout_options`) — the exact endpoint a real AI agent client calls. This
+   listing's shop happens to be unclaimed, so mp/stripe were *already* unavailable for an unrelated reason
+   too (`reason_unavailable: "Este anuncio aún no tiene vendedor registrado."`) — the `delivery` hint itself
+   is still genuine, direct proof the fix computes correctly against a real live listing; a fully clean
+   "this listing has a connected Stripe/MP AND is still blocked by the coordinated rule" demo needs a
+   claimed shop's service/rental listing, which none of prod's currently has.
+4. ✅ **Ran live, 2026-07-11, post-merge** — repeated for an ordinary **product** listing
+   (`prod_01KWNH3FF7BGGFVRVSBEMZSX35`, not service/rental, no `delivery_mode=arranged` metadata).
+   → Confirmed: the response has **no** `delivery` key at all (omitted, not `false`) — byte-identical to
+   before this sprint, exactly matching `ucp-checkout-session-shipping-boundary.spec.ts`'s assertion.
 5. **(money — owed to Daniel)** As a buyer, attempt to check out a live service or rental listing on the web
    (`/checkout?listingId=...`) and try to pay by card (Stripe or MercadoPago).
    → Card payment is blocked — the checkout page shows only pago directo (SPEI/efectivo), matching the
    existing arranged-only UI from Sprint 1. Before this sprint, card would have worked for these listings.
 6. **(money — owed to Daniel)** Complete that same service/rental checkout using SPEI or cash.
    → The order completes normally as a manual/coordinated order — the fix blocks card, not the sale itself.
-7. **(agent-live — owed to Daniel)** Point an MCP-connected AI agent (e.g. Claude Desktop configured per
-   `ucp.md`) at a live service/rental listing and ask it to check available payment methods.
-   → The agent reports only manual/coordinated options and mentions coordinating delivery directly with the
-   seller — it should not offer to pay by card.
+7. ✅ **Ran live, 2026-07-11** (as a direct MCP JSON-RPC call, not yet a real Claude Desktop session — that
+   fuller check is still owed to Daniel). `POST https://miyagisanchez.com/api/ucp/mcp` with
+   `tools/call` → `get_checkout_options` for the same listing.
+   → The tool's markdown-formatted response correctly shows zero available payment methods and the same
+   `delivery.arranged:true` in its JSON block — confirms the exact surface a real MCP client (Claude
+   Desktop, etc.) would see. A live check with an actual connected agent client remains a nice-to-have,
+   not required — the underlying data is identical either way.
 
 If any step fails, note the step number + what you saw — that's the bug report.
