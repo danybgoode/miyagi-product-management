@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: shipping-provider-expansion
 ---
 
@@ -61,11 +61,11 @@ Correos option automatically (AGENTS rule #3). All new copy es-MX (not on the bi
 | 2 | S2.2 Grant honored at **every label seam** (incl. FE legacy ship route) | **HIGH** | ✅ shipped 2026-07-11 |
 | 2 | S2.3 Admin grant/revoke toggle on `/admin/tenants` | med | ✅ shipped 2026-07-11 |
 | 2 | S2.4 Seller settings reflect granted state | low | ✅ shipped 2026-07-11 |
-| 3 | S3.1 Pure Impresos tariff lib (versioned table + `quoteCorreos(weightGrams)`) | low | ✅ built |
-| 3 | S3.2 Seller opt-in + rate preview + drop-off explainer | low | ✅ built |
-| 3 | S3.3 Correos option at checkout (flag + opt-in + weight-gated; backend SSOT) | **HIGH** | ✅ built, awaiting Daniel's merge |
-| 3 | S3.4 Fulfillment via manual-carrier flow + honest sin-rastreo emails | med | ✅ built |
-| 3 | S3.5 Agent parity + api specs + browser smoke | low | ✅ built (narrowed scope — see sprint-3.md) |
+| 3 | S3.1 Pure Impresos tariff lib (versioned table + `quoteCorreos(weightGrams)`) | low | ✅ shipped 2026-07-11 |
+| 3 | S3.2 Seller opt-in + rate preview + drop-off explainer | low | ✅ shipped 2026-07-11 |
+| 3 | S3.3 Correos option at checkout (flag + opt-in + weight-gated; backend SSOT) | **HIGH** | ✅ shipped 2026-07-11 |
+| 3 | S3.4 Fulfillment via manual-carrier flow + honest sin-rastreo emails | med | ✅ shipped 2026-07-11 |
+| 3 | S3.5 Agent parity + api specs + browser smoke | low | ✅ shipped 2026-07-11 (narrowed scope — see sprint-3.md) |
 
 *Sprints 2–3 do NOT block on Sprint 1's decision — the grant + Correos are useful under any funding model.*
 
@@ -74,15 +74,17 @@ Backend-first each sprint. Sprint 2 and Sprint 3 are independently shippable; Sp
 (no deploy). Frontend degrades gracefully throughout (ungranted/flag-OFF ⇒ today's behavior, byte-identical).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated (04 domain lines)
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** `shipping.correos_enabled` exists in both `lib/flags.ts`, enablement polarity, default OFF, created disabled; OFF ⇒ Correos never quotes anywhere (agents included)
-- [ ] Sprint 1's written decision landed in `spike-envia-byo.md` + the scope doc; Daniel signed off
-- [ ] Both quote AND label seams enforce the grant (no agent/stale-page bypass)
-- [ ] es-MX copy-complete (checkout option, explainer, emails, 422s)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` — **smoke-tested: NO, gap stated** — both S2's and S3's live
+      money-path smokes are owed to Daniel (walkthroughs below, in `sprint-2.md`/`sprint-3.md`);
+      code-level deterministic gates (tsc/build/unit/Playwright) are green on all merged commits
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated (04 domain lines + Recent highlights)
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** `shipping.correos_enabled` exists in both `lib/flags.ts`, enablement polarity, default OFF, created disabled (fail-open default, no Supabase row required to ship OFF); OFF ⇒ Correos never quotes anywhere (agents included — enforced at the same backend seam as web)
+- [x] Sprint 1's written decision landed in `spike-envia-byo.md` + the scope doc; Daniel signed off (2026-07-08)
+- [x] Both quote AND label seams enforce the grant (no agent/stale-page bypass) — Sprint 2
+- [x] es-MX copy-complete (checkout option, explainer, emails, 422s)
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** — both S3 branches deleted post-merge (`build-order.mjs` regenerated below)

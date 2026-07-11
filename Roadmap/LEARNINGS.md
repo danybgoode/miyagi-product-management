@@ -34,6 +34,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   spec file itself — the spec can already be blob-identical on your branch while the feature commit it
   tests sits only on `main`. *(First hit 2026-06-05 seasonal-theme; reconfirmed twice more since —
   delivery-money-polish S3, seleccion-pins S2.2.)*
+  **Corollary — the stale-vs-fresh mismatch can hit your own NEW code too, not just an untouched
+  spec, when a sibling PR changes a shared file's CONVENTIONS (a lint rule, not a feature).**
+  `seller-portal-rails-foundation` S2.5 added `Envios.tsx` to a design-token CI lint's
+  enforced-sweep set and converted the file's pre-existing banners to a shared `<Banner>` component
+  — landing on `main` mid-flight of `shipping-provider-expansion` S3, which had ALSO edited that
+  same file (a new Correos toggle block) using the exact raw-Tailwind pattern the file's *older*
+  code had used days earlier. CI failed on the new block, not on anything pre-existing — easy to
+  misread as "my new code is broken" when the real cause is "the file's own conventions moved out
+  from under it." Same fix (`git merge origin/main`), but the diagnostic tell is different: check
+  whether a FAILING assertion is about a rule/convention that changed, not just a feature/data
+  mismatch. *(2026-07-11, shipping-provider-expansion S3.2.)*
 - **Announce cross-cutting or direct-to-`main` changes**, and prefer a PR even for "engine"
   features. Anything touching shared surface — `layout.tsx`, `middleware.ts`, `globals.css`,
   `package.json`/deps, a new sibling worktree — can break every other open PR. *(2026-06-05 — a
@@ -631,6 +642,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A ported external tariff/pricing table's unit ("per piece" vs "per shipment/order") is easy to get
+  wrong even with the source document open, and a single-item-only test suite can't catch it.** Porting
+  Correos de México's Impresos tariff (a weight-band table) into a pure calculator, the first pass summed
+  every cart item's weight into one combined total before quoting — plausible-looking, and every unit
+  test passed, because they all happened to exercise a single item. The source PDF's own column header
+  ("peso en gramos por pieza") only got read carefully during a cross-model review, which is what caught
+  that two 1500g pieces (each fine alone) summed to 3000g and wrongly returned "no quote" once combined.
+  When porting a tariff/pricing table, write the unit the table prices *by* into the calculator's own
+  doc-comment, and include at least one MULTI-item test case explicitly — a suite of only single-item
+  cases structurally cannot distinguish "quotes correctly" from "quotes correctly only when there's
+  exactly one thing to price." *(2026-07-11, shipping-provider-expansion S3.1 —
+  `lib/correos-tariff.ts`'s `quoteCorreosForPieces`, caught by Codex cross-review, not the original
+  unit-spec suite.)*
 - **A synthetic "oversize" test payload must be sized relative to BOTH the app's own cap and the real
   deployment platform's ceiling, not just the app's.** A payload comfortably above the app's own limit
   can still be ABOVE the platform's real body-size ceiling (Vercel Node.js Serverless Functions: ~4.5MB),

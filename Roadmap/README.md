@@ -92,6 +92,8 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
 - ✅ **Platform Envía kill-switch** — `shipping.envia_enabled` (enablement flag, default OFF) gates carrier quotes **and** label generation at the backend seams, so UCP/agent calls inherit the kill automatically; when off, checkout falls back to arranged delivery and sellers get a platform-pause banner + the manual-carrier path — flip in the flag dashboard, no deploy *(created OFF while the Envía account is unfunded; live flag-flip smoke owed to Daniel)*
+- ✅ **Envía comp-grant** — the platform admin can hand-pick individual shops to ride live Envía rates + real labels while the global `shipping.envia_enabled` flag stays OFF for everyone else (`metadata.envia_grant` on the Medusa seller, toggled from `/admin/tenants`, near-instant no-deploy effect) — both the quote seam and every label seam (incl. the FE legacy ship route) honor the grant, so agents can't bypass it *(live money-path smoke — grant, buy, generate a real platform-paid label, revoke — owed to Daniel)*
+- ✅ **Correos de México (económico)** — a new manual, no-API shipping-provider class: the Impresos en General tariff as a versioned weight-band table (2026, spec-locked to the published PDF, priced per piece), a per-shop seller opt-in with an honest explainer (drop-off at the post office, no tracking, printed-matter class) and a live rate preview, and a real checkout option — «Correos de México — Económico · 4–10 días · sin rastreo» — priced from item weight, never pre-selected over a faster carrier. Fulfillment rides the existing manual-carrier flow (tracking optional). Behind `shipping.correos_enabled` (enablement, default OFF) — independent of the Envía flag/grant, so it's still offered even when Envía itself is off *(created OFF; live checkout + ship + honest-email smoke owed to Daniel)*
 - ✅ Address capture tuned for Mexico (CP-first, alcaldía/colonia)
 - ✅ "Entrega acordada" (arranged delivery) and pickup options — pickup is a real **propose-and-confirm appointment** (buyer proposes date + window at checkout; whoever didn't propose confirms, seller can reschedule), and when a shipping quote fails or times out, checkout offers a selectable arranged-delivery fallback (paid via pago directo) instead of dead-ending
 - ✅ CP-first address form + shipping-quote recovery — the postal code leads and auto-fills estado/alcaldía/colonias before the rest reveals; quotes resolve within ~9s so "Cotizando…" can't hang
@@ -154,6 +156,29 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-11 — Shipping provider expansion SHIPPED (3 sprints; HIGH — checkout/fulfillment money
+  path, Daniel-merged throughout).** Envía was platform-disabled since the June kill-switch epic, so
+  every shop rode the arranged-delivery fallback with no path back to real carrier rates short of
+  flipping the global flag for everyone. This epic gave the platform surgical control instead:
+  **S1** (spike, docs-only) landed the funding-model decision — HYBRID: admin comp-grant for
+  curated tenants, BYO Envía token for self-serve sellers later, arranged/manual for the rest.
+  **S2** (comp-grant) let the admin hand-pick shops onto live platform Envía while the global flag
+  stays OFF (`metadata.envia_grant`, `/admin/tenants`), enforced at both the quote AND every label
+  seam so no agent/stale-page path bypasses it (be
+  [#78](https://github.com/danybgoode/medusa-bonsai-backend/pull/78) ·
+  fe [#210](https://github.com/danybgoode/miyagisanchezcommerce/pull/210)). **S3** added Correos de
+  México as a wholly new manual, no-API provider class — the Impresos en General tariff as a
+  spec-locked versioned weight-band table (priced per piece, not combined cart weight — a real bug
+  a cross-agent review caught and fixed before merge), a seller opt-in with an honest sin-rastreo
+  explainer, and a real checkout rate that's never pre-selected over a faster carrier (be
+  [#80](https://github.com/danybgoode/medusa-bonsai-backend/pull/80) ·
+  fe [#214](https://github.com/danybgoode/miyagisanchezcommerce/pull/214)) — both behind
+  independent enablement flags, both created OFF, shipping dark. A sibling epic's design-token CI
+  lint landed on the exact settings file S3 was editing mid-flight; caught by CI, fixed by adopting
+  the shared `<Banner>` primitive. See [04 · Shipping & Delivery ›
+  shipping-provider-expansion](04-shipping-and-delivery/shipping-provider-expansion/). Owed to
+  Daniel: both sprints' live money-path smokes (grant+label purchase; Correos checkout+ship).
 
 - **2026-07-10 — Repo cleanup + per-repo READMEs SHIPPED (1 sprint; LOW throughout — docs-only).**
   All four repos in the platform (root docs, backend, frontend, zine) greeted a visitor with

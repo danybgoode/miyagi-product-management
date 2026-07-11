@@ -1,14 +1,31 @@
 # Shipping provider expansion — Sprint 3: Correos de México — manual economy provider (Impresos v1)
 
-**Status:** ✅ built — backend PR [#80](https://github.com/danybgoode/medusa-bonsai-backend/pull/80)
-(`feat/shipping-provider-expansion-s3`), frontend PR
-[#214](https://github.com/danybgoode/miyagisanchezcommerce/pull/214) (same branch name). Deterministic
-gate green on both (tsc + build + unit/Playwright). CI running. Codex cross-review run on both — one
-real bug found and fixed (per-piece vs. combined-cart tariff weight, both apps); the two "should-fix"
-frontend findings were checked against the actual code and are non-issues (see the PR comment thread).
-**Owed:** the fresh Claude `pr-reviewer` pass — attempted, hit a session rate-limit mid-review both
-times, did not complete; re-run before Daniel merges the HIGH-risk S3.3. Live money-path smoke below
-also owed to Daniel.
+**Status:** ✅ MERGED — backend PR [#80](https://github.com/danybgoode/medusa-bonsai-backend/pull/80)
+→ squash `77d0875`, frontend PR [#214](https://github.com/danybgoode/miyagisanchezcommerce/pull/214) →
+squash `a19f3cc`, both branches deleted post-merge. Both apps deploy on merge (frontend → Cloud Run;
+backend → Cloud Build us-east4 → Cloud Run) — flag stays OFF by code default, so this ships dark.
+Deterministic gate green on both. Cross-review layers, both clean:
+- **Codex (advisory, both PRs):** one real bug found and fixed on both apps — the tariff table is priced
+  "per pieza" (per piece), not by combined cart weight; a multi-item order could be wrongly rejected once
+  the *summed* weight crossed 2000g even though every individual piece was within it. Fixed with a new
+  `quoteCorreosForPieces` helper. Two other findings were false positives (checked against the actual
+  code, documented in the PR comment threads) and one (buyer-side UCP shipping exposure) was the
+  already-deferred S3.5 scope decision, not a new gap.
+- **Claude `pr-reviewer` (the actual gate, both PRs, re-run after an earlier session-limit failure):**
+  **Approve** on both, no code changes required. Backend review flagged one genuine documentation gap
+  (the tariff-source PDF's location wasn't clear from a backend-repo-only read — it's committed in the
+  monorepo-ROOT repo, not `apps/backend`, per this project's nested-repo structure) — fixed as a comment
+  clarification on both apps (`34c336e` backend). Frontend review independently confirmed the 3-way merge
+  churn (per-piece fix + a sibling epic's design-token sweep landing on the same file + this PR's own
+  Banner-conversion fix) dropped nothing.
+- **Real mid-build catch (self-caught, not review-caught):** merging `origin/main` mid-flight surfaced
+  that a sibling epic (`seller-portal-rails-foundation` S2.5, #213) had landed a design-token CI lint
+  sweep on `Envios.tsx` — the exact file this sprint's S3.2 toggle touches — between when this branch was
+  cut and when the PR was opened. CI caught it (2 failing specs); fixed by converting the new Correos
+  banners to the same `<Banner>` primitive the rest of the now-swept file uses.
+
+**Owed to Daniel:** the live money-path smoke (walkthrough below) — flag flip, real Correos checkout,
+seller ship round-trip.
 
 > New provider **class**: a manual carrier with a real, priced checkout rate — no API, no labels.
 > v1 = **Impresos en General only** (national flat weight bands, no zones, no tracking; 2026 tariff —
@@ -19,6 +36,10 @@ also owed to Daniel.
 > Ordinary mail has no rastreo — buyer copy must never imply tracking.
 
 ## Stories
+
+*Per-story commit hashes below are the original WIP commits on the now-deleted feature branches —
+squash-merged away. Both apps' `main` carry the whole sprint as one commit each: backend `77d0875`
+(PR #80), frontend `a19f3cc` (PR #214).*
 
 ### Story 3.1 — Pure Impresos tariff lib ✅ backend `9d2f5cd` · frontend `84c3b36`
 **As** the platform, **I want** a versioned tariff table (weight bands → IVA-inclusive MXN totals, with

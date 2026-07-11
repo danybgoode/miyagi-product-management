@@ -13,14 +13,13 @@
 ## 🏗️ Building now (2)
 
 - [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 11/16 stories · risk: High · Wave 1
-- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 10/10 stories · risk: High · tbd
+- [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 4/4 stories · risk: Low · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (10)
+## 📋 Ready to build (scaffolded, not started) (9)
 
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 0/9 stories · risk: Low · Wave 1
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 0/7 stories · risk: High · Wave 1
 - [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](../../03-selling-and-shops/platform-migrations/README.md) — 03 Selling & Shops · 0/8 stories · risk: High · Wave 2
-- [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 0/4 stories · risk: Low · Wave 1
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
@@ -28,7 +27,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (91)
+## ✅ Shipped (92)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -57,6 +56,7 @@
 - [Seller Coupon Codes](../../03-selling-and-shops/promotions/README.md) — 03 Selling & Shops · 4/4 stories
 - [Shop Settings refactor](../../03-selling-and-shops/shop-settings-refactor/README.md) — 03 Selling & Shops · 21/21 stories · risk: Low
 - [Envía — platform Flagsmith kill-switch](../../04-shipping-and-delivery/envia-killswitch/README.md) — 04 Shipping · 4/4 stories
+- [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 10/10 stories · risk: High · tbd
 - [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Buyer Telegram channel + Buyer preference center](../../05-trust-offers-and-messaging/buyer-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Granular Multi-Channel Notifications (Email + Telegram)](../../05-trust-offers-and-messaging/granular-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
@@ -130,5 +130,15 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+
+These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
+derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
+forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
+
+| Epic | frontmatter (used) | sprint/retro-derived |
+|---|---|---|
+| Setup guide on dashboard | In progress | Shipped |
+
 ---
-_Epics: 104 · seeds in funnel: 5 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 104 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
