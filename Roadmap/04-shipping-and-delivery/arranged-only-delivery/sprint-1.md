@@ -1,17 +1,32 @@
 # Sprint 1 — The web path (seller declares → buyer checks out arranged-only)
 
 **Epic:** [Arranged-only delivery](README.md) · **Risk: HIGH — Daniel merges** ·
-**Status: 🟢 built, CI green on both PRs, awaiting Daniel's merge (HIGH risk).**
-Backend PR [danybgoode/medusa-bonsai-backend#84](https://github.com/danybgoode/medusa-bonsai-backend/pull/84)
-(S1.1+S1.2) · Frontend PR [danybgoode/miyagisanchezcommerce#223](https://github.com/danybgoode/miyagisanchezcommerce/pull/223)
-(S1.1+S1.2+S1.3). Both branches: `feat/arranged-only-delivery`, cut off latest `origin/main` in each repo
-(isolated worktrees — the shared checkouts were parked on sibling sessions' branches). Deterministic gate
-green on both (`tsc` + build + unit/api tests) before opening either PR. Mid-flight, a sibling epic
-(`onboarding-three-doors`, PR #221) merged to `main` first — merged `origin/main` into the frontend branch,
-resolved a `FlagKey`-union conflict + a `platform_flags` migration-timestamp collision (re-stamped ours
-`20260711140000`→`20260711150000`) + a stale flag-count drift-guard assertion (27→28). CI (`Type-check +
-build`, `Playwright vs preview`) green on the frontend PR after the merge; backend PR stayed mergeable
-throughout (no backend-side conflict).
+**Status: ✅ MERGED to `main` in both repos, 2026-07-11.** Backend PR
+[danybgoode/medusa-bonsai-backend#84](https://github.com/danybgoode/medusa-bonsai-backend/pull/84)
+(S1.1+S1.2) and frontend PR
+[danybgoode/miyagisanchezcommerce#223](https://github.com/danybgoode/miyagisanchezcommerce/pull/223)
+(S1.1+S1.2+S1.3) both squash-merged after CI green + a fresh pr-reviewer pass + an advisory cross-agent
+(Codex) pass on each. `shipping.arranged_only_enabled` stays OFF (default) — every code path is
+byte-identical to today until Daniel's money-path smoke passes and an admin flips it in `/admin/flags`.
+
+**Build notes:** both branches (`feat/arranged-only-delivery`) were cut in isolated worktrees off latest
+`origin/main` (the shared checkouts were parked on sibling sessions' branches). Mid-flight, three sibling
+epics merged to `main` in quick succession (`onboarding-three-doors` #221, `panfleto-premium-shop-s2` #222
+and #83) — each required a fresh `git merge origin/main`, resolving a `FlagKey`-union conflict + a
+`platform_flags` migration-timestamp collision (re-stamped ours `20260711140000`→`20260711150000`) + a
+flag-count drift-guard bump (26→27→28). CI also hit a real but unrelated flake: `panfleto-dressup-render.spec.ts`
+asserts a sibling epic's live storefront dress-up (collections + product curation) that was mid-rollout on
+prod during our CI runs — the spec's own skip-logic only accounts for "nothing created yet," not a partial
+state, so it failed hard instead of skipping until that rollout finished; resolved by re-running once the
+dress-up settled, not by any code change here. A cross-agent (Codex) pass on the backend PR flagged one real,
+non-blocking gap: the `start-checkout` 422 guard trusts client-supplied `fulfillment_method` rather than
+re-deriving the coordinated signal from the listing's actual `delivery_mode` — widened epic follow-up S2.2
+(see the epic README) to close this for arranged products, not just service/rental as originally scoped.
+
+Separately, a small unrelated chore rode alongside: `/admin/flags` had grown past 25+ flags with no
+consistent order or pagination — [danybgoode/miyagisanchezcommerce#225](https://github.com/danybgoode/miyagisanchezcommerce/pull/225)
+(LOW risk, merged) added alphabetical default sort + pagination + polished, plain-language es-MX
+descriptions for every known flag (backfilling three that had never been seeded at all).
 
 The thinnest end-to-end slice that ships and is Daniel-testable: a seller marks a listing arranged-only, a
 buyer checks out seeing only the coordinated delivery + pago directo, and the order completes. All three
@@ -22,7 +37,7 @@ stories are backend-first, then the FE reads them; the whole slice sits behind `
 
 ## Stories
 
-### S1.1 — Backend emits arranged-only *(HIGH — Daniel merges)* ✅ built — commit `2dd9a97` (backend) + `3816adb` (frontend flag mirror)
+### S1.1 — Backend emits arranged-only *(HIGH — Daniel merges)* ✅ MERGED — backend `21b1874` (PR #84 squash), frontend flag mirror `ba92aab1` (PR #223 squash)
 > **As a** buyer on an arranged-only listing, **I want** checkout-options to offer only the coordinated
 > delivery + manual payment, **so that** I'm not asked for a shipping address or a card that the seller
 > can't honor.
@@ -40,7 +55,7 @@ stories are backend-first, then the FE reads them; the whole slice sits behind `
   single `coord` delivery method, `only_coordinated:true`, and **zero** instant payment methods (manual
   only). Same call with `delivery_mode=carrier` or the flag off is unchanged from today.
 
-### S1.2 — Seller declares `delivery_mode` per listing *(HIGH — Daniel merges)* ✅ built — commit `76ed0cd` (backend) + `c4705de` (frontend)
+### S1.2 — Seller declares `delivery_mode` per listing *(HIGH — Daniel merges)* ✅ MERGED — backend `21b1874` (PR #84 squash), frontend `ba92aab1` (PR #223 squash)
 > **As a** seller, **I want** to mark a listing as delivered only by coordination, **so that** I can publish
 > a service / rental / local-only item without faking a carrier or a pickup spot.
 - A per-listing "Entrega" control in the listing create/edit form (a `carrier | arranged` choice) writes
@@ -53,7 +68,7 @@ stories are backend-first, then the FE reads them; the whole slice sits behind `
   a seller **with** a manual method can publish an arranged listing that has no carrier/pickup; a seller
   **without** one is blocked with a clear reason.
 
-### S1.3 — Web checkout honors arranged-only *(HIGH — Daniel merges)* ✅ built — commit `e104af2` (frontend)
+### S1.3 — Web checkout honors arranged-only *(HIGH — Daniel merges)* ✅ MERGED — frontend `ba92aab1` (PR #223 squash)
 > **As a** buyer, **I want** the checkout page to show the arranged delivery + pago directo cleanly, **so
 > that** I can complete the purchase without a dead-end.
 - Options proxy (`app/api/checkout/options/route.ts`) + `checkout/page.tsx` derive `delivery_mode` from the
