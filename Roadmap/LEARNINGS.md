@@ -1046,6 +1046,34 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `tsc`. Fix: always convert client-side (`new Date(value).toISOString()`) before the value ever
   leaves the browser; never send the naive `datetime-local` string and let the server interpret it.
   *(2026-07-09, admin-content-and-announcements S3 — the `/admin/contenido` announcement scheduler.)*
+- **A test named after a specific claim ("X is open/visible/true by default") can still pass without
+  asserting that claim, if it only checks the properties that happen to sit on the same object.** A
+  pure-logic spec titled "payments carries the '~4 min' estimate…" checked `.estimate`/`.body`/`.ctaHref`
+  (static config, present regardless of state) but never checked `.open` — so it kept passing through a
+  real resolution-order bug where payments *wasn't* actually the open step on a fresh shop, the exact
+  behavior the test's own name claimed to cover. When a test's title makes a specific behavioral claim,
+  assert that specific field explicitly, not just whichever properties are easiest to check on the same
+  object — this is the same shape as the tariff-unit lesson above (a suite can look like it covers a
+  claim while structurally never exercising it). *(2026-07-11, seller-portal-setup-guide B.1 — caught by
+  the `pr-reviewer` subagent, fixed same-session.)*
+- **An "extract this logic verbatim" refactor can silently break a lint/CI guard that's keyed on file
+  PATH, not file content.** `lib/design-token-audit.ts`'s raw-hex-literal guard allowlists specific
+  `(path, literal, contains)` triples — moving an allowlisted expression to a new file (same code, same
+  line, new location) broke the guard even though nothing about the code itself changed, because the
+  allowlist entry stayed pointed at the old path. A narrower per-story spec run (just the new file) didn't
+  catch it; only a full `api`-project run did. Any code-MOVE refactor should grep for path-keyed config
+  (lint allowlists, exclusion lists, `enforcedSweptPaths`-style sets) referencing the old path, not just
+  run the specs for the new code. *(2026-07-11, seller-portal-setup-guide B.1.)*
+- **"One step/item open at a time, first-incomplete-in-order" and "this specific step is always open when
+  incomplete" read almost identically in prose, and a plan's one worked acceptance example can fail to
+  distinguish them if that example happens to produce the same answer under both rules.** The epic doc's
+  stated resolution rule ("payments open by default when incomplete") was correct the whole time; the
+  first implementation defaulted to the simpler strict-order rule because the one acceptance example in
+  the sprint doc (profile+payments-only) gives the same result either way. When a plan states a resolution
+  rule for "one thing active/open/selected at a time" and a straightforward reading of "first in order"
+  could diverge from it, work out a SECOND example by hand — one where the two rules actually disagree —
+  before writing the code. *(2026-07-11, seller-portal-setup-guide B.1 — `getSetupSteps`'s payments
+  escalation; caught in review, would have been cheaper caught before.)*
 
 ## Medusa gotchas
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the
