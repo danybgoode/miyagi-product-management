@@ -46,6 +46,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   commit still landed safely via its own `.worktrees/<name>` off `origin/main`, then `git push origin
   HEAD:main` (or `main:main` if the local branch itself has the commit) — same fix the parallel-*planning*
   rule already prescribed, just needed mid-*build* too.
+  **Corollary — checking CI status and merging a PR need no local checkout at all.** `gh pr checks
+  <N>` and `gh pr merge <N>` operate against the pushed remote branch via the GitHub API; they
+  don't care what's checked out locally. Mid-session, a concurrent agent switched the shared
+  `apps/miyagisanchez` checkout to its own branch with in-progress uncommitted work; rather than
+  checking back out to reclaim it (which would have yanked that session's tree), CI status and the
+  merge itself were driven entirely through `gh` from wherever the shell happened to be — the
+  sibling session's branch and uncommitted changes were never touched. *(2026-07-10,
+  repo-readmes-branding S1.)*
 - **Before building a story, grep whether a sibling PR already fixed the identical root cause.** Two epics
   approved the same day can target the same bug from different scope docs. `feat/agent-discovery-and-indexing`
   had an open, green, mergeable PR that fixed `promoter-funnel-fixes` Story 1.1's exact root cause

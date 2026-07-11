@@ -1,6 +1,6 @@
 # Repo cleanup + per-repo READMEs — Sprint 1: Per-repo READMEs (flagship root + frontend/backend/zine) + stale-reference sweep
 
-**Status:** ✅ shipped 2026-07-11
+**Status:** ✅ shipped 2026-07-10
 
 ## Stories
 
@@ -53,7 +53,7 @@ the root repo — **so that** a PR-link visitor to any repo lands on the real st
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: GitHub (rendered READMEs) + local for zine
 
-**Results (run 2026-07-11, post-merge):**
+**Results (run 2026-07-10, post-merge):**
 
 1. Open https://github.com/danybgoode/miyagi-product-management
    → **PASS.** The README (committed locally, `9614024` — not yet pushed; Daniel pushes per root-repo

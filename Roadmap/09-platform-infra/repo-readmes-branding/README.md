@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: repo-readmes-branding
 ---
 
@@ -48,12 +48,16 @@ product-docs repo; zine has no remote). Frontend/backend README changes ride nor
 their own repos (reviewer may auto-merge on green CI); no cross-repo ordering constraint.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Kill-switch: **n/a** — decided at grooming (docs-only, no runtime seam)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — frontend
+      [PR #212](https://github.com/danybgoode/miyagisanchezcommerce/pull/212), backend
+      [PR #79](https://github.com/danybgoode/medusa-bonsai-backend/pull/79); root + zine committed
+      locally (root: owed push to Daniel per convention; zine: genuinely no remote)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs) — see `sprint-1.md`
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Kill-switch: **n/a** — decided at grooming (docs-only, no runtime seam)
+- [x] Feature branch deleted (both app-repo PRs merged with `--delete-branch`); **this README's
+      frontmatter `status: shipped`**
