@@ -1,6 +1,6 @@
 # Catalog management — Sprint 5: Nav SSOT layer (flag-safe nav · mobile bar · one import door)
 
-**Status:** 🚧 built, gate green, PR open (Daniel merges — folds into the epic's HIGH tier) · commit refs: see PR. **Sequence gate: build after S3 merges** (nav/shell work must not collide with S3's open PRs) — satisfied, S3 merged 2026-07-09. Independent of S4's table columns.
+**Status:** ✅ MERGED 2026-07-11 — FE PR [#216](https://github.com/danybgoode/miyagisanchezcommerce/pull/216) squash `4b5b831`. **Sequence gate: build after S3 merges** (nav/shell work must not collide with S3's open PRs) — satisfied, S3 merged 2026-07-09. Independent of S4's table columns.
 
 > **Scope note (confirmed with Daniel during planning):** Story 5.3's "one import door" is narrowed to
 > just fixing `ManageDashboard.tsx`'s mobile-hidden Importar button. The settings-page banner stays on
@@ -19,19 +19,19 @@
 
 ## Stories
 
-### Story 5.1 — Flag-safe nav parity (R13) ✅ built
+### Story 5.1 — Flag-safe nav parity (R13) ✅ merged
 **As a** seller, **I want** nav entries to appear only when their page actually exists, **so that** I never tap a rail/sheet item into a 404.
 **Acceptance:** `SellerNavEntry` gains an optional `flag: FlagKey`; the manage layout resolves the enabled set server-side via the **same `isEnabled()`** the pages use and passes it to the client `SellerNav`, which filters on it. With `ops.profit_enabled` OFF: no Ganancias entry in the rail or the mobile "Más" sheet, and `/shop/manage/profit` still `notFound()`s. With it ON: the entry appears and resolves 200. Pure filter fn is unit-tested.
 **Risk:** LOW
 **Reuse:** `lib/flags.ts isEnabled()` (identical gate to the pages — do not fork the flag read); `lib/seller-nav.ts` SSOT (add the field, don't restructure). *(LEARNINGS: the Ganancias 404 is the flag→notFound→force-dynamic case, profit-analyzer S1, 2026-07-06 — fix it nav-side, not page-side.)*
 
-### Story 5.2 — Mobile bar redesign (F5) ✅ built
+### Story 5.2 — Mobile bar redesign (F5) ✅ merged
 **As a** seller on a phone, **I want** a Publicar action and a sanely-grouped "Más", **so that** every dashboard action is reachable in ≤2 taps.
 **Acceptance:** the mobile bottom bar reads **Resumen · Pedidos(badge) · ⊕ Publicar FAB (center, 46px, accent) → `/sell` · Catálogo · Más(badge relay)** — ≤5 slots. The "Más" sheet is **grouped with headers** (Operar remainder incl. Ofertas w/ badge · Crecer grid · Configuración w/ status pill · "Ver tienda pública" link) — no ungrouped junk drawer. Any badge hidden inside "Más" **relays** onto the "Más" trigger (info color), fed by `lib/seller-pending-summary.ts`. Every Crecer/Config destination reachable in ≤2 taps. FAB lands on `/sell`.
 **Risk:** LOW–MED
 **Reuse:** `SellerNav.tsx` (extend the existing "Más" disclosure — add the FAB + grouping + relay); `lib/seller-pending-summary.ts` (the badge feed); the buyer PWA "Publicar ⊕" FAB pattern from `navigation-settings-reorg` as the visual precedent.
 
-### Story 5.3 — One import door + mobile restore (F7, change #3) ✅ built, narrowed scope
+### Story 5.3 — One import door + mobile restore (F7, change #3) ✅ merged, narrowed scope
 **As a** seller, **I want** the catalog importer reachable on mobile, **so that** import isn't desktop-only.
 **Acceptance (as built):** `ManageDashboard.tsx`'s "Importar" control (→ `/shop/manage/import`, the
 catalog/product importer) drops its `hidden sm:inline-block` — visible + tappable at 390px. The
