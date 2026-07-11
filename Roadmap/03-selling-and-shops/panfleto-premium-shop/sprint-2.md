@@ -1,8 +1,10 @@
 # Panfleto — the first premium shop — Sprint 2: Rename + dress-up miyagiprints → panfleto
 
-**Status:** ⬜ in progress · **Sprint 1 confirmed merged** (frontend `#217`/`6c42c43`, backend
-`#81`/`3b252c1`, both on `origin/main`). Branched fresh: `feat/panfleto-premium-shop-s2` off
-`origin/main` in both repos (the old `feat/panfleto-premium-shop` is a squash-merged dead end).
+**Status:** 🚧 in progress · Story 2.2 (`create_collection` MCP tool) ✅ merged + live. Stories 2.1 +
+2.3 await Daniel's three live actions (see "Your three actions" below). **Sprint 1 confirmed merged**
+(frontend `#217`/`6c42c43`, backend `#81`/`3b252c1`, both on `origin/main`). Branched fresh:
+`feat/panfleto-premium-shop-s2` off `origin/main` in both repos (the old `feat/panfleto-premium-shop`
+is a squash-merged dead end).
 
 **Live baseline confirmed (2026-07-11, via the public catalog API):** the shop has exactly **one**
 product today — "Stickers personalizados", $50 MXN, category `creatividad`, no collection yet — and
@@ -42,9 +44,16 @@ portal UI, since no create path exists). Touches **both repos**: a new backend
 tested `createSellerCollection` helper — no new collection-creation logic, just an internal-auth
 wrapper); frontend `createSellerCollectionViaInternal` + the `create_collection` MCP tool
 (schema + handler + dispatch case + `MCP_SELLER_TOOLS`/manifest wiring). QA:
-`e2e/mcp-create-collection.spec.ts` (schema, both auth-rejection cases, manifest wiring — verified
-live) + `e2e/mcp-tool-dispatch-parity.spec.ts` (verified live, confirms dispatch wiring). Both repos
-`tsc --noEmit` clean; backend `medusa build` clean.
+`e2e/mcp-create-collection.spec.ts` (schema, both auth-rejection cases, manifest wiring, pure
+name-validation cases — verified live) + `e2e/mcp-tool-dispatch-parity.spec.ts` (verified live,
+confirms dispatch wiring). Both repos `tsc --noEmit` clean; backend `medusa build` clean. Reviewed
+(fresh pr-reviewer agent on each PR: approve) + cross-agent advisory (codex): backend clean; frontend
+surfaced 2 real findings (schema promised 2–60 char name validation the handler didn't enforce; the
+QA spec claimed input-validation coverage it didn't have) — both fixed pre-merge (extracted
+`validateCollectionName` to `lib/collection-derive.ts`, next-free, directly unit-tested). **✅ MERGED +
+LIVE** — backend PR [#83](https://github.com/danybgoode/medusa-bonsai-backend/pull/83) (squash
+`6fe6bdc`), frontend PR [#222](https://github.com/danybgoode/miyagisanchezcommerce/pull/222) (squash
+`9e8a1f6`).
 
 ### Story 2.3 — Full brand dress-up (dogfooding the agent path)
 **As a** visitor, **I want** panfleto to read as an editorial publishing house, **so that** the first

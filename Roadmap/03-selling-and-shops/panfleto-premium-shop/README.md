@@ -42,9 +42,9 @@ is *which* seller owns placement products (S1) — a data/ownership move, not a 
 |---|---|---|---|
 | 1 | Placements sell through a platform-owned seller (config-addressable) | high | ✅ shipped + live |
 | 1 | Old miyagiprints constant unreachable; existing orders + zine pipeline intact | high | ✅ shipped + live |
-| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | 🚧 built + QA'd; the two live actions are Daniel's (see sprint-2.md) |
-| 2 | `create_collection` MCP tool (closes a real gap — collections were list-only) | low | 🚧 built + QA'd |
-| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | 🚧 copy drafted, awaiting Daniel's approval before execution |
+| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | 🚧 QA'd + live infra ready; 2 of Daniel's 3 live actions pending (see sprint-2.md) |
+| 2 | `create_collection` MCP tool (closes a real gap — collections were list-only) | low | ✅ shipped + live (backend PR [#83](https://github.com/danybgoode/medusa-bonsai-backend/pull/83) `6fe6bdc`, frontend PR [#222](https://github.com/danybgoode/miyagisanchezcommerce/pull/222) `9e8a1f6`, both merged) |
+| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | 🚧 copy drafted; execution pending Daniel's agent-token action + explicit copy approval |
 | 3 | The horror convocatoria — created, copy drafted, submission window open | med | ⬜ not started |
 | 3 | Voting/excerpt launch plan + share surfaces (announcement, mschz link) | med | ⬜ not started |
 | 4 | 2–3 new premium theme presets (incl. dark/editorial for panfleto) | low | ⬜ not started |
