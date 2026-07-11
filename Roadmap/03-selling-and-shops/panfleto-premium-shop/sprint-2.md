@@ -1,10 +1,8 @@
 # Panfleto — the first premium shop — Sprint 2: Rename + dress-up miyagiprints → panfleto
 
-**Status:** 🚧 in progress · Story 2.2 (`create_collection` MCP tool) ✅ merged + live. Stories 2.1 +
-2.3 await Daniel's three live actions (see "Your three actions" below). **Sprint 1 confirmed merged**
-(frontend `#217`/`6c42c43`, backend `#81`/`3b252c1`, both on `origin/main`). Branched fresh:
-`feat/panfleto-premium-shop-s2` off `origin/main` in both repos (the old `feat/panfleto-premium-shop`
-is a squash-merged dead end).
+**Status:** ✅ ALL 3 STORIES SHIPPED + LIVE. **Sprint 1 confirmed merged** (frontend `#217`/`6c42c43`,
+backend `#81`/`3b252c1`, both on `origin/main`). Branched fresh: `feat/panfleto-premium-shop-s2` off
+`origin/main` in both repos (the old `feat/panfleto-premium-shop` is a squash-merged dead end).
 
 **Live baseline confirmed (2026-07-11, via the public catalog API):** the shop has exactly **one**
 product today — "Stickers personalizados", $50 MXN, category `creatividad`, no collection yet — and
@@ -23,10 +21,18 @@ admin subdomain grant; the `mschz.org/panfleto` flat short link resolves.
 **Execution:** both mutations require a live authenticated session (Clerk seller session for the
 slug PATCH, Clerk admin session for the subdomain grant) — **Daniel executes both directly**, no
 CLI/script/MCP tool exists or is being built for either. Exact steps below, under "Your three actions."
-**Status:** 🚧 QA built (`e2e/panfleto-rename-alias.spec.ts` — self-activating, verified live against
-today's un-renamed prod: correctly skips all 3 assertions; caught + fixed a real bug in the process
-— `mschz.org`'s branded 404 is itself a 301, not a 404 status, so the skip condition had to key off
-the redirect target). Awaiting Daniel's two live actions.
+**Status:** ✅ SHIPPED + LIVE. Daniel executed the rename (`miyagiprints` → `panfleto`), the subdomain
+grant, and — beyond scope — added a verified custom domain. `e2e/panfleto-rename-alias.spec.ts`
+(self-activating) now genuinely **passes** (not skips) all 3 assertions against the live shop:
+`/s/miyagiprints` redirects to `/s/panfleto`, `panfleto.miyagisanchez.com` renders white-label,
+`mschz.org/panfleto` resolves. Two real spec bugs found and fixed against the live result (PR
+[#226](https://github.com/danybgoode/miyagisanchezcommerce/pull/226), squash `17b4293`): (1) the
+page-level redirect is a **308** (Next.js `permanentRedirect()`), not 301 — 301 is what middleware's
+own `NextResponse.redirect(url, 301)` issues for the mschz.org/subdomain host paths, a genuinely
+different code path for the same alias intent; (2) a codex cross-review catch — the collection-render
+check (Story 2.3) originally asserted loose "Stickers" text, which the shop's pre-existing "Stickers
+personalizados" product title also satisfies regardless of whether the collection exists; fixed to
+assert the shop's own nav-strip href shape instead.
 
 ### Story 2.2 — `create_collection` MCP tool
 **As** a seller agent, **I want** to create a shop collection through the MCP tool surface (not just
@@ -66,11 +72,19 @@ live `/api/ucp/mcp` endpoint using the shop's own agent token — not the settin
 agent path." Copy meets the epic's content bar and is drafted below for Daniel's read **before any
 MCP call executes.**
 **Risk:** low (content/config only — no money, no auth path touched).
-**Status:** 🚧 copy drafted below; QA built (`e2e/mcp-store-config-presentation.spec.ts` extended
-for `content.about`/`content.faq` + `e2e/panfleto-dressup-render.spec.ts`, self-activating —
-verified live: both skip cleanly today). Execution is necessarily **post-merge/deploy** — the
-`create_collection` tool this story dogfoods only exists on prod once Story 2.2 ships — and
-**post-approval** of the copy below.
+**Status:** ✅ SHIPPED + LIVE. Copy approved by Daniel as drafted (verbatim, promo image left unset
+per his call). Executed live via MCP tool calls against `POST /api/ucp/mcp` using the shop's own
+agent token: one `patch_store_configuration` call (profile tagline/announcement/hero/theme_preset +
+content.about/content.faq + returns_policy — all 3 blocks applied, zero issues), three
+`create_collection` calls (Historias/Convocatorias/Stickers, all created cleanly), one
+`update_listing` call assigning the existing "Stickers personalizados" product
+(`prod_01KWNH3FF7BGGFVRVSBEMZSX35`) into the Stickers collection. `profile.name` was left untouched
+(Daniel's own rename already set it to "Panfleto"; the draft's lowercase suggestion was superseded by
+his live choice, not overridden). Verified via `get_store_configuration` + `list_my_collections`
+(both read back exactly as sent) and a live storefront curl (`/s/panfleto/c/{historias,convocatorias,
+stickers}` all present in the nav HTML). `e2e/panfleto-dressup-render.spec.ts` genuinely **passes**
+(not skips) both checks; the full `mcp-create-collection.spec.ts` + `mcp-store-config-presentation.spec.ts`
+suites (15 tests) pass live.
 
 ## Drafted copy (Story 2.3) — for Daniel's read before shipping
 
@@ -132,21 +146,14 @@ call):
 3. **Stickers** — "Stickers de edición limitada, impresos por panfleto." → the existing "Stickers
    personalizados" product gets assigned here via `update_listing.collection_names`.
 
-**⬜ Waiting on Daniel's read/approval of this copy block before any MCP call executes.**
+**✅ Approved by Daniel as drafted (2026-07-11) and shipped live — see Story 2.3 status above.**
 
-## Your three actions
-Once the PRs are merged + deployed, do these in order:
-1. **Rename the slug** (Story 2.1). Shop settings → Canal → change the shop's slug from
-   `miyagiprints` to `panfleto`. This is the self-serve `PATCH /api/sell/shop/slug` flow — the old
-   slug 301-aliases automatically for 90 days.
-2. **Grant the subdomain** (Story 2.1). Admin → Tenants → find the shop (now `panfleto`) → grant
-   `subdomain`. This writes the comp grant that makes `panfleto.miyagisanchez.com` route white-label.
-3. **Provision (or rotate) the shop's MCP agent token** (Story 2.3 — found while checking what
-   Story 2.3's execution needs). `POST /api/sell/agent-token` is Clerk-session-gated only — same as
-   the two actions above, no internal/admin path exists — and the plaintext token is returned
-   **once**, never retrievable again. Shop settings → "Agentes e integraciones" → generate (or
-   rotate, if one already exists but the plaintext is gone) → paste me the token so I can run the
-   Story 2.3 MCP calls with it.
+## Daniel's three actions — all done
+1. ✅ **Renamed the slug** (Story 2.1) — `miyagiprints` → `panfleto`, confirmed live.
+2. ✅ **Granted the subdomain** (Story 2.1) — `panfleto.miyagisanchez.com` confirmed white-label live.
+   Daniel also added a **verified custom domain**, beyond this sprint's scope — not touched by any
+   spec or code here.
+3. ✅ **Provisioned the MCP agent token** (Story 2.3) — used to execute every MCP call in this sprint.
 
 ## Sprint QA — one spec per story
 - **2.1:** extend `e2e/own-shop-seo.spec.ts` and/or `e2e/subdomain.spec.ts` with the slug-alias 301 +
@@ -162,13 +169,17 @@ Once the PRs are merged + deployed, do these in order:
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
 
+**Agent-verified already** (2026-07-11, via `curl`/Playwright against prod — not a substitute for
+your own eyeball pass, especially for visual/copy quality):
 1. Open https://miyagisanchez.com/s/miyagiprints
-   → 301 to https://miyagisanchez.com/s/panfleto.
+   → Redirects to https://miyagisanchez.com/s/panfleto. ✅ confirmed (308).
 2. Open https://panfleto.miyagisanchez.com in a private window.
-   → White-label shop, new brand, no platform chrome.
+   → White-label shop, new brand, no platform chrome. ✅ confirmed (200, "panfleto" in the HTML).
 3. Open https://mschz.org/panfleto
-   → 301 to the canonical shop URL.
+   → 301 to the canonical shop URL. ✅ confirmed.
 4. Tap through Historias / Convocatorias / Stickers collections + Acerca.
-   → Curated content, es-MX copy, sticker product intact under its collection.
+   → Curated content, es-MX copy, sticker product intact under its collection. ✅ nav links + sticker
+   curation confirmed via API; **visual/copy quality is still yours to eyeball** — tagline, hero,
+   Acerca body, FAQ, and the `papel` theme preset haven't had a human look at them live yet.
 
 If any step fails, note the step number + what you saw — that's the bug report.

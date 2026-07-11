@@ -42,9 +42,9 @@ is *which* seller owns placement products (S1) — a data/ownership move, not a 
 |---|---|---|---|
 | 1 | Placements sell through a platform-owned seller (config-addressable) | high | ✅ shipped + live |
 | 1 | Old miyagiprints constant unreachable; existing orders + zine pipeline intact | high | ✅ shipped + live |
-| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | 🚧 QA'd + live infra ready; 2 of Daniel's 3 live actions pending (see sprint-2.md) |
-| 2 | `create_collection` MCP tool (closes a real gap — collections were list-only) | low | ✅ shipped + live (backend PR [#83](https://github.com/danybgoode/medusa-bonsai-backend/pull/83) `6fe6bdc`, frontend PR [#222](https://github.com/danybgoode/miyagisanchezcommerce/pull/222) `9e8a1f6`, both merged) |
-| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | 🚧 copy drafted; execution pending Daniel's agent-token action + explicit copy approval |
+| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | ✅ shipped + live |
+| 2 | `create_collection` MCP tool (closes a real gap — collections were list-only) | low | ✅ shipped + live (backend PR [#83](https://github.com/danybgoode/medusa-bonsai-backend/pull/83) `6fe6bdc`, frontend PR [#222](https://github.com/danybgoode/miyagisanchezcommerce/pull/222) `9e8a1f6`, fix PR [#226](https://github.com/danybgoode/miyagisanchezcommerce/pull/226) `17b4293`) |
+| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | ✅ shipped + live |
 | 3 | The horror convocatoria — created, copy drafted, submission window open | med | ⬜ not started |
 | 3 | Voting/excerpt launch plan + share surfaces (announcement, mschz link) | med | ⬜ not started |
 | 4 | 2–3 new premium theme presets (incl. dark/editorial for panfleto) | low | ⬜ not started |
@@ -54,6 +54,15 @@ is *which* seller owns placement products (S1) — a data/ownership move, not a 
 (squash `6c42c43`), both merged and live; cutover complete (`PLATFORM_SELLER_SLUG` →
 `miyagi-plataforma` on both Cloud Run services). Details + smoke walkthrough: `sprint-1.md`. Owed:
 Daniel's live money-step smoke (buy one real placement).
+
+**Sprint 2** (2026-07-11): backend PR [#83](https://github.com/danybgoode/medusa-bonsai-backend/pull/83)
+(squash `6fe6bdc`) + frontend PR [#222](https://github.com/danybgoode/miyagisanchezcommerce/pull/222)
+(squash `9e8a1f6`) + fix PR [#226](https://github.com/danybgoode/miyagisanchezcommerce/pull/226)
+(squash `17b4293`, two real spec bugs found verifying against the live rename), all merged. Daniel
+renamed the shop, granted the subdomain, and added a verified custom domain (beyond scope, untouched
+here); the dress-up copy was approved as drafted and executed live via MCP (`patch_store_configuration`
++ 3× `create_collection` + `update_listing`). Details + smoke walkthrough: `sprint-2.md`. Owed:
+Daniel's own visual/copy eyeball pass (agent-verified the wiring, not the aesthetics).
 
 **Content bar (S2/S3, every word):** es-MX, simple, concrete, direct address. Banned: time-to-complete
 promises; "esto nos recuerda…"-shaped wrap-ups; filler intensifiers. Draft copy lands in the sprint
