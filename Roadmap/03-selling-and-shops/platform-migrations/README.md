@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: platform-migrations
 archetype: Grower
 ---
@@ -75,16 +75,18 @@ mechanism: in-house `platform_flags` via `isEnabled()` (node/server seam). The S
 an unpriced SKU is unsellable.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** `migrations.connector_enabled` exists in the flag store, enablement polarity,
-      created DISABLED in every env. *Verify-only — decided at grooming, not here.*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated — see RETROSPECTIVE.md's
+      "Gaps / follow-ups": S0/S1/S2's live/money smokes and S3's export-file verification remain
+      owed to Daniel; S3's copy sign-off is done)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** `migrations.connector_enabled` exists in the flag store, enablement polarity,
+      confirmed ON in prod 2026-07-11 (sprint-1.md). *Verify-only — decided at grooming, not here.*
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — run `node scripts/build-order.mjs`)
 
 ## Sprints
 - [sprint-0.md](sprint-0.md) — ✅ Bug: ML re-auth churn (do first). Merged + live.
@@ -95,4 +97,5 @@ an unpriced SKU is unsellable.
 - [sprint-3.md](sprint-3.md) — ✅ MERGED + LIVE 2026-07-11 (PR #230, squash `56a4ddd`). Packaging:
   `/vende/migracion` landing pages (Shopify connector + Tiendanube/WooCommerce/BigCartel export
   how-tos) + consultant runbook + sell-sheet/`/vende` integration + an admin pricing-UI fix.
-  Owed: Daniel's copy sign-off + live export-file verification + the admin price-set smoke.
+  Copy signed off by Daniel 2026-07-11. Owed: live export-file verification + the admin price-set
+  smoke.

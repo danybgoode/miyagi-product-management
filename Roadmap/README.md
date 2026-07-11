@@ -91,6 +91,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ **Setup guide on dashboard** — a persistent "Pon tu tienda en marcha" card on Resumen (`/shop/manage`) reads the shop's real completion state and walks a merchant through 5 steps to a sellable shop, with **payments named up front** (step 3, "~4 min" estimate) rather than sprung on them after everything else looks done — one step open at a time, done steps collapse with strikethrough, dismissible with a restore toggle in Configuración, step 5 completed via a real share action. The completion logic is one shared seam (`lib/setup-guide.ts`) also driving the existing Configuración "N de X secciones configuradas" counter, so the two surfaces can't drift apart. Guide-interaction events (view/step-open/step-complete/dismiss/restore/first-share) feed the GTM `dataLayer` as the epic's Grower signal *(live card render/interaction + payments-OAuth smoke owed to Daniel)*
 - ✅ **Onboarding — three ranked doors + guided cobros + Comparte** — first run replaces the old "paste JSON into a bare textarea" entry with a welcome intake → three ranked doors (agent-first, with a trust contract), a drop-anything intake (CSV/JSON), an editable staging preview the merchant approves before anything is created, one shared `<SuccessCard>` ending across all three doors, a guided cobros mini-wizard (breadcrumb + step dots, wraps the existing Mercado Pago OAuth unchanged — token exchange/storage never touched), and a Comparte share moment (WhatsApp-first, IG-story image, agent hand-off). Personalizes the setup guide's step order from the seller's own intake answers. Behind `onboarding.three_doors_enabled` (kill-switch, default OFF) *(live S7 MercadoPago connect round-trip + full first-run walkthrough smoke owed to Daniel)*
 - ✅ **Catálogo — one home for every product, channel, price & quantity** — the old flat "Mis anuncios" grid is now a real server-filtered/paginated table (`/shop/manage/catalogo`: search/status/channel/stock/category, sort, URL-addressable views) with the activo/borrador/pausado/agotado status model as first-class filters. Honest **inventory modes** (tracked / sin límite / sobre pedido — Medusa-native `manage_inventory`/`allow_backorder`, never a qty-0 hack) plus **per-channel publish toggles** (Miyagi/ML) and a per-product **ML price override**. **Staged bulk actions**: select-across-filter → diff preview (old→new, per-row validation) → apply — price set/±%, publish toggles, category/collection, inventory mode, pause/soft-delete, idempotent and audited, with full MCP parity (propose→confirm→apply as agent tools). **Estimated margin** per product/channel (margin-killer flags) with a bulk "apply suggested price" through the same staged pipeline. `catalog.inventory_channels_enabled` + `catalog.bulk_enabled` (fail-closed) both **ON**
+- ✅ **Platform migrations — Shopify connector, parity score, consultant white-glove SKU** — a merchant switching from another platform points at their **Shopify** shop domain and Miyagi pulls catalog + policies into staging via Shopify's UCP-conformant Storefront MCP (`migrations.connector_enabled` **ON**), rides the existing bulk-import review/confirm pipeline, and sees an honest **parity report** (5 sections rated mapped/partial/none — including the real, permanent gap that Miyagi has no arbitrary custom-pages model) before anything imports. A `migration` promoter SKU ($999 MXN flat ≤150 listings, 50% commission, admin-tunable) closes small catalogs on the spot; larger ones get a **platform-computed, tamper-proof quoted estimate** (no client-suppliable amount on the close route at all) or route to Daniel for genuinely custom cases, never a silent guess. Per-platform **migration landing pages** at `/vende/migracion` (Shopify → the connector; Tiendanube/WooCommerce → real export steps into the shipped importer; Big Cartel → its public `/products.json` endpoint, since it has no admin export button) plus a printable **consultant runbook** for in-person closes. *(live money-path + real-export-file smokes owed to Daniel)*
 
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
@@ -166,6 +167,28 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-11 — Platform migrations epic SHIPPED (4 sprints; HIGH).** Merchants stayed on
+  Shopify/Tiendanube/WooCommerce/BigCartel because switching meant weeks of re-typing. **S0**
+  (backend PR #82) fixed a live customer-pain bug first — two identically-scheduled cron jobs
+  racing an unserialized Mercado Libre token refresh, causing false "reconnect required" churn.
+  **S1** (PR #220) added a **Shopify connector**: a shop domain in → catalog + policies pulled via
+  Shopify's UCP-conformant Storefront MCP into the existing bulk-import staging pipeline, plus an
+  honest **parity report** (5 sections rated mapped/partial/none) before any money changes hands —
+  validated and fed back a real, permanent gap (no arbitrary custom-pages model) into the idea
+  funnel rather than silently absorbing it. **S2** (PR #224) added the money path: a `migration`
+  promoter SKU ($999 MXN flat ≤150 listings) with **no separate discount layer** (the number both
+  sides see is the only number, by construction), and a **quoted-estimate** primitive for larger
+  catalogs whose close route has no client-suppliable amount field at all — a tamper attempt has
+  nothing to act on. **S3** (PR #230, built in its own session after S0-S2's deferral) packaged
+  all of it: per-platform `/vende/migracion` landing pages with real, honest export steps (Big
+  Cartel: no admin export button exists at all — routed through the paste/AI-extract path instead
+  of a CSV that doesn't exist) and a printable consultant runbook, plus a same-sprint fix for a
+  real, unrelated bug (the admin pricing screen couldn't actually save a price for the `migration`
+  SKU). Every reviewed sprint's cross-agent + independent `pr-reviewer` passes caught real,
+  non-blocking issues, all fixed pre-merge. Copy signed off by Daniel; the live money-path and
+  real-export-file smokes remain owed. See [03 · Selling & Shops › Platform
+  migrations](03-selling-and-shops/platform-migrations/).
 
 - **2026-07-11 — Arranged-only delivery epic SHIPPED (2 sprints; HIGH, S2.1 MED).** A seller who genuinely
   delivers only in person — a service, a rental, a local-only item — previously had no way to say so; every

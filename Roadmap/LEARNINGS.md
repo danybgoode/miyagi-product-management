@@ -564,6 +564,43 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   index into that (the same pattern `components/ui/StatusBadge.tsx`'s `TOKEN_CLASS` record already uses
   correctly) — never interpolate inside the class string itself. *(2026-07-10,
   seller-portal-rails-foundation S2 — caught mid-sweep in `Negociacion.tsx` before it shipped.)*
+- **A production build's `output: 'standalone'` server is the only reliable way to locally
+  Playwright-verify a branch when `next dev` is broken for the repo (see the Turbopack corollary
+  below) — and `next start` is NOT a safe substitute, despite printing what looks like a routine
+  warning.** `next start` prints "`next start` does not work with `output: standalone`" but still
+  boots and serves *stale* content — a locale-copy fix tested green against a build that had never
+  actually picked it up, across two full `npm run build` reruns in the same session, silently (no
+  error, no visibly wrong page — the served page just didn't have the fix). The real fix: run
+  `node .next/standalone/<path-to-app>/server.js` directly. Two things `next build` does NOT copy
+  into `.next/standalone` that you must copy by hand before it'll serve real pages: `public/` and
+  `.next/static/`. And standalone does **not** auto-load `.env.local` the way `next dev`/`next
+  start` do — source it into the process env before launching (`set -a; source .env.local; set +a;
+  PORT=<p> node .../server.js`). *(2026-07-11, platform-migrations S3.)*
+  **Corollary — Turbopack's dev-mode global CSS class scanner can crash on a literal string sitting
+  in a `.spec.ts` fixture or a code comment, nowhere near any real Tailwind usage.** A design-token
+  CI lint's own negative-fixture string (`rounded-l-[var(--r-*)]`, deliberately invalid syntax
+  written to test a regex) got picked up by Turbopack's source-wide class-name scan and threw a hard
+  PostCSS parse error on every page load under `next dev --turbopack` — while `next build`
+  (webpack) built the identical tree with zero errors. When a `next dev --turbopack` 500 cites a
+  nonsensical, non-Tailwind CSS token, `grep` that literal string across the **whole** repo
+  (comments and test fixtures included) before assuming a real class-usage bug — this is what
+  forced the standalone-server workaround above in the first place. *(2026-07-11,
+  platform-migrations S3.)*
+- **`scripts/cross-review.mjs` resolves its target repo from the current working directory, and
+  gets it silently wrong from the monorepo root.** Running it from `/medusa-bonsai` (the root
+  Roadmap repo) against an app-repo PR number printed a clean, unremarkable `cross-review skipped
+  (empty diff)` — not an error — because it was diffing the *root* repo, which genuinely has no
+  changes for that PR number. Always run it from inside the actual app-repo checkout/worktree the
+  PR belongs to, or pass `--repo owner/repo` explicitly. *(2026-07-11, platform-migrations S3.)*
+- **When reusing an existing admin "price vs. regular-price comparison" UI field for a new entity
+  that has no regular price to compare against, check whether the missing comparison value ALSO
+  disables the raw input — those are two different questions a single `base == null` check can
+  wrongly conflate.** "No fixed regular price" (correctly hides the discount-math comparison) and
+  "admin cannot set ANY price" (a bug, for any entity that IS still directly priced elsewhere) got
+  gated by the exact same boolean, so the second entity ever added to the pattern inherited a real,
+  live-money-relevant bug that sat undetected through an entire prior sprint — the underlying API
+  route worked fine; only the UI gate silently blocked the one path that would have exercised it.
+  *(2026-07-11, platform-migrations S3 — the `migration` promoter SKU's admin price field.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
