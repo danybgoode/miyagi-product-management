@@ -75,6 +75,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Risk tier decides who merges** (from WAYS-OF-WORKING): low-risk → the reviewer/agent may merge on
   green CI; anything touching payments / checkout / fulfillment / auth / DB / shared infra / money →
   **Daniel merges**. When unsure, treat as high.
+  **Corollary — an explicit "merge on green" authorization changes who decides to pause and check in, not
+  whether the review layers themselves still run.** Under exactly such an authorization, both the
+  cross-agent advisory pass AND the independent fresh-reviewer pass still ran on a HIGH-tier PR before
+  merge — and the independent pass still found two real, non-blocking issues (a guard-scope gap, two
+  stale money-path return URLs), fixed pre-merge rather than deferred. "Merge on green" is permission to
+  proceed through the established gate without re-asking at each step, not permission to skip the gate.
+  *(2026-07-11, catalog-management S6.)*
 - **When your branch is BEHIND `main`, the two-dot `git diff main..HEAD` lies — read the three-dot.**
   Two-dot compares tips directly, so it folds in the *inverse* of every commit `main` gained since you
   branched (a sibling epic's new files show up as "deletions" in your diff — alarming and wrong). Review
@@ -217,7 +224,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **A unit-tested pure helper can't live in a module that imports `next/cache`.** The Playwright
   runner can't load `next/cache`, so importing the module to test the pure function throws. Keep the
   pure logic in a next-free module (e.g. `lib/slug.ts`) and let the cached/DB wrapper import *it*.
-  *(2026-06-06, custom-slugs.)*
+  *(2026-06-06, custom-slugs.)* **Corollary — the same trap fires for `server-only`/`@clerk/nextjs/server`,
+  and the discipline has to be enforced at the FILE level, not the function level.** A new pure predicate
+  (`isSellShellCandidatePath`) was itself side-effect-free, but it lived in the same file as an async
+  `server-only` gate importing `@clerk/nextjs/server` — importing that file from a Playwright `api` spec
+  threw an opaque `Cannot find module '.../routeMatcher'` from *inside* Clerk's package (a resolution
+  failure, not a missing file), even though the predicate never touched Clerk. The existing
+  `lib/seller-mode.ts` convention (keep the pure predicate in its own zero-import file, precisely so the
+  api spec can load it directly) already states the reason; the gap was applying it inconsistently to a
+  new sibling file. When adding a pure predicate alongside an async/auth-touching helper, split them into
+  separate files from the start. *(2026-07-11, catalog-management S6.1 — `lib/sell-shell-path.ts` split
+  out of `lib/seller-shell-gate.ts`.)*
 - **Swapping a framework-generated artifact for a hand-rolled route breaks specs on exact format.**
   Converting `app/robots.ts` (typed `MetadataRoute.Robots`) → `app/robots.txt/route.ts` (to carry
   `# …` comment pointers the typed object can't express) silently changed the serializer's
@@ -782,6 +799,27 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   **When the guard trips because an orchestrator file crept up to the cap, DECOMPOSE — don't bump the cap**
   (that's the erosion it exists to stop): extract the new feature's section AND an existing sibling to
   reclaim headroom, keeping the file's parallel structure. *(2026-07-01, subdomain-pricing Canal UI.)*
+  **Corollary — a directory-scoped guard silently stops covering a feature the moment its files move
+  outside that directory, and nothing signals the gap.** Splitting the 1074-line `Canal.tsx` moved its
+  federation half to a NEW sibling directory (`canal-propio/`, deliberately outside `SETTINGS_DIR` since
+  it's no longer a settings section) — the anti-monolith guard, hard-coded to scan only `SETTINGS_DIR`,
+  simply never looked there again. The new file immediately re-grew past the old cap (977 lines) with
+  the guard reporting green the whole time; only an independent review pass caught it by hand. Fixed both
+  ways: decomposed the file (extract a child component, don't just raise the cap — same precedent as
+  above) AND added the new directory as a second scan root to the guard itself, so the same class of
+  regression can't recur silently. When a refactor moves a guarded feature's files to a new directory,
+  re-scope the guard in the SAME change — don't treat "it still passes" as evidence the guard still
+  applies. *(2026-07-11, catalog-management S6.2 — `CANAL_PROPIO_DIR` added to `monolith-guard.ts`.)*
+- **A grep for the FILE being renamed/deleted doesn't find every reference to the VALUE it represented —
+  a taxonomy slug string, a registry count, a config key — those need a separate grep for the literal
+  value.** Splitting `Canal.tsx` into `canal-propio/` + a new `apoyo` taxonomy slug correctly swept every
+  code IMPORT of the old file (confirmed via grep, zero missed) but missed two Playwright specs hardcoding
+  the literal slug string `'canal'` (a `SLUGS` array + a `MANUAL_KEYS` expected-list) and a flag-registry
+  count that the new flag key bumped from 24 to 25 — both invisible to a filename-scoped grep, both caught
+  only by CI on the first push. After sweeping every import of a file being renamed/retired, separately
+  grep the literal string/count VALUE it carried across the whole repo (not just the directory being
+  restructured) — the value can be hardcoded in a spec, a seed, or a doc with zero import relationship to
+  the file itself. *(2026-07-11, catalog-management S6.2.)*
   **And a grep-to-zero cleanup (e.g. consolidating bespoke back-links onto one shared component) becomes a
   permanent invariant the same way** — an fs-guard scanning for the banned strings catches stragglers a
   first sweep missed. *(2026-06-23, seller-nav-consolidation S2.)*
