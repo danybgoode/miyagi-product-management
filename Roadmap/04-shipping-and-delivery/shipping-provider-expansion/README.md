@@ -44,25 +44,28 @@ Correos option automatically (AGENTS rule #3). All new copy es-MX (not on the bi
 - Comp-grant precedent: `metadata.subdomain_grant` (subdomain-pricing S1) + domain comp grants.
 - Admin tenant surface: `app/(shell)/admin/tenants` + `app/api/admin/tenants` — grant toggle lives here.
 - Quote seam that already resolves the seller: backend `POST /store/envia/rates`.
-- **All three label seams** — backend ship route, `modules/fulfillment-envia/`, and the FE legacy `app/api/orders/[id]/ship` (the L737/S1.4 bypass — trace every importer again).
+- **All three label seams** — backend ship route, `modules/fulfillment-envia/`, and the FE legacy
+  `app/api/orders/[id]/ship`. **Correction (found during Sprint 2 build):** this route is NOT a live
+  bypass — it was already remediated in an earlier epic (calls `enviaKillGate` at all 3 call sites).
+  Still trace every importer before touching a seam; there's just no bypass to discover here anymore.
 - Manual-carrier fulfillment path + "can't ship before payment" 422 gate → Correos ships through this.
 - Listing weight data: product `metadata.weight_grams` (default 500 g) + per-shop package defaults.
 - Per-shop shipping settings UI: `app/(shell)/shop/manage/settings/_sections/Envios.tsx`.
 - Checkout-options backend route as SSOT → agents inherit new methods.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | S1.1 Spike: funding-model written decision (BYO vs platform+markup vs hybrid; Skydropx/Pakke/Mienvío/EnvíoClick compared; credential storage; client-refactor shape; go/no-go + thin slice) | low (spike) |
-| 2 | S2.1 Grant honored at the **quote** seam (pure gate widened) | **HIGH** |
-| 2 | S2.2 Grant honored at **every label seam** (incl. FE legacy ship route) | **HIGH** |
-| 2 | S2.3 Admin grant/revoke toggle on `/admin/tenants` | med |
-| 2 | S2.4 Seller settings reflect granted state | low |
-| 3 | S3.1 Pure Impresos tariff lib (versioned table + `quoteCorreos(weightGrams)`) | low |
-| 3 | S3.2 Seller opt-in + rate preview + drop-off explainer | low |
-| 3 | S3.3 Correos option at checkout (flag + opt-in + weight-gated; backend SSOT) | **HIGH** |
-| 3 | S3.4 Fulfillment via manual-carrier flow + honest sin-rastreo emails | med |
-| 3 | S3.5 Agent parity + api specs + browser smoke | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | S1.1 Spike: funding-model written decision (BYO vs platform+markup vs hybrid; Skydropx/Pakke/Mienvío/EnvíoClick compared; credential storage; client-refactor shape; go/no-go + thin slice) | low (spike) | ✅ approved 2026-07-08 |
+| 2 | S2.1 Grant honored at the **quote** seam (pure gate widened) | **HIGH** | ✅ shipped 2026-07-11 |
+| 2 | S2.2 Grant honored at **every label seam** (incl. FE legacy ship route) | **HIGH** | ✅ shipped 2026-07-11 |
+| 2 | S2.3 Admin grant/revoke toggle on `/admin/tenants` | med | ✅ shipped 2026-07-11 |
+| 2 | S2.4 Seller settings reflect granted state | low | ✅ shipped 2026-07-11 |
+| 3 | S3.1 Pure Impresos tariff lib (versioned table + `quoteCorreos(weightGrams)`) | low | not started |
+| 3 | S3.2 Seller opt-in + rate preview + drop-off explainer | low | not started |
+| 3 | S3.3 Correos option at checkout (flag + opt-in + weight-gated; backend SSOT) | **HIGH** | not started |
+| 3 | S3.4 Fulfillment via manual-carrier flow + honest sin-rastreo emails | med | not started |
+| 3 | S3.5 Agent parity + api specs + browser smoke | low | not started |
 
 *Sprints 2–3 do NOT block on Sprint 1's decision — the grant + Correos are useful under any funding model.*
 

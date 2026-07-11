@@ -1,6 +1,9 @@
 # Shipping provider expansion — Sprint 2: Envía comp-grant (admin-granted platform Envía)
 
-**Status:** 🚧 built, both PRs open — Daniel merge pending (HIGH risk, both repos)
+**Status:** ✅ MERGED 2026-07-11 — backend [#78](https://github.com/danybgoode/medusa-bonsai-backend/pull/78)
+(`a06fe6f`), frontend [#210](https://github.com/danybgoode/miyagisanchezcommerce/pull/210) (`92c2a8c`),
+both squash-merged by Daniel on green CI + clean cross-review. Live money-path smoke on prod is owed to
+Daniel (walkthrough below) — not yet run.
 
 > Platform flag `shipping.envia_enabled` stays the global master, **unchanged and OFF**. The grant
 > (`metadata.envia_grant` on the Medusa seller — same grant SHAPE as the `subdomain_grant` precedent,
@@ -23,10 +26,11 @@ arranged-delivery fallback.
 **Acceptance:** ungranted shop → today's fallback, byte-identical; granted shop → live carrier rates at
 checkout. Flag stays OFF throughout.
 **Risk:** HIGH (checkout money path → Daniel merge)
-**Commits:** backend `b8b7d41`, frontend `9c8347b`. The quote route also now resolves the seller (for the
-grant check) even when the platform flag is OFF, which it previously skipped — a restructuring the pure
-gate widen forced, not a scope expansion; ungranted/malformed requests still short-circuit to the
-byte-identical fallback response before any address/product validation runs.
+**Commits:** squash-merged into backend `a06fe6f` / frontend `92c2a8c` (PR #78 / #210). The quote route
+also now resolves the seller (for the grant check) even when the platform flag is OFF, which it
+previously skipped — a restructuring the pure gate widen forced, not a scope expansion; ungranted/
+malformed requests still short-circuit to the byte-identical fallback response before any address/
+product validation runs.
 
 ### Story 2.2 — Grant honored at every label seam ✅ built
 **As** a granted seller, **I want** label generation to work for my orders — the grant checked on the
@@ -37,7 +41,8 @@ manual-carrier steer.
 **Acceptance:** granted seller generates a real label end-to-end; ungranted seller's ship attempt still
 422s with the existing es-MX message; no seam lets an agent or stale page bypass.
 **Risk:** HIGH (fulfillment money path → Daniel merge)
-**Commits:** backend `fe9715f`, frontend `33786db`. **Correction to the LEARNINGS ~L737 framing**: the FE
+**Commits:** squash-merged into backend `a06fe6f` / frontend `92c2a8c` (PR #78 / #210). **Correction to
+the LEARNINGS ~L737 framing**: the FE
 legacy route was already remediated in an earlier epic — it already called `enviaKillGate` at all 3 call
 sites (POST top, GET top, inline) before this sprint. This sprint widened each of those 3 calls with
 `sellerGranted`, it didn't discover/fix a live bypass. The Medusa-order branch of the POST handler now
@@ -54,10 +59,12 @@ unlike the 60s `platform_flags` cache the platform kill-switch itself goes throu
 original "~1 min" estimate below, which conflated the two); flip OFF → fallback returns; granted state
 visible in the tenant list.
 **Risk:** med (admin-auth write to seller metadata)
-**Commits:** frontend `f97056d` (backend route shipped as part of S2.2's `fe9715f`, since S2.2's legacy
-ship path needed it too). `sku=envia` extends the existing `/admin/tenants` `EntitlementControls`
-picker — same UI, same response shape as `custom_domain`/`subdomain`/`ml_sync` — but its read/write
-special-cases to the Medusa-seller-backed internal route instead of a Supabase `metadata` column.
+**Commits:** squash-merged into frontend `92c2a8c` (backend route shipped as part of S2.2's backend
+commit, since S2.2's legacy ship path needed it too). `sku=envia` extends the existing `/admin/tenants`
+`EntitlementControls` picker — same UI, same response shape as `custom_domain`/`subdomain`/`ml_sync` —
+but its read/write special-cases to the Medusa-seller-backed internal route instead of a Supabase
+`metadata` column. Cross-review (PR #210) caught one stray English word in the new sku's option label
+("comp-grant" → "cortesía") — fixed before merge.
 
 ### Story 2.4 — Seller settings reflect granted state ✅ built
 **As** a granted seller, **I want** my shipping settings (`Envios.tsx`) to say «Envía habilitado por
@@ -65,7 +72,7 @@ Miyagi» instead of the platform-off banner, **so that** the state I see matches
 **Acceptance:** granted seller sees the enabled state + their existing carrier preferences; ungranted
 copy unchanged.
 **Risk:** low
-**Commits:** frontend `187220c`.
+**Commits:** squash-merged into frontend `92c2a8c`.
 
 ## Sprint QA
 - **api spec(s):** unit specs on the widened pure gate, both apps (backend Jest
@@ -83,6 +90,12 @@ copy unchanged.
   parallel runs, e.g. `launchpad-*`, `home-*` specs) — confirmed zero overlap with any file this sprint
   touched, and every touched spec passes consistently in isolation. Backend-first deploy
   (S2.1→S2.2 before S2.3/S2.4).
+- **cross-review (advisory, both PRs, Antigravity — codex unavailable that session):** backend flagged a
+  real, pre-existing O(N) seller-scan in `envia/rates/route.ts` that this sprint now runs more often
+  (previously skipped on the OFF-flag path; now always runs, to check the grant) — a known, plan-reviewed
+  tradeoff, not fixed here (flagged to Daniel on PR #78 rather than bundling an unrelated optimization
+  into a HIGH-risk PR; still open as a future cleanup). Frontend flagged + fixed one stray English word
+  in the new admin sku option before merge.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (backend has no preview — post-merge prod confirmation)
