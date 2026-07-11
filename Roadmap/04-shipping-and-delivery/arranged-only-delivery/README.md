@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: arranged-only-delivery
 ---
 
@@ -7,9 +7,13 @@ slug: arranged-only-delivery
 
 > **Macro-section:** [04 · Shipping & Delivery](../README.md) · **BUILD-ORDER:** #3c · Epic B · B.5 ·
 > **Risk: HIGH — Daniel merges** (checkout / fulfillment / payment routing / product publish).
-> **Status: 📋 SCAFFOLDED 2026-07-07 — ready to build, not started.** Deep-groomed from the signed-off
-> spike ([`spike-arranged-only-delivery.md`](../../00-ideas/seeds/spike-arranged-only-delivery.md) →
-> **GO with constraints**, decision landed `3be3fb2`). Scope doc:
+> **Status: ✅ SHIPPED 2026-07-11 — both sprints merged to `main` in both repos.** [Sprint 1](sprint-1.md)
+> (web path — PR #84 backend, #223 frontend) and [Sprint 2](sprint-2.md) (agent parity + the card-payment
+> hole fix — PR #85 backend, #228 frontend) both live. The `shipping.arranged_only_enabled` kill-switch
+> stays OFF/dark (per its own gate — flips only after Daniel's money smoke); the service/rental
+> card-payment fix (S2.2) is unconditional and live now, no flag. Deep-groomed from the signed-off spike
+> ([`spike-arranged-only-delivery.md`](../../00-ideas/seeds/spike-arranged-only-delivery.md) → **GO with
+> constraints**, decision landed `3be3fb2`). Scope doc:
 > [`00-ideas/2. readyforscope/arranged-only-delivery.md`](../../00-ideas/2.%20readyforscope/arranged-only-delivery.md).
 > Wave context: [`remaining-audit-polish.md`](../../00-ideas/seeds/remaining-audit-polish.md) (#3c Epic B,
 > B.5). Parent Epic B ([`02/delivery-money-polish`](../../02-checkout-and-payments/delivery-money-polish/README.md))
@@ -89,11 +93,17 @@ write + publish gate) + S2.2 (`start-checkout`) must be live before S1.3/S2.1 (f
 kill-switch keeps the whole feature inert until flipped, so FE + BE merge dark with zero live-commerce risk.
 
 ## Epic Definition of Done
-- [ ] Both sprints' stories merged + smoke-tested (money/auth gaps stated; owed to Daniel by name).
-- [ ] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed; money/publish steps flagged Daniel-owed).
-- [ ] This README ✅ complete (`status: shipped`); every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Product poster (`Roadmap/README.md` + `04/README.md`) updated — flip the arranged-only line from aspirational to ✅ enforced; add a Recent highlights entry.
-- [ ] Team memory + `LEARNINGS.md` updated (durable learning — the half-built-primitive reuse; the service/rental guard hole).
-- [ ] **Kill-switch verified:** `shipping.arranged_only_enabled` exists (enablement, default `false`, created disabled); flipped ON only after Daniel's S1 money smoke.
-- [ ] Branch deleted; PR(s) merged.
+- [x] Both sprints' stories merged + smoke-tested (money/auth gaps stated; owed to Daniel by name — he'll
+      run the money-path smokes for both sprints in prod).
+- [x] Each `sprint-N.md` has a fool-proof smoke walkthrough (real prod URLs once deployed; money/publish
+      steps flagged Daniel-owed).
+- [x] This README ✅ complete (`status: shipped`); every sprint status ticked with commit refs.
+- [x] `RETROSPECTIVE.md` written.
+- [x] Product poster (`Roadmap/README.md` + `04/README.md`) updated — flip the arranged-only line from
+      aspirational to ✅ enforced; add a Recent highlights entry.
+- [x] Team memory + `LEARNINGS.md` updated (durable learning — the half-built-primitive reuse; the
+      service/rental guard hole).
+- [ ] **Kill-switch verified:** `shipping.arranged_only_enabled` exists (enablement, default `false`,
+      created disabled) — done. **Flip to ON still pending Daniel's S1 money smoke** (unchanged gate; this
+      is the one item this epic doc leaves genuinely open, by design).
+- [x] Branch deleted; PR(s) merged.

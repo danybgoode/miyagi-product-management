@@ -81,7 +81,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   merge — and the independent pass still found two real, non-blocking issues (a guard-scope gap, two
   stale money-path return URLs), fixed pre-merge rather than deferred. "Merge on green" is permission to
   proceed through the established gate without re-asking at each step, not permission to skip the gate.
-  *(2026-07-11, catalog-management S6.)*
+  *(2026-07-11, catalog-management S6.)* **Reconfirmed on a tier-classification finding, not just a
+  code-correctness one:** a MED-tier PR's fresh-reviewer pass approved the code but flagged the tier
+  itself as worth a second look (a `checkout-session` file, arguably HIGH by the letter of the rule). The
+  builder did not self-merge under the standing "merge on green" go-ahead — instead posted the tier
+  reasoning back on the PR (the route only describes availability; the actual money-mutating enforcement
+  lives in a sibling HIGH-tier PR's guard) and left it ready-for-review. The product owner's later explicit
+  "merge on green" message was then read as resolving that specific open question, not as blanket
+  pre-authorization that would have let the builder skip past a reviewer's "needs discussion" verdict in
+  the first place. *(2026-07-11, arranged-only-delivery S2.)*
 - **When your branch is BEHIND `main`, the two-dot `git diff main..HEAD` lies — read the three-dot.**
   Two-dot compares tips directly, so it folds in the *inverse* of every commit `main` gained since you
   branched (a sibling epic's new files show up as "deletions" in your diff — alarming and wrong). Review
@@ -659,6 +667,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **Match a regression spec's TIER to where the fix actually lives, rather than defaulting to whatever
+  test type the original scope doc named.** A service/rental card-payment fix lived entirely in backend
+  logic (a pure derivation function + a route guard) — the sprint doc's original QA plan assumed a
+  frontend Playwright spec would cover it, but writing one would have meant inventing a new
+  direct-to-Medusa cart-creation test pattern that doesn't exist anywhere in that repo's harness (every
+  existing spec hits the frontend's own Next.js routes). The regression coverage went into the backend's
+  existing unit-spec file instead (6 new cases, already part of the `test:unit` CI gate) — matching how
+  the backend's own CI gate is designed (no DB-bound integration tests, pure-function unit specs only).
+  The deviation from the original plan was stated explicitly in the sprint doc and the PR, not silently
+  substituted. When a fix's regression coverage doesn't fit the test tier a scope doc assumed, put it
+  where the fix lives and name the deviation, rather than forcing a new test-infra shape into an existing
+  harness just to match the plan. *(2026-07-11, arranged-only-delivery S2.2.)*
 - **A ported external tariff/pricing table's unit ("per piece" vs "per shipment/order") is easy to get
   wrong even with the source document open, and a single-item-only test suite can't catch it.** Porting
   Correos de México's Impresos tariff (a weight-band table) into a pure calculator, the first pass summed

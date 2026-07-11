@@ -1,30 +1,34 @@
 # Sprint 2 — Agent parity + consistency hardening (the car)
 
-**Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: 🚧 built, CI green,
-reviewed, ready-for-review, awaiting merge.** Backend PR
-[danybgoode/medusa-bonsai-backend#85](https://github.com/danybgoode/medusa-bonsai-backend/pull/85) (S2.2,
-commit `c360f00`) and frontend PR
-[danybgoode/miyagisanchezcommerce#228](https://github.com/danybgoode/miyagisanchezcommerce/pull/228) (S2.1,
-commit `14a027f`), both off fresh `feat/arranged-only-delivery-s2` branches cut in isolated worktrees off
-latest `origin/main` (S1's branch was squash-merged — a dead end per `LEARNINGS.md`).
+**Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: ✅ MERGED to
+`main` in both repos, 2026-07-11.** Backend PR
+[danybgoode/medusa-bonsai-backend#85](https://github.com/danybgoode/medusa-bonsai-backend/pull/85)
+(S2.2, squash `4de1de2`) and frontend PR
+[danybgoode/miyagisanchezcommerce#228](https://github.com/danybgoode/miyagisanchezcommerce/pull/228)
+(S2.1, squash `2317c0f`), both squash-merged on Daniel's "merge on green" go-ahead after CI green + a
+fresh pr-reviewer pass + an advisory cross-agent (Codex) pass on each, off fresh `feat/arranged-only-delivery-s2`
+branches cut in isolated worktrees off latest `origin/main` (S1's branch was squash-merged — a dead end
+per `LEARNINGS.md`). Branches deleted in both repos after merge.
+
+**S2.2 is live now, unconditionally** — the service/rental card-payment hole is closed in production as
+of this merge, no flag. The `arranged` capability for ordinary products (S1's kill-switch,
+`shipping.arranged_only_enabled`) stays OFF/dark pending Daniel's S1 money smoke, per the epic's own
+Definition of Done — this sprint didn't touch that gate.
 
 **Review pass results:**
 - **Backend PR #85 (S2.2)** — fresh pr-reviewer: **Approve** (all 8 report claims independently
   re-verified, including re-executing `isCoordinatedListing`'s 7 branch combinations against the real
   function body). Cross-agent (Codex) advisory caught one real gap: the coordinated-guard's cart-product
-  hydration could silently read a hydration shortfall as "not coordinated" (fail-open) instead of fail-closed
-  — fixed same-session (`c360f00`), re-verified (tsc clean, 401/401 unit tests). Awaiting Daniel's merge
-  (HIGH tier, as declared).
+  hydration could silently read a hydration shortfall as "not coordinated" (fail-open) instead of
+  fail-closed — fixed pre-merge (`c360f00`), re-verified (tsc clean, 401/401 unit tests).
 - **Frontend PR #228 (S2.1)** — fresh pr-reviewer: code approved on correctness; flagged two procedural
-  holds (still draft; whether MED vs HIGH is right for a `checkout-session` file). Resolved: marked
-  ready-for-review, and posted the tier reasoning on the PR — this route never itself moves money, it only
-  describes availability + returns `checkout_url`s pointing at the actual mutating endpoints
+  holds (still draft; whether MED vs HIGH is right for a `checkout-session` file). Resolved pre-merge:
+  marked ready-for-review, and posted the tier reasoning on the PR — this route never itself moves money,
+  it only describes availability + returns `checkout_url`s pointing at the actual mutating endpoints
   (`/api/mp/checkout`, `/api/stripe/checkout`, both untouched); the real enforcement is the backend's
-  `start-checkout` 422 guard (S2.2, already HIGH-gated). Cross-agent (Codex) advisory: one trivial
-  formatting nit fixed (`14a027f`'s interface spacing), one already-acknowledged fixture-gating limitation
-  (no unmocked positive test runs in CI until `MS_TEST_ARRANGED_LISTING_ID` is provisioned). Ready to merge
-  on green CI per the declared MED tier — flagged for Daniel/reviewer sign-off given the review's "needs
-  discussion" verdict rather than self-merged by the builder.
+  `start-checkout` 422 guard (S2.2, HIGH-gated). Cross-agent (Codex) advisory: one trivial formatting nit
+  fixed (`0e84a52`), one already-acknowledged fixture-gating limitation (no unmocked positive test runs in
+  CI until `MS_TEST_ARRANGED_LISTING_ID` is provisioned).
 
 Sprint 1 ships the web path. Sprint 2 brings the agent surface to parity and closes the adjacent money-path
 inconsistency the spike surfaced.
@@ -46,7 +50,7 @@ for service/rental listings once S2.2's backend fix ships. Full plan:
 
 ## Stories
 
-### S2.1 — Agent/UCP arranged-only surface *(MED — reviewer may merge on green CI)* ✅ BUILT — frontend `14a027f` (PR #228)
+### S2.1 — Agent/UCP arranged-only surface *(MED — reviewer may merge on green CI)* ✅ MERGED — frontend `2317c0f` (PR #228 squash)
 > **As a** buyer's AI agent, **I want** the checkout session to tell me a listing is delivered by
 > coordination, **so that** I present "coordina la entrega con el vendedor" instead of implying shipping or
 > offering a card.
@@ -67,7 +71,7 @@ for service/rental listings once S2.2's backend fix ships. Full plan:
 - **Acceptance:** a `POST /api/ucp/checkout-session` for an arranged listing returns `delivery.arranged:true`
   with a coordinate note, **no** instant `checkout_url`s, and only manual payment options.
 
-### S2.2 — Close the service/rental card-payment hole *(HIGH — Daniel merges)* ✅ BUILT — backend `0cdc034` (PR #85)
+### S2.2 — Close the service/rental card-payment hole *(HIGH — Daniel merges)* ✅ MERGED — backend `4de1de2` (PR #85 squash)
 > **As** the platform, **I want** service and rental listings to enforce manual payment like any coordinated
 > delivery, **so that** a buyer can't pay by card for something that fulfills by in-person coordination.
 - **Widened during build**: the real root cause was one layer deeper than the original story text —
@@ -106,32 +110,28 @@ for service/rental listings once S2.2's backend fix ships. Full plan:
 - **Anonymous browser smoke** — an agent-style fetch of a coordinated listing shows the coordinate hint —
   **owed, post-merge** (nothing live to fetch yet; attempted pre-merge against prod and confirmed it's
   correctly running the OLD code, as expected — see PR #228's test plan).
-- **Money-path smoke — OWED TO DANIEL** (confirm a real service/rental checkout can no longer be card-paid).
+- **Money-path smoke — OWED TO DANIEL, he will run it in prod** (confirm a real service/rental checkout can
+  no longer be card-paid).
 
 ---
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: **preview** (pre-merge) — `https://miyagisanchez-og7n7cko6-danybgoodes-projects.vercel.app` (the
-frontend PR #228's Vercel preview, commit `0e84a52`). Backend has no per-branch preview (Cloud Run,
-post-merge only) — steps 3–6 below need a live backend, so they can only run for real **after both PRs
-merge and the backend finishes deploying**. Money/agent-live steps are flagged **owed to Daniel**.
+Env: **production** (both PRs merged 2026-07-11; backend Cloud Build deploys ~12 min post-merge, no
+preview). Steps 1–2 already ran pre-merge (below) as a build-time sanity check — steps 3–7 are the real
+prod walkthrough, **all owed to Daniel** (he'll run these himself in prod).
 
-1. **(works now, pre-merge)** Confirm the two new/updated automated specs pass against the frontend preview:
-   `PLAYWRIGHT_BASE_URL=https://miyagisanchez-og7n7cko6-danybgoodes-projects.vercel.app npx playwright test
-   --project=api e2e/ucp-checkout-session-shipping-boundary.spec.ts
-   e2e/ucp-checkout-session-arranged-delivery.spec.ts`
-   → Both **skip** (fixture env vars not yet set) rather than fail — confirms the harness wiring is correct
-   even before the fixtures exist.
-2. **(works now, pre-merge)** `npm run test:unit` in `apps/backend` on the S2.2 branch.
-   → 401/401 pass, including the 6 new `isCoordinatedListing`/`buildDeliveryCatalog` regression cases in
+1. ✅ **Ran pre-merge.** The two new/updated specs against the frontend PR's preview correctly **skipped**
+   (fixture env vars not yet set) rather than failed — confirmed the harness wiring before the fixtures
+   exist: `e2e/ucp-checkout-session-shipping-boundary.spec.ts`, `e2e/ucp-checkout-session-arranged-delivery.spec.ts`.
+2. ✅ **Ran pre-merge.** `npm run test:unit` in `apps/backend` on the S2.2 branch — 401/401 passed,
+   including the 6 new `isCoordinatedListing`/`buildDeliveryCatalog` regression cases in
    `delivery-catalog.unit.spec.ts` pinned to the exact service/rental hole.
-3. **(post-merge, backend deployed)** As an AI agent (or `curl`), `POST
-   https://miyagisanchez.com/api/ucp/checkout-session` with `{"listing_id":"<a live service or rental
-   listing's prod_ id>"}`.
+3. **(owed to Daniel)** As an AI agent (or `curl`), `POST https://miyagisanchez.com/api/ucp/checkout-session`
+   with `{"listing_id":"<a live service or rental listing's prod_ id>"}`.
    → The response body includes `delivery: { arranged: true, note: "…" }`, and in `payment_options`, both
    `mercadopago` and `stripe` entries show `available: false` with **no** `checkout_url`.
-4. **(post-merge, backend deployed)** Repeat step 3 for an ordinary shippable **product** listing (not
-   service/rental, no `delivery_mode=arranged` metadata).
+4. **(owed to Daniel)** Repeat step 3 for an ordinary shippable **product** listing (not service/rental, no
+   `delivery_mode=arranged` metadata).
    → The response has **no** `delivery` key at all (omitted, not `false`) — byte-identical to before this
    sprint.
 5. **(money — owed to Daniel)** As a buyer, attempt to check out a live service or rental listing on the web

@@ -100,7 +100,14 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ Address capture tuned for Mexico (CP-first, alcaldía/colonia)
 - ✅ "Entrega acordada" (arranged delivery) and pickup options — pickup is a real **propose-and-confirm appointment** (buyer proposes date + window at checkout; whoever didn't propose confirms, seller can reschedule), and when a shipping quote fails or times out, checkout offers a selectable arranged-delivery fallback (paid via pago directo) instead of dead-ending
 - ✅ CP-first address form + shipping-quote recovery — the postal code leads and auto-fills estado/alcaldía/colonias before the rest reveals; quotes resolve within ~9s so "Cotizando…" can't hang
-- 🚧 Delivery-method-aware checkout — arranged delivery + pickup surface manual payment; **arranged-*only* enforcement pending Spike 0** (`onlyCoordinated` is hardcoded off in `checkout-options/route.ts`)
+- ✅ **Arranged-only delivery** — a per-listing `delivery_mode` (`carrier|arranged`) lets a seller publish a
+  service/rental/local-only listing with **no carrier or pickup spot**; checkout then shows only the
+  coordinated delivery + pago directo (SPEI/efectivo), no card, for that listing. **Service and rental
+  listings enforce this unconditionally, live in production** — they can no longer be card-paid despite
+  fulfilling by coordination (closed a real pre-existing money-path hole). The general capability (any
+  product opting into `arranged`) is built, merged, and agent-visible (`delivery` hint on the UCP checkout
+  session) but stays behind `shipping.arranged_only_enabled` (dark, default OFF) pending Daniel's live
+  money smoke — see [04 · Shipping & Delivery › Arranged-only delivery](04-shipping-and-delivery/arranged-only-delivery/)
 
 ### 05 · Trust, Offers & Messaging
 - ✅ Make-an-offer / price negotiation — the offer card says **whose turn it is** with a **live deadline countdown** (48 h to respond / 24 h on a counter)
@@ -159,6 +166,25 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-11 — Arranged-only delivery epic SHIPPED (2 sprints; HIGH, S2.1 MED).** A seller who genuinely
+  delivers only in person — a service, a rental, a local-only item — previously had no way to say so; every
+  listing was forced to offer a carrier quote. **S1** (backend PR #84, frontend PR #223) added a per-listing
+  `delivery_mode` (`carrier|arranged`) on product metadata; `checkout-options` derives `coord`-only delivery
+  + manual-only payment for arranged listings via a new pure seam; the seller listing editor gets an
+  "Entrega" toggle; the publish gate requires a manual payment method for arranged listings; web checkout
+  renders the coordinated path first-class. **S2** (backend PR #85, frontend PR #228) brought the UCP
+  agent-checkout surface to parity (an AI agent checking out a coordinated listing now sees a `delivery`
+  hint and no card options, where before it saw card options regardless) and — the sprint's real find —
+  closed a genuine, **pre-existing** money-path hole: service and rental listings were card-payable in
+  production despite always fulfilling by coordination, because neither `checkout-options` nor
+  `start-checkout`'s payment guard ever consulted listing type, only a client-suppliable field. One
+  canonical function now backs both surfaces; service/rental enforcement is **live now, unconditionally, no
+  flag** (confirmed with Daniel as a bug fix, not new scope). Two independent review layers (a fresh
+  pr-reviewer pass + an advisory cross-agent/Codex pass) each caught a real issue pre-merge on both PRs. The
+  general `arranged` capability for ordinary products stays dark behind `shipping.arranged_only_enabled`
+  pending Daniel's money smoke. See [04 · Shipping & Delivery › Arranged-only
+  delivery](04-shipping-and-delivery/arranged-only-delivery/).
 
 - **2026-07-11 — Onboarding three-doors epic SHIPPED (3 sprints; LOW, S3's D.7 a HIGH tripwire —
   P1·D of the July-2026 seller-portal UX audit).** The hero agent path used to be copy-a-prompt →
