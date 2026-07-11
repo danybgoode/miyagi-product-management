@@ -1,12 +1,30 @@
 # Sprint 2 — Agent parity + consistency hardening (the car)
 
-**Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: 🚧 built, PRs
-open, awaiting CI + merge.** Backend PR
+**Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: 🚧 built, CI green,
+reviewed, ready-for-review, awaiting merge.** Backend PR
 [danybgoode/medusa-bonsai-backend#85](https://github.com/danybgoode/medusa-bonsai-backend/pull/85) (S2.2,
-commit `0cdc034`) and frontend PR
+commit `c360f00`) and frontend PR
 [danybgoode/miyagisanchezcommerce#228](https://github.com/danybgoode/miyagisanchezcommerce/pull/228) (S2.1,
-commit `14a027f`), both draft, both off fresh `feat/arranged-only-delivery-s2` branches cut in isolated
-worktrees off latest `origin/main` (S1's branch was squash-merged — a dead end per `LEARNINGS.md`).
+commit `14a027f`), both off fresh `feat/arranged-only-delivery-s2` branches cut in isolated worktrees off
+latest `origin/main` (S1's branch was squash-merged — a dead end per `LEARNINGS.md`).
+
+**Review pass results:**
+- **Backend PR #85 (S2.2)** — fresh pr-reviewer: **Approve** (all 8 report claims independently
+  re-verified, including re-executing `isCoordinatedListing`'s 7 branch combinations against the real
+  function body). Cross-agent (Codex) advisory caught one real gap: the coordinated-guard's cart-product
+  hydration could silently read a hydration shortfall as "not coordinated" (fail-open) instead of fail-closed
+  — fixed same-session (`c360f00`), re-verified (tsc clean, 401/401 unit tests). Awaiting Daniel's merge
+  (HIGH tier, as declared).
+- **Frontend PR #228 (S2.1)** — fresh pr-reviewer: code approved on correctness; flagged two procedural
+  holds (still draft; whether MED vs HIGH is right for a `checkout-session` file). Resolved: marked
+  ready-for-review, and posted the tier reasoning on the PR — this route never itself moves money, it only
+  describes availability + returns `checkout_url`s pointing at the actual mutating endpoints
+  (`/api/mp/checkout`, `/api/stripe/checkout`, both untouched); the real enforcement is the backend's
+  `start-checkout` 422 guard (S2.2, already HIGH-gated). Cross-agent (Codex) advisory: one trivial
+  formatting nit fixed (`14a027f`'s interface spacing), one already-acknowledged fixture-gating limitation
+  (no unmocked positive test runs in CI until `MS_TEST_ARRANGED_LISTING_ID` is provisioned). Ready to merge
+  on green CI per the declared MED tier — flagged for Daniel/reviewer sign-off given the review's "needs
+  discussion" verdict rather than self-merged by the builder.
 
 Sprint 1 ships the web path. Sprint 2 brings the agent surface to parity and closes the adjacent money-path
 inconsistency the spike surfaced.
@@ -93,7 +111,38 @@ for service/rental listings once S2.2's backend fix ships. Full plan:
 ---
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-> _Written at sprint close with real production URLs. The service/rental card-block is a **money-path** check
-> owed to Daniel._
->
-> _Placeholder — fill at sprint close per WAYS-OF-WORKING Stage 8b._
+Env: **preview** (pre-merge) — `https://miyagisanchez-og7n7cko6-danybgoodes-projects.vercel.app` (the
+frontend PR #228's Vercel preview, commit `0e84a52`). Backend has no per-branch preview (Cloud Run,
+post-merge only) — steps 3–6 below need a live backend, so they can only run for real **after both PRs
+merge and the backend finishes deploying**. Money/agent-live steps are flagged **owed to Daniel**.
+
+1. **(works now, pre-merge)** Confirm the two new/updated automated specs pass against the frontend preview:
+   `PLAYWRIGHT_BASE_URL=https://miyagisanchez-og7n7cko6-danybgoodes-projects.vercel.app npx playwright test
+   --project=api e2e/ucp-checkout-session-shipping-boundary.spec.ts
+   e2e/ucp-checkout-session-arranged-delivery.spec.ts`
+   → Both **skip** (fixture env vars not yet set) rather than fail — confirms the harness wiring is correct
+   even before the fixtures exist.
+2. **(works now, pre-merge)** `npm run test:unit` in `apps/backend` on the S2.2 branch.
+   → 401/401 pass, including the 6 new `isCoordinatedListing`/`buildDeliveryCatalog` regression cases in
+   `delivery-catalog.unit.spec.ts` pinned to the exact service/rental hole.
+3. **(post-merge, backend deployed)** As an AI agent (or `curl`), `POST
+   https://miyagisanchez.com/api/ucp/checkout-session` with `{"listing_id":"<a live service or rental
+   listing's prod_ id>"}`.
+   → The response body includes `delivery: { arranged: true, note: "…" }`, and in `payment_options`, both
+   `mercadopago` and `stripe` entries show `available: false` with **no** `checkout_url`.
+4. **(post-merge, backend deployed)** Repeat step 3 for an ordinary shippable **product** listing (not
+   service/rental, no `delivery_mode=arranged` metadata).
+   → The response has **no** `delivery` key at all (omitted, not `false`) — byte-identical to before this
+   sprint.
+5. **(money — owed to Daniel)** As a buyer, attempt to check out a live service or rental listing on the web
+   (`/checkout?listingId=...`) and try to pay by card (Stripe or MercadoPago).
+   → Card payment is blocked — the checkout page shows only pago directo (SPEI/efectivo), matching the
+   existing arranged-only UI from Sprint 1. Before this sprint, card would have worked for these listings.
+6. **(money — owed to Daniel)** Complete that same service/rental checkout using SPEI or cash.
+   → The order completes normally as a manual/coordinated order — the fix blocks card, not the sale itself.
+7. **(agent-live — owed to Daniel)** Point an MCP-connected AI agent (e.g. Claude Desktop configured per
+   `ucp.md`) at a live service/rental listing and ask it to check available payment methods.
+   → The agent reports only manual/coordinated options and mentions coordinating delivery directly with the
+   seller — it should not offer to pay by card.
+
+If any step fails, note the step number + what you saw — that's the bug report.
