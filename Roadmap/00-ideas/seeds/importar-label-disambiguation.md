@@ -1,7 +1,7 @@
 ---
 title: "Disambiguate the two 'Importar' doors — dashboard label copy tweak"
 slug: importar-label-disambiguation
-status: raw                          # raw | ready | queued | scaffolded | in-progress | shipped | archived
+status: shipped                      # raw | ready | queued | scaffolded | in-progress | shipped | archived
 area: "03"                           # touches app/(shell)/shop/manage/ManageDashboard.tsx — closest home is catalog-management's own footprint, but see note below
 type: polish
 priority: low
@@ -49,9 +49,10 @@ closer to whatever epic owns the seller settings/onboarding IA (`lib/setup-guide
 built immediately so it isn't lost, but also doesn't force a branch/PR/CI cycle for a one-line
 change during a sprint wrap-up.
 
-## Next step
+## Shipped
 
-Not yet groomed to "ready." When picked up: confirm the label still reads cleanly at mobile width
-(390px) alongside "+ Nuevo anuncio" in the same header row (`ManageDashboard.tsx`'s
-`flex-shrink-0 flex items-center gap-2` container) — "Importar catálogo" is longer than "Importar,"
-worth a quick visual check, not just a string swap.
+2026-07-11 — PR [#218](https://github.com/danybgoode/miyagisanchezcommerce/pull/218) squash `2cc1d26`.
+LOW risk, agent-merged on green CI (tsc/build/Playwright vs preview) per WAYS-OF-WORKING's low-risk
+auto-merge tier — copy-only, no commerce/auth/DB/money surface. The mobile-width visual check
+(390px, alongside "+ Nuevo anuncio") wasn't separately verified live — worth a glance next time
+someone's on that dashboard on a phone, not blocking.
