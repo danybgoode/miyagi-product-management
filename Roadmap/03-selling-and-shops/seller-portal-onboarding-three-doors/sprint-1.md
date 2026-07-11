@@ -1,6 +1,11 @@
 # Onboarding three-doors — Sprint 1: Intake store + three-doors entry
 
-**Status:** ✅ built, PR open — branch `feat/seller-portal-onboarding-three-doors`
+**Status:** ✅ merged — [PR #221](https://github.com/danybgoode/miyagisanchezcommerce/pull/221)
+(squash `ee90cef`). Cross-agent (Codex, advisory) + independent `pr-reviewer` review both ran;
+findings fixed pre-merge (see PR #221 comments — Story 1.2b's shop auto-provisioning was gated
+behind the flag so it stays dark like the rest of the epic; two smaller resilience/nit fixes).
+CI green (`tsc`+`build`+Playwright `api` vs the PR's Vercel preview). **Live smoke owed to
+Daniel, on prod** (not yet run).
 
 > Rails: R13 (seller shell / nav parity) · R11 (ready-not-blank). Spec: ONBOARDING-SPEC S1–S3.
 > Build on P0·A `<Card>`/`<Button>`. Behind `onboarding.three_doors_enabled` (dark, default OFF).
@@ -24,6 +29,11 @@ didn't cover:
 4. **Entry wiring.** `/sell`'s signed-in branch redirects a flag-on, shop-less, intake-less
    merchant to `/sell/bienvenida`; the ghost CTA / Door 3 set a one-tab-session skip cookie so
    they don't loop back.
+5. **Found in review, fixed pre-merge.** The independent `pr-reviewer` caught that Story 1.2b's
+   first version auto-provisioned a real Medusa seller for *any* signed-in shop-less visitor to
+   `/shop/manage/import`, unconditionally — live on merge, not gated by the flag, contradicting
+   the epic's own "ships dark" posture. Fixed by gating that auto-create behind
+   `onboarding.three_doors_enabled` too (OFF preserves the original `redirect('/sell')`).
 
 ## Stories
 
