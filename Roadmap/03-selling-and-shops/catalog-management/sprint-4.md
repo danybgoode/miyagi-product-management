@@ -12,7 +12,10 @@ issues pre-merge (see below); an independent `pr-reviewer` pass on the frontend 
 verified green (tsc + build + specs) before pushing. **Risk tier: HIGH** (Story 4.2 is a live price
 mutation + Mercado Libre push) — Daniel explicitly authorized merging on green CI + clean review, with
 the **live money-path smoke owed post-merge** (not a pre-merge blocker for this pair, by his explicit
-call — see the walkthrough below).
+call — see the walkthrough below). `delta_cents` migration applied to prod same day. **Partial live
+smoke run 2026-07-10** on a real Chrome session (no test-account sales history available) — everything
+short of the actual money-path apply confirmed working in prod; the money-path leg (a real sold product's
+suggested price actually applying to Miyagi + ML) is still owed — see the walkthrough's per-step status.
 
 ### Review findings — caught and fixed pre-merge
 Both PRs went through cross-agent (Antigravity/agy) advisory review + an independent `pr-reviewer`
@@ -142,33 +145,60 @@ hasn't landed yet, since `delta_cents` is only included in the insert for this o
   — `29130705888` — passed after resolving a real conflict with a same-day sibling PR, #208)
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com. **Both PRs merged 2026-07-10 (code is live) — the steps below
-are the smoke owed post-merge, not yet run.**
+Env: production · https://miyagisanchez.com. **Both PRs merged 2026-07-10, `delta_cents` migration applied
+same day. Partial live smoke run 2026-07-10 (Claude + Daniel, real Chrome session): everything short of the
+actual money-path apply is confirmed live in prod. The money-path leg (steps 3-4 against a product with
+REAL sales history) is still owed — genuinely can't be faked without executing a real payment.**
 
-0. Apply the `delta_cents` migration (`supabase/migrations/20260710170000_catalog_bulk_delta_cents.sql`) to
-   the prod Supabase project — nullable/additive, safe at any time, but step 3 below needs it for the
-   confirm-dialog total to actually populate (it degrades gracefully without it, just shows no total line).
-1. With `ops.profit_enabled` ON and COGS set on 3 products (at least one never sold, one sold with no
-   COGS, one sold with COGS), open `/shop/manage/catalogo`.
-   → Margen column renders per channel: the never-sold product shows "sin ventas", the sold-no-COGS one
-   shows "sin COGS" with a link to set it, the third shows a real margin number.
-2. Click "Margen (esta página)" to sort ascending, then descending.
-   → Rows with a real margin reorder; margin-killer rows (below 5%) show a red flag (⚠); rows with no
-   computed margin always sort last regardless of direction.
-3. Select 3 products that each have sales history + COGS set, bulk action → "Aplicar precio sugerido",
-   set a target margin (e.g. 25%), click Previsualizar.
-   → Diff shows old → suggested price per row; a confirm-dialog total line shows the net $ change across
-   the batch (not just per-row).
-4. (money path) Aplicar.
-   → Miyagi PDPs show the new prices; the ML-linked one among the three updates on Mercado Libre too;
-   `catalog_bulk_audit_log` records the batch with actor + before/after; the backend's `ml_sync_event`
-   log shows a `price_apply` entry per item.
-5. Try "seleccionar todos que coinciden con el filtro" with "Aplicar precio sugerido" selected as the
-   action.
-   → The "seleccionar todos" prompt doesn't appear for this action type (manual selection only, by design).
-6. Select a multi-variant product alongside the eligible ones, bulk action → "Aplicar precio sugerido" →
-   Previsualizar.
+0. ✅ **DONE 2026-07-10.** `delta_cents` migration applied directly via Supabase MCP (`ALTER TABLE
+   catalog_bulk_batch_items ADD COLUMN delta_cents INTEGER` — nullable/additive, zero data risk). Verified
+   via `information_schema.columns`; `get_advisors` shows no new issues, same pre-existing RLS-info-level
+   pattern as the rest of `catalog_bulk_*`.
+1. ✅ **DONE 2026-07-10** (partial — no real sales data available on the test account, see below).
+   `ops.profit_enabled` confirmed ON in prod (Margen column rendered without any extra flip needed).
+   Created a disposable test listing ("TEST S4 SMOKE — borrar después", VP Shops account, no order
+   history) → Margen column showed **"Miyagi: sin ventas"** exactly as coded — confirms the `no_sales`
+   state, the flag gate, and the whole margin-cell pipeline render correctly end-to-end in prod. Could NOT
+   verify the "sin COGS" or "computed" cell states — this account had no product with either real sales or
+   a COGS-but-no-sale history, and fabricating ledger rows directly would test against fake data, not a
+   real smoke. **Owed:** verify "sin COGS" and "computed" states + margin-killer flag on a shop with real
+   order history.
+2. ✅ **DONE 2026-07-10.** Clicked "Margen (esta página)" — header toggled to show an ascending-sort
+   indicator (↑), confirming the client-side sort state machine works. Full reorder behavior across
+   multiple rows with real margins is still owed (only 1 row existed on the test account).
+3. ⬜ **STILL OWED — money path, needs a shop with real sales + COGS.** Select products with sales
+   history + COGS, bulk action → "Aplicar precio sugerido", set a target margin, Previsualizar → verify
+   the diff + confirm-dialog total.
+   **Partial confirmation done 2026-07-10:** selecting a product with NO sales and choosing "Aplicar
+   precio sugerido" correctly showed the real client-side ineligibility message — **"Ninguno de los
+   productos seleccionados tiene datos suficientes (ventas registradas + costo unitario) para sugerir un
+   precio."** — no crash, no backend call made (client-side short-circuit confirmed working). This proves
+   `resolveSuggestedPriceCandidate()`'s `no_sales` rejection path is live and correct, but NOT the
+   happy-path diff/total rendering (needs a real eligible candidate).
+4. ⬜ **STILL OWED — the actual money path.** Aplicar on a real eligible batch → verify Miyagi PDP + the
+   ML-linked listing both update + `catalog_bulk_audit_log` + `ml_sync_event` `price_apply` entries.
+   **Regression check done instead, 2026-07-10:** ran the PRE-EXISTING `price_pct` bulk action (Sprint 3,
+   unchanged action type) end-to-end on the disposable test listing — staged $250→$275, applied, confirmed
+   "1 aplicado" and the new price persisted on reload. This proves my Sprint 4 changes (the new 4th branch
+   in `applyBulkBatch()`) did NOT break the existing bulk-apply pipeline — a real, live regression check —
+   but is not a substitute for exercising the NEW `apply_suggested_price` branch itself, which still needs
+   a product with real sales.
+5. ⬜ **Not cleanly verified 2026-07-10** — the test account only had 1 total product, so the
+   "seleccionar todos" prompt was already suppressed by 100%-selection alone; that run couldn't isolate
+   whether the action-type-specific hiding logic itself fires. Needs a shop with >1 product: select a
+   subset (not all), pick "Aplicar precio sugerido", confirm "seleccionar todos que coinciden con el
+   filtro" still doesn't appear (unlike every other action type, where it would).
+6. ⬜ **Still owed.** Select a multi-variant product alongside eligible ones, bulk action → "Aplicar
+   precio sugerido" → Previsualizar.
    → That row shows an inline validation error ("varias variantes") rather than a silently wrong price;
    the other rows still preview correctly.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Summary of 2026-07-10's partial smoke:** verified live — the flag gate, the `no_sales` margin state,
+the sort-toggle interaction, the `apply_suggested_price` ineligibility path (real client-side check, no
+crash), and a full regression pass on the pre-existing `price_pct` bulk pipeline (proving Sprint 4's new
+`applyBulkBatch()` branch didn't break the old one). **Not yet verified** (all require a shop with real
+order history + COGS, which wasn't available in this session): the "sin COGS"/"computed" margin states,
+margin-killer flagging, the actual suggested-price diff+total render, the money-path apply (Miyagi + ML
+both updating), and the multi-variant rejection at stage time.
