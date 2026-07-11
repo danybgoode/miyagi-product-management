@@ -1,11 +1,13 @@
 # Seller-portal rails foundation — Sprint 2: Adoption sweep + CI token-lint
 
-**Status:** ✅ built 2026-07-10 — `feat/seller-portal-rails-foundation-s2`, commits `c9f8568` (2.1 core
-portal files), `5c6020b` (2.1 settings/_sections), `71819cb` (2.1 settings/_components), `e0f47eb` (2.2
-CI token-lint). Deterministic gate green (`tsc` + `npm run build` + `npm run test:e2e`, 1819 passed — 7
-pre-existing, environment-dependent failures unrelated to this sweep, confirmed by reproducing them on
-the clean pre-sweep tree). Daniel's live visual smoke (light/dark/calm across the swept surface) still
-owed — no money/auth path.
+**Status:** ✅ merged 2026-07-10 — PR #211 squash `37182fa` (branch `feat/seller-portal-rails-foundation-s2`,
+4 commits: `c9f8568`/`5c6020b`/`71819cb` Story 2.1, `e0f47eb` Story 2.2). Deterministic gate green (`tsc` +
+`npm run build` + `npm run test:e2e`, 1819 passed — 7 pre-existing, environment-dependent failures unrelated
+to this sweep, confirmed by reproducing them on the clean pre-sweep tree). CI green (Playwright vs preview +
+type-check/build). Cross-agent review skipped this PR: `agy` couldn't take the 335 KB diff (argv-only input,
+256 KB cap) and `codex` was over its usage quota at merge time — advisory-only per its own design, so merge
+proceeded on green CI with Daniel's explicit go-ahead. Daniel's live visual smoke (light/dark/calm across the
+swept surface) still owed — no money/auth path.
 
 > Blocked-by Sprint 1 (the primitives must exist first — merged as PR #208). Replaces every legacy/raw
 > call-site with the shared primitives, then locks the door with a CI lint so the dialects can't come

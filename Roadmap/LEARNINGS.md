@@ -130,6 +130,25 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (not just trusting the doc's phrasing) is what keeps a deprecation from over-removing. *(2026-07-03,
   zine-editing-central S3.1 — the Maqueta "builder" and the "print/export" pipeline read the same
   `print_layouts` table but are different routes; only the builder was in scope.)*
+- **A subagent/fork that dies mid-task from a shared session rate-limit still returns a `result` — that
+  text is its last tool-call narration, not a trustworthy completion claim.** Five parallel forks doing a
+  mechanical file-sweep all hit the same account-level rate-limit simultaneously and terminated
+  `status: failed`; one fork's dying narration even referenced a different fork's assigned file, reading
+  like real confusion but really just whatever it happened to be mid-sentence about. Trusting any of their
+  result text would have left 2-3 files silently unfinished or referencing components with no import line
+  — `tsc` caught it, the fork's own "looks done" narration would not have. After any subagent/fork batch —
+  especially one large enough to plausibly share a rate-limit, or any showing `status: failed` — re-derive
+  actual file state directly (grep the real repo) and run the language's type-checker/build before treating
+  the batch as complete. *(2026-07-10, seller-portal-rails-foundation S2.)*
+- **A CI-lint's hard gate should cover exactly what a sweep actually swept, not the whole tree the
+  underlying scan visits.** A settings-tree directory audit found ~50 more seller-portal files than a
+  sprint doc named, all with the exact debt the new lint was built to catch — asserting `toEqual([])`
+  across the whole `app/`+`lib/` tree would have failed immediately on files that sprint never touched.
+  Fix: scan broadly for visibility (future sweeps see what's left), but assert the hard `toEqual([])` gate
+  only against an explicit `enforcedSweptPaths`-style allow-list that each sweep extends as it goes — the
+  same incremental-adoption shape as the raw-color guard's own file-exclusion list, just inverted (an
+  enforced-list of what's covered, not an excluded-list of what's exempt). *(2026-07-10,
+  seller-portal-rails-foundation S2.)*
 
 ## Tooling gotchas
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
@@ -492,6 +511,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   data dir); never point ANY write at the shared/retired instance to "test" against it — it's read-only
   by design precisely to prevent that. *(2026-07-06, profit-analyzer S2 — validated the Apply-price
   write path + the new `price_apply` activity-log kind this way.)*
+- **Never build a Tailwind arbitrary-value class via string interpolation** (e.g.
+  `` `text-[var(--${someVariable})]` ``) — Tailwind's JIT compiler scans source text **statically** for
+  complete class-name literals, so a dynamically-interpolated class name is invisible to it and silently
+  emits **no CSS at all**. Not a build error — the element just renders with inherited/default styling,
+  and nothing looks obviously broken until you notice the color is wrong. Fix: build a static
+  `Record<YourEnumType, string>` mapping each known branch to a **complete literal class string** and
+  index into that (the same pattern `components/ui/StatusBadge.tsx`'s `TOKEN_CLASS` record already uses
+  correctly) — never interpolate inside the class string itself. *(2026-07-10,
+  seller-portal-rails-foundation S2 — caught mid-sweep in `Negociacion.tsx` before it shipped.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop

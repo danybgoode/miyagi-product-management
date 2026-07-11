@@ -1,5 +1,5 @@
 ---
-status: in-progress   # Sprint 1 (StatusBadge/Button/Card + Toast/Banner) MERGED 2026-07-10: PR #208 squash 3bb5fb7. Deterministic gate green (tsc+build+Playwright, 23 tests); cross-agent (antigravity) review caught + fixed 2 real bugs pre-merge (toast action not dismissing, missing timer cleanup) + a test-durability gap in the R2 .btn-primary scan. Found 6 duplicate toast implementations, not the 4 the scope doc named (OfferInbox.tsx + OrderDetail.tsx's own bespoke toasts were undiscovered). Owed: Daniel's live visual smoke (light/dark/calm + undo path). Sprint 2 (adoption sweep + CI token-lint) BUILT 2026-07-10 — branch feat/seller-portal-rails-foundation-s2, 4 commits, draft PR open, awaiting Daniel merge. Deterministic gate green (tsc+build+Playwright, 1819 passed). Swept 25 files (core portal + full settings _sections/_components tree, bigger than the scope doc's named 4 files — confirmed with Daniel); CatalogTable.tsx (STATUS_LABEL+td-block) and Envios.tsx scoped out (in-flight PR #209/#210 at branch time, both merged mid-sprint) — owed as Sprint 2.5 follow-up. New CI lint gates only the swept file set, not the whole app (confirmed with Daniel — ~50 sibling seller-portal files were never in scope). Owed: Daniel's live visual smoke.
+status: shipped   # Both sprints merged 2026-07-10. S1: PR #208 squash 3bb5fb7 (StatusBadge/Button/Card + Toast/Banner, 23 tests). S2: PR #211 squash 37182fa (adoption sweep across 25 files -- the 4 named + OfferInbox/OrderDetail + PrintEditionCard + the full settings _sections/_components tree, ~2x the named scope, confirmed with Daniel -- + 4 new CI-lint checks in lib/design-token-audit.ts, gated on the swept file set only). Deterministic gate green both sprints (tsc+build+Playwright, 1819 passed on S2). Cross-agent review skipped on PR #211 (agy: diff too large for its argv-only input; codex: over quota) -- merged on green CI with Daniel's go-ahead. Owed: Daniel's live visual smoke (light/dark/calm + undo path); a follow-up sweep for CatalogTable.tsx (STATUS_LABEL+td-block) + Envios.tsx, both scoped out this epic (in-flight PR #209/#210 territory at S2 branch time, both merged mid-sprint); the ~50 other seller-portal files never in this epic's scope still carry the same raw-palette/bg-white/literal-radii debt (visible via the lint's broad scan, not yet gated).
 slug: seller-portal-rails-foundation
 ---
 
@@ -60,13 +60,14 @@ sweep (2.1) can only replace call-sites with primitives that exist (1.1/1.2), an
 > - Path-scoped commits only (`git add <your files>`), never `git add -A` — a shared worktree races the index.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** N/A — LOW risk, no runtime seam. Enforcement is the CI token-lint (build-time), not a
+- [x] All sprints merged to `main` + smoke-tested (gaps stated: Daniel's live visual smoke owed on both
+      sprints — no money/auth path)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** N/A — LOW risk, no runtime seam. Enforcement is the CI token-lint (build-time), not a
       runtime flag; a bad sweep is reverted with `git revert`. *(Carve-out recorded at grooming — Stage 6b.)*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — run `node scripts/build-order.mjs`)
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — run `node scripts/build-order.mjs`)
