@@ -92,7 +92,7 @@ an unpriced SKU is unsellable.
   flag `migrations.connector_enabled` confirmed ON in prod 2026-07-11.
 - [sprint-2.md](sprint-2.md) — ✅ Money path: `migration` SKU + quoted estimate. Merged (PR #224)
   + live 2026-07-11.
-- [sprint-3.md](sprint-3.md) — ✅ built, PR pending. Packaging: `/vende/migracion` landing pages
-  (Shopify connector + Tiendanube/WooCommerce/BigCartel export how-tos) + consultant runbook +
-  sell-sheet/`/vende` integration + an admin pricing-UI fix. Owed: Daniel's copy sign-off + live
-  export-file verification.
+- [sprint-3.md](sprint-3.md) — ✅ MERGED 2026-07-11 (PR #230, squash `56a4ddd`). Packaging:
+  `/vende/migracion` landing pages (Shopify connector + Tiendanube/WooCommerce/BigCartel export
+  how-tos) + consultant runbook + sell-sheet/`/vende` integration + an admin pricing-UI fix. Owed:
+  Daniel's copy sign-off + live export-file verification + confirming the deploy actually rolled.

@@ -1,10 +1,26 @@
 # Platform migrations — Sprint 3: Packaging — landings + consultant runbook
 
-**Status:** ✅ built, PR pending. Commits on `feat/platform-migrations-s3` (apps/miyagisanchez,
-branched off `origin/main` `57b6831`, onboarding-three-doors S2 merged): `0877bb2` (admin pricing
-fix, do-first), `692afef` (Story 3.1), `921f5f4` (Story 3.2), `6c26b55` (QA spec + design-token
-allowlist).
-**Risk:** LOW (copy + non-commerce pages; reviewer may auto-merge on green CI).
+**Status:** ✅ MERGED 2026-07-11. PR [#230](https://github.com/danybgoode/miyagisanchezcommerce/pull/230),
+squash-merged `56a4ddd` to `main` (apps/miyagisanchez), deploying via the frontend Cloud Run rail
+(no per-branch preview once merged — **live confirmation still owed**, see the smoke walkthrough).
+Built on `feat/platform-migrations-s3`, branched off `origin/main` `57b6831` (onboarding-three-doors
+S2 merged). Pre-squash commits: `0877bb2` (admin pricing fix, do-first), `692afef` (Story 3.1),
+`921f5f4` (Story 3.2), `6c26b55` (QA spec + design-token allowlist), `00005f4` (cross-agent +
+pr-reviewer findings — see below).
+**Risk:** LOW (copy + non-commerce pages). Got both a cross-agent (Codex) review and the repo's
+`pr-reviewer` subagent before merge; `pr-reviewer` verdict: **Approve**. CI green (type-check +
+build, Playwright vs preview, Vercel) before merge.
+
+**Found + fixed during review (both passes ran on PR #230 before merge):**
+- **Real bug (Codex, should-fix):** `MIGRACION_PLATFORM_PATHS[card.slug as keyof ...]` would
+  silently produce `href={undefined}` for a bad/typo'd `slug` — and `slug` ultimately comes from
+  admin-editable copy overrides (`getOverriddenDictionary`), not just the static JSON. Replaced
+  the unsafe cast with an `isMigracionPlatformSlug` type guard that degrades to the always-valid
+  hub link (`/vende/migracion`) instead; regression spec added.
+- **Cosmetic (pr-reviewer):** the new `en.json` content (never served — these pages pin
+  `getOverriddenDictionary('es')` per AGENTS rule #5, `en.json` only exists for `Dictionary`
+  type-completeness) had the same bare-"Miyagi" brand-voice issue already fixed in `es.json`.
+  Fixed, scoped to exactly the lines this sprint added.
 
 **Found + fixed before Story 3.2 could proceed (not in the original epic doc):** the admin
 promoter-pricing screen (`PromoterAdminClient.tsx`) hard-disabled the "Precio por SKU" input for
