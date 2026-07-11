@@ -64,3 +64,7 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
    → It's visible (not desktop-only) and routes to `/shop/manage/import` (the catalog importer). The settings page's own import banner is untouched and still links to `/shop/manage/settings/import` (store-configuration import) — a deliberately separate feature, not a duplicate door (see the scope note at the top of this doc).
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Two cosmetic notes from the independent PR review (not blocking, just worth an eyeball during the smoke):**
+- The primary bar's "Catálogo" tab (the `anuncios` entry, → `/shop/manage/catalogo`) and the "Más" sheet's "Catálogo" group header (Colecciones/Canales/Importar catálogo) share a label but point at different things — confirm this doesn't read as confusing in practice.
+- Ofertas moved from a 1-tap primary-bar item to 2-tap (inside "Más"), mitigated by the badge relay dot — confirm that still feels reachable enough on a real phone.
