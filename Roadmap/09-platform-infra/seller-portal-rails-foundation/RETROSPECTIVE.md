@@ -67,9 +67,15 @@ _Closed: 2026-07-10_
 ## Gaps / follow-ups
 - **Daniel's live visual smoke** (light/dark/calm across the swept surface; see `sprint-2.md`'s
   walkthrough) — no money/auth path, safe to run anytime.
-- **`CatalogTable.tsx`'s `STATUS_LABEL` map + `<td>` render block** and **`Envios.tsx` entirely** —
-  scoped out of Sprint 2 (in-flight PR #209/#210 territory at branch time; both merged mid-sprint).
-  ~14 + ~38 raw-palette/radius hits remain in these two files. Not yet in `enforcedSweptPaths`.
+- ~~**`CatalogTable.tsx`'s `STATUS_LABEL` map + `<td>` render block** and **`Envios.tsx` entirely**~~
+  **RESOLVED 2026-07-10** — PR #213 (squash `6de222f`), same session. Both files fully swept, both
+  now in `enforcedSweptPaths`. Along the way: added `catalogStatusToToken()`; found and fixed a real
+  duplicate-toggle-switch bug in `Envios.tsx` (imported the shared `<ToggleSwitch>` but never used it
+  — same shape as this epic's own `Canal.tsx`/`SectionSaveBar` finding); fixed a real gap in the
+  token-lint's `literalRadiusPattern` (it silently missed Tailwind's directional/corner radius classes
+  like `rounded-l`/`rounded-r`, which `Envios.tsx` used six times with zero coverage); cross-agent
+  review (agy) caught one real bug pre-merge (a `title` on a natively-disabled `<button>` never shows
+  in most browsers — moved to the wrapping `<label>`).
 - **The other ~50 seller-portal files never in either sprint's scope** (analytics, collections,
   content, convocatoria, eventos, import, mercadolibre, profit, promotions, subscriptions,
   sweepstakes) still carry the same raw-palette/`bg-white`/literal-radii debt — visible via the
