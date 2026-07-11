@@ -1,10 +1,13 @@
 # Platform migrations — Sprint 2: Money path — `migration` SKU + quoted estimate
 
-**Status:** ✅ all 3 stories built (PR pending). Commits: `f73e832` (Story 2.1), `2104be3`
-(Stories 2.2 + 2.3 — see note below), `11a76fd` (spec fix) on `feat/platform-migrations-s2`
-(apps/miyagisanchez), branched off `origin/main` `2b1a483` (Sprint 1 merged, PR #220).
-**Risk:** HIGH (money — **Daniel merges** every story here). Dark launch by construction: an
-unpriced SKU is unsellable, so the SKU is inert until admin config prices it — no second flag.
+**Status:** ✅ MERGED + LIVE 2026-07-11. PR [#224](https://github.com/danybgoode/miyagisanchezcommerce/pull/224),
+squash-merged `4dcd441` to `main` (apps/miyagisanchez), deployed via the frontend Cloud Run rail.
+Built on `feat/platform-migrations-s2`, branched off `origin/main` `2b1a483` (Sprint 1 merged,
+PR #220). Commits (pre-squash): `f73e832` (Story 2.1), `2104be3` (Stories 2.2+2.3), `11a76fd`
+(spec fix), `94d7cba` (3 review-driven fixes), `f260b05` (CI-lint false-positive fix).
+**Risk:** HIGH (money — **Daniel authorized "merge on green" this session, 2026-07-11**). Dark
+launch by construction: an unpriced SKU is unsellable, so the SKU is inert until admin config
+prices it — no second flag.
 
 **Build note — 2.2 and 2.3 shipped as one commit, not two.** The plan split them (estimator/
 close-from-quote vs. very-custom routing), but in the actual implementation the batch
@@ -20,6 +23,34 @@ the full breakdown.
 - The epic doc didn't specify the per-section adder amount. Set to **$199 MXN per parity
   section rated `partial` or `none`** (`MIGRATION_SECTION_ADDER_CENTS`, `lib/migration-estimate.ts`)
   — confirm this number with Daniel before/at merge; it's a one-line constant to change.
+
+**Found + resolved during review (both a cross-agent Codex pass and the repo's `pr-reviewer`
+subagent ran on PR #224 before merge):**
+- **Real functional gap (pr-reviewer):** Story 2.3's Telegram-to-Daniel notify was unreachable
+  through the shipped UI — it only fired inside `classifyMigrationPricing`, whose sole caller
+  (the estimate route) is only ever invoked by `MigrationEstimateCard`, which the parity page
+  renders ONLY when the report is NOT very-custom. Fixed: `notifyIfVeryCustom()` now fires
+  directly from the parity page's server component at page load, independent of the card.
+- **Broken dedupe guard (Codex):** a second `.eq()` filter attempting "only update if still null"
+  on a jsonb `->>` path produced `eq.null` in PostgREST (matches nothing — NULL needs `is.null`),
+  so the guard was silently a no-op. Removed the broken filter; documented as honestly
+  best-effort now, not falsely precise.
+- **Hardcoded price duplication (Codex):** the estimator's base price was hardcoded independent
+  of the admin-configured price the flat ≤150 path actually charges. `computeMigrationEstimate`
+  now takes `basePriceCents` as a required input, sourced from the same admin config.
+- **Not changed:** Codex's "Medusa-first violation" / "no UCP/MCP parity" findings — verified
+  against precedent (every existing promoter SKU uses the identical Stripe-direct rail with zero
+  UCP/MCP exposure, since these are human-consultant flows, not agent-facing commerce) and judged
+  not applicable, matching the pattern this SKU was built to follow.
+
+**Merge-time CI note (validated after the fact):** the PR's own CI showed 2 failures in
+`e2e/panfleto-dressup-render.spec.ts` — a file entirely owned by the sibling panfleto-premium-shop
+epic (zero overlap with this diff), still failing after a re-run (ruling out a flake). Merged with
+that finding documented on the PR rather than treated as blocking. **Confirmed correct
+immediately after**: PR [#226](https://github.com/danybgoode/miyagisanchezcommerce/pull/226),
+merged minutes later, fixed the exact two specs — a real skip-gate bug in that OTHER epic's test
+(`.some()` false-positived past the skip condition on a pre-existing "Stickers personalizados"
+product title), not anything introduced by this PR.
 
 ## Context
 Pricing accepted at the gate (2026-07-09): white-glove **$999 MXN flat ≤150 listings**, commission
@@ -114,10 +145,9 @@ no one is silently quoted for work we can't do.
   there yet, same as every new route's gating spec before its first merge).
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com (all of Sprint 2 rides behind
-`migrations.connector_enabled` for the estimate/very-custom steps — flip it ON in a controlled
-window per Sprint 1's own walkthrough, or run this on the branch's Vercel preview pre-merge; the
-`migration` SKU itself needs no flag, only an admin-set price, per the dark-launch note above).
+Env: production · https://miyagisanchez.com (`migrations.connector_enabled` is confirmed **ON**
+in prod as of 2026-07-11 — steps 3-5 below need it; the `migration` SKU itself needs no flag,
+only an admin-set price, per the dark-launch note above).
 
 1. As admin at https://miyagisanchez.com/admin/promoter, price the `migration` SKU at $999 (it
    shows as "Migración de tienda" in the SKU list).

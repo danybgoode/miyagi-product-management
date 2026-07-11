@@ -87,7 +87,10 @@ an unpriced SKU is unsellable.
 - [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — run `node scripts/build-order.mjs`)
 
 ## Sprints
-- [sprint-0.md](sprint-0.md) — Bug: ML re-auth churn (do first).
-- [sprint-1.md](sprint-1.md) — Shopify connector → staging + parity score.
-- [sprint-2.md](sprint-2.md) — Money path: `migration` SKU + quoted estimate.
-- [sprint-3.md](sprint-3.md) — Packaging: landings + consultant runbook.
+- [sprint-0.md](sprint-0.md) — ✅ Bug: ML re-auth churn (do first). Merged + live.
+- [sprint-1.md](sprint-1.md) — ✅ Shopify connector → staging + parity score. Merged (PR #220),
+  flag `migrations.connector_enabled` confirmed ON in prod 2026-07-11.
+- [sprint-2.md](sprint-2.md) — ✅ Money path: `migration` SKU + quoted estimate. Merged (PR #224)
+  + live 2026-07-11.
+- [sprint-3.md](sprint-3.md) — ⬜ not started. Packaging: landings + consultant runbook. **Deferred
+  to a new session** (per Daniel, 2026-07-11).
