@@ -1,12 +1,14 @@
 # Platform migrations — Sprint 3: Packaging — landings + consultant runbook
 
-**Status:** ✅ MERGED 2026-07-11. PR [#230](https://github.com/danybgoode/miyagisanchezcommerce/pull/230),
-squash-merged `56a4ddd` to `main` (apps/miyagisanchez), deploying via the frontend Cloud Run rail
-(no per-branch preview once merged — **live confirmation still owed**, see the smoke walkthrough).
-Built on `feat/platform-migrations-s3`, branched off `origin/main` `57b6831` (onboarding-three-doors
-S2 merged). Pre-squash commits: `0877bb2` (admin pricing fix, do-first), `692afef` (Story 3.1),
-`921f5f4` (Story 3.2), `6c26b55` (QA spec + design-token allowlist), `00005f4` (cross-agent +
-pr-reviewer findings — see below).
+**Status:** ✅ MERGED + LIVE 2026-07-11. PR [#230](https://github.com/danybgoode/miyagisanchezcommerce/pull/230),
+squash-merged `56a4ddd` to `main` (apps/miyagisanchez), deployed via the frontend Cloud Run rail —
+confirmed live same day: all 5 `/vende/migracion*` pages + the runbook return 200, the sitemap
+lists all 5 new URLs, the `negocios`/`servicios` migration callout and the sell-sheet's runbook
+link both render, and the `og:image` route (the one live-fetch assertion that fails by design
+pre-merge) now returns a real `200 image/png`. Built on `feat/platform-migrations-s3`, branched
+off `origin/main` `57b6831` (onboarding-three-doors S2 merged). Pre-squash commits: `0877bb2`
+(admin pricing fix, do-first), `692afef` (Story 3.1), `921f5f4` (Story 3.2), `6c26b55` (QA spec +
+design-token allowlist), `00005f4` (cross-agent + pr-reviewer findings — see below).
 **Risk:** LOW (copy + non-commerce pages). Got both a cross-agent (Codex) review and the repo's
 `pr-reviewer` subagent before merge; `pr-reviewer` verdict: **Approve**. CI green (type-check +
 build, Playwright vs preview, Vercel) before merge.
@@ -110,17 +112,26 @@ exactly how to move to Miyagi, **so that** I can judge the switch in five minute
   backend running in the verification sandbox, the same class of gap Sprint 1 documented.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com (once merged + deployed)
+Env: production · https://miyagisanchez.com
+
+**Agent-verified live 2026-07-11** (the parts an anonymous HTTP check can confirm): all 5
+`/vende/migracion*` pages + `/vende/promotor/migracion` return 200; `/sitemap.xml` lists all 5
+new URLs; `/vende/negocios` and `/vende/servicios` both render the "¿Vienes de otra plataforma?"
+callout; `/vende/promotor/sell-sheet` renders the "Manual de migración" link; the hub's `og:image`
+route returns a real `200 image/png`. **Steps 1, 4, and 5's price-matching/real-file parts below
+are still owed to Daniel** — they need a real admin session and a real downloaded export file,
+neither of which an anonymous check can exercise.
 
 1. Go to https://miyagisanchez.com/admin/promoter and set a price for "Migración de tienda" (e.g.
    $999) — the input should now be editable and save successfully (**the S3 fix**: before this
    sprint, this field was hard-disabled and unsaveable for this SKU).
    → `Precio guardado.` confirmation; the field shows the saved amount on reload.
+   **(owed to Daniel — needs an admin session)**
 2. Go to https://miyagisanchez.com/vende/negocios and https://miyagisanchez.com/vende/servicios →
    a "¿Vienes de otra plataforma?" card appears near the bottom of each, linking to
-   `/vende/migracion`.
+   `/vende/migracion`. ✅ confirmed live.
 3. Go to https://miyagisanchez.com/vende/migracion → a hub page with 4 platform cards (Shopify,
-   Tiendanube, WooCommerce, Big Cartel).
+   Tiendanube, WooCommerce, Big Cartel). ✅ confirmed live (200 + sitemap entries + og:image).
    → Click each card → lands on `/vende/migracion/{platform}`. The Shopify page's primary button
    links to `/shop/manage/shopify/import` (the real S1 connector flow); the other three link to
    `/shop/manage/import` (the shipped importer) and state that platform's real, numbered export
@@ -134,10 +145,13 @@ Env: production · https://miyagisanchez.com (once merged + deployed)
    cross-check, not a real file — this is the exact gap this step exists to close).
    **(owed to Daniel — no real export file existed during the build)**
 5. Go to https://miyagisanchez.com/vende/promotor/sell-sheet → the "Migración de tienda" glossary
-   card and 30-second pitch script appear; the price line at the bottom shows the real admin-set
-   price (from step 1); a "→ Manual de migración" link is present.
-   → Click it → lands on `/vende/promotor/migracion`, a printable runbook: what to photograph, the
-   interview questions, and the flat-price ($X, up to the listed cap) / cotización / "pasa el caso
-   a Daniel" decision tree — the price shown matches step 1's admin-set amount exactly.
+   card and 30-second pitch script appear ✅ confirmed live; a "→ Manual de migración" link is
+   present ✅ confirmed live. The price line at the bottom should show the real admin-set price
+   (from step 1) — **owed to Daniel** (no price is set in prod yet, so this line currently omits
+   the migration price entirely, which is the correct degrade, not a bug).
+   → Click it → lands on `/vende/promotor/migracion` ✅ confirmed live, a printable runbook: what
+   to photograph, the interview questions, and the flat-price ($X, up to the listed cap) /
+   cotización / "pasa el caso a Daniel" decision tree — the price shown should match step 1's
+   admin-set amount exactly **(owed to Daniel — needs step 1 done first)**.
 
 If any step fails, note the step number + what you saw — that's the bug report.
