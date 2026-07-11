@@ -1,10 +1,16 @@
 # Panfleto — the first premium shop — Sprint 2: Rename + dress-up miyagiprints → panfleto
 
-**Status:** ⬜ not started · **Blocked by Sprint 1** (placements must be rehomed first)
+**Status:** ⬜ in progress · **Sprint 1 confirmed merged** (frontend `#217`/`6c42c43`, backend
+`#81`/`3b252c1`, both on `origin/main`). Branched fresh: `feat/panfleto-premium-shop-s2` off
+`origin/main` in both repos (the old `feat/panfleto-premium-shop` is a squash-merged dead end).
+
+**Live baseline confirmed (2026-07-11, via the public catalog API):** the shop has exactly **one**
+product today — "Stickers personalizados", $50 MXN, category `creatividad`, no collection yet — and
+`about`/`returns_policy` are both null. This is a real blank slate, not an overwrite.
 
 ## Stories
 
-### Story 2.1 — Rename with 301 + subdomain
+### Story 2.1 — Rename with 301 + subdomain grant
 **As** the shop owner, **I want** the miyagiprints shop renamed to `panfleto` with the old slug
 aliased and the subdomain granted, **so that** every existing link keeps working while the new
 identity takes over.
@@ -12,21 +18,117 @@ identity takes over.
 slug (shipped custom-slugs alias); `panfleto.miyagisanchez.com` renders the shop white-label via an
 admin subdomain grant; the `mschz.org/panfleto` flat short link resolves.
 **Risk:** low
+**Execution:** both mutations require a live authenticated session (Clerk seller session for the
+slug PATCH, Clerk admin session for the subdomain grant) — **Daniel executes both directly**, no
+CLI/script/MCP tool exists or is being built for either. Exact steps below, under "Your two actions."
 
-### Story 2.2 — Full brand dress-up
+### Story 2.2 — `create_collection` MCP tool
+**As** a seller agent, **I want** to create a shop collection through the MCP tool surface (not just
+list them), **so that** the full storefront dress-up — including collections — is genuinely
+agent-doable.
+**Acceptance:** a new `create_collection` tool appears in the MCP tool list; calling it with the
+shop's agent token creates a real Medusa Product Category under that seller; `list_my_collections`
+immediately reflects it; an unauthorized/malformed call fails the same way sibling tools do.
+**Risk:** low (additive; closes a real gap — `list_my_collections` today tells an agent to use the
+portal UI, since no create path exists). Touches **both repos**: a new backend
+`internal/seller-collections` route (mirrors `internal/seller-products`) + the frontend MCP tool
+(mirrors `create_listing`'s shape). This means Sprint 2 is **not** frontend-only — the epic README's
+"Deploy order" note gets corrected as part of this sprint.
+
+### Story 2.3 — Full brand dress-up (dogfooding the agent path)
 **As a** visitor, **I want** panfleto to read as an editorial publishing house, **so that** the first
 premium shop demonstrates what the tier means.
-**Acceptance:** name/logo/announcement bar/hero set; a theme preset applied (S4 may swap in the new
-editorial preset later); collections created (Historias · Convocatorias · Stickers — existing sticker
-catalog curated into its collection, nothing deleted); Acerca/FAQ/Políticas written. All via
-Storefront-as-Code / MCP config (dogfood the agent path). Copy meets the epic's content bar and is
-drafted in this sprint doc for Daniel's read before shipping.
-**Risk:** low
+**Acceptance:** name/tagline/announcement bar/hero set; a theme preset applied (S4 may swap in a new
+editorial preset later); collections created (Historias · Convocatorias · Stickers — the existing
+sticker product curated into Stickers, nothing deleted); Acerca/FAQ/Políticas written. **Executed via
+MCP tool calls** (`patch_store_configuration` + `create_collection` + `update_listing`) against the
+live `/api/ucp/mcp` endpoint using the shop's own agent token — not the settings UI — per "dogfood the
+agent path." Copy meets the epic's content bar and is drafted below for Daniel's read **before any
+MCP call executes.**
+**Risk:** low (content/config only — no money, no auth path touched).
 
-## Sprint QA
-- **api spec(s):** 301 alias + subdomain render → extend `own-shop-seo` / subdomain specs.
-- **browser smoke owed:** yes, to Daniel — visual before/after eyeball on phone + desktop.
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge
+## Drafted copy (Story 2.3) — for Daniel's read before shipping
+
+Content bar applied: es-MX, simple, concrete, direct address. No time-to-complete promises (nothing
+claims the horror call is open yet — that's Sprint 3's job). No "esto nos recuerda…" wrap-ups. No
+filler intensifiers.
+
+**Name:** `panfleto` (lowercase, matching the existing `miyagiprints` convention)
+
+**Tagline:**
+> Terror latinoamericano. Escrito, votado, impreso.
+
+**Announcement bar** (`announcement.text`, ≤140 chars — this draft is ~75):
+> panfleto publica relatos de terror de autores mexicanos y latinoamericanos.
+
+`announcement.link`: **none for S2** (`null`) — there's no convocatoria page live yet; Sprint 3
+Story 3.2 repoints this at the call once it launches.
+
+**Hero** (`mode: 'promo'` — the shop has too little live inventory yet for a `listings`-mode hero):
+- `promo_cta_text`: "Conoce panfleto"
+- `promo_cta_link`: `https://panfleto.miyagisanchez.com/acerca`
+- `promo_image_url`: **gap — no image asset exists yet.** Needs a real hero image from Daniel (or
+  this field stays unset for S2, which `applyStoreConfig` allows; hero still renders in a degraded
+  text-only form). Flagging rather than guessing.
+
+**Theme preset:** proposing `papel` (warm paper tones, editorial typography — the closest existing
+fit) as an interim choice; Sprint 4 may add a dedicated dark/editorial preset and swap it in later.
+
+**Acerca** (`content.about.body`, ≤600 chars):
+> panfleto es una editorial que publica relatos de terror de autores mexicanos y latinoamericanos.
+> Cualquiera puede enviar un relato, sin cuenta y sin costo. Los relatos aceptados se publican como
+> adelanto digital. Los lectores votan por sus favoritos, y el relato más votado se imprime en una
+> edición física. panfleto también vende stickers de edición limitada.
+
+**FAQ** (`content.faq.items`, Q≤140/A≤600 each — scoped to what's true *today*, not the not-yet-open
+call):
+1. **¿Qué publica panfleto?**
+   Relatos de terror de autores mexicanos y latinoamericanos, elegidos por votación de los lectores.
+   El relato más votado se imprime en una edición física.
+2. **¿Panfleto era miyagiprints?**
+   Sí. Es la misma tienda con nombre nuevo. Los enlaces antiguos con miyagiprints siguen funcionando
+   y redirigen aquí.
+3. **¿Qué vende panfleto además de las historias?**
+   Stickers de edición limitada, en la colección Stickers.
+
+**Políticas** (mirrors `returns_policy` — no separate field):
+- `window`: "7 días"
+- `shipping_paid_by`: `buyer`
+- `conditions`: "Producto sin uso, en empaque original."
+- `custom_note`: "Los relatos publicados en el sitio no son un producto físico y no aplican para
+  devolución."
+
+**Collections** (3, created via the new `create_collection` tool; Historias/Convocatorias start empty
+— Sprint 3 populates them):
+1. **Historias** — "Los relatos que panfleto ha publicado, con su adelanto para leer antes de
+   decidir si votas."
+2. **Convocatorias** — "Los relatos aceptados en la llamada abierta actual, mientras compiten por la
+   edición impresa."
+3. **Stickers** — "Stickers de edición limitada, impresos por panfleto." → the existing "Stickers
+   personalizados" product gets assigned here via `update_listing.collection_names`.
+
+**⬜ Waiting on Daniel's read/approval of this copy block before any MCP call executes.**
+
+## Your two actions (Story 2.1 — Daniel executes these directly)
+Once the rest of the sprint is built and ready to verify against, do these two in order:
+1. **Rename the slug.** Shop settings → Canal → change the shop's slug from `miyagiprints` to
+   `panfleto`. This is the self-serve `PATCH /api/sell/shop/slug` flow — the old slug 301-aliases
+   automatically for 90 days.
+2. **Grant the subdomain.** Admin → Tenants → find the shop (now `panfleto`) → grant `subdomain`.
+   This writes the comp grant that makes `panfleto.miyagisanchez.com` route white-label.
+
+I'll tell you exactly when to do these (after the build + copy sign-off, before final verification).
+
+## Sprint QA — one spec per story
+- **2.1:** extend `e2e/own-shop-seo.spec.ts` and/or `e2e/subdomain.spec.ts` with the slug-alias 301 +
+  subdomain white-label render assertions.
+- **2.2:** new spec (or extend `e2e/mcp-tool-dispatch-parity.spec.ts`) asserting `create_collection`
+  → real Medusa category → visible in `list_my_collections`, plus an auth-rejection case.
+- **2.3:** extend `e2e/mcp-store-config-presentation.spec.ts` (already round-trips
+  announcement/hero/theme_preset) to cover `content.about`/`content.faq`, plus a render-level check
+  that the three collections (and the curated sticker) appear on the storefront.
+- **deterministic gate:** backend `medusa build` → `tsc --noEmit` → `npm run test:unit`; frontend
+  `tsc --noEmit` → `npm run build` → Playwright `api` — both green before merge.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
@@ -38,6 +140,6 @@ Env: production · https://miyagisanchez.com
 3. Open https://mschz.org/panfleto
    → 301 to the canonical shop URL.
 4. Tap through Historias / Convocatorias / Stickers collections + Acerca.
-   → Curated content, es-MX copy, stickers intact under their collection.
+   → Curated content, es-MX copy, sticker product intact under its collection.
 
 If any step fails, note the step number + what you saw — that's the bug report.
