@@ -1,12 +1,17 @@
 # Sprint 1 — The web path (seller declares → buyer checks out arranged-only)
 
 **Epic:** [Arranged-only delivery](README.md) · **Risk: HIGH — Daniel merges** ·
-**Status: 🟡 built, PRs open — not yet merged.**
+**Status: 🟢 built, CI green on both PRs, awaiting Daniel's merge (HIGH risk).**
 Backend PR [danybgoode/medusa-bonsai-backend#84](https://github.com/danybgoode/medusa-bonsai-backend/pull/84)
 (S1.1+S1.2) · Frontend PR [danybgoode/miyagisanchezcommerce#223](https://github.com/danybgoode/miyagisanchezcommerce/pull/223)
 (S1.1+S1.2+S1.3). Both branches: `feat/arranged-only-delivery`, cut off latest `origin/main` in each repo
 (isolated worktrees — the shared checkouts were parked on sibling sessions' branches). Deterministic gate
-green on both (`tsc` + build + unit/api tests) before opening either PR.
+green on both (`tsc` + build + unit/api tests) before opening either PR. Mid-flight, a sibling epic
+(`onboarding-three-doors`, PR #221) merged to `main` first — merged `origin/main` into the frontend branch,
+resolved a `FlagKey`-union conflict + a `platform_flags` migration-timestamp collision (re-stamped ours
+`20260711140000`→`20260711150000`) + a stale flag-count drift-guard assertion (27→28). CI (`Type-check +
+build`, `Playwright vs preview`) green on the frontend PR after the merge; backend PR stayed mergeable
+throughout (no backend-side conflict).
 
 The thinnest end-to-end slice that ships and is Daniel-testable: a seller marks a listing arranged-only, a
 buyer checks out seeing only the coordinated delivery + pago directo, and the order completes. All three
