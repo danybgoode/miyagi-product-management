@@ -42,8 +42,9 @@ is *which* seller owns placement products (S1) — a data/ownership move, not a 
 |---|---|---|---|
 | 1 | Placements sell through a platform-owned seller (config-addressable) | high | ✅ shipped + live |
 | 1 | Old miyagiprints constant unreachable; existing orders + zine pipeline intact | high | ✅ shipped + live |
-| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | ⬜ not started |
-| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | ⬜ not started |
+| 2 | Rename miyagiprints → panfleto (slug 301 + subdomain grant) | low | 🚧 built + QA'd; the two live actions are Daniel's (see sprint-2.md) |
+| 2 | `create_collection` MCP tool (closes a real gap — collections were list-only) | low | 🚧 built + QA'd |
+| 2 | Full brand dress-up (theme, hero, collections, content pages, all copy) | low | 🚧 copy drafted, awaiting Daniel's approval before execution |
 | 3 | The horror convocatoria — created, copy drafted, submission window open | med | ⬜ not started |
 | 3 | Voting/excerpt launch plan + share surfaces (announcement, mschz link) | med | ⬜ not started |
 | 4 | 2–3 new premium theme presets (incl. dark/editorial for panfleto) | low | ⬜ not started |
@@ -60,10 +61,10 @@ doc for Daniel's read before it ships.
 
 ## Deploy order
 
-Frontend-only expected throughout (placement ownership lives in the frontend's print-server layer +
-Supabase/Medusa data, not backend code — verify in S1 planning; if a backend seller change is needed,
-backend merges first and the frontend degrades gracefully). S1 **blocks** S2. S3 and S4 are
-independent after S2.
+S1 was frontend-only. **S2 is not** — closing the MCP `create_collection` gap (list-only before)
+needs a small additive backend route (`internal/seller-collections`, mirrors
+`internal/seller-products`); backend merges first, frontend (the MCP tool + rename/dress-up doc)
+after. S1 **blocks** S2. S3 and S4 are independent after S2.
 
 ## Definition of Done (epic)
 

@@ -21,6 +21,10 @@ admin subdomain grant; the `mschz.org/panfleto` flat short link resolves.
 **Execution:** both mutations require a live authenticated session (Clerk seller session for the
 slug PATCH, Clerk admin session for the subdomain grant) — **Daniel executes both directly**, no
 CLI/script/MCP tool exists or is being built for either. Exact steps below, under "Your two actions."
+**Status:** 🚧 QA built (`e2e/panfleto-rename-alias.spec.ts` — self-activating, verified live against
+today's un-renamed prod: correctly skips all 3 assertions; caught + fixed a real bug in the process
+— `mschz.org`'s branded 404 is itself a 301, not a 404 status, so the skip condition had to key off
+the redirect target). Awaiting Daniel's two live actions.
 
 ### Story 2.2 — `create_collection` MCP tool
 **As** a seller agent, **I want** to create a shop collection through the MCP tool surface (not just
@@ -34,6 +38,13 @@ portal UI, since no create path exists). Touches **both repos**: a new backend
 `internal/seller-collections` route (mirrors `internal/seller-products`) + the frontend MCP tool
 (mirrors `create_listing`'s shape). This means Sprint 2 is **not** frontend-only — the epic README's
 "Deploy order" note gets corrected as part of this sprint.
+**Status:** ✅ built — backend `POST /internal/seller-collections` (reuses the existing, already-
+tested `createSellerCollection` helper — no new collection-creation logic, just an internal-auth
+wrapper); frontend `createSellerCollectionViaInternal` + the `create_collection` MCP tool
+(schema + handler + dispatch case + `MCP_SELLER_TOOLS`/manifest wiring). QA:
+`e2e/mcp-create-collection.spec.ts` (schema, both auth-rejection cases, manifest wiring — verified
+live) + `e2e/mcp-tool-dispatch-parity.spec.ts` (verified live, confirms dispatch wiring). Both repos
+`tsc --noEmit` clean; backend `medusa build` clean.
 
 ### Story 2.3 — Full brand dress-up (dogfooding the agent path)
 **As a** visitor, **I want** panfleto to read as an editorial publishing house, **so that** the first
@@ -46,6 +57,11 @@ live `/api/ucp/mcp` endpoint using the shop's own agent token — not the settin
 agent path." Copy meets the epic's content bar and is drafted below for Daniel's read **before any
 MCP call executes.**
 **Risk:** low (content/config only — no money, no auth path touched).
+**Status:** 🚧 copy drafted below; QA built (`e2e/mcp-store-config-presentation.spec.ts` extended
+for `content.about`/`content.faq` + `e2e/panfleto-dressup-render.spec.ts`, self-activating —
+verified live: both skip cleanly today). Execution is necessarily **post-merge/deploy** — the
+`create_collection` tool this story dogfoods only exists on prod once Story 2.2 ships — and
+**post-approval** of the copy below.
 
 ## Drafted copy (Story 2.3) — for Daniel's read before shipping
 
