@@ -10,15 +10,15 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (2)
 
-- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 11/16 stories · risk: High · Wave 1
+- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 16/16 stories · risk: High · Wave 1
+- [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 2/7 stories · risk: High · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (9)
+## 📋 Ready to build (scaffolded, not started) (8)
 
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 0/9 stories · risk: Low · Wave 1
-- [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 0/7 stories · risk: High · Wave 1
-- [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](../../03-selling-and-shops/platform-migrations/README.md) — 03 Selling & Shops · 0/8 stories · risk: High · Wave 2
+- [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](../../03-selling-and-shops/platform-migrations/README.md) — 03 Selling & Shops · 1/8 stories · risk: High · Wave 2
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
@@ -130,5 +130,16 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+
+These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
+derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
+forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
+
+| Epic | frontmatter (used) | sprint/retro-derived |
+|---|---|---|
+| Catalog management — one Catálogo home for every product, channel, price & quantity | In progress | Shipped |
+| Platform migrations — Shopify connector, parity score, consultant white-glove SKU | Scaffolded | In progress |
+
 ---
-_Epics: 104 · seeds in funnel: 5 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 104 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
