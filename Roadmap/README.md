@@ -73,7 +73,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ Open a shop in minutes (store + first listing onboarding)
 - ✅ Create & edit listings with photos and rich details
 - ✅ Seller dashboard: orders, offers, analytics, content, settings
-- ✅ Dedicated **seller-mode shell** — `/shop/manage` drops the buyer chrome (header/footer/tab bar) for a seller-distinct space: a dark brand top bar with "Volver a comprar" and a `SellerNav` (Operar: Resumen · Pedidos · Ofertas · Anuncios / Crecer: Cupones · Suscripciones · Contenido · Eventos · Sorteos · Analíticas · Importar catálogo · Configuración), reachable via "Cambiar a modo vendedor" in the Cuenta menu. The rail is the **single nav source of truth** (`lib/seller-nav.ts`) and every section renders one shared **"Resumen / \<Sección\>"** breadcrumb derived from it
+- ✅ Dedicated **seller-mode shell** — `/shop/manage` **and now `/sell`/`/sell/setup` for a signed-in owner** drop the buyer chrome (header/footer/tab bar) for a seller-distinct space: a dark brand top bar with "Volver a comprar" and a `SellerNav` (Operar: Resumen · Pedidos · Ofertas / Catálogo: Anuncios · Colecciones · Canales · Mercado Libre · Importar / Crecer: Cupones · Suscripciones · Contenido · Eventos · Sorteos · Analíticas · Ganancias / Configuración), reachable via "Cambiar a modo vendedor" in the Cuenta menu — signed-out `/sell` keeps buyer chrome (the acquisition path is untouched). The rail is the **single nav source of truth** (`lib/seller-nav.ts`) and every section renders one shared **"Resumen / \<Sección\>"** breadcrumb derived from it. Behind kill-switch `seller.shell_on_sell_enabled` (default ON) for the `/sell` extension
 - ✅ Get paid to your own Stripe / MercadoPago / SPEI account (no commission)
 - ✅ Order management with manual-payment confirmation
 - ✅ Seller subscriptions / recurring offerings
@@ -89,6 +89,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ **Profit Analyzer ("Ganancias")** — an append-only per-sale financial ledger (revenue − ML fee − shipping − COGS, snapshotted at sale time, native + Mercado Libre orders both) drives a margin dashboard at `/shop/manage/profit`: per-order and per-SKU realized margin, "margin killer" and underpriced-SKU call-outs, and a **solve-for-price suggester** (target a margin, see the price ML's own fee actually requires) with **one-click Apply** — a confirmed price change that updates Miyagi and pushes to the linked ML listing, logged to the activity feed. COGS lives on the variant (bulk-CSV settable). Behind `ops.profit_enabled` *(live money-path apply-price smoke against a real ML sandbox owed to Daniel)*
 - ✅ **Custom print products (the sticker-shop buy experience)** — a print shop (miyagiprints first) sells a real StickerJunkie/Sticker-Mule-grade configured product: priced size/material options with automatic **quantity-break pricing** (a pure price-grid deriver keeps PDP/cart/checkout in sync with Medusa's own price resolution), a seller-facing "Opciones" editor, buyer artwork upload (real magic-byte format sniffing, a low-res print-quality preflight warning) that rides the order end-to-end, a lightweight **print-proof sign-off** over the existing buyer-seller chat (size/qty/price always server-restated — never a silent seller-proposed change), full **AI-agent parity** (an agent reads a listing's options/tiers/artwork contract via UCP/MCP and places a fully configured order, artwork included), and one-tap **reorder**. Behind `configurator.enabled` (kill-switch, fail-open ON, scoped to the buy-box artwork addition only) *(live proof round-trip + one real MCP agent order owed to Daniel)*
 - ✅ **Setup guide on dashboard** — a persistent "Pon tu tienda en marcha" card on Resumen (`/shop/manage`) reads the shop's real completion state and walks a merchant through 5 steps to a sellable shop, with **payments named up front** (step 3, "~4 min" estimate) rather than sprung on them after everything else looks done — one step open at a time, done steps collapse with strikethrough, dismissible with a restore toggle in Configuración, step 5 completed via a real share action. The completion logic is one shared seam (`lib/setup-guide.ts`) also driving the existing Configuración "N de X secciones configuradas" counter, so the two surfaces can't drift apart. Guide-interaction events (view/step-open/step-complete/dismiss/restore/first-share) feed the GTM `dataLayer` as the epic's Grower signal *(live card render/interaction + payments-OAuth smoke owed to Daniel)*
+- ✅ **Catálogo — one home for every product, channel, price & quantity** — the old flat "Mis anuncios" grid is now a real server-filtered/paginated table (`/shop/manage/catalogo`: search/status/channel/stock/category, sort, URL-addressable views) with the activo/borrador/pausado/agotado status model as first-class filters. Honest **inventory modes** (tracked / sin límite / sobre pedido — Medusa-native `manage_inventory`/`allow_backorder`, never a qty-0 hack) plus **per-channel publish toggles** (Miyagi/ML) and a per-product **ML price override**. **Staged bulk actions**: select-across-filter → diff preview (old→new, per-row validation) → apply — price set/±%, publish toggles, category/collection, inventory mode, pause/soft-delete, idempotent and audited, with full MCP parity (propose→confirm→apply as agent tools). **Estimated margin** per product/channel (margin-killer flags) with a bulk "apply suggested price" through the same staged pipeline. `catalog.inventory_channels_enabled` + `catalog.bulk_enabled` (fail-closed) both **ON**
 
 ### 04 · Shipping & Delivery
 - ✅ Real-time shipping quotes & labels (Envía — Estafeta live)
@@ -158,6 +159,23 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-11 — Catalog management epic SHIPPED (6 sprints; MED→HIGH).** One Catálogo home
+  replaces the old flat `ManageDashboard` grid: a real server-filtered/paginated table with the
+  activo/borrador/pausado/agotado status model (S1); honest inventory modes (sin límite/sobre
+  pedido, Medusa-native, never qty-0) + per-channel publish toggles + ML price override (S2);
+  staged bulk actions — select-across-filter → diff preview → apply, full MCP agent parity (S3);
+  margin columns + bulk apply-suggested-price (S4); a nav SSOT layer (flag-safe nav, mobile bar
+  redesign) (S5); and the seller shell extended to `/sell`+`/sell/setup` for signed-in owners plus
+  a 1074-line settings mega-section split into a dedicated Canales page + support-widget card
+  (S6). S3's independent review pass caught a real IDOR the cross-agent pass missed; S3's own live
+  smoke surfaced a second production incident (a null-slot crash) same-day, fixed same-day. S6's
+  6.1 shared-`layout.tsx` fork got a cross-agent planning-panel run **before any code was
+  written**, per the epic's own process discipline for that risk class — it caught a real
+  duplicate-Medusa-call design gap. Durable lever promoted to LEARNINGS: a grep for the FILE being
+  renamed doesn't find every reference to the VALUE it carried (a taxonomy slug string, a flag
+  count) — grep the literal value too, not just the filename. Flags `catalog.inventory_channels_enabled`
+  + `catalog.bulk_enabled` (fail-closed) + `seller.shell_on_sell_enabled` (new) all confirmed live
+  in prod by Daniel same day. See [03 · Selling & Shops › Catalog management](03-selling-and-shops/catalog-management/).
 - **2026-07-11 — Setup guide on dashboard SHIPPED (1 sprint, 4 stories; LOW — P0·B of the July-2026
   seller-portal UX audit).** Onboarding was a wall, not a path: after creating a shop there was no
   setup guide, the completion counter was buried in Configuración, and payments surfaced as a manual

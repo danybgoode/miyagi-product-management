@@ -10,15 +10,14 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (2)
+## 🏗️ Building now (1)
 
-- [Catalog management — one Catálogo home for every product, channel, price & quantity](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 16/16 stories · risk: High · Wave 1
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 2/7 stories · risk: High · Wave 1
 
 ## 📋 Ready to build (scaffolded, not started) (8)
 
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 0/9 stories · risk: Low · Wave 1
-- [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](../../03-selling-and-shops/platform-migrations/README.md) — 03 Selling & Shops · 1/8 stories · risk: High · Wave 2
+- [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](../../03-selling-and-shops/platform-migrations/README.md) — 03 Selling & Shops · 3/8 stories · risk: High · Wave 2
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 0/5 stories
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
@@ -26,7 +25,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## ✅ Shipped (93)
+## ✅ Shipped (94)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -43,6 +42,7 @@
 - [Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)](../../03-selling-and-shops/agent-native-setup/README.md) — 03 Selling & Shops · 7/7 stories · risk: High
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 8/8 stories
 - [Bulk Import & Express Migration](../../03-selling-and-shops/bulk-import-migration/README.md) — 03 Selling & Shops · 17/17 stories · risk: High
+- [Catalog management — one Catálogo home for every product, channel, price & quantity ✅](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 16/16 stories · risk: High · Wave 1
 - [Configurable & Personalized Products](../../03-selling-and-shops/configurable-personalized-products/README.md) — 03 Selling & Shops · 10/10 stories · risk: High
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 13/13 stories
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 9/9 stories
@@ -122,15 +122,16 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (5)
+## ⬜ Funnel — seeds not yet scaffolded (6)
 
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~18 routes](seeds/seller-catalog-null-slot-sweep.md) — Raw · Feature · tbd
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
+- [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -138,8 +139,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Catalog management — one Catálogo home for every product, channel, price & quantity | In progress | Shipped |
 | Platform migrations — Shopify connector, parity score, consultant white-glove SKU | Scaffolded | In progress |
 
 ---
-_Epics: 104 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 104 · seeds in funnel: 6 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
