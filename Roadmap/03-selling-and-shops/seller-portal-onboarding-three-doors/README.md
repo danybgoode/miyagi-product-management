@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: seller-portal-onboarding-three-doors
 ---
 
@@ -43,16 +43,18 @@ tools already let an agent produce the intake JSON. All copy es-MX (rule 5).
 - **In-house flags** (`lib/flags.ts` `FlagKey` + `DEFAULT_FLAGS`, Supabase `platform_flags`, fail-open) — the
   recommended `onboarding.three_doors_enabled` dark-launch flag lives here (no Flagsmith).
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | D.1 `tenant_intake` store + S1 intake · D.2 S2 three-doors · D.3 S3 drop-anything intake | low |
-| 2 | D.4 S4 staging preview (over SetupClient) · D.5 `<SuccessCard>` + F12 convergence · D.6 S6 personalization | low (D.4 low–med) |
-| 3 | D.7 S7 cobros mini-wizard · D.8 S8 share + loop-close · D.9 metrics | low* |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | D.1 `tenant_intake` store + S1 intake · D.2 S2 three-doors · D.3 S3 drop-anything intake | low | ✅ PR [#221](https://github.com/danybgoode/miyagisanchezcommerce/pull/221), squash `ee90cef` |
+| 2 | D.4 S4 staging preview (over SetupClient) · D.5 `<SuccessCard>` + F12 convergence · D.6 S6 personalization | low (D.4 low–med) | ✅ PR [#227](https://github.com/danybgoode/miyagisanchezcommerce/pull/227), squash `57b6831` |
+| 3 | D.7 S7 cobros mini-wizard · D.8 S8 share + loop-close · D.9 metrics | low* | ✅ PR [#229](https://github.com/danybgoode/miyagisanchezcommerce/pull/229), squash `5e29f4e` |
 
 \* **D.7 tripwire → HIGH → Daniel merges** if any story edits `lib/mercadopago-connect.ts` token
 exchange/storage, `mpSettingsFromToken`, the callback's token logic, or `syncMedusaSellerProfile`. The
 wizard is a presentational wrapper over the **unchanged** OAuth; the allowed callback redirect-target change
-stays low. The real MP OAuth connect round-trip is a smoke **owed to Daniel** (S7).
+stays low. The real MP OAuth connect round-trip is a smoke **owed to Daniel** (S7). **Confirmed clean at
+merge**: an independent review verified none of the four named functions were touched — the only OAuth-glue
+change is a redirect-target cookie. Daniel merged PR #229 on green CI + review, 2026-07-11.
 
 ## Deploy order
 Frontend-only epic (no `apps/backend` change). `tenant_intake` is an additive **Supabase** migration in the
@@ -71,14 +73,16 @@ the row seed rides the normal PR/deploy — not a build-session write. Carve-out
 `git revert`-able, D.7 adds no new money-path seam.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch (if the `onboarding.three_doors_enabled` flag was taken at kickoff):** the flag slice
-      shipped + the key exists in `lib/flags.ts` `DEFAULT_FLAGS` (default `false`) with a seeded
-      `platform_flags` row. *Verify-only — not a new gate. In-house flags, no Flagsmith.*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — S1/S2/S3 all merged; the S7 MP OAuth
+      round-trip + full first-run walkthrough are live-smoke gaps explicitly owed to Daniel (stated in
+      `sprint-3.md`), to run post-deploy on prod.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** `onboarding.three_doors_enabled` exists in `lib/flags.ts` `DEFAULT_FLAGS` (default
+      `false`) with a seeded `platform_flags` row (Sprint 1 migration
+      `20260711140000_onboarding_three_doors_flag.sql`, `ON CONFLICT DO NOTHING` — live, verified, still OFF).
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`**

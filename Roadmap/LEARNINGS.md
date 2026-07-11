@@ -1112,6 +1112,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   could diverge from it, work out a SECOND example by hand — one where the two rules actually disagree —
   before writing the code. *(2026-07-11, seller-portal-setup-guide B.1 — `getSetupSteps`'s payments
   escalation; caught in review, would have been cheaper caught before.)*
+  **Corollary — a completion/"is X done" gate can read an opt-*out* column as if it were a connected-*state*
+  flag, and both compile, type-check, and "look done" in a quick manual test.** The same `getSetupSteps`
+  payments step later read `shop.mp_enabled` — a DB column that defaults `true` for EVERY shop
+  (`mp_enabled BOOLEAN NOT NULL DEFAULT true`, a "seller hasn't disabled MP checkout" opt-out toggle, not
+  "MP is connected") — so the step showed done for every fresh, never-connected shop since the column was
+  introduced. It surfaced only because a later feature's acceptance ("the guide's payments step is checked
+  after connecting") forced tracing what actually flips the flag. Before trusting an existing "is X
+  configured/done" gate, read the underlying column's migration for what its *default* actually means — a
+  boolean defaulting `true`/`false` for an unrelated reason (an opt-out toggle, a legacy default) is a
+  different signal than "the feature was ever used," even when the column name suggests otherwise. Fixed
+  to read the real connected-state field (`metadata.settings.mercadopago.connected`) the OAuth callback
+  actually writes, with a regression-guard spec. *(2026-07-11, onboarding-three-doors S3.1.)*
 
 ## Medusa gotchas
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the
@@ -1532,6 +1544,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   the SECOND link-worthy event," not just the first. *(2026-07-07, custom-print-products S4 —
   `lib/conversations.ts`'s `findOrCreateConversation`, feeding the transaction ledger's
   `medusa_order_id` fallback resolution.)*
+- **A scope doc's literal phrasing ("wrap the EXISTING settings page in a wizard shell") can describe the
+  wrong architecture when a page it names is also read by users OUTSIDE the flow being designed — check
+  who else uses that page before building to the literal wording.** Taken at face value, "wrap
+  `settings/pagos`" would have made the flat, general-purpose payments settings panel itself conditionally
+  wizard-shaped — forcing a returning seller who already has payments configured through a first-run-shaped
+  flow just to tweak an unrelated field (escrow mode, a SPEI CLABE). A NEW dedicated route (confirmed as a
+  design decision before building, not assumed) kept the existing page's behavior for ongoing management
+  completely untouched, while still satisfying every acceptance criterion the scope doc actually named.
+  When a scope doc's literal reading would change behavior for users outside the feature being built, that
+  divergence is worth a real check-in, not a quiet assumption either way. *(2026-07-11,
+  onboarding-three-doors S3.1 — the cobros mini-wizard vs. `/shop/manage/settings/pagos`.)*
+  **Corollary — an existing inline action can quietly own the exact completion flag your new surface is
+  about to duplicate; grep for the flag's OTHER writers before wiring your own.** A dashboard guide card's
+  `comparte` step already had its own inline share handler (native share/clipboard) marking
+  `settings.guide.share_done`, undocumented in the epic's own scope docs — found only by reading the actual
+  consumer of the CTA `href` being rewired, not just the string itself. Left unchecked, a new dedicated
+  share page would have either duplicated the completion-marking write or left the old inline handler as a
+  now-redundant, silently-competing path. Before pointing an existing step's CTA at a new surface, grep for
+  every other place that already writes the flag that step's "done" state depends on. *(2026-07-11,
+  onboarding-three-doors S3.2 — `SetupGuideCard.tsx`'s retired `handleShare` vs. the new Comparte page.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole

@@ -1,9 +1,12 @@
 # Onboarding three-doors — Sprint 3: Cobros wizard + share + metrics
 
-**Status:** ✅ built (commits `f67fa77` · `7644cfa` · `4e233de` on
-`feat/seller-portal-onboarding-three-doors-s3`) — **HIGH tripwire: Daniel merges**
-(touches the MP OAuth redirect glue). Deterministic gate green (`tsc` + `next build`
-+ Playwright `api`). Money-path smoke owed to Daniel — see below.
+**Status:** ✅ merged — PR [#229](https://github.com/danybgoode/miyagisanchezcommerce/pull/229), squash
+`5e29f4e` (commits `f67fa77` · `7644cfa` · `4e233de` on the deleted
+`feat/seller-portal-onboarding-three-doors-s3` branch). **HIGH tripwire held**: independent review
+confirmed the four named token-path functions were never touched — only a redirect-target cookie in the
+OAuth glue. Deterministic gate was green; Daniel merged on green + clean review. Money-path smoke (S7
+MP connect round-trip + full first-run walkthrough) owed to Daniel, to run live on prod post-deploy — see
+below.
 
 **Design note, decided during build:** the cobros wizard is a NEW, dedicated route
 (`/shop/manage/settings/pagos/wizard`), not a takeover of the existing flat

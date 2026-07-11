@@ -89,6 +89,7 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 - ✅ **Profit Analyzer ("Ganancias")** — an append-only per-sale financial ledger (revenue − ML fee − shipping − COGS, snapshotted at sale time, native + Mercado Libre orders both) drives a margin dashboard at `/shop/manage/profit`: per-order and per-SKU realized margin, "margin killer" and underpriced-SKU call-outs, and a **solve-for-price suggester** (target a margin, see the price ML's own fee actually requires) with **one-click Apply** — a confirmed price change that updates Miyagi and pushes to the linked ML listing, logged to the activity feed. COGS lives on the variant (bulk-CSV settable). Behind `ops.profit_enabled` *(live money-path apply-price smoke against a real ML sandbox owed to Daniel)*
 - ✅ **Custom print products (the sticker-shop buy experience)** — a print shop (miyagiprints first) sells a real StickerJunkie/Sticker-Mule-grade configured product: priced size/material options with automatic **quantity-break pricing** (a pure price-grid deriver keeps PDP/cart/checkout in sync with Medusa's own price resolution), a seller-facing "Opciones" editor, buyer artwork upload (real magic-byte format sniffing, a low-res print-quality preflight warning) that rides the order end-to-end, a lightweight **print-proof sign-off** over the existing buyer-seller chat (size/qty/price always server-restated — never a silent seller-proposed change), full **AI-agent parity** (an agent reads a listing's options/tiers/artwork contract via UCP/MCP and places a fully configured order, artwork included), and one-tap **reorder**. Behind `configurator.enabled` (kill-switch, fail-open ON, scoped to the buy-box artwork addition only) *(live proof round-trip + one real MCP agent order owed to Daniel)*
 - ✅ **Setup guide on dashboard** — a persistent "Pon tu tienda en marcha" card on Resumen (`/shop/manage`) reads the shop's real completion state and walks a merchant through 5 steps to a sellable shop, with **payments named up front** (step 3, "~4 min" estimate) rather than sprung on them after everything else looks done — one step open at a time, done steps collapse with strikethrough, dismissible with a restore toggle in Configuración, step 5 completed via a real share action. The completion logic is one shared seam (`lib/setup-guide.ts`) also driving the existing Configuración "N de X secciones configuradas" counter, so the two surfaces can't drift apart. Guide-interaction events (view/step-open/step-complete/dismiss/restore/first-share) feed the GTM `dataLayer` as the epic's Grower signal *(live card render/interaction + payments-OAuth smoke owed to Daniel)*
+- ✅ **Onboarding — three ranked doors + guided cobros + Comparte** — first run replaces the old "paste JSON into a bare textarea" entry with a welcome intake → three ranked doors (agent-first, with a trust contract), a drop-anything intake (CSV/JSON), an editable staging preview the merchant approves before anything is created, one shared `<SuccessCard>` ending across all three doors, a guided cobros mini-wizard (breadcrumb + step dots, wraps the existing Mercado Pago OAuth unchanged — token exchange/storage never touched), and a Comparte share moment (WhatsApp-first, IG-story image, agent hand-off). Personalizes the setup guide's step order from the seller's own intake answers. Behind `onboarding.three_doors_enabled` (kill-switch, default OFF) *(live S7 MercadoPago connect round-trip + full first-run walkthrough smoke owed to Daniel)*
 - ✅ **Catálogo — one home for every product, channel, price & quantity** — the old flat "Mis anuncios" grid is now a real server-filtered/paginated table (`/shop/manage/catalogo`: search/status/channel/stock/category, sort, URL-addressable views) with the activo/borrador/pausado/agotado status model as first-class filters. Honest **inventory modes** (tracked / sin límite / sobre pedido — Medusa-native `manage_inventory`/`allow_backorder`, never a qty-0 hack) plus **per-channel publish toggles** (Miyagi/ML) and a per-product **ML price override**. **Staged bulk actions**: select-across-filter → diff preview (old→new, per-row validation) → apply — price set/±%, publish toggles, category/collection, inventory mode, pause/soft-delete, idempotent and audited, with full MCP parity (propose→confirm→apply as agent tools). **Estimated margin** per product/channel (margin-killer flags) with a bulk "apply suggested price" through the same staged pipeline. `catalog.inventory_channels_enabled` + `catalog.bulk_enabled` (fail-closed) both **ON**
 
 ### 04 · Shipping & Delivery
@@ -158,6 +159,27 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-11 — Onboarding three-doors epic SHIPPED (3 sprints; LOW, S3's D.7 a HIGH tripwire —
+  P1·D of the July-2026 seller-portal UX audit).** The hero agent path used to be copy-a-prompt →
+  leave → come back to paste JSON into a bare textarea (F4), with three inconsistent success
+  endings (F12). **S1** (PR #221) added the `tenant_intake` Supabase store, a Bienvenida welcome
+  intake, three ranked doors (agent-first, with a trust contract), and a drop-anything CSV/JSON
+  intake. **S2** (PR #227) ported `ImportClient.tsx`'s inline-fix pattern into `SetupClient.tsx` for
+  an editable staging preview the merchant approves before anything is created, converged all three
+  doors' endings onto one shared `<SuccessCard>` (F12), and personalized the setup guide's step order
+  from the intake. **S3** (PR #229) wrapped the **already-shipped, unchanged** Mercado Pago OAuth in
+  a guided cobros mini-wizard (breadcrumb + step dots, resume banner) — verified by an independent
+  review that token exchange/storage was never touched, only a redirect-target cookie — added a
+  Comparte share page (WhatsApp-first, IG-story image, agent hand-off), and instrumented the funnel
+  end to end via the already-live GTM `pushAnalyticsEvent` helper. S3 also found and fixed a real
+  pre-existing bug: the dashboard guide's payments step read an opt-out DB column that defaults
+  `true` for every shop, so it showed "done" for fresh shops that had never connected anything.
+  Every sprint's review layers (cross-agent + independent `pr-reviewer`) caught real issues before
+  merge, including a false "stays a draft" copy claim and a raw-Tailwind CI-lint miss in S2. Dark
+  behind `onboarding.three_doors_enabled` (default OFF). Owed to Daniel: the S7 Mercado Pago connect
+  round-trip + the full first-run walkthrough smoke, on prod. See
+  [03 · Selling & Shops › Onboarding three-doors](03-selling-and-shops/seller-portal-onboarding-three-doors/).
 
 - **2026-07-11 — Catalog management epic SHIPPED (6 sprints; MED→HIGH).** One Catálogo home
   replaces the old flat `ManageDashboard` grid: a real server-filtered/paginated table with the
