@@ -1,9 +1,24 @@
 # Sprint 2 — Agent parity + consistency hardening (the car)
 
-**Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: 📋 not started**
+**Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: 🚧 in progress —
+branch `feat/arranged-only-delivery-s2` cut off fresh `origin/main` in both repos (isolated worktrees,
+S1's branch was squash-merged).**
 
 Sprint 1 ships the web path. Sprint 2 brings the agent surface to parity and closes the adjacent money-path
 inconsistency the spike surfaced.
+
+**Build note (planning):** research for this sprint found the S2.2 hole goes one layer deeper than S1's
+cross-agent finding — `checkout-options`' own `buildDeliveryCatalog` derivation never looks at
+`listingType` at all (only a client-supplied `delivery_mode` query param), and `start-checkout`'s 422
+guard runs *before* the cart/product is even loaded, so there's no server-side product truth anywhere on
+the payment path today. Fix: one canonical pure function (`isCoordinatedListing`) in
+`delivery-catalog.ts`, called by both `checkout-options` (existing) and `start-checkout` (new). Confirmed
+with Daniel: the service/rental branch of that function is **unconditional** (ships live on merge, no new
+flag) since it closes a pre-existing bug, not new epic scope — the `arranged`-capability branch stays
+behind `shipping.arranged_only_enabled` exactly as S1.1 built it. Build order is **S2.2 (backend) before
+S2.1 (frontend)** — deviates from the story numbering below because S2.1's UCP hint is only fully correct
+for service/rental listings once S2.2's backend fix ships. Full plan:
+`~/.claude/plans/toasty-sniffing-snowglobe.md`.
 
 ---
 
