@@ -1,6 +1,6 @@
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 1: Restore rows on prod — observed red, root cause, fix + breadcrumb
 
-**Status:** 🟨 in progress
+**Status:** 🟨 code complete, gate green, PR open — Daniel's live prod smoke owed before close
 
 ## Stories
 
@@ -48,6 +48,7 @@ this is fully ruled safe elsewhere.
 
 **Acceptance:** met — exact failing layer named with evidence (bundle excerpt above).
 **Risk:** low
+**Commit:** `77e1d77` (root repo, doc-only)
 
 ### Story 1.2 — Fix the failing layer ✅
 **As a** signed-in buyer, **I want** the rows to render on prod, **so that** the homepage is mine again.
@@ -66,24 +67,40 @@ code reusing an existing, already-correct env var. This **supersedes** the origi
 framing above (which assumed a CORS/infra fix) — by the WAYS-OF-WORKING risk-tier rule this qualifies
 as reviewer-mergeable-on-green, not Daniel-only. Still called out explicitly in the PR since it's the
 epic's headline fix.
+**Commit:** `3b12053` (apps/miyagisanchez)
 
-### Story 1.3 — Make island failure observable (breadcrumb)
+### Story 1.3 — Make island failure observable (breadcrumb) ✅
 **As a** maintainer, **I want** a visible breadcrumb when the personalization fetch fails,
 **so that** "fail-open by design" can never mask a prod outage again (this bug survived a platform
 migration unnoticed).
-Minimal: `console.warn('[home-personalization] fetch failed', …)` in the provider's catch +
-non-ok branch. No UI change, no retry loop, no polling.
-**Acceptance:** forcing a failure (bad key locally) logs the warn; success logs nothing; regression
-spec covers the catch path (extend `e2e/home-personalization.spec.ts` pure-logic seam or the
-browser spec's mock).
+`console.warn('[home-personalization] fetch failed', reason)` now fires on a non-ok response or a
+caught error, extracted as a pure `logPersonalizationFetchFailure` helper in
+`lib/home-personalization.ts` (the existing Clerk/next-free seam) so it's unit-testable without a
+browser; guarded by the existing `cancelled` flag so an unmount race never logs a false failure. No
+UI change, no retry/poll.
+**Acceptance:** met — `e2e/home-personalization.spec.ts` gained a pure-logic test asserting the helper
+warns exactly once with the right reason on failure, and is never called on success (nothing to invoke
+= nothing to log). Observed red once: temporarily stubbed out the `console.warn` call inside the
+helper, confirmed the new test failed (`expect(calls).toHaveLength(1)` → received `0`), then restored
+and confirmed green.
 **Risk:** low
+**Commit:** `5541d5b` (apps/miyagisanchez)
 
 ## Sprint QA
-- **api spec(s):** extend `e2e/home-personalization.spec.ts` / `home-personalization.browser.spec.ts`
-  (mocked fetch → warn on failure, rows on success). `home-static.spec.ts` must stay green untouched.
-- **browser smoke owed:** yes, to Daniel — signed-in prod eyeball on his real account (the
-  "authed hydration eyeball" the S4 comment says was never done). Auth path, can't be automated.
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **api spec(s):** extended `e2e/home-personalization.spec.ts` with a pure-logic test for the new
+  `logPersonalizationFetchFailure` breadcrumb helper (warns once with the reason on failure; nothing
+  to assert on success beyond "not invoked"). `home-static.spec.ts` stayed green, untouched — its
+  assertions only cover anonymous HTML, which nothing in this sprint's fix changes.
+- **deterministic gate:** `tsc --noEmit` ✅, `npm run build` ✅ (`/` still prerenders as `○` static —
+  the epic's hard rail holds), Playwright `api` project — all `home-*` specs green (17/17); 6
+  pre-existing failures elsewhere (`launchpad-*`, `not-found-shape`) confirmed unrelated (reproduce
+  identically on unmodified `origin/main`, touch none of the files this sprint changed) and a 7th
+  (`agent-connector.spec.ts`) that only fails under full-suite parallel load (passes in isolation) —
+  a pre-existing rate-limiter test-flake, not a regression from this sprint.
+- **browser smoke owed:** yes, to Daniel — the real signed-in eyeball on prod (favorites rail +
+  offer ribbon actually rendering after deploy). The live-bundle evidence in Story 1.1 proves the
+  fetch was broken and Story 1.2's fix now targets the right URL/key via props, but a live confirmation
+  on his real account remains the final word per the walkthrough below. Auth path, can't be automated.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
