@@ -129,7 +129,7 @@
 
 ## ⬜ Funnel — seeds not yet scaffolded (6)
 
-- [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~20 sites](seeds/seller-catalog-null-slot-sweep.md) — Ready · Feature · tbd
+- [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~18 routes](seeds/seller-catalog-null-slot-sweep.md) — Raw · Feature · tbd
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
