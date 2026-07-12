@@ -1,13 +1,16 @@
 # MCP parity core — Sprint 1: Unblock the launchpad + cheap hygiene wins
 
-**Status:** ✅ built, PR open — [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237)
-(draft, squash `82fa8c6` on `feat/mcp-parity-core`). All 6 stories done. All LOW risk — no money
-touched, no new kill-switch (launchpad tools inherit the existing `launchpad.enabled`, already ON).
-This sprint directly unblocks `panfleto-premium-shop` Sprint 3, which is paused waiting on it.
-`tsc --noEmit` + `npm run build` clean; every touched/new e2e spec passes in isolation (62/62)
-against a local dev server — see the PR body for the full self-QA note, including why a raw
-full-suite local run is noisy (a known local-dev-server-overload artifact, not a regression).
-Owed: fresh reviewer pass (cross-agent, builder ≠ reviewer) + CI green before merge.
+**Status:** ✅ MERGED + LIVE — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237)
+(squash `ddb8773`), merged 2026-07-12. All 6 stories shipped. All LOW risk — no money touched, no
+new kill-switch (launchpad tools inherit the existing `launchpad.enabled`, already ON). This sprint
+directly unblocked `panfleto-premium-shop` Sprint 3, which was paused waiting on it — the 4 new
+write tools + the `launchpad` config block were used live immediately after merge (see that sprint's
+doc). Cross-agent (codex) advisory review + an independent fresh `pr-reviewer` pass both ran before
+merge; the reviewer independently re-derived the id-space correctness claim (see S1.1 below) against
+the real code and confirmed it, found zero blocking issues, one non-blocking coupling nit (importing
+`campaignErrorMessage` from a route file — fine, already exported, not worth a refactor). CI
+(Playwright vs preview, type-check+build, Vercel) all green. No browser smoke owed — every story
+here was fully automatable.
 
 ## Stories
 

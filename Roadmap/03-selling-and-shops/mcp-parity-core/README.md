@@ -40,12 +40,12 @@ that backend's existing validators verbatim.
 
 | Sprint | Story | Risk | Status |
 |---|---|---|---|
-| 1 | Campaign CRUD over MCP (create/update/activate/cancel) | low | ✅ built, PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
-| 1 | Manuscript review + publish over MCP | low | ✅ built, PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
-| 1 | `launchpad` block in `patch_store_configuration` | low | ✅ built, PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
-| 1 | Manifest sync (4 drifted tools + new A1 tools, permanent drift guard) | low | ✅ built, PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
-| 1 | Fix `update_listing` title-validation drift | low | ✅ built, PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
-| 1 | e2e coverage for `list_launchpad_campaigns`/`list_manuscript_submissions` | low | ✅ built, PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
+| 1 | Campaign CRUD over MCP (create/update/activate/cancel) | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
+| 1 | Manuscript review + publish over MCP | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
+| 1 | `launchpad` block in `patch_store_configuration` | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
+| 1 | Manifest sync (4 drifted tools + new A1 tools, permanent drift guard) | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
+| 1 | Fix `update_listing` title-validation drift | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
+| 1 | e2e coverage for `list_launchpad_campaigns`/`list_manuscript_submissions` | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
 | 2 | `configure_listing_options` over MCP (CPP price_grid/Opciones) | high | ⬜ not started |
 | 3 | `delete_listing` over MCP | high | ⬜ not started |
 | 3 | `apply_price` over MCP | high | ⬜ not started |
