@@ -20,7 +20,7 @@
 
 ## 📋 Ready to build (scaffolded, not started) (8)
 
-- [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 0/10 stories · risk: Low
+- [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 3/10 stories · risk: Low
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
@@ -140,5 +140,15 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+
+These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
+derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
+forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
+
+| Epic | frontmatter (used) | sprint/retro-derived |
+|---|---|---|
+| Homepage dynamic rows — restore on prod + polish to spec | Scaffolded | In progress |
+
 ---
-_Epics: 112 · seeds in funnel: 7 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 112 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
