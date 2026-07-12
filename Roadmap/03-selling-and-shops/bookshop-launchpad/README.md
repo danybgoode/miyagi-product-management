@@ -74,3 +74,34 @@ until the S3 smoke. Cross-epic: CPP S2/S3 merged before S3 links a print product
 - [x] Feature branches deleted (BE + FE); frontmatter `status: shipped` (ran `node scripts/build-order.mjs`)
 
 > **Owed at close (not blocking merge — feature is dark):** Daniel's real-device money smoke (sprint-3.md walkthrough) + flip `launchpad.enabled` ON in `/admin/flags` after it passes.
+
+## Fast follows — found during panfleto's first live use (2026-07-12, not blocking)
+Daniel's UX feedback submitting the two seed manuscripts for `panfleto-premium-shop` S3. Both are
+scoped to the shared launchpad submission form (`app/(shell)/s/[slug]/convocatoria/ConvocatoriaClient.tsx`)
+— applies to every shop, not panfleto-specific. Noted for a future grooming pass, not built now.
+
+1. **Género should be a constrained dropdown, not free text.** Today it's an optional
+   `<input maxLength={60}>` with a placeholder example ("Novela, cuento, poesía…") — genuinely free
+   text, no validation, easy to get inconsistent values across submissions. Should become a
+   `<select>` with a shop-defined (or platform-default) list of genre categories matching what the
+   convocatoria's own guidelines advertise (e.g. this call is horror-only — the dropdown should
+   reflect that, not offer unrelated genres). Small, low-risk, contained to one component + its
+   submit payload.
+2. **Let a writer type/paste their story directly instead of file-upload-only.** Today `manuscript`
+   is a required `<input type="file" accept="PDF,EPUB,DOCX">` — Daniel had to create a local file
+   before he could submit, for what turned out to be two short pieces. A textarea alternative (paste
+   or write in-browser, then store as plain text / a generated .txt or .md, same private-bucket path
+   the file upload already uses) would remove that friction for short-form submissions. **Evaluated
+   whether `smalldocs` (the render engine scaffolded for `pmo-operational-reports`,
+   `09-platform-infra/pmo-operational-reports`) fits as the engine here — it doesn't, directly.**
+   smalldocs is a markdown-**in** → PDF/docx/slides/Excel-**out** *rendering* engine, not an
+   in-browser rich-text *editor*; "let someone type text in a box" needs nothing more than a
+   `<textarea>` + persisting the text (the manuscript storage path already handles arbitrary file
+   bytes, so plain text is a strict simplification, not a new capability). Where smalldocs could
+   plausibly add value is a stretch, separate idea: rendering a nicer-formatted reading version from
+   pasted markdown for the "Lee un adelanto" excerpt — genuinely optional polish, not a dependency
+   for the core ask. Ship the textarea path independent of whether/when the PMO smalldocs instance
+   exists.
+
+Neither item is scoped into a sprint yet — surface at the next grooming pass for this epic or fold
+into a small standalone chore.
