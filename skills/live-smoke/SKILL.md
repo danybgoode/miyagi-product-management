@@ -91,13 +91,16 @@ agent regardless of tooling and is owed to Daniel by name, same as any other mon
 - **The honest environment × auth matrix — no tool choice routes around these platform
   constraints.** Local: unauthed ✅, authed ✅ (the only fully-working authed combination — the dev
   Clerk instance allows `localhost`). Preview: unauthed ✅ (`VERCEL_AUTOMATION_BYPASS_SECRET`),
-  authed ⚠️ genuinely unvalidated as of this skill's creation — two independent gates stack (the
-  Vercel SSO bypass, which is likely fine since it's wired into the browser context already, AND
-  the Clerk **dev-instance allowed-origins list**, which very likely does NOT include a preview's
-  `*.vercel.app` host — a perfect Vercel bypass doesn't help if clerk-js itself refuses to
-  hydrate). Staging: unauthed ✅, authed ❌ same Clerk-origin constraint. Prod: unauthed ✅, authed
-  ❌ **permanently** (Clerk rejects testing tokens for prod secret keys by design — the script
-  itself refuses this combination rather than silently failing).
+  authed ❌ **confirmed blocked live 2026-07-12** — the Vercel SSO bypass genuinely works (a real
+  smoke against a live PR preview reached the actual `/sign-in` page, screenshot confirmed), but
+  Clerk itself never hydrates on a `*.vercel.app` origin (`clerk.signIn` times out waiting for
+  `window.Clerk` — no sign-in widget ever mounts). This is the Clerk **dev-instance allowed-origins
+  list**, not a Vercel problem — fixing it needs a **human Clerk-console decision** (add the
+  preview host, or a stable alias, to the dev instance's allowed origins) and hasn't been done;
+  authed-preview stays unsupported until then. Staging: unauthed ✅, authed ❌ same Clerk-origin
+  constraint (untested, presumed same failure). Prod: unauthed ✅, authed ❌ **permanently** (Clerk
+  rejects testing tokens for prod secret keys by design — the script itself refuses this
+  combination rather than silently failing).
 - **`next start` can silently serve a STALE build** in this repo if `output: 'standalone'` is set
   in `next.config.ts` (it is) — it prints an "unsupported" warning but still boots and serves old
   content, with no further error. If `--env=local` smokes are showing content that doesn't match a
@@ -122,11 +125,35 @@ agent regardless of tooling and is owed to Daniel by name, same as any other mon
   (`apps/miyagisanchez`) is the SSOT: a Clerk user is admin if `publicMetadata.role === 'admin'`
   **or** its email is in the `MIYAGI_ADMIN_EMAILS` env comma-list. Set `MS_TEST_ADMIN_EMAIL`
   explicitly once one exists, or the script falls back to `MS_TEST_SELLER_EMAIL` (useful if that
-  user is the one granted the admin role).
+  user is the one granted the admin role). **Provisioned 2026-07-12:** `agentsm@miyagisanchez.com`
+  exists in the correct dev instance (`honest-eel-39` — the "Despacho Bonsai" Clerk app, NOT the
+  "Miyagi Sanchez"-named one) with `publicMetadata.role: "admin"`; verified live against
+  `/admin/promoter` locally. Set `MS_TEST_ADMIN_EMAIL=agentsm@miyagisanchez.com` when running
+  `--flow=admin`.
+- **The Clerk `clerk` CLI can enumerate/create dev-instance test users directly** — useful for
+  provisioning a fixture without hand-editing the Clerk dashboard. `clerk apps list` to find the
+  right `application_id`/`instance_id` pair (cross-check against the app's real
+  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` per the instance-match gotcha above — don't trust the app's
+  display name), then `clerk api /users --app <app_id> --instance <instance_id> -d
+  '{"email_address":["..."],"public_metadata":{"role":"admin"},"skip_password_requirement":true}'`
+  — no password needed since the ticket sign-in strategy never uses one. Requires `--yes` to
+  actually mutate (defaults to a confirmation prompt); `--dry-run` previews the request first.
 - **Never print or log a secret value** — the script reads `.env.local` and shell env directly
   into the Playwright child process; it never echoes a key/token to stdout. Follow the same
   discipline in any follow-up command (e.g. don't `cat .env.local` to "double check" a value that's
   already being read programmatically).
+- **`VERCEL_AUTOMATION_BYPASS_SECRET` can be fetched live from the Vercel API using the
+  `VERCEL_API_TOKEN`/`VERCEL_PROJECT_ID` already in `.env.local`** — GitHub Actions secrets
+  themselves are permanently write-only (no API/CLI can ever read one back once set, by design;
+  don't waste time trying `gh secret`), but Vercel's own project-settings API exposes its
+  `protectionBypass` object, whose **keys** (not values) are the actual bypass secret strings,
+  scoped `automation-bypass`. Fetch it into a shell variable and use it in the SAME command
+  (shell state doesn't persist between tool calls) — never let it reach stdout/a transcript, not
+  even via a debug print. `curl -s -H "Authorization: Bearer $TOKEN"
+  https://api.vercel.com/v9/projects/$PROJECT_ID | python3 -c "... print only the matching key ..."`
+  captured straight into `VERCEL_AUTOMATION_BYPASS_SECRET=$(...)`, confirmed present only by
+  printing its **length**, never its value (same discipline as this repo's own documented
+  Stripe-coupon-length verification pattern).
 - **A `--path` ad-hoc run overwrites the previous one's `report.json`/`screenshot.png`** (fixed
   filenames in `test-results/live-smoke/`) — if you need to compare two pages side by side, read
   each result before running the next, or pass `LIVE_SMOKE_OUT=<custom-dir>` in the shell env to
