@@ -140,6 +140,53 @@ export function decideTrivialSkip({ files, minLines = 10 } = {}) {
   return { skip: false };
 }
 
+// ── Diff-size guard: strip generated files before they blow a reviewer's context window ────────────────────
+// Found live (deploy-pipeline-tuning epic, 2026-07-11): a PR whose diff includes a large auto-generated file
+// (a first-time-committed package-lock.json, ~12–19K lines) blew Codex's context window —
+// `ERROR: Codex ran out of room in the model's context window` — and the failure surfaced as an opaque
+// `codex exec failed (non-auth): 0` (the "0" is codex's own trailing token-count line, picked up by
+// `lastLine()`, not a real exit code the caller can act on). Worked around by hand that day
+// (`git diff origin/main...HEAD -- . ':(exclude)package-lock.json'` piped directly into `codex exec -`,
+// bypassing this script); fixed here so the NEXT PR that touches a lockfile doesn't need the same manual
+// detour. This repo committing per-app lockfiles is now Sprint 1's established convention, so this is a
+// recurring case, not a one-off.
+//
+// Strips whole per-file diff hunks (each starts with `diff --git a/X b/Y`) for known generated-file
+// basenames, replacing each with a one-line placeholder so the reviewer still sees THAT the file changed —
+// just not its (often huge, low-signal) content. Pure string logic, no git/gh dependency, so it's directly
+// unit-testable against a hand-built diff fixture.
+const GENERATED_FILE_RE = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|composer\.lock|Gemfile\.lock|Cargo\.lock|poetry\.lock)$/;
+
+export function stripGeneratedFileDiffs(diffText, { extraPatterns = [] } = {}) {
+  if (!diffText) return { diff: diffText, strippedFiles: [] };
+  const isGenerated = (path) =>
+    GENERATED_FILE_RE.test(path || '') || extraPatterns.some((re) => re.test(path || ''));
+
+  // Split on the `diff --git a/X b/Y` boundary, keeping the delimiter with each chunk (lookahead split).
+  const chunks = diffText.split(/(?=^diff --git )/m);
+  const strippedFiles = [];
+  const kept = chunks.map((chunk) => {
+    const header = chunk.match(/^diff --git a\/(\S+) b\/(\S+)/);
+    if (!header) return chunk; // preamble before the first `diff --git` (rare, but don't drop it)
+    const path = header[2] || header[1];
+    if (!isGenerated(path)) return chunk;
+    strippedFiles.push(path);
+    return `diff --git a/${path} b/${path}\n(generated file — diff omitted to fit the reviewer's context window; see the real file in the PR)\n`;
+  });
+  return { diff: kept.join(''), strippedFiles };
+}
+
+// True when a codex/agy response signals it ran out of context-window room — a DIFFERENT failure class from
+// an auth lapse (retrying with a fallback model would likely hit the exact same overflow, since the input
+// size is the problem, not the model). Checked against both stdout and stderr since codex's own trailing
+// diagnostics ("tokens used\n0") can land on either depending on the failure path, which is what made this
+// failure mode read as an opaque `(non-auth): 0` before this check existed. Kept as a named, tested export so
+// the message stays actionable instead of falling through to the generic non-auth failure text.
+export function isContextWindowOverflow(output) {
+  // ['’] covers both a straight and a "smart"/curly apostrophe — CLIs are inconsistent about which they emit.
+  return /ran out of room in the model['’]?s context window/i.test(output || '');
+}
+
 // gh stderr signalling "this branch has no associated PR" — kept TIGHT to gh's actual no-PR message so a
 // repo/remote/auth misconfig (e.g. a bad --repo) falls through to the generic error instead of being masked
 // as "no open PR" and sending the operator chasing the wrong fix.
@@ -258,11 +305,15 @@ export function runCodex(prompt, stdin, opts = {}) {
 // soft mode made structured; runCodex stays the string-returning variant for its existing direct callers.
 export function tryCodex(prompt, stdin) {
   const r = execCodex(prompt, stdin);
+  const stdout = r.stdout || '';
   const stderr = r.stderr || '';
   return {
     ok: r.status === 0,
-    text: (r.stdout || '').trim(),
+    text: stdout.trim(),
     authFailed: r.status !== 0 && isCodexAuthError(stderr),
+    // See stripGeneratedFileDiffs' header comment: checked on both streams because codex's own trailing
+    // diagnostics can land on either, depending on the exact failure path.
+    contextOverflow: r.status !== 0 && (isContextWindowOverflow(stdout) || isContextWindowOverflow(stderr)),
     stderr,
   };
 }
@@ -280,8 +331,12 @@ export function isCodexAuthError(stderr) {
 
 // Pure fallback decision — the unit under test. Given the outcome of a codex attempt and whether agy is
 // available, return the action to take. No I/O, no exit.
-export function decideCodexFallback({ codexOk, authFailed, agyAvailable }) {
+export function decideCodexFallback({ codexOk, authFailed, contextOverflow, agyAvailable }) {
   if (codexOk) return 'use-codex';
+  // Checked BEFORE authFailed: an overflow is a distinct failure class from auth (retrying with a fallback
+  // model wouldn't help — the input itself is too big, not the credential), so it gets its own clear
+  // message rather than falling through to the generic "(non-auth): <cryptic tail line>" text.
+  if (contextOverflow) return 'fail-context-overflow';
   if (!authFailed) return 'fail-non-auth'; // codex broke for a non-auth reason — don't mask it behind a fallback
   if (!agyAvailable) return 'fail-both-dead';
   return 'fallback';
@@ -305,12 +360,21 @@ export function runWithCodexFallback(
   const action = decideCodexFallback({
     codexOk: codex.ok,
     authFailed: codex.authFailed,
+    contextOverflow: codex.contextOverflow,
     agyAvailable: hasCmdFn('agy'),
   });
 
   switch (action) {
     case 'use-codex':
       return { findings: codex.text, fellBack: false };
+    case 'fail-context-overflow':
+      return failFn(
+        "codex exec failed: the diff is too large for Codex's context window. " +
+          'This is usually a large auto-generated file (a lockfile, a minified bundle, a snapshot) — ' +
+          'stripGeneratedFileDiffs() already excludes the known lockfile patterns by default, so if you\'re ' +
+          'seeing this, either that allowlist needs a new pattern for this file, or the PR has a genuinely ' +
+          'large hand-written diff that needs splitting.'
+      );
     case 'fail-non-auth':
       return failFn(`codex exec failed (non-auth): ${lastLine(codex.stderr)}`);
     case 'fail-both-dead':

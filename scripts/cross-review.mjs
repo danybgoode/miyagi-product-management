@@ -22,6 +22,13 @@
 // Default posts the findings as a labeled, clearly-advisory PR comment; --dry-run prints instead.
 // `gh` resolves the repo from the current directory; pass --repo to target another (e.g. the app repo).
 // Zero npm deps — Node 18+. CLI plumbing is shared with cross-panel.mjs via scripts/lib/cross-agent-cli.mjs.
+//
+// The diff is passed through stripGeneratedFileDiffs() before it reaches the reviewer CLI — a large
+// auto-generated file (a committed package-lock.json, ~12–19K lines) blew Codex's context window live
+// (deploy-pipeline-tuning epic, 2026-07-11); the reviewer still sees THAT the file changed, just not its
+// (huge, low-signal) content. See that function's header comment in cross-agent-cli.mjs for the full story.
+// --include-lockfiles opts back into the raw, unstripped diff for the rare case of reviewing a hand-edited
+// lockfile itself.
 
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -40,6 +47,7 @@ import {
   currentHeadSha,
   decideHeadGuard,
   decideTrivialSkip,
+  stripGeneratedFileDiffs,
   shortSha,
 } from './lib/cross-agent-cli.mjs';
 
@@ -59,13 +67,15 @@ Usage:
 [PR#] is optional — omit it to review the open PR for the CURRENT branch.
 
 Flags:
-  --agent <name>      reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
-  --repo  owner/repo  target a specific repo (default: the repo of the current directory)
-  --force             proceed even when local HEAD differs from the resolved PR head (auto-resolve only)
-  --skip-trivial      skip (exit 0, no comment) when the PR is docs-only or under --min-lines changed lines
-  --min-lines N       trivial-diff threshold for --skip-trivial (default: 10)
-  --dry-run           print the comment instead of posting it (alias: --no-comment)
-  -h, --help          show this help
+  --agent <name>       reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
+  --repo  owner/repo   target a specific repo (default: the repo of the current directory)
+  --force              proceed even when local HEAD differs from the resolved PR head (auto-resolve only)
+  --skip-trivial       skip (exit 0, no comment) when the PR is docs-only or under --min-lines changed lines
+  --min-lines N        trivial-diff threshold for --skip-trivial (default: 10)
+  --include-lockfiles  send the RAW diff, including generated files (package-lock.json, yarn.lock, etc.) —
+                       normally stripped to a placeholder to avoid blowing the reviewer's context window
+  --dry-run            print the comment instead of posting it (alias: --no-comment)
+  -h, --help           show this help
 
 With no [PR#], resolves the branch's PR via \`gh pr view\` and refuses a stale local HEAD unless --force.
 An explicit [PR#] overrides resolution and bypasses the stale guard.
@@ -81,6 +91,7 @@ function parseArgs(argv) {
     dryRun: false,
     skipTrivial: false,
     minLines: 10,
+    includeLockfiles: false,
     help: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -89,6 +100,7 @@ function parseArgs(argv) {
     else if (a === '--dry-run' || a === '--no-comment') out.dryRun = true;
     else if (a === '--force') out.force = true;
     else if (a === '--skip-trivial') out.skipTrivial = true;
+    else if (a === '--include-lockfiles') out.includeLockfiles = true;
     else if (a === '--min-lines') out.minLines = parseMinLines(need(argv[++i], '--min-lines'));
     else if (a.startsWith('--min-lines=')) out.minLines = parseMinLines(a.slice('--min-lines='.length));
     else if (a === '--agent') out.agent = need(argv[++i], '--agent');
@@ -168,7 +180,9 @@ function postComment(pr, repo, body) {
 }
 
 function main() {
-  let { pr, agent, repo, force, dryRun, skipTrivial, minLines, help } = parseArgs(process.argv.slice(2));
+  let { pr, agent, repo, force, dryRun, skipTrivial, minLines, includeLockfiles, help } = parseArgs(
+    process.argv.slice(2)
+  );
   if (help) {
     process.stdout.write(HELP + '\n');
     process.exit(0);
@@ -217,7 +231,18 @@ function main() {
   }
 
   const prompt = loadPromptBody(PROMPT_PATH);
-  const diff = ghDiff(pr, repo);
+  const rawDiff = ghDiff(pr, repo);
+  let diff = rawDiff;
+  if (!includeLockfiles) {
+    const stripped = stripGeneratedFileDiffs(rawDiff);
+    diff = stripped.diff;
+    if (stripped.strippedFiles.length) {
+      process.stderr.write(
+        `Omitted ${stripped.strippedFiles.length} generated file diff(s) to fit the reviewer's context ` +
+          `window: ${stripped.strippedFiles.join(', ')} (pass --include-lockfiles to send the raw diff).\n`
+      );
+    }
+  }
   const { findings, fellBack } = runReview(agent, prompt, diff);
   if (!findings) die(`${fellBack ? AGENTS.antigravity : AGENTS[agent]} returned no output.`);
 

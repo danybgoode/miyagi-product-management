@@ -24,6 +24,8 @@ import {
   AGY_MODEL,
   AGY_FALLBACK_MODEL,
   AGY_ARG_LIMIT,
+  stripGeneratedFileDiffs,
+  isContextWindowOverflow,
 } from './cross-agent-cli.mjs';
 
 // The real stderr a live revoked Codex token emits (captured 2026-06-21) — the trigger must match THIS.
@@ -128,6 +130,127 @@ test('runWithCodexFallback: dead token + agy ALSO unavailable → one-line failu
     return true;
   });
   assert.equal(d.calls.antigravity, 0);
+});
+
+test('runWithCodexFallback: context-window overflow → fails clearly, NO fallback (retrying wouldn\'t help)', () => {
+  const d = deps({
+    codex: { ok: false, text: '', authFailed: false, contextOverflow: true, stderr: 'tokens used\n0' },
+    agyAvailable: true,
+  });
+  assert.throws(() => runWithCodexFallback(ARGS, d), /context window/i);
+  assert.equal(d.calls.antigravity, 0, 'an overflow is an input-size problem, not an auth problem — no fallback attempt');
+});
+
+// --- isContextWindowOverflow (pure) — the real Codex overflow signature, captured live 2026-07-11 --------
+
+test('isContextWindowOverflow: the real Codex overflow message → true', () => {
+  assert.equal(
+    isContextWindowOverflow("ERROR: Codex ran out of room in the model's context window. Start a new thread or clear earlier history before retrying."),
+    true
+  );
+});
+
+test('isContextWindowOverflow: case-insensitive, and matches on stdout OR stderr text alike', () => {
+  assert.equal(isContextWindowOverflow('codex RAN OUT OF ROOM in the model’s context window'), true);
+});
+
+test('isContextWindowOverflow: unrelated errors/empty → false', () => {
+  assert.equal(isContextWindowOverflow('internal error: boom'), false);
+  assert.equal(isContextWindowOverflow(''), false);
+  assert.equal(isContextWindowOverflow(undefined), false);
+});
+
+// --- decideCodexFallback: contextOverflow takes priority over authFailed ----------------------------------
+
+test('decideCodexFallback: contextOverflow wins even if authFailed is ALSO somehow true', () => {
+  assert.equal(
+    decideCodexFallback({ codexOk: false, authFailed: true, contextOverflow: true, agyAvailable: true }),
+    'fail-context-overflow'
+  );
+});
+
+// --- stripGeneratedFileDiffs (pure) — the fix for Codex blowing its context window on a huge lockfile ----
+// Found live: a PR's package-lock.json diff (~12–19K lines) blew Codex's context window. This strips whole
+// per-file diff hunks for known generated-file basenames to a one-line placeholder before the diff ever
+// reaches a reviewer CLI.
+
+const SMALL_HUNK = `diff --git a/src/foo.ts b/src/foo.ts
+index 1111111..2222222 100644
+--- a/src/foo.ts
++++ b/src/foo.ts
+@@ -1,1 +1,2 @@
+ const x = 1
++const y = 2
+`;
+
+const LOCKFILE_HUNK = `diff --git a/package-lock.json b/package-lock.json
+index 3333333..4444444 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,3 +1,4 @@
+ {
+   "name": "app",
++  "newDep": "^1.0.0"
+ }
+`;
+
+test('stripGeneratedFileDiffs: leaves ordinary source-file hunks completely untouched', () => {
+  const { diff, strippedFiles } = stripGeneratedFileDiffs(SMALL_HUNK);
+  assert.equal(diff, SMALL_HUNK);
+  assert.deepEqual(strippedFiles, []);
+});
+
+test('stripGeneratedFileDiffs: replaces a package-lock.json hunk with a placeholder, reports it stripped', () => {
+  const combined = SMALL_HUNK + LOCKFILE_HUNK;
+  const { diff, strippedFiles } = stripGeneratedFileDiffs(combined);
+  assert.deepEqual(strippedFiles, ['package-lock.json']);
+  assert.match(diff, /generated file — diff omitted/);
+  assert.doesNotMatch(diff, /"newDep"/); // the actual lockfile content is gone
+  assert.match(diff, /const y = 2/); // the real source hunk survives byte-for-byte
+});
+
+test('stripGeneratedFileDiffs: known lock-file family (yarn/pnpm/composer/Cargo/etc.) all match', () => {
+  for (const name of ['yarn.lock', 'pnpm-lock.yaml', 'composer.lock', 'Gemfile.lock', 'Cargo.lock', 'poetry.lock', 'npm-shrinkwrap.json']) {
+    const hunk = `diff --git a/${name} b/${name}\nindex 1..2 100644\n--- a/${name}\n+++ b/${name}\n@@ -1 +1 @@\n-old\n+new\n`;
+    const { strippedFiles } = stripGeneratedFileDiffs(hunk);
+    assert.deepEqual(strippedFiles, [name], `expected ${name} to be recognized as generated`);
+  }
+});
+
+test('stripGeneratedFileDiffs: a nested-path lockfile (apps/foo/package-lock.json) still matches', () => {
+  const hunk = `diff --git a/apps/foo/package-lock.json b/apps/foo/package-lock.json\nindex 1..2 100644\n--- a/apps/foo/package-lock.json\n+++ b/apps/foo/package-lock.json\n@@ -1 +1 @@\n-old\n+new\n`;
+  const { strippedFiles } = stripGeneratedFileDiffs(hunk);
+  assert.deepEqual(strippedFiles, ['apps/foo/package-lock.json']);
+});
+
+test('stripGeneratedFileDiffs: a similarly-named but NOT-actually-a-lockfile path is left alone', () => {
+  // "my-package-lock.json.md" or a file merely containing the substring must not false-positive.
+  const hunk = `diff --git a/docs/package-lock.json.md b/docs/package-lock.json.md\nindex 1..2 100644\n--- a/docs/package-lock.json.md\n+++ b/docs/package-lock.json.md\n@@ -1 +1 @@\n-old\n+new\n`;
+  const { strippedFiles } = stripGeneratedFileDiffs(hunk);
+  assert.deepEqual(strippedFiles, []);
+});
+
+test('stripGeneratedFileDiffs: extraPatterns lets a caller add repo-specific generated files', () => {
+  const hunk = `diff --git a/dist/bundle.min.js b/dist/bundle.min.js\nindex 1..2 100644\n--- a/dist/bundle.min.js\n+++ b/dist/bundle.min.js\n@@ -1 +1 @@\n-old\n+new\n`;
+  const { strippedFiles: withoutPattern } = stripGeneratedFileDiffs(hunk);
+  assert.deepEqual(withoutPattern, [], 'not stripped without an explicit pattern');
+  const { strippedFiles: withPattern } = stripGeneratedFileDiffs(hunk, { extraPatterns: [/\.min\.js$/] });
+  assert.deepEqual(withPattern, ['dist/bundle.min.js']);
+});
+
+test('stripGeneratedFileDiffs: empty/falsy input passes through harmlessly', () => {
+  assert.deepEqual(stripGeneratedFileDiffs(''), { diff: '', strippedFiles: [] });
+  assert.deepEqual(stripGeneratedFileDiffs(undefined), { diff: undefined, strippedFiles: [] });
+});
+
+test('stripGeneratedFileDiffs: multiple generated files in one diff all get stripped, order preserved', () => {
+  // .replaceAll, not .replace — the naive single-replace version left the "b/" side of the diff --git
+  // header un-renamed (LOCKFILE_HUNK repeats "package-lock.json" 4x: the diff --git a/…, b/…, ---, +++
+  // lines), which silently degraded this into a same-path duplicate rather than a true second file.
+  const secondHunk = LOCKFILE_HUNK.replaceAll('package-lock.json', 'apps/x/package-lock.json');
+  const combined = LOCKFILE_HUNK + SMALL_HUNK + secondHunk;
+  const { strippedFiles } = stripGeneratedFileDiffs(combined);
+  assert.deepEqual(strippedFiles, ['package-lock.json', 'apps/x/package-lock.json']);
 });
 
 // --- Cost guard: decideTrivialSkip (pure, the CI "skip a typo PR" decision) -----------------------------
