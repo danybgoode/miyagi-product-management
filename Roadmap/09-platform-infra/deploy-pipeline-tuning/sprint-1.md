@@ -7,14 +7,11 @@ Daniel merges** · **Status: ✅ MERGED to `main` in both repos, 2026-07-12.** B
 [danybgoode/miyagisanchezcommerce#233](https://github.com/danybgoode/miyagisanchezcommerce/pull/233)
 → squash `471de96`, both merged by Daniel per the tier note below. Branches deleted in both repos.
 
-**Owed / not yet confirmed:** the actual live Cloud Build run triggered by this merge. Local
-`gcloud` auth is stale (`invalid_grant`, needs an interactive re-login) so it couldn't be checked
-directly from this session. Both `https://api.miyagisanchez.com/health` and
-`https://miyagisanchez.com/` returned 200 shortly after merge, but that only confirms the
-services are up — not specifically that the new image (vs. the prior revision) is what's serving.
-Low-risk given the identical local `docker build` + boot test already passed for both apps, but
-worth a real check (`gcloud builds list --region=us-east4` for both triggers, or the Cloud Run
-revision list) before treating this sprint as fully closed.
+**Live Cloud Build confirmed** ✅ (Daniel re-authed `gcloud` mid-session): both merge-triggered
+builds succeeded — backend build `dc3059c1` (commit `d8131fa`, repo `medusa-bonsai-backend`,
+`SUCCESS`) and frontend build `f92a02c8` (commit `471de96`, repo `miyagisanchezcommerce`,
+`SUCCESS`), both `gcloud builds describe --region=us-east4` confirmed matching the exact squash
+commits. Sprint fully closed.
 
 The prerequisite for everything else in this epic: neither `apps/backend` nor
 `apps/miyagisanchez` has a committed lockfile, so every Docker build re-resolves dependency

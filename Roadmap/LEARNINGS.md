@@ -596,6 +596,22 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (empty diff)` — not an error — because it was diffing the *root* repo, which genuinely has no
   changes for that PR number. Always run it from inside the actual app-repo checkout/worktree the
   PR belongs to, or pass `--repo owner/repo` explicitly. *(2026-07-11, platform-migrations S3.)*
+- **`scripts/cross-review.mjs`'s default `gh pr diff` piping blows Codex's context window on a PR
+  whose diff includes a large auto-generated file (a committed `package-lock.json`, ~12–19K
+  lines).** Codex exits 0 with `ERROR: Codex ran out of room in the model's context window` on
+  stdout — `cross-agent-cli.mjs`'s `runCodex()` only checks the exit CODE, so this reads as an
+  opaque `codex exec failed (non-auth): 0` from the wrapper (the "0" is the last stderr line, not a
+  real error code) rather than a clear "diff too large" message. The script itself has no
+  size-aware handling for this path (unlike agy's own argv-size cap, which fails loud with a clear
+  message — see the foreign-CLI LEARNING above). **Workaround used**: build a pathspec-excluded
+  diff by hand (`git diff origin/main...HEAD -- . ':(exclude)package-lock.json'`) and pipe THAT
+  plus `scripts/cross-review.prompt.md` into `codex exec -` directly, bypassing the wrapper script
+  for that one PR. This is a real, likely-recurring gap now that `deploy-pipeline-tuning` S1
+  established committing per-app lockfiles as this repo's convention — every future lockfile-touch-
+  ing PR will hit this. Worth fixing in `cross-review.mjs` itself (e.g. `git diff` with a
+  `':(exclude)'` pathspec for known-generated files, or a byte-size pre-check with a clear die()
+  message) rather than re-deriving the workaround by hand each time. *(2026-07-11,
+  deploy-pipeline-tuning S1.)*
 - **When reusing an existing admin "price vs. regular-price comparison" UI field for a new entity
   that has no regular price to compare against, check whether the missing comparison value ALSO
   disables the raw input — those are two different questions a single `base == null` check can

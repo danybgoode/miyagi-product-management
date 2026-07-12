@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: deploy-pipeline-tuning
 ---
 
@@ -9,11 +9,11 @@ slug: deploy-pipeline-tuning
 **Class:** Infra optimization (engineering-facing deploy pipeline + edge/runtime config; one
 step — the Cloudflare Cache Rule — is a genuinely new, first-time capability, everything else is
 tuning existing rails). No new commerce surface.
-**Status: 📋 SCAFFOLDED 2026-07-11 — ready to build, not started.** Groomed via plan mode (not the
-`groom` skill's seed→scope funnel — Daniel brought a set of external AI-generated suggestions,
-which were validated against the real codebase across three parallel research passes + an
-Opus-backed second-opinion pass before this epic was scaffolded). Full plan/evaluation:
-`~/.claude/plans/toasty-sniffing-snowglobe.md`.
+**Status: 🚧 IN PROGRESS 2026-07-12 — S1+S2 merged + live in prod; S3-S5 not started.** Groomed
+via plan mode (not the `groom` skill's seed→scope funnel — Daniel brought a set of external
+AI-generated suggestions, which were validated against the real codebase across three parallel
+research passes + an Opus-backed second-opinion pass before this epic was scaffolded). Full
+plan/evaluation: `~/.claude/plans/toasty-sniffing-snowglobe.md`.
 
 ## Why
 Daniel received a set of generic CI/CD + Cloud Run + observability suggestions written for "a
@@ -66,8 +66,8 @@ no user-facing copy (rule 5).
 
 | Sprint | Story | Risk |
 |---|---|---|
-| [S1](sprint-1.md) | Commit a `package-lock.json` per app + switch both Dockerfiles from `npm install` to `npm ci` | LOW-but-deploy-rail — Daniel merges (see note below) |
-| [S2](sprint-2.md) | Add Docker layer caching (BuildKit inline cache or buildx registry cache) to both `cloudbuild.yaml`s | LOW-MED — Daniel merges (same deploy-rail reasoning) |
+| [S1](sprint-1.md) | Commit a `package-lock.json` per app + switch both Dockerfiles from `npm install` to `npm ci` | LOW-but-deploy-rail — Daniel merges (see note below) — ✅ MERGED, live |
+| [S2](sprint-2.md) | Add Docker layer caching (buildx registry cache, `mode=max`) to both `cloudbuild.yaml`s | LOW-MED — Daniel merges (same deploy-rail reasoning) — ✅ MERGED, live |
 | [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — Daniel sign-off before the Cache Rule goes live (first time this repo caches anything at Cloudflare's edge) |
 | [S4](sprint-4.md) | Pull real Cloud Run metrics → tune `--concurrency` only if the data supports it | LOW (data-gathering) / LOW-MED (conditional config change) |
 | [S5](sprint-5.md) | Structured JSON logging, phased — backend payment-adjacent call sites first, GCP-native (no new dependency) | LOW |
@@ -114,16 +114,19 @@ revision config flag (concurrency — one `gcloud run services update` away from
 uncached-at-edge behavior instantly). No customer-facing feature flag applies.
 
 ## Epic Definition of Done
-- [ ] All sprints' stories merged + verified (data-gathering steps' findings recorded in their
-      sprint doc even when they conclude "don't build this," e.g. S3's origin probe, S4's metrics
-      pull).
-- [ ] Each sprint with a live-config change has a smoke walkthrough (build-time comparison for
-      S1/S2; `cf-cache-status` header check for S3; before/after Cloud Run metrics for S4).
-- [ ] This README ✅ complete (`status: shipped`); every sprint status ticked with commit refs.
-- [ ] `RETROSPECTIVE.md` written.
-- [ ] Team memory updated (deploy-topology note — build caching + edge-cache behavior changed).
-- [ ] `Roadmap/LEARNINGS.md` updated if anything genuinely new/generalizable surfaces during build
-      (dedupe — sharpen an existing entry rather than append near-duplicates; the existing
-      "image-only deploy" and drift-guard entries already cover most of the load-bearing
-      conventions this epic must respect, not reinvent).
-- [ ] Branch(es) deleted; PR(s) merged.
+- [x] S1+S2 merged + verified live (real merge-triggered Cloud Build confirmed `SUCCESS` on both,
+      matching exact commit SHAs; live services confirmed healthy post-deploy). — [ ] S3-S5 not
+      started.
+- [x] S1+S2 both have a smoke walkthrough with real, measured numbers (not estimates) in their
+      sprint docs.
+- [ ] This README ✅ complete (`status: shipped`) — **not yet**, only 2 of 5 sprints done; stays
+      `in-progress` until S3-S5 are built or explicitly descoped.
+- [ ] `RETROSPECTIVE.md` — written at epic close, once all sprints are resolved (built or
+      explicitly descoped), not mid-epic.
+- [ ] Team memory updated (deploy-topology note — build caching behavior changed) — owed at epic
+      close.
+- [x] `Roadmap/LEARNINGS.md` updated with genuinely new findings from S1+S2: sharpened the
+      worktree-lockfile note to disambiguate from this epic's deliberate per-app lockfile policy;
+      new entry on `scripts/cross-review.mjs` blowing Codex's context window on large generated
+      diffs (a real, recurring gap now that lockfiles are committed).
+- [ ] Branch(es) deleted; PR(s) merged — **done for S1+S2**; S3-S5 not yet built.
