@@ -5,6 +5,20 @@
 (`apps/miyagisanchez` was mid-flight on a sibling agent's branch — not touched); merged latest
 `origin/main` in on 2026-07-12 to pick up `mcp-parity-core` S1 (see below).
 
+**Production incident found + fixed mid-sprint (2026-07-12):** Daniel hit "Algo salió mal" clicking
+"Enviar código" on the convocatoria form. Root cause: the entire `bookshop-launchpad` epic's
+Supabase schema (3 migration files dated 2026-07-07 — `launchpad_submissions`,
+`launchpad_email_verifications`, `launchpad_campaigns`, `launchpad_campaign_works`,
+`launchpad_campaign_votes`, `launchpad_campaign_verifications`) was **merged in the PRs but never
+actually applied to production** — confirmed via `list_migrations` (none of the 3 files appeared)
+and live Cloud Run logs (`Could not find the table 'public.launchpad_email_verifications' in the
+schema cache`). The feature has been silently 100%-broken for any real writer since the flag
+flipped ON 2026-07-08. Fixed: applied all 3 migration files verbatim (idempotent, no new SQL
+authored) after explicit go-ahead; confirmed live with a real curl round-trip against
+`POST /api/launchpad/panfleto/verification` (200, `{"ok":true}`), throwaway test row cleaned up.
+**This confirms the exact failure mode `[[supabase-migration-file-vs-applied-gap]]` warns about —
+worth a wider sweep of other epics' migrations at some point, not just this one.**
+
 **Live so far (via MCP, `POST /api/ucp/mcp` with the shop's own agent token):**
 - ✅ Reward listing created: **"Edición impresa — panfleto"**, `prod_01KXAHXB98GF5SJEJ8KK0RF3QN`,
   $180 MXN, category `creatividad`. Still needs its second price tier (portal-only, see below).
