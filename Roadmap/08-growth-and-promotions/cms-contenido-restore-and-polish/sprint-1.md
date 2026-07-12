@@ -1,6 +1,6 @@
 # CMS restore & polish — Sprint 1: Restore the save path + editor polish
 
-**Status:** ⬜ not started
+**Status:** 🚧 in progress — Story 1.1 done (migration applied live 2026-07-12)
 
 ## Stories
 
@@ -15,6 +15,11 @@ before running (LEARNINGS: name the specific prod-mutation category, don't lean 
 **Acceptance:** save an override in `/admin/contenido` → success toast; the edited copy is live on
 the target page within ≤1 min; the row is visible via the admin GET route.
 **Risk:** high (prod DB DDL on shared infra — no code change)
+**✅ Done 2026-07-12** — applied via `mcp__plugin_supabase_supabase__apply_migration` against
+`xljxqymsuyhlnorfrnno` (verified `SUPABASE_URL` first); confirmed live: `to_regclass('public.platform_copy_overrides')`
+resolves, RLS enabled, `content.overrides_enabled` = `true`, tracked in `list_migrations` as
+`20260712060556`. The admin-UI save/live-render round-trip is Clerk-gated — **owed to Daniel** (see
+Sprint QA below), not verifiable by the build agent.
 
 ### Story 1.2 — Regression spec + actionable "store unavailable" error
 **As** an admin, **I want** a clear message when the override store is unreachable/missing, **so
