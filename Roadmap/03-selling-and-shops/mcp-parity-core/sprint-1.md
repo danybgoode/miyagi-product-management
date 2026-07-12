@@ -1,8 +1,13 @@
 # MCP parity core — Sprint 1: Unblock the launchpad + cheap hygiene wins
 
-**Status:** ⬜ building. All LOW risk — no money touched, no new kill-switch (launchpad tools
-inherit the existing `launchpad.enabled`, already ON). This sprint directly unblocks
-`panfleto-premium-shop` Sprint 3, which is paused waiting on it.
+**Status:** ✅ built, PR open — [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237)
+(draft, squash `82fa8c6` on `feat/mcp-parity-core`). All 6 stories done. All LOW risk — no money
+touched, no new kill-switch (launchpad tools inherit the existing `launchpad.enabled`, already ON).
+This sprint directly unblocks `panfleto-premium-shop` Sprint 3, which is paused waiting on it.
+`tsc --noEmit` + `npm run build` clean; every touched/new e2e spec passes in isolation (62/62)
+against a local dev server — see the PR body for the full self-QA note, including why a raw
+full-suite local run is noisy (a known local-dev-server-overload artifact, not a regression).
+Owed: fresh reviewer pass (cross-agent, builder ≠ reviewer) + CI green before merge.
 
 ## Stories
 
