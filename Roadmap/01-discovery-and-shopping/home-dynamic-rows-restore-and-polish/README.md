@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: home-dynamic-rows-restore-and-polish
 ---
 
@@ -37,13 +37,15 @@ rule 2 compliant. Recently-viewed is device-local (`localStorage`) in v1 — no 
 ## Scope — stories
 | Sprint | Story | Risk |
 |---|---|---|
-| 1 | Restore rows on prod — observed red, root cause, fix + breadcrumb | low (env/CORS story → Daniel merges) |
+| 1 | Restore rows on prod — observed red, root cause, fix + breadcrumb | ✅ low — merged `a2061e9` (PR #243) |
 | 2 | Signed-in polish to spec — ribbon gating, price-drop badge, recently-viewed | low |
 | 3 | Signed-out first-visit iteration — hero, Recién llegado, Pasillos, seller block | low |
 
 ## Deploy order
-S1 may be config-only (Cloud Run env / `STORE_CORS`) — backend env change lands first, frontend
-needs no deploy unless `NEXT_PUBLIC_*` vars were missing at build time (then rebuild frontend).
+S1 turned out to be a pure `apps/miyagisanchez` app-code fix, **not** the CORS/Cloud-Run-env change
+originally assumed — see `sprint-1.md` Story 1.1 for the corrected root cause (a Docker-build-arg
+gap, fixed by threading the store URL/key as Server Component props instead of reading
+`NEXT_PUBLIC_*` client-side). No backend/infra deploy was needed for S1.
 S2 backend (snapshot column + endpoint field) before frontend badge — endpoint field is additive,
 frontend degrades gracefully. S3 is frontend-only. **Hard rail throughout: `/` stays an ISR static
 asset** — `next build` must keep the static marker for `/` (no `ƒ`), and `home-static.spec.ts`

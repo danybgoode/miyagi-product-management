@@ -1,6 +1,6 @@
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 1: Restore rows on prod — observed red, root cause, fix + breadcrumb
 
-**Status:** 🟨 code complete, gate green, PR open — Daniel's live prod smoke owed before close
+**Status:** ✅ merged to main (PR #243, `a2061e9`) — Daniel's live prod smoke owed before epic close
 
 ## Stories
 
@@ -101,6 +101,42 @@ and confirmed green.
   offer ribbon actually rendering after deploy). The live-bundle evidence in Story 1.1 proves the
   fetch was broken and Story 1.2's fix now targets the right URL/key via props, but a live confirmation
   on his real account remains the final word per the walkthrough below. Auth path, can't be automated.
+
+## Review & merge
+- **Cross-agent (Codex) advisory pass** flagged one real question worth resolving before merge:
+  whether reading `MEDUSA_STORE_URL` in the Server Component parent is still frozen at `next build`
+  time (the same failure mode this sprint fixed), since `/` is prerendered with `revalidate = 60`.
+  **Investigated empirically** (not just argued): built the branch in an isolated worktree with
+  `MEDUSA_STORE_URL` unset (simulating Cloud Build), confirmed the *first* prerendered artifact does
+  bake in the wrong value — then confirmed it self-heals: with the route's existing ISR revalidate
+  window, the next request past that window serves `x-nextjs-cache: STALE` and triggers a background
+  regeneration that re-executes the Server Component against the live runtime env, re-serializing the
+  correct value. Verified conclusively by rebuilding with `revalidate = 1` and polling — cache flips
+  to `STALE`, next regen serves the live value, not the build-time fallback. Same self-healing
+  mechanism the page already relies on for its other data reads (documented in `page.tsx`'s own header
+  comment). Codex's second point (is `MEDUSA_STORE_URL` a public, browser-reachable URL?) — confirmed
+  yes, it's `https://api.miyagisanchez.com` in prod (`infra/gcp/deploy-frontend.sh`), the same
+  CORS-allowed origin already used server-side. A test-naming nit was also fixed (`4d6d45c`).
+- **Independent fresh-reviewer pass** (`pr-reviewer` subagent) verified the diff matches the report,
+  confirmed no other caller of `HomePersonalizationProvider` needed updating, confirmed the five
+  AGENTS.md rules were untouched, and **approved for merge**. It also surfaced a HIGH-severity,
+  out-of-scope finding — see "Urgent fast-follow" below.
+- **Merged:** PR #243 → squash-merged to `main` as `a2061e9` (danybgoode/miyagisanchezcommerce).
+  Deploys automatically via the Cloud Run frontend Cloud Build trigger on merge.
+
+## Urgent fast-follow (found during review, not part of this sprint's scope)
+The independent reviewer's sweep for other consumers of the same broken-inlining pattern found —
+and I independently confirmed live against a real prod PDP page's shipped JS — that **checkout is
+broken on prod right now**: `lib/cart.ts`'s client-side `MEDUSA_BASE` (feeds every `startCheckout`
+call from `BuyButton.tsx`) resolves to `http://localhost:9000` in every visitor's browser, the exact
+same root cause as this sprint's bug, but on the money path, and **without** the ISR self-healing
+that saved the homepage fix — it's a plain client-side module const, so it will not fix itself on
+the next deploy. Filed as its own HIGH-priority seed:
+[`checkout-cloudrun-localhost-fallback-outage`](../../00-ideas/seeds/checkout-cloudrun-localhost-fallback-outage.md)
+(merged, PR #75) — deliberately **not** bundled into this LOW-risk homepage PR. A companion spike
+seed, [`nextpublic-buildtime-inlining-audit`](../../00-ideas/seeds/nextpublic-buildtime-inlining-audit.md),
+covers sweeping the rest of the app for the same class of bug (Stripe/MercadoPago/Supabase keys,
+unconfirmed either way).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
