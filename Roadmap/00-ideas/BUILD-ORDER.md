@@ -14,7 +14,7 @@
 
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 5/9 stories · risk: High · tbd
+- [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 9/9 stories · risk: High · tbd
 - [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
@@ -140,7 +140,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -149,6 +149,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Homepage dynamic rows — restore on prod + polish to spec | Scaffolded | In progress |
+| CMS restore & polish — /admin/contenido saves again, then gets previews | In progress | Shipped |
 
 ---
-_Epics: 112 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 112 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
