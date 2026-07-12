@@ -62,7 +62,7 @@ Payload-class tools earn their keep.
 ## Stories (one sprint)
 | # | Story | Risk |
 |---|---|---|
-| 1.0 | **Apply the migration to prod** — Daniel (or Daniel-supervised) applies `20260708150000_platform_copy_overrides.sql` to the shared Supabase project. ⚠️ LEARNINGS: Supabase has NO dev-scoped credential — "local" IS prod; apply deliberately, never from a build session. Acceptance: a save in `/admin/contenido` persists; the edited copy is live on the target page within ≤1 min. | high |
+| 1.0 | **Apply the migration to prod** — the Claude Code build agent applies `20260708150000_platform_copy_overrides.sql` to the shared Supabase project (**pre-authorized by Daniel 2026-07-11** — this specific migration only; announce before running). ⚠️ LEARNINGS: Supabase has NO dev-scoped credential — "local" IS prod; verify which project `SUPABASE_URL` points at, apply deliberately. Acceptance: a save in `/admin/contenido` persists; the edited copy is live on the target page within ≤1 min. | high |
 | 1.1 | **Regression spec + actionable failure** — api spec asserting the save round-trip against the route's contract, and the route distinguishes "table missing / store unreachable" from generic failure so an inert store is loud in the admin UI (banner: "el almacén de overrides no está disponible"), never a silent generic error again. | low |
 | 1.2 | **Editor polish + live preview** — before/after preview of the affected surface rendered client-side via the pure merge seam (`getOverriddenDictionary` shape), clearer save/restore states, es-MX microcopy pass. No new deps, no visual page-builder (out of scope — that's the CMS-eval trigger). | low |
 | 1.3 | **Smoke walkthrough** — real-URL walkthrough in sprint-1.md; save + preview + restore path owed to Daniel. | low |
@@ -79,7 +79,8 @@ the existing editor.
 media management · anything on Vercel prod.
 
 ## Open risks
-- The migration touches the shared Supabase project — mitigated by Daniel applying it deliberately
-  (story 1.0), the exact discipline LEARNINGS prescribes.
+- The migration touches the shared Supabase project — mitigated by the explicit pre-authorization
+  (scoped to this one idempotent migration), announcing before running, and verifying the target
+  project first (story 1.0) — the exact discipline LEARNINGS prescribes.
 - Preview fidelity: client-side preview approximates the server render; acceptance is "copy shown =
   copy that ships," not pixel parity.

@@ -40,8 +40,10 @@ untouched (rule #4). Editor microcopy es-MX (rule #5). No agent surface (admin t
 | 1 | US-1.3 Editor polish + live before/after preview via the pure merge seam | low |
 
 ## Deploy order
-US-1.1 is an ops action on the shared Supabase project (⚠️ LEARNINGS: Supabase has NO dev-scoped
-credential — local IS prod; apply deliberately, verify which project the URL points at first).
+US-1.1 is an ops action on the shared Supabase project, applied by the build agent —
+**pre-authorized by Daniel 2026-07-11, scoped to this one idempotent migration; announce before
+running** (⚠️ LEARNINGS: Supabase has NO dev-scoped credential — local IS prod; verify which project
+the URL points at first).
 Additive `CREATE TABLE IF NOT EXISTS` + RLS; reads are already fail-open so the site is safe
 throughout. US-1.2/1.3 are frontend-only, normal PR flow. Kill-switch: carve-out (DB migration —
 fail-open reads ARE the rollback; see seed Stage 6b).

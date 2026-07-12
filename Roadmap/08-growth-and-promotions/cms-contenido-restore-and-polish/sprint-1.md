@@ -7,12 +7,14 @@
 ### Story 1.1 — Apply the `platform_copy_overrides` migration to prod
 **As** Daniel (admin), **I want** the overrides table to actually exist in prod, **so that** my
 `/admin/contenido` edits persist instead of erroring.
-**How:** apply `apps/miyagisanchez/supabase/migrations/20260708150000_platform_copy_overrides.sql`
+**How:** the **build agent applies** `apps/miyagisanchez/supabase/migrations/20260708150000_platform_copy_overrides.sql`
 to the shared Supabase project (`xljxqymsuyhlnorfrnno` — verify `SUPABASE_URL` first; local IS prod,
-per LEARNINGS). Idempotent (`CREATE TABLE IF NOT EXISTS` + RLS). Pre-authorized by Daniel 2026-07-11.
+per LEARNINGS). Idempotent (`CREATE TABLE IF NOT EXISTS` + RLS; flag insert is `ON CONFLICT DO
+NOTHING`). **Pre-authorized by Daniel 2026-07-11 — scoped to this one migration**; announce in-chat
+before running (LEARNINGS: name the specific prod-mutation category, don't lean on broad authorization).
 **Acceptance:** save an override in `/admin/contenido` → success toast; the edited copy is live on
 the target page within ≤1 min; the row is visible via the admin GET route.
-**Risk:** high (prod DB DDL on shared infra — announce before applying; no code change)
+**Risk:** high (prod DB DDL on shared infra — no code change)
 
 ### Story 1.2 — Regression spec + actionable "store unavailable" error
 **As** an admin, **I want** a clear message when the override store is unreachable/missing, **so
