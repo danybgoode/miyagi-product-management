@@ -127,6 +127,10 @@ epic's **"What already exists (reuse, don't rebuild)"** list — concrete files/
 AGENTS five rules (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk
 untouched · es-MX copy). If the ask violates a rule, flag it now.
 
+> The reuse list also names which UX rails cover this surface — CI guards (the design-token guard,
+> swept-path lints), the audits lens (`00-ideas/audits/results-refresh-2026-06/`), and any
+> design-language debt — using the seed template's "UX heuristics & rails check" block.
+
 > **Cross-agent planning panel — the trigger model (advisory, never a gate).** This is where the expensive
 > *architecture forks* surface — and where the panel earns its keep. **You must surface a one-line offer to
 > run the panel** whenever the reframe hits a fork worth a second model family's eyes:

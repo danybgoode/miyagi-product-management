@@ -33,7 +33,7 @@ merging to it deploys.
 Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (preview) → push → Daniel reviews preview → … → PR → merge to main → (epic close: poster + retro)
 ```
 
-1. **Plan.** For non-trivial work, Claude enters plan mode, writes a plan as user stories, and Daniel approves before code. **Every plan names a QA / smoke-test stage** with the specific checks and tools. Reference end-states (spec docs) are inspiration, never signed-off scope.
+1. **Plan.** For non-trivial work, Claude enters plan mode, writes a plan as user stories, and Daniel approves before code. **Every plan names a QA / smoke-test stage** with the specific checks and tools. Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the groom skill's Stage 4 reuse list (`skills/groom/templates/scope-seed.md`).
 2. **Branch + scaffold docs.** Create one working branch per epic — `feat/<epic-slug>` (or `fix/…`, `chore/…`) — off the latest `main`, in each repo you'll touch. On it, *before any code*, scaffold the epic `README.md` + per-sprint files under the right macro-section (plain-language stories + acceptance). The build runs against these docs; Daniel sees scope as it grows. Keep them current as stories land (✅ ticks, commit refs); retrospective at epic close.
 3. **Build one story at a time.** Iterative. Reuse before rebuild. Commit per story to the branch (`Co-Authored-By: Claude` trailer).
 4. **Verify.** Type-check + lint clean, build passes.
@@ -111,6 +111,10 @@ at grooming (the flag is decided + sliced there, verified at epic DoD — not a 
   testing-token bypass for prod secret keys by design). Never "build passes, therefore done." If a live
   smoke test genuinely can't run (no test account, money-/account-gated), that gap is stated explicitly in
   the PR rather than glossed.
+- **Every new spec was observed failing (red) at least once** — via a deliberate
+  break-the-implementation mutation check if the test was written after the code. This verifies
+  the spec isn't a false-positive tautology; it is **not** an ordering mandate — don't force
+  test-first (agents often do it anyway).
 - Committed to the feature branch; sprint doc status ticked.
 
 ## Definition of Done (an epic) — the close-out checklist

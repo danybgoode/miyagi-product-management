@@ -26,6 +26,12 @@ updated: {{DATE}}
 ## What already exists (reuse, don't rebuild)
 <!-- Concrete files / routes / primitives (Medusa-first reframe). -->
 
+## UX heuristics & rails check
+<!-- Keep this a checklist, not an essay. -->
+- **CI guards covering this surface:** <token guard / swept-path lint / none — say so>
+- **Audits-lens findings that apply:** <cite `Roadmap/00-ideas/audits/results-refresh-2026-06/`, or "none found">
+- **Design-language debt (if any):** <e.g. raw hex, missing shared component, inconsistent spacing>
+
 ## Kill-switch / runtime gate (risk:high only — Stage 6b)
 <!-- Delete this block if risk:low. For risk:high, record the decision (mandatory), not just the flag:
      EITHER a recommended flag story — flag `<domain>.<feature>_enabled` · polarity (kill-switch=default
