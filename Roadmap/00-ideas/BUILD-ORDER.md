@@ -130,9 +130,11 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (9)
 
+- [Audit: which NEXT_PUBLIC_* client reads are actually inlined at Cloud Run build time](seeds/nextpublic-buildtime-inlining-audit.md) — Raw · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
+- [Checkout on prod resolves to localhost:9000 — live money-path outage](seeds/checkout-cloudrun-localhost-fallback-outage.md) — Ready · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Mobile: discoverable Clerk account management (/account/settings)](seeds/mobile-clerk-account-management.md) — Ready · Feature
@@ -152,4 +154,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | CMS restore & polish — /admin/contenido saves again, then gets previews | In progress | Shipped |
 
 ---
-_Epics: 112 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 112 · seeds in funnel: 9 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
