@@ -66,11 +66,22 @@ no user-facing copy (rule 5).
 
 | Sprint | Story | Risk |
 |---|---|---|
-| [S1](sprint-1.md) | Commit a `package-lock.json` per app + switch both Dockerfiles from `npm install` to `npm ci` | LOW |
-| [S2](sprint-2.md) | Add Docker layer caching (BuildKit inline cache or buildx registry cache) to both `cloudbuild.yaml`s | LOW-MED |
+| [S1](sprint-1.md) | Commit a `package-lock.json` per app + switch both Dockerfiles from `npm install` to `npm ci` | LOW-but-deploy-rail — Daniel merges (see note below) |
+| [S2](sprint-2.md) | Add Docker layer caching (BuildKit inline cache or buildx registry cache) to both `cloudbuild.yaml`s | LOW-MED — Daniel merges (same deploy-rail reasoning) |
 | [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — Daniel sign-off before the Cache Rule goes live (first time this repo caches anything at Cloudflare's edge) |
 | [S4](sprint-4.md) | Pull real Cloud Run metrics → tune `--concurrency` only if the data supports it | LOW (data-gathering) / LOW-MED (conditional config change) |
 | [S5](sprint-5.md) | Structured JSON logging, phased — backend payment-adjacent call sites first, GCP-native (no new dependency) | LOW |
+
+**Tier note (reconsidered during S1's build, both repos):** the plan originally scoped S1/S2 as
+"reviewer may merge on green CI." Both S1 PRs' independent fresh-reviewer passes flagged the same
+concern: these changes modify the production `Dockerfile` — shared deploy-rail infra per
+`WAYS-OF-WORKING`'s HIGH triggers — and merging auto-deploys to Cloud Run with no pre-merge
+`docker build` gate in CI (CI runs `tsc`/`build`/tests, never an actual image build). Even though
+the change is build-time-only and fully `git revert`-able, that combination (shared infra +
+deploy-on-merge + no build-step CI gate) tips it into "when unsure, treat as high" territory per
+the standing rule. **Every sprint in this epic that touches a Dockerfile or `cloudbuild.yaml`
+routes to Daniel for the actual merge**, even where CI is green and review is clean — S3's
+Cloudflare-only sprint keeps its own sign-off gate regardless.
 
 **Explicitly dismissed, not built this epic** (see the plan file for full reasoning):
 - Cloud Build ↔ Artifact Registry region alignment — already correct everywhere (`us-east4`

@@ -225,7 +225,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   you `npm install` *inside* the worktree. That install adds a worktree-local `@playwright/test`, so running
   the **root** `playwright` binary then throws *"two different versions of @playwright/test"* / "No tests
   found" — switch to the **worktree-local** `node_modules/.bin/playwright`. Its generated `package-lock.json`
-  is untracked; don't commit it. *(2026-06-09, trust-messaging-polish S2.)*
+  is untracked; don't commit it (this note is scoped to a WORKTREE'S incidental lockfile — a reused package
+  name breaks npm workspace resolution at the monorepo root, so the file that comes out can be malformed;
+  it does not apply to a deliberately-generated, CI-validated per-app lockfile — see the `deploy-pipeline-tuning`
+  epic, which committed real `package-lock.json`s to both `apps/backend` and `apps/miyagisanchez` on purpose).
+  *(2026-06-09, trust-messaging-polish S2.)*
 - **`gh pr merge --delete-branch` fails when a worktree holds `main`.** The merge still succeeds on
   GitHub; only the local branch-delete errors. Verify with `gh pr view <n> --json state`. Don't
   re-run blindly.
