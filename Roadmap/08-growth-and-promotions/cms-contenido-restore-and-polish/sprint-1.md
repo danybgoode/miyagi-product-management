@@ -1,6 +1,8 @@
 # CMS restore & polish — Sprint 1: Restore the save path + editor polish
 
-**Status:** 🚧 in progress — all 3 stories built + deterministic gate green (2026-07-12); PR open, awaiting Daniel's merge + smoke
+**Status:** ✅ merged 2026-07-12 (PR #236, squash commit `9a1b9a4`) — deterministic gate green
+(`pr-reviewer`: Approve; Codex cross-review: no blocking/should-fix findings, 1 accepted nit); the
+admin-UI round-trip smoke is still **owed to Daniel** (Clerk-gated, see below)
 
 ## Stories
 
