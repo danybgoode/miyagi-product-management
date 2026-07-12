@@ -14,11 +14,11 @@
 
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 5/5 stories · risk: High · tbd
+- [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 5/9 stories · risk: High · tbd
 - [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## 📋 Ready to build (scaffolded, not started) (7)
+## 📋 Ready to build (scaffolded, not started) (8)
 
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
@@ -27,6 +27,7 @@
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 0/7 stories · risk: Low · tbd
+- [Process iteration — UX rails at grooming + observed-red DoD](../../09-platform-infra/process-ux-rails-and-red-green/README.md) — 09 Platform-infra · 0/2 stories · risk: Low · tbd
 
 ## ✅ Shipped (97)
 
@@ -136,15 +137,5 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
-
-These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
-derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
-forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
-
-| Epic | frontmatter (used) | sprint/retro-derived |
-|---|---|---|
-| CMS restore & polish — /admin/contenido saves again, then gets previews | In progress | Shipped |
-
 ---
-_Epics: 110 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 111 · seeds in funnel: 5 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
