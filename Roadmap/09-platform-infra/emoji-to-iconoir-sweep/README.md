@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress
 slug: emoji-to-iconoir-sweep
 ---
 
@@ -36,6 +36,6 @@ beside it); the 79-file audit list (regenerate with the grep in the scope doc).
 One sprint; shared-surface files announced; visual-diff pass before merge.
 
 ## Definition of Done (epic)
-- [ ] Sprint merged + Daniel's visual eyeball on storefront + one settings page
-- [ ] CI guard active (required) with allowlist documented
-- [ ] Poster's "no emoji" claim true; this README `status: shipped`; retro + learnings if any
+- [ ] Sprint merged + Daniel's visual eyeball on storefront + one settings page — **PR open** ([frontend](https://github.com/danybgoode/miyagisanchezcommerce/tree/feat/emoji-to-iconoir-sweep)), gate green (`tsc`+`build`+`test:e2e`), merge + the eyeball still owed
+- [x] CI guard active with allowlist documented — `lib/emoji-guard.ts` + `e2e/emoji-guard.spec.ts`, joins the required `api` gate on merge (advisory in the sense of being new/unproven on this PR, same framing every prior guard here has used)
+- [ ] Poster's "no emoji" claim true; this README `status: shipped`; retro + learnings if any — **not yet**: 10 of the 79 swept files still carry emoji the mechanical pass couldn't convert (plain-string data fields needing a data-model change, or code comments) — tracked in `lib/emoji-guard.ts`'s comments as a pass-2 candidate, not silently dropped
