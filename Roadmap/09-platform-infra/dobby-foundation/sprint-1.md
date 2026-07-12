@@ -8,7 +8,8 @@
 **As** Daniel, **I want** a `~/dobby/dobby-foundation` git repo (pushed to GitHub) containing
 `.claude-plugin/marketplace.json` and a `ways-of-work` plugin carrying the repo-original skills
 (`groom` incl. `scaffold-epic.mjs` + `templates/`, `doc-hygiene`, `standup-post`, `weekly-recap`,
-`babysit-pr`, `build-order-sync`, `vercel-prune`), **so that** every project installs and updates the
+`babysit-pr`, `build-order-sync`, `vercel-prune`, `live-smoke` — re-inventory `skills/` at build
+time; the list grew once already since grooming), **so that** every project installs and updates the
 same skills from one versioned place.
 **Acceptance:** in a scratch project, `/plugin marketplace add <org>/dobby-foundation` then
 `/plugin install ways-of-work@dobby-foundation` succeed; saying "let's groom X" triggers the groom

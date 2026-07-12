@@ -1,7 +1,7 @@
 ---
 title: "Golden Beans — Unified Growth Engine (standalone) + the dobby-foundation extraction"
 slug: golden-beans-growth-engine
-status: ready
+status: scaffolded
 area: "09 · Platform & Infra"   # S0 lives here; the engine epic lives in golden-beans' own Roadmap
 type: feature                   # one epic, two workstreams (S0 foundation is a chore-shaped enabler)
 archetype: Builder              # S0: Maintainer
@@ -9,7 +9,7 @@ priority: null
 risk: low                       # no money/auth/commerce paths; shared-surface stories flagged below
 epic: "09-platform-infra/dobby-foundation"   # S0 workstream; engine epic scaffolds in golden-beans/Roadmap after S0.4
 build_order: null
-updated: 2026-07-03
+updated: 2026-07-11   # re-groomed: flag-reality correction + commercial frame (see Decisions 2026-07-11)
 prd: "../1. raw/golden-beans.md"
 prd_addendum: "../1. raw/golden-beans-prd-g-chaos.md"   # PRD-G: chaos + SecOps — deferred to v2, see Addendum section
 ---
@@ -33,6 +33,76 @@ prd_addendum: "../1. raw/golden-beans-prd-g-chaos.md"   # PRD-G: chaos + SecOps 
 4. **Plugin marketplace + template** — `dobby-foundation` carries (a) a Claude Code **plugin
    marketplace** distributing the living skills to every project, and (b) a **project template**
    skeleton new projects copy once.
+
+## Decisions locked (Daniel, 2026-07-11 re-groom)
+Re-groomed because (a) the original grooming assumed doc flag states that were wrong (see
+*Flag-reality correction* below), and (b) the product frame grew: golden beans is now aimed at being
+a **standalone commercial product** (PostHog as the quality bar) sold as **AI development pods**
+(Globant/Anthropic model, [announced 2026-06-30](https://www.globant.com/news/globant-anthropic-alliance-claude-ai-pods)),
+with miyagisanchez as client #1. Decisions 1–4 above stand. New:
+
+5. **Engine first, commercial next.** S0–S4 remain v1 (amended below for flag reality + new reuse).
+   The commercial layer — landing + waitlist, multi-tenant activation, pods/benchmarks report,
+   signals loop, CMS integration — lands as **named, ordered follow-on epics** in golden-beans' own
+   Roadmap (see *Follow-on epics*). Proof before pitch.
+6. **CMS: integrate, don't own.** Golden beans exposes flag/experiment/cohort/telemetry primitives
+   any CMS consumes via SDK/MCP; content storage is not engine scope. Miyagi keeps
+   `content.overrides_enabled` admin-content and becomes the **reference integration**. A
+   Payload-based CMS module is a **v2 spike** (Payload: MIT, Next.js-native, Figma-owned since
+   2026-04; open-source + self-host publicly committed, Payload Cloud paused signups — roadmap-capture
+   risk noted, self-hosting mitigates). Payload as golden-beans' own UI shell: rejected for now
+   (couples the core product surface to Figma's roadmap).
+7. **Headline operate route = tokenized connector URL.** Landing leads with "copy your unique MCP
+   URL → *Add to Claude*" (`claude.ai/new?modal=add-custom-connector` deep-link; works on Claude free
+   tier) — a direct reuse of the shipped `seller-agent-connect-mcp-url` pattern (opaque revocable
+   credential in the path). Second: Cowork/Claude Code plugin (the full pods experience). Third:
+   `npx` wizard for engineers. **SDK/npx instrumentation of the customer's app is orthogonal and
+   always required** — it's how data gets in; the connector is how humans + their agents operate the
+   engine. BYO-agent stays the stance: no integrated AI.
+8. **Tenancy: design multi-tenant, run single.** From S1.1 the schema + tokens are tenant-scoped
+   (`projectId` first-class, per-project credentials), but v1 runs one tenant (miyagisanchez), no
+   self-serve signup; hand-provisioned pilot tenants are allowed for early pod trials. Auth
+   hardening + self-serve signup stay a follow-on epic, built against a real consumer.
+
+## Flag-reality correction (2026-07-11) — the chain effect
+The 2026-07-03 grooming assumed the poster's flag claims. Reality (per Daniel): **every platform
+flag is ON in production except `shipping.envia_enabled`** — many features documented "dark/default
+OFF" have been live. Poster corrected 2026-07-11 (dated snapshot note + per-bullet fixes).
+Consequences absorbed into scope:
+- **S2's feature registry must seed from LIVE `platform_flags` rows (prod state), not `lib/flags.ts`
+  code defaults** — code defaults are fail-safe fallbacks and systematically say OFF. Seeding from
+  defaults would make every "Targeted" denominator lie — the exact class of drift that forced this
+  re-groom. (Amended in S2 below.)
+- **Golden beans is itself the structural fix for this drift class:** runtime flag state becomes a
+  *displayed, queryable* surface (registry + funnel) instead of prose in docs. Worth one line on the
+  landing page someday; recorded here so the positioning isn't rediscovered.
+- **S1.3's instrumented feature can now be any live feature.** Proposed candidate:
+  `onboarding.three_doors_enabled` (natural TARS story — Targeted: new sellers hitting first-run ·
+  Adopted: completed a door · Retained: published listing/first share), with the setup-guide's
+  existing GTM `dataLayer` events as a second, nearly-free source. Final pick at S1.3 build time.
+
+## Product frame (2026-07-11): the PostHog bar, differentiators, pods GTM
+Verified against posthog.com (+ docs/handbook), 2026-07-11:
+- **PostHog today:** product/web analytics, session replay, error tracking, logs, feature flags,
+  experiments/no-code A/B, surveys, data warehouse + CDP (120+ sources), workflows, endpoints/API,
+  AI evals + AI observability, PostHog AI assistant, and **PostHog Code** (spring 2026): production
+  signals → auto-diagnosed tasks → agent-generated PRs. Usage-based pricing, generous free tier.
+- **They have NO chaos-engineering / DevSecOps product.** PRD-G (Modules E+F) remains a genuine
+  differentiator — sequencing unchanged (v2, after flag-serving migration).
+- **Steal from them:** the **closed signal loop** shape (error/friction signals → structured tasks →
+  fixes) and error tracking with product context — slotted as follow-on epic E4, *ending in the
+  customer's own agent over MCP* rather than an integrated agent. That inversion (their loop ends in
+  their agent; ours ends in yours) is the crispest statement of our BYO-agent differentiator.
+- **Persona & pitch:** elevate PMs → technical PMs; convert the product-development team from cost
+  center to revenue engine. Quantified via standard metrics decision-makers already use — velocity
+  (points/sprint), throughput (stories/epics per period), cycle + lead time, DORA (deploy frequency,
+  change lead time, change-failure rate, MTTR), cost per shipped point — human-only baseline vs
+  agent-augmented pod — layered with outcome metrics the engine itself produces (TARS adoption,
+  North-Star input movement, revenue per feature). This is follow-on epic E3, and **medusa-bonsai is
+  the dogfood dataset** (104 epics, 97 shipped, all dated in Roadmap frontmatter + git history — the
+  case-study numbers are computable, not claimed).
+- **UI bar:** PostHog-grade usability/beauty is the aspiration for the engine's UI surfaces (original
+  "PRD design notes ignored" stands; this is a bar, not a spec).
 
 ## Stage-2.5 bucket
 - **Engine core (TARS · North Star · A/B bucketing · unified `/v1/track` · SDK): genuinely new.**
@@ -81,7 +151,7 @@ Heuristics that survive contact with agentic + classic workspace practice:
 ## What already exists (reuse, don't rebuild)
 | Capability | Where | Reuse for |
 |---|---|---|
-| Skills: `groom`, `doc-hygiene`, `standup-post`, `weekly-recap`, `babysit-pr`, `build-order-sync`, `vercel-prune` | `skills/` (medusa-bonsai) | Move into the `ways-of-work` plugin; consumed back via marketplace |
+| Skills: `groom`, `doc-hygiene`, `standup-post`, `weekly-recap`, `babysit-pr`, `build-order-sync`, `vercel-prune`, **`live-smoke` (added since 2026-07-03 — re-inventory `skills/` at S0.1 build time)** | `skills/` (medusa-bonsai) | Move into the `ways-of-work` plugin; consumed back via marketplace |
 | Vendored Stripe skills pattern | `.agents/skills/*` + symlinks | Stays as-is — vendored ≠ repo-original (spike §4) |
 | Scaffolder + templates | `skills/groom/scaffold-epic.mjs` + `templates/` | Ships inside the groom skill in the plugin |
 | `build-order.mjs`, `cross-review.mjs`, `cross-panel.mjs`, routine prompts, `.githooks` | `scripts/` | Template `scripts/` (portable — they read Roadmap frontmatter, not Miyagi code) |
@@ -91,21 +161,95 @@ Heuristics that survive contact with agentic + classic workspace practice:
 | Deploy rails: Vercel (FE), Cloud Run us-east4 pattern, Telegram notify | infra + `lib/telegram.ts` | golden-beans v1 = Next.js on Vercel + its **own** Supabase project (Pub/Sub/Redis deferred) |
 | Playwright harness (api project) | `apps/miyagisanchez/e2e/` | Template e2e harness; golden-beans dogfoods it |
 
+**Reuse added at the 2026-07-11 re-groom (shipped since 2026-07-03):**
+| Capability | Where | Reuse for |
+|---|---|---|
+| Tokenized MCP connector URL + "Agregar a Claude" deep-link (opaque revocable path credential) | `seller-agent-connect-mcp-url` epic (**ON in prod**) | The headline operate route (Decision 7) — pattern lift, not a rebuild |
+| Runtime admin content + announcements (`content.overrides_enabled`) | `admin-content-and-announcements` epic | The **reference CMS integration** seam for Decision 6 (engine primitives powering content experiments) |
+| Setup-guide GTM `dataLayer` events + three-doors onboarding funnel | `seller-portal-setup-guide` / `seller-portal-onboarding-three-doors` | S1.3 instrumentation candidates (see Flag-reality correction) |
+| Staged bulk propose→confirm→apply MCP mutation pattern (agent-safe writes) | `catalog-management` epic | Shape for ANY engine mutation exposed as an MCP tool |
+| Append-only per-event financial ledger (snapshot at event time) | `profit-analyzer` epic | Pattern prior for S3 North-Star revenue inputs + E3 cost-per-point math |
+| `/admin/flags` audited flag dashboard reading live `platform_flags` rows | `feature-flags-inhouse` epic | S2 registry seeds from THIS (live rows), not code defaults |
+| House deploy rail moved: FE = Cloud Run behind Cloudflare; Vercel = per-PR previews + CI only (2026-07-10) | `frontend-vercel-to-cloudrun` epic | Deploy-rail note below needs this delta |
+
+**Deploy-rail note (delta):** the 2026-07-03 line "golden-beans v1 = Next.js on Vercel" predates the
+Vercel exit. **Decided at the 2026-07-11 panel adjudication (#5): Vercel for golden-beans v1** —
+Miyagi's exit was about prod-scale cost, which an internal tool with free previews doesn't have. The
+template carries the deploy rail as a per-project variable (S0.3), never both rails. Revisit at E2
+(multi-tenant scale) together with the Postgres-ingest write-load ceiling. New-infra-cost rule
+applies: surface to Daniel before provisioning.
+
 **Five-rule check:** engine is non-commerce and standalone — Medusa N/A, Clerk untouched, UCP N/A.
 Supabase rule honored *per project* (engine gets its own project — see `db-egress-and-account-strategy`
 for the account-strategy prior). Bilingual rule is Miyagi-scoped; golden-beans admin UI ships in one
 language (English, internal tool) unless Daniel says otherwise.
 
 ## v1 boundary
-**In:** the foundation extraction (S0) · schema-validated `POST /v1/track` → Postgres · TS SDK
-(`track`, `trackAdoption`, deterministic bucketing) · feature registry with retention windows · TARS
-funnel view · North Star metric + inputs + per-feature report · basic A/B variant comparison · one
-real Miyagi feature instrumented behind a kill-switch.
-**Out (named later epics, not creep):** flag-serving gateway + Miyagi `isEnabled()` migration ·
-Pub/Sub broker + GA4/vendor fanout · `triggerSatisfaction()` micro-surveys · p99 < 5 ms SLO · Redis
-cache-aside · multi-tenant auth hardening · statistical-significance engine (basic lift only in v1) ·
-all PRD design/branding notes (per Daniel) · **PRD-G Modules E + F** (chaos engineering · SecOps
-simulation · circuit breakers — the v2 epic, see Addendum below).
+**In:** the foundation extraction (S0) · schema-validated `POST /v1/track` → Postgres, **tenant-scoped
+from day one** (`projectId` first-class + per-project credentials — Decision 8: design multi-tenant,
+run single) · TS SDK (`track`, `trackAdoption`, deterministic bucketing) · feature registry with
+retention windows, **seeded from live `platform_flags` rows** · TARS funnel view · North Star metric +
+inputs + per-feature report · basic A/B variant comparison · one real Miyagi feature instrumented
+behind a kill-switch.
+**Out (named later epics, not creep — see Follow-on epics):** landing page + waitlist + connector
+install page (E1) · self-serve signup + auth hardening + trials (E2) · pods/benchmarks report (E3) ·
+error/signals loop (E4) · flag-serving gateway + Miyagi `isEnabled()` migration (E5a) · **PRD-G
+Modules E + F** (chaos · SecOps · circuit breakers — E5b, see Addendum) · CMS integration spike,
+Payload (E6) · Pub/Sub broker + GA4/vendor fanout · `triggerSatisfaction()` micro-surveys · p99 < 5 ms
+SLO · Redis cache-aside · statistical-significance engine (basic lift only in v1) · all PRD
+design/branding notes (per Daniel; PostHog-grade usability stays the bar).
+
+## Follow-on epics (named + ordered, groomed one-per-session in golden-beans' own Roadmap after S4)
+| # | Epic | One line | Depends on |
+|---|---|---|---|
+| E1 | Commercial shell | Landing (PostHog-bar UI) + waitlist signup + install page: connector-URL headline ("Add to Claude" deep-link), Cowork/Code plugin, npx wizard docs | S2 (something real to show) |
+| E2 | Multi-tenant activation | Auth hardening · hand-provisioned → self-serve tenants · pod trials ("integrate this pod, give it to your PM") | E1 + the S1 tenant-scoped schema |
+| E3 | Pod Report (benchmarks & ROI) | Velocity/throughput/cycle/lead/DORA + cost-per-point vs industry benchmarks; outcome layer from TARS/North-Star; **dogfood: computed from medusa-bonsai Roadmap frontmatter + git history** — the cost-center→revenue-engine sales artifact | S2–S3 |
+| E4 | Signals loop (the PostHog steal, inverted) | Error/friction signals → structured tasks → **the customer's own agent** over MCP (no integrated AI) | S1 SDK envelope |
+| E5 | a) Flag-serving migration → b) PRD-G chaos/SecOps + circuit breakers | Unchanged from Addendum; E5b risk callouts recorded there stand | S4, then a→b |
+| E6 | CMS integration spike (Payload) | Integrate-don't-own proven against miyagi's admin-content as reference; Payload module go/no-go decision | E1/E2 |
+
+Ordering is the default; re-sequence at each groom. E1↔E3 may swap if a pods sales conversation
+needs the report before the landing.
+
+## Panel adjudication (2026-07-11 — codex + antigravity, both lenses; Daniel approved, adjudication delegated)
+Absorbed (small amendments, no re-slice):
+1. **S2 cross-project seeding is real** (both panels): golden-beans' own Supabase can't read Miyagi's
+   `platform_flags` table. **Adjudicated: the client PUSHES** — SDK `syncFeatures()` / a one-command
+   seed run from Miyagi POSTing its live flag rows to the engine. Keeps the engine client-agnostic
+   (every future tenant can push; no bespoke Miyagi API coupling, no cross-DB creds). Registry sync
+   stays a command, not a product; funnel labels Targeted as registry-declared. (S2 amended.)
+2. **S3 revenue truth lives in Medusa** (codex-purist): North-Star revenue inputs for Miyagi read
+   Medusa-owned order/payment surfaces; the engine stores attribution telemetry + derived reports
+   only — never a commerce replica. (S3 amended.)
+3. **S4 is NOT flag serving** (vs antigravity-pragmatist's blocking claim — rejected as overstated,
+   clarified instead): deterministic hash bucketing computes a variant **client-side with no lookup
+   and no resolve endpoint**; on/off gating stays with the client's own flags (`isEnabled()`).
+   Decision 1 banned the serving gateway + migration, not local experiment assignment. (S4 amended.)
+4. **F3 circuit-breaker flag WRITES must be backend-owned + allow-listed** (both purists): already in
+   the Addendum's risk callouts; sharpened — money-path flag mutation is a Medusa/backend capability
+   behind an explicit allow-list, never a generic engine write to a flag table. Also (codex-purist):
+   once the connector operates commerce-adjacent experiments for Miyagi, Rule 3 applies — the UCP
+   manifest/MCP surface must describe those controls accurately (recorded for E1/E5).
+5. **Deploy rail decided: Vercel for golden-beans v1.** Miyagi left Vercel for prod-scale cost; an
+   internal tool with free previews has none of that. The template carries the rail as a per-project
+   variable (S0.3 already says so) — it never carries both. Revisit at E2 alongside the
+   Postgres-write-load ceiling (antigravity-pragmatist's ClickHouse point — accepted as named v1
+   debt with the same E2 revisit trigger).
+6. **GTM-events-first check at S1 kickoff** (codex-pragmatist): before building the full SDK
+   integration, check whether three-doors/setup-guide `dataLayer` events already yield
+   Targeted/Adopted/Retained for the first funnel — the first consumer may be a light adapter; the
+   SDK still ships (it's the product surface every other tenant uses).
+
+Rejected:
+- **"Defer S0 / spawn golden-beans minimal, extract later"** (codex-pragmatist): contradicts locked
+  Decision 4 and the dogfood sequencing rationale ("spawned *from* the template or the foundation is
+  fiction"); the marketplace/template is half the initiative's value, and Daniel confirmed the
+  slicing. Kept: S0 strictly first.
+- **"`checkout.stripe_enabled` in Supabase violates Rule 1"** (antigravity-purist): that flag is
+  pre-existing, shipped app-layer kill-switch wiring — it gates the app seam, it doesn't replace
+  Medusa's provider config, and this plan doesn't touch it in v1. The legitimate kernel (v2 flag
+  writes) is item 4 above.
 
 ## Slicing (skateboard → car)
 
@@ -120,23 +264,30 @@ simulation · circuit breakers — the v2 epic, see Addendum below).
 ### S1 — skateboard: events flow end-to-end *(this + later sprints: golden-beans' own Roadmap)*
 | Story | Ships | Risk |
 |---|---|---|
-| S1.1 As a builder I want `POST /v1/track` rejecting malformed events (projectId/userId/event; featureId optional) and persisting to Postgres, so funnels stay accurate. Acceptance: bad payload → 4xx; good → row queryable. **Forward-compat (PRD-G):** the event schema carries an extensible `tags`/`metadata` object from day one, so v2 friction/chaos tagging (F2) needs no migration. | ingest + store (own Supabase) | LOW |
+| S1.1 As a builder I want `POST /v1/track` rejecting malformed events (projectId/userId/event; featureId optional) and persisting to Postgres, so funnels stay accurate. Acceptance: bad payload → 4xx; good → row queryable. **Tenant-scoped by design (Decision 8):** `projectId` is first-class, auth is a per-project credential, and no query path can cross projects — run single-tenant, but the schema/token shape never needs a migration to go multi. **Forward-compat (PRD-G):** the event schema carries an extensible `tags`/`metadata` object from day one, so v2 friction/chaos tagging (F2) needs no migration. | ingest + store (own Supabase) | LOW |
 | S1.2 As an app builder I want a TS SDK (`track`, `trackAdoption(featureKey)`) auto-appending context, so integration is minutes. Acceptance: fresh Next.js app fires an event with ≤5 lines. **Forward-compat (PRD-G):** any SDK resolve/config call returns an extensible **payload envelope** (not a bare boolean), so v2 fault injection (`delay_ms`, `force_error_code`) is additive, never a breaking SDK change. | SDK package | LOW |
 | S1.3 As a PM I want one real Miyagi feature instrumented behind `growth.telemetry_enabled` (enablement, default **OFF**, in `platform_flags`), so real traffic proves the loop with an instant off-switch. Acceptance: flag ON → events land; OFF → zero calls. | first consumer | LOW — **touches marketplace FE, additive, announce** |
 
 ### S2 — TARS funnel v1
-Feature registry (key · target rule · retention window; seeded read-only from `platform_flags` defs) ·
-aggregation (Targeted denominator, Adopted = first event, Retained = repeat inside window) · funnel
-page for the S1.3 feature. All LOW.
+Feature registry (key · target rule · retention window; **seeded by the CLIENT PUSHING its live
+`platform_flags` rows** — SDK `syncFeatures()` or a one-command seed run from Miyagi, per Panel
+adjudication #1; live prod runtime state, never `lib/flags.ts` code defaults, per the Flag-reality
+correction) · aggregation (Targeted denominator, Adopted = first event, Retained = repeat inside
+window) · funnel page for the S1.3 feature. All LOW.
 
 ### S3 — North Star engine v1
 Define metric + leading inputs · link feature→input · per-feature input-impact report over time. LOW.
+**Commerce-truth boundary (Panel adjudication #2):** any revenue/order input for Miyagi reads
+Medusa-owned surfaces; the engine stores attribution telemetry + derived reports only.
 
 ### S4 — A/B v1
-Deterministic hash bucketing in the SDK (same user → same variant, no lookup) · exposure events ·
-side-by-side variant comparison (basic lift; significance = later epic). LOW.
+Deterministic hash bucketing in the SDK (same user → same variant, **computed client-side, no lookup,
+no resolve endpoint — this is experiment assignment, not flag serving; Decision 1 stands**, Panel
+adjudication #3) · exposure events · side-by-side variant comparison (basic lift; significance =
+later epic). LOW.
 **Forward-compat (PRD-G):** variant resolution returns the S1.2 payload envelope; targeting rules
-stored as data (cohort %, region) — v2 chaos scenarios (E2 blast radius) reuse this rules shape.
+stored as data (cohort %, region — telemetry/GeoIP properties only, never Medusa's `Region`
+currency/tax concept) — v2 chaos scenarios (E2 blast radius) reuse this rules shape.
 
 ## Addendum — PRD-G: Bottom-line optimization (chaos + SecOps) — deferred to v2 (Daniel, 2026-07-03)
 PRD addendum at `../1. raw/golden-beans-prd-g-chaos.md` (Modules E + F). **Decision: v1 (S0–S4)
@@ -150,7 +301,10 @@ golden-beans' Roadmap after S4.** Why deferral is structural, not preference:
 - **Risk callouts for the v2 grooming (recorded now so they're not rediscovered):** F3 auto-toggling
   flags like `checkout.stripe_enabled` is money-path-adjacent → **HIGH**, Daniel merges, needs its
   own kill-switch + an allow-list of breaker-eligible flags (money/auth flags likely excluded or
-  human-confirmed). F1 attack simulations (credential stuffing, rate abuse) against live surfaces
+  human-confirmed). **Sharpened per Panel adjudication #4:** money-path flag mutation is a
+  Medusa/backend-owned capability behind that explicit allow-list — never a generic engine write to
+  a flag table; and once the connector operates commerce-adjacent experiments, the UCP manifest/MCP
+  surface must describe those controls accurately (Rule 3). F1 attack simulations (credential stuffing, rate abuse) against live surfaces
   touch **Clerk (third-party ToS)** and real buyers → v2 must decide staging-vs-prod + blast-radius
   policy before any simulation runs; client-side-SDK-level injection first (per Daniel's note),
   deep backend fault injection later still.
@@ -175,9 +329,17 @@ S2 funnel-renders-real-data smoke.
 
 ## Definition of Ready
 - [x] Mirror-back confirmed; 4 forks decided by Daniel (2026-07-03).
-- [x] Stage-2.5 buckets named; overlaps (in-house flags · GTM · skills-spike trigger) cited.
-- [x] Reuse list produced; five-rule check done; research cited (plugin marketplaces).
-- [x] v1 in/out boundary written; kill-switch named (`growth.telemetry_enabled`, enablement, OFF).
+- [x] **Re-groom 2026-07-11:** mirror-back confirmed; 4 new forks decided by Daniel (Decisions 5–8);
+      flag-reality correction absorbed (poster fixed same day); research re-verified (PostHog suite +
+      Code · Globant/Anthropic pods · Payload/Figma · connector deep-link).
+- [x] Stage-2.5 buckets named; overlaps (in-house flags · GTM · skills-spike trigger · **connector-URL
+      pattern · admin-content seam**) cited.
+- [x] Reuse list produced (extended 2026-07-11); five-rule check done; research cited.
+- [x] v1 in/out boundary written (amended: tenant-scoped design, live-row registry seed); follow-on
+      epics E1–E6 named + ordered; kill-switch named (`growth.telemetry_enabled`, enablement, OFF).
 - [x] Stories risk-tiered (all LOW; two shared-surface announcements); QA stage + smoke owners named.
-- [ ] **Daniel approves this doc** → scaffold `09-platform-infra/dobby-foundation/` here + hold the
-      engine epic scaffold until golden-beans exists (S0.4), then scaffold it there; emit kickoffs.
+- [x] **Daniel approved the re-groomed doc (2026-07-11)** — with the advisory panel run (codex +
+      antigravity, both lenses) and adjudicated (see Panel adjudication). Scaffold docs already exist
+      (`09-platform-infra/dobby-foundation/`, amended 2026-07-11); Sprint-1 kickoff re-emitted; the
+      engine epic scaffold is held until golden-beans exists (S0.4), then S1–S4 scaffold there;
+      E1–E6 groom later, one per session, in golden-beans' Roadmap.

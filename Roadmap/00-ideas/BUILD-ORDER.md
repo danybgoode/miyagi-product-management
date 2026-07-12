@@ -5,14 +5,15 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-11 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-12 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (1)
+## 🏗️ Building now (2)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
+- [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 
 ## 📋 Ready to build (scaffolded, not started) (5)
 
@@ -132,4 +133,4 @@
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ---
-_Epics: 104 · seeds in funnel: 6 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 105 · seeds in funnel: 6 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._
