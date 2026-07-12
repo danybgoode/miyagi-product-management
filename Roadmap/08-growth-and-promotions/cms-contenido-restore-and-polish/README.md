@@ -40,6 +40,10 @@ untouched (rule #4). Editor microcopy es-MX (rule #5). No agent surface (admin t
 | 1 | US-1.3 Editor polish + live before/after preview via the pure merge seam | low |
 | 2 | US-2.1 Search/filter/sort/pagination for the key list + show which page/URL each key belongs to (Daniel fast-follow, 2026-07-12) | low |
 | 2 | US-2.2 Bulk export/import scope inputs become predefined dropdowns with a default + plain-language "what this produces" label (Daniel fast-follow, 2026-07-12) | low |
+| 3 | US-3.1 Page-first sub-navigation — namespace groups w/ route labels, derived field labels (from Daniel's `references/cms_redesign.tsx` prototype, adapted at grooming 2026-07-12) | low |
+| 3 | US-3.2 Batched save — dirty-map + floating «Guardar cambios» riding the existing bulk upsert | low |
+| 3 | US-3.3 Token/Iconoir re-skin + AdminShell grouping & sticky-overflow fix (shared surface — announce) | low |
+| 3 | US-3.4 Extend the design-token guard to the touched admin files (incremental sweep list) | low |
 
 ## Deploy order
 US-1.1 is an ops action on the shared Supabase project, applied by the build agent —
