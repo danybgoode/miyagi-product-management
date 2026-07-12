@@ -18,9 +18,10 @@
 - [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## 📋 Ready to build (scaffolded, not started) (6)
+## 📋 Ready to build (scaffolded, not started) (7)
 
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
+- [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
@@ -127,9 +128,8 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (6)
+## ⬜ Funnel — seeds not yet scaffolded (5)
 
-- [Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~20 sites](seeds/seller-catalog-null-slot-sweep.md) — Ready · Feature · tbd
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
@@ -147,4 +147,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | CMS restore & polish — /admin/contenido saves again, then gets previews | In progress | Shipped |
 
 ---
-_Epics: 109 · seeds in funnel: 6 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 110 · seeds in funnel: 5 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
