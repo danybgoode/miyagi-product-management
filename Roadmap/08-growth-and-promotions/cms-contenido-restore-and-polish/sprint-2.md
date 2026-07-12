@@ -1,6 +1,8 @@
 # CMS restore & polish — Sprint 2: findability polish (fast-follow, requested 2026-07-12)
 
-**Status:** ✅ built + deterministic gate green 2026-07-12 (PR #238); admin-UI visual smoke owed to Daniel
+**Status:** ✅ merged 2026-07-12 (PR #238, squash commit `09f5421`) — CI green, `pr-reviewer`
+(request-changes → fixed pre-merge: 3 missing `sellerAcquisition` route mappings) + Codex cross-review
+(3 findings, all fixed pre-merge) both cleared; admin-UI visual smoke still owed to Daniel
 
 Daniel's fast-follow ask after Sprint 1 shipped: the ~119-key editor list is hard to scan, and the
 bulk export/import scope fields are free-text guesswork. Both stories reuse existing, already-shipped
@@ -75,8 +77,8 @@ Env: production · https://miyagisanchez.com/admin/contenido
    → The list is no longer one long unpaginated scroll — search box, namespace/status filters, sort,
    and page controls are visible.
 2. Type a partial page name (e.g. "autos") into search.
-   → Only matching keys show; each visible row names its page (e.g. "Vende — Autos") and path
-   (`/vende/autos`).
+   → Only matching keys show; the section header above them names the page (e.g. "autos — Vende —
+   Autos · /vende/autos").
 3. Clear the search, open the "Exportar / importar en bloque" panel.
    → Both scope fields are dropdowns (not free-text boxes), each with a sensible default already
    selected.
