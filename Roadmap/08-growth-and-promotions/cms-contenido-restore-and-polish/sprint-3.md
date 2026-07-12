@@ -1,7 +1,9 @@
 # CMS restore & polish — Sprint 3: the redesign — page-first IA, batched save, tokens (from Daniel's prototype)
 
-**Status:** 🚧 built, deterministic gate green, PR open — browser/visual smoke owed to Daniel (same
-split as Sprint 1/2 of this epic: no money/auth path, UX confirmation only)
+**Status:** ✅ merged 2026-07-12 (PR #242, squash commit `32bcf7a`) — deterministic gate green
+(CI + independent `pr-reviewer` pass + codex cross-agent advisory, one real finding fixed pre-merge);
+browser/visual live smoke still owed to Daniel (same split as Sprint 1/2 of this epic: no money/auth
+path, UX confirmation only)
 
 Origin: Daniel's prototype `references/cms_redesign.tsx` (2026-07-12), reviewed + adapted at grooming.
 **Adopted:** page/section sub-navigation, single floating batched save, status chips, sidebar grouping.
@@ -101,9 +103,25 @@ check, ran the fixture — it failed exactly as expected (red), then reverted an
   - `copy-overrides-labels.spec.ts` (5 cases, `humanizeKeyPath`)
   - `copy-overrides-page-nav.spec.ts` (8 cases, `buildPageNavGroups`/`firstNavSelection`/`isValidNavSelection`)
   - `copy-overrides-admin-view.spec.ts` extended (+3 cases: `filterKeysBySection`, `section` in `buildContenidoPageUrl`)
-  - `copy-overrides-draft-batch.spec.ts` (7 cases, `buildBatchApplyRows`/`removeAppliedDrafts` — mutation-checked)
+  - `copy-overrides-draft-batch.spec.ts` (12 cases, `buildBatchApplyRows`/`removeAppliedDrafts`/`updateDraftLocale`
+    — the last of these added POST-review, see below; all mutation-checked)
   - `admin-sections.spec.ts` extended (+2 cases: the new `group` field — mutation-checked)
   - `design-token-foundation.spec.ts` extended (+2 cases: the guard-coverage override — mutation-checked)
+- **Review — 3 layers, one real fix landed pre-merge:**
+  - **CI (GitHub Actions):** `Type-check + build` + `Playwright vs preview` both green on the final commit.
+  - **Independent `pr-reviewer` subagent** (fresh agent, not the builder): verified every S3.1–S3.4 claim
+    against the actual diff, confirmed LOW risk tier defensible (AdminShell.tsx is presentational chrome,
+    no auth/money/DB), approved cleanly — two minor non-blocking notes only (a PR-body wording nit on
+    "4 files touched" vs the sprint's actual 6-file diff; an already-idempotent partial-failure edge case).
+  - **Cross-agent advisory (codex, `node scripts/cross-review.mjs 242 --agent codex`):** found one real,
+    worth-fixing issue — `dirtyPaths` counted every *touched* draft path, not actually-dirty ones, so
+    editing a field then reverting it back to the live value still triggered the unsaved-changes warning,
+    the batched-save bar, and a no-op re-write. **Fixed pre-merge** (commit `f28d091`): extracted a new
+    pure `updateDraftLocale()` into `lib/copy-overrides-draft-batch.ts` so the "does this un-dirty the
+    entry" decision is unit-tested (5 new cases) rather than inline component logic — mutation-checked
+    (all 3 revert-path assertions observed red, then reverted). Antigravity was also attempted as a second
+    cross-agent opinion but its CLI errored on this run (`Agent execution terminated due to error`) —
+    codex's pass stood as the cross-agent signal.
 - **browser smoke owed:** yes, to Daniel — the visual/aesthetic sign-off on the redesigned editor and
   the grouped rail (no money path). **Also owed:** this build session had no local Supabase/Clerk
   credentials available (`.env.local` absent from this worktree) and this epic's own Sprint 1/2 already
@@ -111,12 +129,17 @@ check, ran the fixture — it failed exactly as expected (red), then reverted an
   batched-save round-trip (edit → Guardar cambios → confirm via GET → live ≤1 min) and the
   unsaved-changes-warning UX were verified by code review + the pure-logic specs above, NOT by an actual
   browser session. This is explicitly flagged, not glossed.
-- **deterministic gate:** ✅ green 2026-07-12 — `tsc --noEmit` clean, `npm run build` clean, Playwright
-  `api` 2181 passed / 2187 (same 6 pre-existing unrelated failures as Sprint 1/2 — `launchpad-campaign-vote.spec.ts`,
-  `launchpad-submission.spec.ts`, `not-found-shape.spec.ts` — zero file overlap with anything this sprint touched).
+- **deterministic gate:** ✅ green on the final merged commit — `tsc --noEmit` clean, `npm run build`
+  clean, Playwright `api` green (a local re-run showed a fluctuating extra 2-3 failures across repeated
+  runs — different specs each time, e.g. `own-shop-seo.spec.ts`/`static-shell-split.spec.ts`/
+  `embed-shop.spec.ts` — all touching files unrelated to this PR and none stable across runs, consistent
+  with live-data/environment flakiness rather than a regression; CI's own run on the PR's Vercel preview
+  is the authoritative signal and was green). The stable, consistently-reproducing 3 specs
+  (`launchpad-campaign-vote.spec.ts`, `launchpad-submission.spec.ts`, `not-found-shape.spec.ts`) match
+  the same pre-existing gap Sprint 1/2 already documented.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com (preview URL pre-merge)
+Env: production · https://miyagisanchez.com (merged 2026-07-12, live once Cloud Run finishes deploying)
 
 1. Go to https://miyagisanchez.com/admin/contenido (as admin, desktop).
    → A page/section list appears alongside the editor; pick "Acerca (plataforma)".
