@@ -191,9 +191,14 @@ test('--extract: fully-shipped epics report FULL story completion (the audit §6
         `${s.slug} should read N/N or —, got "${s.sprint_progress}"`);
     }
   }
-  // An in-flight epic must NOT be inflated: ml-orders-native has draft-PR sprints — its done count is
-  // whatever the docs really tick, and at least one non-shipped sprint keeps a sub-total fraction.
-  const inflight = rows.find((r) => r.grain === 'Epic' && r.slug === 'ml-orders-native');
-  assert.ok(inflight, 'expected ml-orders-native epic row');
+  // An in-flight epic must NOT be inflated/miscategorized by the same fix that corrects the two
+  // undercounts above (status silently floored to Shipped). Picked DYNAMICALLY from whichever epic
+  // is currently in-progress in the real live Roadmap — not a hardcoded slug. The original fixture
+  // here was `ml-orders-native`, which genuinely shipped 2026-07-08; the hardcoded assertion then
+  // silently asserted a false invariant against reality until CI caught the drift (deploy-pipeline-
+  // tuning epic, 2026-07-12). Any epic currently mid-build works as the negative-control example, so
+  // this self-heals as epics ship over time instead of needing a slug swap each time one does.
+  const inflight = rows.find((r) => r.grain === 'Epic' && r.status === 'In progress');
+  assert.ok(inflight, 'expected at least one in-progress epic in the live Roadmap to use as the negative-control example');
   assert.equal(inflight.status, 'In progress');
 });
