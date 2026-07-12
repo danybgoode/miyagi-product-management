@@ -1,9 +1,9 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: process-ux-rails-and-red-green
 ---
 
-# Epic: Process iteration — UX rails at grooming + observed-red DoD
+# Epic: Process iteration — UX rails at grooming + observed-red DoD ✅
 
 > **Area:** 09-platform-infra · **Risk:** low · **Archetype:** Maintainer · **Scope seed:**
 > [`00-ideas/seeds/process-ux-rails-and-red-green.md`](../../00-ideas/seeds/process-ux-rails-and-red-green.md)
@@ -37,10 +37,10 @@ Root-repo docs only; no deploy, no flag (LOW — carve-out: doc/skill edits, rev
 Announce anyway: the groom template edit touches every future planning session.
 
 ## Definition of Done (epic)
-- [ ] Stories merged to `main`
-- [ ] This README marked ✅; sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Team memory + `MEMORY.md` index updated if durable
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** n/a — LOW, carve-out recorded at grooming
-- [ ] **This README's frontmatter `status: shipped`**; run `node scripts/build-order.mjs`
+- [x] Stories merged to `main` (commits `d7bd19b`, `a4ca168`)
+- [x] This README marked ✅; sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** n/a — LOW, carve-out recorded at grooming
+- [x] **This README's frontmatter `status: shipped`**; run `node scripts/build-order.mjs`

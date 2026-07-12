@@ -1,6 +1,6 @@
 # Process iteration — UX rails + observed-red — Sprint 1
 
-**Status:** ⬜ not started
+**Status:** ✅ done — commits `d7bd19b` (S1.1), `a4ca168` (S1.2)
 
 ## Stories
 
@@ -15,6 +15,7 @@ reuse list names the rails). Add a WAYS-OF-WORKING pointer. Keep it a checklist,
 **Acceptance:** template + SKILL.md updated; the next groomed seed (whichever it is) carries the
 block; WAYS-OF-WORKING references it.
 **Risk:** low
+**Status:** ✅ done — commit `d7bd19b`
 
 ### Story 1.2 — Observed-red DoD line
 **As** the team, **I want** proof every new spec can fail, **so that** agent-written tests can't pass
@@ -27,6 +28,7 @@ do it anyway). One LEARNINGS line under Tooling gotchas citing the article + dat
 **Acceptance:** the DoD line reads as verification-only; LEARNINGS cites
 dev.to/antoniel (2026-07-12); nothing else in the process changed.
 **Risk:** low
+**Status:** ✅ done — commit `a4ca168`
 
 ## Sprint QA
 - **api spec(s):** n/a — doc/template edits. Gate: the groom template still renders (scaffold a
