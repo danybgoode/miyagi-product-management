@@ -94,14 +94,19 @@ tooling: always embed an explicit `cd <absolute-path> &&` in the SAME command as
 `gcloud`/`docker` invocation that must run against a specific worktree — never rely on a
 previously-issued `cd` persisting across a `run_in_background: true` call boundary.**
 
-## Tooling gotcha found and worked around (promoted to `Roadmap/LEARNINGS.md`)
-`scripts/cross-review.mjs`'s default `gh pr diff` piping blows Codex's context window on a PR
+## Tooling gotcha found, worked around, then fixed as a fast-follow
+`scripts/cross-review.mjs`'s default `gh pr diff` piping blew Codex's context window on a PR
 whose diff includes a large auto-generated file — both S1's (a first-time committed
 `package-lock.json`, ~12–19K lines) and this sprint inherited the exposure. Worked around per-PR
-with a pathspec-excluded diff (`git diff origin/main...HEAD -- . ':(exclude)package-lock.json'`)
-piped directly into `codex exec -` alongside the shared prompt, bypassing the wrapper script.
-**This is a real, likely-recurring gap now that S1 established committing per-app lockfiles as
-convention** — flagged in `LEARNINGS.md` for the next agent, not just fixed ad hoc each time.
+during the build (a pathspec-excluded diff piped directly into `codex exec -`, bypassing the
+wrapper script), then **fixed properly right after both S2 PRs merged**, since it was flagged as a
+real, likely-recurring gap now that S1 established committing per-app lockfiles as convention.
+`stripGeneratedFileDiffs()` (`scripts/lib/cross-agent-cli.mjs`) now strips known-lockfile diff
+hunks to a placeholder by **default** in `cross-review.mjs` (`--include-lockfiles` opts out); a new
+`isContextWindowOverflow()` check gives a specific, actionable error if some other huge generated
+file slips through the allowlist. 14 new `node:test` cases; re-verified end-to-end against the
+exact backend PR (#86) that originally failed — the wrapper now completes cleanly with zero manual
+workaround. Full detail: `Roadmap/LEARNINGS.md`'s cross-review entry.
 
 ---
 
