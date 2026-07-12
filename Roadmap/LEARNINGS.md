@@ -625,6 +625,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   live-money-relevant bug that sat undetected through an entire prior sprint — the underlying API
   route worked fine; only the UI gate silently blocked the one path that would have exercised it.
   *(2026-07-11, platform-migrations S3 — the `migration` promoter SKU's admin price field.)*
+- **Verify every new spec can fail before trusting that it can pass, especially when written
+  after the implementation — a deliberate mutation (break the code, confirm red) is cheap
+  insurance against a false-positive tautology test.** Adopted from antoniel's agentic BDD article
+  (https://dev.to/antoniel/my-agentic-engineering-process-from-vibe-code-to-bdd-2ne) — the one
+  piece worth taking. Explicitly NOT adopted: Gherkin/.feature files, Cucumber ceremony, Stryker
+  mutation tooling, or an enforced test-first ordering. *(2026-07-12,
+  process-ux-rails-and-red-green S1.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop
