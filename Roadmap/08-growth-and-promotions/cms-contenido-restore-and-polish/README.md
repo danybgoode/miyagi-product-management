@@ -38,6 +38,8 @@ untouched (rule #4). Editor microcopy es-MX (rule #5). No agent surface (admin t
 | 1 | US-1.1 Apply the migration to prod + verify the save round-trip live | high |
 | 1 | US-1.2 Regression spec + actionable "store unavailable" error (no more silent generic 500) | low |
 | 1 | US-1.3 Editor polish + live before/after preview via the pure merge seam | low |
+| 2 | US-2.1 Search/filter/sort/pagination for the key list + show which page/URL each key belongs to (Daniel fast-follow, 2026-07-12) | low |
+| 2 | US-2.2 Bulk export/import scope inputs become predefined dropdowns with a default + plain-language "what this produces" label (Daniel fast-follow, 2026-07-12) | low |
 
 ## Deploy order
 US-1.1 is an ops action on the shared Supabase project, applied by the build agent —
