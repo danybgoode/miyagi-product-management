@@ -1,14 +1,14 @@
 ---
 title: "Checkout on prod resolves to localhost:9000 — live money-path outage"
 slug: checkout-cloudrun-localhost-fallback-outage
-status: ready
+status: in-progress
 area: "02"
 type: bug
 priority: null
 risk: high
 epic: null
 build_order: null
-updated: 2026-07-12
+updated: 2026-07-13
 ---
 
 # Scope — Checkout on prod resolves to localhost:9000 (live outage, urgent)
@@ -52,19 +52,27 @@ value permanently at build time, exactly like the (now-fixed) `HomePersonalizati
 This is a genuine bug, not a transient/self-healing one — it will not fix itself on the next
 deploy unless the fix changes where the value is read from.
 
-## Suggested fix shape (mirrors PR #243's fix, not yet built)
-Thread `storeUrl`/`publishableApiKey` down from a Server Component parent as props (same pattern
-`app/(site)/page.tsx` now uses for `HomePersonalizationProvider`), or expose a tiny server-only
-API route the client can call to fetch these public, non-secret values once at page load. Do NOT
-try to fix by adding a Docker build-arg alone — that only fixes the value for the NEXT rebuild,
-not for the mechanism-level gap (any future NEXT_PUBLIC_* env consumer would re-break the same
-way). The props/RSC-payload approach is the systemic fix; a `--build-arg` is a patch for one var.
+## Fix built — PR danybgoode/miyagisanchezcommerce#244 (fix/checkout-cloudrun-localhost-fallback)
+Planned by an Opus 4.8 Plan agent given the money-path stakes, built by Sonnet 5. **Not** the
+props-threading pattern from PR #243 (`lib/cart.ts`'s `startCheckout` is a whole multi-step
+orchestration called from 2 different client buttons — BuyButton, CheckoutPayButton — not a single
+component tree a Server Component prop can reach cleanly). Instead: a new thin Route Handler,
+`app/api/checkout/start/route.ts`, calls the **unchanged** `startCheckout` server-side (matching the
+codebase's own existing `app/api/checkout/{options,validate-coupon,postal-lookup,shipping-rates}`
+proxy-route convention); a new `lib/cart-client.ts` gives the two client buttons a same-signature
+drop-in replacement that POSTs to the new route instead of calling Medusa directly. `lib/cart.ts`
+itself is untouched — zero risk to its tested checkout logic. Full reasoning (including why a
+Server Action was rejected) is in the PR/commit.
+
+**Status:** PR open, deterministic gate green, cross-agent + fresh-reviewer passes run. Owed before
+close: Daniel merges (HIGH risk/money-path tier), then a live prod-bundle grep + a real end-to-end
+checkout smoke (both `startCheckout` exit paths — external redirect and manual/SPEI complete).
 
 ## Scope
-**In v1 (urgent):** fix `lib/cart.ts`'s client-side store-URL/publishable-key resolution using the
-props-threading pattern from PR #243. Verify against the live prod bundle (same read-only
-grep-the-shipped-JS method) that `localhost:9000` no longer appears in any checkout-adjacent chunk.
-Confirm a real prod checkout completes end-to-end (Daniel — money path, cannot be automated).
+**v1 = the PR above.** Verify against the live prod bundle (same read-only grep-the-shipped-JS
+method used to find this bug) that `localhost:9000` no longer appears in any checkout-adjacent
+chunk post-deploy. Confirm a real prod checkout completes end-to-end (Daniel — money path, cannot
+be automated).
 
 **Out of v1 / needs its own investigation:** whether `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` /
 `NEXT_PUBLIC_MP_PUBLIC_KEY` / `NEXT_PUBLIC_SUPABASE_*` have the same gap — see the companion seed
