@@ -25,7 +25,7 @@ Linea honesta: esto muestra un diferencial operativo frente a referencias extern
 #title: Flujo de entrega
 #metric: {{throughput.shippedStories}}
 #label: historias shipped
-#caption: {{throughput.shippedEpics}} epics shipped - {{deploys.total}} deploys por merge a main
+#caption: {{throughput.shippedEpics}} epics shipped - {{deploys.perWeek}} deploys/semana vs benchmark {{benchmarks.deploysPerWeek}}
 ~~~
 
 ~~~slide
@@ -57,8 +57,9 @@ Linea honesta: esto muestra un diferencial operativo frente a referencias extern
 #title: Lectura ejecutiva
 #body:
 - Throughput: **{{throughput.shippedStories}}** historias y **{{throughput.shippedEpics}}** epics shipped.
-- Deploy frequency: **{{deploys.total}}** merges a main.
-- Change-fail proxy: **{{quality.changeFailProxy}}** reverts/hotfixes.
+- Deploy frequency: **{{deploys.perWeek}}** por semana; benchmark DORA/Four Keys daily: **{{benchmarks.deploysPerWeek}}** dias con deployment por semana.
+- PR cycle mediano: **{{cycle.medianHours}}h** vs referencia one-day **{{benchmarks.prCycleMedianHours}}h**.
+- Change-failure proxy: **{{quality.changeFailureRatePercent}}%** vs referencia top bucket **{{benchmarks.changeFailureRatePercent}}%**.
 - Doc-ops: **{{docOps.learningsPromotions}}** promociones a LEARNINGS.
-#footer: Diferencial, no experimento controlado.
+#footer: {{benchmarks.sourceLine}}. {{benchmarks.framing}}
 ~~~

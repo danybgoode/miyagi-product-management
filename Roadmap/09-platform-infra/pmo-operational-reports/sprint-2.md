@@ -1,6 +1,6 @@
 # PMO operational reports — Sprint 2: smalldocs fork + templates + benchmarks
 
-**Status:** 🏗 in progress — Stories 2.1-2.2 built; benchmarks remain
+**Status:** ✅ built + smoke-walked — Stories 2.1-2.3 complete
 
 ## Stories
 
@@ -26,12 +26,14 @@ generated deck renders as slides, sheet exports to Excel with working formulas.
 `scripts/lib/pmo-templates.mjs`, `pmo-report --weekly|--monthly|--sheet` smalldocs URL output.
 **Risk:** low
 
-### Story 2.3 — Benchmark dataset (the AI-differential)
+### Story 2.3 — Benchmark dataset (the AI-differential) ✅
 **As** a stakeholder, **I want** the pod's numbers next to cited industry medians, **so that** the
 AI-assisted differential is credible, not vibes.
 **Acceptance:** `benchmarks.json` with source + date per figure (researched + web-verified AT BUILD
 TIME, never training memory); CI guard fails on any unsourced figure (comparator US-1.2 shape); the
 templates render the comparison with the honest framing line (differential, not controlled experiment).
+**Built:** `scripts/pmo/benchmarks.json` with dated Four Keys/DORA sources, validation guard in
+`scripts/lib/pmo-benchmarks.mjs`, and rendered benchmark comparisons in weekly/monthly/sheet templates.
 **Risk:** low
 
 ## Sprint QA
@@ -53,3 +55,24 @@ Env: the new Cloud Run instance URL (fill in at deploy) + local repo
    → It carries a source + date.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+## Sprint 2 — Smoke walkthrough results
+
+Env:
+- Cloud Run: `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`
+- Fork: `danybgoode/smalldocs@60a7707`
+- Root branch: `feat/pmo-operational-reports-s1`
+
+Results:
+1. `curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app` returned `HTTP/2 200`; `/trust/manifest`
+   returned commit `60a7707` and repo `https://github.com/danybgoode/smalldocs`.
+2. `node scripts/pmo-report.mjs --dry-run --weekly --sheet` generated SmallDocs weekly + sheet URLs
+   against the Cloud Run host and left the window log untouched.
+3. Generated sheet markdown includes live formula cells, including
+   `Change-failure proxy %,0,15,lower is better`; automated PDF/Excel browser export remains Daniel's
+   manual smoke because it depends on interactive SmallDocs export UI.
+4. Benchmark lines render source/date framing: `DORA / Four Keys (2024-01-23; consultado 2026-07-13)`
+   plus `Differential, not a controlled experiment.`
+
+Deterministic gate:
+- `node --test 'scripts/lib/pmo-*.test.mjs'` passed 30/30 tests on 2026-07-13.

@@ -59,7 +59,9 @@ test('buildReportArtifacts fills requested templates and emits smalldocs URLs', 
   const artifacts = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: true });
   assert.deepEqual(artifacts.map((a) => a.name), ['weekly', 'sheet']);
   assert.match(artifacts[0].markdown, /PMO semanal/);
+  assert.match(artifacts[0].markdown, /benchmark DORA\/Four Keys daily: \*\*3\*\*/);
   assert.match(artifacts[0].url, /present=0/);
   assert.match(artifacts[1].markdown, /```cells/);
+  assert.match(artifacts[1].markdown, /Change-failure proxy %,0,15,lower is better/);
   assert.match(artifacts[1].url, /^https:\/\/pmo-smalldocs-/);
 });

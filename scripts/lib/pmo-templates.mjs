@@ -24,8 +24,32 @@ function formatNumber(value, fallback = 0) {
   return value;
 }
 
+function round(value, digits = 1) {
+  if (!Number.isFinite(value)) return 0;
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function windowDays(metrics) {
+  const since = new Date(metrics.window.sinceISO).getTime();
+  const until = new Date(metrics.window.untilISO).getTime();
+  if (!Number.isFinite(since) || !Number.isFinite(until) || until <= since) return 7;
+  return (until - since) / (24 * 60 * 60 * 1000);
+}
+
+function benchmarkSourceLine(benchmarks) {
+  const firstSource = benchmarks.sources?.[0];
+  if (!firstSource) return 'Benchmarks no cargados.';
+  return `${firstSource.publisher} (${firstSource.publishedDate}; consultado ${firstSource.accessedDate})`;
+}
+
 export function buildTemplateData(metrics, { benchmarks = {}, generatedAt = new Date() } = {}) {
   const generatedDate = generatedAt.toISOString().slice(0, 10);
+  const days = windowDays(metrics);
+  const deploysPerWeek = round((formatNumber(metrics.deployFrequency.total) / days) * 7);
+  const changeFailureRatePercent = metrics.deployFrequency.total
+    ? round((formatNumber(metrics.changeFailProxy.count) / metrics.deployFrequency.total) * 100)
+    : 0;
   return {
     window: {
       sinceISO: metrics.window.sinceISO,
@@ -49,9 +73,11 @@ export function buildTemplateData(metrics, { benchmarks = {}, generatedAt = new 
     },
     deploys: {
       total: formatNumber(metrics.deployFrequency.total),
+      perWeek: deploysPerWeek,
     },
     quality: {
       changeFailProxy: formatNumber(metrics.changeFailProxy.count),
+      changeFailureRatePercent,
     },
     docOps: {
       learningsPromotions: formatNumber(metrics.docOps.learningsPromotions),
@@ -60,14 +86,13 @@ export function buildTemplateData(metrics, { benchmarks = {}, generatedAt = new 
       retroPercent: formatNumber(metrics.docOps.retroCoverage.percent),
     },
     benchmarks: {
-      storiesShipped: formatNumber(benchmarks.storiesShipped),
-      epicsShipped: formatNumber(benchmarks.epicsShipped),
-      deploys: formatNumber(benchmarks.deploys),
+      deploysPerWeek: formatNumber(benchmarks.deploysPerWeek),
       prCycleMedianHours: formatNumber(benchmarks.prCycleMedianHours),
       epicLeadMedianDays: formatNumber(benchmarks.epicLeadMedianDays),
-      changeFailProxy: formatNumber(benchmarks.changeFailProxy),
-      learningsPromotions: formatNumber(benchmarks.learningsPromotions),
-      retroCoveragePercent: formatNumber(benchmarks.retroCoveragePercent),
+      changeFailureRatePercent: formatNumber(benchmarks.changeFailureRatePercent),
+      restoreTimeHours: formatNumber(benchmarks.restoreTimeHours),
+      framing: benchmarks.framing || 'Diferencial operativo, no experimento controlado.',
+      sourceLine: benchmarkSourceLine(benchmarks),
     },
   };
 }

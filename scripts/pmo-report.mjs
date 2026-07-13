@@ -13,6 +13,11 @@ import { dirname, join, resolve } from 'node:path';
 import { searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { truncateForTelegram } from './lib/telegram-format.mjs';
+import {
+  benchmarkTemplateValues,
+  loadBenchmarkDataset,
+  validateBenchmarkDataset,
+} from './lib/pmo-benchmarks.mjs';
 import { buildSmallDocsUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
 import { parseStatusFlipsFromLog, filterFlipsToWindow } from './weekly-recap.mjs';
 import {
@@ -179,7 +184,14 @@ export function buildReport({ window, repoResults, roadmapRows, epicStatusFlips,
   return { metrics, text: truncateForTelegram(formatPmoReport({ metrics, baselineLine }), 4096) };
 }
 
-export function buildReportArtifacts(metrics, args) {
+export function loadReportBenchmarks() {
+  const dataset = loadBenchmarkDataset();
+  const errors = validateBenchmarkDataset(dataset);
+  if (errors.length) throw new Error(`Invalid PMO benchmark dataset:\n${errors.join('\n')}`);
+  return benchmarkTemplateValues(dataset);
+}
+
+export function buildReportArtifacts(metrics, args, { benchmarks = loadReportBenchmarks() } = {}) {
   const artifacts = [];
   for (const [name, enabled] of [
     ['weekly', args.weekly],
@@ -187,7 +199,7 @@ export function buildReportArtifacts(metrics, args) {
     ['sheet', args.sheet],
   ]) {
     if (!enabled) continue;
-    const markdown = fillPmoTemplate(name, metrics);
+    const markdown = fillPmoTemplate(name, metrics, { benchmarks });
     artifacts.push({
       name,
       markdown,
