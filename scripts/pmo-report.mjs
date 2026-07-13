@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import { searchMergedPrs } from './lib/gh-rest.mjs';
+import { listPulls, searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { truncateForTelegram } from './lib/telegram-format.mjs';
 import {
@@ -83,21 +83,25 @@ function loadRoadmapRows() {
   }
 }
 
-function loadLogContent({ dryRun }) {
-  if (!dryRun) return readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH });
-  const result = git(['show', `origin/${LOG_BRANCH}:${LOG_BRANCH_PATH}`]);
-  return result.status === 0 ? result.stdout : null;
+export function loadLogContent({
+  readRemoteLog = () => readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH }),
+} = {}) {
+  return readRemoteLog();
 }
 
-function gatherRepoResults(sinceISO, untilISO) {
+export function gatherRepoResults(sinceISO, untilISO, {
+  searchMerged = searchMergedPrs,
+  listOpen = listPulls,
+} = {}) {
   return REPOS.map((repo) => {
-    const prs = searchMergedPrs({ repo, sinceDate: sinceISO.slice(0, 10), base: 'main' });
-    if (prs === null) return { repo, available: false, prs: [], openPrs: [] };
+    const prs = searchMerged({ repo, sinceDate: sinceISO.slice(0, 10), base: 'main' });
+    const openPrs = listOpen({ repo, state: 'open', perPage: 100 });
+    if (prs === null || openPrs === null) return { repo, available: false, prs: [], openPrs: [] };
     return {
       repo,
       available: true,
       prs: prs.filter((pr) => pr.mergedAt >= sinceISO && pr.mergedAt < untilISO),
-      openPrs: [],
+      openPrs,
     };
   });
 }
@@ -217,7 +221,7 @@ function openUrl(url) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const logContent = loadLogContent({ dryRun: args.dryRun });
+  const logContent = loadLogContent();
   const lastLog = lastPmoLogEntry(logContent);
   const window = computePmoWindow(lastLog, new Date(), args);
 

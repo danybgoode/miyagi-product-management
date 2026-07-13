@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildReport, buildReportArtifacts, parseArgs } from '../pmo-report.mjs';
+import {
+  buildReport,
+  buildReportArtifacts,
+  gatherRepoResults,
+  loadLogContent,
+  parseArgs,
+} from '../pmo-report.mjs';
 
 test('parseArgs reads dry-run and explicit window overrides', () => {
   assert.deepEqual(parseArgs(['--dry-run', '--weekly', '--open', '--since', '2026-07-01T00:00:00Z', '--until', '2026-07-08T00:00:00Z']), {
@@ -44,6 +50,31 @@ test('buildReport uses injected data and does not perform script I/O when import
   assert.match(text, /PMO operational report/);
   assert.match(text, /baseline established/);
   assert.match(text, /Roadmap progress 2\/3 stories/);
+});
+
+test('loadLogContent always reads the fetched remote log branch, including dry-run preflight', () => {
+  let reads = 0;
+  assert.equal(loadLogContent({
+    readRemoteLog: () => {
+      reads += 1;
+      return '{"untilISO":"fresh"}\n';
+    },
+  }), '{"untilISO":"fresh"}\n');
+  assert.equal(reads, 1);
+});
+
+test('gatherRepoResults populates open PRs from REST listPulls', () => {
+  const results = gatherRepoResults('2026-07-01T00:00:00Z', '2026-07-08T00:00:00Z', {
+    searchMerged: ({ repo }) => ([
+      { repo, number: 1, title: 'feat: inside', mergedAt: '2026-07-02T00:00:00Z' },
+      { repo, number: 2, title: 'feat: outside', mergedAt: '2026-07-09T00:00:00Z' },
+    ]),
+    listOpen: ({ repo }) => ([{ repo, number: 10, title: 'open work' }]),
+  });
+  assert.equal(results.length, 3);
+  assert.ok(results.every((result) => result.available));
+  assert.ok(results.every((result) => result.prs.length === 1));
+  assert.ok(results.every((result) => result.openPrs.length === 1));
 });
 
 test('buildReportArtifacts fills requested templates and emits smalldocs URLs', () => {
