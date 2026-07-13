@@ -1,7 +1,8 @@
 # CMS restore & polish — Sprint 4: nav clarity + destination accuracy (Daniel fast-follow, requested 2026-07-13)
 
-**Status:** 🚧 built, deterministic gate green, PR open — browser/visual smoke owed to Daniel (same
-split this epic has used every sprint: no money/auth path, UX confirmation only)
+**Status:** ✅ merged 2026-07-13 (PR #246, squash commit `764007f`) — deterministic gate green,
+independent `pr-reviewer` pass approved cleanly, codex cross-agent advisory caught one real
+label-regression (fixed pre-merge, commit `fd6be95`); browser/visual live smoke still owed to Daniel.
 
 Daniel's fast-follow ask after Sprint 3 shipped: screenshot review (`references/cms.png`) showed the
 page-nav's parent group and every child section rendering the SAME label text — so nothing visually
@@ -90,6 +91,20 @@ Sprint 3's Story 3.3 re-skin/sticky-rail fix. Visual confirmation owed to Daniel
     word-splitting fallback) — mutation-checked.
   - `copy-overrides-page-nav.spec.ts` extended: per-section `label`, `uniformRoute` (both the
     uniform and non-uniform cases) — mutation-checked.
+- **Review — 3 layers, one real fix landed pre-merge:**
+  - **CI (GitHub Actions):** `Type-check + build` + `Playwright vs preview` both green on the final commit.
+  - **Independent `pr-reviewer` subagent:** verified every S4.1–S4.3 claim against the real diff
+    (including tracing every `getDictionary()` call site itself, not trusting the report), confirmed
+    LOW risk tier, approved cleanly.
+  - **Cross-agent advisory (codex):** found a real regression — `sellerAcquisition`'s already-good
+    curated nav labels ("Vende — Autos") had been replaced by the new generic word-splitter ("Autos")
+    for every namespace, not just the ones that actually had the "siblings look identical" bug. Also
+    caught that a section whose route fails to resolve (real routing-map drift) rendered nothing in
+    the nav, despite the route helper's own doc comment promising a visible warning. **Both fixed
+    pre-merge** (commit `fd6be95`): a section's own route label now wins whenever its group isn't
+    uniform (preserving sellerAcquisition/sweepstakes/events' good labels), the generic humanizer is
+    reserved for uniform groups where every route label is identical; the nav shows the
+    `NO_SINGLE_PAGE_LABEL` warning inline for an unresolved route instead of blank space.
 - **browser smoke owed:** yes, to Daniel — the sticky header and the nav's visual differentiation are
   best confirmed by eye (same split this epic has used every sprint: no money/auth path involved).
 - **deterministic gate:** ✅ green 2026-07-13 — `tsc --noEmit` clean, `npm run build` clean, all 133
@@ -103,18 +118,25 @@ Sprint 3's Story 3.3 re-skin/sticky-rail fix. Visual confirmation owed to Daniel
   `request` fixture — they're 100% pure/local and unaffected either way; they're the real signal here.
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com/admin/contenido (preview URL pre-merge)
+Env: production · https://miyagisanchez.com/admin/contenido (merged 2026-07-13, live once Cloud Run
+finishes deploying)
 
 1. Open `/admin/contenido`.
-   → Under "Sorteos", the three items ("Público", "Panel de tienda", "Correos" — exact wording may
-     differ slightly) show clearly different destinations, not the same repeated text.
-2. Click the "Panel de tienda" item under Sorteos.
+   → Under "Sorteos", the three items ("Sorteos — público", "Sorteos — panel de tienda", "Sorteos —
+     correos") show clearly different destinations, not the same repeated text. Under "Inicio", the
+     sections show plain labels (Ribbon, Selection, Categories, …), all sharing one destination shown
+     once next to the group header instead of repeated per item.
+2. Click the "Sorteos — panel de tienda" item.
    → The page header shows `/shop/manage/sweepstakes`, not `/g/[slug]`.
-3. Click the "Correos" item under Sorteos.
+3. Click the "Sorteos — correos" item.
    → The header explains this is a transactional email, not a page with a URL.
 4. Edit any field, watch the before/after preview appear.
    → The preview names the exact destination the edit will land on.
 5. With enough fields on screen to require scrolling, scroll down.
    → The page-context header (page/section name + destination) stays visible at the top.
+
+**Status of the above, as of this build session:** none of steps 1–5 have been run against a live
+browser session by the building agent (no admin credentials available locally, consistent with this
+epic's established split) — all 5 are owed to Daniel.
 
 If any step fails, note the step number + what you saw — that's the bug report.
