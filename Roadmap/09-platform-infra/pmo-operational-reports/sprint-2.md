@@ -67,7 +67,9 @@ Results:
 1. `curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app` returned `HTTP/2 200`; `/trust/manifest`
    returned commit `60a7707` and repo `https://github.com/danybgoode/smalldocs`.
 2. `node scripts/pmo-report.mjs --dry-run --weekly --sheet` generated SmallDocs weekly + sheet URLs
-   against the Cloud Run host and left the window log untouched.
+   against the Cloud Run host and left the window log untouched; after independent review, this smoke
+   was rerun with fresh remote log fetch + REST open-PR reads and reported `13 open PRs`, `109 recently
+   merged PRs`, and `101 merges to main`.
 3. Generated sheet markdown includes live formula cells, including
    `Change-failure proxy %,0,15,lower is better`; automated PDF/Excel browser export remains Daniel's
    manual smoke because it depends on interactive SmallDocs export UI.
@@ -75,4 +77,11 @@ Results:
    plus `Differential, not a controlled experiment.`
 
 Deterministic gate:
-- `node --test 'scripts/lib/pmo-*.test.mjs'` passed 30/30 tests on 2026-07-13.
+- `node --test 'scripts/lib/pmo-*.test.mjs'` passed 32/32 tests on 2026-07-13.
+
+Independent review:
+- Reviewer flagged stale dry-run log reads and missing baseline open-PR population; both were fixed in
+  `scripts/pmo-report.mjs` with regression tests.
+- `node scripts/cross-review.mjs <PR> --agent antigravity` posted advisory reviews on open PRs #82, #77,
+  #73, and #70. A later rerun on #82's updated head was blocked by the approval reviewer as external
+  disclosure risk, so no workaround was attempted.
