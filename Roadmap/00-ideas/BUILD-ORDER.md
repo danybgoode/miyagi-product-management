@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-12 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-13 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -134,8 +134,8 @@
 
 - [Audit: which NEXT_PUBLIC_* client reads are actually inlined at Cloud Run build time](seeds/nextpublic-buildtime-inlining-audit.md) — Raw · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
-- [Checkout on prod resolves to localhost:9000 — live money-path outage](seeds/checkout-cloudrun-localhost-fallback-outage.md) — Ready · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
+- [Defense-in-depth: pass NEXT_PUBLIC_* as Docker build-args in the Cloud Run frontend pipeline](seeds/nextpublic-docker-buildargs-hardening.md) — Raw · Chore
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Mobile: discoverable Clerk account management (/account/settings)](seeds/mobile-clerk-account-management.md) — Ready · Feature
 - [PDP: single-image listings get lightbox + back/share chrome](seeds/pdp-single-image-gallery-parity.md) — Ready · Feature
