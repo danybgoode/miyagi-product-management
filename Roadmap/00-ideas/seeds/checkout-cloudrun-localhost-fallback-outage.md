@@ -1,7 +1,7 @@
 ---
 title: "Checkout on prod resolves to localhost:9000 — live money-path outage"
 slug: checkout-cloudrun-localhost-fallback-outage
-status: in-progress
+status: shipped
 area: "02"
 type: bug
 priority: null
@@ -64,15 +64,22 @@ drop-in replacement that POSTs to the new route instead of calling Medusa direct
 itself is untouched — zero risk to its tested checkout logic. Full reasoning (including why a
 Server Action was rejected) is in the PR/commit.
 
-**Status:** PR open, deterministic gate green, cross-agent + fresh-reviewer passes run. Owed before
-close: Daniel merges (HIGH risk/money-path tier), then a live prod-bundle grep + a real end-to-end
-checkout smoke (both `startCheckout` exit paths — external redirect and manual/SPEI complete).
+**Status:** merged 2026-07-13 (Daniel, `444c5cb`), deployed (Cloud Build `7139e2d8` → SUCCESS,
+revision `miyagi-web-00057-d7p`, 100% traffic). **Live prod-bundle grep confirms the fix**: fetched
+the same real PDP page used to find this bug and grepped its shipped JS chunks —
+`localhost:9000` gone (0 matches), the raw `start-checkout` Medusa path gone from client code, and
+`/api/checkout/start` (the new route) present in its place, exact call:
+`fetch("/api/checkout/start",{method:"POST",...})`. The route itself confirmed live: malformed/empty
+POST → `400`, GET → `405`.
+
+**Still owed (Daniel-only, cannot be automated):** a real end-to-end prod checkout — both
+`startCheckout` exit paths, a genuine "Comprar" → Stripe redirect, and a manual/SPEI "Confirmar
+pedido" → order-page completion — to confirm the full flow completes with a real payment, not just
+that the fetch targets the right endpoint.
 
 ## Scope
-**v1 = the PR above.** Verify against the live prod bundle (same read-only grep-the-shipped-JS
-method used to find this bug) that `localhost:9000` no longer appears in any checkout-adjacent
-chunk post-deploy. Confirm a real prod checkout completes end-to-end (Daniel — money path, cannot
-be automated).
+**v1 = PR #244, merged and deployed.** Bundle-level verification done (see above). Daniel's real
+checkout completion smoke is the only remaining item before this closes fully.
 
 **Out of v1 / needs its own investigation:** whether `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` /
 `NEXT_PUBLIC_MP_PUBLIC_KEY` / `NEXT_PUBLIC_SUPABASE_*` have the same gap — see the companion seed
