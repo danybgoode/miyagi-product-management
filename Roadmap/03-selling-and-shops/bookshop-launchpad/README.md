@@ -103,5 +103,30 @@ scoped to the shared launchpad submission form (`app/(shell)/s/[slug]/convocator
    for the core ask. Ship the textarea path independent of whether/when the PMO smalldocs instance
    exists.
 
-Neither item is scoped into a sprint yet — surface at the next grooming pass for this epic or fold
-into a small standalone chore.
+3. **Real bug, unresolved: a variant with NO price_set at all can't have a price set via the
+   internal seller-product-update route.** Found live 2026-07-13 activating panfleto S3's two
+   launchpad-published listings (exactly this shape — `createSellerProductViaInternal` creates a
+   variant with `prices: []` when `price_cents` is null, which is what every launchpad publish does
+   today). Calling `update_listing`'s `price_mxn` on such a listing throws `"Price set with id:
+   undefined not found"` from `seller-product-update.ts`'s hand-rolled "no price_set at all"
+   fallback branch (manually calls `pricingService.createPriceSets()` then `remoteLink.create()`).
+   **Confirmed the underlying data/DB is healthy** — Medusa Admin's own official price editor sets a
+   price on the exact same variant cleanly. The bug is specific to this repo's hand-rolled
+   orchestration, not Medusa core. Real root cause not yet nailed down (two theories investigated
+   and both fail to fully explain the exact error text — see the closed
+   [backend PR #88](https://github.com/danybgoode/medusa-bonsai-backend/pull/88) for the full
+   investigation trail). **Live workaround for now:** set the price via Medusa Admin directly — works
+   every time, not blocking. **Real fix, scoped for later:** replace the hand-rolled
+   `createPriceSets`+`remoteLink.create()` two-step with whatever mechanism Admin's own product-edit
+   form uses (likely `updateProductsWorkflow` with the variant's full `prices` array, or a dedicated
+   core-flows step) — narrow edge case (only a variant that's *never* had any price hits this branch;
+   the far more common update-an-existing-price path is unaffected), doesn't block anything else.
+4. **Stray "Europe" region still live in Medusa Admin's pricing UI.** Found alongside #3 — the price
+   editor shows 3 columns (MXN currency-level, plus a column per configured region: "Europe" and
+   "Mexico"). This marketplace is Mexico-only; "Europe" is very likely unremoved default/seed data
+   from Medusa's starter template. Not blocking (the real MXN region is what checkout actually reads,
+   `MXN_REGION_ID` in `lib/cart.ts`) but worth a platform-infra hygiene chore to delete it — it clutters
+   every seller's/admin's price-editing view platform-wide, not just launchpad-published products.
+
+None of these 4 items are scoped into a sprint yet — surface at the next grooming pass for this
+epic (#1/#2/#3) or a platform-infra chore (#4).
