@@ -61,8 +61,8 @@ not by inventing a new one. Finding F deletes a stray Region via Medusa's own Ad
 
 | Sprint | Story | Risk | Status |
 |---|---|---|---|
-| S0 | **Finding A** — resolve the Medusa-cart charge-semantics unknown with certainty (source-trace + test-mode probe). GATE. | HIGH | ⬜ not started |
-| S0 | Finding A follow-on — *if confirmed*, scope the fix (write-path realignment vs. checkout conversion layer) as a signed-off sub-story; *if refuted*, document the evidence and de-escalate | HIGH | ⬜ conditional |
+| S0 | **Finding A** — resolve the Medusa-cart charge-semantics unknown with certainty (source-trace). GATE. | HIGH | ✅ **REFUTED — safe**, see sprint-0.md |
+| S0 | Finding A follow-on — *if confirmed*, scope the fix; *if refuted*, document the evidence | HIGH | ✅ refuted, documented — no fix needed |
 | S1 | **Finding D** — fresh zero-price variant can't have a price set via `seller-product-update.ts` (`"Price set with id: undefined not found"`) | HIGH | ⬜ not started |
 | S1 | **Finding E** — Admin's dual MXN/region columns create two price rows; ambiguity guard misfires as if they were real tiers | HIGH | ⬜ not started |
 | S2 | **Finding F** — delete leftover default "Europe" region (pricing-editor hygiene) | LOW | ⬜ not started |
@@ -71,15 +71,18 @@ not by inventing a new one. Finding F deletes a stray Region via Medusa's own Ad
 
 ## Deploy order
 
-**S0 is the gate — nothing merges, and no paused feature work resumes, until S0 closes.** Then S1
-(each story Daniel-authorized) → S2 → (S3 deferred). Every S0/S1 story is HIGH-risk money/pricing
-→ Daniel authorizes and merges each per WAYS-OF-WORKING. Destructive prod ops (Region delete, any
-prod-DB pricing rewrite) get explicit in-conversation sign-off.
+**S0 is the gate — nothing merges, and no paused feature work resumes, until S0 closes.** S0
+**closed 2026-07-13 — Finding A REFUTED** (full evidence trail in `sprint-0.md`): every real
+checkout path this marketplace actually uses charges buyers exactly what's displayed. **No fix
+needed for Finding A; `panfleto-premium-shop` Sprint 3 is cleared to resume.** Now S1 (each story
+Daniel-authorized) → S2 → (S3 deferred). Every S1 story is still HIGH-risk money/pricing → Daniel
+authorizes and merges each per WAYS-OF-WORKING. Destructive prod ops (Region delete, any prod-DB
+pricing rewrite) get explicit in-conversation sign-off.
 
 ## Definition of Done (epic)
 
-- [ ] S0 produces a **written verdict** on Finding A (confirmed / refuted) with the actual
-      evidence, approved by Daniel; conditional fix sub-story scoped or formally dropped.
+- [x] S0 produces a **written verdict** on Finding A (confirmed / refuted) with the actual
+      evidence — **REFUTED**, see `sprint-0.md`. No conditional fix sub-story needed.
 - [ ] Findings D + E fixed, each with a live before/after reproduction (not just tsc/build).
 - [ ] Finding F region removed; codebase confirmed free of Europe-region-id references first.
 - [ ] Migrations sweep run; any gaps logged (fixed or ticketed).
@@ -90,22 +93,19 @@ prod-DB pricing rewrite) get explicit in-conversation sign-off.
 
 ## Recommended sequencing
 
-1. **First, alone, blocking everything: Sprint 0 / Finding A.** Trace Medusa v2.15.3's
-   payment-session source to learn what value actually hits the buyer's card on the Medusa-cart
-   path; corroborate with a Stripe **test-mode** probe if the source read is ambiguous. Produce a
-   written **confirmed-or-refuted verdict with evidence**. If confirmed, scope the fix as a
-   separately-authorized sub-story — do not start coding the fix inside S0. This is the only
-   CRITICAL item, and it's 100% latent (zero orders), so there's time to be certain rather than fast.
-2. **Then Sprint 1: Findings D and E** — the two live seller/agent pricing write-path bugs. These
+1. ✅ **Sprint 0 / Finding A — DONE, REFUTED.** Traced Medusa v2.15.3's payment-session source
+   end-to-end for both checkout shapes this marketplace uses (flat-price and Medusa-cart). Every
+   real charge is self-consistent with what's displayed — full evidence in `sprint-0.md`. No fix
+   needed. Skipped the Stripe test-mode probe (Story 0.2) — the source trace left no ambiguity.
+2. **Next: Sprint 1, Findings D and E** — the two live seller/agent pricing write-path bugs. These
    are the "foundation" Daniel meant; both HIGH-risk, each Daniel-authorized.
 3. **Then Sprint 2: Finding F** (delete the stray Europe region after confirming nothing
    references it) **and the migrations sweep** — quick, low-risk hygiene.
 4. **Sprint 3 (Findings G/H) deferred** back to bookshop-launchpad grooming.
-5. **`panfleto-premium-shop` Sprint 3 stays paused until Sprint 0 closes with certainty.** Its
-   vote→coupon→redeem money smoke buys a real CPP/quantity-tier print reward through the
-   Medusa-cart path — the *exact* path Finding A questions — so it must not be the thing that
-   discovers the answer. Once S0 returns "safe" (or the confirmed fix ships and is verified),
-   panfleto S3 is cleared to resume; its own smoke then doubles as a live confirmation of the
-   money path.
+5. **`panfleto-premium-shop` Sprint 3 is cleared to resume** (Sprint 0 closed safe) — but its
+   vote→coupon→redeem money smoke buys the exact CPP print-product reward that hit Finding D/E
+   this session (an Admin-set price on a fresh zero-price variant), so it should still wait until
+   Sprint 1 fixes those two bugs — otherwise the smoke just re-hits the known, already-scoped
+   issue rather than proving something new.
 6. **`mcp-parity-core` Sprints 2–4 and `mcp-parity-config`** (already scoped, unbuilt) stay lower
    priority than everything above — resume after this hardening pass, not during it.
