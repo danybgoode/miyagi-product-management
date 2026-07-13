@@ -10,12 +10,11 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (6)
+## 🏗️ Building now (5)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 3/10 stories · risk: Low
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 9/9 stories · risk: High · tbd
 - [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
@@ -29,7 +28,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 - [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 0/7 stories · risk: Low · tbd
 
-## ✅ Shipped (98)
+## ✅ Shipped (99)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -88,6 +87,7 @@
 - [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 6/6 stories
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
 - [Admin content & announcements — runtime marketing copy + platform banners ✅ shipped 2026-07-09](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 8/8 stories
+- [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 12/12 stories · risk: High · tbd
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 3/3 stories · risk: Low
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 3/3 stories
 - [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 19/19 stories
@@ -141,15 +141,5 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
-
-These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
-derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
-forgot to set `status:` (or the README is stale). Reconcile the README, then this advisory clears.
-
-| Epic | frontmatter (used) | sprint/retro-derived |
-|---|---|---|
-| CMS restore & polish — /admin/contenido saves again, then gets previews | In progress | Shipped |
-
 ---
-_Epics: 112 · seeds in funnel: 8 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 112 · seeds in funnel: 8 · status drift: 0. Regenerate with `node scripts/build-order.mjs`._

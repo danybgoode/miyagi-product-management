@@ -869,6 +869,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `PLAYWRIGHT_BASE_URL` explicitly for any spec that hits a route/tool added or changed in the current
   session — don't trust a green run against the default baseURL to mean "my change works."
   *(2026-07-04, ml-orders-native S3.)*
+  **Corollary — the same "baseURL defaults to production" fact also produces FALSE FAILURES, not just
+  false passes, when prod itself is unstable.** A full local `npm run test:e2e` run showed a large,
+  DIFFERENT set of unrelated-file failures on every re-run (`nav-entry-points.spec.ts` one run,
+  `static-shell-split.spec.ts`/`platform-theme.spec.ts`/`profit.spec.ts` the next) — an earlier session
+  the same day mischaracterized an identical pattern as generic "environment flakiness." The real
+  mechanism: these specs use the `request` fixture and hit real production over the network, and prod
+  was being actively worked on by concurrent sessions that same day (two separate incident-response
+  epics shipped fixes). Before trusting a full local `api` run as a signal about your own branch, check
+  which specs actually use the `request` fixture (network-dependent, hits whatever `baseURL` resolves
+  to) versus which are pure/local (zero network — the real signal for a lib-only PR); CI's own run
+  against the PR's Vercel preview stays authoritative for anything that does need the network.
+  *(2026-07-13, cms-contenido-restore-and-polish S4.)*
 - **A raw-color guard keeps a tokenized surface tokenized.** Once components move onto semantic CSS
   tokens, add a pure-logic `api` spec that scans customer-facing dirs and **fails CI on a newly-introduced
   raw hex** (allow-list legit hardcoded contexts: email, print/PDF, OG image, admin, sandbox) — cheapest
@@ -1212,6 +1224,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   different signal than "the feature was ever used," even when the column name suggests otherwise. Fixed
   to read the real connected-state field (`metadata.settings.mercadopago.connected`) the OAuth callback
   actually writes, with a regression-guard spec. *(2026-07-11, onboarding-three-doors S3.1.)*
+- **A "make every case consistent" fix applied uniformly to every case in scope can regress the cases
+  that were already correct.** Fixing "every sibling nav item renders identical text" (real, in
+  namespaces where every section genuinely shares one page) by routing every namespace through the
+  same generic label-humanizer also touched `sellerAcquisition`, which never had that bug — its
+  per-section route labels were already curated and already distinct ("Vende — Autos", "Vende —
+  Creadores"). The fix silently downgraded those to plain word-splits ("Autos"), caught by a
+  cross-agent review pass, not the deterministic gate (both old and new labels are valid non-empty
+  strings — nothing type-checks or asserts differently). The generalizable check: before extending a
+  consistency fix to every case a symptom was observed in some of, ask which cases actually exhibit the
+  symptom — a namespace whose route label already differentiates its own siblings doesn't need (and is
+  actively hurt by) being routed through the same fallback that a genuinely-uniform namespace needs.
+  *(2026-07-13, cms-contenido-restore-and-polish S4.)*
 
 ## Medusa gotchas
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the

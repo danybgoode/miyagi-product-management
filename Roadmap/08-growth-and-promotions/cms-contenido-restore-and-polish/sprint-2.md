@@ -2,7 +2,7 @@
 
 **Status:** ✅ merged 2026-07-12 (PR #238, squash commit `09f5421`) — CI green, `pr-reviewer`
 (request-changes → fixed pre-merge: 3 missing `sellerAcquisition` route mappings) + Codex cross-review
-(3 findings, all fixed pre-merge) both cleared; admin-UI visual smoke still owed to Daniel
+(3 findings, all fixed pre-merge) both cleared. **Live admin-UI smoke confirmed green by Daniel, 2026-07-13.**
 
 Daniel's fast-follow ask after Sprint 1 shipped: the ~119-key editor list is hard to scan, and the
 bulk export/import scope fields are free-text guesswork. Both stories reuse existing, already-shipped
@@ -87,3 +87,5 @@ Env: production · https://miyagisanchez.com/admin/contenido
    buttons updates to describe exactly what will be exported.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Confirmed green by Daniel, 2026-07-13.**

@@ -162,7 +162,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 - ✅ **Marketplace positioning metadata** — the browser/Google title, meta description, OpenGraph/Twitter tags, and generated social card now say what Miyagi is in plain es-MX: a marketplace to buy, sell, and open your own shop in Mexico, keeping the **segundamano** recognition in the description/keywords/card instead of leading with "infraestructura."
 - ✅ **Sweepstakes** — a tenant runs a compliant giveaway: a SEGOB-aware campaign gate, a public entry page (`/g/[slug]`) + QR, email-code-verified entries, optional purchase-bonus tickets, an automated backend draw, and winner/consolation notifications. A global kill-switch lets Miyagi suspend all sweepstakes.
 - ✅ **Seasonal theme engine** — rotating platform-level brand collaborations: a visitor toggle between the Core look and the active seasonal collaboration (accent/logo/tagline/background/spot-art), persisted and applied before first paint, with contrast guardrails and strict exclusion of seller storefronts, dashboards, checkout, and embeds.
-- ✅ **Admin content & announcements** — runtime-editable marketing copy (`/admin/contenido`: per-key form + restore, CSV/XLSX/JSON bulk export/import with diff preview) covering the homepage, `/vende` family, and `/acerca` (with its full agent-facing fan-out — `/agent`, the UCP manifest, `/llms.txt`, the MCP `about_miyagi` resource) — no deploy needed for a copy edit. Plus one **announcement primitive**: scheduled, audience-scoped platform comms (feature launches, flash sales, promoted stores) as a dismissable seller strip atop `/shop/manage` and an understated dismissable card on the buyer homepage, one active campaign per audience, `/` staying a static CDN asset throughout. Both behind `content.overrides_enabled` (kill-switch, default ON).
+- ✅ **Admin content & announcements** — runtime-editable marketing copy at `/admin/contenido`, restored after a prod migration gap and since redesigned as a real page-first CMS: a page/section nav (each item showing its own real destination — a public page, a seller-portal page, or "transactional email, not a page" — no two siblings look alike), a flat field editor scoped to one page at a time with before/after previews and a sticky page-context header, batched multi-field save (one «Guardar cambios» instead of one button per field), search/filter/sort/pagination, and CSV/XLSX/JSON bulk export/import with diff preview. Covers the homepage, `/vende` family, `/acerca` (full agent-facing fan-out — `/agent`, the UCP manifest, `/llms.txt`, the MCP `about_miyagi` resource), sweepstakes, and events (public/seller-portal/email copy each routed accurately) — no deploy needed for a copy edit. Plus one **announcement primitive**: scheduled, audience-scoped platform comms as a dismissable seller strip atop `/shop/manage` and an understated dismissable card on the buyer homepage, one active campaign per audience, `/` staying a static CDN asset throughout. Both behind `content.overrides_enabled` (kill-switch, default ON).
 
 ### 10 · Events & Ticketing
 - ✅ **Paid event admission** — sell admission as a `service`/`digital` listing through the real checkout, with event date/venue/aforo (capacity), and buyers can re-download their ticket/confirmation
@@ -173,6 +173,33 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-13 — CMS restore & polish epic SHIPPED (4 sprints; started HIGH for the DB migration,
+  LOW throughout the rest).** `/admin/contenido` saved nothing for two days — the `platform_copy_overrides`
+  migration merged in an earlier epic but was never actually applied to prod, so every edit failed
+  with a generic error. **S1** ([#236](https://github.com/danybgoode/miyagisanchezcommerce/pull/236))
+  applied the migration live, added a `classifyOverrideStoreError()` so an inert store fails loud
+  (503 + an actionable message) instead of a silent 500, and gave the editor a live before/after
+  preview through the same merge seam production reads through. **S2**
+  ([#238](https://github.com/danybgoode/miyagisanchezcommerce/pull/238), Daniel fast-follow) added
+  search/filter/sort/pagination and turned free-text bulk-export scope fields into dropdowns with a
+  plain-language summary. **S3** ([#242](https://github.com/danybgoode/miyagisanchezcommerce/pull/242))
+  redesigned the editor from Daniel's own prototype: a page-first nav replacing a flat 1,121-key list,
+  batched multi-field save riding the existing bulk-upsert route (no new backend), and a token/Iconoir
+  re-skin with an `AdminShell` grouping + sticky-rail fix. **S4**
+  ([#246](https://github.com/danybgoode/miyagisanchezcommerce/pull/246), Daniel fast-follow from a
+  screenshot review) fixed a REAL routing bug underneath a labeling complaint: `sweepstakes`/`events`
+  each fan into `seller`/`public`/`email` sections rendering on 3 genuinely different surfaces, but the
+  CMS told you the wrong one for two of them — traced to the actual `getDictionary()` call sites, not
+  guessed, then every section given its own real destination (shown inline when a group's sections
+  genuinely differ, once at the group header when they don't) plus a per-field destination line and a
+  sticky page header. A codex cross-agent review caught a real regression in that same PR — the fix
+  had accidentally overwritten `sellerAcquisition`'s already-good curated labels with a generic
+  fallback — fixed pre-merge. Durable lever promoted to LEARNINGS: **`playwright.config.ts`'s `api`
+  gate defaults to LIVE PRODUCTION as `baseURL`** — a fluctuating extra-failure set on a full local run
+  is prod volatility from concurrent work, not a signal about your own branch; the pure, network-free
+  specs are the real gate signal. All 4 sprints' live smokes confirmed green by Daniel, 2026-07-13. See
+  [08 · Growth & Promotions › CMS restore & polish](08-growth-and-promotions/cms-contenido-restore-and-polish/).
 
 - **2026-07-11 — Platform migrations epic SHIPPED (4 sprints; HIGH).** Merchants stayed on
   Shopify/Tiendanube/WooCommerce/BigCartel because switching meant weeks of re-typing. **S0**

@@ -2,7 +2,8 @@
 
 **Status:** ✅ merged 2026-07-13 (PR #246, squash commit `764007f`) — deterministic gate green,
 independent `pr-reviewer` pass approved cleanly, codex cross-agent advisory caught one real
-label-regression (fixed pre-merge, commit `fd6be95`); browser/visual live smoke still owed to Daniel.
+label-regression (fixed pre-merge, commit `fd6be95`). **Live browser/visual smoke confirmed green by
+Daniel, 2026-07-13.**
 
 Daniel's fast-follow ask after Sprint 3 shipped: screenshot review (`references/cms.png`) showed the
 page-nav's parent group and every child section rendering the SAME label text — so nothing visually
@@ -80,7 +81,7 @@ visible while scrolling the field list.
 **Risk:** low
 **✅ Done 2026-07-13** (commit `10160be`) — presentational-only change (sticky positioning + reusing
 already-computed route data); no new pure-logic surface to unit-test, so no new spec — same shape as
-Sprint 3's Story 3.3 re-skin/sticky-rail fix. Visual confirmation owed to Daniel.
+Sprint 3's Story 3.3 re-skin/sticky-rail fix. Visual confirmation: green, per Daniel's 2026-07-13 smoke.
 
 ## Sprint QA
 - **api spec(s) — all new/extended, all green (133 pure specs total across the touched files):**
@@ -135,8 +136,6 @@ finishes deploying)
 5. With enough fields on screen to require scrolling, scroll down.
    → The page-context header (page/section name + destination) stays visible at the top.
 
-**Status of the above, as of this build session:** none of steps 1–5 have been run against a live
-browser session by the building agent (no admin credentials available locally, consistent with this
-epic's established split) — all 5 are owed to Daniel.
-
 If any step fails, note the step number + what you saw — that's the bug report.
+
+**Confirmed green by Daniel, 2026-07-13** (steps 1–5 above).

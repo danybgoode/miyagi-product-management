@@ -1,9 +1,8 @@
 # CMS restore & polish — Sprint 3: the redesign — page-first IA, batched save, tokens (from Daniel's prototype)
 
 **Status:** ✅ merged 2026-07-12 (PR #242, squash commit `32bcf7a`) — deterministic gate green
-(CI + independent `pr-reviewer` pass + codex cross-agent advisory, one real finding fixed pre-merge);
-browser/visual live smoke still owed to Daniel (same split as Sprint 1/2 of this epic: no money/auth
-path, UX confirmation only)
+(CI + independent `pr-reviewer` pass + codex cross-agent advisory, one real finding fixed pre-merge).
+**Live browser/visual smoke confirmed green by Daniel, 2026-07-13.**
 
 Origin: Daniel's prototype `references/cms_redesign.tsx` (2026-07-12), reviewed + adapted at grooming.
 **Adopted:** page/section sub-navigation, single floating batched save, status chips, sidebar grouping.
@@ -156,8 +155,4 @@ Env: production · https://miyagisanchez.com (merged 2026-07-12, live once Cloud
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-**Status of the above, as of this build session:** none of steps 1–5 have been run against a live
-browser session by the building agent (no admin credentials available locally, consistent with
-Sprint 1/2's own split) — all 5 are owed to Daniel. The deterministic gate (pure-logic specs +
-`tsc`/`build`) covers the underlying data/filter/batch logic each step exercises, but not the rendered
-UI, the real Supabase round-trip, or the responsive/visual behavior itself.
+**Confirmed green by Daniel, 2026-07-13** (steps 1–5 above).

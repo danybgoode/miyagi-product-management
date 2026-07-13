@@ -1,8 +1,8 @@
 # CMS restore & polish — Sprint 1: Restore the save path + editor polish
 
 **Status:** ✅ merged 2026-07-12 (PR #236, squash commit `9a1b9a4`) — deterministic gate green
-(`pr-reviewer`: Approve; Codex cross-review: no blocking/should-fix findings, 1 accepted nit); the
-admin-UI round-trip smoke is still **owed to Daniel** (Clerk-gated, see below)
+(`pr-reviewer`: Approve; Codex cross-review: no blocking/should-fix findings, 1 accepted nit).
+**Live admin-UI smoke confirmed green by Daniel, 2026-07-13.**
 
 ## Stories
 
@@ -83,8 +83,7 @@ Env: production · https://miyagisanchez.com
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Owed to Daniel
-- Steps 1–5 above (the full admin-UI round-trip is Clerk-gated; the build agent applied and verified
-  the migration at the DB level only — see Story 1.1).
+- ~~Steps 1–5 above~~ **Confirmed green by Daniel, 2026-07-13.**
 - A live check that Story 1.2's error path never actually needs to fire (it's a pure-logic spec, not a
   live-triggered one — there's no safe way to make prod's `platform_copy_overrides` table disappear to
-  test it against the real API).
+  test it against the real API) — still open, low-stakes, not part of the confirmed smoke.
