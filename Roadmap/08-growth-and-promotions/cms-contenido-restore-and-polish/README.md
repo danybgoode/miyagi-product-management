@@ -44,6 +44,9 @@ untouched (rule #4). Editor microcopy es-MX (rule #5). No agent surface (admin t
 | 3 | US-3.2 Batched save — dirty-map + floating «Guardar cambios» riding the existing bulk upsert | low |
 | 3 | US-3.3 Token/Iconoir re-skin + AdminShell grouping & sticky-overflow fix (shared surface — announce) | low |
 | 3 | US-3.4 Extend the design-token guard to the touched admin files (incremental sweep list) | low |
+| 4 | US-4.1 Fix the routing map — real per-section destinations (sweepstakes/events seller vs public vs email) + honest no-page labels (Daniel fast-follow, 2026-07-13) | low |
+| 4 | US-4.2 Nav: distinct section names + real destinations shown inline, no two siblings look alike | low |
+| 4 | US-4.3 Per-field destination context next to the before/after preview + sticky page header | low |
 
 ## Deploy order
 US-1.1 is an ops action on the shared Supabase project, applied by the build agent —
