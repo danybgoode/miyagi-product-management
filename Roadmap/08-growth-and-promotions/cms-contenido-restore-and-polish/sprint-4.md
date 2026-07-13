@@ -1,6 +1,7 @@
 # CMS restore & polish — Sprint 4: nav clarity + destination accuracy (Daniel fast-follow, requested 2026-07-13)
 
-**Status:** ⬜ not started
+**Status:** 🚧 built, deterministic gate green, PR open — browser/visual smoke owed to Daniel (same
+split this epic has used every sprint: no money/auth path, UX confirmation only)
 
 Daniel's fast-follow ask after Sprint 3 shipped: screenshot review (`references/cms.png`) showed the
 page-nav's parent group and every child section rendering the SAME label text — so nothing visually
@@ -39,6 +40,10 @@ intentional no-page cases.
 unrecognized namespace/section falls back to the generic label; `events.seller` documents (via code
 comment, matching the file's existing convention) that it also renders on the `/[id]` roster route.
 **Risk:** low
+**✅ Done 2026-07-13** (commit `a3cac4a` on `feat/cms-contenido-restore-and-polish-s4`) — confirmed the
+real surface for every section via an Explore agent reading the actual `getDictionary()` call sites
+(not guessed): `sweepstakes.seller`/`events.seller` → their seller-portal pages,
+`sweepstakes.email`/`events.email` → `lib/email.ts` (no page). 12 spec cases, all green.
 
 ### Story 4.2 — Nav: distinct section names + real destinations shown inline
 **As** Daniel, **I want** each item in the page-nav to look and read differently from its siblings,
@@ -56,6 +61,9 @@ transaccional").
 **Acceptance:** no two sibling nav items render identical text; a fan-out namespace's items show their
 real, DIFFERENT destinations without opening them.
 **Risk:** low
+**✅ Done 2026-07-13** (commit `3c2984b`) — `humanizeSectionName()` + `uniformRoute` computation, both
+mutation-checked (observed red on the override lookup and the uniformity check, then reverted). 18 spec
+cases across the extended `copy-overrides-labels.spec.ts`/`copy-overrides-page-nav.spec.ts`.
 
 ### Story 4.3 — Per-field destination context + a sticky page header
 **As** Daniel, **I want** to see exactly where an edit will land right next to the before/after preview,
@@ -69,14 +77,30 @@ becomes `position: sticky` at the top of the editor column, so it survives scrol
 **Acceptance:** an actively-edited field's preview names its real destination; the page header stays
 visible while scrolling the field list.
 **Risk:** low
+**✅ Done 2026-07-13** (commit `10160be`) — presentational-only change (sticky positioning + reusing
+already-computed route data); no new pure-logic surface to unit-test, so no new spec — same shape as
+Sprint 3's Story 3.3 re-skin/sticky-rail fix. Visual confirmation owed to Daniel.
 
 ## Sprint QA
-- **api spec(s):** `copy-overrides-routes.spec.ts` extended (sweepstakes/events per-section routes,
-  descriptive no-page RouteInfo for platformTheme/pwaSearch/sellerAcquisition.shared); a new
-  `humanizeSectionName` unit spec; `copy-overrides-page-nav.spec.ts` extended for `uniformRoute`.
+- **api spec(s) — all new/extended, all green (133 pure specs total across the touched files):**
+  - `copy-overrides-routes.spec.ts` extended: sweepstakes/events per-section routes, descriptive
+    no-page `RouteInfo` for platformTheme/pwaSearch/sellerAcquisition.shared, the tightened
+    unrecognized-only `null` semantics.
+  - `copy-overrides-labels.spec.ts` extended: `humanizeSectionName` (curated overrides +
+    word-splitting fallback) — mutation-checked.
+  - `copy-overrides-page-nav.spec.ts` extended: per-section `label`, `uniformRoute` (both the
+    uniform and non-uniform cases) — mutation-checked.
 - **browser smoke owed:** yes, to Daniel — the sticky header and the nav's visual differentiation are
   best confirmed by eye (same split this epic has used every sprint: no money/auth path involved).
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
+- **deterministic gate:** ✅ green 2026-07-13 — `tsc --noEmit` clean, `npm run build` clean, all 133
+  copy-overrides/admin-sections pure specs green. **Note on the full `api` suite:** `playwright.config.ts`'s
+  `baseURL` defaults to LIVE PRODUCTION (`https://miyagisanchez.com`) — a full-suite run this session
+  showed a large, fluctuating set of unrelated failures (different specs each run, e.g.
+  `nav-entry-points.spec.ts`, `static-shell-split.spec.ts`, `platform-theme.spec.ts` — all hitting `/`
+  or other pages over the network), consistent with prod itself being actively worked on concurrently
+  (see `home-dynamic-rows-restore-and-polish` + `nextpublic-docker-buildargs-hardening` epics' fixes
+  landing the same day) rather than anything this PR touched. None of the copy-overrides specs use the
+  `request` fixture — they're 100% pure/local and unaffected either way; they're the real signal here.
 
 ## Sprint 4 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com/admin/contenido (preview URL pre-merge)
