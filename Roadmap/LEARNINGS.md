@@ -233,6 +233,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **`gh pr merge --delete-branch` fails when a worktree holds `main`.** The merge still succeeds on
   GitHub; only the local branch-delete errors. Verify with `gh pr view <n> --json state`. Don't
   re-run blindly.
+- **`process.env.NEXT_PUBLIC_SITE_URL ?? \`https://${req.headers.get('host')}\`` is a real
+  server-side gotcha, distinct from the client-bundle `NEXT_PUBLIC_*` build-time-inlining bug
+  (`444c5cb`/`fc3cf37` — those only affect `'use client'` code).** This is a **server-side runtime**
+  `process.env` read, which is normally the *correct*, live-reading pattern — the trap is the Host-header
+  fallback when the env var is unset. Daniel hit it reconnecting Stripe locally via a bare Docker run
+  (`docker run -p 8080:PORT` with no explicit hostname config): the `Host` header came through as
+  `0.0.0.0:8080`, and the fallback happily built `https://0.0.0.0:8080/...` as a real Stripe Connect
+  `return_url` — a broken redirect on a money path. `.env.local` had the correct value; `next dev`/`next
+  start` read it automatically, but a plain `docker run` only gets `NEXT_PUBLIC_SITE_URL` if it's passed
+  as an explicit runtime env var (`-e NEXT_PUBLIC_SITE_URL=...`), not just baked into `.env.local`. Cloud
+  Run itself isn't believed exposed — its own reverse proxy forwards a trustworthy `Host` in normal
+  operation; the failure shape (a literal `0.0.0.0` bind address) is local-Docker-specific. The identical
+  fallback was duplicated across 11 route files (every Stripe/MercadoPago connect/checkout/subscription/
+  billing-portal callback builder). Fix: one shared `resolveOrigin()` helper (`lib/request-origin.ts`)
+  that rejects obviously-wrong hosts (`0.0.0.0`, `undefined`, `null`, empty) and **throws instead of
+  silently building a broken URL** — a loud failure beats a dead redirect on a money path. *(2026-07-13,
+  fix/stripe-connect-redirect-bugs.)*
 - **A unit-tested pure helper can't live in a module that imports `next/cache`.** The Playwright
   runner can't load `next/cache`, so importing the module to test the pure function throws. Keep the
   pure logic in a next-free module (e.g. `lib/slug.ts`) and let the cached/DB wrapper import *it*.
