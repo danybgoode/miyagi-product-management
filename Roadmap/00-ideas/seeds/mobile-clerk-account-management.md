@@ -1,15 +1,26 @@
 ---
 title: "Mobile: discoverable Clerk account management (/account/settings)"
 slug: mobile-clerk-account-management
-status: ready
+status: shipped
 area: "09"
 type: bug
 priority: null
 risk: high
 epic: null
 build_order: null
-updated: 2026-07-12
+updated: 2026-07-13
 ---
+
+## Shipped
+PR [#250](https://github.com/danybgoode/miyagisanchezcommerce/pull/250), merged 2026-07-13
+(squash `2006c9a`). New `/account/settings` route hosting Clerk's `<UserProfile>`, "Administrar
+cuenta" row added to the `/account` hub, `@clerk/localizations` `esMX` wired app-wide on
+`ClerkProvider` (previously unset — `SignIn`/`SignUp`/`UserButton` were rendering English). Full
+local gate green (tsc, build, `test:e2e`), CI's design-token guard caught a real raw-hex violation
+in the new `<UserProfile appearance>` config on first push — fixed via the existing allowlist
+mechanism (`lib/design-token-audit.ts`). Both the cross-agent advisory pass and an independent
+fresh-reviewer pass ran clean. Daniel confirmed smokes green and merged; live prod check owed by
+him post-deploy.
 
 # Scope — Mobile Clerk account management
 
