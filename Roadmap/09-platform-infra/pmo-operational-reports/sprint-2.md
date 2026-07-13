@@ -1,16 +1,19 @@
 # PMO operational reports — Sprint 2: smalldocs fork + templates + benchmarks
 
-**Status:** ⬜ not started
+**Status:** 🏗 in progress — Story 2.1 built/deployed; templates + benchmarks remain
 
 ## Stories
 
-### Story 2.1 — smalldocs fork + self-host (chore)
+### Story 2.1 — smalldocs fork + self-host (chore) ✅
 **As** the team, **I want** our own smalldocs instance, **so that** reports render on infrastructure
 we own (hosted-ToS question mooted, supply chain pinned) and the comparador can later point at it.
 **Acceptance:** fork under our GitHub org (ELv2 notices intact — no notice-stripping, no license-key
 circumvention, never offered to third parties); deployed on **Cloud Run** (direction of travel — not
 Vercel); serves the static app + URL-hash docs (short-link/SQLite persistence explicitly deferred —
 document the carve in the fork README); a report md opens and renders on our URL.
+**Built:** fork `danybgoode/smalldocs@60a7707`, Cloud Run service `pmo-smalldocs`,
+`https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`; runbook:
+`infra/gcp/pmo-smalldocs.md`.
 **Risk:** low
 
 ### Story 2.2 — Report templates (scripts fill values only)
