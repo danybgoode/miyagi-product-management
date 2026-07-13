@@ -13,6 +13,7 @@ import { dirname, join, resolve } from 'node:path';
 import { searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { truncateForTelegram } from './lib/telegram-format.mjs';
+import { buildSmallDocsUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
 import { parseStatusFlipsFromLog, filterFlipsToWindow } from './weekly-recap.mjs';
 import {
   baselineSummary,
@@ -50,6 +51,10 @@ export function parseArgs(argv) {
   };
   return {
     dryRun: has('--dry-run'),
+    weekly: has('--weekly'),
+    monthly: has('--monthly'),
+    sheet: has('--sheet'),
+    open: has('--open'),
     sinceISO: value('--since'),
     untilISO: value('--until'),
   };
@@ -174,6 +179,30 @@ export function buildReport({ window, repoResults, roadmapRows, epicStatusFlips,
   return { metrics, text: truncateForTelegram(formatPmoReport({ metrics, baselineLine }), 4096) };
 }
 
+export function buildReportArtifacts(metrics, args) {
+  const artifacts = [];
+  for (const [name, enabled] of [
+    ['weekly', args.weekly],
+    ['monthly', args.monthly],
+    ['sheet', args.sheet],
+  ]) {
+    if (!enabled) continue;
+    const markdown = fillPmoTemplate(name, metrics);
+    artifacts.push({
+      name,
+      markdown,
+      url: buildSmallDocsUrl(markdown, { present: name === 'weekly' }),
+    });
+  }
+  return artifacts;
+}
+
+function openUrl(url) {
+  if (process.platform !== 'darwin') return false;
+  const result = spawnSync('open', [url], { encoding: 'utf8' });
+  return result.status === 0;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const logContent = loadLogContent({ dryRun: args.dryRun });
@@ -188,6 +217,15 @@ async function main() {
   const { metrics, text } = buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs });
 
   console.log(text);
+  const artifacts = buildReportArtifacts(metrics, args);
+  for (const artifact of artifacts) {
+    console.log(`\nSmallDocs ${artifact.name}: ${artifact.url}`);
+    if (args.open) {
+      const opened = openUrl(artifact.url);
+      console.log(opened ? `Opened ${artifact.name} in the browser.` : `Could not auto-open ${artifact.name}; use the URL above.`);
+    }
+  }
+
   if (args.dryRun) {
     console.log('\nDry run: window log not updated.');
     return;

@@ -1,10 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildReport, parseArgs } from '../pmo-report.mjs';
+import { buildReport, buildReportArtifacts, parseArgs } from '../pmo-report.mjs';
 
 test('parseArgs reads dry-run and explicit window overrides', () => {
-  assert.deepEqual(parseArgs(['--dry-run', '--since', '2026-07-01T00:00:00Z', '--until', '2026-07-08T00:00:00Z']), {
+  assert.deepEqual(parseArgs(['--dry-run', '--weekly', '--open', '--since', '2026-07-01T00:00:00Z', '--until', '2026-07-08T00:00:00Z']), {
     dryRun: true,
+    weekly: true,
+    monthly: false,
+    sheet: false,
+    open: true,
     sinceISO: '2026-07-01T00:00:00Z',
     untilISO: '2026-07-08T00:00:00Z',
   });
@@ -40,4 +44,22 @@ test('buildReport uses injected data and does not perform script I/O when import
   assert.match(text, /PMO operational report/);
   assert.match(text, /baseline established/);
   assert.match(text, /Roadmap progress 2\/3 stories/);
+});
+
+test('buildReportArtifacts fills requested templates and emits smalldocs URLs', () => {
+  const metrics = {
+    window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
+    throughput: { shippedStories: 1, shippedEpics: 1, closedEpics: 1 },
+    prCycleTime: { medianHours: 2, averageHours: 3, p90Hours: 4 },
+    epicLeadTime: { medianDays: 5, averageDays: 6 },
+    deployFrequency: { total: 7 },
+    changeFailProxy: { count: 0 },
+    docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
+  };
+  const artifacts = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: true });
+  assert.deepEqual(artifacts.map((a) => a.name), ['weekly', 'sheet']);
+  assert.match(artifacts[0].markdown, /PMO semanal/);
+  assert.match(artifacts[0].url, /present=0/);
+  assert.match(artifacts[1].markdown, /```cells/);
+  assert.match(artifacts[1].url, /^https:\/\/pmo-smalldocs-/);
 });
