@@ -1,7 +1,42 @@
 # Pricing & money-path remediation — Sprint 1: live pricing write-path bugs
 
-**Risk:** HIGH (both touch the seller/agent pricing write path) · **Status:** ⬜ not started ·
-**Precondition:** Sprint 0 closed.
+**Risk:** HIGH (both touch the seller/agent pricing write path) · **Status:** ✅ MERGED + LIVE —
+backend PR [#89](https://github.com/danybgoode/medusa-bonsai-backend/pull/89) (squash `3247d68`),
+merged + deployed 2026-07-13 (Cloud Run revision `medusa-web-00166-rlz`). **Precondition:** Sprint 0
+closed (✅, REFUTED — see `sprint-0.md`).
+
+## Finding D — three attempts, the real bug was a plain key-name typo
+
+This took three attempts, each independently reviewed by a fresh cross-agent pass, before landing
+on the real cause — worth recording in full since it's a strong example of "keep digging past a
+plausible-sounding fix":
+
+1. **First attempt** (closed PR [#88](https://github.com/danybgoode/medusa-bonsai-backend/pull/88)):
+   an `Array.isArray` guard on `pricingService.createPriceSets()`'s return value. A fresh reviewer
+   read the actual compiled `@medusajs/pricing@2.17.2` source and proved this was a **no-op** — the
+   single-object-in/single-object-out overload genuinely returns a single object, never an array.
+2. **Second attempt** (this PR's first commit): wrapped `createPriceSets` in an array instead,
+   mirroring Medusa's own `upsertVariantPricesWorkflow` internal convention. A **different** fresh
+   reviewer proved this was **also a no-op** — read `mikro-orm-serializer.js` and showed both call
+   shapes serialize to a byte-identical result.
+3. **Third attempt (the real fix, this PR's final commit):** re-reading Medusa's `addPrices_`
+   source (a function neither prior attempt had focused on) found the actual bug —
+   `AddPricesDTO`'s real field is `priceSetId` (camelCase, confirmed against
+   `@medusajs/types/dist/pricing/common/price-set.d.ts`), but **both** `addPrices()` call sites in
+   `seller-product-update.ts` were passing `price_set_id` (snake_case) — an unrecognized key.
+   Medusa's own internals then read `data.priceSetId` as `undefined`, which cascades into exactly
+   `` `Price set with id: undefined not found` `` — grepped the entire installed Medusa pricing
+   package and confirmed this exact error-string template exists in **exactly one place**, so this
+   diagnosis is the only possible source of the observed error. A **third** fresh reviewer
+   independently re-verified this same mechanism against the real compiled source and approved.
+   Also confirmed `createProductsWorkflow` always creates a (possibly-empty) price_set for every
+   new variant — so the two affected products' `if (priceSetId)` → `addPrices()` branch is what
+   actually runs, not the "no price_set at all" fallback the first two attempts targeted.
+
+**Bonus finding:** the identical key-name bug existed in a second call site — the `variant_tiers`
+(CPP quantity-tier) branch — meaning the Custom Print Products tier-pricing feature has been
+completely broken this whole session/epic too (always a loud thrown error, never silent data
+corruption — no live tier data was ever corrupted, since nothing ever silently succeeded).
 
 ## Story 1.1 — Finding D: set a price on a variant that has never had one
 
@@ -79,5 +114,30 @@ apply fix; confirm it now updates the single logical price correctly (price-grid
 `variant_tiers`** (regression guard). Unstick the two known products
 (`prod_01KXBHQJQ4QD5GPZGQV73DAW1M`, `prod_01KXBHQMR7A2YFKBMXAA2NK7ZJ`). Backend tests green.
 
+## Sprint 1 — Live verification (done, 2026-07-13)
+
+Both stories confirmed live in production against the two real affected products, post-deploy
+(Cloud Run revision `medusa-web-00166-rlz`):
+
+1. `update_listing price_mxn:25` on `prod_01KXBHQJQ4QD5GPZGQV73DAW1M` ("La foto de la cena") →
+   ✅ succeeded (`"Anuncio actualizado: price."`). Raw price-grid confirms `amount: 2500` (correct
+   $25.00) on **both** duplicate rows (Finding E's collapse-all-duplicates fix). Buyer-facing
+   `get_listing` now shows `**Precio:** $25.00` (was $0.25 before this fix).
+2. Same for `prod_01KXBHQMR7A2YFKBMXAA2NK7ZJ` ("El que cuenta las sillas") → ✅ succeeded, same
+   correct $25.00 result.
+
+**Not independently re-tested live this session:** the `variant_tiers` write path (the second,
+previously-undiscovered instance of the same key-name bug) and the "genuinely tiered variant still
+correctly refuses `price_cents`" regression case. Both are the *identical* code mechanism as the
+verified fix above, already independently traced against the real compiled Medusa source by two
+separate fresh-reviewer passes — and there is currently no MCP write tool for `variant_tiers`
+(that's `mcp-parity-core` Sprint 2, unbuilt) to exercise it without a raw internal-API call, which
+wasn't judged necessary given the review depth already applied. **This will be naturally exercised
+as a real live test** when Daniel adds the print-product reward listing's second price tier via
+Admin's "Opciones" screen (the exact next step `panfleto-premium-shop` Sprint 3 already needs) —
+worth watching for a clean result there as the real-world confirmation.
+
 ## Sprint 1 — findings log
-_(filled in as the work proceeds)_
+Both stories done. Findings D and E fixed in one PR (backend #89) after a 3-attempt investigation
+on Finding D — see the "three attempts" writeup above. `panfleto-premium-shop` Sprint 3 is now
+cleared to resume (per the epic README's sequencing note).
