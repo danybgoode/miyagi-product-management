@@ -67,6 +67,30 @@ NEW_SECRETS=(
   CRON_SECRET             # still read by the vercel.json crons until S3.1 moves them to Cloud Scheduler
 )
 
+# NEXT_PUBLIC_* real-key shells (EMPTY — values populated separately, never by
+# this script) read at DOCKER BUILD TIME by cloudbuild.yaml's availableSecrets
+# (nextpublic-docker-buildargs-hardening), so `next build` can inline them
+# into the client bundle instead of baking in `undefined` — see the two prior
+# incidents this class of bug caused (home-dynamic-rows-restore-and-polish S1,
+# checkout-cloudrun-localhost-fallback-outage). These are publishable/anon/
+# public keys, public by design once shipped — NOT secrets in the security
+# sense, but Secret Manager is still the source (matches how every other
+# credential in this repo rotates) rather than a literal value in
+# cloudbuild.yaml. IAM access is granted to the CI/CD build SA, not the
+# runtime RUN_SA — see cicd-setup-frontend.sh. Kept in parity with
+# cloudbuild.yaml's availableSecrets by infra/gcp/test/frontend-build-args.test.js.
+# NEXT_PUBLIC_SUPABASE_URL deliberately reuses the existing SUPABASE_URL
+# secret above rather than a second copy of the same value.
+PUBLIC_BUILD_SECRETS=(
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  NEXT_PUBLIC_MEDUSA_MXN_REGION_ID
+  NEXT_PUBLIC_MP_PUBLIC_KEY
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  NEXT_PUBLIC_SUPABASE_ANON_KEY
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY
+)
+
 say() { printf '\n\033[1;36m▶ %s\033[0m\n' "$*"; }
 
 gcloud config set project "$PROJECT_ID"
@@ -100,6 +124,13 @@ for s in "${NEW_SECRETS[@]}"; do
     --role="roles/secretmanager.secretAccessor" >/dev/null
 done
 
+say "Creating PUBLIC_BUILD_SECRETS (empty) shells — build-time only, no RUN_SA grant here"
+for s in "${PUBLIC_BUILD_SECRETS[@]}"; do
+  if ! gcloud secrets describe "$s" >/dev/null 2>&1; then
+    gcloud secrets create "$s" --replication-policy=automatic
+  fi
+done
+
 cat <<EOF
 
 ✅ Provisioned. Next:
@@ -110,5 +141,15 @@ cat <<EOF
        #   VERCEL_API_TOKEN, SERPAPI_KEY, R2_*_ACCESS_KEY_ID, R2_*_SECRET_ACCESS_KEY,
        #   UPSTASH_REDIS_REST_TOKEN, ADMIN_SECRET, CLAIM_JWT_SECRET,
        #   ENCRYPTION_KEY, ENCRYPTION_SECRET, CRON_SECRET
-  2) Deploy:  PROJECT_ID=$PROJECT_ID bash infra/gcp/deploy-frontend.sh
+  2) Populate the PUBLIC_BUILD_SECRETS shells with the SAME live values already
+     typed into deploy-frontend.sh's NEXT_PUBLIC_* vars (they're the same
+     publishable/anon/public keys, just also readable at Docker build time now):
+       printf '%s' "<value>" | gcloud secrets versions add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY --data-file=-
+       # …NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+       #   NEXT_PUBLIC_MEDUSA_MXN_REGION_ID, NEXT_PUBLIC_MP_PUBLIC_KEY,
+       #   NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  3) Grant the CI/CD build SA access to PUBLIC_BUILD_SECRETS (+ the existing
+     SUPABASE_URL secret, reused for NEXT_PUBLIC_SUPABASE_URL) — run
+     infra/gcp/cicd-setup-frontend.sh, which does this grant.
+  4) Deploy:  PROJECT_ID=$PROJECT_ID bash infra/gcp/deploy-frontend.sh
 EOF

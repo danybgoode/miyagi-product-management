@@ -43,6 +43,28 @@ done
 gcloud iam service-accounts add-iam-policy-binding "$RUN_SA_EMAIL" \
   --member="serviceAccount:${CICD_SA_EMAIL}" --role="roles/iam.serviceAccountUser" --condition=None >/dev/null
 
+# NEXT_PUBLIC_* real-key secrets read at DOCKER BUILD TIME by cloudbuild.yaml's
+# availableSecrets (nextpublic-docker-buildargs-hardening) — a BUILD-time
+# grant on the CI/CD SA, distinct from provision-frontend.sh's RUN_SA grants
+# (which are for Cloud Run RUNTIME secret access). NEXT_PUBLIC_SUPABASE_URL
+# reuses the existing SUPABASE_URL secret, so it needs the same grant here too.
+echo "▶ Granting build-time access to NEXT_PUBLIC_* secrets"
+PUBLIC_BUILD_SECRETS=(
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  NEXT_PUBLIC_MEDUSA_MXN_REGION_ID
+  NEXT_PUBLIC_MP_PUBLIC_KEY
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  NEXT_PUBLIC_SUPABASE_ANON_KEY
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  SUPABASE_URL
+)
+for s in "${PUBLIC_BUILD_SECRETS[@]}"; do
+  gcloud secrets add-iam-policy-binding "$s" \
+    --member="serviceAccount:${CICD_SA_EMAIL}" \
+    --role="roles/secretmanager.secretAccessor" >/dev/null
+done
+
 if [ -z "$GH_CONNECTION" ] || [ -z "$GH_REPO" ]; then
   cat <<EOF
 
