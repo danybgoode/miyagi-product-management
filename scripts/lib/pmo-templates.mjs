@@ -1,4 +1,4 @@
-import { brotliCompressSync } from 'node:zlib';
+import { brotliCompressSync, constants as zlibConstants } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -116,15 +116,12 @@ export function fillPmoTemplate(name, metrics, options = {}) {
 }
 
 function toBase64Url(buffer) {
-  return Buffer.from(buffer).toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return Buffer.from(buffer).toString('base64url');
 }
 
 export function buildSmallDocsUrl(markdown, { baseUrl = DEFAULT_SMALLDOCS_URL, present = false } = {}) {
   const compressed = brotliCompressSync(Buffer.from(markdown, 'utf8'), {
-    params: { 1: 11 },
+    params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
   });
   const params = new URLSearchParams({ md: toBase64Url(compressed) });
   if (present) params.set('present', '0');
