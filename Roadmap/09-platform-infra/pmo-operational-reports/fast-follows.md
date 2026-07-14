@@ -1,6 +1,6 @@
 # PMO operational reports — post-ship fast follows
 
-**Status:** 🚧 in progress · **Risk:** LOW · **Branch:** `codex/pmo-fast-follows`
+**Status:** ✅ built + smoked · **Risk:** LOW · **Branch:** `codex/pmo-fast-follows`
 
 These are follow-ups from the Sprint 3 smoke/research discussion. The shipped PMO epic stays shipped;
 this file records the small post-ship stories without reopening the original sprint count.
@@ -37,3 +37,21 @@ and redeploy/update-smoke steps. The root scripts continue to use the existing s
 - `node --test 'scripts/lib/pmo-*.test.mjs'`
 - `node scripts/standup.mjs --dry-run` (prints standup text + `SmallDocs standup:` link; no Telegram/log write)
 - `node scripts/build-order.mjs --check`
+
+## Smoke results
+
+Run date: 2026-07-14 · Branch: `codex/pmo-fast-follows` · Risk: LOW
+
+1. ✅ `node --test 'scripts/lib/pmo-*.test.mjs'` passed 40/40.
+2. ✅ `node --test scripts/standup.test.mjs scripts/lib/standup-deck.test.mjs scripts/routines.test.mjs`
+   passed 20/20.
+3. ✅ `node scripts/build-order.mjs --check` reported `BUILD-ORDER.md is up to date`.
+4. ✅ `node scripts/standup.mjs --dry-run` printed the normal Telegram standup plus a
+   `SmallDocs standup:` URL ending in `present=0`; because it was `--dry-run`, it sent no Telegram post
+   and did not advance the standup log. Browser smoke was `success`; stale-preview count degraded to
+   `unavailable`.
+
+Red checks observed:
+- Standup deck test failed when `SmallDocs standup:` was intentionally changed to `Deck standup:`.
+- PMO template test failed when the weekly deck aspect marker was intentionally changed from `16:9` to
+  `4:3`.
