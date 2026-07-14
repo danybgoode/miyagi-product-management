@@ -27,6 +27,15 @@ test('cloudflare-cache-provision.mjs: PUT to the entrypoint preserves any OTHER 
   assert.match(src, /otherRules\s*=\s*existingRules\.filter/, 'a re-run must not clobber a rule a human added by hand in the dashboard')
 })
 
+test('cloudflare-cache-provision.mjs: the entrypoint-read catch only swallows "no ruleset yet" (10003), rethrows every other failure', () => {
+  const catchIdx = src.indexOf('} catch (e) {')
+  assert.ok(catchIdx !== -1, 'expected a catch(e) block around the entrypoint read, not a bare catch that swallows everything')
+  const catchBlockEnd = src.indexOf('\n  }', catchIdx)
+  const catchBody = src.slice(catchIdx, catchBlockEnd)
+  assert.match(catchBody, /10003/, 'expected the catch to check for Cloudflare error code 10003 specifically')
+  assert.match(catchBody, /throw e/, 'a 403/5xx/transient failure must rethrow, not silently proceed as if no rules exist (would clobber existing rules on the PUT)')
+})
+
 test('cloudflare-cache-provision.mjs: targets the Cache Rules phase, not the WAF script\'s firewall phase', () => {
   assert.match(src, /http_request_cache_settings/)
   assert.doesNotMatch(src, /http_request_firewall_custom/)

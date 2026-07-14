@@ -87,8 +87,12 @@ const RULE_DESCRIPTION = 'miyagi-web edge cache — confirmed-static paths only 
   try {
     const entry = await cfApi(`/zones/${zone.id}/rulesets/phases/http_request_cache_settings/entrypoint`)
     existingRules = entry.result?.rules ?? []
-  } catch {
-    // No entrypoint ruleset exists yet for this phase — starting from empty is correct.
+  } catch (e) {
+    // Cloudflare error code 10003 = "no entrypoint ruleset in this phase yet" — starting from
+    // empty is correct. Any OTHER failure (permission lost, 5xx, transient network) must NOT fall
+    // through to a PUT that would silently clobber existing Cache Rules — rethrow (cross-review
+    // finding, fixed pre-merge).
+    if (!/"code":\s*10003/.test(e.message)) throw e
   }
 
   const ownRule = {
