@@ -1,6 +1,6 @@
 # Claude Routines — stand-up runbook
 
-The three approved **Claude Code Routines** (research preview) for this project, as committed,
+The approved **Claude Code Routines** (research preview) for this project, as committed,
 reviewable prompt artifacts plus the steps to stand them up. Routines are saved cloud Claude Code
 configurations (prompt + repos + triggers) that run **autonomously on Anthropic-managed infra, as
 Daniel** — so they keep running with the laptop closed. Created/managed in Daniel's account at
@@ -17,6 +17,9 @@ Daniel** — so they keep running with the laptop closed. Created/managed in Dan
 > S1 shipped `ops-nightly` as the daily standup alone; **S2 added the three nightly fixer steps that now
 > run before it** (`build-order-sync`, `vercel-prune` dry-run, `babysit-pr`); **S3 added `weekly-recap`**,
 > a dedicated weekly routine (mirroring Routine C's precedent) for the longer-horizon exec recap.
+> The sixth routine, `pmo-report`, is added by
+> [`pmo-operational-reports`](../../Roadmap/09-platform-infra/pmo-operational-reports/README.md) S3
+> for stakeholder-facing weekly PMO deck delivery.
 
 This repo commits the *prompts + this runbook*. **The account stand-up itself is operational, owed to
 Daniel** — installing the GitHub App, creating the routines from these prompts, and setting B's
@@ -215,6 +218,34 @@ and a short retro digest per shipped epic — then posts one Telegram message.
    and a short retro digest per shipped epic, or a one-line "quiet week" post when there's nothing to
    report. **Never** a PR, **never** a code change, **never** a required check.
 
+## Routine pmo-report — Weekly PMO operational report  *(sixth routine, stakeholder report delivery)*
+**Prompt:** [`pmo-report.prompt.md`](pmo-report.prompt.md) · **Repo:** root `miyagi-product-management`
+(reads `gh` + `git log` across all 3 repos; posts to Telegram; writes `claude/pmo-reports-log`).
+
+Shipped by [`pmo-operational-reports`](../../Roadmap/09-platform-infra/pmo-operational-reports/README.md)
+S3. One step: the `pmo-report` skill (`scripts/pmo-report.mjs --weekly`) gathers scrum/DORA/doc-ops
+metrics, renders a SmallDocs story-deck URL, posts headline numbers plus the deck link to Telegram, and
+then advances the PMO window log.
+
+1. **Install the Claude GitHub App** on `miyagi-product-management` if not already done for Routine C /
+   `ops-nightly`.
+2. **Create the routine** from `pmo-report.prompt.md`.
+3. **Trigger:** Schedule, **weekly — Mon 16:30 UTC** (after roadmap-hygiene and weekly-recap, so the PMO
+   deck reflects the current Roadmap/doc state).
+4. **Env:**
+   - **The `gh` CLI setup script + `GH_TOKEN`** — same requirement as `ops-nightly`'s. `pmo-report.mjs`
+     reads merged/open PRs across all 3 repos through the REST rail.
+   - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — load-bearing; the Telegram post is the
+     routine's actual output.
+   - **`TELEGRAM_CHAT_ID`** in the routine's environment — the unattended path. A local
+     `skills/pmo-report/config.json` is still supported for manual runs, but it is gitignored and will
+     not survive routine sessions.
+   - **Network access -> Custom**, with **`api.telegram.org`** allow-listed.
+   - **No unrestricted branch push needed** — the PMO window log lives on `claude/pmo-reports-log`
+     through `scripts/lib/log-branch.mjs`.
+5. **Output:** one Telegram message per week with headline PMO numbers plus a SmallDocs story-deck link.
+   **Never** a PR, **never** a merge, **never** a required check.
+
 ---
 
 ## Daily-cap budget (Pro)
@@ -231,8 +262,9 @@ have their **own separate per-routine/per-account hourly caps**, not the schedul
 | B — smoke triage | Schedule, nightly | Yes, 1/day |
 | ops-nightly — standup + nightly fixers | Schedule, nightly | Yes, 1/day (still one routine, now 4 steps) |
 | weekly-recap — weekly exec recap | Schedule, weekly | Yes, but ~0.14/day |
+| pmo-report — weekly PMO deck delivery | Schedule, weekly | Yes, but ~0.14/day |
 
-- **Scheduled load = B (1/day) + ops-nightly (1/day) + C (~0.14/day) + weekly-recap (~0.14/day) ≈ 2.3/day**
+- **Scheduled load = B (1/day) + ops-nightly (1/day) + C (~0.14/day) + weekly-recap (~0.14/day) + pmo-report (~0.14/day) ≈ 2.4/day**
   — still well under the 5/day cap.
 - **A is effectively uncapped for our volume** (GitHub events, hourly caps only); it does **not** eat
   the scheduled budget. On a busy day it's bounded by the preview hourly cap, not the daily 5.
@@ -256,9 +288,9 @@ trigger GitHub notifications). The gap is a **run that fails to complete** (netw
 hourly cap) — that shows only on `claude.ai/code/routines` / the transcript unless you check.
 
 This section is about that **optional** ping for A/B/C — none of them has a Telegram post as its actual
-output. **ops-nightly and weekly-recap are the two exceptions**: their Telegram post IS the routine's
+output. **ops-nightly, weekly-recap, and pmo-report are the exceptions**: their Telegram post IS the routine's
 output, so their Telegram setup is load-bearing, not optional (see each one's own section above for the
-full env list). Both still use this same failure-ping *pattern* for the "couldn't even attempt the
+full env list). They still use this same failure-ping *pattern* for the "couldn't even attempt the
 post" case.
 
 To close it without checking the app daily, each prompt has an **optional, best-effort Telegram

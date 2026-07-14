@@ -14,6 +14,11 @@ import { listPulls, searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { truncateForTelegram } from './lib/telegram-format.mjs';
 import {
+  buildTelegramDeliveryMessage,
+  loadTelegramChatId,
+  sendTelegramMessage,
+} from './lib/pmo-delivery.mjs';
+import {
   benchmarkTemplateValues,
   loadBenchmarkDataset,
   validateBenchmarkDataset,
@@ -37,6 +42,7 @@ const ROOT = resolve(__dirname, '..');
 const LOG_BRANCH = 'claude/pmo-reports-log';
 const LOG_BRANCH_PATH = 'pmo-reports.log';
 const LOG_MESSAGE = 'chore(pmo): append operational report window';
+const CONFIG_PATH = join(ROOT, 'skills/pmo-report/config.json');
 
 const REPOS = [
   'danybgoode/miyagi-product-management',
@@ -58,7 +64,7 @@ export function parseArgs(argv) {
     dryRun: has('--dry-run'),
     weekly: has('--weekly'),
     monthly: has('--monthly'),
-    sheet: has('--sheet'),
+    sheet: has('--sheet') || has('--monthly'),
     open: has('--open'),
     sinceISO: value('--since'),
     untilISO: value('--until'),
@@ -213,6 +219,10 @@ export function buildReportArtifacts(metrics, args, { benchmarks = loadReportBen
   return artifacts;
 }
 
+export function shouldSendWeeklyTelegram(args) {
+  return args.weekly && !args.dryRun;
+}
+
 function openUrl(url) {
   if (process.platform !== 'darwin') return false;
   const result = spawnSync('open', [url], { encoding: 'utf8' });
@@ -239,6 +249,18 @@ async function main() {
     if (args.open) {
       const opened = openUrl(artifact.url);
       console.log(opened ? `Opened ${artifact.name} in the browser.` : `Could not auto-open ${artifact.name}; use the URL above.`);
+    }
+  }
+
+  if (args.weekly) {
+    const message = buildTelegramDeliveryMessage({ metrics, artifacts });
+    if (shouldSendWeeklyTelegram(args)) {
+      const chatId = loadTelegramChatId({ configPath: CONFIG_PATH });
+      await sendTelegramMessage({ chatId, text: message });
+      console.log('\nTelegram weekly PMO report sent.');
+    } else {
+      console.log('\nDry run: Telegram weekly PMO report not sent.');
+      console.log(message);
     }
   }
 
