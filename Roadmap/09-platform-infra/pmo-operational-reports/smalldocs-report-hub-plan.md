@@ -1,12 +1,14 @@
 # SmallDocs report hub branding plan
 
-**Status:** planned · **Risk:** LOW to MED depending on short-link storage · **Service:**
-`pmo-smalldocs`
+**Status:** Stories 1-2 shipped live 2026-07-14 via SmallDocs PR #1
+(`cea02aa9db690f0b2c39dd1748f901f2a178d195`) · Story 3 planned · **Risk:** LOW for branding,
+MED when true short-link storage is chosen · **Service:** `pmo-smalldocs`
 
-The current `pmo-smalldocs` root page is still upstream SmallDocs marketing. Going forward it should be
-our internal report hub: a branded place for PMO, standup, weekly recap, and future stakeholder packets.
+The `pmo-smalldocs` root page is now the internal Miyagi Reports hub: a branded place for PMO, standup,
+weekly recap, and future stakeholder packets. The remaining open decision is true short-link storage; today
+report payloads still travel in URL-hash links with short Telegram labels.
 
-## Story 1 — Branded report-hub landing page
+## Story 1 — Branded report-hub landing page ✅
 
 **As** Daniel, **I want** `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/` to open as the Miyagi report
 hub, **so that** shared report links feel like our operating system rather than upstream product
@@ -20,7 +22,7 @@ marketing.
 - `/trust` and license notices remain visible and intact.
 - No third-party hosted service, no upstream notice removal, no license-key workaround.
 
-## Story 2 — Miyagi report theme
+## Story 2 — Miyagi report theme ✅
 
 **As** a stakeholder opening a report, **I want** decks/docs/sheets to carry a Miyagi PMO visual identity,
 **so that** the artifacts feel intentional when forwarded.
@@ -31,7 +33,7 @@ marketing.
 - Empty/loading/error states use the same brand voice.
 - Upstream SmallDocs trust/license surfaces remain available.
 
-## Story 3 — True short report links
+## Story 3 — True short report links ⏳
 
 **As** Daniel, **I want** Telegram links like `/r/pmo-weekly-2026-07-14` or `/r/daily-story-today`,
 **so that** report links are short, readable, and resilient even when the embedded URL-hash payload gets
@@ -47,10 +49,11 @@ large.
 
 ## Recommended order
 
-1. **Now:** keep URL-hash sharing and use Telegram HTML labels (`abrir deck semanal`, `abrir daily story`)
-   so messages are readable and Telegram truncation does not cut visible URLs.
-2. **Next SmallDocs fork PR:** branded landing page + theme, no storage change.
-3. **Then decide short-link storage:** enable a tiny report registry only after choosing retention,
+1. **Shipped:** Telegram HTML labels (`abrir deck semanal`, `abrir daily story`) keep messages readable
+   while preserving URL-hash sharing.
+2. **Shipped:** SmallDocs fork PR #1 replaced the generic landing page with Miyagi Reports branding and
+   localized the viewer chrome without changing storage.
+3. **Next decision:** enable a tiny report registry only after choosing retention,
    slug shape, and write credentials. This is the only part that changes the current stateless posture.
 
 ## Smoke
@@ -63,3 +66,23 @@ large.
    → Both render with Miyagi theme and `16:9` slide aspect.
 4. If short links ship, open the same report through both URL-hash and `/r/<slug>`.
    → Both resolve to identical content; forwarded link works in an anonymous browser.
+
+## Smoke results
+
+Run date: 2026-07-14 · SmallDocs PR: #1 · Merge/deploy commit:
+`cea02aa9db690f0b2c39dd1748f901f2a178d195` · Cloud Run revision: `pmo-smalldocs-00002-kvb`
+
+1. ✅ `node test/run.js` passed 1077/1077 in the SmallDocs fork after rerunning with loopback-port
+   permissions.
+2. ✅ `npx playwright test test/footer-fit.spec.js` passed 2/2.
+3. ✅ Agy cross-agent review was posted on SmallDocs PR #1 and returned no findings on the final pass.
+4. ✅ `gcloud run deploy pmo-smalldocs ... SDOCS_COMMIT=cea02aa...` completed and routed 100% traffic to
+   `pmo-smalldocs-00002-kvb`.
+5. ✅ Live HTTP smoke: `/`, `/trust`, and `/trust/manifest` responded; manifest reported the fork repo and
+   commit `cea02aa...`; `/api/short/example` returned `stateful_apis_disabled`.
+6. ✅ Live browser smoke passed on desktop and phone for both the documented URL
+   `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app` and canonical Cloud Run URL
+   `https://pmo-smalldocs-91083034475.us-east4.run.app`: branded landing, branded `/docs`, default report
+   copy, and no horizontal overflow.
+7. ✅ `node scripts/pmo-report.mjs --weekly --dry-run` and `node scripts/standup.mjs --dry-run` generated
+   live Story-deck links; both opened on phone-width Chromium against the deployed service.

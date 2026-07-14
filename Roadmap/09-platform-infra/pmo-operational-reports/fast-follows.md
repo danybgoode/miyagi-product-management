@@ -30,6 +30,8 @@ shared report links are clearly ours.
 **Acceptance:** the PMO SmallDocs Cloud Run runbook names the branding scope, fork-only edit boundary,
 and redeploy/update-smoke steps. The report-hub plan covers replacing the generic SmallDocs landing page
 and the later true-short-link decision. The root scripts continue to use the existing service URL.
+**Follow-through:** SmallDocs PR #1 shipped the branded Miyagi Reports landing/viewer and was deployed to
+`pmo-smalldocs` revision `pmo-smalldocs-00002-kvb` on 2026-07-14.
 **Risk:** low
 
 ### FF-4 — Telegram report links are short visible labels ✅
@@ -76,3 +78,10 @@ Red checks observed:
 - Telegram formatter test failed when href escaping stopped converting `&` to `&amp;`.
 - PMO delivery test failed when long SmallDocs hrefs were counted raw instead of by visible Telegram
   label length.
+
+## Report Hub follow-through smoke
+
+After SmallDocs PR #1 merged, the branded fork was deployed live to `pmo-smalldocs` at commit
+`cea02aa9db690f0b2c39dd1748f901f2a178d195`. Live smoke passed for the documented and canonical Cloud Run
+URLs on desktop and phone, and exact PMO weekly + daily standup dry-run links opened against the deployed
+service. Details live in `smalldocs-report-hub-plan.md` and `infra/gcp/pmo-smalldocs.md`.
