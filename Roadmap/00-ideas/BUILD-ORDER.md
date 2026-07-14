@@ -10,13 +10,12 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (6)
+## 🏗️ Building now (5)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 6/10 stories · risk: Low
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Money-Path & Pricing Integrity Remediation](../../03-selling-and-shops/pricing-money-path-remediation/README.md) — 03 Selling & Shops · 0/8 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 4/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
 ## 📋 Ready to build (scaffolded, not started) (6)
@@ -28,7 +27,7 @@
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
-## ✅ Shipped (100)
+## ✅ Shipped (101)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -105,6 +104,7 @@
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent review on every PR (CI auto-run + policy)](../../09-platform-infra/cross-agent-review-always/README.md) — 09 Platform-infra · 5/5 stories
+- [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 7/7 stories
 - [Design-Token / Design-System Foundation](../../09-platform-infra/design-token-foundation/README.md) — 09 Platform-infra · 5/5 stories · risk: Low · Wave 0 Enablers
 - [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 8/8 stories
 - [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 4/4 stories
