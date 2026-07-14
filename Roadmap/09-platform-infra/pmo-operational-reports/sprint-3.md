@@ -1,6 +1,6 @@
 # PMO operational reports — Sprint 3: Delivery + smoke
 
-**Status:** 🚧 built + Telegram-posted; Daniel phone smoke pending on draft PR
+**Status:** ✅ shipped — PR #84, Daniel phone/Excel smoke confirmed 2026-07-14
 
 ## Stories
 
@@ -17,20 +17,19 @@ wrapper), `pmo-report --weekly` Telegram delivery, `--monthly` => packet + sheet
 and skill/runbook entries.
 **Risk:** low
 
-### Story 3.2 — Live smoke + close-out 🚧
+### Story 3.2 — Live smoke + close-out ✅
 **As** Daniel, **I want** to verify the whole loop on my phone, **so that** the epic closes on
 evidence, not narration.
 **Acceptance:** the walkthrough below passes end-to-end on a real device; retro written; learnings
 promoted; poster updated; board regenerated.
-**Built so far:** live weekly Telegram post sent; exact monthly packet command generated packet + sheet;
-deterministic gate green. Phone tap/open/forward and Excel-open confirmation remain Daniel-owned on the
-draft PR.
+**Built:** live weekly Telegram post sent; exact monthly packet command generated packet + sheet;
+deterministic gate green; Daniel confirmed the phone/Telegram deck and Excel sheet smoke clear.
 **Risk:** low
 
 ## Sprint QA
 - **api spec(s):** delivery formatting unit spec (headline + truncation), monthly packet+sheet contract,
   stateless on-demand artifact guard.
-- **browser smoke owed:** yes, to Daniel — the phone/Telegram walkthrough below.
+- **browser smoke owed:** complete — Daniel confirmed the phone/Telegram walkthrough clear.
 - **deterministic gate:** `node --test 'scripts/lib/pmo-*.test.mjs'` green.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
@@ -50,23 +49,24 @@ If any step fails, note the step number + what you saw — that's the bug report
 
 ## Sprint 3 — Smoke walkthrough results
 
-Run date: 2026-07-14 · Branch: `feat/pmo-operational-reports-s3` · Risk: LOW
+Run date: 2026-07-14 · Branch: `feat/pmo-operational-reports-s3` · PR: #84 · Risk: LOW
 
 1. ✅ Weekly run triggered with `node scripts/pmo-report.mjs --weekly` using the existing GCP Secret
    Manager values (`TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID_APP` mapped to `TELEGRAM_CHAT_ID`, values
    not printed). The script posted successfully: `Telegram weekly PMO report sent.` The message included
    headline PMO numbers and a `SmallDocs weekly` story-deck link.
-2. ⏳ Phone tap/open is owed to Daniel. Automated side confirmed the SmallDocs host returns `HTTP/2 200`
-   from `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`.
+2. ✅ Daniel confirmed the Telegram deck link opens cleanly on phone and reads as slides. Automated side
+   confirmed the SmallDocs host returns `HTTP/2 200` from
+   `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`.
 3. ✅ Exact command `node scripts/pmo-report.mjs --monthly` generated both `SmallDocs monthly` and
    `SmallDocs sheet` links. The Excel check uses the separate `SmallDocs sheet:` URL printed by the
    command, not the weekly Telegram story-deck URL. The script printed `On-demand artifact run: window log
    not updated`, so the manual monthly packet does not disturb the weekly delivery window. Excel
-   formula-open confirmation is still owed to Daniel because it requires the interactive export/open flow.
-4. ⏳ Forward-to-second-device/person is owed to Daniel after opening the Telegram deck link on phone.
+   Daniel confirmed the sheet/Excel smoke clear after using the separate sheet URL.
+4. ✅ Daniel confirmed the phone smoke clear, including the shareable deck-link path.
 
 Deterministic gate:
-- ✅ `node --test 'scripts/lib/pmo-*.test.mjs'` passed 39/39 tests.
+- ✅ `node --test 'scripts/lib/pmo-*.test.mjs'` passed 40/40 tests.
 - ✅ `node --test scripts/routines.test.mjs` passed 7/7 tests for the new routine prompt guard.
 
 Red checks observed:

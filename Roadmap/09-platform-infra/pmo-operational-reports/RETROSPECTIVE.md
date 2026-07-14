@@ -1,6 +1,6 @@
 # PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs — Retrospective
 
-_Closed: pending Daniel phone/Excel smoke + PR merge (draft PR branch evidence recorded July 14, 2026)._
+_Closed: 2026-07-14 — Daniel phone/Excel smoke confirmed; PR #84 green and merged._
 
 ## What shipped
 - **S1 — Metrics + window log.** A pure PMO metrics library, fixture coverage, and the
@@ -26,12 +26,10 @@ _Closed: pending Daniel phone/Excel smoke + PR merge (draft PR branch evidence r
   `Roadmap/LEARNINGS.md`.
 
 ## Gaps / follow-ups
-- Daniel still owns the real phone smoke: tap the Telegram deck link, confirm it swipes as slides, open
-  the generated metrics sheet in Excel with live formulas, and forward the deck link to a second device or
-  person.
-- The `pmo-report` Claude Routine account stand-up remains operational: create the routine from
-  `scripts/routines/pmo-report.prompt.md`, set `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`, allow-list
-  `api.telegram.org`, and provision `gh`/`GH_TOKEN` as documented in `scripts/routines/README.md`.
-- Epic close-out should flip the epic README frontmatter to `shipped`, regenerate the build-order board,
-  and add a poster Recent highlights entry only after the draft PR is accepted and the phone smoke is
-  confirmed.
+- Daniel confirmed the real phone/Excel smoke clear on 2026-07-14: Telegram deck open, deck readability,
+  monthly sheet export/open, and shareable deck-link path.
+- Fast follow: add a SmallDocs daily standup story-deck link to the existing `ops-nightly` Telegram
+  standup without replacing the plain text.
+- Fast follow: brand the self-hosted SmallDocs fork and make the slide aspect explicit for mobile reading.
+- Deferred unless Daniel asks for it: automatic monthly delivery. Today the monthly packet stays on-demand
+  and stateless by design.
