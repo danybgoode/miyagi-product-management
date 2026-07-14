@@ -8,6 +8,7 @@ import {
   fillStandupTemplate,
   telegramHtmlToMarkdown,
 } from './standup-deck.mjs';
+import { telegramHtmlVisibleLength } from './telegram-format.mjs';
 
 const SNAPSHOT = {
   ts: '2026-07-14T12:00:00Z',
@@ -70,6 +71,7 @@ test('buildStandupDeckMarkdown emits a landscape SmallDocs slide deck with no un
   assert.match(markdown, /slideAspectRatio: "16:9"/);
   assert.match(markdown, /~~~slide/);
   assert.match(markdown, /#title: Standup diario/);
+  assert.match(markdown, /#title: Qué cambió/);
   assert.doesNotMatch(markdown, /\{\{/);
 });
 
@@ -90,7 +92,18 @@ test('appendStandupArtifactsToMessage preserves artifact links when truncating t
     [{ name: 'standup', url: 'https://example.test/#md=abc&present=0' }],
     120
   );
-  assert.ok(result.length <= 120);
-  assert.match(result, /SmallDocs standup: https:\/\/example\.test\/#md=abc&present=0$/);
+  assert.ok(telegramHtmlVisibleLength(result) <= 120);
+  assert.match(result, /SmallDocs standup: <a href="https:\/\/example\.test\/#md=abc&amp;present=0">abrir daily story<\/a>$/);
   assert.match(result, /…/);
+});
+
+test('appendStandupArtifactsToMessage keeps very long SmallDocs hrefs whole because only the label is visible', () => {
+  const href = `https://example.test/#md=${'x'.repeat(1200)}&present=0`;
+  const result = appendStandupArtifactsToMessage(
+    `<b>Standup</b>\n${'x'.repeat(200)}`,
+    [{ name: 'standup', url: href }],
+    120
+  );
+  assert.ok(telegramHtmlVisibleLength(result) <= 120);
+  assert.match(result, new RegExp(`${'x'.repeat(1200)}&amp;present=0">abrir daily story</a>$`));
 });

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { truncateForTelegram } from './telegram-format.mjs';
+import { formatTelegramHtmlLink, telegramHtmlVisibleLength, truncateForTelegram } from './telegram-format.mjs';
 import { buildSmallDocsUrl } from './pmo-templates.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -99,7 +99,10 @@ export function buildStandupArtifacts(options) {
 
 export function appendStandupArtifactsToMessage(message, artifacts, maxChars = TELEGRAM_MAX_CHARS) {
   if (!artifacts.length) return truncateForTelegram(message, maxChars);
-  const suffix = `\n\n${artifacts.map((artifact) => `SmallDocs ${artifact.name}: ${artifact.url}`).join('\n')}`;
-  if (suffix.length >= maxChars) return truncateForTelegram(`${message}${suffix}`, maxChars);
-  return `${truncateForTelegram(message, maxChars - suffix.length)}${suffix}`;
+  const suffix = `\n\n${artifacts
+    .map((artifact) => `SmallDocs ${artifact.name}: ${formatTelegramHtmlLink('abrir daily story', artifact.url)}`)
+    .join('\n')}`;
+  const suffixVisibleLength = telegramHtmlVisibleLength(suffix);
+  if (suffixVisibleLength >= maxChars) return truncateForTelegram(message, maxChars);
+  return `${truncateForTelegram(message, maxChars - suffixVisibleLength)}${suffix}`;
 }

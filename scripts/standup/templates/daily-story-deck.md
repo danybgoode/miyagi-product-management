@@ -16,12 +16,12 @@ styles:
 #title: Standup diario
 #subtitle: {{window.date}}
 #kicker: Miyagi ops-nightly
-#footer: Plain Telegram text remains canonical; this deck is the mobile artifact.
+#footer: El texto de Telegram sigue siendo la lectura canónica; este deck es el artefacto móvil.
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Que cambio
+#title: Qué cambió
 #body:
 {{summary.bullets}}
 #footer: Generado {{window.generatedDate}}
@@ -29,18 +29,18 @@ styles:
 
 ~~~slide
 @extends title-body
-#title: Repos
+#title: Repositorios
 #body:
 {{repos.bullets}}
-#footer: GitHub REST + existing standup delta log.
+#footer: GitHub REST + log incremental del standup.
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Guardrails
+#title: Controles
 #body:
 - Browser smoke: **{{guards.browserSmoke}}**
 - BUILD-ORDER.md: **{{guards.buildOrder}}**
 - Stale previews: **{{guards.stalePreviews}}**
-#footer: Same signals as the Telegram standup, rendered for forwarding.
+#footer: Las mismas señales del standup de Telegram, listas para reenviar.
 ~~~

@@ -3,7 +3,14 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatPrList, truncateForTelegram } from './telegram-format.mjs';
+import {
+  formatPrList,
+  formatTelegramHtmlLink,
+  telegramHtmlToConsoleText,
+  telegramHtmlVisibleLength,
+  telegramHtmlVisibleText,
+  truncateForTelegram,
+} from './telegram-format.mjs';
 
 // ---- formatPrList ----
 
@@ -17,6 +24,30 @@ test('formatPrList: over the cap → truncates the list and appends an exact rem
   const out = formatPrList(prs, 12);
   assert.match(out, /#12 pr12; …and 3 more$/);
   assert.doesNotMatch(out, /#13/);
+});
+
+// ---- HTML links ----
+
+test('formatTelegramHtmlLink: escapes visible label and href for Telegram HTML', () => {
+  assert.equal(
+    formatTelegramHtmlLink('abrir deck <weekly>', 'https://example.test/#md=abc&present=0'),
+    '<a href="https://example.test/#md=abc&amp;present=0">abrir deck &lt;weekly&gt;</a>'
+  );
+});
+
+test('telegramHtmlVisibleText/Length count the short label, not the long href payload', () => {
+  const href = `https://example.test/#md=${'x'.repeat(1000)}&present=0`;
+  const html = `SmallDocs standup: ${formatTelegramHtmlLink('abrir daily story', href)}`;
+  assert.equal(telegramHtmlVisibleText(html), 'SmallDocs standup: abrir daily story');
+  assert.equal(telegramHtmlVisibleLength(html), 'SmallDocs standup: abrir daily story'.length);
+});
+
+test('telegramHtmlToConsoleText shows hrefs during dry-run output', () => {
+  const html = `<b>Standup</b>\nSmallDocs standup: ${formatTelegramHtmlLink('abrir daily story', 'https://example.test/#md=abc&present=0')}`;
+  assert.equal(
+    telegramHtmlToConsoleText(html),
+    'Standup\nSmallDocs standup: abrir daily story (https://example.test/#md=abc&present=0)'
+  );
 });
 
 // ---- truncateForTelegram ----

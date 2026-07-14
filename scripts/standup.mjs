@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
-import { formatPrList } from './lib/telegram-format.mjs';
+import { formatPrList, telegramHtmlToConsoleText } from './lib/telegram-format.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { appendStandupArtifactsToMessage, buildStandupArtifacts } from './lib/standup-deck.mjs';
 
@@ -342,7 +342,7 @@ async function main() {
   // summary lines, formatPrList) should already keep any normal night well under this.
   const message = appendStandupArtifactsToMessage(rawMessage, artifacts, TELEGRAM_MAX_CHARS);
 
-  console.log(message.replace(/<\/?[^>]+>/g, ''));
+  console.log(telegramHtmlToConsoleText(message));
 
   if (!DRY_RUN) {
     const chatId = loadChatId();
