@@ -85,11 +85,18 @@ test('normalizePullListItem: a closed-but-not-merged PR → state CLOSED', () =>
 // ---- normalizeSearchPrItem ----
 
 test('normalizeSearchPrItem: pulls mergedAt from the nested pull_request object', () => {
-  const it = { number: 9, title: 'w', html_url: 'https://x', pull_request: { merged_at: '2026-07-01T00:00:00Z' } };
-  assert.deepEqual(normalizeSearchPrItem(it), { number: 9, title: 'w', mergedAt: '2026-07-01T00:00:00Z', url: 'https://x' });
+  const it = { number: 9, title: 'w', created_at: '2026-06-30T00:00:00Z', html_url: 'https://x', pull_request: { merged_at: '2026-07-01T00:00:00Z' } };
+  assert.deepEqual(normalizeSearchPrItem(it), {
+    number: 9,
+    title: 'w',
+    createdAt: '2026-06-30T00:00:00Z',
+    mergedAt: '2026-07-01T00:00:00Z',
+    url: 'https://x',
+  });
 });
 
 test('normalizeSearchPrItem: missing pull_request → mergedAt null, not a throw', () => {
   const it = { number: 10, title: 'v', html_url: 'https://x' };
   assert.equal(normalizeSearchPrItem(it).mergedAt, null);
+  assert.equal(normalizeSearchPrItem(it).createdAt, null);
 });

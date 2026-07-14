@@ -96,6 +96,7 @@ export function normalizeSearchPrItem(it) {
   return {
     number: it.number,
     title: it.title,
+    createdAt: it.created_at || null,
     mergedAt: it.pull_request?.merged_at || null,
     url: it.html_url,
   };

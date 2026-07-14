@@ -1,10 +1,10 @@
 # PMO operational reports — Sprint 1: Metrics lib + window log
 
-**Status:** ⬜ not started
+**Status:** 🟦 in review — built on `feat/pmo-operational-reports-s1`, awaiting PR/merge
 
 ## Stories
 
-### Story 1.1 — Pure metrics lib (`scripts/lib/pmo-metrics.mjs`)
+### Story 1.1 — Pure metrics lib (`scripts/lib/pmo-metrics.mjs`) ✅
 **As** Daniel, **I want** collectors for throughput, cycle time, deploy frequency, change-fail proxy
 and doc-ops breadth, **so that** every report draws from one tested source of numbers.
 **Acceptance:** pure functions (I/O injected) computing: stories+epics shipped/week (epic frontmatter
@@ -13,15 +13,17 @@ lead time (gh-rest), merges-to-`main` counts per repo (deploys, per the WAYS-OF-
 revert/hotfix count, Roadmap docs touched per epic + LEARNINGS promotions + retro coverage.
 `node:test` fixtures give exact expected numbers; `isMain`-guarded (LEARNINGS — a co-located test
 file re-executes an unguarded `main()`).
+**Built:** `d432e9c`
 **Risk:** low
 
-### Story 1.2 — Window log + baseline guard
+### Story 1.2 — Window log + baseline guard ✅
 **As** the reporting routine, **I want** to know where the last report window ended, **so that**
 back-to-back runs never double-count or gap (weekly-recap's window-tracking shape, NOT the standup
 delta shape — LEARNINGS distinguishes them).
 **Acceptance:** `pmo-reports.log` persisted via the log-branch plumbing (flat filename — mktree is
 single-level); a missing baseline produces ONE bounded "baseline established" summary (counts only),
 never full history; regression test on a large history fixture (the standup 120-PR lesson).
+**Built:** `cc60bfe`
 **Risk:** low
 
 ## Sprint QA
@@ -41,3 +43,21 @@ Env: local repo checkout
    → All green.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+## Sprint 1 — Smoke walkthrough results
+Run date: 2026-07-13 · Branch: `feat/pmo-operational-reports-s1` · Risk: LOW
+
+1. ✅ `node scripts/pmo-report.mjs --dry-run`
+   → Printed a plain-text PMO summary with throughput, PR cycle time, deploy frequency, change-fail
+     proxy, and doc-ops. First run used the bounded baseline shape:
+     `PMO baseline established · 0 open PRs · 0 recently merged PRs · 429 Roadmap rows · 353 doc changes`.
+     GitHub REST data was unavailable from this sandbox, so deploy/cycle counts degraded to
+     `unavailable`/`0` rather than crashing.
+2. ✅ Re-ran `node scripts/pmo-report.mjs --dry-run`
+   → Same window boundaries on both runs:
+     `2026-07-06T22:00:00.000Z → 2026-07-13T22:00:00.000Z`; dry-run did not update the log.
+3. ✅ `node --test 'scripts/lib/pmo-*.test.mjs'`
+   → Green: 20 tests passed.
+
+Supporting check: `node --test scripts/lib/gh-rest.test.mjs` green (13 tests) for the `createdAt`
+normalizer extension used by PMO cycle-time metrics.
