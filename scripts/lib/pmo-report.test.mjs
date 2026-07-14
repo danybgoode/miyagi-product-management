@@ -6,6 +6,7 @@ import {
   gatherRepoResults,
   loadLogContent,
   parseArgs,
+  shouldPersistWindow,
 } from '../pmo-report.mjs';
 
 test('parseArgs reads dry-run and explicit window overrides', () => {
@@ -18,6 +19,26 @@ test('parseArgs reads dry-run and explicit window overrides', () => {
     sinceISO: '2026-07-01T00:00:00Z',
     untilISO: '2026-07-08T00:00:00Z',
   });
+});
+
+test('parseArgs makes monthly produce both packet and sheet', () => {
+  assert.deepEqual(parseArgs(['--monthly']), {
+    dryRun: false,
+    weekly: false,
+    monthly: true,
+    sheet: true,
+    open: false,
+    sinceISO: null,
+    untilISO: null,
+  });
+});
+
+test('shouldPersistWindow advances scheduled reports but not on-demand artifacts', () => {
+  assert.equal(shouldPersistWindow(parseArgs(['--weekly'])), true);
+  assert.equal(shouldPersistWindow(parseArgs([])), false);
+  assert.equal(shouldPersistWindow(parseArgs(['--dry-run', '--weekly'])), false);
+  assert.equal(shouldPersistWindow(parseArgs(['--monthly'])), false);
+  assert.equal(shouldPersistWindow(parseArgs(['--sheet'])), false);
 });
 
 test('buildReport uses injected data and does not perform script I/O when imported', () => {
@@ -95,4 +116,18 @@ test('buildReportArtifacts fills requested templates and emits smalldocs URLs', 
   assert.match(artifacts[1].markdown, /```cells/);
   assert.match(artifacts[1].markdown, /Change-failure proxy %,0,15,lower is better/);
   assert.match(artifacts[1].url, /^https:\/\/pmo-smalldocs-/);
+});
+
+test('buildReportArtifacts treats monthly as packet plus sheet', () => {
+  const metrics = {
+    window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
+    throughput: { shippedStories: 1, shippedEpics: 1, closedEpics: 1 },
+    prCycleTime: { medianHours: 2, averageHours: 3, p90Hours: 4 },
+    epicLeadTime: { medianDays: 5, averageDays: 6 },
+    deployFrequency: { total: 7 },
+    changeFailProxy: { count: 0 },
+    docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
+  };
+  const artifacts = buildReportArtifacts(metrics, parseArgs(['--monthly']));
+  assert.deepEqual(artifacts.map((a) => a.name), ['monthly', 'sheet']);
 });

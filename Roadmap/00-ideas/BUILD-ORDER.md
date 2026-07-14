@@ -10,7 +10,7 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (7)
+## 🏗️ Building now (6)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 6/10 stories · risk: Low
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
@@ -18,7 +18,6 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
-- [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 5/7 stories · risk: Low · tbd
 
 ## 📋 Ready to build (scaffolded, not started) (6)
 
@@ -29,7 +28,7 @@
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
 
-## ✅ Shipped (99)
+## ✅ Shipped (100)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -118,6 +117,7 @@
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 9/9 stories · risk: High
 - [Notion roadmap board hygiene](../../09-platform-infra/notion-board-hygiene/README.md) — 09 Platform-infra · 6/6 stories
 - [Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)](../../09-platform-infra/ops-routines-reporting/README.md) — 09 Platform-infra · 8/8 stories
+- [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 7/7 stories · risk: Low · tbd
 - [Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅](../../09-platform-infra/postgres-neon-to-cloudsql/README.md) — 09 Platform-infra · 8/8 stories
 - [Process iteration — UX rails at grooming + observed-red DoD ✅](../../09-platform-infra/process-ux-rails-and-red-green/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · tbd
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 6/6 stories · risk: Low

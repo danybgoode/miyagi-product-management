@@ -14,6 +14,11 @@ import { listPulls, searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { truncateForTelegram } from './lib/telegram-format.mjs';
 import {
+  buildTelegramDeliveryMessage,
+  loadTelegramChatId,
+  sendTelegramMessage,
+} from './lib/pmo-delivery.mjs';
+import {
   benchmarkTemplateValues,
   loadBenchmarkDataset,
   validateBenchmarkDataset,
@@ -37,6 +42,7 @@ const ROOT = resolve(__dirname, '..');
 const LOG_BRANCH = 'claude/pmo-reports-log';
 const LOG_BRANCH_PATH = 'pmo-reports.log';
 const LOG_MESSAGE = 'chore(pmo): append operational report window';
+const CONFIG_PATH = join(ROOT, 'skills/pmo-report/config.json');
 
 const REPOS = [
   'danybgoode/miyagi-product-management',
@@ -58,7 +64,7 @@ export function parseArgs(argv) {
     dryRun: has('--dry-run'),
     weekly: has('--weekly'),
     monthly: has('--monthly'),
-    sheet: has('--sheet'),
+    sheet: has('--sheet') || has('--monthly'),
     open: has('--open'),
     sinceISO: value('--since'),
     untilISO: value('--until'),
@@ -213,6 +219,15 @@ export function buildReportArtifacts(metrics, args, { benchmarks = loadReportBen
   return artifacts;
 }
 
+export function shouldSendWeeklyTelegram(args) {
+  return args.weekly && !args.dryRun;
+}
+
+export function shouldPersistWindow(args) {
+  if (args.dryRun) return false;
+  return args.weekly;
+}
+
 function openUrl(url) {
   if (process.platform !== 'darwin') return false;
   const result = spawnSync('open', [url], { encoding: 'utf8' });
@@ -242,8 +257,23 @@ async function main() {
     }
   }
 
-  if (args.dryRun) {
-    console.log('\nDry run: window log not updated.');
+  if (args.weekly) {
+    const message = buildTelegramDeliveryMessage({ metrics, artifacts });
+    if (shouldSendWeeklyTelegram(args)) {
+      const chatId = loadTelegramChatId({ configPath: CONFIG_PATH });
+      await sendTelegramMessage({ chatId, text: message });
+      console.log('\nTelegram weekly PMO report sent.');
+    } else {
+      console.log('\nDry run: Telegram weekly PMO report not sent.');
+      console.log(message);
+    }
+  }
+
+  if (!shouldPersistWindow(args)) {
+    const reason = args.monthly || args.sheet
+      ? 'On-demand artifact run: window log not updated.'
+      : 'Window log not updated; run --weekly to deliver and advance the PMO window.';
+    console.log(args.dryRun ? '\nDry run: window log not updated.' : `\n${reason}`);
     return;
   }
 

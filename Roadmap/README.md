@@ -174,6 +174,17 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-14 — PMO operational reports SHIPPED (3 sprints; LOW, root scripts + self-hosted
+  SmallDocs).** The repo can now report delivery health like a PMO without hand assembly: **S1**
+  built the pure scrum/DORA/doc-ops metrics library plus a bounded `claude/pmo-reports-log` window
+  tracker on the existing `gh-rest`/`log-branch` rails; **S2** deployed the internal SmallDocs fork on
+  Cloud Run and added the weekly story-deck, monthly stakeholder packet, metrics-sheet template, and
+  source-guarded benchmark dataset; **S3** (root PR #84) sends the weekly headline numbers + deck link
+  to Telegram and keeps `node scripts/pmo-report.mjs --monthly` as an on-demand packet + sheet command.
+  Daniel confirmed the phone Telegram deck and Excel sheet smoke clear on 2026-07-14. Durable lever
+  promoted to LEARNINGS: on-demand artifact modes must not advance scheduled routine windows. See
+  [09 · Platform & Infra › PMO operational reports](09-platform-infra/pmo-operational-reports/).
+
 - **2026-07-13 — CMS restore & polish epic SHIPPED (4 sprints; started HIGH for the DB migration,
   LOW throughout the rest).** `/admin/contenido` saved nothing for two days — the `platform_copy_overrides`
   migration merged in an earlier epic but was never actually applied to prod, so every edit failed

@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: pmo-operational-reports
 ---
 
@@ -53,8 +53,8 @@ framing line (differential, not controlled experiment).
 | 2 | US-2.1 smalldocs fork → org + self-host on Cloud Run (chore; notices intact; URL-hash only, no short-link state) | low |
 | 2 | US-2.2 Report templates — weekly story-deck (slides), monthly packet (doc), metrics sheet (formulas); scripts fill values only | low |
 | 2 | US-2.3 Benchmark dataset — industry baseline JSON, source+date per figure + CI guard | low |
-| 3 | US-3.1 Delivery — weekly Telegram post (headlines + deck link); on-demand `--monthly` packet | low |
-| 3 | US-3.2 Smoke — Daniel opens the deck from Telegram on phone; sheet opens in Excel with working formulas | low |
+| 3 | US-3.1 Delivery — weekly Telegram post (headlines + deck link); on-demand `--monthly` packet ✅ PR #84 | low |
+| 3 | US-3.2 Smoke — Daniel opens the deck from Telegram on phone; sheet opens in Excel with working formulas ✅ confirmed 2026-07-14 | low |
 
 ## Deploy order
 Root-repo scripts + one new Cloud Run service (S2). No app-repo surface, no flag (LOW — carve-out:
@@ -65,12 +65,13 @@ instance is live, note the one-line pointer swap available to cost-comparator US
 our instance).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** n/a — LOW risk, carve-out recorded at grooming
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (S1/S2 via PR #82; S3 via PR #84)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs where applicable)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory reviewed; durable operational memory captured in `RETROSPECTIVE.md` +
+      `Roadmap/LEARNINGS.md` (no app-repo memory commit for this root-only scripts epic)
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (deduped)
+- [x] **Kill-switch:** n/a — LOW risk, carve-out recorded at grooming
+- [x] Feature branch deleted via PR #84 merge; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
