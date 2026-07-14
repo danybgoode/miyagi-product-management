@@ -42,6 +42,7 @@ gcloud run deploy pmo-smalldocs \
 
 Branding belongs in the fork (`https://github.com/danybgoode/smalldocs`), not in the root report
 scripts. The root repo should continue to generate URL-hash documents and point at the service URL above.
+Planning doc: `Roadmap/09-platform-infra/pmo-operational-reports/smalldocs-report-hub-plan.md`.
 
 Fork-side scope:
 
