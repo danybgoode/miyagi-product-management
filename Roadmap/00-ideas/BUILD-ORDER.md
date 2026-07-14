@@ -10,7 +10,7 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (6)
+## 🏗️ Building now (7)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 6/10 stories · risk: Low
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
@@ -18,8 +18,9 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
+- [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 5/7 stories · risk: Low · tbd
 
-## 📋 Ready to build (scaffolded, not started) (7)
+## 📋 Ready to build (scaffolded, not started) (6)
 
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
@@ -27,7 +28,6 @@
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 0/4 stories
-- [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 5/7 stories · risk: Low · tbd
 
 ## ✅ Shipped (99)
 
@@ -141,7 +141,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -150,7 +150,6 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Money-Path & Pricing Integrity Remediation | In progress | Scaffolded |
-| PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs | Scaffolded | In progress |
 
 ---
-_Epics: 113 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 113 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._

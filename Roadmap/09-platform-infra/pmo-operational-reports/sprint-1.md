@@ -1,6 +1,6 @@
 # PMO operational reports — Sprint 1: Metrics lib + window log
 
-**Status:** 🟦 in review — built on `feat/pmo-operational-reports-s1`, awaiting PR/merge
+**Status:** ✅ built + merged — PR #82 (squash `f8ec0e0`, merged 2026-07-14)
 
 ## Stories
 

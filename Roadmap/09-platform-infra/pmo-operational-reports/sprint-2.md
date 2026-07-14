@@ -1,6 +1,6 @@
 # PMO operational reports — Sprint 2: smalldocs fork + templates + benchmarks
 
-**Status:** ✅ built + smoke-walked — Stories 2.1-2.3 complete
+**Status:** ✅ built + smoke-walked + merged — Stories 2.1-2.3 complete, PR #82 (squash `f8ec0e0`, merged 2026-07-14)
 
 ## Stories
 
@@ -85,3 +85,8 @@ Independent review:
 - `node scripts/cross-review.mjs <PR> --agent antigravity` posted advisory reviews on open PRs #82, #77,
   #73, and #70. A later rerun on #82's updated head was blocked by the approval reviewer as external
   disclosure risk, so no workaround was attempted.
+- Picked up in a fresh Claude Code session 2026-07-14: addressed the three remaining Antigravity nits
+  (`toMs(null)` no longer resolves to the Unix epoch; brotli quality uses the named `zlib` constant;
+  `toBase64Url` uses Node's native `base64url` encoding), regenerated a stale `BUILD-ORDER.md` that was
+  failing the `build-order-fresh` CI check, merged latest `main`, confirmed all 4 CI checks green, and
+  squash-merged PR #82 (`f8ec0e0`).
