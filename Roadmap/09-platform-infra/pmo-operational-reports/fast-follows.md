@@ -24,7 +24,7 @@ tests fail if that marker disappears. If the current SmallDocs fork ignores the 
 branding/theme work owns the renderer-side behavior.
 **Risk:** low
 
-### FF-3 — SmallDocs fork branding handoff 🚧
+### FF-3 — SmallDocs fork branding handoff ✅
 **As** Daniel, **I want** our self-hosted SmallDocs fork to feel like a Miyagi/PMO tool, **so that**
 shared report links are clearly ours.
 **Acceptance:** the PMO SmallDocs Cloud Run runbook names the branding scope, fork-only edit boundary,

@@ -38,6 +38,30 @@ gcloud run deploy pmo-smalldocs \
   --set-env-vars SDOCS_ENABLE_STATEFUL_APIS=0,SDOCS_REPO_URL=https://github.com/danybgoode/smalldocs,SDOCS_COMMIT=<fork-commit>
 ```
 
+## Branding fast-follow
+
+Branding belongs in the fork (`https://github.com/danybgoode/smalldocs`), not in the root report
+scripts. The root repo should continue to generate URL-hash documents and point at the service URL above.
+
+Fork-side scope:
+
+- Name/title: brand the shell as Miyagi/PMO SmallDocs (page title, visible app chrome, export metadata
+  where the fork supports it).
+- Visual system: Miyagi/PMO colors, favicon/app icon, default slide/document theme, and a footer that
+  reads as ours without removing upstream notices.
+- Mobile/story decks: honor `styles.slideAspectRatio` from report templates; current PMO/standup story
+  decks declare `16:9`.
+- Trust/compliance: keep the ELv2 license notices and `/trust` surfaces intact. Do not strip upstream
+  notices or introduce stateful short-link APIs for this internal instance.
+
+Redeploy checklist after fork changes:
+
+1. Deploy the fork commit to `pmo-smalldocs` with `SDOCS_COMMIT=<fork-commit>`.
+2. Update the deployed commit value in this runbook.
+3. Smoke `/`, `/trust`, `/trust/manifest`, and `/api/short/example`.
+4. Generate one PMO weekly link and one daily standup link from the root scripts; confirm the branded
+   shell/theme renders and the `16:9` story decks still open in presentation mode.
+
 ## Smoke
 
 ```bash
