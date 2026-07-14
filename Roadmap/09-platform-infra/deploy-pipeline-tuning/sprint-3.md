@@ -113,15 +113,26 @@ cf-cache-status: DYNAMIC
 `/` graduates `MISS → HIT` on the second request, exactly per acceptance; `/s/panfleto` is
 completely unchanged (`DYNAMIC`, still `private, no-cache`) — the `(shell)` subtree is untouched.
 
+## Review findings (fixed pre-merge)
+- **Cross-agent (Codex) — PR #85**: **Blocking**, real finding. The entrypoint-ruleset read caught
+  *all* errors and treated them as "no ruleset yet" — a transient 403/5xx/network failure could
+  fall through to a PUT containing only this script's own rule, silently deleting any OTHER Cache
+  Rule a human added by hand, contradicting the preservation contract. Fixed: only Cloudflare
+  error code `10003` ("no entrypoint ruleset in this phase") is swallowed; every other failure
+  rethrows before any mutating call. Added a drift-guard case (`141/141` now green). The
+  already-live prod rule is unaffected (the fix only changes error handling on a read path) — no
+  live re-run needed to verify it.
+
 ---
 
 ## Sprint QA
-- **Automated drift-guard**: `infra/gcp/test/cloudflare-cache-provision.test.mjs` — 6 cases,
+- **Automated drift-guard**: `infra/gcp/test/cloudflare-cache-provision.test.mjs` — 7 cases,
   asserting the script only lists paths S3.1 confirmed static (`['/']`), respects origin
   `Cache-Control` (no forced override TTL), preserves other rules on re-run, targets the Cache
-  Rules phase (not the WAF script's firewall phase), and is scoped to an exact apex/www host match
-  (never a `contains` that could catch a subdomain/custom domain). All green, plus the full
-  `infra/gcp/test/` suite (140/140).
+  Rules phase (not the WAF script's firewall phase), is scoped to an exact apex/www host match
+  (never a `contains` that could catch a subdomain/custom domain), and (added post cross-review)
+  only swallows the specific "no ruleset yet" error, rethrowing everything else. All green, plus
+  the full `infra/gcp/test/` suite (141/141).
 - **Bundled CI fix**: `.github/workflows/infra-guard.yml` only globbed `*.test.js`, silently
   skipping 9 of 13 files in that directory (all `.test.mjs`, including this sprint's new test and
   the pre-existing `cloudflare-waf-provision.test.mjs`). Fixed to glob both extensions — verified
