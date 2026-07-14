@@ -27,4 +27,7 @@ jobs:
         with:
           node-version: '22'
       - name: Run infra drift guard
-        run: node --test infra/gcp/test/*.test.js
+        # Both extensions: several sibling scripts (e.g. cloudflare-*.test.mjs) use .mjs and were
+        # silently never run here (deploy-pipeline-tuning S3 — the *.test.js-only glob shell-expanded
+        # to just the .js files, dropping 9 of 13 test files with no CI signal at all).
+        run: node --test infra/gcp/test/*.test.js infra/gcp/test/*.test.mjs
