@@ -35,7 +35,7 @@ test('parseArgs makes monthly produce both packet and sheet', () => {
 
 test('shouldPersistWindow advances scheduled reports but not on-demand artifacts', () => {
   assert.equal(shouldPersistWindow(parseArgs(['--weekly'])), true);
-  assert.equal(shouldPersistWindow(parseArgs([])), true);
+  assert.equal(shouldPersistWindow(parseArgs([])), false);
   assert.equal(shouldPersistWindow(parseArgs(['--dry-run', '--weekly'])), false);
   assert.equal(shouldPersistWindow(parseArgs(['--monthly'])), false);
   assert.equal(shouldPersistWindow(parseArgs(['--sheet'])), false);

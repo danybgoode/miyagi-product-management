@@ -225,8 +225,7 @@ export function shouldSendWeeklyTelegram(args) {
 
 export function shouldPersistWindow(args) {
   if (args.dryRun) return false;
-  if (args.weekly) return true;
-  return !args.monthly && !args.sheet;
+  return args.weekly;
 }
 
 function openUrl(url) {
@@ -271,7 +270,10 @@ async function main() {
   }
 
   if (!shouldPersistWindow(args)) {
-    console.log(args.dryRun ? '\nDry run: window log not updated.' : '\nOn-demand artifact run: window log not updated.');
+    const reason = args.monthly || args.sheet
+      ? 'On-demand artifact run: window log not updated.'
+      : 'Window log not updated; run --weekly to deliver and advance the PMO window.';
+    console.log(args.dryRun ? '\nDry run: window log not updated.' : `\n${reason}`);
     return;
   }
 

@@ -73,11 +73,19 @@ export async function sendTelegramMessage({
     signal: AbortSignal.timeout(10000),
   });
 
-  let body = {};
+  let bodyText = '';
   try {
-    body = await res.json();
+    bodyText = await res.text();
   } catch {
-    /* non-JSON error body */
+    /* response body unavailable */
   }
-  if (!res.ok) throw new Error(`Telegram sendMessage failed: ${res.status} ${JSON.stringify(body).slice(0, 300)}`);
+  if (!res.ok) {
+    let detail = bodyText;
+    try {
+      detail = JSON.stringify(JSON.parse(bodyText));
+    } catch {
+      /* keep raw non-JSON body */
+    }
+    throw new Error(`Telegram sendMessage failed: ${res.status} ${detail.slice(0, 300)}`);
+  }
 }

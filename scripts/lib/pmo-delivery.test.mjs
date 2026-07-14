@@ -62,7 +62,7 @@ test('sendTelegramMessage posts the same sendMessage shape used by routines', as
     text: 'hello',
     fetchImpl: async (url, options) => {
       calls.push({ url, options });
-      return { ok: true, json: async () => ({ ok: true }) };
+      return { ok: true, text: async () => '{"ok":true}' };
     },
   });
   assert.equal(calls[0].url, 'https://api.telegram.org/bottoken/sendMessage');
@@ -71,4 +71,16 @@ test('sendTelegramMessage posts the same sendMessage shape used by routines', as
     text: 'hello',
     disable_web_page_preview: true,
   });
+});
+
+test('sendTelegramMessage preserves non-JSON API error context', async () => {
+  await assert.rejects(
+    sendTelegramMessage({
+      chatId: '123',
+      token: 'token',
+      text: 'hello',
+      fetchImpl: async () => ({ ok: false, status: 502, text: async () => '<html>bad gateway</html>' }),
+    }),
+    /Telegram sendMessage failed: 502 <html>bad gateway<\/html>/
+  );
 });
