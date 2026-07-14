@@ -72,6 +72,11 @@ gems/
 references/design_handoff_mexico26_trifold/
 references/MiyagiAdminUXAudit/
 
+# Founder CV export — personal/identifying source doc used to write the /acerca founder
+# section (mobile-clerk-account-management fast-follow); the consolidated, reviewed copy
+# lives in code (lib/about-content.ts + locales/*.json), not this raw export.
+references/founder-cv.md
+
 # macOS system files
 .DS_Store
 .DS_Store?
