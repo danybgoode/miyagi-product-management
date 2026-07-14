@@ -41,7 +41,8 @@ Env: Telegram (your admin chat) + phone
 2. Tap the deck link on your phone.
    → The story-deck opens on our instance and swipes like slides.
 3. Run `node scripts/pmo-report.mjs --monthly`.
-   → Packet doc + metrics sheet generated; sheet opens in Excel with working formulas.
+   → Packet doc + a separate `SmallDocs sheet:` link are generated. Open the sheet link (not the weekly
+   deck link) and export/open that sheet in Excel; formulas stay live.
 4. Forward the deck link to a second device/person.
    → It renders identically (document travels in the URL, no auth needed).
 
@@ -58,9 +59,10 @@ Run date: 2026-07-14 · Branch: `feat/pmo-operational-reports-s3` · Risk: LOW
 2. ⏳ Phone tap/open is owed to Daniel. Automated side confirmed the SmallDocs host returns `HTTP/2 200`
    from `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`.
 3. ✅ Exact command `node scripts/pmo-report.mjs --monthly` generated both `SmallDocs monthly` and
-   `SmallDocs sheet` links. The script printed `On-demand artifact run: window log not updated`, so the
-   manual monthly packet does not disturb the weekly delivery window. Excel formula-open confirmation is
-   still owed to Daniel because it requires the interactive export/open flow.
+   `SmallDocs sheet` links. The Excel check uses the separate `SmallDocs sheet:` URL printed by the
+   command, not the weekly Telegram story-deck URL. The script printed `On-demand artifact run: window log
+   not updated`, so the manual monthly packet does not disturb the weekly delivery window. Excel
+   formula-open confirmation is still owed to Daniel because it requires the interactive export/open flow.
 4. ⏳ Forward-to-second-device/person is owed to Daniel after opening the Telegram deck link on phone.
 
 Deterministic gate:
