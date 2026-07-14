@@ -16,7 +16,7 @@
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Money-Path & Pricing Integrity Remediation](../../03-selling-and-shops/pricing-money-path-remediation/README.md) — 03 Selling & Shops · 0/8 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 2/7 stories
+- [Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)](../../09-platform-infra/deploy-pipeline-tuning/README.md) — 09 Platform-infra · 4/7 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 - [PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs](../../09-platform-infra/pmo-operational-reports/README.md) — 09 Platform-infra · 5/7 stories · risk: Low · tbd
 
