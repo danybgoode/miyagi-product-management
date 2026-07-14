@@ -31,8 +31,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
-import { formatPrList, truncateForTelegram } from './lib/telegram-format.mjs';
+import { formatPrList } from './lib/telegram-format.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
+import { appendStandupArtifactsToMessage, buildStandupArtifacts } from './lib/standup-deck.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -336,9 +337,10 @@ async function main() {
 
   const header = `<b>Standup · ${cur.ts.slice(0, 10)}</b>`;
   const rawMessage = deltaLines.length ? [header, ...deltaLines].join('\n') : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
+  const artifacts = buildStandupArtifacts({ snapshot: cur, deltaLines, generatedAt: new Date(cur.ts) });
   // Last-resort safety net for Telegram's hard 4096-char limit — the per-repo caps above (baseline
   // summary lines, formatPrList) should already keep any normal night well under this.
-  const message = truncateForTelegram(rawMessage, TELEGRAM_MAX_CHARS);
+  const message = appendStandupArtifactsToMessage(rawMessage, artifacts, TELEGRAM_MAX_CHARS);
 
   console.log(message.replace(/<\/?[^>]+>/g, ''));
 

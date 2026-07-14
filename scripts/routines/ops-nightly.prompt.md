@@ -62,9 +62,11 @@ Follow `skills/standup-post/SKILL.md` exactly — it handles the config check (c
 actually works in this unattended routine session, since `config.json` is gitignored and can't survive
 between separate runs; if genuinely BOTH are unset, that's a hard stop, use the failure ping below
 instead of guessing — never `AskUserQuestion` here, no interactive human is present), the
-`TELEGRAM_BOT_TOKEN` secret check, running `node scripts/standup.mjs`, and reporting the result. Its own
-CI-red and merge-conflict signals are read fresh at this point — after steps 1–3 had a chance to fix/flag
-things — so they reflect the current state, not a stale pre-run snapshot.
+`TELEGRAM_BOT_TOKEN` secret check, running `node scripts/standup.mjs`, and reporting the result. The
+Telegram message keeps the plain standup text and appends a `SmallDocs standup:` story-deck link for
+mobile reading/forwarding. Its own CI-red and merge-conflict signals are read fresh at this point —
+after steps 1–3 had a chance to fix/flag things — so they reflect the current state, not a stale pre-run
+snapshot.
 
 ## Nothing else
 No PR beyond what steps 1 and 3 produce as their normal output; no extra comment; no code change of
