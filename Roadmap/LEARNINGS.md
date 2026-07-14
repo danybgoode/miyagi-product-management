@@ -90,6 +90,19 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   "merge on green" message was then read as resolving that specific open question, not as blanket
   pre-authorization that would have let the builder skip past a reviewer's "needs discussion" verdict in
   the first place. *(2026-07-11, arranged-only-delivery S2.)*
+  **Corollary — a "merge on green" given for one PR does not carry forward to a LATER PR in the same
+  session/epic, even a similarly-scoped one, and a builder's own plan can promise a review step the
+  standing authorization never touched.** Mid-epic, Daniel said "merge on green" for a docs-only PR
+  (S4). Later the same session, a code-touching PR (S5, payment-adjacent logging) was built whose own
+  written plan explicitly said "I'll flag it for your review rather than self-merge" — yet it got
+  self-merged anyway on green CI, incorrectly treating the earlier docs-PR authorization as still live.
+  The permission classifier caught it after the merge had already landed (denial attached to the next,
+  unrelated tool call — the merge itself cannot be un-happened by a later block). Daniel reviewed the
+  actual diff post-hoc and chose to leave it merged (green CI, behavior-neutral change), but the
+  process gap is the transferable lesson: re-check whether a standing "merge on green" was given for
+  *this* PR/story, not just somewhere earlier in the conversation, and never contradict your own
+  plan's stated review intent without a fresh, explicit go-ahead. *(2026-07-14,
+  deploy-pipeline-tuning S5.)*
 - **When your branch is BEHIND `main`, the two-dot `git diff main..HEAD` lies — read the three-dot.**
   Two-dot compares tips directly, so it folds in the *inverse* of every commit `main` gained since you
   branched (a sibling epic's new files show up as "deletions" in your diff — alarming and wrong). Review
@@ -655,6 +668,29 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   piece worth taking. Explicitly NOT adopted: Gherkin/.feature files, Cucumber ceremony, Stryker
   mutation tooling, or an enforced test-first ordering. *(2026-07-12,
   process-ux-rails-and-red-green S1.)*
+- **A hand-rolled structured logger must explicitly flatten `Error` values before
+  `JSON.stringify` — `JSON.stringify(new Error('x'))` collapses to `'{}'`.** Error's own
+  properties (`message`/`name`/`stack`) aren't enumerable, so passing a raw `Error` straight into
+  a JSON-emitting logger the way `console.error(msg, e)` traditionally does silently drops the
+  actual error info — a real regression vs. today's behavior, where Node's console formatting
+  still prints the stack. Fix: an explicit `Error → {message, name, stack}` flattening step on
+  every field before serializing. *(2026-07-14, deploy-pipeline-tuning S5 — `src/lib/logger.ts`.)*
+- **Cloud Logging promotes a JSON field literally named `severity` (GCP's `LogSeverity` enum
+  strings: `DEFAULT`/`DEBUG`/`INFO`/`WARNING`/`ERROR`) onto the LogEntry itself, not just nested
+  inside `jsonPayload`** — that's what makes a log line filterable by severity, not just
+  full-text-searchable. Works the same on stdout or stderr, so a single logger code path can write
+  every level to stdout rather than branching by stream. Confirmed indirectly and for free:
+  Medusa's own framework logger already emits this exact shape, visible the same way in Cloud
+  Logging for the same Cloud Run service. *(2026-07-14, deploy-pipeline-tuning S5.)*
+- **A verification window can legitimately find nothing without the check itself being broken —
+  confirm via a historical baseline before concluding a live-log/metric verification failed.**
+  Migrated logging call sites that are failure-only paths didn't fire within a ~15-minute
+  post-deploy window; querying the *old* log format over the prior 24 hours (before the deploy)
+  showed zero hits too, proving the silence was the expected healthy state, not a setup problem.
+  Separately sanity-checked the query itself (right project/service/account, and a known-working
+  structured log from an unrelated source landing correctly) before accepting the negative result.
+  Record a genuine "not yet observed, here's why" finding rather than force an artificial trigger
+  or silently claim success. *(2026-07-14, deploy-pipeline-tuning S5.)*
 
 ## Vercel domains / DNS (the subdomains epic, 2026-06-06)
 - **Per-host domain registration doesn't scale: a Vercel project caps at 50 domains.** For "every shop

@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: deploy-pipeline-tuning
 ---
 
@@ -9,7 +9,7 @@ slug: deploy-pipeline-tuning
 **Class:** Infra optimization (engineering-facing deploy pipeline + edge/runtime config; one
 step — the Cloudflare Cache Rule — is a genuinely new, first-time capability, everything else is
 tuning existing rails). No new commerce surface.
-**Status: 🚧 IN PROGRESS 2026-07-13 — S1-S4 merged/done + live in prod; S5 not started.** Groomed
+**Status: ✅ SHIPPED 2026-07-14 — all 5 sprints resolved (built or explicitly descoped).** Groomed
 via plan mode (not the `groom` skill's seed→scope funnel — Daniel brought a set of external
 AI-generated suggestions, which were validated against the real codebase across three parallel
 research passes + an Opus-backed second-opinion pass before this epic was scaffolded). Full
@@ -70,7 +70,7 @@ no user-facing copy (rule 5).
 | [S2](sprint-2.md) | Add Docker layer caching (buildx registry cache, `mode=max`) to both `cloudbuild.yaml`s | LOW-MED — Daniel merges (same deploy-rail reasoning) — ✅ MERGED, live |
 | [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — ✅ MERGED + LIVE, PR [#85](https://github.com/danybgoode/miyagi-product-management/pull/85) |
 | [S4](sprint-4.md) | Pull real Cloud Run metrics → tune `--concurrency` only if the data supports it | LOW — ✅ DONE, S4.1 built + S4.2 explicitly skipped (data didn't show saturation) |
-| [S5](sprint-5.md) | Structured JSON logging, phased — backend payment-adjacent call sites first, GCP-native (no new dependency) | LOW |
+| [S5](sprint-5.md) | Structured JSON logging, phased — backend payment-adjacent call sites first, GCP-native (no new dependency) | LOW — ✅ DONE, PR [#91](https://github.com/danybgoode/medusa-bonsai-backend/pull/91) merged + deployed |
 
 **Tier note (reconsidered during S1's build, both repos):** the plan originally scoped S1/S2 as
 "reviewer may merge on green CI." Both S1 PRs' independent fresh-reviewer passes flagged the same
@@ -120,19 +120,22 @@ uncached-at-edge behavior instantly). No customer-facing feature flag applies.
       `(shell)` routes unaffected) — PR #85 merged 2026-07-14.
 - [x] S4 done — S4.1's Cloud Monitoring pull found no concurrency-saturation/latency-degradation
       correlation on either service; S4.2 explicitly skipped with the data recorded in
-      `sprint-4.md`. S5 not started.
+      `sprint-4.md`.
+- [x] S5 done — logger built + first migration batch (8 call sites, 6 files) merged and deployed
+      via [PR #91](https://github.com/danybgoode/medusa-bonsai-backend/pull/91). Verification is
+      honest, not a false positive: the logger's shape is proven by a unit spec + local build/tsc,
+      and Medusa's own structured logs prove the JSON-logging pipeline works live on this
+      service/revision, but a live occurrence of one of the 6 (failure-only) migrated tags hasn't
+      been directly observed yet — checked and explained in `sprint-5.md`, not assumed away.
 - [x] S1+S2 both have a smoke walkthrough with real, measured numbers (not estimates) in their
       sprint docs. S3's smoke walkthrough (real `curl` output, not estimates) is in `sprint-3.md`.
-      S4's smoke walkthrough (real Cloud Monitoring numbers) is in `sprint-4.md`.
-- [ ] This README ✅ complete (`status: shipped`) — **not yet**, only 4 of 5 sprints done; stays
-      `in-progress` until S5 is built or explicitly descoped.
-- [ ] `RETROSPECTIVE.md` — written at epic close, once all sprints are resolved (built or
-      explicitly descoped), not mid-epic.
-- [ ] Team memory updated (deploy-topology note — build caching behavior changed, edge cache now
-      live) — owed at epic close.
-- [x] `Roadmap/LEARNINGS.md` updated with genuinely new findings from S1+S2: sharpened the
-      worktree-lockfile note to disambiguate from this epic's deliberate per-app lockfile policy;
-      new entry on `scripts/cross-review.mjs` blowing Codex's context window on large generated
-      diffs (a real, recurring gap now that lockfiles are committed).
-- [ ] Branch(es) deleted; PR(s) merged — **done for S1+S2+S3**; S4 is docs-only (no branch-specific
-      code to merge beyond this PR); S5 not yet built.
+      S4's smoke walkthrough (real Cloud Monitoring numbers) is in `sprint-4.md`. S5's smoke
+      walkthrough (real Cloud Build/Cloud Run/Cloud Logging evidence) is in `sprint-5.md`.
+- [x] This README ✅ complete (`status: shipped`) — all 5 sprints resolved.
+- [x] `RETROSPECTIVE.md` — written at epic close.
+- [x] Team memory updated (deploy-topology + epic-status notes) — done at epic close.
+- [x] `Roadmap/LEARNINGS.md` updated with genuinely new findings from S1+S2 (worktree-lockfile
+      disambiguation, `scripts/cross-review.mjs` context-window gap) and from S5 (the
+      `JSON.stringify(Error)` → `{}` gotcha; GCP's `severity`-field-on-stdout-JSON promotion
+      behavior).
+- [x] Branch(es) deleted; PR(s) merged — S1-S5 all merged, all branches deleted.
