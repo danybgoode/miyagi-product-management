@@ -455,6 +455,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `scripts/lib/telegram-format.mjs`) as defense in depth regardless. Add the regression test for the exact
   reported failure, not just the generic case — `standup.test.mjs`'s bootstrap tests assert directly on a
   120-PR-history fixture. *(2026-07-03, ops-routines-reporting.)*
+  **Corollary — a script that has both scheduled window delivery and on-demand artifact generation must
+  keep the artifact mode stateless.** PMO reports reused the weekly window-log rail correctly for scheduled
+  Telegram delivery, but the first monthly smoke exposed the trap: `node scripts/pmo-report.mjs --monthly`
+  would have advanced the weekly window and disturbed the next routine run. Keep `--weekly` stateful, but
+  make monthly/sheet-only artifact modes print `window log not updated`, and lock that with a pure
+  `shouldPersistWindow()` test. *(2026-07-14, pmo-operational-reports S3.)*
   **Corollary — when a routine-account permission toggle won't save, design the persistence mechanism to
   not need that permission at all, rather than escalating the toggle.** `standup.mjs`/`weekly-recap.mjs`
   originally committed their delta logs straight to `main`, which needs "Allow unrestricted branch

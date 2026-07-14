@@ -223,6 +223,12 @@ export function shouldSendWeeklyTelegram(args) {
   return args.weekly && !args.dryRun;
 }
 
+export function shouldPersistWindow(args) {
+  if (args.dryRun) return false;
+  if (args.weekly) return true;
+  return !args.monthly && !args.sheet;
+}
+
 function openUrl(url) {
   if (process.platform !== 'darwin') return false;
   const result = spawnSync('open', [url], { encoding: 'utf8' });
@@ -264,8 +270,8 @@ async function main() {
     }
   }
 
-  if (args.dryRun) {
-    console.log('\nDry run: window log not updated.');
+  if (!shouldPersistWindow(args)) {
+    console.log(args.dryRun ? '\nDry run: window log not updated.' : '\nOn-demand artifact run: window log not updated.');
     return;
   }
 

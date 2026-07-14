@@ -6,6 +6,7 @@ import {
   gatherRepoResults,
   loadLogContent,
   parseArgs,
+  shouldPersistWindow,
 } from '../pmo-report.mjs';
 
 test('parseArgs reads dry-run and explicit window overrides', () => {
@@ -30,6 +31,14 @@ test('parseArgs makes monthly produce both packet and sheet', () => {
     sinceISO: null,
     untilISO: null,
   });
+});
+
+test('shouldPersistWindow advances scheduled reports but not on-demand artifacts', () => {
+  assert.equal(shouldPersistWindow(parseArgs(['--weekly'])), true);
+  assert.equal(shouldPersistWindow(parseArgs([])), true);
+  assert.equal(shouldPersistWindow(parseArgs(['--dry-run', '--weekly'])), false);
+  assert.equal(shouldPersistWindow(parseArgs(['--monthly'])), false);
+  assert.equal(shouldPersistWindow(parseArgs(['--sheet'])), false);
 });
 
 test('buildReport uses injected data and does not perform script I/O when imported', () => {
