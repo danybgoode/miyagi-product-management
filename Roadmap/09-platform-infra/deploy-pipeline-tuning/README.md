@@ -68,7 +68,7 @@ no user-facing copy (rule 5).
 |---|---|---|
 | [S1](sprint-1.md) | Commit a `package-lock.json` per app + switch both Dockerfiles from `npm install` to `npm ci` | LOW-but-deploy-rail — Daniel merges (see note below) — ✅ MERGED, live |
 | [S2](sprint-2.md) | Add Docker layer caching (buildx registry cache, `mode=max`) to both `cloudbuild.yaml`s | LOW-MED — Daniel merges (same deploy-rail reasoning) — ✅ MERGED, live |
-| [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — Daniel sign-off before the Cache Rule goes live (first time this repo caches anything at Cloudflare's edge) |
+| [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — S3.1 done, S3.2 code + drift-guard done; blocked on a Cloudflare token permission fix + Daniel sign-off before the Cache Rule goes live (first time this repo caches anything at Cloudflare's edge) |
 | [S4](sprint-4.md) | Pull real Cloud Run metrics → tune `--concurrency` only if the data supports it | LOW (data-gathering) / LOW-MED (conditional config change) |
 | [S5](sprint-5.md) | Structured JSON logging, phased — backend payment-adjacent call sites first, GCP-native (no new dependency) | LOW |
 
