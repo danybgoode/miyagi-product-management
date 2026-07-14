@@ -65,6 +65,7 @@ NEW_SECRETS=(
   ENCRYPTION_KEY
   ENCRYPTION_SECRET
   CRON_SECRET             # still read by the vercel.json crons until S3.1 moves them to Cloud Scheduler
+  GROWTH_ENGINE_API_KEY   # golden-beans Growth Engine per-project credential (growth-engine-v1 S1.3)
 )
 
 # NEXT_PUBLIC_* real-key shells (EMPTY — values populated separately, never by
