@@ -1,8 +1,10 @@
 # Sprint 3 — Edge cache: origin probe + a scoped Cloudflare Cache Rule
 
 **Epic:** [Deploy pipeline tuning](README.md) · **Risk: MED — Daniel sign-off before the Cache
-Rule goes live** · **Status: 🚧 S3.1 done, S3.2 code built + drift-guard green — blocked on a
-Cloudflare token permission fix + Daniel's live go-ahead (see S3.2 below)**
+Rule goes live** · **Status: ✅ BUILT + LIVE 2026-07-13.** Daniel added the missing "Cache Rules"
+permission to the `CLOUDFLARE_API_TOKEN`, then gave the explicit go — the rule is provisioned in
+prod and verified (see S3.2 below). PR [danybgoode/miyagi-product-management#85](https://github.com/danybgoode/miyagi-product-management/pull/85),
+ready for review — **awaiting Daniel's merge** (MED tier, not auto-mergeable on green CI).
 
 11 frontend routes already use `export const revalidate = N`, but that only controls Next's own
 regeneration cache **inside** the Cloud Run container — nothing today caches these responses at
@@ -51,7 +53,7 @@ but don't resolve live. This is a genuine, pre-existing routing/content bug, unr
 qualifies. This narrows S3.2 to a single path rather than the multi-path list originally assumed
 — the correct, evidence-driven outcome per this story's own acceptance bar.
 
-### S3.2 — Cloudflare Cache Rule for the confirmed-static set *(MED — Daniel sign-off required)* — code ✅ BUILT, NOT YET RUN LIVE
+### S3.2 — Cloudflare Cache Rule for the confirmed-static set *(MED — Daniel sign-off required)* — ✅ BUILT + LIVE
 > **As** the platform, **I want** genuinely static pages served straight from Cloudflare's edge,
 > **so that** they never round-trip to Cloud Run and load faster globally.
 
@@ -74,14 +76,42 @@ qualifies. This narrows S3.2 to a single path rather than the multi-path list or
 - **Acceptance:** a warm second request to `/` through Cloudflare shows `cf-cache-status: HIT`; a
   `(shell)` route shows no change from today's behavior.
 
-**Dry-run finding — blocks the live run, needs Daniel:** ran the script's read-only calls (zone
-resolve + read the existing `http_request_cache_settings` entrypoint ruleset) directly against
-live Cloudflare with the `CLOUDFLARE_API_TOKEN` currently in Secret Manager. Zone resolution
-works fine (`0091f4f96b3c474293bb025635d18e0d`, `miyagisanchez.com`), but the ruleset read itself
-403s: `"request is not authorized"`. The token doesn't have the **Cache Rules** zone permission
-scope — same shape as the WAF script's Bot Fight Mode gap, except this one can't be soft-failed
-since the Cache Rule *is* the entire point of this script. **Needs**: add "Cache Rules: Edit" (or
-equivalent) to the existing Cloudflare API token's permission group before this can run live.
+**Dry-run finding, found and resolved:** a read-only dry-run (zone resolve + read the existing
+`http_request_cache_settings` entrypoint ruleset) against live Cloudflare initially 403'd
+(`"request is not authorized"`) — the `CLOUDFLARE_API_TOKEN` in Secret Manager didn't have the
+**Cache Rules** zone permission scope (same shape as the WAF script's Bot Fight Mode gap, except
+this one couldn't be soft-failed since the Cache Rule *is* the entire point of this script).
+Daniel added that permission to the token; re-running the same dry-run then got a clean 404
+("no entrypoint ruleset in this phase yet" — the expected empty state, already handled by the
+script's `existingRules = []` fallback), confirming the fix worked before anything mutating ran.
+
+**Live run:** with the permission fixed and Daniel's explicit go, ran
+`node infra/gcp/cloudflare-cache-provision.mjs` for real:
+```
+▶ Zone: 0091f4f96b3c474293bb025635d18e0d (miyagisanchez.com)
+  = cache rule in place for / (0 other rule(s) preserved untouched)
+```
+
+**Live verification, both passed:**
+```
+$ curl -sI https://miyagisanchez.com/           # request 1
+HTTP/2 200
+cache-control: max-age=14400, s-maxage=60, stale-while-revalidate=31535940
+cf-cache-status: MISS
+
+$ curl -sI https://miyagisanchez.com/           # request 2, 2s later
+HTTP/2 200
+cache-control: max-age=14400, s-maxage=60, stale-while-revalidate=31535940
+age: 4
+cf-cache-status: HIT
+
+$ curl -sI https://miyagisanchez.com/s/panfleto  # (shell) regression check
+HTTP/2 200
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+cf-cache-status: DYNAMIC
+```
+`/` graduates `MISS → HIT` on the second request, exactly per acceptance; `/s/panfleto` is
+completely unchanged (`DYNAMIC`, still `private, no-cache`) — the `(shell)` subtree is untouched.
 
 ---
 
@@ -96,9 +126,9 @@ equivalent) to the existing Cloudflare API token's permission group before this 
   skipping 9 of 13 files in that directory (all `.test.mjs`, including this sprint's new test and
   the pre-existing `cloudflare-waf-provision.test.mjs`). Fixed to glob both extensions — verified
   locally all 140 tests (both patterns) pass.
-- **Manual live check (owed, blocked on the token-permission fix above)**: `curl -sI` through
-  Cloudflare for `/`, confirm `cf-cache-status: HIT` on a warm second request; confirm a `(shell)`
-  route is unchanged (still dynamic, no cache header).
+- **Manual live check — done**: `curl -sI` through Cloudflare for `/` showed `MISS` → `HIT` on the
+  warm second request (real output above); `/s/panfleto` confirmed unchanged (`DYNAMIC`, still
+  `private, no-cache`).
 
 ---
 
@@ -109,15 +139,16 @@ equivalent) to the existing Cloudflare API token's permission group before this 
 2. ✅ **Done.** S3.1 findings above are the confirmed path list (`/` only) `cloudflare-cache-provision.mjs`
    was written against.
 3. ✅ **Ran.** Script + drift-guard written, 140/140 `node --test` cases pass locally. Read-only
-   dry-run against live Cloudflare (zone resolve + read the existing entrypoint ruleset) confirmed
-   the zone resolves correctly, but surfaced a real blocker: the current `CLOUDFLARE_API_TOKEN`
-   403s ("request is not authorized") on the Cache Rules phase specifically — it needs the "Cache
-   Rules: Edit" permission added before the actual PUT can run.
-4. **Owed, blocked on step 3's token-permission fix + Daniel's explicit go.** `curl -sI
-   https://miyagisanchez.com/` twice — first request may be `MISS`, second should show
-   `cf-cache-status: HIT`.
-5. **Owed.** Spot-check a `(shell)` route (e.g. a real seller storefront) is completely unaffected
-   — same response as before this sprint, still dynamic.
-6. **Owed.** Merge + close out.
+   dry-run against live Cloudflare (zone resolve + read the existing entrypoint ruleset) first
+   surfaced a real blocker (token missing the Cache Rules permission — 403); Daniel added the
+   permission, re-run confirmed clean (404 "no ruleset yet", the expected empty state) before
+   anything mutating ran.
+4. ✅ **Ran, live, with Daniel's explicit go.** Ran the script for real; `curl -sI
+   https://miyagisanchez.com/` twice showed `MISS` → `HIT` on the warm second request (real
+   output above).
+5. ✅ **Ran.** `/s/panfleto` spot-checked through Cloudflare — completely unaffected, still
+   `DYNAMIC`/`private, no-cache`, same as before this sprint.
+6. **Owed — awaiting Daniel's merge.** PR #85 is ready for review; MED tier means Daniel merges,
+   not auto-merge-on-green-CI.
 
 If any step fails, note the step number + what you saw — that's the bug report.
