@@ -3,7 +3,8 @@
 // candidates in LEARNINGS.md + the README poster. ADVISORY ONLY: this script never edits any
 // Roadmap doc — it only reads them and (unless --check) writes ONE new dated report file under
 // Roadmap/00-ideas/. Every flagged candidate is a hint for a human/model to verify, not a verdict —
-// see skills/doc-hygiene/SKILL.md for the judgment pass this script's output feeds.
+// see the `doc-hygiene` skill (`ways-of-work` plugin, dobby-foundation marketplace) for the
+// judgment pass this script's output feeds.
 //
 //   node scripts/doc-hygiene.mjs             # print the report + write Roadmap/00-ideas/DOC-HYGIENE-REPORT-<date>.md
 //   node scripts/doc-hygiene.mjs --check     # print only, write nothing (quick look / CI-safe)

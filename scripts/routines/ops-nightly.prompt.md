@@ -12,14 +12,18 @@
 
   Every step here is advisory/observability or a docs-only PR — none merges, none gates, none is a
   required check, and NOTHING here ever runs a destructive `--apply` (that stays a separate,
-  human-confirmed action per skills/vercel-prune/SKILL.md — this routine only ever runs its dry-run
+  human-confirmed action per the `vercel-prune` skill — this routine only ever runs its dry-run
   report step).
 
+  Skills below come from the `ways-of-work` plugin (dobby-foundation marketplace,
+  danybgoode/dobby-foundation) as of dobby-foundation Sprint 1 Story 1.2 — invoke each by name, not
+  by a repo-local `skills/<name>/SKILL.md` path (that path no longer exists in this repo).
+
   Reuse, don't rebuild:
-    - skills/build-order-sync/SKILL.md → scripts/build-order-sync.mjs (check/regen/branch/PR on drift)
-    - skills/vercel-prune/SKILL.md → scripts/vercel-prune-previews.mjs (dry-run report only, never --apply)
-    - skills/babysit-pr/SKILL.md → scripts/babysit-pr.mjs (one open PR at a time; silent when clean)
-    - skills/standup-post/SKILL.md → scripts/standup.mjs (the aggregation, diffing, and actual Telegram
+    - `build-order-sync` skill → scripts/build-order-sync.mjs (check/regen/branch/PR on drift)
+    - `vercel-prune` skill → scripts/vercel-prune-previews.mjs (dry-run report only, never --apply)
+    - `babysit-pr` skill → scripts/babysit-pr.mjs (one open PR at a time; silent when clean)
+    - `standup-post` skill → scripts/standup.mjs (the aggregation, diffing, and actual Telegram
       send — including its own independent CI-red / merge-conflict read, taken AFTER steps 1–3 have run)
     - gh CLI (all 3 repos), scripts/build-order.mjs --check, scripts/vercel-prune-previews.mjs
       (dry-run, --age 7), .github/workflows/browser-smoke.yml (frontend repo only).
@@ -38,12 +42,12 @@ running as Daniel. Your job is to run four steps, in order, then stop. Everythin
 you make lands only as a `claude/`-branch PR for a human to review.
 
 ## Step 1 — `build-order-sync`
-Follow `skills/build-order-sync/SKILL.md`: run `node scripts/build-order-sync.mjs`. If the board was
+Use the `build-order-sync` skill: run `node scripts/build-order-sync.mjs`. If the board was
 stale, it opens a `claude/` docs PR with the regenerated `Roadmap/00-ideas/BUILD-ORDER.md` — nothing
 else to do. If it was already current, no PR — move on.
 
 ## Step 2 — `vercel-prune` (dry-run report only)
-Follow `skills/vercel-prune/SKILL.md` **through Stage 2 only** — the dry-run report. **Never run its
+Use the `vercel-prune` skill **through Stage 2 only** — the dry-run report. **Never run its
 Stage 3 (`--apply`)** from this routine, under any circumstance; that is a separate, human-initiated
 action gated on Daniel explicitly asking for it in a live conversation, which this unattended nightly
 run structurally cannot be. Note the stale-preview count/list in your own reasoning — no PR, no
@@ -52,13 +56,13 @@ comment; the standup (step 4) will report it independently.
 ## Step 3 — `babysit-pr` (once per open PR, across all 3 repos)
 For each of `danybgoode/miyagi-product-management`, `danybgoode/miyagisanchezcommerce`, and
 `danybgoode/medusa-bonsai-backend`: list open PRs (`gh pr list --repo <repo> --state open --json
-number`), then follow `skills/babysit-pr/SKILL.md` once per open PR (`node scripts/babysit-pr.mjs <PR#>
+number`), then use the `babysit-pr` skill once per open PR (`node scripts/babysit-pr.mjs <PR#>
 --repo <repo>`). A clean PR gets no comment — that's correct, not a skipped step. Never merge, never
 rebase a conflicting branch, never touch any commit-status/check-run API.
 
 ## Step 4 — `standup-post`
-Follow `skills/standup-post/SKILL.md` exactly — it handles the config check (chat id from
-`skills/standup-post/config.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
+Use the `standup-post` skill exactly — it handles the config check (chat id from
+`.claude/config/standup-post.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
 actually works in this unattended routine session, since `config.json` is gitignored and can't survive
 between separate runs; if genuinely BOTH are unset, that's a hard stop, use the failure ping below
 instead of guessing — never `AskUserQuestion` here, no interactive human is present), the
@@ -86,6 +90,6 @@ If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silen
 and **never** ping after a run that completed successfully, even a fully quiet one.
 
 Note: `TELEGRAM_CHAT_ID` here (the failure-ping env var, matching the other three routines' convention)
-and the `chat_id` in `skills/standup-post/config.json` (what `standup.mjs` actually posts the standup
+and the `chat_id` in `.claude/config/standup-post.json` (what `standup.mjs` actually posts the standup
 to) are typically the **same** MiyagiDevopsTele bot/chat, just sourced differently for two different
 call sites — don't be confused into thinking they must be configured independently of each other.

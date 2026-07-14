@@ -84,6 +84,6 @@ One field is authoritative at each stage — they never both drive the board:
 1. **Capture** — drop a raw idea as `seeds/<slug>.md` with `status: raw` (the `groom` skill does this from a brain-dump).
 2. **Scope** — `groom` fills out the Definition-of-Ready and flips `status: ready`.
 3. **Queue** — add it to `BUILD-ORDER.md`; `status: queued`.
-4. **Scaffold** — on approval, `groom` runs `skills/groom/scaffold-epic.mjs` to create the epic/sprint docs, then sets the seed's `epic:` + `status: scaffolded`. **No file ever moves between folders** — the frontmatter carries the state.
+4. **Scaffold** — on approval, `groom` runs its own `scaffold-epic.mjs` (ships inside the `groom` skill, `ways-of-work` plugin) to create the epic/sprint docs, then sets the seed's `epic:` + `status: scaffolded`. **No file ever moves between folders** — the frontmatter carries the state.
 
 Filenames are kebab-case and match `slug`. Audits live in `audits/`, never in `seeds/`.

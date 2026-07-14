@@ -9,8 +9,10 @@
   failure-ping) but on a weekly cadence, and mirrors Routine C's precedent (a dedicated weekly routine,
   not a day-of-week-gated step folded into a nightly one).
 
-  Reuse, don't rebuild:
-    - skills/weekly-recap/SKILL.md → scripts/weekly-recap.mjs (the gathering, message-building, and the
+  Reuse, don't rebuild (the `weekly-recap` skill comes from the `ways-of-work` plugin, dobby-foundation
+  marketplace, as of dobby-foundation Sprint 1 Story 1.2 — invoke by name, not a repo-local
+  `skills/<name>/SKILL.md` path, which no longer exists in this repo):
+    - `weekly-recap` skill → scripts/weekly-recap.mjs (the gathering, message-building, and the
       actual Telegram send + weekly-recaps.log commit — this routine just invokes it and reports back)
     - gh CLI (all 3 repos), git log -p on epic READMEs (status: SSOT), the same 3-repo list
       scripts/standup.mjs already uses.
@@ -30,8 +32,8 @@ Everything you do is **advisory/observability only** — read-only aggregation p
 one log-commit; you never merge, approve, block, or touch any repo's code.
 
 ## The one step — `weekly-recap`
-Follow `skills/weekly-recap/SKILL.md` exactly — it handles the config check (chat id from
-`skills/weekly-recap/config.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
+Use the `weekly-recap` skill exactly — it handles the config check (chat id from
+`.claude/config/weekly-recap.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
 actually works in this unattended routine session, since `config.json` is gitignored and can't survive
 between separate runs; if genuinely BOTH are unset, that's a hard stop, use the failure ping below
 instead of guessing — never `AskUserQuestion` here, no interactive human is present), the
@@ -56,6 +58,6 @@ If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silen
 and **never** ping after a run that completed successfully, even a fully quiet one.
 
 Note: `TELEGRAM_CHAT_ID` here (the failure-ping env var, matching the other routines' convention) and the
-`chat_id` in `skills/weekly-recap/config.json` (what `weekly-recap.mjs` actually posts the recap to) are
+`chat_id` in `.claude/config/weekly-recap.json` (what `weekly-recap.mjs` actually posts the recap to) are
 typically the **same** MiyagiDevopsTele bot/chat, just sourced differently for two different call sites —
 same pattern `ops-nightly.prompt.md` already documents for `standup-post`, not a new wrinkle.

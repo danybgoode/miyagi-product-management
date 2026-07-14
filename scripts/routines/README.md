@@ -115,7 +115,7 @@ routine (cap-safe) — see the budget table below.
      **LOAD-BEARING** (step 4's actual output), not the optional failure-ping the other three routines
      use.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
-     unattended routine run.** `skills/standup-post/config.json`'s `chat_id` (gitignored, per the
+     unattended routine run.** `.claude/config/standup-post.json`'s `chat_id` (gitignored, per the
      D-spike's user-specific-setup convention) is preferred when present, but a routine's cloud sandbox
      is a fresh checkout every run, so a locally-written `config.json` never persists to the next run —
      `standup.mjs` falls back to this env var, and it's the same one the optional failure-ping already
@@ -205,8 +205,8 @@ and a short retro digest per shipped epic — then posts one Telegram message.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — this routine's Telegram use is
      **LOAD-BEARING** (its one step's actual output), same as `ops-nightly`'s.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
-     unattended routine run** (same reasoning as `ops-nightly`'s: `skills/weekly-recap/config.json`'s
-     `chat_id`, its own file separate from `standup-post/config.json` per the D-spike's per-skill
+     unattended routine run** (same reasoning as `ops-nightly`'s: `.claude/config/weekly-recap.json`'s
+     `chat_id`, its own file separate from `standup-post.json` per the D-spike's per-skill
      convention, is preferred when present, but can't persist across a routine's fresh-checkout-per-run
      sandbox — `weekly-recap.mjs` falls back to this env var, the same one the optional failure-ping
      already needed).
@@ -239,7 +239,7 @@ then advances the PMO window log.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — load-bearing; the Telegram post is the
      routine's actual output.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — the unattended path. A local
-     `skills/pmo-report/config.json` is still supported for manual runs, but it is gitignored and will
+     `.claude/config/pmo-report.json` is still supported for manual runs, but it is gitignored and will
      not survive routine sessions.
    - **Network access -> Custom**, with **`api.telegram.org`** allow-listed.
    - **No unrestricted branch push needed** — the PMO window log lives on `claude/pmo-reports-log`

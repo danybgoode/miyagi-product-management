@@ -46,7 +46,7 @@ const ROOT = join(__dirname, '..');
 // failed to save live, 2026-07-02/03).
 const LOG_BRANCH = 'claude/weekly-recap-log';
 const LOG_BRANCH_PATH = 'weekly-recaps.log'; // flat filename — git mktree needs a single-level tree
-const CONFIG_PATH = join(ROOT, 'skills/weekly-recap/config.json');
+const CONFIG_PATH = join(ROOT, '.claude/config/weekly-recap.json');
 
 const argv = process.argv.slice(2);
 const DRY_RUN = argv.includes('--dry-run');
@@ -368,7 +368,7 @@ async function main() {
     if (!chatId) {
       die(
         `No Telegram chat id configured — set "chat_id" in ${CONFIG_PATH} ` +
-          `(copy skills/weekly-recap/config.example.json, or let the weekly-recap skill ask via AskUserQuestion).`
+          `(copy .claude/config/weekly-recap.example.json, or let the weekly-recap skill ask via AskUserQuestion).`
       );
     }
     await sendTelegram(chatId, message);

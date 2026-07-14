@@ -33,7 +33,7 @@ merging to it deploys.
 Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (preview) → push → Daniel reviews preview → … → PR → merge to main → (epic close: poster + retro)
 ```
 
-1. **Plan.** For non-trivial work, Claude enters plan mode, writes a plan as user stories, and Daniel approves before code. **Every plan names a QA / smoke-test stage** with the specific checks and tools. Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the groom skill's Stage 4 reuse list (`skills/groom/templates/scope-seed.md`).
+1. **Plan.** For non-trivial work, Claude enters plan mode, writes a plan as user stories, and Daniel approves before code. **Every plan names a QA / smoke-test stage** with the specific checks and tools. Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list (`groom/templates/scope-seed.md` in the `ways-of-work` plugin, dobby-foundation marketplace).
 2. **Branch + scaffold docs.** Create one working branch per epic — `feat/<epic-slug>` (or `fix/…`, `chore/…`) — off the latest `main`, in each repo you'll touch. On it, *before any code*, scaffold the epic `README.md` + per-sprint files under the right macro-section (plain-language stories + acceptance). The build runs against these docs; Daniel sees scope as it grows. Keep them current as stories land (✅ ticks, commit refs); retrospective at epic close.
 3. **Build one story at a time.** Iterative. Reuse before rebuild. Commit per story to the branch (`Co-Authored-By: Claude` trailer).
 4. **Verify.** Type-check + lint clean, build passes.
@@ -93,7 +93,7 @@ do this, and they're complementary:
   live-commerce guardrail — an agent never deploys real-money paths to production on its own.
 When unsure which tier, treat it as high-risk. High-risk epics are also *planned behind a kill-switch*
 at grooming (the flag is decided + sliced there, verified at epic DoD — not a new gate); see
-`skills/groom` Stage 6b.
+the `groom` skill (`ways-of-work` plugin, dobby-foundation marketplace) Stage 6b.
 
 ## Definition of Ready (a story can start)
 - The "as a / I want / so that" is clear and the acceptance check is testable.
@@ -138,7 +138,7 @@ When the last story of an epic is merged, the epic is not "done" until ALL of th
       Flagsmith (or Edge Config, for Edge seams) with the polarity the scope doc stated (kill-switch ⇒
       default `true`, created **enabled**; enablement ⇒ default `false`, created **disabled**). This
       **verifies** planned work — it is **not** a new build-time gate. Whether a high-risk epic needs a
-      kill-switch is decided at **grooming** (`skills/groom` Stage 6b), not discovered here.
+      kill-switch is decided at **grooming** (the `groom` skill, `ways-of-work` plugin, Stage 6b), not discovered here.
 - [ ] Feature branch deleted; PR merged.
 
 ## Automated QA — where we are
@@ -158,8 +158,8 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   `MS_TEST_*` secrets and **skip gracefully** when unset. **`live-smoke` (skill, `scripts/live-smoke.mjs`)
   wraps this project as the default interactive verification tool** — `--path` for an ad-hoc "does this
   render right" check during a build (nothing permanent left behind), `--spec` to run an existing committed
-  spec by name. See `skills/live-smoke/SKILL.md` for the full env × auth matrix and the Claude-in-Chrome
-  fallback boundary.
+  spec by name. See the `live-smoke` skill (`ways-of-work` plugin, dobby-foundation marketplace) for the
+  full env × auth matrix and the Claude-in-Chrome fallback boundary.
   - *Owed (Daniel, one-time):* the `MS_TEST_*` repo secrets — buyer/seller password-auth accounts +
     `MS_TEST_PERSONALIZED_LISTING_ID` — so the credentialed/epic browser smokes light up (they skip until then).
 

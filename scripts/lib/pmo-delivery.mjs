@@ -69,7 +69,7 @@ export async function sendTelegramMessage({
   fetchImpl = fetch,
 }) {
   if (!token) throw new Error('TELEGRAM_BOT_TOKEN is not set — export it before running pmo-report.mjs.');
-  if (!chatId) throw new Error('No Telegram chat id configured — set TELEGRAM_CHAT_ID or skills/pmo-report/config.json.');
+  if (!chatId) throw new Error('No Telegram chat id configured — set TELEGRAM_CHAT_ID or .claude/config/pmo-report.json.');
 
   const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
