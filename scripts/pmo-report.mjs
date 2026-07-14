@@ -42,7 +42,7 @@ const ROOT = resolve(__dirname, '..');
 const LOG_BRANCH = 'claude/pmo-reports-log';
 const LOG_BRANCH_PATH = 'pmo-reports.log';
 const LOG_MESSAGE = 'chore(pmo): append operational report window';
-const CONFIG_PATH = join(ROOT, 'skills/pmo-report/config.json');
+const CONFIG_PATH = join(ROOT, '.claude/config/pmo-report.json');
 
 const REPOS = [
   'danybgoode/miyagi-product-management',

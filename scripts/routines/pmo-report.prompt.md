@@ -5,8 +5,10 @@
   It posts the PMO headline metrics plus the SmallDocs story-deck link to Telegram, using the same
   Telegram/load-bearing-output rail as standup-post and weekly-recap.
 
-  Reuse, don't rebuild:
-    - skills/pmo-report/SKILL.md -> scripts/pmo-report.mjs --weekly
+  Reuse, don't rebuild (the `pmo-report` skill comes from the `ways-of-work` plugin, dobby-foundation
+  marketplace, as of dobby-foundation Sprint 1 Story 1.2 — invoke by name, not a repo-local
+  `skills/<name>/SKILL.md` path, which no longer exists in this repo):
+    - `pmo-report` skill -> scripts/pmo-report.mjs --weekly
     - scripts/lib/gh-rest.mjs, scripts/lib/log-branch.mjs, scripts/lib/telegram-format.mjs
     - scripts/lib/pmo-delivery.mjs for message formatting and sendMessage.
 
@@ -27,8 +29,8 @@ code, open a PR, or change a required status check. The Telegram post plus the P
 the entire output.
 
 ## The one step - `pmo-report`
-Follow `skills/pmo-report/SKILL.md` exactly. It handles the config check (chat id from
-`skills/pmo-report/config.json` if present, else the `TELEGRAM_CHAT_ID` env var; the env var is what
+Use the `pmo-report` skill exactly. It handles the config check (chat id from
+`.claude/config/pmo-report.json` if present, else the `TELEGRAM_CHAT_ID` env var; the env var is what
 works in this unattended routine session), the `TELEGRAM_BOT_TOKEN` check, running
 `node scripts/pmo-report.mjs --weekly`, and reporting the headline metrics plus generated deck link.
 

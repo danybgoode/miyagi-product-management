@@ -37,7 +37,7 @@ import { appendStandupArtifactsToMessage, buildStandupArtifacts } from './lib/st
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const CONFIG_PATH = join(ROOT, 'skills/standup-post/config.json');
+const CONFIG_PATH = join(ROOT, '.claude/config/standup-post.json');
 
 // The delta log lives on a dedicated `claude/`-prefixed branch, not committed to `main` — a routine's
 // DEFAULT push scope already covers `claude/`-prefixed branches, so this needs no extra permission (see
@@ -349,7 +349,7 @@ async function main() {
     if (!chatId) {
       die(
         `No Telegram chat id configured — set "chat_id" in ${CONFIG_PATH} ` +
-          `(copy skills/standup-post/config.example.json, or let the standup-post skill ask via AskUserQuestion).`
+          `(copy .claude/config/standup-post.example.json, or let the standup-post skill ask via AskUserQuestion).`
       );
     }
     await sendTelegram(chatId, message);

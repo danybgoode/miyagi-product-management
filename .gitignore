@@ -63,8 +63,9 @@ apps/
 # Local Claude Code settings (never history)
 .claude/settings.local.json
 
-# Skill user-specific setup (e.g. a Telegram chat id) — see skills/*/config.example.json for the template
-skills/*/config.json
+# Skill user-specific setup (e.g. a Telegram chat id) — see .claude/config/*.example.json for the template
+.claude/config/*.json
+!.claude/config/*.example.json
 
 # Staging / reference asset drops (binaries; not repo history)
 gems/
