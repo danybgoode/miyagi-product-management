@@ -8,8 +8,10 @@ Sprint: `Roadmap/09-platform-infra/pmo-operational-reports/sprint-2.md`
 - Project: `miyagisanchezback-497722`
 - Region: `us-east4`
 - URL: `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`
+- Canonical Cloud Run URL: `https://pmo-smalldocs-91083034475.us-east4.run.app`
 - Fork: `https://github.com/danybgoode/smalldocs`
-- Deployed fork commit: `60a7707`
+- Deployed fork commit: `cea02aa9db690f0b2c39dd1748f901f2a178d195`
+- Latest deployed revision: `pmo-smalldocs-00002-kvb` (2026-07-14)
 
 ## Operating mode
 
@@ -20,7 +22,7 @@ Stateful APIs are disabled:
 
 - `SDOCS_ENABLE_STATEFUL_APIS=0`
 - `SDOCS_REPO_URL=https://github.com/danybgoode/smalldocs`
-- `SDOCS_COMMIT=60a7707`
+- `SDOCS_COMMIT=cea02aa9db690f0b2c39dd1748f901f2a178d195`
 
 The intended report-sharing path is URL-hash documents. Short-link/SQLite persistence is deliberately
 deferred for this PMO instance.
@@ -42,7 +44,8 @@ gcloud run deploy pmo-smalldocs \
 
 Branding belongs in the fork (`https://github.com/danybgoode/smalldocs`), not in the root report
 scripts. The root repo should continue to generate URL-hash documents and point at the service URL above.
-Planning doc: `Roadmap/09-platform-infra/pmo-operational-reports/smalldocs-report-hub-plan.md`.
+The Report Hub branding shipped in SmallDocs PR #1 and is live on the deployed revision above. Planning
+doc: `Roadmap/09-platform-infra/pmo-operational-reports/smalldocs-report-hub-plan.md`.
 
 Fork-side scope:
 
@@ -77,3 +80,18 @@ Expected:
 - `/trust` renders the SmallDocs Trust page and license/notices remain intact.
 - `/trust/manifest` reports the fork repo and deployed commit.
 - `/api/short/example` returns `{"error":"stateful_apis_disabled"}` with `HTTP 404`.
+
+## Smoke results
+
+Run date: 2026-07-14 · Deploy: `pmo-smalldocs-00002-kvb` · Commit:
+`cea02aa9db690f0b2c39dd1748f901f2a178d195`
+
+1. `gcloud run deploy pmo-smalldocs --source ...` completed and routed 100% traffic to the revision above.
+2. Both the documented URL and canonical Cloud Run URL returned `HTTP 200` for `/`.
+3. `/trust` returned `HTTP 200`; `/trust/manifest` reported the fork repo and commit `cea02aa...`.
+4. `/api/short/example` returned `{"error":"stateful_apis_disabled"}`, confirming the PMO instance stayed
+   stateless.
+5. Browser smoke passed on desktop and phone for `/` and `/docs` on both URLs: Miyagi Reports branding,
+   default report copy, and no horizontal overflow.
+6. Root-script dry-runs generated live PMO weekly and daily standup story links; both opened on phone-width
+   Chromium against the deployed service.
