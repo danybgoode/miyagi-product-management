@@ -16,7 +16,7 @@ the log. Pure tests cover markdown generation, link preservation under Telegram 
 safety.
 **Risk:** low
 
-### FF-2 — Mobile slide aspect marker 🚧
+### FF-2 — Mobile slide aspect marker ✅
 **As** Daniel, **I want** story decks to declare a landscape slide aspect, **so that** PMO/standup
 slides render predictably for phone review and PPT/PDF export.
 **Acceptance:** the PMO weekly deck and daily standup deck templates declare `slideAspectRatio: "16:9"`;
