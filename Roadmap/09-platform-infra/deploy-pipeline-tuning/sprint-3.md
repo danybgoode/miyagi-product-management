@@ -17,7 +17,7 @@ probe before S3.2 touches anything.
 
 ## Stories
 
-### S3.1 — Origin `Cache-Control` probe *(data-gathering, no code change)*
+### S3.1 — Origin `Cache-Control` probe *(data-gathering, no code change)* ✅ DONE 2026-07-13
 > **As** the platform, **I want** to know exactly which routes' origin responses are genuinely
 > cacheable, **so that** a Cloudflare Cache Rule only ever caches content that's actually safe to
 > cache — never something dynamically rendered per-request or per-tenant.
@@ -27,6 +27,28 @@ probe before S3.2 touches anything.
 - Record the actual `Cache-Control` header per path in this sprint doc.
 - **Acceptance:** a clear, evidenced list of which paths are eligible for S3.2 and which aren't
   — expected (not assumed) result: `/` is cacheable, the `(shell)` subtree is not.
+
+**Results** — probed `https://miyagi-web-oehqqtyoia-uk.a.run.app` directly (resolved live via
+`gcloud run services describe miyagi-web --project=miyagisanchezback-497722 --region=us-east4
+--format='value(status.url)'`), bypassing Cloudflare entirely:
+
+| Path | Status | `cache-control` | Verdict |
+|---|---|---|---|
+| `/` | 200 | `s-maxage=60, stale-while-revalidate=31535940` (+ `x-nextjs-cache: STALE`, `x-nextjs-prerender: 1`) | **Cacheable** — confirms the hypothesis above |
+| `/faq` | **404** | `private, no-cache, no-store, max-age=0, must-revalidate` | Not eligible (see finding below) |
+| `/politicas` | **404** | `private, no-cache, no-store, max-age=0, must-revalidate` | Not eligible (see finding below) |
+| `/s/panfleto` (representative `(shell)` storefront) | 200 | `private, no-cache, no-store, max-age=0, must-revalidate` | Confirmed dynamic, as expected |
+| `/s/panfleto/c/algo` | 404 (bad test collection slug — header shape is what matters here) | `private, no-cache, no-store, max-age=0, must-revalidate` | Confirmed dynamic, as expected |
+
+**Finding, out of scope for this epic**: `/faq` and `/politicas` return 404 on BOTH the direct
+origin and the live prod domain (`https://miyagisanchez.com/faq` re-checked — same 404, same
+`cf-cache-status: DYNAMIC`). `app/(shell)/faq` and `app/(shell)/politicas` exist as source files
+but don't resolve live. This is a genuine, pre-existing routing/content bug, unrelated to caching
+— **not fixed here**; recommend filing it separately.
+
+**Conclusion: the only confirmed-cacheable path today is `/` (exact match).** No other route
+qualifies. This narrows S3.2 to a single path rather than the multi-path list originally assumed
+— the correct, evidence-driven outcome per this story's own acceptance bar.
 
 ### S3.2 — Cloudflare Cache Rule for the confirmed-static set *(MED — Daniel sign-off required)*
 > **As** the platform, **I want** genuinely static pages served straight from Cloudflare's edge,
