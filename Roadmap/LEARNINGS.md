@@ -651,7 +651,9 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   originally failed. If a NEW class of huge generated file trips this again, add its pattern to
   `GENERATED_FILE_RE` (or pass `stripGeneratedFileDiffs`'s `extraPatterns` for a one-off) — don't
   reach for the manual `git diff ':(exclude)...' | codex exec -` workaround this entry used to
-  describe; the script handles it now. *(2026-07-11, deploy-pipeline-tuning S1/S2 fast-follow.)*
+  describe; the script handles it now. 2026-07-14 follow-up: `public/reports-data.json`, generated for the
+  hosted PMO report library, hit the same agy argv limit and is now stripped by default too.
+  *(2026-07-11, deploy-pipeline-tuning S1/S2 fast-follow; 2026-07-14 PMO report hub fast-follow.)*
 - **When reusing an existing admin "price vs. regular-price comparison" UI field for a new entity
   that has no regular price to compare against, check whether the missing comparison value ALSO
   disables the raw input — those are two different questions a single `base == null` check can

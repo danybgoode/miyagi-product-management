@@ -155,7 +155,7 @@ export function decideTrivialSkip({ files, minLines = 10 } = {}) {
 // basenames, replacing each with a one-line placeholder so the reviewer still sees THAT the file changed —
 // just not its (often huge, low-signal) content. Pure string logic, no git/gh dependency, so it's directly
 // unit-testable against a hand-built diff fixture.
-const GENERATED_FILE_RE = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|composer\.lock|Gemfile\.lock|Cargo\.lock|poetry\.lock)$/;
+const GENERATED_FILE_RE = /(^|\/)(package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|composer\.lock|Gemfile\.lock|Cargo\.lock|poetry\.lock|reports-data\.json)$/;
 
 export function stripGeneratedFileDiffs(diffText, { extraPatterns = [] } = {}) {
   if (!diffText) return { diff: diffText, strippedFiles: [] };

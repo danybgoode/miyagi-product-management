@@ -43,12 +43,26 @@ raw href length, and prove long hrefs stay whole. True short `/r/<slug>` links a
 the SmallDocs report-hub plan because they require a storage/retention decision.
 **Risk:** low
 
+### FF-5 — Hosted Roadmap report library ✅
+**As** Daniel, **I want** a hosted PMO/Roadmap report library inside the Miyagi Reports hub, **so that**
+clients, investors, and the team can browse polished Roadmap views without installing the local SmallDocs
+library agent.
+**Acceptance:** the PMO SmallDocs fork serves `/reports` from generated public Roadmap data, `/docs`
+routes the `Biblioteca de reportes` button to `/reports`, each report opens through `/docs#md=...`, and
+the upstream `/library` + `/connect` loopback flow remains available for private local files. The root
+generator uses `scripts/roadmap-to-notion.mjs --extract` and the existing SmallDocs hash-link helper,
+curating summaries/metadata rather than publishing raw full docs.
+**Follow-through:** SmallDocs PR #2 shipped `/reports` and was deployed to `pmo-smalldocs` revision
+`pmo-smalldocs-00003-zkb` on 2026-07-14.
+**Risk:** low
+
 ## QA
 
 - `node --test scripts/standup.test.mjs scripts/lib/standup-deck.test.mjs`
 - `node --test 'scripts/lib/pmo-*.test.mjs'`
 - `node scripts/standup.mjs --dry-run` (prints standup text + `SmallDocs standup:` link; no Telegram/log write)
 - `node scripts/pmo-report.mjs --weekly --dry-run` (prints PMO Telegram dry-run with the short visible link)
+- `node scripts/pmo-report-hub-data.mjs` (refreshes SmallDocs `public/reports-data.json`)
 - `node scripts/build-order.mjs --check`
 
 ## Smoke results
@@ -85,3 +99,9 @@ After SmallDocs PR #1 merged, the branded fork was deployed live to `pmo-smalldo
 `cea02aa9db690f0b2c39dd1748f901f2a178d195`. Live smoke passed for the documented and canonical Cloud Run
 URLs on desktop and phone, and exact PMO weekly + daily standup dry-run links opened against the deployed
 service. Details live in `smalldocs-report-hub-plan.md` and `infra/gcp/pmo-smalldocs.md`.
+
+After SmallDocs PR #2 merged, the hosted report library was deployed live to `pmo-smalldocs` at commit
+`eee8803b784f0577d15227e29d0d56fff317f1a8`. Live smoke passed for `/reports` on the documented and
+canonical Cloud Run URLs: 5 executive views rendered, 429 Roadmap rows loaded, 421 directory items were
+available with a 160-card visible cap, search filtered to the expected PMO results, view cards opened
+`/docs#md=...`, mobile had no horizontal overflow, and the segmented filter touch target measured 44px.
