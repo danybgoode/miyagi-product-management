@@ -217,6 +217,14 @@ test('stripGeneratedFileDiffs: known lock-file family (yarn/pnpm/composer/Cargo/
   }
 });
 
+test('stripGeneratedFileDiffs: generated PMO report-library JSON is stripped by default', () => {
+  const hunk = `diff --git a/public/reports-data.json b/public/reports-data.json\nindex 1..2 100644\n--- a/public/reports-data.json\n+++ b/public/reports-data.json\n@@ -1 +1 @@\n-{\"items\":[]}\n+{\"items\":[{\"huge\":\"payload\"}]}\n`;
+  const { diff, strippedFiles } = stripGeneratedFileDiffs(hunk);
+  assert.deepEqual(strippedFiles, ['public/reports-data.json']);
+  assert.match(diff, /generated file — diff omitted/);
+  assert.doesNotMatch(diff, /huge/);
+});
+
 test('stripGeneratedFileDiffs: a nested-path lockfile (apps/foo/package-lock.json) still matches', () => {
   const hunk = `diff --git a/apps/foo/package-lock.json b/apps/foo/package-lock.json\nindex 1..2 100644\n--- a/apps/foo/package-lock.json\n+++ b/apps/foo/package-lock.json\n@@ -1 +1 @@\n-old\n+new\n`;
   const { strippedFiles } = stripGeneratedFileDiffs(hunk);
