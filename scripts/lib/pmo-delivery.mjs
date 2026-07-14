@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { truncateForTelegram } from './telegram-format.mjs';
+import { formatTelegramHtmlLink, telegramHtmlVisibleLength, truncateForTelegram } from './telegram-format.mjs';
 
 export const TELEGRAM_MAX_CHARS = 4096;
 
@@ -18,6 +18,14 @@ function artifactLabel(name) {
     monthly: 'Packet mensual',
     sheet: 'Sheet de metricas',
   }[name] || name;
+}
+
+function artifactLinkText(name) {
+  return {
+    weekly: 'abrir deck semanal',
+    monthly: 'abrir packet mensual',
+    sheet: 'abrir sheet viva',
+  }[name] || 'abrir reporte';
 }
 
 export function loadTelegramChatId({ configPath, env = process.env } = {}) {
@@ -44,12 +52,13 @@ export function buildTelegramDeliveryMessage({ metrics, artifacts, maxChars = TE
 
   const links = artifacts
     .filter((artifact) => artifact.url)
-    .map((artifact) => `${artifactLabel(artifact.name)}: ${artifact.url}`);
+    .map((artifact) => `${artifactLabel(artifact.name)}: ${formatTelegramHtmlLink(artifactLinkText(artifact.name), artifact.url)}`);
   const footer = links.length ? `\n\n${links.join('\n')}` : '';
   if (!footer) return truncateForTelegram(body, maxChars);
 
-  const bodyLimit = maxChars - footer.length;
-  if (bodyLimit <= 20) return truncateForTelegram(`${body}${footer}`, maxChars);
+  const footerVisibleLength = telegramHtmlVisibleLength(footer);
+  if (footerVisibleLength >= maxChars) return truncateForTelegram(body, maxChars);
+  const bodyLimit = maxChars - footerVisibleLength;
   return `${truncateForTelegram(body, bodyLimit)}${footer}`;
 }
 
@@ -68,6 +77,7 @@ export async function sendTelegramMessage({
     body: JSON.stringify({
       chat_id: chatId,
       text,
+      parse_mode: 'HTML',
       disable_web_page_preview: true,
     }),
     signal: AbortSignal.timeout(10000),

@@ -6,9 +6,9 @@ description: >
   CI status, the latest browser-smoke.yml run, BUILD-ORDER.md drift, open-PR state, and the stale
   Vercel-preview count. Use when Daniel asks to "post the standup", "run the daily standup", "what
   happened overnight", or as the nightly ops routine's one step. Runs scripts/standup.mjs, which does
-  all the aggregation, diffing (against scripts/standups.log), and the actual Telegram send. Read-only
-  aggregation + one Telegram post + a log commit — never merges, never gates, never touches any repo's
-  code.
+  all the aggregation, diffing (against the `claude/standup-log` branch), SmallDocs story-deck link
+  generation, and the actual Telegram send. Read-only aggregation + one Telegram post + a log commit —
+  never merges, never gates, never touches any repo's code.
 ---
 
 # standup-post — the daily Telegram standup
@@ -23,8 +23,9 @@ Daniel asks for a standup / "what happened overnight", or the nightly **ops-nigh
 
 ## What already exists (reuse, don't rebuild)
 - **`scripts/standup.mjs`** — the mechanical part. Run it, always: `node scripts/standup.mjs` (gathers,
-  diffs, posts, commits the log) or `node scripts/standup.mjs --dry-run` (gathers + prints the message,
-  skips Telegram and the git commit — use this to sanity-check without touching anything).
+  diffs, posts the plain standup plus a `SmallDocs standup:` story-deck link, commits the log) or
+  `node scripts/standup.mjs --dry-run` (gathers + prints the same message, skips Telegram and the git
+  commit — use this to sanity-check without touching anything).
 - **`gh` CLI** — the PR/CI/workflow-run signals. Must be authenticated with read access to all 3 repos;
   a repo it can't reach degrades to "unavailable" in that section, it doesn't fail the whole run.
 - **`scripts/build-order.mjs --check`** — the build-order drift signal. Don't re-implement its diff logic.
@@ -55,8 +56,9 @@ or set it on the routine's environment (for the nightly run) — don't try to ca
 
 ## Stage 3 — run it
 `node scripts/standup.mjs`. Report back what posted — either the delta lines, or the "quiet night, no
-change" case — so whoever invoked this (Daniel or the routine transcript) has a summary even without
-opening Telegram. Write it in prose as if reporting to executive level.
+change" case — and mention that the Telegram message includes the `SmallDocs standup:` deck link. That
+way whoever invoked this (Daniel or the routine transcript) has a summary even without opening Telegram.
+Write it in prose as if reporting to executive level.
 
 ## Stage 4 — on failure
 Surface `standup.mjs`'s stderr verbatim (it dies loud with a specific message — missing token, missing

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { listPulls, searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
-import { truncateForTelegram } from './lib/telegram-format.mjs';
+import { telegramHtmlToConsoleText, truncateForTelegram } from './lib/telegram-format.mjs';
 import {
   buildTelegramDeliveryMessage,
   loadTelegramChatId,
@@ -265,7 +265,7 @@ async function main() {
       console.log('\nTelegram weekly PMO report sent.');
     } else {
       console.log('\nDry run: Telegram weekly PMO report not sent.');
-      console.log(message);
+      console.log(telegramHtmlToConsoleText(message));
     }
   }
 

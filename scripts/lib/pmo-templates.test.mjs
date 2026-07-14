@@ -78,6 +78,7 @@ test('weekly story-deck fixture fills to exact smalldocs markdown markers', () =
     benchmarks: BENCHMARKS,
   });
   assert.match(output, /^---\ntitle: "PMO semanal - 2026-07-01 a 2026-07-08"/);
+  assert.match(output, /slideAspectRatio: "16:9"/);
   assert.match(output, /#metric: 8/);
   assert.match(output, /"values":\[8,2,6,1\]/);
   assert.match(output, /PR cycle mediano: \*\*9.5h\*\* vs referencia one-day \*\*24h\*\*/);

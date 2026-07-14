@@ -4,6 +4,7 @@ styles:
   fontFamily: "Inter"
   baseFontSize: 15
   lineHeight: 1.6
+  slideAspectRatio: "16:9"
   h1: { fontSize: 2.1, fontWeight: 700 }
   h2: { fontSize: 1.35, fontWeight: 600 }
 ---

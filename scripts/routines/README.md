@@ -170,9 +170,10 @@ routine (cap-safe) — see the budget table below.
      "unavailable" without it (confirmed live in S1), same fallback the standup has always had; this is
      purely so step 2's own dry-run report has real numbers to show, rather than an auth error.
 5. **Output:** one Telegram message per night (the standup) — either the delta lines or a one-line
-   "quiet night, no change" post — **plus, only when there's something to act on:** a `claude/` docs PR
-   from step 1 (board was stale) and/or an advisory comment on a PR from step 3 (it had a conflict or a
-   retryable failing check). **Never** an `--apply` run, **never** a merge, **never** a required check.
+   "quiet night, no change" post, now with a `SmallDocs standup:` story-deck link appended for mobile
+   reading/forwarding — **plus, only when there's something to act on:** a `claude/` docs PR from step 1
+   (board was stale) and/or an advisory comment on a PR from step 3 (it had a conflict or a retryable
+   failing check). **Never** an `--apply` run, **never** a merge, **never** a required check.
    - ⚠️ **First-live-action gate (owed to Daniel, per the epic's risk-tier rule):** before this routine
      runs unattended on schedule, confirm the first live `vercel-prune --apply` (run only by explicit
      ask, never by this routine) and the first live `babysit-pr` action (a real retry/comment on a real

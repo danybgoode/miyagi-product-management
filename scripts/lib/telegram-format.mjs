@@ -8,6 +8,39 @@ function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function escAttr(s) {
+  return esc(s).replace(/"/g, '&quot;');
+}
+
+function decodeHtmlEntities(s) {
+  return String(s ?? '')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+export function formatTelegramHtmlLink(label, url) {
+  return `<a href="${escAttr(url)}">${esc(label)}</a>`;
+}
+
+export function telegramHtmlVisibleText(text) {
+  return decodeHtmlEntities(String(text ?? '')
+    .replace(/<a\s+href="[^"]*">([\s\S]*?)<\/a>/g, '$1')
+    .replace(/<[^>]*>/g, ''));
+}
+
+export function telegramHtmlVisibleLength(text) {
+  return telegramHtmlVisibleText(text).length;
+}
+
+export function telegramHtmlToConsoleText(text) {
+  return decodeHtmlEntities(String(text ?? '')
+    .replace(/<a\s+href="([^"]*)">([\s\S]*?)<\/a>/g, '$2 ($1)')
+    .replace(/<[^>]*>/g, ''));
+}
+
 // Pure — caps a list of {number, title} PRs to maxItems titles before it can dominate a message on a
 // busy day/week, folding the rest into a "…and N more" tail. The caller's own section-header count is
 // never capped, only the listed titles are.

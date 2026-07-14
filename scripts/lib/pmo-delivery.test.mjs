@@ -8,6 +8,7 @@ import {
   loadTelegramChatId,
   sendTelegramMessage,
 } from './pmo-delivery.mjs';
+import { telegramHtmlVisibleLength, telegramHtmlVisibleText } from './telegram-format.mjs';
 
 const METRICS = {
   window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
@@ -28,8 +29,9 @@ test('buildTelegramDeliveryMessage includes headline metrics and preserves the d
   });
   assert.match(message, /PMO semanal - 2026-07-01 a 2026-07-08/);
   assert.match(message, /Historias shipped: 8 \| Epics shipped: 2/);
-  assert.match(message, /Story-deck: https:\/\/pmo-smalldocs\.example\/#md=abc&present=0/);
-  assert.ok(message.length <= 4096);
+  assert.match(message, /Story-deck: <a href="https:\/\/pmo-smalldocs\.example\/#md=abc&amp;present=0">abrir deck semanal<\/a>/);
+  assert.doesNotMatch(telegramHtmlVisibleText(message), /https:\/\//);
+  assert.ok(telegramHtmlVisibleLength(message) <= 4096);
 });
 
 test('buildTelegramDeliveryMessage truncates headline text before chopping artifact links', () => {
@@ -41,9 +43,23 @@ test('buildTelegramDeliveryMessage truncates headline text before chopping artif
     artifacts: [{ name: 'weekly', url: 'https://pmo-smalldocs.example/#md=abc' }],
     maxChars: 230,
   });
-  assert.ok(message.length <= 230);
-  assert.match(message, /Story-deck: https:\/\/pmo-smalldocs\.example\/#md=abc$/);
+  assert.ok(telegramHtmlVisibleLength(message) <= 230);
+  assert.match(message, /Story-deck: <a href="https:\/\/pmo-smalldocs\.example\/#md=abc">abrir deck semanal<\/a>$/);
   assert.match(message, /…/);
+});
+
+test('buildTelegramDeliveryMessage preserves very long SmallDocs hrefs behind short visible labels', () => {
+  const href = `https://pmo-smalldocs.example/#md=${'x'.repeat(1200)}&present=0`;
+  const message = buildTelegramDeliveryMessage({
+    metrics: {
+      ...METRICS,
+      prCycleTime: { medianHours: 'x'.repeat(160), p90Hours: 24 },
+    },
+    artifacts: [{ name: 'weekly', url: href }],
+    maxChars: 230,
+  });
+  assert.ok(telegramHtmlVisibleLength(message) <= 230);
+  assert.match(message, new RegExp(`${'x'.repeat(1200)}&amp;present=0">abrir deck semanal</a>$`));
 });
 
 test('loadTelegramChatId prefers config json and falls back to env', () => {
@@ -69,6 +85,7 @@ test('sendTelegramMessage posts the same sendMessage shape used by routines', as
   assert.deepEqual(JSON.parse(calls[0].options.body), {
     chat_id: '123',
     text: 'hello',
+    parse_mode: 'HTML',
     disable_web_page_preview: true,
   });
 });
