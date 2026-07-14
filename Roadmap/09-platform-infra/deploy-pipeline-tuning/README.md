@@ -9,7 +9,7 @@ slug: deploy-pipeline-tuning
 **Class:** Infra optimization (engineering-facing deploy pipeline + edge/runtime config; one
 step — the Cloudflare Cache Rule — is a genuinely new, first-time capability, everything else is
 tuning existing rails). No new commerce surface.
-**Status: 🚧 IN PROGRESS 2026-07-12 — S1+S2 merged + live in prod; S3-S5 not started.** Groomed
+**Status: 🚧 IN PROGRESS 2026-07-13 — S1-S4 merged/done + live in prod; S5 not started.** Groomed
 via plan mode (not the `groom` skill's seed→scope funnel — Daniel brought a set of external
 AI-generated suggestions, which were validated against the real codebase across three parallel
 research passes + an Opus-backed second-opinion pass before this epic was scaffolded). Full
@@ -68,8 +68,8 @@ no user-facing copy (rule 5).
 |---|---|---|
 | [S1](sprint-1.md) | Commit a `package-lock.json` per app + switch both Dockerfiles from `npm install` to `npm ci` | LOW-but-deploy-rail — Daniel merges (see note below) — ✅ MERGED, live |
 | [S2](sprint-2.md) | Add Docker layer caching (buildx registry cache, `mode=max`) to both `cloudbuild.yaml`s | LOW-MED — Daniel merges (same deploy-rail reasoning) — ✅ MERGED, live |
-| [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — ✅ BUILT + LIVE, PR [#85](https://github.com/danybgoode/miyagi-product-management/pull/85) ready for review, awaiting Daniel's merge |
-| [S4](sprint-4.md) | Pull real Cloud Run metrics → tune `--concurrency` only if the data supports it | LOW (data-gathering) / LOW-MED (conditional config change) |
+| [S3](sprint-3.md) | Origin `Cache-Control` probe (data-gathering) → scoped Cloudflare Cache Rule for confirmed-static routes only | MED — ✅ MERGED + LIVE, PR [#85](https://github.com/danybgoode/miyagi-product-management/pull/85) |
+| [S4](sprint-4.md) | Pull real Cloud Run metrics → tune `--concurrency` only if the data supports it | LOW — ✅ DONE, S4.1 built + S4.2 explicitly skipped (data didn't show saturation) |
 | [S5](sprint-5.md) | Structured JSON logging, phased — backend payment-adjacent call sites first, GCP-native (no new dependency) | LOW |
 
 **Tier note (reconsidered during S1's build, both repos):** the plan originally scoped S1/S2 as
@@ -117,12 +117,15 @@ uncached-at-edge behavior instantly). No customer-facing feature flag applies.
 - [x] S1+S2 merged + verified live (real merge-triggered Cloud Build confirmed `SUCCESS` on both,
       matching exact commit SHAs; live services confirmed healthy post-deploy).
 - [x] S3's Cloudflare Cache Rule is live in prod and verified (`cf-cache-status: HIT` on `/`,
-      `(shell)` routes unaffected) — **PR #85 not yet merged**, awaiting Daniel (MED tier). S4-S5
-      not started.
+      `(shell)` routes unaffected) — PR #85 merged 2026-07-14.
+- [x] S4 done — S4.1's Cloud Monitoring pull found no concurrency-saturation/latency-degradation
+      correlation on either service; S4.2 explicitly skipped with the data recorded in
+      `sprint-4.md`. S5 not started.
 - [x] S1+S2 both have a smoke walkthrough with real, measured numbers (not estimates) in their
       sprint docs. S3's smoke walkthrough (real `curl` output, not estimates) is in `sprint-3.md`.
-- [ ] This README ✅ complete (`status: shipped`) — **not yet**, only 3 of 5 sprints done; stays
-      `in-progress` until S4-S5 are built or explicitly descoped.
+      S4's smoke walkthrough (real Cloud Monitoring numbers) is in `sprint-4.md`.
+- [ ] This README ✅ complete (`status: shipped`) — **not yet**, only 4 of 5 sprints done; stays
+      `in-progress` until S5 is built or explicitly descoped.
 - [ ] `RETROSPECTIVE.md` — written at epic close, once all sprints are resolved (built or
       explicitly descoped), not mid-epic.
 - [ ] Team memory updated (deploy-topology note — build caching behavior changed, edge cache now
@@ -131,5 +134,5 @@ uncached-at-edge behavior instantly). No customer-facing feature flag applies.
       worktree-lockfile note to disambiguate from this epic's deliberate per-app lockfile policy;
       new entry on `scripts/cross-review.mjs` blowing Codex's context window on large generated
       diffs (a real, recurring gap now that lockfiles are committed).
-- [ ] Branch(es) deleted; PR(s) merged — **done for S1+S2**; S3's PR #85 open, awaiting merge;
-      S4-S5 not yet built.
+- [ ] Branch(es) deleted; PR(s) merged — **done for S1+S2+S3**; S4 is docs-only (no branch-specific
+      code to merge beyond this PR); S5 not yet built.
