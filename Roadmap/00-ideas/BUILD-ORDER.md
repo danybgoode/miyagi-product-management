@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-14 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-15 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -18,14 +18,20 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 0/2 stories
 
-## 📋 Ready to build (scaffolded, not started) (6)
+## 📋 Ready to build (scaffolded, not started) (12)
 
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
+- [Agent-readability & marketing-surface hardening](../../07-agentic-and-federated-commerce/agent-readability-marketing-surface/README.md) — 07 Agentic/Federated · 0/3 stories · risk: Low · #2
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
+- [Build-order CI self-heal](../../09-platform-infra/build-order-ci-self-heal/README.md) — 09 Platform-infra · 0/1 stories · risk: Low · #1
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
+- [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 0/6 stories · risk: Low · #4
+- [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
+- [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #5
+- [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/6 stories · risk: High · #6
 
 ## ✅ Shipped (101)
 
@@ -131,14 +137,8 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (13)
+## ⬜ Funnel — seeds not yet scaffolded (7)
 
-- [Build-order CI self-heal — guard regenerates the board instead of failing](seeds/build-order-ci-self-heal.md) — Ready · Chore · #1
-- [Agent-readability P0 — /acerca empty to fetch agents, OG template, CI guard spec](seeds/agent-readability-marketing-surface.md) — Ready · Feature · #2
-- [Process token-diet — kickoff/smoke templating, review-policy flip, doc drift](seeds/process-token-diet.md) — Ready · Chore · #3
-- [Hyper-performant website — mobile 65→90, LCP 12.2s→<2.5s (validated inputs)](seeds/hyper-performant-website.md) — Ready · Feature · #4
-- [ReportHub as the Notion replacement — short links, live views, Notion decommission](seeds/reporthub-as-notion.md) — Raw · Feature · #5
-- [UI refresh before launch — material feel, Kindle-like calm](seeds/ui-refresh-launch.md) — Raw · Feature · #6
 - [Audit: which NEXT_PUBLIC_* client reads are actually inlined at Cloud Run build time](seeds/nextpublic-buildtime-inlining-audit.md) — Raw · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
@@ -159,4 +159,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 
 ---
-_Epics: 113 · seeds in funnel: 13 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 119 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

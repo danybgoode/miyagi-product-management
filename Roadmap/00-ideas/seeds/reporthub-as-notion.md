@@ -1,20 +1,24 @@
 ---
 title: "ReportHub as the Notion replacement — short links, live views, Notion decommission"
 slug: reporthub-as-notion
-status: raw
+status: scaffolded
 area: "09"
 type: feature
 priority: "#5"
 risk: high
-epic: null
+epic: "09-platform-infra/reporthub-as-notion"
 build_order: "#5"
 updated: 2026-07-14
 ---
 
 # Seed — ReportHub as the Notion replacement
 
-**Captured in:** `Roadmap/00-ideas/audits/batch-groom-2026-07-14.md` (Ask 3). **Not yet groomed —
-gets its own session per the batch cadence.**
+**Captured in:** `Roadmap/00-ideas/audits/batch-groom-2026-07-14.md` (Ask 3). **Groomed 2026-07-14
+(same-day session, Fable trial). Decisions (Daniel):** registry storage = **Cloud Storage bucket**;
+retention = **forever for packets, 90d TTL for dailies**; Notion exit = **parallel-run 2–4 weeks, then
+a gated decommission story**; cross-panel offer surfaced, declined ("your call at the gate").
+Kill-switch (Stage 6b): **carve-out — additive read path with stateless URL-hash fallback baked in.**
+Epic: `09-platform-infra/reporthub-as-notion` (3 sprints).
 
 **The ask:** the SmallDocs-powered Miyagi Reports hub (`pmo-smalldocs`, Cloud Run) replaces Notion as
 the working surface: DB-backed queries, graphs, roadmap + sprint status views, custom artifacts beyond

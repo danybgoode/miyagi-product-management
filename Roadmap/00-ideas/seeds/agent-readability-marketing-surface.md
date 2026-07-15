@@ -1,12 +1,12 @@
 ---
 title: "Agent-readability P0 — /acerca empty to fetch agents, OG template, CI guard spec"
 slug: agent-readability-marketing-surface
-status: ready
+status: scaffolded
 area: "07"
 type: bug
 priority: "#2"
 risk: low
-epic: null
+epic: "07-agentic-and-federated-commerce/agent-readability-marketing-surface"
 build_order: "#2"
 updated: 2026-07-14
 ---

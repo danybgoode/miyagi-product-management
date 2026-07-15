@@ -1,12 +1,12 @@
 ---
 title: "Process token-diet — kickoff/smoke templating, review-policy flip, doc drift"
 slug: process-token-diet
-status: ready
+status: scaffolded
 area: "09"
 type: chore
 priority: "#3"
 risk: low
-epic: null
+epic: "09-platform-infra/process-token-diet"
 build_order: "#3"
 updated: 2026-07-14
 ---

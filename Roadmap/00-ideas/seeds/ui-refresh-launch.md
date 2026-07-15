@@ -1,20 +1,25 @@
 ---
 title: "UI refresh before launch — material feel, Kindle-like calm"
 slug: ui-refresh-launch
-status: raw
+status: scaffolded
 area: "09"
 type: feature
 priority: "#6"
-risk: low
-epic: null
+risk: high
+epic: "09-platform-infra/ui-refresh-launch"
 build_order: "#6"
 updated: 2026-07-14
 ---
 
 # Seed — UI refresh before launch
 
-**Captured in:** `Roadmap/00-ideas/audits/batch-groom-2026-07-14.md` (Ask 5). **Not yet groomed —
-gets its own session, sequenced AFTER the perf epic** (same shells/components; avoid double-touching).
+**Captured in:** `Roadmap/00-ideas/audits/batch-groom-2026-07-14.md` (Ask 5). **Groomed 2026-07-14
+(same-day session, Fable trial). Decisions (Daniel):** "material"/"Kindle" are inspiration, not spec —
+apply *current* Material heuristics for a top-shelf feel, calm content-first on reading surfaces;
+scope is **site-wide via the token layer** (why no per-page choice was needed), polish passes
+sequenced by risk with **checkout last (HIGH, Daniel merges)**; **token re-skin only, no component
+rewrites**. Still sequenced AFTER the perf epic (its budgets become acceptance constraints).
+Epic: `09-platform-infra/ui-refresh-launch` (3 sprints).
 
 **The ask (Daniel's words):** optimization-focused UI upgrade to a "material feel", "Kindle-like
 experience", before launch.

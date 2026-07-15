@@ -1,12 +1,12 @@
 ---
 title: "Build-order CI self-heal — guard regenerates the board instead of failing"
 slug: build-order-ci-self-heal
-status: ready
+status: scaffolded
 area: "09"
 type: chore
 priority: "#1"
 risk: low
-epic: null
+epic: "09-platform-infra/build-order-ci-self-heal"
 build_order: "#1"
 updated: 2026-07-14
 ---

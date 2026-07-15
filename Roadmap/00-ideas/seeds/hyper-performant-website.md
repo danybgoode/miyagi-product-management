@@ -1,12 +1,12 @@
 ---
 title: "Hyper-performant website — mobile 65→90, LCP 12.2s→<2.5s (validated inputs)"
 slug: hyper-performant-website
-status: ready
+status: scaffolded
 area: "09"
 type: feature
 priority: "#4"
 risk: low
-epic: null
+epic: "09-platform-infra/hyper-performant-website"
 build_order: "#4"
 updated: 2026-07-14
 ---
