@@ -18,6 +18,10 @@
 # Marketplace Roadmap database id is the default (it is an id, not a secret).
 #
 # Zero dependencies — the script is plain Node 18+ (global fetch), no install step.
+#
+# fetch-depth: 0 is REQUIRED on the checkout below: the extractor derives "Status date" (when a row
+# entered its current status) from git history (`git log -G`); a shallow clone would silently date
+# everything "today" (added 2026-07-15, board-sort polish).
 name: notion-sync
 
 on:
@@ -39,6 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
