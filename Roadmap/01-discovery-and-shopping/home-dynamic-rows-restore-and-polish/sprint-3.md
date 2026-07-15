@@ -1,7 +1,7 @@
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 3: Signed-out first-visit iteration — hero, Recién llegado, Pasillos, seller block
 
-**Status:** ✅ built, PR review pending — Daniel's visual-design eyeball owed (async, no auth/money
-path — see Sprint QA below)
+**Status:** ✅ merged `f77dda0` (PR #255, squash-merged to `main` 2026-07-15) — Daniel's
+visual-design eyeball still owed (async, no auth/money path — see Sprint QA below)
 
 > Reference mockup: `mercado-libre-search-results.png` (signed-out · primera visita). Hard rail:
 > `/` stays an ISR static asset — every section below is server-rendered from cached reads or
@@ -95,6 +95,18 @@ href mutation, then green).
   confirmed unrelated (2 curated-listings-empty-shaped + 5 launchpad-flag-state — the exact pattern
   Sprint 2 documented; both spec files diff byte-identical against `origin/main`, i.e. nothing this
   sprint touched).
+- **cross-agent + fresh-reviewer review:** `node scripts/cross-review.mjs 255 --agent codex` posted an
+  advisory pass (should-fix: chip label+count coupled to React's SSR comment-node serialization,
+  addressed — `6be66cd`; two minor nits, one addressed via the same commit, one left as-is). The
+  `pr-reviewer` subagent independently verified every claim against the diff/`origin/main` and
+  returned **Approve**, flagging 5 `copy-overrides-*.spec.ts` fixtures still referencing the deleted
+  `home.ribbon.*` key as harmless-but-stale example data — fixed same-sprint (`6be66cd`).
+- **CI gotcha:** the first post-review push (`6be66cd`) had `Type-check + build` pass but `Playwright
+  vs preview` time out after 10 min — Vercel never built a preview deployment for that commit at all
+  (confirmed via `vercel ls`, no deployment appeared). An empty-commit retrigger (`4ce5f4d`) produced a
+  normal ~7 min green run. One-off Vercel webhook gap, not a code issue — matches the existing
+  LEARNINGS pattern for GitHub Actions occasionally not scheduling a run.
+- **Merged:** squash-merged to `main` as `f77dda0`, PR #255, 2026-07-15. Branch deleted.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com

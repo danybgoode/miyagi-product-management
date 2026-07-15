@@ -38,8 +38,8 @@ rule 2 compliant. Recently-viewed is device-local (`localStorage`) in v1 — no 
 | Sprint | Story | Risk |
 |---|---|---|
 | 1 | Restore rows on prod — observed red, root cause, fix + breadcrumb | ✅ low — merged `a2061e9` (PR #243) |
-| 2 | Signed-in polish to spec — ribbon gating, price-drop badge, recently-viewed | low |
-| 3 | Signed-out first-visit iteration — hero, Recién llegado, Pasillos, seller block | low |
+| 2 | Signed-in polish to spec — ribbon gating, price-drop badge, recently-viewed | ✅ low — merged `5ac54d5` (PR #251) |
+| 3 | Signed-out first-visit iteration — hero, Recién llegado, Pasillos, seller block | ✅ low — merged `f77dda0` (PR #255) |
 
 ## Deploy order
 S1 turned out to be a pure `apps/miyagisanchez` app-code fix, **not** the CORS/Cloud-Run-env change
@@ -52,6 +52,12 @@ asset** — `next build` must keep the static marker for `/` (no `ƒ`), and `hom
 must stay green (signed-in testids absent from anonymous HTML).
 
 ## Definition of Done (epic)
+All 3 sprints are now merged to `main` (2026-07-15). **Epic close held back on real gaps, not
+formality:** Daniel's live prod smoke is still owed for S1+S2 (the signed-in personalization
+islands — retoma rail, offer alerts, price-drop badge, recently-viewed — need a real authed
+session to confirm), and S3's visual-design eyeball (anonymous surface, but colors/spacing/layout
+fidelity against the mockup needs a human). Retrospective/poster/LEARNINGS promotion intentionally
+NOT done yet — they belong at true epic close, once those smokes land, not before.
 - [ ] All sprints merged to `main` + smoke-tested (gaps stated)
 - [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
 - [ ] This README marked ✅; every sprint status ticked with commit refs
