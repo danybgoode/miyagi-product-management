@@ -1,7 +1,8 @@
 # Pricing & money-path remediation — Sprint 3: convocatoria UX fast-follows (DEFERRED)
 
-**Risk:** LOW · **Status:** ⬜ **deferred** to `bookshop-launchpad` next grooming — not part of this
-hardening pass.
+**Status:** ⬜ deferred — not part of this hardening pass.
+
+**Risk:** LOW · Deferred to `bookshop-launchpad` next grooming.
 
 Per Daniel's own words ("bugs and cleanups… more important than dressing up"), these UX polish
 items are not pulled into this epic. Already logged in full detail in

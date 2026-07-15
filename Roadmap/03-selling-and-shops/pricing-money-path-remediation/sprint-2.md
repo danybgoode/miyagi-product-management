@@ -1,7 +1,8 @@
 # Pricing & money-path remediation — Sprint 2: hygiene (Europe region + migrations sweep)
 
-**Risk:** LOW (F) / LOW–MED (sweep) · **Status:** ⬜ not started · **Precondition:** Sprint 1 in
-flight or done.
+**Status:** 🏗️ in progress.
+
+**Risk:** LOW (F) / LOW–MED (sweep) · **Precondition:** Sprint 1 done (✅ — cleared to start).
 
 ## Story 2.1 — Finding F: remove the leftover "Europe" region
 

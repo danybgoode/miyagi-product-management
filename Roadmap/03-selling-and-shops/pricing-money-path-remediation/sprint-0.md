@@ -1,7 +1,8 @@
 # Pricing & money-path remediation — Sprint 0: resolve the charge-semantics unknown (THE GATE)
 
-**Risk:** HIGH · **Status:** 🟡 in progress · **Blocks:** everything, incl. resuming
-`panfleto-premium-shop` Sprint 3.
+**Status:** ✅ CLOSED — Finding A REFUTED, no fix needed (full verdict below).
+
+**Risk:** HIGH · **Blocks:** everything, incl. resuming `panfleto-premium-shop` Sprint 3 — now cleared.
 
 This sprint is a **spike, not a fix**. It produces certainty and a written verdict. No pricing
 code changes here unless the verdict is "confirmed" *and* the follow-on fix sub-story is

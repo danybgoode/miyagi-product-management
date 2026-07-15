@@ -1,9 +1,10 @@
 # Pricing & money-path remediation — Sprint 1: live pricing write-path bugs
 
-**Risk:** HIGH (both touch the seller/agent pricing write path) · **Status:** ✅ MERGED + LIVE —
-backend PR [#89](https://github.com/danybgoode/medusa-bonsai-backend/pull/89) (squash `3247d68`),
-merged + deployed 2026-07-13 (Cloud Run revision `medusa-web-00166-rlz`). **Precondition:** Sprint 0
-closed (✅, REFUTED — see `sprint-0.md`).
+**Status:** ✅ MERGED + LIVE — backend PR [#89](https://github.com/danybgoode/medusa-bonsai-backend/pull/89)
+(squash `3247d68`), merged + deployed 2026-07-13 (Cloud Run revision `medusa-web-00166-rlz`).
+
+**Risk:** HIGH (both touch the seller/agent pricing write path) · **Precondition:** Sprint 0 closed
+(✅, REFUTED — see `sprint-0.md`).
 
 ## Finding D — three attempts, the real bug was a plain key-name typo
 
