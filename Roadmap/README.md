@@ -174,6 +174,31 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-15 — Money-Path & Pricing Integrity Remediation epic SHIPPED (3 sprints; HIGH →
+  LOW).** Before any more feature-building, Daniel called for a full audit of every latent bug and
+  hygiene gap surfaced along the way — "our foundation needs to be rock solid." **S0** traced
+  Medusa v2.15.3's own payment-session pipeline end-to-end for both checkout shapes this
+  marketplace uses and **refuted** the one CRITICAL unknown (whether the Medusa-cart charge could
+  ever diverge from what's displayed) — every real charge is self-consistent, no fix needed. **S1**
+  fixed two live seller-facing pricing bugs in `seller-product-update.ts` (backend PR #89): a
+  fresh-variant price-set write that always 500'd (`"Price set with id: undefined not found"` — the
+  real cause, found only on a third attempt after two independently-reviewed fixes turned out to be
+  no-ops, was a plain `price_set_id` vs. Medusa's actual `priceSetId` key-name typo), and Admin's
+  dual-column price editor creating duplicate rows that a legitimate tier-ladder guard then
+  misread as real quantity tiers. **S2** deleted a leftover seeded "Europe" region cluttering
+  Admin's price editor for every product (backend PR #92, currency-guarded, verified live via
+  `/store/regions`), and ran a full migrations-vs-applied sweep across every other epic's Supabase
+  schema — surfacing **3 real gaps**: `tenant_intake` (onboarding-three-doors' Q1/Q2
+  personalization has been silently inert since that epic "shipped," failing soft with no visible
+  error), `marketplace_migration_estimates` (platform-migrations' quoted-estimate guarantee has
+  been hard-500ing on any >150-listing Shopify migration since that epic "closed" — the exact
+  "owed" live smoke gap its own tracking already flagged), and a ticket-token uniqueness index
+  (lowest severity, unused in app logic). All three applied live and independently re-verified via
+  direct schema query, not migration bookkeeping. Durable lever: **"shipped" only means the code
+  merged — a same-day live-schema check is the only way to know the DB agrees**, the second time
+  this exact failure mode recurred this session (see `bookshop-launchpad`'s Finding B). See
+  [03 · Selling & Shops › pricing-money-path-remediation](03-selling-and-shops/pricing-money-path-remediation/).
+
 - **2026-07-14 — PMO operational reports SHIPPED (3 sprints; LOW, root scripts + self-hosted
   SmallDocs).** The repo can now report delivery health like a PMO without hand assembly: **S1**
   built the pure scrum/DORA/doc-ops metrics library plus a bounded `claude/pmo-reports-log` window

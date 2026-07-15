@@ -1235,6 +1235,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (`to_regclass` or `list_tables` via the Supabase MCP) as part of that PR's own smoke — a green CI run
   proves the code is correct, never that the DDL was applied to the real database.
   *(2026-07-09, admin-content-and-announcements S3.)*
+  **Recurred twice more since, confirming this is systemic, not a one-off — and it fails in TWO
+  different shapes depending on the read path's error-handling style.** `bookshop-launchpad`'s whole
+  Supabase schema silently broke for 4+ days (merged 2026-07-07, unnoticed until 2026-07-12). Then a
+  dedicated one-time sweep (`pricing-money-path-remediation` epic S2, 2026-07-15) diffed all 68 local
+  migration files against `list_migrations` on prod and found **3 more** real gaps across two
+  *different* already-"shipped" epics: `tenant_intake` (onboarding-three-doors) and
+  `marketplace_migration_estimates` (platform-migrations), plus one index. **The fail-soft/fail-loud
+  split matters:** a degrade-safe read pattern (every Supabase error swallowed to a default, per
+  `lib/home-favorites.ts`'s convention) makes a missing table **silent** — `tenant_intake`'s entire
+  onboarding-personalization feature had persisted nothing since its ship date with zero error
+  reports. An unguarded insert makes it **loud** instead — `marketplace_migration_estimates` 500'd on
+  every >150-listing migration quote attempt. Don't read "no error reports" as evidence a
+  fail-soft feature actually works if nobody has exercised it live since deploy. **Tooling gotcha
+  when sweeping:** `apply_migration` (the Supabase MCP tool) records **its own run timestamp** as the
+  migration version, not the local filename's timestamp — a naive exact-timestamp diff against
+  `list_migrations` produces false positives (a table that DOES exist looks "missing" because it was
+  recorded under a different version number). Diff by migration **name** first to rule out
+  timestamp-only mismatches, then confirm every real candidate against live schema directly
+  (`to_regclass`/`pg_indexes`) — that's the only fully-authoritative check, migration bookkeeping
+  itself is not trustworthy evidence either way.
 - **A `<input type="datetime-local">` value carries NO timezone — converting it to a real ISO instant
   must happen in the BROWSER, not the server.** The browser's own `new Date(naiveString)` parse
   correctly uses the visitor's real local timezone (the thing you actually want), but a server-side
@@ -1349,6 +1369,29 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   check on an order-level write" as a checklist item whenever copying an existing
   `resolveOrderForSeller`-shaped helper into a new route. *(2026-07-07, custom-print-products S4 —
   `proof`/`tags`/`confirm-payment` routes, caught across two Codex cross-review rounds.)*
+
+- **Medusa v2's pricing `amount` field stores MAJOR currency units, not minor-unit cents — but this
+  app's entire custom write/read path assumes integer cents.** This app writes `amount: price_cents`
+  (e.g. `5000` for "$50.00") and divides by 100 on every read, which is self-consistent only while
+  this app's own code is the sole reader/writer. Medusa Admin's native price editor writes true major
+  units (typing "25" stores `amount: 25`), which this app's ÷100 read then renders as "$0.25" — the
+  visible symptom of the mismatch. Traced end-to-end (`pricing-money-path-remediation` S0, 2026-07-13):
+  every REAL checkout path this marketplace uses stayed self-consistent (charges exactly what's
+  displayed), so this was refuted as a money-safety bug — but it's a live landmine for any future
+  integration that reads/writes Medusa pricing using its own native major-unit convention instead of
+  going through this app's cents-based helpers.
+- **`AddPricesDTO`'s real field is `priceSetId` (camelCase) — not `price_set_id`.** Passing the
+  snake_case key silently fails: Medusa reads `data.priceSetId` as `undefined`, which cascades into
+  `` `Price set with id: undefined not found` `` — a genuinely confusing error since the actual
+  problem (a typo'd key name) is nowhere in the message. Confirmed by grepping the entire installed
+  `@medusajs/pricing` package for the exact error-string template (exists in exactly one place), so
+  this diagnosis is the only possible source once that string appears. Took three attempts to find —
+  two independently-reviewed "fixes" (an `Array.isArray` guard, then an array-wrapped call) each
+  looked plausible and each turned out to be a no-op once a fresh review read the actual compiled
+  source deeply enough. **When a Medusa DTO call throws an "X with id: undefined not found," check
+  the literal key names passed against the DTO's actual TS type first** — don't assume the bug is in
+  return-value shape or module wiring before ruling out a plain typo. *(2026-07-13,
+  pricing-money-path-remediation S1 — backend PR #89.)*
 
 ## Architecture
 - **A secret-auth internal route must fail CLOSED when its secret env is UNSET — and check idempotency

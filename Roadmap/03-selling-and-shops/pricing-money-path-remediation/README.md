@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: pricing-money-path-remediation
 ---
 
@@ -65,8 +65,8 @@ not by inventing a new one. Finding F deletes a stray Region via Medusa's own Ad
 | S0 | Finding A follow-on — *if confirmed*, scope the fix; *if refuted*, document the evidence | HIGH | ✅ refuted, documented — no fix needed |
 | S1 | **Finding D** — fresh zero-price variant can't have a price set via `seller-product-update.ts` (`"Price set with id: undefined not found"`) | HIGH | ✅ shipped + live — PR [#89](https://github.com/danybgoode/medusa-bonsai-backend/pull/89) |
 | S1 | **Finding E** — Admin's dual MXN/region columns create two price rows; ambiguity guard misfires as if they were real tiers | HIGH | ✅ shipped + live — PR [#89](https://github.com/danybgoode/medusa-bonsai-backend/pull/89) |
-| S2 | **Finding F** — delete leftover default "Europe" region (pricing-editor hygiene) | LOW | ⬜ not started |
-| S2 | Migrations-vs-applied sweep across other epics (Finding B precedent) | LOW–MED | ⬜ not started |
+| S2 | **Finding F** — delete leftover default "Europe" region (pricing-editor hygiene) | LOW | ✅ shipped + live — PR [#92](https://github.com/danybgoode/medusa-bonsai-backend/pull/92) |
+| S2 | Migrations-vs-applied sweep across other epics (Finding B precedent) | LOW–MED | ✅ done — 3 gaps found + fixed live, see sprint-2.md |
 | S3 | **Findings G/H** — convocatoria "Género" dropdown + paste-a-story option | LOW | ⬜ **deferred** to bookshop-launchpad grooming |
 
 ## Deploy order
@@ -75,23 +75,28 @@ not by inventing a new one. Finding F deletes a stray Region via Medusa's own Ad
 **closed 2026-07-13 — Finding A REFUTED** (full evidence trail in `sprint-0.md`): every real
 checkout path this marketplace actually uses charges buyers exactly what's displayed. No fix
 needed. **S1 also closed 2026-07-13 — Findings D+E fixed, merged (PR #89), deployed, and verified
-live** (full 3-attempt investigation writeup in `sprint-1.md`). **`panfleto-premium-shop` Sprint 3
-is fully cleared to resume.** Next: S2 → (S3 deferred). Every S1/S2 destructive-op story is still
-HIGH-risk money/pricing → Daniel authorizes and merges each per WAYS-OF-WORKING. Destructive prod ops
-(Region delete, any prod-DB
-pricing rewrite) get explicit in-conversation sign-off.
+live** (full 3-attempt investigation writeup in `sprint-1.md`). **S2 closed 2026-07-15 — Finding F
+deleted + verified live (PR #92), migrations sweep complete (3 real gaps found across other epics,
+all fixed live)** — full detail in `sprint-2.md`. S3 stays deferred. **The epic is functionally
+done** — only close-out docs (retrospective, `Roadmap/README.md` poster, `LEARNINGS.md`) remain.
+`panfleto-premium-shop` Sprint 3 has been fully cleared to resume since S1 closed. Every
+destructive-op story in this epic got explicit in-conversation Daniel sign-off before merge AND
+separately before live execution, per WAYS-OF-WORKING.
 
 ## Definition of Done (epic)
 
 - [x] S0 produces a **written verdict** on Finding A (confirmed / refuted) with the actual
       evidence — **REFUTED**, see `sprint-0.md`. No conditional fix sub-story needed.
-- [ ] Findings D + E fixed, each with a live before/after reproduction (not just tsc/build).
-- [ ] Finding F region removed; codebase confirmed free of Europe-region-id references first.
-- [ ] Migrations sweep run; any gaps logged (fixed or ticketed).
-- [ ] `panfleto-premium-shop` Sprint 3 explicitly cleared to resume (sequencing note below).
-- [ ] Each `sprint-N.md` has its real smoke walkthrough; statuses ticked with commit refs.
+- [x] Findings D + E fixed, each with a live before/after reproduction (not just tsc/build).
+- [x] Finding F region removed; codebase confirmed free of Europe-region-id references first.
+- [x] Migrations sweep run; any gaps logged (fixed or ticketed) — 3 real gaps found
+      (`tenant_intake`, `marketplace_migration_estimates`, ticket-token unique index), all applied
+      live and re-verified via direct schema query. See `sprint-2.md`.
+- [x] `panfleto-premium-shop` Sprint 3 explicitly cleared to resume (sequencing note below).
+- [x] Each `sprint-N.md` has its real smoke walkthrough; statuses ticked with commit refs.
 - [ ] Team memory + `LEARNINGS.md` updated (the cents-vs-major-units semantics is a durable,
       cross-cutting learning worth promoting regardless of the verdict).
+- [ ] `RETROSPECTIVE.md` written, `Roadmap/README.md` poster updated, epic frontmatter → `shipped`.
 
 ## Recommended sequencing
 
