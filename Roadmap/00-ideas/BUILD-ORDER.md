@@ -131,8 +131,14 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (13)
 
+- [Build-order CI self-heal — guard regenerates the board instead of failing](seeds/build-order-ci-self-heal.md) — Ready · Chore · #1
+- [Agent-readability P0 — /acerca empty to fetch agents, OG template, CI guard spec](seeds/agent-readability-marketing-surface.md) — Ready · Feature · #2
+- [Process token-diet — kickoff/smoke templating, review-policy flip, doc drift](seeds/process-token-diet.md) — Ready · Chore · #3
+- [Hyper-performant website — mobile 65→90, LCP 12.2s→<2.5s (validated inputs)](seeds/hyper-performant-website.md) — Ready · Feature · #4
+- [ReportHub as the Notion replacement — short links, live views, Notion decommission](seeds/reporthub-as-notion.md) — Raw · Feature · #5
+- [UI refresh before launch — material feel, Kindle-like calm](seeds/ui-refresh-launch.md) — Raw · Feature · #6
 - [Audit: which NEXT_PUBLIC_* client reads are actually inlined at Cloud Run build time](seeds/nextpublic-buildtime-inlining-audit.md) — Raw · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
@@ -153,4 +159,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 
 ---
-_Epics: 113 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 113 · seeds in funnel: 13 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
