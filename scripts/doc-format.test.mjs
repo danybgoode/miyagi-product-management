@@ -115,6 +115,32 @@ None.
   assert.deepEqual(checkRetrospective(content), []);
 });
 
+test('checkRetrospective: a "_Closed: YYYY-MM-DD_" line with trailing content after the italic close is clean (real-world norm, not drift)', () => {
+  const content = `# X — Retrospective
+
+_Closed: 2026-06-23_ · **2 sprints** · Risk LOW throughout
+
+## What shipped
+## What went well
+## What we learned
+## Gaps / follow-ups
+`;
+  assert.deepEqual(checkRetrospective(content), []);
+});
+
+test('checkRetrospective: a "_Closed: YYYY-MM-DD ... _" line with the italic closed at end-of-line is clean', () => {
+  const content = `# X — Retrospective
+
+_Closed: 2026-06-09 · 3 sprints, all shipped to prod._
+
+## What shipped
+## What went well
+## What we learned
+## Gaps / follow-ups
+`;
+  assert.deepEqual(checkRetrospective(content), []);
+});
+
 test('checkRetrospective: bold "**Closed ...**" flagged as the legacy format', () => {
   const content = '# X — Retrospective\n\n**Closed 2026-06-07.**\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n';
   const offenses = checkRetrospective(content);

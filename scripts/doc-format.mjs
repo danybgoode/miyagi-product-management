@@ -173,11 +173,21 @@ export function checkRetrospective(content) {
   const closedLine = content.split('\n').find((l) => /closed/i.test(l) && l.trim() !== '');
   if (!closedLine) {
     offenses.push({ rule: 'retro-closed-missing', detail: 'no "Closed" date line found near the top' });
-  } else if (!/^_Closed:\s*\d{4}-\d{2}-\d{2}_$/.test(closedLine.trim())) {
-    if (/^\*\*Closed/.test(closedLine.trim())) {
-      offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
-    } else {
-      offenses.push({ rule: 'retro-closed-format', detail: `"Closed" line doesn't match canonical "_Closed: YYYY-MM-DD_" — found: "${closedLine.trim()}"` });
+  } else {
+    const trimmed = closedLine.trim();
+    // Canonical is an italic line STARTING with "_Closed: YYYY-MM-DD" — trailing content after the
+    // date (sprint counts, PR refs, caveats) is genuinely the norm across real retros, not drift, as
+    // long as the italic markup actually closes somewhere (immediately after the date, or at the end
+    // of the line). Require: starts with the italic-open + "Closed:" + a real date, and a closing "_"
+    // appears somewhere after that.
+    const startsWithDate = /^_Closed:\s*\d{4}-\d{2}-\d{2}/.test(trimmed);
+    const hasClosingItalic = trimmed.slice(1).includes('_');
+    if (!startsWithDate || !hasClosingItalic) {
+      if (/^\*\*Closed/.test(trimmed)) {
+        offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
+      } else {
+        offenses.push({ rule: 'retro-closed-format', detail: `"Closed" line doesn't match canonical "_Closed: YYYY-MM-DD_" — found: "${trimmed}"` });
+      }
     }
   }
 
