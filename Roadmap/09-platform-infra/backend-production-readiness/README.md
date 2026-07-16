@@ -5,9 +5,10 @@ slug: backend-production-readiness
 
 # Epic: Backend Production Readiness — audit + hardening
 
-> **Area:** 09-platform-infra · **Risk:** HIGH (shared infra / secrets / prod Cloud Run + DB)
-> **Scope seed:** [`00-ideas/seeds/backend-production-readiness.md`](../../00-ideas/seeds/backend-production-readiness.md) — APPROVED 2026-06-10
-> **Class:** Chore / infra — no buyer/seller/agent-facing change. Audit-first.
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/backend-production-readiness.md`](../../00-ideas/seeds/backend-production-readiness.md)
+
+Shared infra / secrets / prod Cloud Run + DB. No buyer/seller/agent-facing change. Audit-first.
+Approved 2026-06-10.
 
 ## Why
 The Medusa backend deploys **straight to prod** with no staging, no rehearsed rollback, and unverified

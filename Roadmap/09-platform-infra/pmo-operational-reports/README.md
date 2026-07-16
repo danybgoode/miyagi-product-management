@@ -5,7 +5,7 @@ slug: pmo-operational-reports
 
 # Epic: PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs
 
-> **Area:** 09-platform-infra · **Risk:** low · **Archetype:** Grower · **Scope seed:**
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Feature · **Scope seed:**
 > [`00-ideas/seeds/pmo-operational-reports.md`](../../00-ideas/seeds/pmo-operational-reports.md)
 > (approved by Daniel 2026-07-11).
 

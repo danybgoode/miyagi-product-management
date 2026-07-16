@@ -5,7 +5,7 @@ slug: build-order-ci-self-heal
 
 # Epic: Build-order CI self-heal
 
-> **Area:** 09-platform-infra · **Risk:** low · **Scope seed:** [`00-ideas/seeds/build-order-ci-self-heal.md`](../../00-ideas/seeds/build-order-ci-self-heal.md) · **Archetype:** Sweeper
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/build-order-ci-self-heal.md`](../../00-ideas/seeds/build-order-ci-self-heal.md)
 
 ## Why
 An epic-close session that flips a README `status:` without regenerating `BUILD-ORDER.md` reds the

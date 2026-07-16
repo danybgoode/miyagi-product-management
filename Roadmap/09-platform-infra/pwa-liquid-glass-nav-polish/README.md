@@ -5,10 +5,11 @@ slug: pwa-liquid-glass-nav-polish
 
 # Epic — PWA Liquid-Glass Nav Polish
 
-> **Macro-section:** [09 · Platform & Infra](../README.md) · **Branches:** `feat/pwa-glass-nav` (S1) +
-> `feat/pwa-glass-nav-s2` (S2) — **both merged + deleted** ·
-> **Risk: LOW overall** (frontend-only; S1.3 + S2.2 touch shared `globals.css`/`layout.tsx` — announce).
-> Reviewer may auto-merge LOW stories on green CI **unless** they touch shared layout.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Feature · **Scope seed:** [`00-ideas/seeds/pwa-liquid-glass-nav-polish.md`](../../00-ideas/seeds/pwa-liquid-glass-nav-polish.md)
+
+**Branches:** `feat/pwa-glass-nav` (S1) + `feat/pwa-glass-nav-s2` (S2) — **both merged + deleted** ·
+frontend-only; S1.3 + S2.2 touch shared `globals.css`/`layout.tsx` — announce.
+Reviewer may auto-merge LOW stories on green CI **unless** they touch shared layout.
 > **Status: ✅ COMPLETE — both sprints merged to prod (2026-06-22).** S1 squash `071246d`
 > ([PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98)) · S2 squash `4ab597c`
 > ([PR #99](https://github.com/danybgoode/miyagisanchezcommerce/pull/99)); both cross-reviewed by **Codex**

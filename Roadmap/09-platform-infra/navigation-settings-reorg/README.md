@@ -5,12 +5,13 @@ slug: navigation-settings-reorg
 
 # Epic — Navigation & Settings Reorg
 
-> **Macro-section:** [09 · Platform & Infra](../README.md) · **Branch:** `feat/nav-reorg` ·
-> **Risk: LOW overall, with one HIGH sprint** (S3 alters the global app-shell suppression gate).
-> Reviewer may auto-merge LOW stories on green CI **unless** they touch shared layout; **S3 → Daniel merges.**
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Feature · **Scope seed:** [`00-ideas/seeds/navigation-settings-reorg.md`](../../00-ideas/seeds/navigation-settings-reorg.md)
+
+**Branch:** `feat/nav-reorg` · LOW overall, with one HIGH sprint (S3 alters the global app-shell
+suppression gate). Reviewer may auto-merge LOW stories on green CI **unless** they touch shared
+layout; **S3 → Daniel merges.**
 > **Status: ✅ EPIC COMPLETE — all 4 sprints shipped to prod 2026-06-11 + closed out.**
-> S1 #75 `dc4c992` · S2 #77 `a7d6fe8` · S3 #80 `d6b0a6b` · S4 #81 `8e12782`. Scope doc:
-> [`00-ideas/seeds/navigation-settings-reorg.md`](../../00-ideas/seeds/navigation-settings-reorg.md).
+> S1 #75 `dc4c992` · S2 #77 `a7d6fe8` · S3 #80 `d6b0a6b` · S4 #81 `8e12782`.
 > Source: nav + settings audit (Miyagi Sánchez). es-MX default.
 >
 > **⚠️ Partially superseded (2026-06-22) by [PWA Liquid-Glass Nav Polish](../pwa-liquid-glass-nav-polish/)** —

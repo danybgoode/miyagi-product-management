@@ -5,7 +5,7 @@ slug: reporthub-as-notion
 
 # Epic: ReportHub as the Notion replacement
 
-> **Area:** 09-platform-infra · **Risk:** high · **Scope seed:** [`00-ideas/seeds/reporthub-as-notion.md`](../../00-ideas/seeds/reporthub-as-notion.md) · **Archetype:** Grower
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Feature · **Scope seed:** [`00-ideas/seeds/reporthub-as-notion.md`](../../00-ideas/seeds/reporthub-as-notion.md)
 
 ## Why
 The SmallDocs-powered Miyagi Reports hub (`pmo-smalldocs`, Cloud Run) replaces Notion as the working

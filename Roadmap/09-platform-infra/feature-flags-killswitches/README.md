@@ -11,9 +11,10 @@ slug: feature-flags-killswitches
 > proven and cheap to extend on demand (see [RETROSPECTIVE](RETROSPECTIVE.md)). S2 post-deploy toggle
 > smoke owed to Daniel.
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Infra / platform tooling (operational control for the founder; gates buyer/seller surfaces but is not itself a product journey).
-**Scope doc / decision:** [`Roadmap/00-ideas/seeds/spike-flagsmith.md`](../../00-ideas/seeds/spike-flagsmith.md) — spike **investigated + GO signed off 2026-06-06**.
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/spike-flagsmith.md`](../../00-ideas/seeds/spike-flagsmith.md)
+
+Operational control for the founder; gates buyer/seller surfaces (checkout-adjacent) but is not itself
+a product journey. Spike investigated + GO signed off 2026-06-06.
 
 ## Why
 

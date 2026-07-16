@@ -5,10 +5,10 @@ slug: groom-archetype-lens
 
 # Epic: Groom archetype-lens wiring — optional Stage-2 archetype tag
 
-> **Area:** 09 · Platform & Infra · **Risk:** Low · **Type:** Chore (docs/tooling) · **Archetype:** Builder
-> (small additive tooling) · **Scope doc:**
-> [`00-ideas/2. readyforscope/groom-archetype-lens.md`](../../00-ideas/2.%20readyforscope/groom-archetype-lens.md)
-> · **Decision it implements:** [`spike-role-archetypes`](../../00-ideas/2.%20readyforscope/spike-role-archetypes.md) WRITTEN DECISION (2026-07-02).
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Small additive tooling (docs/tooling). Scope doc: [`00-ideas/2. readyforscope/groom-archetype-lens.md`](../../00-ideas/2.%20readyforscope/groom-archetype-lens.md)
+· **Decision it implements:** [`spike-role-archetypes`](../../00-ideas/2.%20readyforscope/spike-role-archetypes.md) WRITTEN DECISION (2026-07-02).
 
 ## Why
 The role-archetypes spike decided to **adopt the five archetypes as an optional groom Stage-2 lens** (trial

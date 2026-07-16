@@ -6,10 +6,11 @@ build_order: 1       # numeric build-order sequence (SSOT for the Notion build-o
 
 # Epic — Admin consolidation + tenant management
 
-**Macro-section:** 09 · Platform & Infra.
-**Class:** Mixed — light consolidation (re-home/relink + one shell) **+** new auth model **+** new tenant
-management. Risk spans LOW (read-only directory, nav shell) → HIGH (auth migration, entitlement mutations).
-**Scope doc / decision:** [`Roadmap/00-ideas/2. readyforscope/spike-admin-consolidation.md`](../../00-ideas/2.%20readyforscope/spike-admin-consolidation.md) — spike RUN + **APPROVED 2026-06-22** (decision + cross-panel folded in).
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Feature
+
+Light consolidation (re-home/relink + one shell) + new auth model + new tenant management. Risk spans
+LOW (read-only directory, nav shell) → HIGH (auth migration, entitlement mutations) — tagged High
+overall. Scope/decision: [`Roadmap/00-ideas/2. readyforscope/spike-admin-consolidation.md`](../../00-ideas/2.%20readyforscope/spike-admin-consolidation.md) — spike RUN + **APPROVED 2026-06-22** (decision + cross-panel folded in).
 
 ## Why
 

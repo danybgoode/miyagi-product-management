@@ -11,9 +11,11 @@ slug: feature-flags-inhouse
 > decommissioned Flagsmith (dependency, env/secrets, MCP server, doc refs). Flagsmith is gone from both
 > running apps and all live infra. See [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / infra migration (no user-facing change) with one design decision, resolved in grooming.
-**Replaces:** [feature-flags-killswitches](../feature-flags-killswitches/) (same interface, new backend).
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Chore
+
+Infra migration (no user-facing change), checkout-adjacent (money-path flag), one design decision
+resolved in grooming. **Replaces:** [feature-flags-killswitches](../feature-flags-killswitches/) (same
+interface, new backend).
 
 ## Why
 

@@ -68,6 +68,18 @@ test('checkEpicReadme: Scope doc (legacy readyforscope/) flagged distinctly from
   assert.ok(!offenses.some((o) => o.rule === 'header-missing-scope-seed'));
 });
 
+test('checkEpicReadme: no Scope-seed field is NOT flagged when the epic genuinely has no seed file (pre-seeds/-convention epic) — an accepted state, not drift', () => {
+  const content = '---\nstatus: shipped\nslug: some-epic-with-no-seed-file\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
+  const offenses = checkEpicReadme(content, { slug: 'some-epic-with-no-seed-file' });
+  assert.ok(!offenses.some((o) => o.rule === 'header-missing-scope-seed'));
+});
+
+test('checkEpicReadme: no Scope-seed field IS flagged when a real seed file exists for this slug and just is not linked', () => {
+  const content = '---\nstatus: shipped\nslug: doc-format-consistency\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
+  const offenses = checkEpicReadme(content, { slug: 'doc-format-consistency' });
+  assert.ok(offenses.some((o) => o.rule === 'header-missing-scope-seed'));
+});
+
 test('checkEpicReadme: legacy Macro-section header flagged', () => {
   const content = '---\nstatus: shipped\nslug: x\n---\n\n> **Macro-section:** [09](../README.md) · **BUILD-ORDER:** #1\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content);

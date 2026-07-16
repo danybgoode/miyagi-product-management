@@ -14,9 +14,10 @@ slug: routines-enablement
 > and added an optional Telegram ping-on-failure. See `RETROSPECTIVE.md`. **Owed to Daniel (operational):**
 > flip both A routines `ready_for_review → opened`; optionally wire the Telegram-on-failure env.
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / dev-tooling + process (engineering-facing; no buyer/seller/agent surface).
-**Decision doc (the spike that approved this):** [`spike-claude-routines`](../../00-ideas/2.%20readyforscope/spike-claude-routines.md) — WRITTEN DECISION landed 2026-06-23.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Engineering-facing dev-tooling + process; no buyer/seller/agent surface. **Decision doc (the spike
+that approved this):** [`spike-claude-routines`](../../00-ideas/2.%20readyforscope/spike-claude-routines.md) — WRITTEN DECISION landed 2026-06-23.
 **Sibling:** the four fixes that came in the same brain-dump — [`devops-reliability-cleanup`](../devops-reliability-cleanup/README.md) (✅ shipped; B's gate, the smoke fix, is done).
 
 ## Why

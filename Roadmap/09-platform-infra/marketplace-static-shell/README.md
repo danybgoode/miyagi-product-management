@@ -5,11 +5,13 @@ slug: marketplace-static-shell
 
 # Epic: Static marketplace shell — kill the per-request homepage function ✅
 
-> **Area:** 09-platform-infra · **Risk:** med–high (S1 restructures the shared layout + middleware that all
-> channels depend on) · **Origin:** the S1-deferred "static signed-out homepage" follow-up from
-> [`neon-egress-and-db-isolation` sprint-1](../neon-egress-and-db-isolation/sprint-1.md), and the live finding
-> (postgres-migration grooming, 2026-06-22) that the **~30 s idle homepage load is a Vercel function
-> cold-start**, not the backend (now warm on Cloud SQL).
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Chore
+
+S1 restructures the shared layout + middleware that all channels depend on. **Origin:** the
+S1-deferred "static signed-out homepage" follow-up from
+[`neon-egress-and-db-isolation` sprint-1](../neon-egress-and-db-isolation/sprint-1.md), and the live finding
+(postgres-migration grooming, 2026-06-22) that the **~30 s idle homepage load is a Vercel function
+cold-start**, not the backend (now warm on Cloud SQL).
 
 ## Why
 The marketplace homepage loads slowly (~30 s) after an idle period because it renders as a **per-request Vercel

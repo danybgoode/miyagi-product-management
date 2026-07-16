@@ -5,7 +5,7 @@ slug: ui-refresh-launch
 
 # Epic: UI refresh before launch
 
-> **Area:** 09-platform-infra · **Risk:** high · **Scope seed:** [`00-ideas/seeds/ui-refresh-launch.md`](../../00-ideas/seeds/ui-refresh-launch.md) · **Archetype:** Builder
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Feature · **Scope seed:** [`00-ideas/seeds/ui-refresh-launch.md`](../../00-ideas/seeds/ui-refresh-launch.md)
 
 ## Why
 A launch-grade visual upgrade. Direction (Daniel, 2026-07-14): "material" and "Kindle-like" are

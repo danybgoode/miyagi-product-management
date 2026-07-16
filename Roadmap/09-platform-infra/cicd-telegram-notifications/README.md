@@ -12,9 +12,9 @@ slug: cicd-telegram-notifications
 > code):** create the dedicated CI/CD channel + set `TELEGRAM_CICD_CHAT_ID` in both repos, then the live
 > push + deploy-finish confirmation — the workflows skip cleanly until those secrets exist.
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / infra (observability for the technical founder; no buyer/seller/agent-facing change).
-**Scope doc:** [`Roadmap/00-ideas/seeds/unified-cicd-notifications.md`](../../00-ideas/seeds/unified-cicd-notifications.md) — APPROVED 2026-06-06.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/unified-cicd-notifications.md`](../../00-ideas/seeds/unified-cicd-notifications.md)
+
+Observability for the technical founder; no buyer/seller/agent-facing change. Approved 2026-06-06.
 
 ## Why
 

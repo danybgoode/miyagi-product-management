@@ -5,10 +5,11 @@ slug: dobby-foundation
 
 # Epic: dobby-foundation — portable ways-of-work (plugin marketplace + project template)
 
-> **Area:** 09-platform-infra · **Risk:** low · **Archetype:** Maintainer ·
-> **Scope doc:** [`00-ideas/2. readyforscope/golden-beans-growth-engine.md`](../../00-ideas/2.%20readyforscope/golden-beans-growth-engine.md)
-> (this epic is that doc's **S0 workstream**; the Growth Engine sprints S1–S4 scaffold in the new
-> `golden-beans` repo's own Roadmap once story 1.4 creates it).
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Scope doc: [`00-ideas/2. readyforscope/golden-beans-growth-engine.md`](../../00-ideas/2.%20readyforscope/golden-beans-growth-engine.md)
+(this epic is that doc's **S0 workstream**; the Growth Engine sprints S1–S4 scaffold in the new
+`golden-beans` repo's own Roadmap once story 1.4 creates it).
 
 ## Why
 

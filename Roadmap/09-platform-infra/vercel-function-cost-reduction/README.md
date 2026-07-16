@@ -5,7 +5,7 @@ slug: vercel-function-cost-reduction
 
 # Epic: Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)
 
-> **Area:** 09-platform-infra · **Risk:** low · **Scope seed:** [`00-ideas/seeds/vercel-function-cost-reduction.md`](../../00-ideas/seeds/vercel-function-cost-reduction.md)
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/vercel-function-cost-reduction.md`](../../00-ideas/seeds/vercel-function-cost-reduction.md)
 
 **All 3 sprints shipped.** S1 backend cron cadence ([PR #28](https://github.com/danybgoode/medusa-bonsai-backend/pull/28) `2fa1773`) ·
 S2 `/_not-found` (2.1 Bot Protection **Active** + 2.2 cheap cached 404, [PR #92](https://github.com/danybgoode/miyagisanchezcommerce/pull/92) `db3c0a3`) ·

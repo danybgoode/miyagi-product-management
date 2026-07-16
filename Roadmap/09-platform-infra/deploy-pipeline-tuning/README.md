@@ -5,10 +5,10 @@ slug: deploy-pipeline-tuning
 
 # Epic — Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Infra optimization (engineering-facing deploy pipeline + edge/runtime config; one
-step — the Cloudflare Cache Rule — is a genuinely new, first-time capability, everything else is
-tuning existing rails). No new commerce surface.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Engineering-facing deploy pipeline + edge/runtime config; one step — the Cloudflare Cache Rule — is a
+genuinely new, first-time capability, everything else is tuning existing rails. No new commerce surface.
 **Status: ✅ SHIPPED 2026-07-14 — all 5 sprints resolved (built or explicitly descoped).** Groomed
 via plan mode (not the `groom` skill's seed→scope funnel — Daniel brought a set of external
 AI-generated suggestions, which were validated against the real codebase across three parallel

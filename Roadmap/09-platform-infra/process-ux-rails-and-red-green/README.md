@@ -5,7 +5,7 @@ slug: process-ux-rails-and-red-green
 
 # Epic: Process iteration — UX rails at grooming + observed-red DoD ✅
 
-> **Area:** 09-platform-infra · **Risk:** low · **Archetype:** Maintainer · **Scope seed:**
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:**
 > [`00-ideas/seeds/process-ux-rails-and-red-green.md`](../../00-ideas/seeds/process-ux-rails-and-red-green.md)
 > (approved by Daniel 2026-07-12). Child of the `process-iteration-portfolio` line.
 

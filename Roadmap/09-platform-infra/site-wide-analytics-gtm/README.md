@@ -12,9 +12,9 @@ slug: site-wide-analytics-gtm
 > wizard (it showed only 1 session/30d — created but never loading); optionally add GA4 (needs a GA4 property);
 > then the firing smoke. See [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore — frontend analytics instrumentation. No buyer/seller/agent capability change.
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/site-wide-analytics-gtm.md`](../../00-ideas/2.%20readyforscope/site-wide-analytics-gtm.md) — APPROVED 2026-06-22.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Frontend analytics instrumentation. No buyer/seller/agent capability change. Scope doc: [`Roadmap/00-ideas/2. readyforscope/site-wide-analytics-gtm.md`](../../00-ideas/2.%20readyforscope/site-wide-analytics-gtm.md) — APPROVED 2026-06-22.
 **Supersedes:** the orphaned, never-built **Sprint 4 of the archived `neon-egress-and-db-isolation` epic**
 ("Site-wide Clarity loader + UTM") — its Clarity-loader + stale-comment scope is folded in here.
 

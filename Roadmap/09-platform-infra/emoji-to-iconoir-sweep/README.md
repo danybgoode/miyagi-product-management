@@ -5,7 +5,9 @@ slug: emoji-to-iconoir-sweep
 
 # Epic: Emoji → Iconoir sweep — one icon language, finally
 
-> **Area:** 09 · Platform & Infra · **Risk:** LOW (visual-only; shared-surface files announced) · **Archetype:** Sweeper · **Class:** Chore · **Scope doc:** [`00-ideas/2. readyforscope/emoji-to-iconoir-sweep.md`](../../00-ideas/2.%20readyforscope/emoji-to-iconoir-sweep.md)
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Visual-only; shared-surface files announced. Scope doc: [`00-ideas/2. readyforscope/emoji-to-iconoir-sweep.md`](../../00-ideas/2.%20readyforscope/emoji-to-iconoir-sweep.md)
 
 ## Why
 The poster claims "one Iconoir icon language across the buyer surface (no emoji)" — but a 2026-07-05

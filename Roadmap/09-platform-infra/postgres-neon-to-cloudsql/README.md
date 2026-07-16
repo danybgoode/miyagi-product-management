@@ -5,10 +5,12 @@ slug: postgres-neon-to-cloudsql
 
 # Epic: Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅
 
-> **Area:** 09-platform-infra · **Risk:** high (production commerce DB migration: money data, cutover) ·
-> **Supersedes** the spike's "keep commerce on Neon" call in
-> [`00-ideas/2. readyforscope/db-egress-and-account-strategy.md`](../../00-ideas/2.%20readyforscope/db-egress-and-account-strategy.md)
-> and the symptom-treating sprints of [`neon-egress-and-db-isolation`](../neon-egress-and-db-isolation/README.md).
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Chore
+
+Production commerce DB migration: money data, cutover. **Supersedes** the spike's "keep commerce on
+Neon" call in
+[`00-ideas/2. readyforscope/db-egress-and-account-strategy.md`](../../00-ideas/2.%20readyforscope/db-egress-and-account-strategy.md)
+and the symptom-treating sprints of [`neon-egress-and-db-isolation`](../neon-egress-and-db-isolation/README.md).
 
 ## Why
 A Neon usage email warned the org was near its **5 GB/mo egress cap** — with **zero traffic and no

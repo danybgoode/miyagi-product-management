@@ -5,9 +5,10 @@ slug: seller-nav-consolidation
 
 # Epic — Seller nav consolidation + breadcrumb standardization (`/shop/manage`)
 
-**Macro-section:** 09 · Platform & Infra (follows the shipped *Navigation & Settings Reorg* that created the SellerNav).
-**Class:** Chore — frontend-only information-architecture cleanup. No buyer/seller/agent capability change.
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/seller-nav-consolidation.md`](../../00-ideas/2.%20readyforscope/seller-nav-consolidation.md) — APPROVED 2026-06-22.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Follows the shipped *Navigation & Settings Reorg* that created the SellerNav. Frontend-only
+information-architecture cleanup. No buyer/seller/agent capability change. Scope doc: [`Roadmap/00-ideas/2. readyforscope/seller-nav-consolidation.md`](../../00-ideas/2.%20readyforscope/seller-nav-consolidation.md) — APPROVED 2026-06-22.
 
 ## Why
 

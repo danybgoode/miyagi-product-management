@@ -10,9 +10,10 @@ slug: doc-hygiene-learnings-sweep
 > `scripts/doc-hygiene.mjs` stand up the rolling check, wired into weekly Routine C. See
 > [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
 
-> **Area:** 09 · Platform & Infra · **Risk:** Low · **Scope doc:**
-> [`00-ideas/2. readyforscope/doc-hygiene-learnings-sweep.md`](../../00-ideas/2.%20readyforscope/doc-hygiene-learnings-sweep.md)
-> · **Portfolio parent:** [`process-iteration-portfolio`](../../00-ideas/2.%20readyforscope/process-iteration-portfolio.md) (Initiative A)
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Scope doc: [`00-ideas/2. readyforscope/doc-hygiene-learnings-sweep.md`](../../00-ideas/2.%20readyforscope/doc-hygiene-learnings-sweep.md)
+· **Portfolio parent:** [`process-iteration-portfolio`](../../00-ideas/2.%20readyforscope/process-iteration-portfolio.md) (Initiative A)
 
 ## Why
 Agents flag the always-read docs as over-budget. The real bloat (confirmed) is **`LEARNINGS.md`** (~1,125

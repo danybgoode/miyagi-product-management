@@ -5,7 +5,7 @@ slug: frontend-vercel-to-cloudrun
 
 # Epic: Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10
 
-> **Area:** 09-platform-infra · **Risk:** high · **Scope seed:** [`00-ideas/seeds/frontend-vercel-to-cloudrun.md`](../../00-ideas/seeds/frontend-vercel-to-cloudrun.md) · **Archetype:** Maintainer
+> **Area:** 09 · Platform & Infra · **Risk:** High · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/frontend-vercel-to-cloudrun.md`](../../00-ideas/seeds/frontend-vercel-to-cloudrun.md)
 
 ## Why
 

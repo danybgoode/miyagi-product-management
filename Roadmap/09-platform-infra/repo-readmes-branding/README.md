@@ -5,7 +5,7 @@ slug: repo-readmes-branding
 
 # Epic: Repo cleanup + per-repo READMEs — value prop, engineering practice, product story
 
-> **Area:** 09-platform-infra · **Risk:** low · **Scope seed:** [`00-ideas/seeds/repo-readmes-branding.md`](../../00-ideas/seeds/repo-readmes-branding.md)
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/repo-readmes-branding.md`](../../00-ideas/seeds/repo-readmes-branding.md)
 
 ## Why
 The four repos are the public face for exactly the audiences the other Wave-3 seeds court —

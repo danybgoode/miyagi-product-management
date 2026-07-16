@@ -5,9 +5,9 @@ slug: cross-agent-code-review
 
 # Epic — Cross-agent code review (second-opinion command)
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / dev-tooling (process improvement, Cowork track). No buyer/seller/agent-facing change.
-**Scope doc:** [`Roadmap/00-ideas/seeds/cross-agent-code-review.md`](../../00-ideas/seeds/cross-agent-code-review.md) — APPROVED 2026-06-10.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/cross-agent-code-review.md`](../../00-ideas/seeds/cross-agent-code-review.md)
+
+Process improvement, Cowork track. No buyer/seller/agent-facing change. Approved 2026-06-10.
 
 ## Why
 

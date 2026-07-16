@@ -5,9 +5,10 @@ slug: agy-drift-doctor
 
 # Epic · agy drift doctor — self-healing for the Antigravity CLI pin
 
-**Domain: [09 · Platform & Infra](../README.md).** One-sprint **chore** (dev-tooling), risk **LOW** —
-advisory cross-review plumbing that never gates a merge. Asked by Daniel 2026-07-06 after the day's
-cross-reviews degraded to agy's fallback model twice.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+One-sprint chore (dev-tooling) — advisory cross-review plumbing that never gates a merge. Asked by
+Daniel 2026-07-06 after the day's cross-reviews degraded to agy's fallback model twice.
 
 **Status: ✅ shipped 2026-07-06** — 1 sprint, built + merged same day. Retro:
 [`RETROSPECTIVE.md`](RETROSPECTIVE.md).
@@ -28,6 +29,13 @@ scripts test suite). Model drift is **reported, never auto-swapped** (reviewer-m
 judgment call); a broken contract still fails loud — the 1.0.10 protection is preserved, only the
 re-verification is automated. `checkAgyVersion`'s failure message now names the command, so the fix
 reaches exactly the agent that hits the wall.
+
+## Definition of Done (epic)
+- [x] `scripts/agy-doctor.mjs` diagnoses (version vs pin, `--help` contract, both pinned models, live
+      print probes) and `--fix`es (bumps `AGY_PINNED` + a "last verified" marker only on a green live
+      probe, then runs the scripts test suite).
+- [x] Model drift is reported, never auto-swapped; a broken contract still fails loud.
+- [x] `checkAgyVersion`'s failure message names the command, so the fix reaches the agent that hits it.
 
 ## Deliberately out of scope
 - **ops-nightly wiring** — a routine's cloud sandbox has no agy binary and agy has no headless auth

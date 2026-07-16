@@ -79,8 +79,12 @@ export function siblingDocs(readmeRelPath) {
 
 // ── Individual checkers — each returns a list of { rule, detail } offenses for one file's content ──
 
-export function checkEpicReadme(content) {
+export function checkEpicReadme(content, { slug } = {}) {
   const offenses = [];
+  // Many epics predate the seeds/ convention and genuinely have no seed file to link — that's an
+  // accepted state (Sprint 2 sweep decision), not drift. Only require a **Scope seed:** field when a
+  // real seed file exists for this epic's slug; a seed that exists but isn't linked IS still flagged.
+  const hasRealSeed = Boolean(slug) && existsRelative(join('Roadmap', '00-ideas', 'seeds', `${slug}.md`));
 
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (!fmMatch) {
@@ -120,7 +124,7 @@ export function checkEpicReadme(content) {
     if (!headerLine.includes('**Scope seed:**')) {
       if (headerLine.includes('**Scope doc:**')) {
         offenses.push({ rule: 'header-scope-doc-legacy', detail: 'header uses **Scope doc:** — canonical is **Scope seed:** pointing at 00-ideas/seeds/ (2. readyforscope/ is documented legacy per 00-ideas/README.md)' });
-      } else {
+      } else if (hasRealSeed) {
         offenses.push({ rule: 'header-missing-scope-seed', detail: 'header line has no **Scope seed:** field' });
       }
     } else if (headerLine.includes('00-ideas/seeds/')) {
@@ -367,7 +371,7 @@ export function findAllOffenses({ activeOnly = false } = {}) {
   for (const epic of epics) {
     const readmePath = epic.doc_link;
     if (!existsRelative(readmePath)) continue; // extractor can lag a just-renamed/moved doc
-    const readmeOffenses = checkEpicReadme(readRelative(readmePath));
+    const readmeOffenses = checkEpicReadme(readRelative(readmePath), { slug: epic.slug });
     if (readmeOffenses.length) results.push({ path: readmePath, docType: 'epic-README', offenses: readmeOffenses });
 
     const { sprints, retro } = siblingDocs(readmePath);
@@ -503,7 +507,7 @@ function runHook() {
     const content = readFileSync(filePath, 'utf8');
     const base = relPath.split('/').pop();
     let offenses = [];
-    if (base === 'README.md') offenses = checkEpicReadme(content);
+    if (base === 'README.md') offenses = checkEpicReadme(content, { slug: relPath.split('/').at(-2) });
     else if (/^sprint-\d+\.md$/.test(base)) offenses = checkSprintDoc(content);
     else if (base === 'RETROSPECTIVE.md') offenses = checkRetrospective(content);
     else process.exit(0); // not an epic doc type this checker covers (e.g. a seed, the poster)

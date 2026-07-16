@@ -5,7 +5,7 @@ slug: seller-portal-rails-foundation
 
 # Epic: Seller-portal rails foundation — one design language
 
-> **Area:** 09-platform-infra · **Risk:** LOW · **Archetype:** Sweeper · **Scope seed:** [`00-ideas/seeds/seller-portal-ux-audit.md`](../../00-ideas/seeds/seller-portal-ux-audit.md)
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/seller-portal-ux-audit.md`](../../00-ideas/seeds/seller-portal-ux-audit.md)
 >
 > P0·A of the July-2026 seller-portal UX audit (`references/MiyagiAdminUXAudit/`). The mechanical
 > foundation the rest of the audit program builds on. **Rails touched: R1–R7.**

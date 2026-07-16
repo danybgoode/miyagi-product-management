@@ -10,9 +10,9 @@ is merged and runnable: two architecture lenses (purist/pragmatist), a pair-run 
 contradiction-synthesis, the shared CLI plumbing in `scripts/lib/cross-agent-cli.mjs`, and the `groom`
 trigger model + `Panel:` verb wiring. Advisory, single-pass, print-only, never a gate.
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / planning-process tooling (Cowork track). No buyer/seller/agent-facing change.
-**Scope doc:** [`Roadmap/00-ideas/seeds/cross-agent-planning-panel.md`](../../00-ideas/seeds/cross-agent-planning-panel.md) — APPROVED 2026-06-13.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/cross-agent-planning-panel.md`](../../00-ideas/seeds/cross-agent-planning-panel.md)
+
+Planning-process tooling (Cowork track). No buyer/seller/agent-facing change. Approved 2026-06-13.
 
 ## Why
 

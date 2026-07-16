@@ -5,9 +5,9 @@ slug: devops-reliability-cleanup
 
 # Epic — DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore + Bug sweep (engineering-facing observability/tooling; no buyer/seller/agent surface).
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/devops-reliability-cleanup.md`](../../00-ideas/2.%20readyforscope/devops-reliability-cleanup.md) — APPROVED 2026-06-23.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Bug
+
+Engineering-facing observability/tooling bug sweep; no buyer/seller/agent surface. Scope doc: [`Roadmap/00-ideas/2. readyforscope/devops-reliability-cleanup.md`](../../00-ideas/2.%20readyforscope/devops-reliability-cleanup.md) — APPROVED 2026-06-23.
 **Sibling:** the 5th ask of the same brain-dump is a separate spike —
 [`spike-claude-routines`](../../00-ideas/2.%20readyforscope/spike-claude-routines.md).
 

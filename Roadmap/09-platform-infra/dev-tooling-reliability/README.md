@@ -9,9 +9,9 @@ slug: dev-tooling-reliability
 > required status check on `main`) · S2 Codex→Antigravity auto-fallback (root PR #16 `cbed936`) · S3
 > wrong-branch tax: PR# optional + resolve-from-branch + stale-HEAD guard (root PR #17 `2534aeb`).
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / dev-tooling (engineering-facing process improvement; no buyer/seller/agent change).
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/dev-tooling-reliability.md`](../../00-ideas/2.%20readyforscope/dev-tooling-reliability.md) — APPROVED 2026-06-13.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Engineering-facing process improvement; no buyer/seller/agent change. Scope doc: [`Roadmap/00-ideas/2. readyforscope/dev-tooling-reliability.md`](../../00-ideas/2.%20readyforscope/dev-tooling-reliability.md) — APPROVED 2026-06-13.
 
 ## Why
 

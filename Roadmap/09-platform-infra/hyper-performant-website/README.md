@@ -5,7 +5,7 @@ slug: hyper-performant-website
 
 # Epic: Hyper-performant website
 
-> **Area:** 09-platform-infra · **Risk:** low · **Scope seed:** [`00-ideas/seeds/hyper-performant-website.md`](../../00-ideas/seeds/hyper-performant-website.md) · **Archetype:** Maintainer
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/hyper-performant-website.md`](../../00-ideas/seeds/hyper-performant-website.md)
 
 ## Why
 Mobile PageSpeed 65 with LCP 12.2 s (validated Google run, 2026-07-14) on a marketplace about to

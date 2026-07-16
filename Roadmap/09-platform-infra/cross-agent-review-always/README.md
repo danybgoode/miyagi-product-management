@@ -14,9 +14,9 @@ slug: cross-agent-review-always
 
 # Epic — Cross-agent review on every PR (CI auto-run + policy)
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / dev-tooling + process (engineering-facing; no buyer/seller/agent surface).
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/cross-agent-review-always.md`](../../00-ideas/2.%20readyforscope/cross-agent-review-always.md) — APPROVED 2026-06-22.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Engineering-facing dev-tooling + process; no buyer/seller/agent surface. Scope doc: [`Roadmap/00-ideas/2. readyforscope/cross-agent-review-always.md`](../../00-ideas/2.%20readyforscope/cross-agent-review-always.md) — APPROVED 2026-06-22.
 **Sibling:** the other half of the same ask — [`spike-cross-agent-orchestration`](../../00-ideas/2.%20readyforscope/spike-cross-agent-orchestration.md) (build-time delegation; spike, not built here).
 
 ## Why

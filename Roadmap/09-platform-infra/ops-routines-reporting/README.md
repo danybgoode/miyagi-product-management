@@ -14,10 +14,11 @@ slug: ops-routines-reporting
 > weekly Telegram post + the `weekly-recap` routine account stand-up (same "account creation is mine"
 > split every sprint here has used). See `RETROSPECTIVE.md`.
 
-> **Area:** 09 · Platform & Infra · **Risk:** Low–Medium (two risk carve-outs) · **Scope doc:**
-> [`00-ideas/2. readyforscope/ops-routines-reporting.md`](../../00-ideas/2.%20readyforscope/ops-routines-reporting.md)
-> · **Portfolio parent:** [`process-iteration-portfolio`](../../00-ideas/2.%20readyforscope/process-iteration-portfolio.md) (Initiative B)
-> · **Built against:** [`spike-skills-library-audit`](../../00-ideas/2.%20readyforscope/spike-skills-library-audit.md) WRITTEN DECISION (2026-07-02).
+> **Area:** 09 · Platform & Infra · **Risk:** Medium · **Class:** Chore
+
+Two risk carve-outs. Scope doc: [`00-ideas/2. readyforscope/ops-routines-reporting.md`](../../00-ideas/2.%20readyforscope/ops-routines-reporting.md)
+· **Portfolio parent:** [`process-iteration-portfolio`](../../00-ideas/2.%20readyforscope/process-iteration-portfolio.md) (Initiative B)
+· **Built against:** [`spike-skills-library-audit`](../../00-ideas/2.%20readyforscope/spike-skills-library-audit.md) WRITTEN DECISION (2026-07-02).
 
 ## Why
 Turn overnight repo state into something Daniel wakes up to instead of assembles: a **daily standup** in

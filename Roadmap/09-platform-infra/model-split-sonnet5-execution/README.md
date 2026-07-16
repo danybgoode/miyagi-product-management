@@ -5,9 +5,10 @@ slug: model-split-sonnet5-execution
 
 # Epic: Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess ✅ COMPLETE 2026-07-01
 
-> **Area:** 09 · Platform & Infra · **Risk:** Low · **Scope doc:**
-> [`00-ideas/2. readyforscope/model-split-sonnet5-execution.md`](../../00-ideas/2.%20readyforscope/model-split-sonnet5-execution.md)
-> · **Portfolio parent:** [`process-iteration-portfolio`](../../00-ideas/2.%20readyforscope/process-iteration-portfolio.md) (Initiative C)
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Scope doc: [`00-ideas/2. readyforscope/model-split-sonnet5-execution.md`](../../00-ideas/2.%20readyforscope/model-split-sonnet5-execution.md)
+· **Portfolio parent:** [`process-iteration-portfolio`](../../00-ideas/2.%20readyforscope/process-iteration-portfolio.md) (Initiative C)
 
 ## Why
 Make the model-tier default explicit and safe. We already plan on the strong model and execute on a faster

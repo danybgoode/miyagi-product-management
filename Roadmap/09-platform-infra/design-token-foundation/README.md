@@ -5,9 +5,9 @@ slug: design-token-foundation
 
 # Epic — Design-Token / Design-System Foundation
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore / foundation (cross-cutting presentation substrate; no buyer/seller/agent-facing behavior change).
-**Scope doc:** [`Roadmap/00-ideas/seeds/design-token-foundation.md`](../../00-ideas/seeds/design-token-foundation.md) — APPROVED 2026-06-06.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/design-token-foundation.md`](../../00-ideas/seeds/design-token-foundation.md)
+
+Cross-cutting presentation substrate; no buyer/seller/agent-facing behavior change. Approved 2026-06-06.
 
 ## Why
 

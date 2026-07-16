@@ -6,9 +6,9 @@ build_order: 2       # numeric build-order sequence (SSOT for the Notion build-o
 
 # Epic — Notion roadmap board hygiene
 
-**Macro-section:** 09 · Platform & Infra
-**Class:** Chore — dev-tooling/projection hygiene. No buyer/seller/agent surface.
-**Scope doc:** [`Roadmap/00-ideas/2. readyforscope/notion-board-hygiene.md`](../../00-ideas/2.%20readyforscope/notion-board-hygiene.md) — APPROVED 2026-06-22.
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+
+Dev-tooling/projection hygiene. No buyer/seller/agent surface. Scope doc: [`Roadmap/00-ideas/2. readyforscope/notion-board-hygiene.md`](../../00-ideas/2.%20readyforscope/notion-board-hygiene.md) — APPROVED 2026-06-22.
 
 ## Why
 

@@ -5,7 +5,7 @@ slug: process-token-diet
 
 # Epic: Process token-diet
 
-> **Area:** 09-platform-infra · **Risk:** low · **Scope seed:** [`00-ideas/seeds/process-token-diet.md`](../../00-ideas/seeds/process-token-diet.md) · **Archetype:** Sweeper
+> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Scope seed:** [`00-ideas/seeds/process-token-diet.md`](../../00-ideas/seeds/process-token-diet.md)
 
 ## Why
 Stop spending model tokens on invariant boilerplate (kickoff prompts, smoke-walkthrough skeletons) and
