@@ -67,15 +67,11 @@ apps/
 .claude/config/*.json
 !.claude/config/*.example.json
 
-# Staging / reference asset drops (binaries; not repo history)
+# Staging / reference asset drops (binaries; not repo history) — blanket-ignored so new drops
+# (screenshots, PDFs, scratch notes) never sit as untracked/dirty. Files already committed here
+# before 2026-07-16 stay tracked (gitignore doesn't retroactively untrack existing history).
 gems/
-references/design_handoff_mexico26_trifold/
-references/MiyagiAdminUXAudit/
-
-# Founder CV export — personal/identifying source doc used to write the /acerca founder
-# section (mobile-clerk-account-management fast-follow); the consolidated, reviewed copy
-# lives in code (lib/about-content.ts + locales/*.json), not this raw export.
-references/founder-cv.md
+references/
 
 # macOS system files
 .DS_Store
