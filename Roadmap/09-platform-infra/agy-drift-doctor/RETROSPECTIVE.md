@@ -1,7 +1,7 @@
 # Retrospective — agy drift doctor
 
 **Macro-section:** 09 · Platform & Infra · **Class:** chore / dev-tooling · **Risk:** LOW ·
-**Closed:** 2026-07-06 · **1 sprint, 2 stories**, same-day build+merge.
+_Closed: 2026-07-06 · **1 sprint, 2 stories**, same-day build+merge._
 
 ## What shipped
 `scripts/agy-doctor.mjs` (diagnose + `--fix`) making the agy-pin re-verification executable, plus the

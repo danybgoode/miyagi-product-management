@@ -1,6 +1,6 @@
 # Sprint 1 — The kill-switch foundation + first flag
 
-**Epic:** [Feature flags & kill-switches](README.md) · **Status:** ✅ Merged to `main` 2026-06-06 (PR #34)
+**Status:** ✅ Merged to `main` 2026-06-06 (PR #34)
 **Risk:** HIGH (checkout-adjacent → Daniel merged). Code is fail-open, so it's a no-op in prod until activated.
 
 This is the spike's recommended **thin first slice** (spike-flagsmith.md §6): one helper, one flag, one

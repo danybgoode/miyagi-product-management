@@ -113,7 +113,7 @@ revision config flag (concurrency — one `gcloud run services update` away from
 (c) a reversible Cloudflare Cache Rule (delete the rule, traffic falls back to today's
 uncached-at-edge behavior instantly). No customer-facing feature flag applies.
 
-## Epic Definition of Done
+## Definition of Done (epic)
 - [x] S1+S2 merged + verified live (real merge-triggered Cloud Build confirmed `SUCCESS` on both,
       matching exact commit SHAs; live services confirmed healthy post-deploy).
 - [x] S3's Cloudflare Cache Rule is live in prod and verified (`cf-cache-status: HIT` on `/`,

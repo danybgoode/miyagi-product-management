@@ -72,7 +72,7 @@ Single repo (frontend). S1 is docs-only (Roadmap, monorepo-root repo). S2/S3 are
 merge. Land S2 as one focused PR after rebasing latest `main` (shared-surface blast radius). No backend,
 so no Cloud Run lag to coordinate.
 
-## Epic Definition of Done — ✅ CLOSED 2026-06-07
+## Definition of Done (epic)
 
 - [x] All three sprints' stories merged / delivered; each `sprint-N.md` ticked with refs. *(S2+S3 code
       in **PR #37** `cc317ef`; S1 token-contract doc written at close-out — see note below.)*

@@ -13,6 +13,12 @@
 //   node scripts/doc-format.mjs --check     # CI mode — exit 1 only for paths in ENFORCED_SWEPT_PATHS
 //   node scripts/doc-format.mjs --hook      # single-file mode: read a path from stdin JSON
 //                                            (Claude Code PostToolUse hook payload), exit 2 on drift
+//   node scripts/doc-format.mjs --fix [--path=Roadmap/09-platform-infra/]
+//                                            # mechanically rewrites ONLY the fully-unambiguous
+//                                            offenses (DoD heading wording, sprint Status-line shape,
+//                                            retro Closed-line bold→italic) — never guesses real
+//                                            content (Class/Risk/Area/Scope-seed/dates/sections).
+//                                            Everything else is reported as still needing hand-fix.
 //
 // Reuse, don't rebuild: epic discovery + status come from `roadmap-to-notion.mjs --extract` (the
 // same SSOT build-order.mjs and doc-hygiene.mjs read) — this script does not re-derive epic status
@@ -20,7 +26,7 @@
 // fallback in roadmap-to-notion.mjs depends on that field's name + values staying stable).
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, relative } from 'node:path';
 
@@ -200,6 +206,158 @@ export function checkRetrospective(content) {
   return offenses;
 }
 
+// ── Mechanical rewrites — only for offenses with exactly one unambiguous correct rewrite. Never
+// guess real content (Class/Risk/Area/Scope-seed/dates/section text) — those stay hand-fix-only. ──
+
+/** dod-heading-legacy / dod-heading-mismatch → rename the heading line to the canonical wording. */
+export function fixDodHeading(content) {
+  return content.replace(/^##\s+.*Definition of Done.*$/m, CANONICAL_DOD_HEADING);
+}
+
+/**
+ * sprint-status-blockquote / sprint-status-combined → collapse to a plain `**Status:** <value>` line.
+ * Extracts just the status value (whatever follows "Status:"/"Status**" up to the field's own end —
+ * `·`, end of blockquote line, or end of string) and drops any Epic/Risk sharing the line/block.
+ */
+export function fixSprintStatusLine(content) {
+  const lines = content.split('\n');
+  const idx = lines.findIndex((l) => l.includes('**Status:**') || l.includes('Status:'));
+  if (idx === -1) return content;
+
+  const extractValue = (line) => {
+    // Whether to strip a trailing `**` from the captured value depends on WHERE the label's bold
+    // closes, and both real shapes exist in this tree:
+    //   "**Status:** value"        — label bold closes right after the colon (captured, non-greedy
+    //                                 group below matches those 2 asterisks) — the value that follows
+    //                                 is plain; any trailing `**`/`*` in it belongs to unrelated
+    //                                 content later in the value (e.g. "...*(...)*" or "...**x**") and
+    //                                 must be left alone.
+    //   "**Status: value**"        — label bold stays open past the colon and closes at the very end
+    //                                 of the value — THAT trailing `**` really is the label wrapper's
+    //                                 own close and should be stripped.
+    const m = line.match(/(\*{0,2})Status:?(\*{0,2})\s*(.*)$/i);
+    if (!m) return null;
+    const labelOpened = m[1] === '**';
+    const labelClosedAtColon = m[2] === '**';
+    const value = labelOpened && !labelClosedAtColon ? m[3].replace(/\*+$/, '') : m[3];
+    return value.trim();
+  };
+
+  // Real docs have both failure modes a naive rewrite can silently cause: (a) a bold span that
+  // wraps onto the NEXT physical line — collapsing just this line leaves a dangling unmatched `**`
+  // behind; (b) a bold span that closes mid-sentence, not at the end of the extracted value — the
+  // leftover `**` ends up embedded inside the new line. Both show up as an ODD count of `**` somewhere
+  // that should have been even. Bail (leave for hand-fix) rather than risk corrupting or discarding
+  // real content — checked against BOTH the raw input (catches case a) and the candidate output
+  // (catches case b).
+  const isBalancedBold = (s) => (s.match(/\*\*/g) || []).length % 2 === 0;
+
+  const trimmed = lines[idx].trim();
+  if (trimmed.startsWith('>')) {
+    // Blockquote form: the Status line may be this line, or the block may span a preceding
+    // `> Epic: ... **Risk: ...**` line immediately above — collapse the whole contiguous blockquote
+    // run into one plain Status line, but ONLY when that block is short backlink/Risk noise. A long
+    // or prose-heavy block (PR links, findings, "Owed to Daniel" notes, etc.) is real documentation,
+    // not formatting cruft — silently discarding it is worse than leaving it for hand-fix.
+    let start = idx;
+    while (start > 0 && lines[start - 1].trim().startsWith('>')) start--;
+    let end = idx;
+    while (end < lines.length - 1 && lines[end + 1].trim().startsWith('>')) end++;
+
+    // A short line is NOT proof it's disposable backlink noise — e.g. a one-line "Surfaces: ..."
+    // continuation is real, load-bearing content, not formatting cruft (a real case found sweeping
+    // promoter-funnel-v2/sprint-5.md, where a length-only heuristic let it through and it was
+    // silently discarded). Require every non-Status line in the block to be STRICTLY an Epic:/Risk:
+    // labeled field and nothing else — anything else in the block means real content is mixed in,
+    // so bail and leave the whole thing for hand-fix.
+    const blockLines = lines.slice(start, end + 1);
+    if (blockLines.length > 3) return content;
+    const isDisposableNoiseLine = (l) => /^\*{0,2}(Epic|Risk)\s*:.*$/i.test(l.replace(/^>\s*/, '').trim());
+    if (blockLines.some((l, i) => start + i !== idx && !isDisposableNoiseLine(l))) return content;
+    if (!isBalancedBold(blockLines.join('\n'))) return content;
+
+    // Same ordering hazard as the combined branch below: if Risk/Epic trails Status on the Status
+    // line itself, extractValue would fold it into the kept value instead of dropping it.
+    const statusLineNoQuote = trimmed.replace(/^>\s*/, '');
+    const statusIdx = statusLineNoQuote.search(/Status:?/i);
+    if (statusIdx === -1 || /\*\*(Risk|Epic):/i.test(statusLineNoQuote.slice(statusIdx))) return content;
+
+    const value = extractValue(statusLineNoQuote);
+    if (value === null || !isBalancedBold(value)) return content;
+    const newLines = [...lines.slice(0, start), `**Status:** ${value}`, ...lines.slice(end + 1)];
+    return newLines.join('\n');
+  }
+
+  if (/\*\*(Risk|Epic):/i.test(trimmed)) {
+    if (!isBalancedBold(lines[idx])) return content;
+    // extractValue captures everything from "Status:" to the end of the line — safe only when
+    // Risk/Epic appear BEFORE Status (the dropped fields precede the kept one). If Status comes
+    // first, Risk/Epic trailing after it would get silently folded into the "Status value" instead
+    // of dropped, defeating the whole point of this rewrite (real case found sweeping
+    // homepage-polish-b sprint-1/3, where Status led and Risk trailed on the same line).
+    const statusIdx = trimmed.search(/Status:?/i);
+    if (statusIdx === -1 || /\*\*(Risk|Epic):/i.test(trimmed.slice(statusIdx))) return content;
+    const value = extractValue(trimmed);
+    if (value === null || !isBalancedBold(value)) return content;
+    lines[idx] = `**Status:** ${value}`;
+    return lines.join('\n');
+  }
+
+  return content;
+}
+
+/** retro-closed-bold → convert `**Closed ...**` to `_Closed: YYYY-MM-DD ...trailing..._`. */
+export function fixRetroClosedLine(content) {
+  const lines = content.split('\n');
+  const idx = lines.findIndex((l) => /^\*\*Closed/.test(l.trim()));
+  if (idx === -1) return content;
+
+  // Real retros have plain-prose paragraphs that just happen to START with "**Closed <date>.**" —
+  // the bold span self-closes right after the date, then the SAME paragraph continues in plain text
+  // across several more physical lines (soft-wrapped, no blank line between). Rewriting only the
+  // first line there leaves a dangling italic close (`_...text_`) mid-paragraph and strands the
+  // continuation lines as an orphaned fragment. Only touch a Closed line that is its own complete
+  // paragraph — i.e. the next line is blank, a heading, or EOF.
+  const nextLine = lines[idx + 1];
+  const isStandaloneParagraph = nextLine === undefined || nextLine.trim() === '' || /^#{1,6}\s/.test(nextLine.trim());
+  if (!isStandaloneParagraph) return content;
+
+  const trimmed = lines[idx].trim();
+  const dateMatch = trimmed.match(/\d{4}-\d{2}-\d{2}/);
+  if (!dateMatch) return content;
+  // Strip the bold markers, keep whatever trailing content follows the date (sprint counts, PR
+  // refs) as-is, re-wrap the whole thing in italics starting with "_Closed: ".
+  const rest = trimmed
+    .slice(trimmed.indexOf(dateMatch[0]) + dateMatch[0].length)
+    .replace(/\*+\s*$/, '');
+  lines[idx] = `_Closed: ${dateMatch[0]}${rest}_`;
+  return lines.join('\n');
+}
+
+/** Applies every mechanical rewrite this module knows to one file's content; returns { content, fixedRules, remainingOffenses }. */
+export function applyMechanicalFixes(content, docType) {
+  let next = content;
+  const fixedRules = [];
+
+  const before1 = next;
+  next = fixDodHeading(next);
+  if (next !== before1) fixedRules.push('dod-heading-legacy/dod-heading-mismatch');
+
+  if (docType === 'sprint') {
+    const before2 = next;
+    next = fixSprintStatusLine(next);
+    if (next !== before2) fixedRules.push('sprint-status-blockquote/sprint-status-combined');
+  }
+
+  if (docType === 'retrospective') {
+    const before3 = next;
+    next = fixRetroClosedLine(next);
+    if (next !== before3) fixedRules.push('retro-closed-bold');
+  }
+
+  return { content: next, fixedRules };
+}
+
 // ── Full-tree walk ──────────────────────────────────────────────────────────
 
 export function findAllOffenses({ activeOnly = false } = {}) {
@@ -268,6 +426,64 @@ function runCheck() {
   console.log(`doc-format --check: clean (${ENFORCED_SWEPT_PATHS.size} path(s) enforced, ${results.length} advisory finding(s) elsewhere).`);
 }
 
+const MECHANICAL_RULES = new Set([
+  'dod-heading-legacy',
+  'dod-heading-mismatch',
+  'sprint-status-blockquote',
+  'sprint-status-combined',
+  'retro-closed-bold',
+]);
+
+/**
+ * Mechanically rewrites only the fully-unambiguous offenses (see MECHANICAL_RULES / the rewrite
+ * functions above). Everything else — header fields, missing sections, missing dates — needs a human
+ * to read the epic's own content, so it's left untouched and reported as still-needing-hand-fix.
+ */
+function runFix() {
+  const pathFilterArg = process.argv.find((a) => a.startsWith('--path='));
+  const pathFilter = pathFilterArg ? pathFilterArg.slice('--path='.length) : null;
+
+  const results = findAllOffenses();
+  let filesFixed = 0;
+  let filesUntouched = 0;
+  const stillNeedsHandFix = [];
+
+  for (const r of results) {
+    if (pathFilter && !r.path.startsWith(pathFilter)) continue;
+    const mechanicalOffenses = r.offenses.filter((o) => MECHANICAL_RULES.has(o.rule));
+    const remainingOffenses = r.offenses.filter((o) => !MECHANICAL_RULES.has(o.rule));
+
+    if (mechanicalOffenses.length) {
+      const original = readRelative(r.path);
+      const { content: fixed, fixedRules } = applyMechanicalFixes(original, r.docType);
+      if (fixed !== original) {
+        writeFileSync(join(REPO, r.path), fixed);
+        filesFixed++;
+        console.log(`fixed: ${r.path} (${fixedRules.join(', ')})`);
+      } else {
+        filesUntouched++;
+      }
+    } else {
+      filesUntouched++;
+    }
+
+    if (remainingOffenses.length) {
+      stillNeedsHandFix.push({ path: r.path, offenses: remainingOffenses });
+    }
+  }
+
+  console.log(`\ndoc-format --fix: ${filesFixed} file(s) mechanically rewritten.`);
+  if (stillNeedsHandFix.length) {
+    console.log(`${stillNeedsHandFix.length} file(s) still need hand-fixing (real content judgment):\n`);
+    for (const r of stillNeedsHandFix) {
+      console.log(r.path);
+      console.log(formatOffense(r));
+    }
+  } else {
+    console.log('No remaining offenses need hand-fixing.');
+  }
+}
+
 function runHook() {
   let input = '';
   process.stdin.on('data', (chunk) => { input += chunk; });
@@ -307,6 +523,8 @@ if (isMain) {
     runHook();
   } else if (process.argv.includes('--check')) {
     runCheck();
+  } else if (process.argv.includes('--fix')) {
+    runFix();
   } else {
     runReport();
   }

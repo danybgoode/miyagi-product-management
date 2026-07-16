@@ -1,6 +1,6 @@
 # Sprint 2 — Backend enforcement: make the kill-switch a *true* kill
 
-**Epic:** [Feature flags & kill-switches](README.md) · **Status:** ✅ Merged to `main` 2026-06-06 (PR #9; Cloud Run deploy in flight)
+**Status:** ✅ Merged to `main` 2026-06-06 (PR #9; Cloud Run deploy in flight)
 **Risk:** HIGH (live payment path, backend → Cloud Run, no preview → Daniel merged).
 
 Closes **finding #1** from the S1 review: S1 only *hides* Stripe in the human checkout UI. Agents/UCP
