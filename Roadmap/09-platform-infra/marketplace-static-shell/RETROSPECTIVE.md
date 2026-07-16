@@ -1,5 +1,7 @@
 # Retrospective — Static marketplace shell
 
+_Closed: 2026-06-22_
+
 **Area:** 09-platform-infra · **Risk:** med→high (S1/S3) · **Span:** 4 sprints, 2026-06-22
 **Outcome:** the marketplace homepage went from a **~30 s per-request Vercel cold-start** to a
 **static CDN asset** (zero functions), with signed-in personalization restored **from GCP** as
@@ -56,7 +58,7 @@ client islands — no Vercel function reintroduced.
   remote still held S1's pre-squash commits; S4 pushed a fresh `feat/marketplace-static-shell-s4` off
   `main` to keep the PR diff clean.
 
-## Gaps / owed (to Daniel)
+## Gaps / follow-ups
 - **Live instant cold-load eyeball** on `https://miyagisanchez.com/` after idle (S2 step 7).
 - **Signed-in island hydration on prod** — sign in on the live homepage and confirm the retoma rail /
   offer alert / seller module appear a beat after the instant static paint (S4 step 7). Needs the prod

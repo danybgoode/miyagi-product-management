@@ -1,5 +1,7 @@
 # Retrospective — Doc hygiene: LEARNINGS/README sweep + doc-hygiene skill
 
+_Closed: 2026-07-02_
+
 **Shipped:** 2026-07-02 · 1 sprint, 2 stories, both LOW risk · monorepo-root repo, docs/tooling only.
 
 ## What shipped
@@ -30,7 +32,7 @@
   Wired into weekly **Routine C** (`scripts/routines/roadmap-hygiene.prompt.md` step 4) as a fourth
   section of its existing single PR, not a second PR.
 
-## Went well
+## What went well
 - The file's own "sharpen, don't append" discipline had already been followed by prior sessions — most
   bloat wasn't duplication, it was legitimate density (long, hard-won corollary chains). Recognizing that
   early avoided over-pruning; the size win came from tightening restated narrative color, not cutting
@@ -38,7 +40,7 @@
 - Building the flagging heuristics against the SAME extractor `build-order.mjs` already uses
   (`roadmap-to-notion.mjs --extract`) meant zero new frontmatter-parsing code.
 
-## Learned
+## What we learned
 - **A first compression pass on an already-disciplined file can be a rounding error — ask before
   assuming "no real duplication" is the final answer.** The first pass (staleness fix + 2 trims) moved
   the file by ~50 bytes; surfacing that explicitly, rather than declaring the sweep done, let Daniel
@@ -50,13 +52,12 @@
   produced ~50 false positives before the fix; checking against all known roots dropped it to ~4 genuine
   edge cases.
 
-## Owed to Daniel
-- None load-bearing — this was a docs/tooling-only chore with no money/auth/deploy surface. The
-  `doc-hygiene` skill's first live run is committed as `DOC-HYGIENE-REPORT-2026-07-02.md`; nothing further
-  to confirm beyond the sweep diff already reviewed.
-
-## Gap for the next hygiene pass
-The size reduction came almost entirely from `LEARNINGS.md`; the `README.md` poster's "Recent highlights"
+## Gaps / follow-ups
+- **Owed to Daniel:** None load-bearing — this was a docs/tooling-only chore with no money/auth/deploy
+  surface. The `doc-hygiene` skill's first live run is committed as `DOC-HYGIENE-REPORT-2026-07-02.md`;
+  nothing further to confirm beyond the sweep diff already reviewed.
+- **Gap for the next hygiene pass:** the size reduction came almost entirely from `LEARNINGS.md`; the
+  `README.md` poster's "Recent highlights"
 section is now the larger of the two always-read files and was deliberately left untouched (it's a
 changelog, not covered by this sweep's scope). If a future pass wants to shrink it, that's a distinct
 decision — e.g. archiving entries older than N months to a separate file — not a "de-noise" edit.

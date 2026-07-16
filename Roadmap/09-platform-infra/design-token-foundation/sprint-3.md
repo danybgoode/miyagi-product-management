@@ -3,7 +3,7 @@
 Goal: prove every semantic foreground/background pair holds WCAG AA, and stop new raw-hex from
 eroding the foundation after this epic closes.
 
-Status: ✅ shipped — frontend PR #37 (`0c0607f test(tokens): enforce contrast and raw-color guard`).
+**Status:** ✅ shipped — frontend PR #37 (`0c0607f test(tokens): enforce contrast and raw-color guard`).
 Guard lives at `apps/miyagisanchez/e2e/design-token-foundation.spec.ts` (contrast over token pairs +
 the no-regression raw-color scan with the email/print/OG/admin/sandbox allow-list), green in the
 deterministic `api` gate.

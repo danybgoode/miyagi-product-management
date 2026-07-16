@@ -1,6 +1,8 @@
 # Retrospective — Design-Token / Design-System Foundation (#4)
 
-**Closed 2026-06-07.** Class: chore / foundation. Risk: low (presentation + docs). Frontend only
+_Closed: 2026-06-07_
+
+Class: chore / foundation. Risk: low (presentation + docs). Frontend only
 (`danybgoode/miyagisanchezcommerce`) — zero backend, zero DB. Shipped in **PR #37** (merge `cc317ef`);
 S1 doc deliverable written at close-out.
 

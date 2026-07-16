@@ -64,6 +64,7 @@ Env: the branch's Vercel preview (then production after merge), signed in as a s
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — PR #105 squash `2ca1605` (2026-06-22). Owed to Daniel: authed seller browser smoke.
 - [x] S1.1 — **BUILT** `1b20412` — descriptor adds Suscripciones/Contenido/Sorteos + canonical renames
       (Cupones · Analíticas · Configuración · Importar catálogo), README Crecer order; `seller-mode.spec.ts`
       extended (routes + 8-label list + active matcher).

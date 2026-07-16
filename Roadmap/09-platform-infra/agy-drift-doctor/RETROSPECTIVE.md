@@ -30,7 +30,7 @@ escalate). Fail-loud is preserved — `--fix` blesses a new version only after a
   small half; putting the authorization *in the failure message itself* is what makes it reach the
   right actor with zero tribal knowledge.
 
-## Gaps / owed
+## Gaps / follow-ups
 - First **real** (non-simulated) `--fix` run awaits agy's next actual self-update — the simulation is
   faithful (same code path), but watch the first live bump land.
 - If agy ever renames a pinned model, the doctor reports it but a human/agent still picks the

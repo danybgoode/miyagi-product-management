@@ -1,7 +1,9 @@
 # Cross-agent code review — Retrospective
 
-_Closed: 2026-06-10 · PR [#7](https://github.com/danybgoode/miyagi-product-management/pull/7) on the root
-`miyagi-product-management` repo · all 4 stories, all LOW risk · dev tooling only (no app surface)._
+_Closed: 2026-06-10_
+
+PR [#7](https://github.com/danybgoode/miyagi-product-management/pull/7) on the root
+`miyagi-product-management` repo · all 4 stories, all LOW risk · dev tooling only (no app surface).
 
 ## What shipped
 A thin, **advisory** second-opinion command — `node scripts/cross-review.mjs <PR#> --agent

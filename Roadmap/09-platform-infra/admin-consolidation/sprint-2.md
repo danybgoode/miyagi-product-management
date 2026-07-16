@@ -98,6 +98,7 @@ admin = an email in `MIYAGI_ADMIN_EMAILS` (or a Clerk `publicMetadata.role = 'ad
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — merged as PR #109 (`8927965`).
 - [x] S2.1 — `admin_audit_log` + `withAdmin` audit writes *(table live via Supabase MCP; commit `253bd25`)*
 - [x] S2.2 — re-home `/supply`; extract Vecindario; Referrals UI *(commit `cac5fd9`)*
 - [x] S2.3 — migrate all routes/pages to Clerk; kill secret-in-URL (humans); audit viewer; scraper-hop

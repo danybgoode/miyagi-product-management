@@ -62,6 +62,7 @@ until then `notion-pr-sync.yml` PATCHes an unknown property and errors by design
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — built `246a0fa` (S1.1–S1.2) + `bb1e7bf` (S1.3 workflow wiring); live overlay smoke (steps 5–7) owed to Daniel.
 - [x] S1.1 — ✅ built `246a0fa` (archived-epic sprint floor → Archived; `floorSprintStatus` + node:test)
 - [x] S1.2 — ✅ built `246a0fa` (`build_order` from epic README frontmatter; admin=1, notion=2; epic+sprint rows)
 - [x] S1.3 — ✅ built `246a0fa` (script: `lifecycleForPr` + `--lifecycle`) · `bb1e7bf` (shared `notion-pr-sync.yml` wiring) — live overlay smoke (steps 5–7) owed to Daniel

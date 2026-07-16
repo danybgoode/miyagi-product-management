@@ -3,15 +3,15 @@
 **Epic:** [In-house feature flags](README.md) · **Goal:** in-house flags actually serving in both apps, behind the
 unchanged `isEnabled()` interface, fail-open, behavior-preserving. This is the skateboard.
 
-> **Status: ✅ MERGED + DEPLOYED 2026-07-01 (Daniel-authorized merge on green, HIGH).**
-> S1.1 `6463a46` + applied to shared Supabase · S1.2 `67ee051` · S1.3 `d8c2e22`.
-> Merged: **FE [#150](https://github.com/danybgoode/miyagisanchezcommerce/pull/150)** (S1.1 + S1.2) → main `b0582b0`
-> (Vercel prod) · **BE [#50](https://github.com/danybgoode/medusa-bonsai-backend/pull/50)** (S1.3) → main `5179718`
-> (Cloud Run, ~12 min). Deterministic gate green both repos (FE: tsc + build + 45 api specs; BE: build + tsc + 14
-> unit specs). Cross-agent review (Codex) run on both → fixed one finding (`Boolean(r.enabled)` coercion defeated
-> the fail-open guard; now preserves raw + lets `resolveFlag` validate — FE `3ce562d`, BE `0c9fc80`).
-> BE #50 also merged `origin/main` first (ML S4 #49 had added `ml.sync_enabled` to the BE seam — reconciled to 3 keys).
->
+**Status:** ✅ MERGED + DEPLOYED 2026-07-01 (Daniel-authorized merge on green, HIGH).
+S1.1 `6463a46` + applied to shared Supabase · S1.2 `67ee051` · S1.3 `d8c2e22`.
+Merged: **FE [#150](https://github.com/danybgoode/miyagisanchezcommerce/pull/150)** (S1.1 + S1.2) → main `b0582b0`
+(Vercel prod) · **BE [#50](https://github.com/danybgoode/medusa-bonsai-backend/pull/50)** (S1.3) → main `5179718`
+(Cloud Run, ~12 min). Deterministic gate green both repos (FE: tsc + build + 45 api specs; BE: build + tsc + 14
+unit specs). Cross-agent review (Codex) run on both → fixed one finding (`Boolean(r.enabled)` coercion defeated
+the fail-open guard; now preserves raw + lets `resolveFlag` validate — FE `3ce562d`, BE `0c9fc80`).
+BE #50 also merged `origin/main` first (ML S4 #49 had added `ml.sync_enabled` to the BE seam — reconciled to 3 keys).
+
 > **Owed to Daniel (money/auth path):** the live flip smoke below (steps 4–5). Steps 2–3 (pdp flip) also change
 > prod UX for all visitors momentarily, so they're offered rather than auto-run.
 >

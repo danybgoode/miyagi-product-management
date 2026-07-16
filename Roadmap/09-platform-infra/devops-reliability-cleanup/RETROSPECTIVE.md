@@ -1,5 +1,7 @@
 # Retrospective — DevOps reliability cleanup
 
+_Closed: 2026-06-24_
+
 **Shipped:** 2026-06-24 · **2 sprints, all LOW** · monorepo-root (`infra/`, `scripts/`) + app repo.
 **Class:** chore + bug sweep (engineering-facing observability/tooling; zero buyer/seller/agent surface).
 
@@ -44,7 +46,7 @@ All live writes were **run by Claude under explicit authorization** on 2026-06-2
   **primary→fallback**, and make the version check **fail loud** (a stderr warn is ignored — that's *how* the
   bump shipped empty for weeks). Fixed the now-wrong "warn (not fail)" line in the same section.
 
-## Gaps / residual
+## Gaps / follow-ups
 - **One nightly cycle still rolls overnight** to visually confirm zero `neon` alerts from the live `db-backup`
   cron (`0 9 * * *`) — expected silent; nothing to do.
 - **Neon retirement ran ~6 days into the ~1-week rollback window** (per explicit authorization). It only stops

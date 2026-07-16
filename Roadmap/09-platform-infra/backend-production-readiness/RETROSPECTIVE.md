@@ -1,5 +1,7 @@
 # Retrospective — Backend Production Readiness
 
+_Closed: 2026-06-12_
+
 > Epic close, 2026-06-12. Five sprints (S0 audit → S1 staging → S2 backups → S3 recovery → S4 monitoring)
 > that took the Medusa backend from "deploys straight to prod, no staging, unverified backups, no
 > observability" to a hardened, recoverable, monitored service. Pure infra — zero commerce-code change.
@@ -52,7 +54,7 @@
 - **Monitoring threshold conditions support only `COMPARISON_LT`/`GT`** (not GE/LE) and **log-based alerts need
   an `alertStrategy.notificationRateLimit`** — concrete gcloud-monitoring gotchas.
 
-## Gaps / owed to Daniel
+## Gaps / follow-ups
 - **Run `provision-monitoring.sh TARGET=prod`** + confirm a real downtime/5xx/error alert **arrives in
   `MiyagiDevopsTele`** (he holds the prod/channel creds). Agent rehearsed staging end-to-end + tore it down.
 - **Merge both PRs** (monorepo-root: Story 4.1/4.2 + docs; backend: Story 4.3 Dependabot). HIGH-risk tier — shared

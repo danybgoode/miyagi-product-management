@@ -1,5 +1,7 @@
 # Retrospective — PWA Liquid-Glass Nav Polish
 
+_Closed: 2026-06-22_
+
 **Shipped 2026-06-22 · 2 sprints · frontend-only · LOW risk.**
 S1 squash `071246d` ([PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98)) ·
 S2 squash `4ab597c` ([PR #99](https://github.com/danybgoode/miyagisanchezcommerce/pull/99)).
@@ -47,7 +49,7 @@ nav-reorg (2026-06-11) decisions (detached search control re-added; Favoritos pu
 - **An always-mounted-but-hidden dialog must be `inert` when closed** (removes it from tab order + the a11y
   tree, moves focus out) and should `blur()` its input on close so the mobile keyboard dismisses.
 
-## Gaps / owed
+## Gaps / follow-ups
 - **Owed to Daniel (real device — can't be headless):** iOS keyboard raising synchronously on the search
   tap; the PWA-standalone open→type→submit→`/l?q=`→dismiss flow; the single-search-control look; and the
   **mobile-web regression check** (header search must still be present in a normal browser tab).

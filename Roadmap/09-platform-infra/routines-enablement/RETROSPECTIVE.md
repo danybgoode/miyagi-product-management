@@ -1,5 +1,7 @@
 # Retrospective — Claude Routines enablement
 
+_Closed: 2026-06-24_
+
 **Shipped:** 2026-06-24 · **1 sprint, all LOW** · monorepo-root (`scripts/routines/`).
 **Class:** chore / dev-tooling + process (engineering-facing; zero buyer/seller/agent surface).
 
@@ -57,7 +59,7 @@ against them.
   succeeded). Route the *actionable* output to a channel you already watch (GitHub PR comments/PRs, or a
   connector/`curl` ping) so healthy runs aren't silent and failed runs are visible without daily app-checks.
 
-## Gaps / residual (owed to Daniel — operational)
+## Gaps / follow-ups (owed to Daniel — operational)
 - **Flip both A routines `ready_for_review → opened`** so directly-opened non-draft PRs auto-trigger
   (currently verified via *Run now* only).
 - **Routine B's red-smoke → draft-PR path** is unverified end-to-end (the smoke was green at stand-up);

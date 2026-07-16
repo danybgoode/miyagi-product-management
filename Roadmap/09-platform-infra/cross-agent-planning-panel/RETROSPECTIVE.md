@@ -1,5 +1,7 @@
 # Retrospective — Cross-agent planning panel
 
+_Closed: 2026-06-13_
+
 **Shipped 2026-06-13** · 1 sprint, 4 stories, all LOW · PR #15 · planning/dev tooling, no app surface.
 
 ## What shipped
@@ -40,6 +42,6 @@ architecture fork = a required one-line *offer*) and `SESSION-KICKOFFS.md` (`Pan
 - No app gate applies (no tsc/build/Playwright) — the real QA is running the command against a real doc and
   reading the printed block. `codex`/`agy` must be installed + authed; `--dry-run` is the no-CLI plumbing check.
 
-## Owed
+## Gaps / follow-ups
 Nothing money/auth/browser — it's a local repo CLI. Optional: Daniel eyeballs one panel run and the groom
 trigger-model wording.

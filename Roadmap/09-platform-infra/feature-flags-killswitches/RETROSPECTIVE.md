@@ -1,5 +1,7 @@
 # Retrospective — Feature flags & kill-switches (Flagsmith)
 
+_Closed: 2026-06-06_
+
 **Shipped:** 2026-06-06 (one session). **Sprints:** S1 frontend (PR #34), S2 backend (PR #9), both merged.
 **Outcome:** Flagsmith stood up as the platform's **fail-open, admin-only, server-evaluated kill-switch
 layer**. `checkout.stripe_enabled` is a real kill across the human UI, agents/UCP, and direct checkout.
@@ -37,7 +39,7 @@ layer**. `checkout.stripe_enabled` is a real kill across the human UI, agents/UC
 - The Node SDK is **not Edge-compatible** → `middleware.ts` flags (`routing.*`) need a different
   mechanism; deferred deliberately.
 
-## Gaps / owed
+## Gaps / follow-ups
 - **S2 post-deploy toggle smoke owed to Daniel** (the toggle disables Stripe in live prod, so it's his to
   run when convenient). Cloud Build `c3e54c3d` deploying at close.
 - **Residual edge (accepted):** toggling OFF doesn't cancel an already-created Stripe session mid-flow —

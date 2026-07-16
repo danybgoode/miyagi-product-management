@@ -1,7 +1,8 @@
 # Sprint 1 — Per-app lockfiles + `npm ci`
 
-**Epic:** [Deploy pipeline tuning](README.md) · **Risk: LOW, but touches the deploy rail —
-Daniel merges** · **Status: ✅ MERGED to `main` in both repos, 2026-07-12.** Backend PR
+**Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW, but touches the deploy rail — Daniel merges
+
+**Status:** ✅ MERGED to `main` in both repos, 2026-07-12. Backend PR
 [danybgoode/medusa-bonsai-backend#86](https://github.com/danybgoode/medusa-bonsai-backend/pull/86)
 → squash `d8131fa`, frontend PR
 [danybgoode/miyagisanchezcommerce#233](https://github.com/danybgoode/miyagisanchezcommerce/pull/233)

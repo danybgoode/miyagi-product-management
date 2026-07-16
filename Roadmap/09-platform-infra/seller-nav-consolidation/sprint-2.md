@@ -60,6 +60,7 @@ Env: the branch's Vercel preview (then production after merge), signed in as a s
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — PR #107 squash `2debdf7` (2026-06-23). Owed to Daniel: authed seller browser smoke.
 - [x] S2.1 — **BUILT** `1ba557d` — pure `sellerBreadcrumbTrail()` on the nav SSOT (section label =
       canonical rail label) + client `<SellerBreadcrumb>` (`/` separator; `extra` appends deeper
       crumbs keeping the intermediate link; `crumbs` override for bilingual server pages);
@@ -73,7 +74,7 @@ If any step fails, note the step number + what you saw — that's the bug report
       bilingual (dict crumbs via `crumbs`); home label standardized to **Resumen / Summary** (es/en);
       key parity preserved.
 
-**Draft PR** [#107](https://github.com/danybgoode/miyagisanchezcommerce/pull/107) · risk **LOW**.
+**Shipped:** [PR #107](https://github.com/danybgoode/miyagisanchezcommerce/pull/107) squash `2debdf7` (2026-06-23) · risk **LOW**.
 **Gate:** `tsc` clean · `next build` exit 0 · Playwright `api` **723 passed** (incl. the new
 breadcrumb deriver + anti-erosion guard + unchanged `seller-mode.spec.ts`). The one local failure
 (`not-found-shape.spec.ts` `/l/wp-admin` 403≠404) is the **prod WAF Bot-Protection shadow**

@@ -1,6 +1,8 @@
 # Retrospective — Postgres migration: Neon (AWS) → Cloud SQL (GCP co-location)
 
-**Area:** 09-platform-infra · **Risk:** high (production commerce DB migration) · **Closed:** 2026-06-22 ·
+_Closed: 2026-06-22_
+
+**Area:** 09-platform-infra · **Risk:** high (production commerce DB migration) ·
 **Sprints:** 3 (S1 provision + parity · S2 prod cutover · S3 decommission + reconcile)
 
 ## What shipped
@@ -46,7 +48,7 @@
   reach a private IP and a local `pg_dump` 14 refuses a PG17 server. `gcloud --args` splits on commas → use a
   `^@^` delimiter for SQL containing commas.
 
-## Gaps / owed
+## Gaps / follow-ups
 - **Neon demote** (Daniel's decision: demote to dev-only sandbox, not delete) — destructive + gated on the
   rollback window closing + a confirmed Cloud SQL backup; runbook in `sprint-3.md` steps 6–7. Owed to Daniel.
 - **`neon` R2 backup-target drop** — one-line `gcloud run jobs update` once the window closes. Owed to Daniel.

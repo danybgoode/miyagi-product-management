@@ -1,5 +1,7 @@
 # Retrospective — Ops routines & reporting
 
+_Closed: 2026-07-02_
+
 **Shipped:** 2026-07-02 · **3 sprints, mixed LOW→MEDIUM** · monorepo-root (`scripts/`, `skills/`,
 `scripts/routines/`). **Class:** chore / dev-tooling + process (engineering-facing; zero buyer/seller/
 agent surface, zero commerce touch — AGENTS rules 1–4 untouched, rule 5 N/A).
@@ -81,7 +83,7 @@ Five Claude Routines now exist in total (A/B/C from `routines-enablement` + `ops
   only" — the file's guard lowercases and does a plain substring check, so "advisory/observability only"
   does not satisfy it). Grep the guard's exact assertion before assuming a close paraphrase passes.
 
-## Gaps / residual (owed to Daniel — operational)
+## Gaps / follow-ups (owed to Daniel — operational)
 - **The live (non-dry-run) weekly Telegram post** — `TELEGRAM_BOT_TOKEN` and
   `skills/weekly-recap/config.json`'s `chat_id` live on Daniel's routine environment/shell, not the build
   sandbox; the `--dry-run` rehearsal is the strongest signal achievable in-session (same class of gap S1

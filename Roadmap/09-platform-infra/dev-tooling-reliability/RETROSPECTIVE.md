@@ -1,6 +1,8 @@
 # Retrospective — Dev-tooling reliability
 
-**Closed:** 2026-06-21 · **Class:** chore / dev-tooling · **Risk:** LOW (all sprints) · **Repos:** backend
+_Closed: 2026-06-21_
+
+**Class:** chore / dev-tooling · **Risk:** LOW (all sprints) · **Repos:** backend
 (S1) + monorepo-root (S2–S3).
 
 ## What shipped
@@ -42,7 +44,7 @@ Three independent frictions in the ship loop, each fixed as a script/config (not
   everything else fall through to the generic error.
 - **`node --test <dir>` (bare directory) was dropped in Node 24** — use a glob (`'scripts/lib/*.test.mjs'`).
 
-## Gaps / owed
+## Gaps / follow-ups
 
 - **S1 destructive red-path smoke** (deliberately-failing backend PR, steps 2–4) is owed to Daniel on a
   throwaway branch if he wants the red gate exercised live — the green path is proven (PR #29 first run).

@@ -58,5 +58,6 @@ anonymous-401 gate; the authed 200-with-rows render is the human step).
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — merged as PR #110 (`4d4fba8`).
 - [x] S3.1 — `/admin/tenants` directory + inspector (read-only; Medusa IDs canonical) — branch
       `feat/admin-consolidation-s3`

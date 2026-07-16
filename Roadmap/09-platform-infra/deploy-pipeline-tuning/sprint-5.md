@@ -1,9 +1,11 @@
 # Sprint 5 — Structured JSON logging (phased)
 
-**Epic:** [Deploy pipeline tuning](README.md) · **Risk: LOW** · **Status: ✅ DONE 2026-07-14 — S5.1
+**Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW
+
+**Status:** ✅ DONE 2026-07-14 — S5.1
 built + merged (backend PR [#91](https://github.com/danybgoode/medusa-bonsai-backend/pull/91)),
 deployed, structured-log shape verified by unit test + local build/tsc; live occurrence not yet
-observed (see smoke walkthrough, step 3).**
+observed (see smoke walkthrough, step 3).
 
 Zero structured logging exists in either app today — pure `console.*` calls with ad-hoc
 bracket-tag string prefixes (backend: 91 call sites; frontend: ~384). Google Cloud Logging

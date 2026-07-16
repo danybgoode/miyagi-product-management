@@ -3,7 +3,7 @@
 Goal: make customer-facing components reference semantic tokens instead of raw hex, so re-skinning
 (and #6) is a token change — with **zero visible difference** to users.
 
-Status: ✅ shipped — frontend PR #37 (merge `cc317ef`; `657df40 feat(tokens): semanticize customer
+**Status:** ✅ shipped — frontend PR #37 (merge `cc317ef`; `657df40 feat(tokens): semanticize customer
 color usage`). Tokenized `CheckoutExperience`, `embed/s/[slug]`, `ChannelLayout`, `ConversationClient`,
 `ClaimForm`, `MakeOfferButton`, `CheckoutPayButton`, `CartDrawer`, `SearchBar` + the small-offender tail
 (new scoped tokens `--embed-*`, `--claim-*`, `--surface-channel` added to `globals.css`). Follow-up

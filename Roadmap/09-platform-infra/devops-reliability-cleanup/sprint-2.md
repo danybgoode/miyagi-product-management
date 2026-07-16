@@ -101,6 +101,7 @@ a real agy run — they can't be driven from the build sandbox); steps 7–8 are
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — PR #37 (S2 `1133dbb`, S4 `a791477`); live confirmation run 2026-06-24.
 - [x] **S2 (Story 2)** — built (PR #37, `1133dbb`). 2b: `cloudsql-check/` job (pure `backup-freshness.py`
       predicate + `check-cloudsql-backup.sh` alert + Dockerfile) + idempotent
       `provision-cloudsql-backup-check.sh` + node:test; `BACKUPS.md` updated. 2a: retirement one-liner staged

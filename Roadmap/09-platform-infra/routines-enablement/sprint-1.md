@@ -89,6 +89,7 @@ merged branch.) **All steps run; result noted inline.**
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — PR #39 commit `75d8afb`; live stand-up walkthrough run 2026-06-24.
 - [x] **R-A** — built. `scripts/routines/pr-review.prompt.md` (mirrors `cross-review.prompt.md` — five
       AGENTS rules, single pass, advisory banner; cloud Claude reviewer, **comment-only, never a check**).
 - [x] **R-C** — built. `scripts/routines/roadmap-hygiene.prompt.md` (groom funnel, flag status-drift,

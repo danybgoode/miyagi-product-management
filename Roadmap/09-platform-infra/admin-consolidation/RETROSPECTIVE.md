@@ -1,5 +1,7 @@
 # Retrospective — Admin consolidation + tenant management
 
+_Closed: 2026-06-23_
+
 **Macro-section:** 09 · Platform & Infra · **Status:** ✅ shipped 2026-06-23 · **Sprints:** 4 · **Repo:** `apps/miyagisanchez` (one backend *read* in S4.0).
 
 ## What shipped
@@ -20,7 +22,7 @@ The platform went from a scattered, secret-in-URL admin to **one coherent in-rep
 - **An admin write must land where the live reader reads — confirm the metadata source before adding a grant action.** The comp-grant is honored by deriving from `marketplace_shops.metadata.custom_domain_grant`; writing anywhere else (a Medusa seller field, a new table) would have been cosmetic. Grep the consumer's read path first.
 - **A "revoke/clear" action scoped to one grant type must refuse the others.** Clearing a shared key (`custom_domain_grant`) blind to its `type` can strip a *different*, more permanent entitlement. Gate by type on both server and UI.
 
-## Gaps / owed to Daniel
+## Gaps / follow-ups
 - **Live money-adjacent smoke (S4):** with a real admin Clerk session, grant a comp on a test shop → reason flips to **Cortesía**, `/admin/audit` shows the grant/revoke rows, revoke returns to the underlying reason. The agent covered the deterministic gate (tsc + build + the pure round-trip + 401 admin gate) and the route logic; the authed grant→audit→revoke flow needs the session.
 - **S2/S3 authed admin-session eyeballs** (incognito `?secret=`→`/`, `/api/admin/import` Bearer still works, the tenant directory render) remain owed from those sprints.
 

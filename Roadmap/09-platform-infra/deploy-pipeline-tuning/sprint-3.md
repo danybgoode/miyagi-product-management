@@ -1,7 +1,8 @@
 # Sprint 3 — Edge cache: origin probe + a scoped Cloudflare Cache Rule
 
-**Epic:** [Deploy pipeline tuning](README.md) · **Risk: MED — Daniel sign-off before the Cache
-Rule goes live** · **Status: ✅ BUILT + LIVE 2026-07-13.** Daniel added the missing "Cache Rules"
+**Epic:** [Deploy pipeline tuning](README.md) · **Risk:** MED — Daniel sign-off before the Cache Rule goes live
+
+**Status:** ✅ BUILT + LIVE 2026-07-13. Daniel added the missing "Cache Rules"
 permission to the `CLOUDFLARE_API_TOKEN`, then gave the explicit go — the rule is provisioned in
 prod and verified (see S3.2 below). PR [danybgoode/miyagi-product-management#85](https://github.com/danybgoode/miyagi-product-management/pull/85),
 ready for review — **awaiting Daniel's merge** (MED tier, not auto-mergeable on green CI).

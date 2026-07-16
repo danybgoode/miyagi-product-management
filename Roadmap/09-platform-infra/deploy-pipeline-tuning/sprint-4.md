@@ -1,7 +1,8 @@
 # Sprint 4 — Cloud Run scaling: measure before touching
 
-**Epic:** [Deploy pipeline tuning](README.md) · **Risk: LOW** · **Status: ✅ DONE 2026-07-13 — S4.1
-built, S4.2 explicitly skipped (data doesn't support it).**
+**Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW
+
+**Status:** ✅ DONE 2026-07-13 — S4.1 built, S4.2 explicitly skipped (data doesn't support it).
 
 Neither Cloud Run service sets `--concurrency` (both default to 80); neither sets a CPU
 allocation flag (both default to "CPU only during request processing"). The original suggestion

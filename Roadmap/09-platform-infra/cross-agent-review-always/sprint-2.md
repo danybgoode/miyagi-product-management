@@ -45,6 +45,7 @@ Env: the monorepo-root repo on `main` (or the planning branch's diff pre-merge).
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped 2026-06-22.
 - [x] **S2.1** — ✅ WAYS §Review & merge reworded: "run **locally** on every PR, advisory, never gates" (root #29).
 - [x] **S2.2** — ✅ PR template (`Cross-agent review`, no "(optional)") + `SESSION-KICKOFFS.md` #4 line + phrase
       table now say "run locally on every PR, advisory" (root #29).

@@ -100,6 +100,7 @@ secret-skip idiom on the PR itself. *(FE PR: miyagisanchezcommerce#103 · BE PR:
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped 2026-06-22 (local-only, by decision — see README).
 - [x] **S1.1** — ✅ headless auth validated live (codex `--with-api-key`); finding recorded above.
 - [x] **S1.2** — ⚠️ **DESCOPED to local-only (decision 2026-06-22).** `cross-review.yml` was built in both app
       repos + **self-smoked GREEN** (clean-skip path, FE `miyagisanchezcommerce#103` / BE

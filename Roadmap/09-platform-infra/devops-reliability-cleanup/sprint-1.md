@@ -77,6 +77,7 @@ Env: production · https://miyagisanchez.com · GitHub Actions on `danybgoode/mi
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped — PR #115 squash `475ccf3` (S1 + S3) + PR #117 squash `8238cf1` (fixture follow-up).
 - [x] **S1 (Story 1)** — ✅ SHIPPED; 4 drifted browser specs realigned + `data-testid="pwa-tabbar"` added.
 - [x] **S3 (Story 3)** — ✅ SHIPPED; `tg.newShop` re-wired on net-new create **and** claim via pure `lib/shop-notify.ts`.
 - [x] **Fixture follow-up** — ✅ SHIPPED; nightly fully green (see below).

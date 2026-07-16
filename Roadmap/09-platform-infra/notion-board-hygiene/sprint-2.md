@@ -70,6 +70,7 @@ The formula + build-order views are live; the board **grouping** flip (step 0) i
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped (S2.1, S2.3 done via Notion MCP) — S2.2's board-grouping flip is a manual UI step owed to Daniel.
 - [x] S2.1 — ✅ done (Notion MCP): "Board status" formula added; "In progress" Lifecycle option already existed (auto-created by S1's overlay).
 - [~] S2.2 — ⚠️ **manual UI step owed to Daniel** — API can't group a board by a formula; flip both boards to "Group by → Board status" in the UI (boards left safely on `Status`).
 - [x] S2.3 — ✅ done (Notion MCP): **Epic build-order** + **Sprint build-order** views created (sorted tables; numeric-Number-property refinement deferred — see S2.3 note).

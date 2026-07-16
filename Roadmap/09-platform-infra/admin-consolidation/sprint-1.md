@@ -68,7 +68,7 @@ Env: the branch's Vercel preview (then production after merge).
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
-**PR [#108](https://github.com/danybgoode/miyagisanchezcommerce/pull/108)** — **ready for review, CI green** — branch `feat/admin-consolidation`. Bundles all three S1 stories; **HIGH overall (auth surface) → Daniel merges.**
+**Status:** ✅ shipped — merged as [PR #108](https://github.com/danybgoode/miyagisanchezcommerce/pull/108), branch `feat/admin-consolidation`. Bundles all three S1 stories; HIGH overall (auth surface) → Daniel merged.
 - [x] S1.1 — `lib/admin/identity.ts` + dual-accept `requireAdmin`/`withAdmin` · `f514bfb`
 - [x] S1.2 — `AdminShell` + `lib/admin/sections.ts` + hub (external redirect removed) · `d6a29d1` (+ `65dda44` hub dual-accept, codex cross-review fix)
 - [x] S1.3 — register coupons/print; delete orphaned `AdminScrapeClient.tsx` · `b218a9e` (+ `9a964a6` — commit the deletion the path-limited commit had dropped; CI caught it)

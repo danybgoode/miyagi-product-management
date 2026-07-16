@@ -1,6 +1,6 @@
 # Sprint 2 — Admin control surface
 
-**Status: ✅ MERGED + DEPLOYED (Vercel prod) 2026-07-01** — PR **#151** squash `03f5770`, risk **LOW**.
+**Status:** ✅ MERGED + DEPLOYED (Vercel prod) 2026-07-01 — PR **#151** squash `03f5770`, risk **LOW**.
 Deterministic gate green (tsc + build + 35 pure api specs + the anonymous 401 gate on CI-vs-preview). Both
 reviews clean: fresh Claude reviewer **APPROVE WITH NITS** (confirmed the upsert doesn't clobber + the client is
 pessimistic — the two Codex should-fixes were non-issues); one review-named hardening applied (`1e879ff` —

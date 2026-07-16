@@ -1,7 +1,8 @@
 # Sprint 2 — Docker build layer caching
 
-**Epic:** [Deploy pipeline tuning](README.md) · **Risk: LOW-MED, but touches the deploy rail —
-Daniel merges** · **Status: ✅ MERGED to `main` in both repos, live in prod, 2026-07-12.** Backend
+**Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW-MED, but touches the deploy rail — Daniel merges
+
+**Status:** ✅ MERGED to `main` in both repos, live in prod, 2026-07-12. Backend
 PR [danybgoode/medusa-bonsai-backend#87](https://github.com/danybgoode/medusa-bonsai-backend/pull/87)
 → squash `f035f62`, frontend PR
 [danybgoode/miyagisanchezcommerce#234](https://github.com/danybgoode/miyagisanchezcommerce/pull/234)

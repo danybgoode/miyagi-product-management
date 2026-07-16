@@ -53,7 +53,7 @@ board config.
 - **The Notion SQL `query_data_sources` mode needs a Business+ plan** — on this plan, S2 verification is a
   visual board eyeball, not a programmatic assert (as the sprint doc predicted).
 
-## Gaps / owed
+## Gaps / follow-ups
 
 - **Owed to Daniel (operational, no code):** flip both boards to **Group by → Board status** in the Notion
   UI (S2.2); the live draft-PR overlay eyeball.

@@ -3,7 +3,7 @@
 Goal: put the semantic-token contract and the theme-override boundary into the product
 source-of-truth, so the #6 redesign styles by intent without re-deriving the system.
 
-Status: ✅ shipped — token contract written at epic close (2026-06-07):
+**Status:** ✅ shipped — token contract written at epic close (2026-06-07):
 [`token-contract.md`](token-contract.md) (semantic-token reference + locked/unlockable matrix).
 *(This Roadmap deliverable was the gap when the S2/S3 code merged in PR #37; written during #4 close-out.)*
 

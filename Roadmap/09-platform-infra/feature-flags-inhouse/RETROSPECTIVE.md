@@ -1,6 +1,8 @@
 # Retrospective — In-house feature flags (replace Flagsmith)
 
-**Macro-section:** 09 · Platform & Infra · **Class:** chore / infra migration · **Closed:** 2026-07-01 · **3 sprints.**
+_Closed: 2026-07-01_
+
+**Macro-section:** 09 · Platform & Infra · **Class:** chore / infra migration · **3 sprints.**
 
 ## What shipped
 Replaced the **Flagsmith SaaS** flag backend with an **owned Supabase store** behind the *unchanged*
@@ -47,12 +49,10 @@ instance, leaving no runtime switch).
    first (the new revision must boot *without* the secret — which proves it's unneeded), then
    `gcloud secrets delete`. Deleting the secret first would fail-close any new revision (`:latest` unresolvable).
 
-## Gaps / owed
+## Gaps / follow-ups
 - **Live `/admin/flags` flip smoke owed to Daniel** — browser/admin-session-gated; the money-path
   `checkout.stripe_enabled` flip especially (an automated smoke can't cover a real checkout).
 - The S1 "make the table unreadable → both fail open" chaos check was reasoned + unit-covered, not
   exercised against live prod.
-
-## Follow-ups
-- None required. `feature-flags-killswitches` (the prior epic) is superseded — its backend is now the
-  in-house store; poster annotated accordingly.
+- No further follow-ups required. `feature-flags-killswitches` (the prior epic) is superseded — its
+  backend is now the in-house store; poster annotated accordingly.

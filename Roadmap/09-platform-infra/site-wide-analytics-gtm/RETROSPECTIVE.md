@@ -1,5 +1,7 @@
 # Retrospective — Site-wide analytics: GTM container (GA4 + Clarity)
 
+_Closed: 2026-06-22_
+
 **Area:** 09-platform-infra · **Risk:** all LOW · **Span:** 1 sprint, 2026-06-22 · **Repo:** `apps/miyagisanchez` (frontend-only)
 **Outcome:** a **single GTM container** (`GTM-MWHVLJ3M`) now loads across every platform surface, gated
 client-side so the just-shipped static `(site)` shell stays a function-free CDN asset. GA4 + Microsoft
@@ -47,7 +49,7 @@ Clarity are managed as tags **inside** GTM — no redeploy to add or change them
   the component mounted; the pure gate proves *where*; only a browser run with the id configured proves the
   script actually loads. Same "name the gap, don't fake it" discipline as the authed-money-path smoke.
 
-## Gaps / owed (to Daniel) — analytics can't record until these are done
+## Gaps / follow-ups (owed to Daniel) — analytics can't record until these are done
 The code + the `NEXT_PUBLIC_GTM_ID=GTM-MWHVLJ3M` Vercel env (prod + preview + dev) are **live**. The
 container is empty until tags are added **inside GTM** (no code change, no redeploy):
 1. **Clarity (1 click, recommended):** Clarity dashboard → **Settings → Setup → Google Tag Manager →

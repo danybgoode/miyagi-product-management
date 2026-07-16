@@ -1,5 +1,7 @@
 # Retrospective — Model split: Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess
 
+_Closed: 2026-07-01_
+
 **Shipped:** 2026-07-01 · 1 sprint · LOW risk · docs/process only, monorepo-root repo.
 **PR:** [#47](https://github.com/danybgoode/miyagi-product-management/pull/47) (squash `3544073`).
 
@@ -32,7 +34,7 @@ money-path risk. This story closed both gaps in one pass:
   without regenerating `BUILD-ORDER.md` failed `build-order-guard.yml` on the PR — exactly the
   guard doing its job (a generated doc with an unmet freshness gate), not a false positive.
 
-## What we learned / gaps
+## What we learned
 - **A status-frontmatter edit inside a PR is itself a `Roadmap/**` change that trips the build-order
   guard.** Any story that touches an epic README's `status:` (not just Roadmap prose) needs
   `node scripts/build-order.mjs` re-run and committed before the PR is CI-green — worth calling out
@@ -42,4 +44,8 @@ money-path risk. This story closed both gaps in one pass:
   that wrote the docs.** Sprint-1's real test ("hand a fresh Sonnet-5 session an ambiguous/money-path
   story, confirm it escalates") requires an actual live session Daniel observes; this build session
   verified the doc text is correct and consistent but did not — and could not — run that test on
-  itself. **Owed to Daniel:** the live escalation smoke (sprint-1.md step 3).
+  itself.
+
+## Gaps / follow-ups
+- **Owed to Daniel:** the live escalation smoke (sprint-1.md step 3) — hand a fresh Sonnet-5 session
+  an ambiguous/money-path story and confirm it escalates rather than guesses.

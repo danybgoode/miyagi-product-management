@@ -59,6 +59,7 @@ Env: the branch's Vercel preview (set `NEXT_PUBLIC_GTM_ID` on the preview), then
 If any step fails, note the step number + what you saw — that's the bug report.
 
 ## Status
+**Status:** ✅ shipped 2026-06-22 — PR #106 squash `68a3bb0`. Owed to Daniel: GTM tag config + firing smoke (steps 1–6).
 - [x] S1.1 — BUILT `3f59de2` (`lib/analytics-gating.ts` + `e2e/analytics-gating.spec.ts`, 8 unit cases green)
 - [x] S1.2 — BUILT `fb3242b` (`app/components/SiteAnalytics.tsx` mounted in `app/layout.tsx`; `next build` keeps `/` static `○`)
 - [x] S1.3 — SHIPPED `e547fe9` (`e2e/site-analytics-loader.spec.ts` + `lib/print-qr.ts` stale-comment fix) + `8b3df66` (cross-review: opt-in `site-analytics-loader.browser.spec.ts` for real GTM injection)

@@ -1,5 +1,7 @@
 # Retrospective — Seller nav consolidation (`/shop/manage`)
 
+_Closed: 2026-06-23_
+
 **Shipped:** 2026-06-23 · **Sprints:** 2 · **Risk:** LOW throughout (frontend-only IA) · **Repo:** `apps/miyagisanchez`
 **PRs:** S1 [#105](https://github.com/danybgoode/miyagisanchezcommerce/pull/105) `2ca1605` · S2 [#107](https://github.com/danybgoode/miyagisanchezcommerce/pull/107) `2debdf7`
 
@@ -38,7 +40,7 @@ nav descriptor the single source of truth for both the rail and a new shared bre
   `mb-1`") was a real spacing-regression risk — checking the generated CSS byte offsets (`mb-1` < `mb-3` < `mb-6`,
   ascending → caller wins) confirmed it works rather than guessing or over-fixing.
 
-## Gotchas worth carrying forward
+## What we learned
 
 - **The local app `main` was behind `origin/main`.** S1 had squash-merged on the remote but the local checkout
   hadn't pulled it, so `lib/seller-nav.ts` showed the *old* labels locally — the S2 worktree had to be cut off a
@@ -55,7 +57,7 @@ nav descriptor the single source of truth for both the rail and a new shared bre
 - **Prod WAF shadows one spec.** `not-found-shape.spec.ts` (`/l/wp-admin` → 403 not 404) fails on a prod-targeted
   local run (`x-vercel-mitigated: deny`) but is green on previews; CI-vs-preview is authoritative. Not a regression.
 
-## Owed to Daniel
+## Gaps / follow-ups
 
 The authed seller browser smoke across sections (rail labels + the "Resumen / \<Sección\>" breadcrumb on every
 section, incl. the `?lang=en` `Summary / Events` · `Summary / Sweepstakes` spot-check) — he holds the seller

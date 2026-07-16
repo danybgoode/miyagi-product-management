@@ -1,5 +1,7 @@
 # Retrospective — Cross-agent review on every PR
 
+_Closed: 2026-06-22_
+
 **Shipped:** 2026-06-22 (1 working session) · **Outcome:** shipped **local-only, by decision** (CI auto-run descoped).
 
 ## What shipped
@@ -38,11 +40,13 @@ improvement still land; only the automation is dropped.
 - **The built-but-unmerged workflow self-smoked itself** — opening the app PRs proved the clean-skip path
   (guard green, downstream `if`-gated off) at zero cost, which is most of what S1.2 would have demonstrated.
 
-## What we learned / gaps
+## What we learned
 - **A CLI authed by interactive/OAuth login is not CI-ready for free.** Confirm a non-interactive credential
   path (and its cost) before scoping "automate this CLI in CI." (→ LEARNINGS.)
 - **Automating root-repo tooling from app-repo CI has an irreducible cross-repo cost** (a PAT or vendoring) —
   worth weighing against the payoff for a nice-to-have.
+
+## Gaps / follow-ups
 - **Pre-existing:** `build-order-guard` was red on `main` (stale `BUILD-ORDER.md` from sibling scaffolding);
   regenerated as part of this close.
 - **Follow-up flagged (`task_c26bff67`):** root CI runs no workflow for `scripts/lib/*.test.mjs`, so the CLI
