@@ -1,7 +1,20 @@
 # MCP parity core — Sprint 3: Money-adjacent listing/pricing tools
 
-**Status:** ⬜ not started · independent of Sprint 2, both frontend-only. Two small, individually
-simple closures — each mutates money-adjacent state, so each is HIGH with its own kill-switch.
+**Status:** ✅ MERGED — frontend PR [#266](https://github.com/danybgoode/miyagisanchezcommerce/pull/266)
+(2026-07-16) + backend PR [medusa-bonsai-backend#97](https://github.com/danybgoode/medusa-bonsai-backend/pull/97)
+(internal service doors). **Ships dark**: `mcp.delete_listing.enabled` +
+`mcp.apply_price.enabled` both seeded OFF live (verified via `platform_flags` query) — each flips
+only after its smoke below. Review catches applied: apply_price's card-mirror price
+now recomputes min-across-grid (Codex — multi-variant "desde" desync); a delete is
+sensitive-audited like a price change (Sonnet 5 — compromised-token blast radius).
+
+> ⚠️ **Correction to Story 3.1's original acceptance (both reviews confirmed):** the assumed
+> order-linked delete *refusal guard* does not exist anywhere in the live system — the portal
+> DELETE (and therefore the tool) performs a native Medusa **soft-delete**, which is precisely why
+> deleting an order-linked listing is safe: the row keeps `deleted_at` and past order line-items
+> keep resolving. The tool description states this contract; the smoke walkthrough below is
+> corrected accordingly (step 2: expect a successful soft-delete with order history intact, NOT a
+> refusal).
 
 ## Stories
 
@@ -40,7 +53,9 @@ Env: production (or preview, flag forced on for the test shop only)
 1. Create a throwaway test listing with no orders against it. Call `delete_listing` on it.
    → Tool returns success; the listing no longer appears in `list_my_listings` or the storefront.
 2. Call `delete_listing` on a listing that has at least one real order against it.
-   → Tool returns `isError:true` naming the order-linked guard; the listing is untouched.
+   → Tool returns success (soft-delete — see the correction note above); the listing disappears
+   from the catalog/storefront BUT the order's line items still render intact on the buyer and
+   seller order pages (that's the check).
 3. On a test variant, call `apply_price` with a computed target price.
    → Tool returns success with the new price; add the item to a cart and confirm checkout charges
    the new price, not the old one.

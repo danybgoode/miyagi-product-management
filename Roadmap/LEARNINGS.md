@@ -783,6 +783,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   mid-build. *(2026-07-10, frontend-vercel-to-cloudrun S4.3.)*
 
 ## Repo & deploy hygiene
+- **An npm `prepare` script runs on EVERY `npm ci` — including inside Docker build stages, where
+  git (and your repo) don't exist. A git-touching `prepare` must end in `|| true`.** The
+  local-first pre-push hook chore (frontend #264 / backend #96, 2026-07-16) added
+  `"prepare": "git config core.hooksPath .githooks"` — perfectly fine in a dev checkout, but the
+  Dockerfile's deps stage runs `npm ci` in a gitless image, so the script exited 127 and **every
+  Cloud Build on BOTH repos failed silently for ~8 hours** (prod unaffected — it serves the last
+  good revision — but main was undeployable, and three merged epic sprints sat undeployed).
+  Nothing in CI catches this: the Vercel-preview CI gate doesn't run the production Dockerfile, so
+  PRs stay green while the deploy rail is broken. Two rules: (1) any lifecycle script
+  (`prepare`/`postinstall`) that touches git or the filesystem outside `node_modules` gets
+  `2>/dev/null || true`; (2) after merging anything that touches `package.json` scripts or the
+  Dockerfile, **check the actual Cloud Build result** (`gcloud builds list`), not just CI — the
+  deploy rail has no notifier for consecutive failures. *(2026-07-16, caught during
+  mcp-parity-core close-out; fixed forward in frontend #268 / backend #98.)*
 - **Deleting a git branch does NOT delete its Vercel preview deployments — Vercel retains every deployment
   forever.** 73 merged/dead branches had left **150 orphan preview deployments** (469→319 after pruning).
   Pair branch cleanup with a preview prune: `node scripts/vercel-prune-previews.mjs` (dry-run by default;
@@ -1816,6 +1830,41 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   now-redundant, silently-competing path. Before pointing an existing step's CTA at a new surface, grep for
   every other place that already writes the flag that step's "done" state depends on. *(2026-07-11,
   onboarding-three-doors S3.2 — `SetupGuideCard.tsx`'s retired `handleShare` vs. the new Comparte page.)*
+
+- **Batching several sprints into one session from independent worktrees off the same base =
+  a guaranteed, budgetable integration tax when they share hot files — stack or pay.** mcp-parity-core
+  S2/S3/S4 (2026-07-16, deliberate one-session batch) each edited the same 5 files (the MCP route's
+  TOOLS array + dispatch switch, `flags.ts`, `flags-admin.ts`, `capabilities.ts`, and the
+  flags-count spec) from worktrees all cut off the same `origin/main`. Every later merge needed
+  manual conflict surgery, including one genuinely dangerous mangled seam (two function bodies
+  glued mid-`try` during resolution) that only `tsc` caught — always re-run the FULL deterministic
+  gate after resolving, never just eyeball the diff. Two specific magnets: (1) **any
+  count-style assertion** (`FLAG_KEYS.toHaveLength(N)`) is red on every branch's CI in turn (each
+  branch counts only its own additions) and must be re-fixed at each integration (30 → 32 → 34
+  here) — fix it at merge time, not build time; (2) a registry-pattern file (union type + defaults
+  + meta + seed migration) conflicts as a set — resolve them together, then verify the registry's
+  actual runtime count (`node -e` over the parsed object), not just conflict-marker absence.
+  If batching again: cut each branch FROM the previous branch (stacked), or accept the per-merge
+  pass and budget for it. *(2026-07-16, mcp-parity-core S2–S4 one-session batch.)*
+- **A sprint doc's assumed guard/behavior can be fiction — verify acceptance criteria against the
+  live system before building to them, especially when the story says "surface the existing
+  guard."** mcp-parity-core Story 3.1's acceptance AND smoke walkthrough both described an
+  "order-linked delete refusal guard" that does not exist anywhere in the live system — the portal
+  soft-deletes (which is exactly why no guard is needed: `deleted_at` keeps order line-items
+  resolving). Building to the doc would have *invented* a guard the portal doesn't have, silently
+  breaking parity — and Daniel's smoke would have "failed" on correct behavior. Grep for the
+  claimed guard first; if it isn't there, correct the doc (with the reasoning) rather than
+  implementing the fiction. *(2026-07-16, mcp-parity-core S3.1 — confirmed independently by both
+  review passes.)*
+- **A "same semantics as X" justification must name the CONSTRAINT that makes X safe — the
+  precedent may be safe only inside a boundary your new call site doesn't share.** apply_price's
+  first card-mirror write claimed parity with `update_listing`'s unconditional `price_cents`
+  mirror — but `update_listing` can only ever touch single-variant prices (the backend's
+  ambiguity guard routes multi-variant pricing to variant_tiers), which is the hidden constraint
+  that made its blind write correct. apply_price targets ANY variant of a multi-variant product,
+  so the "same" write could stamp a non-cheapest variant's price as the card's "desde" price.
+  Caught only because the reviewer asked *why* the precedent was safe, not just *whether* the code
+  matched it. *(2026-07-16, mcp-parity-core S3.2 — Codex catch, min-across-live-grid recompute.)*
 
 ## Working efficiently across a long epic
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole

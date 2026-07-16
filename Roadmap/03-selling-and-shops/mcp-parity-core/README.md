@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: mcp-parity-core
 ---
 
@@ -46,11 +46,11 @@ that backend's existing validators verbatim.
 | 1 | Manifest sync (4 drifted tools + new A1 tools, permanent drift guard) | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
 | 1 | Fix `update_listing` title-validation drift | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
 | 1 | e2e coverage for `list_launchpad_campaigns`/`list_manuscript_submissions` | low | ✅ shipped + live — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237) |
-| 2 | `configure_listing_options` over MCP (CPP price_grid/Opciones) | high | ⬜ not started |
-| 3 | `delete_listing` over MCP | high | ⬜ not started |
-| 3 | `apply_price` over MCP | high | ⬜ not started |
-| 4 | `support` block in `patch_store_configuration` | high | ⬜ not started |
-| 4 | `checkout` block in `patch_store_configuration` | high | ⬜ not started |
+| 2 | `configure_listing_options` over MCP (CPP price_grid/Opciones) | high | ✅ merged 2026-07-16, dark (flag OFF) — PR [#265](https://github.com/danybgoode/miyagisanchezcommerce/pull/265) |
+| 3 | `delete_listing` over MCP | high | ✅ merged 2026-07-16, dark (flag OFF) — PR [#266](https://github.com/danybgoode/miyagisanchezcommerce/pull/266) + backend [#97](https://github.com/danybgoode/medusa-bonsai-backend/pull/97) |
+| 3 | `apply_price` over MCP | high | ✅ merged 2026-07-16, dark (flag OFF) — PR [#266](https://github.com/danybgoode/miyagisanchezcommerce/pull/266) + backend [#97](https://github.com/danybgoode/medusa-bonsai-backend/pull/97) |
+| 4 | `support` block in `patch_store_configuration` | high | ✅ merged 2026-07-16, dark (flag OFF) — PR [#267](https://github.com/danybgoode/miyagisanchezcommerce/pull/267) |
+| 4 | `checkout` block in `patch_store_configuration` | high | ✅ merged 2026-07-16, dark (flag OFF) — PR [#267](https://github.com/danybgoode/miyagisanchezcommerce/pull/267) |
 
 ## Deploy order
 Sprint 1 is frontend-only, all LOW, ships first — it's the literal blocker for
@@ -61,19 +61,18 @@ dependent frontend tool ships. Sprints 3 and 4 are independent of each other, bo
 each HIGH with its own kill-switch + Daniel smoke.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs) for every HIGH story
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switches:** `mcp.configure_options.enabled`, `mcp.delete_listing.enabled`,
-      `mcp.apply_price.enabled`, `mcp.support_config.enabled`, `mcp.checkout_config.enabled` — all
-      new-capability (default OFF), flipped only after each story's Daniel smoke passes. Sprint 1
-      needs no new flag (launchpad tools inherit the existing `launchpad.enabled`).
-- [ ] Feature branch(es) deleted; this README's frontmatter `status: shipped`
-      (run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main`; **smokes stated as gaps** — all 5 HIGH stories ship dark, each flag flips only after its Daniel smoke (walkthroughs in sprint-{2,3,4}.md)
+- [x] Each `sprint-N.md` has its smoke walkthrough for every HIGH story (S3's corrected for the real soft-delete semantics)
+- [x] This README marked ✅; every sprint status ticked with PR refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switches:** all 5 seeded OFF live and re-verified via a direct `platform_flags`
+      query (not just migration-tool success — see the migrations-gap learning). Each flips only
+      after its story's Daniel smoke passes. Sprint 1 needed no new flag.
+- [x] Feature branches deleted (local + remote, both repos); frontmatter `status: shipped`;
+      BUILD-ORDER regenerated.
 
 See also the sibling epic `mcp-parity-config` (uniformly LOW config-wrapper tools, built after this
 one) and the deferred, named-not-scoped `mcp-money-features`/`mcp-connector-parity` buckets

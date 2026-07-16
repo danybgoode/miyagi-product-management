@@ -174,6 +174,28 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-16 — MCP seller-surface parity (core) epic SHIPPED (4 sprints; S1 LOW, S2–S4 all
+  HIGH, every HIGH story dark behind its own default-OFF kill-switch).** AGENTS.md rule #3
+  promises every seller-portal mutation is agent-accessible — an audit found the gap was broad,
+  and this epic closed the risky half (the LOW config remainder is the sibling
+  `mcp-parity-config`, still unbuilt). **S1** (PR #237, 2026-07-12) unblocked
+  `panfleto-premium-shop` S3: 8 launchpad tools, the `launchpad` config block, manifest sync + a
+  permanent both-directions dispatch⇄manifest drift guard. **S2–S4 were built in ONE session
+  (2026-07-16), deliberately deviating from one-sprint-per-session as a Fable 5 stress test**:
+  `configure_listing_options` (the CPP "Opciones" agent door, zero new pricing logic — PR #265),
+  `delete_listing` + `apply_price` (thin secret-gated internal service doors extracted verbatim
+  from portal routes, double ownership checks — PR #266 + backend #97), and the `support` +
+  `checkout` config blocks (`normalizeSupportSettings` verbatim with the real
+  product-provisioning side effect surfaced explicitly; the epic's only authored validation on
+  the previously-unvalidated checkout block, with CLABE/contact_email never agent-settable and
+  secret-free snapshot projections — PR #267). Every PR got Codex cross-review + a fresh Sonnet 5
+  reviewer; real catches on every single one (a multi-variant "desde"-price desync, two red-CI
+  count assertions, an unchecked mirror write, delete not sensitive-audited — all fixed
+  pre-merge). Story 3.1's assumed "order-linked delete guard" turned out to be fiction — the
+  portal soft-deletes, which is why no guard is needed; docs corrected. All 5 flags seeded OFF
+  live and re-verified by direct `platform_flags` query. **Owed: all 5 Daniel smokes before any
+  flag flips.** See [03 · Selling & Shops › mcp-parity-core](03-selling-and-shops/mcp-parity-core/).
+
 - **2026-07-16 — Emoji → Iconoir sweep SHIPPED (1 sprint + 3 fast follows; LOW throughout).** The
   poster's "one Iconoir icon language, no emoji" claim is now true for genuine UI chrome. **S1**
   ([#235](https://github.com/danybgoode/miyagisanchezcommerce/pull/235)) mechanically swept 86

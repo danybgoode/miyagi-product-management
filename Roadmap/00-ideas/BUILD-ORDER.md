@@ -10,10 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (2)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
-- [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 
 ## 📋 Ready to build (scaffolded, not started) (12)
@@ -31,7 +30,7 @@
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #5
 - [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/6 stories · risk: High · #6
 
-## ✅ Shipped (105)
+## ✅ Shipped (106)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -52,6 +51,7 @@
 - [Configurable & Personalized Products](../../03-selling-and-shops/configurable-personalized-products/README.md) — 03 Selling & Shops · 10/10 stories · risk: High
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 13/13 stories
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 9/9 stories
+- [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 11/11 stories
 - [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 15/15 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Money-Path & Pricing Integrity Remediation](../../03-selling-and-shops/pricing-money-path-remediation/README.md) — 03 Selling & Shops · 10/10 stories

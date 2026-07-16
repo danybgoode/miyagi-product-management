@@ -1,6 +1,17 @@
 # MCP parity core — Sprint 4: Risky config blocks (support, checkout)
 
-**Status:** ⬜ not started · independent of Sprints 2/3. Kept separate from Sprint 1's `launchpad`
+**Status:** ✅ MERGED — frontend PR [#267](https://github.com/danybgoode/miyagisanchezcommerce/pull/267)
+(2026-07-16) + backend PR [medusa-bonsai-backend#97](https://github.com/danybgoode/medusa-bonsai-backend/pull/97)
+(the `/internal/support-product` door). **Ships dark**:
+`mcp.support_config.enabled` + `mcp.checkout_config.enabled` both seeded OFF live (verified); a patch carrying
+either block is refused whole while its flag is OFF. Fresh Sonnet 5 review: approve — verified
+the provision-before-write abort semantics, the secret-free snapshot projections (the stored
+`settings.checkout` holds a real CLABE that never reaches an agent), and that the Clerk-authed
+file-import route gaining these blocks ungated is parity with the portal (same session trust),
+not an escalation. Codex catches (appliedAny honesty, shop-lookup diagnostics, currency copy)
+fixed pre-merge.
+
+Kept separate from Sprint 1's `launchpad`
 block specifically because these two are HIGH, not LOW — one has a real provisioning side effect,
 the other currently has almost no validation to inherit and needs some authored fresh.
 

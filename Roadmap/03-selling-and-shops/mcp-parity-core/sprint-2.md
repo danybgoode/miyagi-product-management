@@ -1,7 +1,15 @@
 # MCP parity core — Sprint 2: CPP "Opciones" / price_grid configurator
 
-**Status:** ⬜ not started · **Blocked by Sprint 1** (no hard dependency, but ships after per the
-epic's risk-ordered sequencing). The highest-complexity, highest-risk story in the whole epic —
+**Status:** ✅ MERGED — PR [#265](https://github.com/danybgoode/miyagisanchezcommerce/pull/265)
+(squash), merged 2026-07-16. **Ships dark**: `mcp.configure_options.enabled` seeded OFF live
+(verified via `platform_flags` query) — flips only after the smoke walkthrough below. Codex
+cross-review caught an unchecked mirror-write (fixed: honest partial-state message); a fresh
+Sonnet 5 `pr-reviewer` pass verified the zero-new-pricing-logic claim against the backend source,
+confirmed the comboKey docs match `buildVariantComboKey`, and caught a red CI (hardcoded
+flags-admin count) fixed pre-merge. No backend change was needed — the internal route already
+passes the full `SellerProductUpdateBody` through.
+
+The highest-complexity, highest-risk story in the whole epic —
 it gets its own sprint precisely so it never gets compressed into a one-line "just add a tool."
 
 > This is a **real** product/price mutation (`PATCH /store/sellers/me/products/:id` in
