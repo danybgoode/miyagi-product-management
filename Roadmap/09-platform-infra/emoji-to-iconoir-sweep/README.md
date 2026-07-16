@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: emoji-to-iconoir-sweep
 ---
 
@@ -36,6 +36,14 @@ beside it); the 79-file audit list (regenerate with the grep in the scope doc).
 One sprint; shared-surface files announced; visual-diff pass before merge.
 
 ## Definition of Done (epic)
-- [ ] Sprint merged + Daniel's visual eyeball on storefront + one settings page — **PR open** ([frontend](https://github.com/danybgoode/miyagisanchezcommerce/tree/feat/emoji-to-iconoir-sweep)), gate green (`tsc`+`build`+`test:e2e`), merge + the eyeball still owed
-- [x] CI guard active with allowlist documented — `lib/emoji-guard.ts` + `e2e/emoji-guard.spec.ts`, joins the required `api` gate on merge (advisory in the sense of being new/unproven on this PR, same framing every prior guard here has used)
-- [ ] Poster's "no emoji" claim true; this README `status: shipped`; retro + learnings if any — **not yet**: 10 of the 79 swept files still carry emoji the mechanical pass couldn't convert (plain-string data fields needing a data-model change, or code comments) — tracked in `lib/emoji-guard.ts`'s comments as a pass-2 candidate, not silently dropped
+- [x] Sprint merged + Daniel's visual eyeball on storefront + one settings page — merged (frontend [#235](https://github.com/danybgoode/miyagisanchezcommerce/pull/235)), gate green throughout; Daniel's eyeball done 2026-07-15 ("looking good all around")
+- [x] CI guard active with allowlist documented — `lib/emoji-guard.ts` + `e2e/emoji-guard.spec.ts`, joins the required `api` gate
+- [x] Poster's "no emoji" claim true (for genuine UI chrome); this README `status: shipped`; retro + learnings promoted — see `RETROSPECTIVE.md`. 10 of the 79 swept files still carry emoji the mechanical pass couldn't convert (plain-string data fields with no separate icon slot, or code comments) — documented in `lib/emoji-guard.ts`'s comments as an explicit, scoped-out pass-2 candidate, not a broken promise.
+
+## Fast follows (found + fixed after merge, same epic)
+Daniel's visual pass caught unrelated **pre-existing broken Iconoir class names** (a class that doesn't exist in the loaded `iconoir@main` CDN bundle silently renders no icon — no error, nothing catches it short of a class-by-class diff against the real bundle). Four rounds, same verification method each time, all merged:
+- [#239](https://github.com/danybgoode/miyagisanchezcommerce/pull/239) — `iconoir-newspaper`/`iconoir-cancel` (the original 2 flagged in the sweep PR) + 2 more found doing the same diff (`iconoir-bag-plus`, `iconoir-lightning-bolt`)
+- [#240](https://github.com/danybgoode/miyagisanchezcommerce/pull/240) — seller-nav "Anuncios", admin-nav "Contenido"/"Flags" + a British-spelling typo (`iconoir-colour-filter`) found broadening the check to `.ts` files
+- [#260](https://github.com/danybgoode/miyagisanchezcommerce/pull/260) — 5 broken classes in `locales/{es,en}.json` (the `/vende` marketing pages' bilingual copy dictionary — outside `app/`+`lib/`+`components/`, missed until the check was broadened to `.json`)
+
+**11 broken Iconoir classes found and fixed total**, none originally caused by this sweep — all pre-existing, silent, undetectable short of this exact verification method. See `RETROSPECTIVE.md` for the durable lesson.

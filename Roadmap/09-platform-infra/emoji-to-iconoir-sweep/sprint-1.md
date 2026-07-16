@@ -1,6 +1,6 @@
 # Emoji → Iconoir sweep — Sprint 1: The sweep + the guard
 
-**Status:** ✅ built, gate green — PR open, merge + Daniel's visual eyeball owed
+**Status:** ✅ shipped — merged, Daniel's visual eyeball done 2026-07-15, 4 fast-follow broken-icon PRs merged (#239, #240, #260)
 
 ## Stories
 

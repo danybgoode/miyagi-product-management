@@ -174,6 +174,24 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-16 — Emoji → Iconoir sweep SHIPPED (1 sprint + 3 fast follows; LOW throughout).** The
+  poster's "one Iconoir icon language, no emoji" claim is now true for genuine UI chrome. **S1**
+  ([#235](https://github.com/danybgoode/miyagisanchezcommerce/pull/235)) mechanically swept 86
+  files (the stale 2026-07-05 audit said 79) from bare emoji to Iconoir `<i>` elements across the
+  storefront, seller shell, and buyer flows, plus a CI guard (`lib/emoji-guard.ts`) modeled on the
+  raw-color guard. Daniel's post-merge visual pass then surfaced a **pre-existing, unrelated** bug
+  class the sweep's own real-bundle verification method was perfectly positioned to catch: **11
+  Iconoir class names that don't exist in the loaded `iconoir@main` CDN bundle**, silently rendering
+  no icon anywhere they appeared (nothing in `tsc`/build/Playwright catches an unknown CSS selector).
+  Three fast-follow PRs, each broadening the verification's file-type scope
+  ([#239](https://github.com/danybgoode/miyagisanchezcommerce/pull/239) `.tsx` →
+  [#240](https://github.com/danybgoode/miyagisanchezcommerce/pull/240) `.ts` →
+  [#260](https://github.com/danybgoode/miyagisanchezcommerce/pull/260) `.json`, catching the
+  `/vende` marketing pages' bilingual copy dictionary) found and fixed every instance. Durable
+  lever promoted to LEARNINGS: a "verify against the real source" check's completeness has to be
+  argued for by enumerating every file type the referenced thing can legally appear in, not
+  inferred from what the current diff touches. See [09 · Platform & Infra › Emoji → Iconoir
+  sweep](09-platform-infra/emoji-to-iconoir-sweep/).
 - **2026-07-15 — Money-Path & Pricing Integrity Remediation epic SHIPPED (3 sprints; HIGH →
   LOW).** Before any more feature-building, Daniel called for a full audit of every latent bug and
   hygiene gap surfaced along the way — "our foundation needs to be rock solid." **S0** traced

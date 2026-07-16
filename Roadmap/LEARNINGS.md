@@ -1317,6 +1317,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   symptom — a namespace whose route label already differentiates its own siblings doesn't need (and is
   actively hurt by) being routed through the same fallback that a genuinely-uniform namespace needs.
   *(2026-07-13, cms-contenido-restore-and-polish S4.)*
+- **A "does X reference a real Y" verification check is only as complete as its own file-type scope,
+  and completeness has to be argued for, not inferred from "I checked the file types the current task
+  touched."** Verifying every `iconoir-*` class against the actually-loaded Iconoir CSS bundle (not
+  memory) started scoped to `.tsx` (matching the sweep's own scope) and found 2 broken classes. A
+  follow-up had to broaden to `.ts` before it found 3 more (a plain `lib/*.ts` nav registry, not a
+  component). A second follow-up had to broaden again to `.json` before it found 5 more (`locales/*.json`
+  — outside `app/`+`lib/`+`components/` entirely). Three rounds, three scope gaps, each only surfaced
+  because a human looked at a rendered page the automated check hadn't been told to cover. Before
+  declaring a "verify against the real source" check complete, explicitly enumerate every file
+  type/location the referenced thing can legally appear in — an icon class, a route path, an env var
+  name — rather than trusting the file types the current diff happens to touch. *(2026-07-16,
+  emoji-to-iconoir-sweep fast-follows #239/#240/#260 — 11 pre-existing broken Iconoir classes found
+  total, none caused by the sweep itself; an unknown class is a silent failure, `tsc`/build/Playwright
+  none of them catch it, since `<i className="iconoir-typo" />` is valid JSX referencing a valid-but-
+  empty CSS selector.)*
 
 ## Medusa gotchas
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the
