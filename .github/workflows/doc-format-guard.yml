@@ -1,0 +1,38 @@
+# Roadmap doc-format consistency — checks epic READMEs/sprints/retrospectives against the canonical
+# shape (the `groom` plugin's scaffolding templates; see scripts/doc-format.mjs's header comment and
+# Roadmap/09-platform-infra/doc-format-consistency/ for the full rationale). Complementary to
+# build-order-guard.yml (which checks the GENERATED status board is fresh, not doc format) — one
+# guard, one concern, matching the scripts-guard/infra-guard/yaml-guard split.
+#
+# ADVISORY for now (Sprint 1 of doc-format-consistency: ENFORCED_SWEPT_PATHS is empty, so `--check`
+# always exits 0 — findings are visible in the log but nothing fails yet). As Sprint 2 sweeps each
+# macro-section, doc-format.mjs's ENFORCED_SWEPT_PATHS set grows and this check starts having real
+# teeth for exactly the docs that have been brought to canonical shape — same incremental-adoption
+# rollout every prior guard here has used (see LEARNINGS.md).
+#
+# Pure node, zero dependencies — no install step. Same shape as build-order-guard.yml.
+name: doc-format-guard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Roadmap/**'
+      - 'scripts/doc-format.mjs'
+      - '.github/workflows/doc-format-guard.yml'
+  pull_request:
+    paths:
+      - 'Roadmap/**'
+      - 'scripts/doc-format.mjs'
+      - '.github/workflows/doc-format-guard.yml'
+
+jobs:
+  doc-format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Roadmap doc format (enforced paths only — see ENFORCED_SWEPT_PATHS)
+        run: node scripts/doc-format.mjs --check

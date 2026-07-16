@@ -175,6 +175,44 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
 - **Retrospectives** — one per epic/sprint, alongside the epic.
 
 ## Conventions
+- **Doc conventions (Roadmap tree).** Epic docs have a canonical shape — checked by
+  `scripts/doc-format.mjs` (`node scripts/doc-format.mjs` for a full-tree report,
+  `--check` for the CI-gate mode `doc-format-guard.yml` runs). **SSOT = the `groom` plugin's
+  scaffolding templates** (`skills/groom/templates/` in the `ways-of-work` plugin,
+  `dobby-foundation` marketplace) — proven canonical by the zero-drift `00-ideas/seeds/*.md`
+  control group (one authoring path, 81 files, identical shape; epic READMEs drift because
+  they get hand-edited after scaffolding, away from the template). If a template changes,
+  update `doc-format.mjs`'s rules to match — the checker tracks the template, not the other
+  way around.
+  - **Epic README header** (the line right after the `# Epic: <title>` H1):
+    `> **Area:** <NN · Macro name> · **Risk:** <level> · **Class:** <Feature|Spike|Bug|Chore> · **Scope seed:** [\`00-ideas/seeds/<slug>.md\`](../../00-ideas/seeds/<slug>.md)`
+    — single line, that field order. `Class` is the Stage-2 classification (a fixed 4-value
+    enum, not free text — a longer description belongs in `## Why`). Optionally append
+    `· **Archetype:** <tag>` after Class (omit for the Builder default). **Scope seed always
+    links to `seeds/`** — `2. readyforscope/` is documented legacy
+    (`00-ideas/README.md`); if an epic was scaffolded from a readyforscope doc with no
+    `seeds/` entry, link there instead and migrate when convenient, don't fabricate a file.
+  - **Frontmatter**: `status:` (one of `scaffolded | in-progress | shipped | archived`) +
+    `slug:`. **Read-only to any tooling** — never rename/rewrite the `status` key or its
+    values; `scripts/roadmap-to-notion.mjs`'s `Lifecycle ?? Status` fallback depends on it.
+  - **Definition of Done heading**: exactly `## Definition of Done (epic)` (not `## Epic
+    Definition of Done` or any other variant).
+  - `## Context` tables and a `## Five-rules check` section are optional — present-or-absent,
+    never flagged either way.
+  - **Sprint files**: the Status line is plain and alone — `**Status:** ⬜ not started` (no
+    blockquote, no Epic backlink, no Risk combined on the same line).
+  - **Retrospectives**: header is `_Closed: YYYY-MM-DD_` (italic, not bold), followed by
+    exactly these 4 sections in order: `## What shipped`, `## What went well`,
+    `## What we learned`, `## Gaps / follow-ups`. Extra sections beyond these 4 are allowed,
+    never flagged.
+  - **Gate policy**: incremental, matching every prior guard here — `doc-format.mjs`'s
+    `ENFORCED_SWEPT_PATHS` allow-list hard-gates only macro-sections that have actually been
+    swept to canonical shape; everything else is visible-but-advisory in the full report.
+    `status: archived` epics are frozen historical record, never added to the enforced set.
+  - **Automatic catch-as-you-edit**: a `PostToolUse` Claude Code hook (checked into
+    `.claude/settings.json`, not per-user `.local.json`) runs `doc-format.mjs --hook` on any
+    `Write`/`Edit` to `Roadmap/**/*.md` — surfaces drift to the acting agent (non-zero exit,
+    findings on stderr) so it can offer a fix; it does not silently auto-rewrite the file.
 - **Gitflow.** Branch off `main` per epic (`feat/<slug>`); commit per story; PR → merge to `main`. Never
   commit feature work straight to `main`, and never force-push a shared branch. Rebase/merge latest `main`
   into a long-running branch before opening the PR. Roll back a bad merge with `git revert` on `main`.
