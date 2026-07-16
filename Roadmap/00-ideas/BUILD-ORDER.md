@@ -16,7 +16,7 @@
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (12)
+## 📋 Ready to build (scaffolded, not started) (13)
 
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
@@ -29,6 +29,7 @@
 - [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 0/6 stories · risk: Low · #4
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #5
+- [Roadmap doc-format consistency — rules, sweep, and an automatic checker](../../09-platform-infra/doc-format-consistency/README.md) — 09 Platform-infra · 0/4 stories · risk: Low
 - [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/6 stories · risk: High · #6
 
 ## ✅ Shipped (103)
@@ -159,4 +160,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 
 ---
-_Epics: 119 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 120 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
