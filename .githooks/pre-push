@@ -11,8 +11,17 @@
 # (a GitHub web edit, a different machine, NOTION_TOKEN unset locally).
 #
 # Advisory by design: a slow/failed Notion sync should never block a push. Requires
-# NOTION_TOKEN in your local shell env (same token as the `gh secret list` value) — if unset,
+# NOTION_TOKEN — either already in your shell env, or in a root .env.local (gitignored;
+# NOTION_TOKEN=<value>, one line, matching the `gh secret list` token) — if neither is present,
 # this silently no-ops and relies on the nightly cron.
+
+load_dotenv_var() {
+  # Minimal, safe parse of a single KEY=VALUE line — not a full shell-source of the file (dotenv
+  # syntax isn't guaranteed to be valid shell, e.g. unescaped # in a value). Prints the value.
+  [ -f .env.local ] || return 0
+  val=$(grep -E "^$1=" .env.local | head -1 | cut -d= -f2-)
+  printf '%s' "$val" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
+}
 
 changed_roadmap() {
   # Any commit between the pushed remote ref and local HEAD touching Roadmap/** or the script.
@@ -30,11 +39,22 @@ if ! changed_roadmap && ! git show --stat -1 HEAD 2>/dev/null | grep -qE '^\s*(R
 fi
 
 if [ -z "$NOTION_TOKEN" ]; then
+  loaded=$(load_dotenv_var NOTION_TOKEN)
+  [ -n "$loaded" ] && NOTION_TOKEN="$loaded"
+fi
+
+if [ -z "$NOTION_TOKEN" ]; then
   echo "pre-push: Roadmap/** changed but NOTION_TOKEN isn't set locally — skipping live sync." >&2
   echo "pre-push: the board will catch up via notion-sync.yml's nightly cron (up to ~24h)." >&2
   exit 0
 fi
 
+if [ -z "$NOTION_DB_ID" ]; then
+  loaded=$(load_dotenv_var NOTION_DB_ID)
+  NOTION_DB_ID="${loaded:-eb68a1fd05f443b184b6b5b3db89f47e}" # same default as notion-sync.yml — an id, not a secret
+fi
+
+export NOTION_TOKEN NOTION_DB_ID
 echo "pre-push: syncing Roadmap → Notion..." >&2
 if ! node scripts/roadmap-to-notion.mjs --sync; then
   echo "pre-push: Notion sync failed — push is proceeding anyway (advisory, not a gate)." >&2

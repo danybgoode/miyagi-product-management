@@ -3,11 +3,11 @@
 # (git config core.hooksPath .githooks), so this runs for every clone with no manual step.
 #
 # Mirrors the fast, pure-node CI guards (all sub-second locally): build-order, doc-format,
-# scripts/ + infra/ node:test suites. These used to fire on every push to main via their own
-# GH Actions workflows (build-order-guard.yml, doc-format-guard.yml, scripts-guard.yml,
-# infra-guard.yml) — moved local-first because they're this repo's most-frequently-triggered
-# workflows and each GH job bills a minimum 1 minute even for a 15-second check. GH Actions
-# keeps the PR-triggered path as a fallback safety net (see each *-guard.yml's own header).
+# scripts/ + infra/ node:test suites. These used to be 5 separate GH Actions workflows firing
+# on every push to main; consolidated into .github/workflows/guards.yml (PR-only, one job) —
+# moved local-first because they were this repo's most-frequently-triggered workflows and each
+# GH job bills a minimum 1 minute even for a 15-second check. guards.yml stays as the
+# PR-triggered fallback safety net (see its own header).
 #
 # Path-gated: each check only runs if this commit touches its own inputs, so an unrelated
 # commit pays zero cost. Bypass with `git commit --no-verify` if you genuinely need to — same
