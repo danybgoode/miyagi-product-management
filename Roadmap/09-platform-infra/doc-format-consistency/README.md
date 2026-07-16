@@ -40,7 +40,7 @@ N/A — pure docs/tooling, no commerce surface.
 |---|---|---|
 | 1 | 1.1 Define the canonical rules in WAYS-OF-WORKING.md + build `doc-format.mjs` (check/report modes only, zero doc edits) + ship `doc-format-guard.yml` advisory | Low |
 | 2 | 2.1 Sweep existing docs to canonical shape, per-macro-section, growing `ENFORCED_SWEPT_PATHS` as each section goes green | Low |
-| 3 | 3.1 Wire the `PostToolUse` hook (`.claude/settings.json`) + flip `doc-format-guard.yml` to required once the sweep is complete and one cycle is clean | Low |
+| 3 | 3.1 Wire the `PostToolUse` hook (`.claude/settings.json`) + flip `doc-format-guard.yml` to required (safe once `ENFORCED_SWEPT_PATHS` is internally clean — doesn't require a full-tree sweep, per 2026-07-15 descope) | Low |
 
 ## Deploy order
 Doc-only + tooling — no backend/frontend deploy involved. Sprint 1 ships zero doc edits (checker +
@@ -49,12 +49,16 @@ WAYS-OF-WORKING's own concurrent-editing convention — never `git add Roadmap/`
 is a `.claude/settings.json` change, checked in so it applies to everyone, not per-user.
 
 ## Definition of Done (epic)
-- [ ] `doc-format.mjs` + tests + advisory guard workflow shipped, zero findings against a full-tree
+- [x] `doc-format.mjs` + tests + advisory guard workflow shipped, zero findings against a full-tree
       report before any sweep begins (S1)
-- [ ] All active (non-archived) macro-sections swept to canonical shape, each added to
-      `ENFORCED_SWEPT_PATHS`, CI green (S2)
-- [ ] `PostToolUse` hook live in `.claude/settings.json`; `doc-format-guard.yml` flipped to required
-      after one clean cycle (S3)
+- [x] Pilot macro-section (`09-platform-infra`, 165 files) swept to canonical shape, added to
+      `ENFORCED_SWEPT_PATHS`, `--check` green (S2 — **descoped 2026-07-15**: a full-tree sweep across
+      every macro-section is explicitly NOT required; the remaining sections stay advisory-only,
+      swept opportunistically going forward rather than as a dedicated pass)
+- [x] `PostToolUse` hook live in `.claude/settings.json`; `doc-format-guard.yml` flipped to required
+      (S3 — comment-flip, no real branch-protection API on this repo tier; safe because `--check`
+      only ever gates `ENFORCED_SWEPT_PATHS`, which is clean)
 - [ ] This README `status: shipped`; retro written; durable learnings promoted to `LEARNINGS.md`
-- [ ] `dobby-foundation` PR #1 (the template fix) merged — otherwise every newly-scaffolded epic
-      keeps reproducing the header drift this epic exists to fix
+- [ ] `dobby-foundation` PR #1 (the template fix) merged — still open, blocked by the permission
+      classifier on a shared-repo merge; owed to Daniel. Until merged, newly-scaffolded epics keep
+      reproducing the header-Class drift this epic exists to fix.
