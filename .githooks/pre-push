@@ -1,0 +1,44 @@
+#!/bin/sh
+# Local-first pre-push — ADVISORY (never blocks the push, exits 0 regardless). Auto-enabled
+# via package.json's "prepare" script (git config core.hooksPath .githooks).
+#
+# Runs the Roadmap → Notion sync that notion-sync.yml's GH Actions `push` trigger used to run
+# on every push — moved local-first because it was this repo's single largest Actions-minutes
+# cost (~5-6 billed min/push, full-history clone). Local is a strictly better fit for this one:
+# git history is already present (no fetch-depth:0 clone needed), and it still fires within
+# ~a minute of the push, same guarantee the old workflow trigger provided. GH Actions keeps a
+# nightly cron + workflow_dispatch as the drift safety-net for pushes this hook can't cover
+# (a GitHub web edit, a different machine, NOTION_TOKEN unset locally).
+#
+# Advisory by design: a slow/failed Notion sync should never block a push. Requires
+# NOTION_TOKEN in your local shell env (same token as the `gh secret list` value) — if unset,
+# this silently no-ops and relies on the nightly cron.
+
+changed_roadmap() {
+  # Any commit between the pushed remote ref and local HEAD touching Roadmap/** or the script.
+  git diff --name-only @{push}...HEAD 2>/dev/null | grep -qE '^(Roadmap/|scripts/roadmap-to-notion\.mjs)'
+}
+
+if ! command -v node >/dev/null 2>&1; then
+  exit 0
+fi
+
+# @{push} can fail on a brand-new branch with no upstream yet — fall back to "did HEAD change
+# Roadmap/** at all" via a cheap recent-commit check instead of blocking on git plumbing.
+if ! changed_roadmap && ! git show --stat -1 HEAD 2>/dev/null | grep -qE '^\s*(Roadmap/|scripts/roadmap-to-notion\.mjs)'; then
+  exit 0
+fi
+
+if [ -z "$NOTION_TOKEN" ]; then
+  echo "pre-push: Roadmap/** changed but NOTION_TOKEN isn't set locally — skipping live sync." >&2
+  echo "pre-push: the board will catch up via notion-sync.yml's nightly cron (up to ~24h)." >&2
+  exit 0
+fi
+
+echo "pre-push: syncing Roadmap → Notion..." >&2
+if ! node scripts/roadmap-to-notion.mjs --sync; then
+  echo "pre-push: Notion sync failed — push is proceeding anyway (advisory, not a gate)." >&2
+  echo "pre-push: the nightly cron or 'gh workflow run notion-sync.yml' will catch it up." >&2
+fi
+
+exit 0
