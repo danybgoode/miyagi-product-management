@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: doc-format-consistency
 ---
 
@@ -24,7 +24,7 @@ N/A — pure docs/tooling, no commerce surface.
   ARE the canonical shape — proven by the zero-drift `00-ideas/seeds/*.md` control group (81 files,
   one authoring path). Fixed a real template bug as part of this epic's research: `scaffold-epic.mjs`
   already computed a `Class` value from its own `--type` flag but the template never rendered it —
-  see `dobby-foundation` repo PR #1 (open, awaiting Daniel's merge — a separate, shared plugin repo).
+  `dobby-foundation` repo PR #1, merged 2026-07-16.
 - `scripts/doc-hygiene.mjs` — complementary, not overlapping: content/staleness checks (dedupe,
   dead paths, archived-epic mentions) on exactly `LEARNINGS.md` + the poster. This epic's checker
   covers FORMAT (headings, frontmatter shape, section order) across the whole `Roadmap/` tree.
@@ -58,7 +58,6 @@ is a `.claude/settings.json` change, checked in so it applies to everyone, not p
 - [x] `PostToolUse` hook live in `.claude/settings.json`; `doc-format-guard.yml` flipped to required
       (S3 — comment-flip, no real branch-protection API on this repo tier; safe because `--check`
       only ever gates `ENFORCED_SWEPT_PATHS`, which is clean)
-- [ ] This README `status: shipped`; retro written; durable learnings promoted to `LEARNINGS.md`
-- [ ] `dobby-foundation` PR #1 (the template fix) merged — still open, blocked by the permission
-      classifier on a shared-repo merge; owed to Daniel. Until merged, newly-scaffolded epics keep
-      reproducing the header-Class drift this epic exists to fix.
+- [x] This README `status: shipped`; retro written; durable learnings promoted to `LEARNINGS.md`
+- [x] `dobby-foundation` PR #1 (the template fix) merged 2026-07-16 (Daniel — permission classifier
+      blocked the agent from a no-review shared-repo merge twice; Daniel ran it directly).

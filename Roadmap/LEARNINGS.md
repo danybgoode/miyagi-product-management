@@ -196,6 +196,27 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   same incremental-adoption shape as the raw-color guard's own file-exclusion list, just inverted (an
   enforced-list of what's covered, not an excluded-list of what's exempt). *(2026-07-10,
   seller-portal-rails-foundation S2.)*
+- **A follow-up message to a running fork can race the fork's own in-flight tool calls.** Sent a
+  background fork a scope-change instruction ("stop sweeping, wrap up") while it was still mid-batch;
+  it kept executing and self-committed content the "wrap up" instance's own final report never
+  mentioned — two overlapping executions against the same working tree, from what looked like one
+  conversation thread. Nothing broke here (both were verified-correct, same task), but don't assume a
+  message to a running fork lands before its current batch finishes; re-derive actual repo state
+  (`git log`, `git status`, re-run the checker) after ANY multi-message fork exchange, not just after
+  the final report. *(2026-07-15/16, doc-format-consistency S2.)*
+- **This GitHub account's repos have no real branch-protection API** (`gh api
+  repos/.../branches/main/protection` → `403 Upgrade to GitHub Pro`). Every "required" CI guard in
+  this repo family (`yaml-guard`, `build-order-guard`, `doc-format-guard`, ...) is a comment-only
+  convention in the workflow file's header, not an enforced merge gate — nothing stops a PR from
+  merging with a red required check. Don't promise "this blocks a bad merge" without checking the
+  tier first. *(2026-07-16, doc-format-consistency S3.)*
+- **Mid-course descope is cheap when you separate "the automatic mechanism" from "the one-time
+  backlog."** A sweep-then-wire-hook plan got reordered mid-flight when Daniel said the historical
+  backlog didn't need finishing — since the hook (catches drift going forward) didn't actually depend
+  on the sweep (fixes drift already there) being complete, the sweep could shrink to a single verified
+  pilot section without weakening the hook's guarantee at all. Worth checking, before grinding through
+  a large cleanup, whether the enforcement mechanism can ship independently of the cleanup finishing.
+  *(2026-07-15/16, doc-format-consistency S2/S3.)*
 
 ## Tooling gotchas
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized

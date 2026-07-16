@@ -16,7 +16,7 @@
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 6/11 stories
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (13)
+## 📋 Ready to build (scaffolded, not started) (12)
 
 - [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
@@ -29,10 +29,9 @@
 - [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 0/6 stories · risk: Low · #4
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #5
-- [Roadmap doc-format consistency — rules, sweep, and an automatic checker](../../09-platform-infra/doc-format-consistency/README.md) — 09 Platform-infra · 0/4 stories · risk: Low
 - [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/6 stories · risk: High · #6
 
-## ✅ Shipped (103)
+## ✅ Shipped (104)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -129,6 +128,7 @@
 - [Process iteration — UX rails at grooming + observed-red DoD ✅](../../09-platform-infra/process-ux-rails-and-red-green/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · tbd
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 6/6 stories · risk: Low
 - [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](../../09-platform-infra/repo-readmes-branding/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · Wave 3
+- [Roadmap doc-format consistency — rules, sweep, and an automatic checker](../../09-platform-infra/doc-format-consistency/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 6/6 stories
 - [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 4/4 stories
 - [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 3/3 stories
