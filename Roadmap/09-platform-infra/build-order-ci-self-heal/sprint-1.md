@@ -1,33 +1,47 @@
 # Build-order CI self-heal — Sprint 1: Guard heals instead of failing
 
-**Status:** ⬜ not started
+**Status:** 🟨 in progress
+
+> **Re-groomed at build time (2026-07-17):** this sprint was groomed against the standalone
+> `build-order-guard.yml`, which no longer exists — the 2026-07-16 local-first consolidation
+> (`github-actions-local-first`) merged it into `.github/workflows/guards.yml` (PR-only) and made
+> `.githooks/pre-commit` the direct-to-`main` layer. The story's *intent* (heal the derived board,
+> don't punish the next passer-by) is unchanged; the fix now lands in those two files, and the
+> original "hard-fail on `main` pushes" acceptance is obsolete — there is no `push` trigger anymore,
+> and the pre-commit hook now heals-and-stages *before* the commit even lands, which is strictly
+> stronger than failing after.
 
 ## Stories
 
-### Story 1.1 — Guard self-heals stale board on PRs, hard-fails on `main` pushes
-**As** Daniel, **I want** `build-order-guard.yml` to regenerate and commit a stale `BUILD-ORDER.md`
-back to the PR branch instead of failing, **so that** forgotten regens stop redding unrelated PRs.
+### Story 1.1 — Self-heal the derived board at both layers
+**As** Daniel, **I want** a stale `BUILD-ORDER.md` to be regenerated automatically (staged into the
+commit locally; bot-committed onto the PR branch in CI), **so that** forgotten regens stop redding
+unrelated PRs.
 **Acceptance:**
-- A PR flipping an epic README `status:` without regen goes green, with a bot commit refreshing only
-  `Roadmap/00-ideas/BUILD-ORDER.md` on the same branch (path-scoped add, `contents: write`).
-- A stale board pushed directly to `main` still fails the guard.
-- No other file is ever touched by the auto-commit.
+- `.githooks/pre-commit`: a commit touching `Roadmap/` with a stale board regenerates + stages
+  `Roadmap/00-ideas/BUILD-ORDER.md` into that same commit (path-scoped `git add`), warns, and
+  proceeds. Only a regen *error* still blocks.
+- `guards.yml` (PR fallback, e.g. `--no-verify` / hookless clone): a PR with a stale board goes
+  green with a bot commit refreshing only `BUILD-ORDER.md` on the PR branch (`contents: write`,
+  PR-head checkout). Fork PRs can't receive a push → loud red with the fix command instead.
+- No other file is ever touched by either heal path.
 **Risk:** low
 
 ## Sprint QA
-- **api spec(s):** n/a (workflow YAML; the QA is the live rehearsal below)
+- **api spec(s):** n/a (workflow YAML + shell hook; QA is the live rehearsal below)
 - **browser smoke owed:** no
-- **deterministic gate:** the rehearsal PR itself — self-heal observed once (green + bot commit), and
-  the mutation check: stale board on `main` observed red once
+- **deterministic gate:** actionlint on guards.yml; live rehearsal of both heal paths
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: GitHub — root repo
+Env: root repo, local + GitHub
 
-1. Open a throwaway PR that edits any epic README `status:` field without running the regenerator.
-   → CI goes green and a bot commit "chore(build-order): self-heal regenerated board" appears on the PR branch touching only BUILD-ORDER.md.
-2. Revert the throwaway change, close the PR.
-   → Board back to normal.
-3. (mutation check, agent-run) Push a deliberately stale board to a `claude/`-prefixed test ref simulating `main` rules, or verify the `push: main` job path in the workflow still ends in `exit 1` on `--check` failure.
-   → Hard fail confirmed on the main path.
+1. Local layer: flip any epic README `status:` and `git commit` WITHOUT running the regenerator.
+   → pre-commit prints "regenerated and staged into this commit" and the commit lands with a fresh
+   `BUILD-ORDER.md` included. (`git show --stat HEAD` includes `Roadmap/00-ideas/BUILD-ORDER.md`.)
+2. CI layer: open a throwaway PR whose head commit carries a stale board (commit with
+   `--no-verify` to simulate a hookless clone).
+   → guards run goes green and a bot commit "chore(build-order): self-heal — regenerate derived
+   board" appears on the PR branch touching only `BUILD-ORDER.md`.
+3. Close/revert the throwaway PR. → Board back to normal.
 
 If any step fails, note the step number + what you saw — that's the bug report.

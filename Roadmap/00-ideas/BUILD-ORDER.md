@@ -149,7 +149,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -158,7 +158,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
+| Build-order CI self-heal | Scaffolded | In progress |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 
 ---
-_Epics: 121 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 121 · seeds in funnel: 7 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._

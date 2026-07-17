@@ -30,10 +30,15 @@ concurrency:
 jobs:
   guards:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # build-order self-heal pushes a regen commit back to the PR branch
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # build-order/doc-format's extractor derives dates from git history
+          # Check out the PR HEAD (not the synthetic merge commit) so the build-order
+          # self-heal can commit + push the regenerated board back to the PR branch.
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -48,9 +53,29 @@ jobs:
           echo "infra=$(echo "$changed" | grep -qE '^infra/' && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "workflows=$(echo "$changed" | grep -qE '^\.github/workflows/' && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
-      - name: build-order — status board is fresh
+      - name: build-order — status board is fresh (self-heals stale boards)
         if: steps.areas.outputs.roadmap == 'true'
-        run: node scripts/build-order.mjs --check
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          if node scripts/build-order.mjs --check; then exit 0; fi
+          # Self-heal (build-order-ci-self-heal epic): BUILD-ORDER.md is DERIVED from epic
+          # frontmatter — a stale board is a forgotten `node scripts/build-order.mjs`, not a
+          # judgment call. Regenerate and push the one derived file back to the PR branch
+          # instead of redding the PR. GITHUB_TOKEN pushes don't retrigger workflows, so this
+          # run's own green is the healed verdict (no recursion possible).
+          if [ "$IS_FORK" = "true" ]; then
+            echo "::error::BUILD-ORDER.md is stale and this is a fork PR (cannot push a heal commit). Run 'node scripts/build-order.mjs' locally and commit the result."
+            exit 1
+          fi
+          node scripts/build-order.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Roadmap/00-ideas/BUILD-ORDER.md
+          git commit -m "chore(build-order): self-heal — regenerate derived board" -- Roadmap/00-ideas/BUILD-ORDER.md
+          git push origin HEAD:"$HEAD_REF"
+          node scripts/build-order.mjs --check
 
       - name: doc-format — Roadmap doc canonical shape (enforced paths only)
         if: steps.areas.outputs.roadmap == 'true'

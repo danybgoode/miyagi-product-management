@@ -23,9 +23,16 @@ fi
 fail=0
 
 if echo "$changed" | grep -qE '^(Roadmap/|scripts/build-order\.mjs|scripts/roadmap-to-notion\.mjs)'; then
-  if ! node scripts/build-order.mjs --check; then
-    echo "pre-commit: build-order failed — BUILD-ORDER.md is stale. Run 'node scripts/build-order.mjs' and stage it." >&2
-    fail=1
+  if ! node scripts/build-order.mjs --check >/dev/null 2>&1; then
+    # Self-heal (build-order-ci-self-heal epic): the board is DERIVED — a stale copy is a
+    # forgotten regen, not a judgment call. Regenerate and stage it into this same commit,
+    # path-scoped to the one file the generator owns. Fail only if the regen itself errors.
+    if node scripts/build-order.mjs && git add Roadmap/00-ideas/BUILD-ORDER.md; then
+      echo "pre-commit: build-order — BUILD-ORDER.md was stale; regenerated and staged into this commit." >&2
+    else
+      echo "pre-commit: build-order self-heal failed — run 'node scripts/build-order.mjs' manually and inspect." >&2
+      fail=1
+    fi
   fi
 fi
 
