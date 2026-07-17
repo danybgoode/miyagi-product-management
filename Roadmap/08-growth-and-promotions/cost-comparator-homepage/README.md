@@ -6,7 +6,7 @@ archetype: Grower
 
 # Epic: Comparador de costos — the stacking-costs sales tool on the homepage
 
-> **Area:** 08-growth-and-promotions · **Risk:** LOW · **Archetype:** Grower · **Scope seed:**
+> **Area:** 08-growth-and-promotions · **Risk:** LOW · **Class:** Feature · **Archetype:** Grower · **Scope seed:**
 > [`00-ideas/seeds/cost-comparator-homepage.md`](../../00-ideas/seeds/cost-comparator-homepage.md)
 > (approved by Daniel 2026-07-09).
 
@@ -87,5 +87,5 @@ pricing is researched + cited **at build time** (web-verify, never training memo
 
 ## Sprints
 - [sprint-1.md](sprint-1.md) — Calculator + dataset + teaser.
-- [sprint-2.md](sprint-2.md) — Report + consultant mode + agent surface.
+- [sprint-2.md](sprint-2.md) — Report + consultant mode + agent surface. 🟡 Built, [PR #278](https://github.com/danybgoode/miyagisanchezcommerce/pull/278) open (not merged) — owed Daniel's phone smoke.
 - [sprint-3.md](sprint-3.md) — URL analyzer (conditional — rides migrations parity module).
