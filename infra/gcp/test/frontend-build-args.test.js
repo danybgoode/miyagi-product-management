@@ -54,6 +54,11 @@ const NEXT_PUBLIC_VARS = [
   'NEXT_PUBLIC_CLERK_SIGN_UP_URL',
   'NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL',
   'NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL',
+  // Added 2026-07-17 (nextpublic-buildtime-inlining-audit close-out): GTM_ID was
+  // Vercel-only — the Cloud Run cutover dropped it and analytics went dark.
+  // MIYAGI_WHATSAPP is the same class (server-read today, empty default).
+  'NEXT_PUBLIC_GTM_ID',
+  'NEXT_PUBLIC_MIYAGI_WHATSAPP',
 ]
 
 // --set-env-vars uses gcloud's custom `^~^`-delimited syntax (a plain comma
@@ -95,6 +100,8 @@ const SUBSTITUTION_DEFAULTS = {
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/sign-up',
   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/',
   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/',
+  NEXT_PUBLIC_GTM_ID: 'GTM-MWHVLJ3M',
+  NEXT_PUBLIC_MIYAGI_WHATSAPP: '',
 }
 
 function deployScriptDefault(src, varName) {
