@@ -24,6 +24,7 @@ import {
   validateBenchmarkDataset,
 } from './lib/pmo-benchmarks.mjs';
 import { buildSmallDocsUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
+import { upgradeArtifactLinks } from './lib/report-registry.mjs';
 import { parseStatusFlipsFromLog, filterFlipsToWindow } from './weekly-recap.mjs';
 import {
   baselineSummary,
@@ -249,6 +250,11 @@ async function main() {
 
   console.log(text);
   const artifacts = buildReportArtifacts(metrics, args);
+  // reporthub-as-notion S1.3: try to upgrade each artifact's URL-hash link to a short gs://-backed
+  // /r/<slug> link (scripts/lib/report-registry.mjs). Mutates `artifacts` in place; on any upload
+  // failure (no credentials, unreachable bucket, ...) the artifact keeps the URL-hash link it already
+  // had — printed below and, for --weekly, the one that reaches Telegram either way.
+  await upgradeArtifactLinks(artifacts, { date: window.untilISO ? new Date(window.untilISO) : new Date() });
   for (const artifact of artifacts) {
     console.log(`\nSmallDocs ${artifact.name}: ${artifact.url}`);
     if (args.open) {
