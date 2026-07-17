@@ -72,9 +72,13 @@ jobs:
             exit 1
           fi
           node scripts/build-order.mjs
+          git add Roadmap/00-ideas/BUILD-ORDER.md
+          if git diff --cached --quiet; then
+            echo "::error::--check failed but the regenerated board is byte-identical to the committed one — generator nondeterminism? Inspect scripts/build-order.mjs."
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Roadmap/00-ideas/BUILD-ORDER.md
           git commit -m "chore(build-order): self-heal — regenerate derived board" -- Roadmap/00-ideas/BUILD-ORDER.md
           git push origin HEAD:"$HEAD_REF"
           node scripts/build-order.mjs --check
