@@ -50,6 +50,26 @@ responds `Cache-Control: public, max-age=31536000, immutable`.
 long cache headers do most of the work; a Cloudflare Cache Rule, see below, does the rest once applied).
 Candidate for Sprint 2 if abuse is observed.
 
+**Follow-up gap noted, not fixed here:** `lib/image-ingest.ts`'s `ingestOne()` (the pre-existing helper
+Story 1.3 reuses for supply-import) calls `fetch(url, { redirect: 'follow' })` — same latent
+allow-list-bypass-via-redirect shape that `/api/img` had before review caught it, but on a DIFFERENT
+route with its own allow-list logic (`isSafePublicUrl()`, blocks loopback/private ranges, not a
+hostname allow-list). Out of scope for this PR (smallest-change principle — it's pre-existing code,
+not something S1.3 introduced); worth a dedicated look in Sprint 2 or a fast-follow.
+
+### Security surface note (post-review)
+This sprint adds a genuinely new **server-side fetch + transcode** surface (`/api/img` fetches an
+arbitrary-but-allow-listed URL and feeds the bytes through `sharp`) — a fresh independent review
+correctly re-tagged that surface as **MED**, not LOW, on its own terms: SSRF-via-redirect (fixed —
+`redirect: 'error'`), unbounded memory on a chunked/misreported-length response (fixed — streaming
+byte-cap), and DoS amplification via the (width × quality × format) variant space (mitigated — quality
+snapped to a 3-value ladder `{60,75,90}`, width already ladder-snapped; the Cloudflare Cache Rule below
+is the AGGREGATE defense — once applied, repeat requests for the same variant never re-hit `sharp` at
+all). **The epic's overall LOW merge-tier rationale still holds**: no money/checkout/auth path is
+touched, the route is unauthenticated by design (same trust boundary as any public image URL) and
+allow-listed to only our own R2/Supabase hosts, and a misbehaving proxy degrades to "images don't
+resize" rather than any data exposure — old raw R2 URLs keep serving untouched either way.
+
 ## Stories
 
 ### Story 1.1 — R2 image delivery through the zone + Cache-Control + responsive sizes ✅
@@ -112,7 +132,35 @@ principle; the admin scrape + ML paths were the two the shared-core doc comment 
   HTML, cache headers verified) that skips gracefully pre-deploy or on an empty catalog, becomes a real
   check once this PR's preview/prod serves it. Hardened further in 2.3.
 - **RED observed:** yes — mutated `lib/r2.ts`'s `CacheControl` line out, confirmed the matching spec
-  failed, restored, confirmed green again.
+  failed, restored, confirmed green again. Repeated for every spec added in the post-review round
+  (below): each mutated out, confirmed RED, restored, confirmed GREEN.
+- **Post-review round (codex + a fresh independent reviewer on PR #276):**
+  - `app/api/img/route.ts` buffered the ENTIRE origin response via `await upstream.arrayBuffer()`
+    before checking size — `content-length` is advisory (absent on chunked responses, or simply
+    wrong), so a chunked large image could spike memory regardless of the header. **Fixed**: streams
+    via `reader.read()` with a running byte counter, cancels the read the moment the total crosses
+    `MAX_SOURCE_BYTES`.
+  - `scripts/r2-set-cache-control.mjs`'s `CopySource` used `encodeURIComponent()` over the WHOLE key,
+    turning every `/` into `%2F` — S3-compatible `CopySource` needs slash-preserving encoding (every
+    real key is nested, e.g. `listing-images/supply/...`, so this would have failed on every object).
+    **Fixed**: `encodeCopySourceKey()` encodes each path segment and rejoins with `/`. Validated with
+    `node -e` against nested-key fixtures (including spaces/accents) — output preserves `/` while still
+    percent-encoding within segments; the naive form was confirmed broken for the same inputs.
+  - The origin `fetch()` in `/api/img` had no `redirect` option — Node follows up to 20 redirects by
+    default, and the hostname allow-list only ever checked the INITIAL url, so a 3xx from an
+    allow-listed host (the Supabase project host especially, a generic multi-tenant domain) could pivot
+    the fetch anywhere. **Fixed**: `redirect: 'error'` — our own R2/Supabase image URLs never
+    legitimately redirect.
+  - Quality accepted any value 40-90 — multiplies the (width × quality × format) variant space an
+    attacker could force `sharp` to encode. **Fixed**: snapped to a 3-value ladder `{60,75,90}`
+    (`snapQuality()`, mirrors the existing `snapWidth()` shape).
+  - Nit: two `e2e/perf-budget.spec.ts` assertions (`priority` on the featured card, the
+    `ingestImageUrls()` call-before-create ordering) matched a nearby PROSE COMMENT that happened to
+    contain the same words/identifier, not just the live code — a false pass would have survived the
+    real code being deleted. **Tightened**: scoped to the captured `<Image ... />` tag / anchored to
+    `await ingestImageUrls(` specifically. Verified each tightened check still goes RED when the real
+    code (not the comment) is removed.
+  - Two new specs added for the redirect + quality-ladder fixes, both RED-observed then restored green.
 - **browser smoke owed:** yes, to Daniel — PageSpeed mobile re-run after merge (this is what actually
   validates the 321-px/~60 KiB and ~2 MB payload-drop numbers; can't be measured without live R2 images)
 - **deterministic gate:** `tsc --noEmit` ✅ + `npm run build` ✅ (homepage `/` still prerenders as
