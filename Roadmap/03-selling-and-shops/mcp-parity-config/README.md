@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: mcp-parity-config
 ---
 
@@ -32,13 +32,13 @@ config route (collections, shop slug, notification preferences, CMS content, Tel
 
 | Sprint | Story | Risk | Status |
 |---|---|---|---|
-| 1 | `update_collection` / `delete_collection` over MCP | low | ⬜ not started |
-| 1 | `reorder_collections` over MCP | low | ⬜ not started |
-| 1 | `set_listing_repuve` over MCP (optional, low priority) | low | ⬜ not started |
-| 2 | `set_shop_slug` over MCP | low | ⬜ not started |
-| 2 | Notification-preferences over MCP (extend existing block or new tool) | low | ⬜ not started |
-| 2 | Shop CMS content CRUD over MCP | low | ⬜ not started |
-| 2 | Telegram link/unlink/test over MCP | low | ⬜ not started |
+| 1 | `update_collection` / `delete_collection` over MCP | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
+| 1 | `reorder_collections` over MCP | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
+| 1 | `set_listing_repuve` over MCP (optional, low priority) | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
+| 2 | `set_shop_slug` over MCP | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
+| 2 | Notification-preferences over MCP (extend existing block or new tool) | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
+| 2 | Shop CMS content CRUD over MCP | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
+| 2 | Telegram link/unlink/test over MCP | low | ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) |
 
 ## Deploy order
 Both sprints are frontend-only, independent of each other and of `mcp-parity-core`. No backend

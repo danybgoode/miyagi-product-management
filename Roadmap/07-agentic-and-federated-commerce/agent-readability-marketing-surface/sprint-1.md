@@ -1,6 +1,6 @@
 # Agent-readability & marketing-surface hardening — Sprint 1: Fix, unify, guard
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped + live 2026-07-16 — PR [#270](https://github.com/danybgoode/miyagisanchezcommerce/pull/270) (`5a120bd`). 1.1 premise not reproducible (root cause in PR); 1.2+1.3 live, guard spec 16/16 vs prod. Owed: Daniel WhatsApp/Telegram preview smoke.
 
 ## Stories
 

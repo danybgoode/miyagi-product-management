@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: mschz-full-coverage
 ---
 
@@ -35,9 +35,9 @@ enhancement**).
   `EventsManager.tsx:225`; launchpad `campaigns/[id]/qr/route.ts:26` + `CampaignsManager.tsx:224`.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | Prefix passthrough + reserved words + share-UI surfacing | high |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | Prefix passthrough + reserved words + share-UI surfacing | high | ✅ shipped + live 2026-07-16 — FE PR [#269](https://github.com/danybgoode/miyagisanchezcommerce/pull/269), BE PR [#99](https://github.com/danybgoode/medusa-bonsai-backend/pull/99) |
 
 ## Deploy order
 Frontend PR (middleware passthrough + frontend reserved list + share UI + specs) and backend PR

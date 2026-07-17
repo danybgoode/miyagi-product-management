@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-16 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -15,13 +15,10 @@
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (12)
+## 📋 Ready to build (scaffolded, not started) (9)
 
-- [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 0/7 stories
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
-- [Agent-readability & marketing-surface hardening](../../07-agentic-and-federated-commerce/agent-readability-marketing-surface/README.md) — 07 Agentic/Federated · 0/3 stories · risk: Low · #2
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 0/10 stories · risk: High · Wave 2
-- [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 0/3 stories · risk: High · Wave 1
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
 - [Build-order CI self-heal](../../09-platform-infra/build-order-ci-self-heal/README.md) — 09 Platform-infra · 0/1 stories · risk: Low · #1
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
@@ -30,7 +27,7 @@
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #5
 - [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/6 stories · risk: High · #6
 
-## ✅ Shipped (106)
+## ✅ Shipped (109)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -51,6 +48,7 @@
 - [Configurable & Personalized Products](../../03-selling-and-shops/configurable-personalized-products/README.md) — 03 Selling & Shops · 10/10 stories · risk: High
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 13/13 stories
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 9/9 stories
+- [MCP seller-surface parity — config (pure config wrappers)](../../03-selling-and-shops/mcp-parity-config/README.md) — 03 Selling & Shops · 7/7 stories
 - [MCP seller-surface parity — core (unblock, hardening, money-adjacent)](../../03-selling-and-shops/mcp-parity-core/README.md) — 03 Selling & Shops · 11/11 stories
 - [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 15/15 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
@@ -75,12 +73,14 @@
 - [Zine = the editing central — integrate the zine studio with the marketplace print pipeline](../../06-print-edition/zine-editing-central/README.md) — 06 Print · 9/9 stories
 - [Agent Connection & Discoverability](../../07-agentic-and-federated-commerce/agent-connection/README.md) — 07 Agentic/Federated · 6/6 stories · risk: High
 - [Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target](../../07-agentic-and-federated-commerce/agent-discovery-and-indexing/README.md) — 07 Agentic/Federated · 3/3 stories
+- [Agent-readability & marketing-surface hardening](../../07-agentic-and-federated-commerce/agent-readability-marketing-surface/README.md) — 07 Agentic/Federated · 3/3 stories · risk: Low · #2
 - [Agent-readable why-sell / about surface](../../07-agentic-and-federated-commerce/agent-readable-about-surface/README.md) — 07 Agentic/Federated · 6/6 stories · risk: Low
 - [Checkout on the custom domain (custom-domain-checkout)](../../07-agentic-and-federated-commerce/custom-domain-checkout/README.md) — 07 Agentic/Federated · 4/4 stories · risk: High
 - [Cross-channel Storefront Trust Parity](../../07-agentic-and-federated-commerce/cross-channel-trust-parity/README.md) — 07 Agentic/Federated · 2/2 stories · risk: Low · Wave 3
 - [Custom-domain paywall + campaign coupon](../../07-agentic-and-federated-commerce/custom-domain-paywall/README.md) — 07 Agentic/Federated · 9/9 stories · risk: High
 - [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2/2 stories
 - [Embeddable Widget](../../07-agentic-and-federated-commerce/embeddable-widget/README.md) — 07 Agentic/Federated · 7/7 stories
+- [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 3/3 stories · risk: High · Wave 1
 - [Multi-tenant subdomains (`yourshop.miyagisanchez.com`)](../../07-agentic-and-federated-commerce/subdomains/README.md) — 07 Agentic/Federated · 3/3 stories
 - [Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation](../../07-agentic-and-federated-commerce/contextual-agent-handoff/README.md) — 07 Agentic/Federated · 7/7 stories
 - [Own channel: custom-domain polish (custom-domain-polish)](../../07-agentic-and-federated-commerce/custom-domain-polish/README.md) — 07 Agentic/Federated · 7/7 stories · risk: Low

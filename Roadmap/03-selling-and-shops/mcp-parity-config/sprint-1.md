@@ -1,6 +1,6 @@
 # MCP parity config — Sprint 1: Catalog config tools
 
-**Status:** ⬜ not started · all LOW, auto-mergeable on green CI, no kill-switch needed.
+**Status:** ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271) (`800538f`), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) (`2b6e0d0`). All 3 tools (incl. optional 1.3) in prod tools/list.
 
 ## Stories
 

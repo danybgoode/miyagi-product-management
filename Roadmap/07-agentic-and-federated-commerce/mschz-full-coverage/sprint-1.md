@@ -1,6 +1,6 @@
 # mschz.org full coverage — short links for every shareable surface — Sprint 1: Prefix passthrough + reserved words + share-UI surfacing
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped + live 2026-07-16 — FE PR [#269](https://github.com/danybgoode/miyagisanchezcommerce/pull/269) (`32bca66`), BE PR [#99](https://github.com/danybgoode/medusa-bonsai-backend/pull/99) (`4a6eb9d`). Passthrough live-verified (all 5 prefixes, query+case preserved, 404 fallthrough). Owed: Daniel QR camera-scan smoke.
 
 ## Stories
 

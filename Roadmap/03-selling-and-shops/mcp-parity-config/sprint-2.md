@@ -1,6 +1,6 @@
 # MCP parity config — Sprint 2: Shop-identity & content config tools
 
-**Status:** ⬜ not started · all LOW, auto-mergeable on green CI, no kill-switch needed.
+**Status:** ✅ shipped + live 2026-07-16 — same PR pair as Sprint 1 (FE [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271) + BE [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100)). 2.2 decision: granular grid ≠ notifications config block → dedicated tool. Owed: first real-token smoke (walkthrough below).
 
 ## Stories
 

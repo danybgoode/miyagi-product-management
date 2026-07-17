@@ -140,7 +140,8 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ### 07 · Agentic & Federated Commerce
 - ✅ **Pick & change your shop URL** — sellers choose a clean `miyagisanchez.com/s/[slug]` at creation and edit it later (live availability, reserved words); the old slug 301s for 90 days, with a copy button + upsell to a full custom domain. *(Free tier of shop addressing.)*
 - ✅ **The white-label subdomain is a paid SKU** — `shopname.miyagisanchez.com` serves the whole storefront white-label (a real `*.miyagisanchez.com` wildcard cert; apex on Vercel nameservers, sales attributed to the `subdomain` channel), but it's now the platform's **cheaper** paid SKU: **$199 MXN/yr or $25 MXN/mo** (switch between them anytime, no double charge), gated behind the fail-open `subdomain.paywall_enabled` flag (ON). Existing shops (179) are **grandfathered free forever**; a new unpaid shop's subdomain **301-redirects to the free `/s/slug`**. Buy + cadence-switch are reachable over MCP (`get_subdomain_entitlement`, `start_subdomain_subscription`, `switch_subdomain_cadence`). **The free `/s/slug` shop URL stays free.** A merchant enrolled via a promoter can also get the **first year free** (a one-time grant, no checkout at all) when the admin prices that SKU at $0 for promoters — see 08 · Promoter program. *(Prod monthly seed + money-path smoke owed to Daniel.)*
-- ✅ **Ultra-short branded links** — `mschz.org/[shop]` and `mschz.org/[product-code]` 301-redirect to the canonical storefront URL (case-insensitive; unknown → branded 404). Every listing auto-gets a short code. *(Completes the addressing ladder: free slug → subdomain → short link → custom domain.)*
+- ✅ **Ultra-short branded links — full coverage** — `mschz.org/[shop]` and `mschz.org/[product-code]` 301-redirect to the canonical storefront URL (case-insensitive; unknown → branded 404), and every public shareable surface now rides the short domain too: `mschz.org/{g,e,v,s,l}/…` passes through verbatim (path + query) to the same path on the platform, share/QR surfaces emit the short form. Every listing auto-gets a short code. *(Completes the addressing ladder: free slug → subdomain → short link → custom domain. QR camera-scan smoke owed to Daniel.)*
+- ✅ **Agent-readability & marketing-surface hardening** — the "pregúntale a tu IA por miyagisanchez.com" chain is CI-guarded: a no-JS spec fetches `/`, `/vende`, `/acerca`, `/agent`, `/llms.txt`, `/robots.txt`, `/api/ucp/manifest` and asserts substantive content + OG/canonical; every marketing page shares one branded OG template with a per-page headline (`lib/marketing-og.tsx`); `/agent` + `/terminos` canonicals self-referential. *(WhatsApp/Telegram preview smoke owed to Daniel.)*
 - ✅ Sell on the marketplace or your **own custom domain** — the **whole storefront** (home, product pages, cart) renders white-label under the tenant domain, scoped to that one shop, with SEO consolidated there (canonical/OG + per-host robots/sitemap + legacy 301s).
 - ✅ **Own-shop premium presentation** — every shop, free on every channel (marketplace, subdomain, custom domain), gets the presentation layer that makes it feel like a real brand's store, not a flat listing grid: an announcement bar, a hero/featured section, curated theme presets (contrast-guarded), seller-defined **collections** (Medusa-native Product Category — a listing can live in several, seller-namespaced handles) with an in-shop nav strip + `/c/[collection]` pages white-labeled everywhere, and real content pages (Acerca / FAQ / Políticas). Storefront-as-Code + MCP config parity throughout — a seller's own agent can set it all up. No flag; absent config renders today's storefront (fail-safe by construction).
 - ✅ **Buy on a custom domain too** — tapping buy hops the buyer to the platform's secure sign-in + payment (pragmatic; Clerk is platform-only), then **returns them to the tenant domain** on success; the sale is attributed `custom_domain` and the buyer's confirmation email is **branded to the seller's domain**, with a "Dominio propio" badge on the order. *(All 3 sprints shipped 2026-06-05, PRs #12/#13/#14; live custom-domain smoke owed to Daniel.)*
@@ -173,6 +174,25 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-07-16 — Four-epic batch: mschz full coverage + agent-readability hardening + MCP parity
+  (config) SHIPPED; Miyagi Partners in flight — all in ONE session (the second Fable 5
+  multi-epic experiment, merges pre-authorized).** Overlap validation up front cut real work:
+  the `/acerca` P0 was already fixed (story became root-cause + CI guard), and two
+  `mcp-parity-config` stories shrank to their genuinely-uncovered halves (email toggles + about/faq
+  were already agent-writable via config blocks). **mschz-full-coverage**: `mschz.org/{g,e,v,s,l}/…`
+  known-prefix 301 passthrough (path+query verbatim) + `g/e/v` reserved in both repos + share/QR
+  surfaces emit short forms (FE #269 + BE #99, live-verified). **agent-readability**: shared
+  marketing-OG template + per-page headlines, `/agent`+`/terminos` canonical fixes, and a no-JS CI
+  guard over the whole agent-discovery chain (#270, 16/16 vs prod). **mcp-parity-config**: 12
+  config-wrapper seller tools (44 → 56 MCP tools) over collections/repuve/slug/notification-grid/
+  content/telegram, via 3 new backend internal doors reusing shared logic verbatim (FE #271 + BE
+  #100); a shared pure `buildSlugAliasHistory` makes the portal and the MCP tool structurally
+  identical. Review lattice held: codex + fresh Sonnet 5 reviewer on every PR — reviewer catches
+  included two missing audit calls on trust-facing mutations (repuve, slug) and a reserved-word
+  gap on the backend slug door, all fixed pre-merge. Smokes owed to Daniel: QR camera scan
+  (mschz), WhatsApp/Telegram previews (readability), first real-token config-tool calls
+  (parity-config). See the three epics' RETROSPECTIVEs.
 
 - **2026-07-16 — MCP seller-surface parity (core) epic SHIPPED (4 sprints; S1 LOW, S2–S4 all
   HIGH, every HIGH story dark behind its own default-OFF kill-switch).** AGENTS.md rule #3

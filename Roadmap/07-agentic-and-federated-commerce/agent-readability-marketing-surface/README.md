@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: agent-readability-marketing-surface
 ---
 
@@ -25,11 +25,11 @@ existing UCP surfaces (validated live).
 - `/vende`'s canonical + own OG image — the pattern the sweep replicates
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | 1.1 Fix `/acerca` empty body to fetch agents (P0) | low |
-| 1 | 1.2 OG sweep: shared template, per-page headline | low |
-| 1 | 1.3 Agent-readability CI spec | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | 1.1 Fix `/acerca` empty body to fetch agents (P0) | low | ✅ premise stale — verified NOT reproducible live 2026-07-16 (page renders dynamic, CF DYNAMIC); root cause recorded in PR [#270](https://github.com/danybgoode/miyagisanchezcommerce/pull/270); durable guard = 1.3 |
+| 1 | 1.2 OG sweep: shared template, per-page headline | low | ✅ shipped + live 2026-07-16 — PR [#270](https://github.com/danybgoode/miyagisanchezcommerce/pull/270) |
+| 1 | 1.3 Agent-readability CI spec | low | ✅ shipped + live 2026-07-16 — PR [#270](https://github.com/danybgoode/miyagisanchezcommerce/pull/270), 16/16 green vs prod |
 
 ## Deploy order
 Frontend only (Cloud Run via merge). Story 1.1's fix may be a Cloudflare cache rule — announce if it
