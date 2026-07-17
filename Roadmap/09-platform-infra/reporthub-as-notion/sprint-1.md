@@ -18,6 +18,18 @@ object.
 `gs://miyagi-pmo-reports-staging` provisioned + verified; prod bucket `miyagi-pmo-reports` NOT yet
 created — one-command Daniel handoff below).
 
+**IAM follow-up (codex review on PR #96, addressed post-merge-request):** the initial `allUsers` public-read
+binding used `roles/storage.objectViewer`, which includes `storage.objects.list` — anyone could enumerate
+every report ever written (slugs, object count) via the bucket's public listing API. Fixed to
+`roles/storage.legacyObjectReader` (read a KNOWN object by name, no list) — the "unlisted, not private"
+model every report already has today via its URL-hash link. The script now also removes the old
+`objectViewer` binding before adding the new one (best-effort, `|| true`, idempotent). **Staging bucket
+re-converged live** (`TARGET=staging bash infra/gcp/provision-report-registry.sh`) and verified:
+anonymous `GET` on a known object still returns `200`; anonymous bucket listing via the public XML API
+now returns `403 AccessDenied` (`storage.objects.list` denied) and the JSON API's `/o` listing endpoint
+returns `401`. `TARGET=prod` picks up the same fixed IAM automatically — no separate prod follow-up
+needed once Daniel runs the one-liner below.
+
 ### Story 1.2 — `/r/<slug>` resolver in the fork ✅ (built + tested, PR open, NOT deployed)
 **As** a stakeholder clicking a Telegram link, **I want** `https://<hub>/r/pmo-weekly-2026-07-14` to
 open the report, **so that** links are short, readable, and survive big payloads.
@@ -49,16 +61,42 @@ modes stay stateless (`shouldPersistWindow` discipline).
 **Acceptance:** one live scheduled fire of standup + weekly shows short links; kill the bucket access
 in a test run → long-link fallback observed; `node --test` on the pure slug/fallback logic.
 **Risk:** low
-**Status:** ✅ merged to `feat/reporthub-as-notion` — commit `5a6bc47`. `scripts/lib/report-registry.mjs`
-(slug builders, daily/-vs-packets/ object-path mapping, URL building, fallback decision — all pure,
-19 `node --test` cases, zero live calls via an injected fake uploader) + credentialed upload orchestration
-(SA-JSON-key JWT → OAuth → REST PUT for the routine/unattended path, `gcloud storage cp` for the
-local/ADC path). `standup.mjs` and `pmo-report.mjs` both call `upgradeArtifactLinks()` right after
-building their existing URL-hash artifacts. Live-smoked against `gs://miyagi-pmo-reports-staging` with
-local gcloud ADC: `standup.mjs --dry-run` uploaded + printed `/r/daily-story-2026-07-17-<hash>`,
-`pmo-report.mjs --weekly --dry-run` uploaded + printed `/r/pmo-weekly-2026-07-17` — both objects verified
-publicly fetchable with the correct `text/markdown` content-type. `node --test 'scripts/lib/*.test.mjs'
-'scripts/*.test.mjs'`: 275/275 green (19 new).
+**Status:** ✅ merged to `feat/reporthub-as-notion` — commit `5a6bc47` (+ a follow-up commit addressing
+codex review on PR #96, see below). `scripts/lib/report-registry.mjs` (slug builders, daily/-vs-packets/
+object-path mapping, URL building, fallback decision — all pure, 30 `node --test` cases, zero live calls
+via injected fakes) + credentialed upload orchestration (SA-JSON-key JWT → OAuth → REST PUT for the
+routine/unattended path, `gcloud storage cp` for the local/ADC path). `standup.mjs` and `pmo-report.mjs`
+both call `upgradeArtifactLinks()` right after building their existing URL-hash artifacts. Live-smoked
+(original round) against `gs://miyagi-pmo-reports-staging` with local gcloud ADC: both scripts uploaded
++ printed `/r/<slug>` links, verified publicly fetchable with the correct `text/markdown` content-type.
+`node --test 'scripts/lib/*.test.mjs' 'scripts/*.test.mjs'`: 286/286 green (30 new in
+report-registry.test.mjs).
+
+**Codex review follow-up (PR #96), all fixed + re-smoked:**
+1. **`--dry-run` no longer writes to the registry at all.** Previously it still called the uploader
+   (reasoned as "additive, not a git/Telegram mutation" — too permissive). Now `buildReportLink`/
+   `upgradeArtifactLinks` take a `dryRun` flag that skips the uploader entirely and just logs the
+   would-be slug/link; both scripts pass their own `--dry-run`/`args.dryRun` through. Live-verified:
+   `packets/` object count in staging was identical before/after a `pmo-report.mjs --weekly --dry-run`
+   run.
+2. **A REJECTING uploader (not just one resolving `{ok:false}`) now also falls back cleanly** —
+   `buildReportLink` wraps the `uploader()` call in try/catch. The "never throws" test was fixed to
+   assert fallback-on-rejection instead of asserting the call rejects (it was testing the opposite of
+   the intended contract).
+3. **Overwrite protection:** REST upload now sends `x-goog-if-generation-match: 0`; `gcloud storage cp`
+   now passes `--if-generation-match=0` (confirmed supported). A `412`/precondition-failure response is
+   treated as `{ ok: true, reason: 'already-exists' }` — the slug already resolves to something, so this
+   is success for an idempotent same-day re-run, and a same-day content-drift re-run never silently
+   clobbers a public link. **Live-verified**: uploaded a throwaway slug, then re-uploaded DIFFERENT
+   content to the same slug — second call returned `already-exists`, and the object's content on GCS was
+   confirmed unchanged (still the first upload's content). Test object cleaned up afterward.
+4. **Public-enumeration IAM fix** — see Story 1.1's status above (`legacyObjectReader`, not
+   `objectViewer`; staging re-converged live).
+5. **Nit — sanitize fallback slugs:** `slugForArtifact`'s unrecognized-name fallback now runs `name`
+   through `sanitizeSlugPart` (lowercase, collapse anything outside `[a-z0-9-]` to `-`, trim, falls back
+   to `"report"` if that empties the string) before interpolating it into a slug/GCS-object-key/URL path
+   segment.
+
 **Scope note:** `weekly-recap.mjs` was NOT wired — it has no existing URL-hash link or SmallDocs artifact
 to upgrade (confirmed: no `buildSmallDocsUrl` usage anywhere in that script; its Telegram message is
 plain text). The epic's `pmo-weekly-YYYY-MM-DD` slug example is `pmo-report.mjs --weekly`'s artifact, a
@@ -83,7 +121,7 @@ redeployed first (Daniel handoff below); step 4 already passed, agent-run, again
 4. (fallback check, agent-run) Run a report script with bucket access revoked in a test env.
    → Message still sends, with the long URL-hash link.
    ✅ Implicit in the design: `upgradeArtifactLinks()` only ever *replaces* the fallback URL on an
-   explicit upload success (`buildReportLink`'s `shouldFallbackToUrlHash` — 19 pure `node --test`
+   explicit upload success (`buildReportLink`'s `shouldFallbackToUrlHash` — 30 pure `node --test`
    cases cover this, including "uploader throws/returns not-ok"). Not re-verified against a live
    permission-revoked bucket this session (would need mutating prod IAM); the pure-logic tests plus the
    two live-success smokes (which prove the OTHER branch works) are the coverage for now.
@@ -94,7 +132,7 @@ redeployed first (Daniel handoff below); step 4 already passed, agent-run, again
    `TARGET=prod bash infra/gcp/provision-report-registry.sh`
    (staging already provisioned + verified; this creates `gs://miyagi-pmo-reports` the same way).
 2. **Fork PR merge + deploy (Story 1.2):** review + merge
-   `danybgoode/smalldocs#<PR-number-below>` (branch `feat/report-registry-resolver`), then redeploy per
+   `danybgoode/smalldocs#3` (branch `feat/report-registry-resolver`), then redeploy per
    `infra/gcp/pmo-smalldocs.md`'s checklist:
    ```bash
    gcloud run deploy pmo-smalldocs \
@@ -106,7 +144,7 @@ redeployed first (Daniel handoff below); step 4 already passed, agent-run, again
    `/api/report/:slug` + `/r/:slug` at the HTTP level only, no browser available to confirm the
    client-side viewer actually renders).
 3. **Root repo PR merge (Stories 1.1 + 1.3):** merge
-   `danybgoode/miyagi-product-management#<PR-number-below>` (branch `feat/reporthub-as-notion`) —
+   `danybgoode/miyagi-product-management#96` (branch `feat/reporthub-as-notion`) —
    safe to merge independent of #2 above; scripts already degrade to the URL-hash fallback with no
    bucket/fork deployed.
 4. **Routine env vars** (once both are live, for the ops-nightly/weekly-recap routines to actually mint

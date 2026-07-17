@@ -93,14 +93,28 @@ const SLUG_BUILDERS = {
   sheet: pmoSheetSlug,
 };
 
+// Pure — lowercases and collapses anything outside [a-z0-9-] to a single '-' (leading/trailing dashes
+// trimmed). Only used for the UNRECOGNIZED-name fallback slug below: a caller-supplied artifact `name`
+// is developer-controlled today, but a future artifact kind (or a typo) could carry spaces, punctuation,
+// or mixed case, and a slug is a URL path segment / GCS object key — never build one from unsanitized
+// interpolation. Falls back to 'report' if sanitizing empties the string entirely.
+export function sanitizeSlugPart(value) {
+  const cleaned = String(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  return cleaned || 'report';
+}
+
 // Dispatches by the report scripts' own artifact `name` (standup.mjs's 'standup', pmo-report.mjs's
 // 'weekly'/'monthly'/'sheet') to the matching slug builder. An unrecognized name still gets a safe,
-// unique-enough slug (packet-shaped, content-suffixed) rather than throwing — a new artifact kind added
-// later degrades to "works, not optimally named" instead of crashing the report script.
+// unique-enough slug (packet-shaped, content-suffixed, sanitized) rather than throwing — a new artifact
+// kind added later degrades to "works, not optimally named" instead of crashing the report script.
 export function slugForArtifact({ name, date = new Date(), markdown = '' }) {
   const builder = SLUG_BUILDERS[name];
   if (builder) return builder({ date, markdown });
-  return `${name}-${dateStamp(date)}-${contentSuffix(markdown)}`;
+  return `${sanitizeSlugPart(name)}-${dateStamp(date)}-${contentSuffix(markdown)}`;
 }
 
 // The one place the daily/-vs-packets/ split is decided — matches
@@ -197,6 +211,16 @@ export async function getAccessTokenFromServiceAccountKey(key, { fetchImpl = fet
   }
 }
 
+// Precondition-failure detector shared by both upload paths — a 412 (REST) or gcloud's equivalent
+// stderr means "an object already exists at this generation-0 precondition", i.e. this exact slug is
+// already taken. That's treated as SUCCESS (not overwritten, but the /r/<slug> link already resolves to
+// *something* — idempotent-safe for a same-day re-run with unchanged content, and for a genuine
+// same-day content drift on a packet slug it's a deliberate "never silently replace a public link"
+// trade-off, not a bug).
+function isPreconditionFailure(text) {
+  return /\b412\b|precondition/i.test(String(text ?? ''));
+}
+
 export async function uploadViaRest({ bucket, objectPath, markdown, token, fetchImpl = fetch }) {
   try {
     const res = await fetchImpl(
@@ -204,12 +228,20 @@ export async function uploadViaRest({ bucket, objectPath, markdown, token, fetch
         `?uploadType=media&name=${encodeURIComponent(objectPath)}`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'text/markdown; charset=utf-8', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          Authorization: `Bearer ${token}`,
+          // Overwrite protection: generation 0 means "only succeed if no object exists at this name yet"
+          // — an existing /r/<slug> object can never be silently replaced by a later run.
+          'x-goog-if-generation-match': '0',
+        },
         body: markdown,
         signal: AbortSignal.timeout(15000),
       }
     );
-    return res.ok ? { ok: true } : { ok: false, reason: `rest-upload-http-${res.status}` };
+    if (res.ok) return { ok: true };
+    if (res.status === 412) return { ok: true, reason: 'already-exists' };
+    return { ok: false, reason: `rest-upload-http-${res.status}` };
   } catch (err) {
     return { ok: false, reason: `rest-upload-error: ${err.message || err}` };
   }
@@ -225,13 +257,21 @@ export function uploadViaGcloud({ bucket, objectPath, markdown, spawnSyncImpl = 
   // `cp -` (stdin) has no filename to sniff a content-type from — pin it explicitly so the object serves
   // as `text/markdown` (matching the REST path's Content-Type) instead of defaulting to
   // application/octet-stream, which some renderers refuse to treat as text.
+  // --if-generation-match=0: same overwrite protection as the REST path's x-goog-if-generation-match
+  // header — `gcloud storage cp` supports this flag directly (confirmed: `gcloud storage cp --help`).
   const r = spawnSyncImpl(
     'gcloud',
-    ['storage', 'cp', '-', `gs://${bucket}/${objectPath}`, '--content-type=text/markdown; charset=utf-8'],
+    [
+      'storage', 'cp', '-', `gs://${bucket}/${objectPath}`,
+      '--content-type=text/markdown; charset=utf-8',
+      '--if-generation-match=0',
+    ],
     { input: markdown, encoding: 'utf8' }
   );
   if (r.status === 0) return { ok: true };
-  return { ok: false, reason: `gcloud-cp-failed: ${(r.stderr || '').trim().slice(0, 300)}` };
+  const stderr = (r.stderr || '').trim();
+  if (isPreconditionFailure(stderr)) return { ok: true, reason: 'already-exists' };
+  return { ok: false, reason: `gcloud-cp-failed: ${stderr.slice(0, 300)}` };
 }
 
 // Orchestrates the two upload paths. Tries the credentialed REST path first (the routine/unattended
@@ -268,8 +308,9 @@ export async function uploadReportPayload({
 
 // ---------------------------------------------------------------------------------------------------
 // The one call site the report scripts use: try to upload + upgrade to a short /r/<slug> link; on ANY
-// failure, keep the caller's already-built URL-hash link and note the fallback on stderr (never throws,
-// never blocks the script from still printing/sending its report).
+// failure — including an uploader that REJECTS rather than resolving `{ ok: false }` — keep the
+// caller's already-built URL-hash link and note the fallback on stderr (never throws, never blocks the
+// script from still printing/sending its report).
 // ---------------------------------------------------------------------------------------------------
 
 export async function buildReportLink({
@@ -282,9 +323,31 @@ export async function buildReportLink({
   env = process.env,
   uploader = uploadReportPayload,
   logError = (msg) => console.error(msg),
+  logInfo = (msg) => console.error(msg),
+  // Dry-run: never write to the registry. Still computes + logs the slug/link this run WOULD have used
+  // (so `--dry-run` output stays informative) but skips calling `uploader` entirely — dry-run must be a
+  // real no-op against the live bucket, not just skip Telegram/log persistence.
+  dryRun = false,
 } = {}) {
   const slug = slugForArtifact({ name, date, markdown });
-  const uploadResult = await uploader({ bucket, slug, markdown, env });
+  if (dryRun) {
+    logInfo(
+      `report-registry: dry run — would upload "${name}" as slug ${slug} ` +
+        `(${registryUrl({ slug, baseUrl })}); no write performed.`
+    );
+    return { url: fallbackUrl, slug, usedRegistry: false, reason: 'dry-run', dryRun: true };
+  }
+
+  let uploadResult;
+  try {
+    uploadResult = await uploader({ bucket, slug, markdown, env });
+  } catch (err) {
+    // An uploader that REJECTS (vs. resolving `{ ok: false, reason }`) must degrade exactly the same way
+    // — the real uploadReportPayload never rejects (every internal branch is try/caught), but this
+    // boundary's contract ("never throws") has to hold for ANY uploader implementation passed in, not
+    // just the well-behaved default.
+    uploadResult = { ok: false, reason: `uploader-threw: ${(err && err.message) || err}` };
+  }
   if (!shouldFallbackToUrlHash(uploadResult)) {
     return { url: registryUrl({ slug, baseUrl }), slug, usedRegistry: true };
   }
@@ -297,9 +360,11 @@ export async function buildReportLink({
 
 // Convenience for the report scripts: mutates each `{ name, markdown, url }` artifact's `url` in place
 // (keeping `url` as the fallback if the upgrade fails) and returns the same array, so a caller can do
-// `artifacts = await upgradeArtifactLinks(artifacts)` right after building them with the existing
-// URL-hash builder (scripts/lib/pmo-templates.mjs's buildSmallDocsUrl / scripts/lib/standup-deck.mjs's
-// buildStandupArtifacts) with no other call-site changes.
+// `artifacts = await upgradeArtifactLinks(artifacts, { dryRun })` right after building them with the
+// existing URL-hash builder (scripts/lib/pmo-templates.mjs's buildSmallDocsUrl /
+// scripts/lib/standup-deck.mjs's buildStandupArtifacts) with no other call-site changes. `options` is
+// forwarded to buildReportLink as-is — pass `dryRun: true` to skip every write for this run (see
+// buildReportLink's `dryRun` param above).
 export async function upgradeArtifactLinks(artifacts, options = {}) {
   for (const artifact of artifacts) {
     const result = await buildReportLink({

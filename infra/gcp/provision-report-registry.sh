@@ -66,11 +66,25 @@ rm -f "$TMP_LC"
 echo "lifecycle applied: ${DAILY_PREFIX}* → delete at ${DAILY_TTL_DAYS}d; all else kept"
 
 # -- public reads (bucket-level, uniform access) -------------------------------
+# roles/storage.legacyObjectReader, NOT roles/storage.objectViewer: objectViewer's permission set
+# includes storage.objects.list, which lets anyone enumerate every report ever written (slugs, filenames,
+# object count) via the bucket's public XML/JSON listing API — reports are meant to be reachable only by
+# whoever holds a specific /r/<slug> link, not browsable. legacyObjectReader grants storage.objects.get
+# (read a KNOWN object) without storage.objects.list, matching the "unlisted, not private" model every
+# report already has today via its URL-hash link.
+#
+# Best-effort remove of the old (over-broad) binding first — `|| true` because a from-scratch bucket
+# never had it and remove-iam-policy-binding fails loud on a no-op removal; this line only matters when
+# converging a bucket that was provisioned before this fix.
+gcloud storage buckets remove-iam-policy-binding "gs://$BUCKET" \
+  --project="$PROJECT_ID" \
+  --member="allUsers" \
+  --role="roles/storage.objectViewer" >/dev/null 2>&1 || true
 gcloud storage buckets add-iam-policy-binding "gs://$BUCKET" \
   --project="$PROJECT_ID" \
   --member="allUsers" \
-  --role="roles/storage.objectViewer" >/dev/null
-echo "public read: allUsers → roles/storage.objectViewer"
+  --role="roles/storage.legacyObjectReader" >/dev/null
+echo "public read: allUsers → roles/storage.legacyObjectReader (read-only, no bucket listing)"
 
 # -- writer service account: create-if-absent + bucket-scoped write -----------
 if gcloud iam service-accounts describe "$WRITER_SA" --project="$PROJECT_ID" >/dev/null 2>&1; then

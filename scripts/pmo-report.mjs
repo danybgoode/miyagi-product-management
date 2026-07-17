@@ -253,8 +253,13 @@ async function main() {
   // reporthub-as-notion S1.3: try to upgrade each artifact's URL-hash link to a short gs://-backed
   // /r/<slug> link (scripts/lib/report-registry.mjs). Mutates `artifacts` in place; on any upload
   // failure (no credentials, unreachable bucket, ...) the artifact keeps the URL-hash link it already
-  // had — printed below and, for --weekly, the one that reaches Telegram either way.
-  await upgradeArtifactLinks(artifacts, { date: window.untilISO ? new Date(window.untilISO) : new Date() });
+  // had — printed below and, for --weekly, the one that reaches Telegram either way. `--dry-run` never
+  // writes to the registry (dryRun: args.dryRun) — it logs the would-be slug/link and keeps the
+  // URL-hash fallback, same as it already skips Telegram and the window log.
+  await upgradeArtifactLinks(artifacts, {
+    date: window.untilISO ? new Date(window.untilISO) : new Date(),
+    dryRun: args.dryRun,
+  });
   for (const artifact of artifacts) {
     console.log(`\nSmallDocs ${artifact.name}: ${artifact.url}`);
     if (args.open) {

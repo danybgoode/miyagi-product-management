@@ -13,8 +13,11 @@ import {
   pmoWeeklySlug,
   registryUrl,
   resolveBucket,
+  sanitizeSlugPart,
   shouldFallbackToUrlHash,
   slugForArtifact,
+  uploadViaGcloud,
+  uploadViaRest,
   upgradeArtifactLinks,
 } from './report-registry.mjs';
 
@@ -79,6 +82,27 @@ test('slugForArtifact degrades to a safe packet-shaped slug for an unrecognized 
   const date = new Date('2026-07-14T05:00:00Z');
   const slug = slugForArtifact({ name: 'mystery', date, markdown: 'x' });
   assert.match(slug, /^mystery-2026-07-14-[0-9a-f]{6}$/);
+});
+
+test('slugForArtifact sanitizes an unrecognized name before building the fallback slug', () => {
+  const date = new Date('2026-07-14T05:00:00Z');
+  const slug = slugForArtifact({ name: 'Weird Name!! With Spaces', date, markdown: 'x' });
+  assert.match(slug, /^weird-name-with-spaces-2026-07-14-[0-9a-f]{6}$/);
+});
+
+// ---- pure: slug-part sanitization ---------------------------------------------------------------
+
+test('sanitizeSlugPart lowercases and collapses anything outside [a-z0-9-] to a single dash', () => {
+  assert.equal(sanitizeSlugPart('Weird Name!!'), 'weird-name');
+  assert.equal(sanitizeSlugPart('a__b//c'), 'a-b-c');
+  assert.equal(sanitizeSlugPart('  leading and trailing  '), 'leading-and-trailing');
+  assert.equal(sanitizeSlugPart('already-clean-123'), 'already-clean-123');
+});
+
+test('sanitizeSlugPart falls back to "report" when sanitizing empties the string', () => {
+  assert.equal(sanitizeSlugPart('!!!'), 'report');
+  assert.equal(sanitizeSlugPart(''), 'report');
+  assert.equal(sanitizeSlugPart(undefined), 'report');
 });
 
 // ---- pure: object-path mapping (must match infra/gcp/provision-report-registry.sh's lifecycle rule) ---
@@ -160,20 +184,80 @@ test('buildReportLink falls back to the URL-hash link on upload failure and logs
   assert.match(errors[0], /falling back to the URL-hash link/);
 });
 
-test('buildReportLink never throws when the uploader itself rejects', async () => {
+test('buildReportLink never throws when the uploader itself REJECTS — falls back to the URL-hash link', async () => {
   // uploadReportPayload's real implementation never rejects (every branch is try/caught), but a caller
-  // wiring in a bad fake shouldn't be able to crash a report script either — assert the documented
-  // contract at this boundary explicitly rather than relying only on the real impl's internals.
-  await assert.rejects(
-    buildReportLink({
-      name: 'weekly',
-      markdown: 'x',
-      fallbackUrl: 'https://example.test/#md=x',
-      uploader: async () => {
-        throw new Error('boom');
-      },
-    })
-  );
+  // wiring in a bad/unusual uploader shouldn't be able to crash a report script either — the "any
+  // failure falls back" contract has to hold whether the uploader resolves `{ ok: false }` OR rejects.
+  const errors = [];
+  const fallbackUrl = 'https://example.test/#md=x';
+  const result = await buildReportLink({
+    name: 'weekly',
+    markdown: 'x',
+    fallbackUrl,
+    date: new Date('2026-07-14T05:00:00Z'),
+    uploader: async () => {
+      throw new Error('boom');
+    },
+    logError: (msg) => errors.push(msg),
+  });
+  assert.equal(result.usedRegistry, false);
+  assert.equal(result.url, fallbackUrl);
+  assert.match(result.reason, /uploader-threw/);
+  assert.match(result.reason, /boom/);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /falling back to the URL-hash link/);
+});
+
+// ---- dry-run: must never call the uploader, but still logs the would-be slug/link -------------------
+
+test('buildReportLink dry-run never calls the uploader and keeps the URL-hash fallback', async () => {
+  const errors = [];
+  const infos = [];
+  let uploaderCalled = false;
+  const fallbackUrl = 'https://example.test/#md=fallback';
+  const result = await buildReportLink({
+    name: 'standup',
+    markdown: '# standup',
+    fallbackUrl,
+    date: new Date('2026-07-14T05:00:00Z'),
+    dryRun: true,
+    uploader: async () => {
+      uploaderCalled = true;
+      return { ok: true };
+    },
+    logError: (msg) => errors.push(msg),
+    logInfo: (msg) => infos.push(msg),
+  });
+  assert.equal(uploaderCalled, false, 'dry run must never call the uploader');
+  assert.equal(result.usedRegistry, false);
+  assert.equal(result.dryRun, true);
+  assert.equal(result.url, fallbackUrl);
+  assert.equal(errors.length, 0);
+  assert.equal(infos.length, 1);
+  assert.match(infos[0], /dry run/);
+  assert.match(infos[0], /daily-story-2026-07-14-[0-9a-f]{6}/);
+});
+
+test('upgradeArtifactLinks forwards dryRun to every artifact, uploading none of them', async () => {
+  const artifacts = [
+    { name: 'weekly', markdown: '# weekly', url: 'https://example.test/#md=weekly-fallback' },
+    { name: 'sheet', markdown: '# sheet', url: 'https://example.test/#md=sheet-fallback' },
+  ];
+  let calls = 0;
+  await upgradeArtifactLinks(artifacts, {
+    date: new Date('2026-07-14T05:00:00Z'),
+    dryRun: true,
+    uploader: async () => {
+      calls += 1;
+      return { ok: true };
+    },
+    logInfo: () => {},
+  });
+  assert.equal(calls, 0);
+  assert.equal(artifacts[0].url, 'https://example.test/#md=weekly-fallback');
+  assert.equal(artifacts[1].url, 'https://example.test/#md=sheet-fallback');
+  assert.equal(artifacts[0].usedRegistry, false);
+  assert.equal(artifacts[1].usedRegistry, false);
 });
 
 test('upgradeArtifactLinks upgrades a successful upload and preserves the fallback on failure, per-artifact', async () => {
@@ -194,4 +278,74 @@ test('upgradeArtifactLinks upgrades a successful upload and preserves the fallba
   assert.equal(artifacts[1].usedRegistry, false);
   assert.equal(artifacts[1].url, 'https://example.test/#md=sheet-fallback');
   assert.equal(errors.length, 1);
+});
+
+// ---- overwrite protection: an existing object at this slug is treated as SUCCESS, never replaced ----
+// No live network/gcloud calls — fetchImpl/spawnSyncImpl are always fakes here too.
+
+test('uploadViaRest sends x-goog-if-generation-match: 0 (never overwrite an existing object)', async () => {
+  let seenHeaders;
+  await uploadViaRest({
+    bucket: 'b', objectPath: 'daily/x.md', markdown: '# x', token: 'tok',
+    fetchImpl: async (url, opts) => {
+      seenHeaders = opts.headers;
+      return { ok: true, status: 200 };
+    },
+  });
+  assert.equal(seenHeaders['x-goog-if-generation-match'], '0');
+});
+
+test('uploadViaRest treats a 412 (object already exists) as success, not a failure', async () => {
+  const result = await uploadViaRest({
+    bucket: 'b', objectPath: 'daily/x.md', markdown: '# x', token: 'tok',
+    fetchImpl: async () => ({ ok: false, status: 412 }),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.reason, 'already-exists');
+});
+
+test('uploadViaRest still fails on a genuine non-412 error', async () => {
+  const result = await uploadViaRest({
+    bucket: 'b', objectPath: 'daily/x.md', markdown: '# x', token: 'tok',
+    fetchImpl: async () => ({ ok: false, status: 403 }),
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /rest-upload-http-403/);
+});
+
+test('uploadViaGcloud passes --if-generation-match=0 (never overwrite an existing object)', () => {
+  let seenArgs;
+  uploadViaGcloud({
+    bucket: 'b', objectPath: 'daily/x.md', markdown: '# x',
+    spawnSyncImpl: (cmd, args) => {
+      seenArgs = args;
+      return { status: 0 };
+    },
+  });
+  assert.ok(seenArgs.includes('--if-generation-match=0'));
+});
+
+test('uploadViaGcloud treats a precondition-failure stderr as success, not a failure', () => {
+  const result = uploadViaGcloud({
+    bucket: 'b', objectPath: 'daily/x.md', markdown: '# x',
+    spawnSyncImpl: (cmd, args) => {
+      if (args[0] === '--version') return { status: 0 };
+      return { status: 1, stderr: 'PreconditionException: 412 Precondition Failed' };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.reason, 'already-exists');
+});
+
+test('uploadViaGcloud still fails on a genuine non-precondition error', () => {
+  const result = uploadViaGcloud({
+    bucket: 'b', objectPath: 'daily/x.md', markdown: '# x',
+    spawnSyncImpl: (cmd, args) => {
+      if (args[0] === '--version') return { status: 0 };
+      return { status: 1, stderr: 'ERROR: (gcloud.storage.cp) 403 Forbidden' };
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /gcloud-cp-failed/);
+  assert.match(result.reason, /403 Forbidden/);
 });

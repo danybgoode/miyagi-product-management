@@ -34,11 +34,26 @@ test('lifecycle: only daily/ expires, at 90 days', () => {
 test('access model: public reads, writer-SA writes, uniform bucket-level access', () => {
   assert.match(src, /--uniform-bucket-level-access/)
   assert.match(src, /allUsers/)
-  assert.match(src, /roles\/storage\.objectViewer/)
   assert.match(src, /pmo-report-writer/)
   assert.match(src, /roles\/storage\.objectUser/)
   // writer binding is BUCKET-scoped, never project-level
   assert.ok(!/gcloud projects add-iam-policy-binding/.test(src), 'no project-level IAM binding')
+})
+
+test('public read role is legacyObjectReader (read, NO list) — never objectViewer (which includes list)', () => {
+  // objectViewer's permission set includes storage.objects.list, which would let anyone enumerate every
+  // report ever written via the bucket's public listing API. legacyObjectReader grants get-by-name only.
+  // Anchored per-invocation (add vs remove), not a blank-line block split — the two gcloud commands sit
+  // back-to-back with no blank line between them, so a block split would merge them into one.
+  const addAllUsersRole = /gcloud storage buckets add-iam-policy-binding[^\n]*\n\s*--project="[^"]*"\s*\\\n\s*--member="allUsers"\s*\\\n\s*--role="([^"]+)"/.exec(src)
+  assert.ok(addAllUsersRole, 'expected an add-iam-policy-binding invocation for --member="allUsers"')
+  assert.equal(addAllUsersRole[1], 'roles/storage.legacyObjectReader')
+
+  // The only remaining mention of objectViewer must be in a REMOVE (best-effort cleanup of the old,
+  // over-broad binding on a bucket provisioned before this fix), never an ADD.
+  const removeAllUsersRole = /gcloud storage buckets remove-iam-policy-binding[^\n]*\n\s*--project="[^"]*"\s*\\\n\s*--member="allUsers"\s*\\\n\s*--role="([^"]+)"/.exec(src)
+  assert.ok(removeAllUsersRole, 'expected a remove-iam-policy-binding invocation for --member="allUsers"')
+  assert.equal(removeAllUsersRole[1], 'roles/storage.objectViewer')
 })
 
 test('idempotency: bucket and SA are create-if-absent', () => {
