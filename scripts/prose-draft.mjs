@@ -20,7 +20,7 @@
 // Model: agy with a cheap-fast pair by default (prose doesn't need Pro-tier reasoning; the
 // coordinating agent is the editor). Override via PROSE_MODEL / PROSE_FALLBACK_MODEL.
 
-import { execSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync, writeSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,14 +72,12 @@ function read(p) {
 }
 
 function gitLogFor(paths) {
-  try {
-    return execSync(`git log --oneline -20 -- ${paths.map((p) => JSON.stringify(p)).join(' ')}`, {
-      cwd: REPO_ROOT,
-      encoding: 'utf8',
-    }).trim();
-  } catch {
-    return '(git log unavailable)';
-  }
+  // argv-array spawn, never a shell-built string — a path can't smuggle command substitution.
+  const r = spawnSync('git', ['log', '--oneline', '-20', '--', ...paths], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+  });
+  return r.status === 0 ? (r.stdout || '').trim() : '(git log unavailable)';
 }
 
 export function gatherEpicSources(epicDir, { readFile = read, listDir = readdirSync, log = gitLogFor } = {}) {
@@ -91,11 +89,11 @@ export function gatherEpicSources(epicDir, { readFile = read, listDir = readdirS
   return `## Source material — epic directory ${epicDir}${parts.join('')}\n\n### GIT LOG (epic paths)\n${log([epicDir])}`;
 }
 
-export function gatherSprintSources(sprintPath, { readFile = read, log = gitLogFor } = {}) {
+export function gatherSprintSources(sprintPath, { readFile = read, log = gitLogFor, exists = existsSync } = {}) {
   const epicDir = dirname(sprintPath);
   const readme = join(epicDir, 'README.md');
   let out = `## Source material — sprint doc ${sprintPath}\n\n### FILE: ${sprintPath}\n\n${readFile(sprintPath)}`;
-  if (existsSync(readme)) out += `\n\n### FILE (context): ${readme}\n\n${readFile(readme)}`;
+  if (exists(readme)) out += `\n\n### FILE (context): ${readme}\n\n${readFile(readme)}`;
   return `${out}\n\n### GIT LOG (epic paths)\n${log([epicDir])}`;
 }
 

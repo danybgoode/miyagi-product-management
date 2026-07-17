@@ -44,9 +44,24 @@ test('gatherSprintSources: sprint doc + README context + log', () => {
   const out = gatherSprintSources('/repo/Roadmap/x/epic/sprint-2.md', {
     readFile: (p) => (p.endsWith('sprint-2.md') ? 'sprint body' : 'readme body'),
     log: () => '(log)',
+    exists: () => true,
   });
   assert.match(out, /sprint body/);
+  assert.match(out, /readme body/);
   assert.match(out, /GIT LOG/);
+});
+
+test('gatherSprintSources: a missing epic README is skipped, not read', () => {
+  const out = gatherSprintSources('/repo/Roadmap/x/epic/sprint-2.md', {
+    readFile: (p) => {
+      if (p.endsWith('README.md')) throw new Error('must not read a missing README');
+      return 'sprint body';
+    },
+    log: () => '(log)',
+    exists: () => false,
+  });
+  assert.match(out, /sprint body/);
+  assert.ok(!/FILE \(context\)/.test(out));
 });
 
 test('buildPrompt: style → task → sources, in that order', () => {
