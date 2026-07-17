@@ -36,10 +36,10 @@ export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 // Harmless here since AGY_MODEL/AGY_FALLBACK_MODEL below are always valid, listed model names (checked via
 // `agy models`), but it means a future typo in either constant would silently review with the WRONG model
 // instead of failing loud — watch for that if either constant is ever edited.
-// agy-doctor: last verified 2026-07-14 against 1.1.2.
+// agy-doctor: last verified 2026-07-17 against 1.1.3.
 //   ^ machine-managed marker — `node scripts/agy-doctor.mjs --fix` rewrites it (with the constant
 //   below) after a green live contract probe. Don't hand-edit the marker's shape.
-export const AGY_PINNED = '1.1.2';
+export const AGY_PINNED = '1.1.3';
 
 // agy's `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
 // nothing (exit 0, empty stdout — the error lands only in agy's log, see --log-file) when the model is
@@ -420,8 +420,14 @@ export function runAntigravity(fullArgv, opts = {}, deps = {}) {
     );
   }
 
+  // opts.models lets a caller pick its own primary→fallback pair (e.g. prose-draft
+  // runs a cheaper Flash model) without forking the retry/empty-output plumbing.
+  // Default: the review pair above — existing callers are byte-identical in behavior.
+  const modelPair = opts.models?.length
+    ? [...new Set(opts.models)]
+    : AGY_MODEL === AGY_FALLBACK_MODEL ? [AGY_MODEL] : [AGY_MODEL, AGY_FALLBACK_MODEL];
   const tried = [];
-  for (const model of AGY_MODEL === AGY_FALLBACK_MODEL ? [AGY_MODEL] : [AGY_MODEL, AGY_FALLBACK_MODEL]) {
+  for (const model of modelPair) {
     const r = execAgy(fullArgv, model, spawn);
     if (r.status !== 0) {
       // A non-zero exit is a real agy error (bad flags, crash) — NOT the quota signal — so don't burn the
@@ -431,7 +437,7 @@ export function runAntigravity(fullArgv, opts = {}, deps = {}) {
     }
     const out = (r.stdout || '').trim();
     if (out) {
-      if (model !== AGY_MODEL) warn(`⚠ agy "${AGY_MODEL}" returned no output (quota/unavailable?) → used "${model}".`);
+      if (model !== modelPair[0]) warn(`⚠ agy "${modelPair[0]}" returned no output (quota/unavailable?) → used "${model}".`);
       return out;
     }
     tried.push(model);

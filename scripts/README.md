@@ -131,6 +131,29 @@ create-version → patch → publish flow (handled automatically; legacy envs ge
 **Env:** `FLAGSMITH_ADMIN_API_TOKEN` required (staged in `apps/miyagisanchez/.env.local`);
 `FLAGSMITH_PROJECT_ID` optional (default `39767`). Zero npm deps — Node 18+ (global `fetch`).
 
+## prose-draft.mjs — delegate file-derived internal prose to a cheaper model
+
+Extends the cross-agent rail from *reviewing code* to *drafting prose* — for artifacts whose
+inputs are **files on disk** (epic docs, sprint docs, git log), not the builder's in-head
+context. A PR body stays with the agent that built the PR (it already has the context); a
+retrospective, poster entry, or sprint-wrap is a synthesis of committed docs, which a cheap
+fast model drafts and the coordinating agent **edits before committing** — the draft opens
+with an `EDIT BEFORE COMMITTING` banner and this tool never writes repo files itself.
+
+```bash
+node scripts/prose-draft.mjs --kind retro       --epic Roadmap/<area>/<epic-dir>
+node scripts/prose-draft.mjs --kind poster      --epic Roadmap/<area>/<epic-dir>
+node scripts/prose-draft.mjs --kind sprint-wrap --sprint Roadmap/<area>/<epic>/sprint-N.md
+```
+
+Rides `agy` with a cheap-fast pair — `PROSE_MODEL` (default `Gemini 3.5 Flash (High)`) →
+`PROSE_FALLBACK_MODEL` (default `GPT-OSS 120B (Medium)`, separate quota pool) — via the same
+version-pinned, empty-output-is-failure plumbing as cross-review (`runAntigravity`, now with a
+caller-supplied model pair). House voice lives in [`prose-draft.prompt.md`](./prose-draft.prompt.md).
+**Known limit (by design):** drafts hallucinate plausible-sounding gaps/learnings when sources
+are thin — the first live dogfood invented two "owed" items. Treat output as a scaffold; the
+editor's factual pass is not optional.
+
 ## cross-review.mjs — advisory cross-agent second opinion on a PR
 
 Pipes a PR diff into a **different model family's** CLI (Codex or Antigravity) for one pass and posts the
