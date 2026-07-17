@@ -817,6 +817,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Dockerfile, **check the actual Cloud Build result** (`gcloud builds list`), not just CI — the
   deploy rail has no notifier for consecutive failures. *(2026-07-16, caught during
   mcp-parity-core close-out; fixed forward in frontend #268 / backend #98.)*
+- **Two near-simultaneous merges race the deploy rail — last-deploy-wins can leave prod on the
+  OLDER commit while both builds report SUCCESS.** Merging #274 then #273 ~5 min apart produced two
+  parallel Cloud Builds whose `gcloud run deploy` steps finished out of order: the newer commit's
+  build deployed revision N, the older commit's slower build then deployed revision N+1 — prod
+  silently served the older image with green everything. Caught only by a live `tools/list` diff
+  against expectation; fixed by redeploying the main-tip image (already in Artifact Registry,
+  tagged by SHA — no rebuild needed). After back-to-back merges, verify prod serves the LAST
+  commit's behavior (or check `gcloud builds log`'s "revision [...] deployed" lines against merge
+  order), don't stop at both builds being SUCCESS. *(2026-07-17, miyagi-partners S2/S3 merges.)*
 - **A classifier/permission block on a prod DB write is the named-category checkpoint working —
   design merges so "stop and hand the write to Daniel" is safe, then actually stop.** The
   miyagi-partners S1 migration (new tables + a flag row on the shared prod Supabase) was blocked

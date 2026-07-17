@@ -56,6 +56,10 @@ _Closed: 2026-07-17_
   row ⇒ OFF ⇒ dark).
 
 ## Gaps / follow-ups
+- **A deploy race bit the S2/S3 merges**: the two Cloud Builds finished out of order and prod
+  briefly served S2's image as the latest revision while S3's build also reported SUCCESS. Caught
+  by the post-merge live `tools/list` check; fixed by redeploying the SHA-tagged main-tip image.
+  Promoted to LEARNINGS (Repo & deploy hygiene).
 - **⚠ BOTH migrations are merged files, NOT applied** (the recurring LEARNINGS gap, this time
   deliberate): `20260717090000_miyagi_partners_s1.sql` (tables + promoter columns +
   `partners.mcp_enabled` seeded OFF) and `20260717100000_platform_feedback.sql`. Daniel applies
