@@ -826,6 +826,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   tagged by SHA — no rebuild needed). After back-to-back merges, verify prod serves the LAST
   commit's behavior (or check `gcloud builds log`'s "revision [...] deployed" lines against merge
   order), don't stop at both builds being SUCCESS. *(2026-07-17, miyagi-partners S2/S3 merges.)*
+- **A guard on a DERIVED artifact should self-heal, not fail.** A stale generated file
+  (`BUILD-ORDER.md`) is a forgotten regen command, not a judgment call — so the guard's job is to
+  run the generator, not to red the next passer-by's PR. Heal at the cheapest layer first
+  (pre-commit regenerates + stages path-scoped into the same commit) with CI as the fallback for
+  hookless clones (bot commit to the PR branch; GITHUB_TOKEN pushes don't retrigger workflows, so
+  no recursion). Keep two loud-fail edges: the regen itself erroring, and a regen that's
+  byte-identical after a failed `--check` (generator nondeterminism). Reserve fail-the-build for
+  files a human authored. *(2026-07-17, build-order-ci-self-heal — PR #93.)*
 - **A classifier/permission block on a prod DB write is the named-category checkpoint working —
   design merges so "stop and hand the write to Daniel" is safe, then actually stop.** The
   miyagi-partners S1 migration (new tables + a flag row on the shared prod Supabase) was blocked

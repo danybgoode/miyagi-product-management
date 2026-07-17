@@ -1,6 +1,6 @@
 # Build-order CI self-heal — Sprint 1: Guard heals instead of failing
 
-**Status:** 🟨 in progress
+**Status:** ✅ shipped — PR #93 (`29796c2`), 2026-07-17; both heal paths observed live on the PR itself
 
 > **Re-groomed at build time (2026-07-17):** this sprint was groomed against the standalone
 > `build-order-guard.yml`, which no longer exists — the 2026-07-16 local-first consolidation
