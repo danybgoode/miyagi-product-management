@@ -1,6 +1,6 @@
 # Miyagi Partners — multi-tenant MCP credential + roles — Sprint 1: Credential + grants + resolver + audit (flag dark-launch)
 
-**Status:** ⬜ not started
+**Status:** ✅ merged dark 2026-07-17 — PR [#272](https://github.com/danybgoode/miyagisanchezcommerce/pull/272) (`237eb20`). resolveToolShop swapped at 42 call sites (doc said ~19 — drift from the two mcp-parity epics). ⚠ OWED: Daniel applies `20260717090000_miyagi_partners_s1.sql` by hand (classifier-blocked agent-side; flag row absent ⇒ fail-open OFF, fully dark) + the full smoke walkthrough below before any flag flip.
 
 ## Stories
 

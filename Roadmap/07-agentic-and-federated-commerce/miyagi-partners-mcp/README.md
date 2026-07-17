@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: miyagi-partners-mcp
 ---
 
@@ -35,11 +35,11 @@ data stays untouched — the epic only changes *who may call* the existing selle
 - Pure spec seam: `e2e/agent-connector.spec.ts`; flag rail: `lib/flags.ts` `FlagKey` + `DEFAULT_FLAGS`.
 
 ## Scope — stories
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | `ms_partner_` credential + connector-URL variant + `partner_grants` + resolver grant-set + `shop_slug` routing + per-call audit + `partners.mcp_enabled` flag (dark-launch) | high |
-| 2 | Promoter-close auto-grant + `/partner` dashboard + seller-side revoke | low-med |
-| 3 | Feedback loop: `send_feedback` tool + `platform_feedback` + Telegram + `/admin/feedback` | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | `ms_partner_` credential + connector-URL variant + `partner_grants` + resolver grant-set + `shop_slug` routing + per-call audit + `partners.mcp_enabled` flag (dark-launch) | high | ✅ merged dark 2026-07-17 — PR [#272](https://github.com/danybgoode/miyagisanchezcommerce/pull/272); ⚠ migration NOT yet applied (Daniel) |
+| 2 | Promoter-close auto-grant + `/partner` dashboard + seller-side revoke | low-med | ✅ merged dark 2026-07-17 — PR [#274](https://github.com/danybgoode/miyagisanchezcommerce/pull/274) |
+| 3 | Feedback loop: `send_feedback` tool + `platform_feedback` + Telegram + `/admin/feedback` | low | ✅ merged 2026-07-17 — PR [#273](https://github.com/danybgoode/miyagisanchezcommerce/pull/273); ⚠ `platform_feedback` migration NOT yet applied (Daniel) |
 
 ## Kill-switch decision (Stage 6b, recorded at grooming)
 **Flag story (in S1):** `partners.mcp_enabled` — **enablement/dark-launch polarity, default `false`,

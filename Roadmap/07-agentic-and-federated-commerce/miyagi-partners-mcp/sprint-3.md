@@ -1,6 +1,6 @@
 # Miyagi Partners — multi-tenant MCP credential + roles — Sprint 3: Feedback loop (send_feedback + admin list)
 
-**Status:** ⬜ not started
+**Status:** ✅ merged 2026-07-17 — PR [#273](https://github.com/danybgoode/miyagisanchezcommerce/pull/273) (`6c53435`). send_feedback viewer-callable; author identity server-derived. ⚠ OWED: Daniel applies `20260717100000_platform_feedback.sql` by hand (until then the tool returns a clean error) + the Telegram-delivery check below.
 
 ## Stories
 

@@ -218,6 +218,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   a large cleanup, whether the enforcement mechanism can ship independently of the cleanup finishing.
   *(2026-07-15/16, doc-format-consistency S2/S3.)*
 
+- **A groomed sprint doc's mechanical-change INVENTORY (a call-site count, a file list) is stale
+  the moment sibling epics land — re-derive it from the code at build time and script the sweep
+  with a shape assertion.** miyagi-partners S1 was groomed at "~19 resolveAgentShop call sites";
+  build-time reality was 42 (two MCP epics landed in between). The swap script asserted the exact
+  guard shape at every site and aborted on the first mismatch — which caught a second guard
+  variant that a blind regex would have half-rewritten. *(2026-07-17, miyagi-partners S1.4.)*
+- **When a funnel/automation writes into an authorization table, enumerate every OTHER writer of
+  that table and decide whose intent wins — "idempotent retry" logic composes badly with
+  deliberate human grants.** A promoter-close auto-grant's duplicate-handling grew an upgrade path
+  that would have silently escalated an admin's deliberate `viewer` grant and let a re-close undo
+  a seller's revoke. Decided: deliberate human decisions win; pairs with ANY history are no-ops
+  with an ops note. Caught by the fresh reviewer asking "who else writes this row and why."
+  *(2026-07-17, miyagi-partners S2.1.)*
+- **A killed/interrupted subagent's UNCOMMITTED tree is evidence, not garbage — diff it before
+  discarding or re-spawning.** The S2 builder was stopped mid-cross-review-fix; its uncommitted
+  diff was a coherent, attributable answer to the codex comment on its own PR. Re-derive state
+  (git status/diff/log + the PR thread), verify (tsc + specs), and land it from the coordinating
+  session — cheaper and safer than a fresh agent redoing the sprint. *(2026-07-17,
+  miyagi-partners S2 — extends the existing failed-fork rule from "distrust the report" to
+  "salvage the tree".)*
 ## Tooling gotchas
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
   AFTER it already landed** — the push itself succeeds (visible on `origin/main`), but a denial message
@@ -797,6 +817,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Dockerfile, **check the actual Cloud Build result** (`gcloud builds list`), not just CI — the
   deploy rail has no notifier for consecutive failures. *(2026-07-16, caught during
   mcp-parity-core close-out; fixed forward in frontend #268 / backend #98.)*
+- **A classifier/permission block on a prod DB write is the named-category checkpoint working —
+  design merges so "stop and hand the write to Daniel" is safe, then actually stop.** The
+  miyagi-partners S1 migration (new tables + a flag row on the shared prod Supabase) was blocked
+  agent-side at apply time. Because the flag is enablement-polarity fail-open OFF (absent row ⇒
+  dark) and every read path degrades cleanly on a missing table, deferring the apply cost nothing:
+  the merge stayed safe-dark and the DDL became an explicit, documented Daniel step on the PR.
+  Dark-merge designs should always make the migration-apply step deferrable this way.
+  *(2026-07-17, miyagi-partners S1.)*
 - **Deleting a git branch does NOT delete its Vercel preview deployments — Vercel retains every deployment
   forever.** 73 merged/dead branches had left **150 orphan preview deployments** (469→319 after pruning).
   Pair branch cleanup with a preview prune: `node scripts/vercel-prune-previews.mjs` (dry-run by default;

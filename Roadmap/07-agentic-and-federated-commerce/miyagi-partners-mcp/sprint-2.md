@@ -1,6 +1,6 @@
 # Miyagi Partners — multi-tenant MCP credential + roles — Sprint 2: Funnel auto-grant + partner dashboard + seller revoke
 
-**Status:** ⬜ not started
+**Status:** ✅ merged dark 2026-07-17 — PR [#274](https://github.com/danybgoode/miyagisanchezcommerce/pull/274) (`85c8820`). Semantics decision (fresh-review, reversible): deliberate human decisions WIN over the funnel — no viewer→manager upgrade, no auto-re-grant after a seller revoke (ops note instead). ⚠ OWED: Daniel confirms that semantics + the smoke walkthrough below (flag ON window).
 
 ## Stories
 
