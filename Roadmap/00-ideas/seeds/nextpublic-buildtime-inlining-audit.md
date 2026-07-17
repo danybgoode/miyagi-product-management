@@ -1,7 +1,7 @@
 ---
 title: "Audit: which NEXT_PUBLIC_* client reads are actually inlined at Cloud Run build time"
 slug: nextpublic-buildtime-inlining-audit
-status: raw
+status: shipped   # audit executed + class closed 2026-07-17 — see Outcome addendum at the bottom
 area: "09"
 type: spike
 priority: null
@@ -56,3 +56,24 @@ build).
 Spike itself is LOW (read-only investigation). Money/auth-adjacent instances found (Stripe,
 MercadoPago) should be treated as HIGH/urgent the moment they're confirmed live-broken, same as
 the checkout finding.
+
+## Outcome addendum (2026-07-17 — audit executed, seed closed)
+
+The mechanism half was already fixed by `nextpublic-docker-buildargs-hardening` (app #245 + root
+#80, 2026-07-13, all 14 vars' values verified live). This close-out did the remaining sweep +
+found one more live break + closed the class:
+
+- **Full client-read sweep:** exactly 4 `'use client'` direct readers exist.
+  `HomePersonalizationProvider.tsx` (fixed via props-threading, PR #243);
+  `lib/supabase-browser.ts` + `lib/push-client.ts` (their 3 vars are on the build-arg rail,
+  values verified live 2026-07-13 — safe); `app/components/SiteAnalytics.tsx` — **broken live**.
+- **New finding, live-confirmed:** `NEXT_PUBLIC_GTM_ID` was Vercel-only env, so the 2026-07-10
+  Cloud Run cutover silently killed ALL analytics (GTM container never injected; no `GTM-`
+  literal in any served prod chunk). Fixed: app #275 + root #94 (merged 2026-07-17) add
+  `NEXT_PUBLIC_GTM_ID` (+ same-class `NEXT_PUBLIC_MIYAGI_WHATSAPP`, server-read, value owed by
+  Daniel) to the Dockerfile/cloudbuild/deploy-frontend rail. Post-deploy live-bundle grep owed.
+- **Class closed:** a source-scan spec in `e2e/frontend-build-args.spec.ts` now fails the gate on
+  ANY `process.env.NEXT_PUBLIC_*` read in app source that's missing from the build-arg rail —
+  a new var can never ship half-wired again (observed red once via mutation).
+- Stripe/MP/Supabase/VAPID "unconfirmed" list from the seed: all were covered by the hardening's
+  rail + live value verification; no other client readers exist (swept `app/ lib/ components/`).
