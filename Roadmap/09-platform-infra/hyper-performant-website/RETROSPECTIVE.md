@@ -1,7 +1,10 @@
 # Hyper-performant website — Retrospective
 
-_Sprints shipped: 2026-07-17 (S1, PR #276) + 2026-07-18 (S2, PR #279) · epic close held on Daniel's
-PageSpeed re-run (the DoD's acceptance number)._
+_Closed: 2026-07-18_
+
+> Code-complete close (S1 PR #276 · S2 PR #279, both live-verified). The one outstanding DoD item —
+> Daniel's PageSpeed mobile re-run (the acceptance number) — is tracked in Gaps below; the epic
+> README stays `in-progress` until it lands.
 
 ## What shipped
 - **S1 — Images (PR #276, merged 2026-07-17, live-verified).** Next's built-in `/_next/image`
@@ -27,7 +30,7 @@ PageSpeed re-run (the DoD's acceptance number)._
   no-external-stylesheet structural check + >150 KiB render-blocking check scoped to external
   assets, prod-only hard assertions.
 
-## What worked
+## What went well
 - **The two-layer review caught real, distinct bugs at every round.** Codex: unbounded
   `arrayBuffer()` before the byte-cap check (OOM vector), `CopySource` `%2F` mis-encoding,
   comment-matching regex asserts. Fresh reviewer: redirect-following SSRF bypass (allow-list only
@@ -61,7 +64,7 @@ PageSpeed re-run (the DoD's acceptance number)._
 - sharp AVIF encode latency on cold variants (4–22 s) — consider lower effort or webp-default for
   w≥640 if it stays visible after cache warm-up.
 
-## Durable learnings (promote at epic close)
+## What we learned
 - **A perf/transfer budget guard must measure what it polices.** Playwright's `body()` returns
   DECOMPRESSED bytes — a raw-byte budget red-flags a data-URI-heavy asset that costs 15 KiB on
   the wire. Scope render-blocking budgets to the third-party class they exist to catch (or
