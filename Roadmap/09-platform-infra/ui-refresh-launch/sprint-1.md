@@ -1,6 +1,7 @@
 # UI refresh before launch — Sprint 1: Token spec + site-wide token layer
 
-**Status:** 🟨 in progress — S1.1 spec written, awaiting approval
+**Status:** 🟨 in progress — S1.1 approved + merged; S1.2 built, PR open, **Daniel's preview
+walkthrough owed before merge** (cross-cutting `globals.css`, merges in a quiet window)
 
 ## Stories
 
@@ -14,9 +15,29 @@ stillness), density. **Ends in a written decision appended to this doc; Daniel a
 **Acceptance:** spec approved in-session; citations included.
 **Risk:** low
 
-### Story 1.2 — Site-wide token layer update
+### Story 1.2 — Site-wide token layer update ✅ built, PR open (Daniel's preview review owed)
 **As** every visitor, **I want** the approved token values live across all tokenized surfaces,
 **so that** the whole site inherits the new feel in one move.
+
+**Status:** built on `feat/ui-refresh-s1`, PR open against `apps/miyagisanchez` (title: "ui-refresh
+S1.2: approved token layer — rem scale + M3 radii [LOW, cross-cutting]"). Implemented exactly the S1.1
+change table: `--t-*` px→rem (`--t-base` 15→16px, `--t-md` 17→18px, rest unchanged sizes), root
+`font-size` unpinned from `--t-base` (now tracks browser default, `body` sets the explicit base),
+`--r-lg` 18→16px, `--r-xl` 24→28px, additive `--measure-prose: 66ch` (defined only — no `.prose`
+class exists yet to apply it to). Left alone: palette hues, `#1d6f42` accent, spacing, motion,
+shadows/glass, semantic colors, elevation, seasonal-theme precedence.
+**Verified pre-PR:** `tsc --noEmit` clean; `npm run build` succeeds, `/` still static; design-token
+guard suite (19 specs) + perf-budget suite (25 specs) green, no new fonts/assets; live dev-server
+spot-check — home, `/l`, a PDP, `/vende`, marketplace shop channel (`/s/agenda-cdmx`), embed widget
+(`/embed/s/agenda-cdmx`), unauthenticated seller-dashboard gate, empty-cart checkout redirect — all
+render cleanly with the new type/radius scale; seasonal-theme toggle re-verified composing correctly
+(accent swap to DesignerN `#9f4f3f` leaves `--r-lg`/`--t-base` untouched, confirming the documented
+precedence); no horizontal overflow detected via `scrollWidth`/`clientWidth` at the narrowest window
+width the browser tool could force (~485px effective — Chrome's OS-level minimum window width blocked
+a true 360px viewport test; **flagged as unverified below**).
+**Owed to Daniel:** the actual preview walkthrough (this doc's Sprint 1 smoke steps), a real 360px
+device/DevTools-emulation check, and the authenticated seller-dashboard + live checkout-with-cart
+surfaces (only their unauthenticated/empty-cart gate states were reachable without login).
 **Acceptance:** token values updated in the `design-token-foundation` SSOT; raw-color CI guards green;
 perf-budget guard green (no new fonts/assets past budget); visual spot-set (home, PDP, /vende, seller
 dashboard, embed widget) reviewed by Daniel on the preview; all four channels render correctly.
