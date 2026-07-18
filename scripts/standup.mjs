@@ -17,8 +17,13 @@
 //
 // Usage:
 //   node scripts/standup.mjs             # gather, diff, post to Telegram, commit+push the log
-//   node scripts/standup.mjs --dry-run   # gather + print the message only — fully read-only, does NOT
-//                                         # append to standups.log, does not touch Telegram or git
+//   node scripts/standup.mjs --dry-run   # gather + print the message only — fully read-only (does NOT
+//                                         # append to standups.log, does not touch Telegram or git, and
+//                                         # does NOT write to the report registry — S1.3,
+//                                         # scripts/lib/report-registry.mjs's upgradeArtifactLinks is
+//                                         # called with dryRun: true, which logs the would-be /r/<slug>
+//                                         # link but performs no upload; the printed message still shows
+//                                         # the existing URL-hash fallback link in that case).
 //
 // Reuse, don't rebuild: ensureGh()/die() (scripts/lib/cross-agent-cli.mjs), build-order.mjs --check,
 // vercel-prune-previews.mjs dry-run, the api.telegram.org sendMessage shape from
@@ -34,6 +39,7 @@ import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.m
 import { formatPrList, telegramHtmlToConsoleText } from './lib/telegram-format.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { appendStandupArtifactsToMessage, buildStandupArtifacts } from './lib/standup-deck.mjs';
+import { upgradeArtifactLinks } from './lib/report-registry.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -338,6 +344,11 @@ async function main() {
   const header = `<b>Standup · ${cur.ts.slice(0, 10)}</b>`;
   const rawMessage = deltaLines.length ? [header, ...deltaLines].join('\n') : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
   const artifacts = buildStandupArtifacts({ snapshot: cur, deltaLines, generatedAt: new Date(cur.ts) });
+  // reporthub-as-notion S1.3: try to upgrade the standup deck's URL-hash link to a short gs://-backed
+  // /r/<slug> link (scripts/lib/report-registry.mjs). `--dry-run` must stay fully read-only, so it's
+  // passed straight through as `dryRun` — a dry run logs the would-be slug/link but performs no upload.
+  // On any real-run upload failure the artifact keeps the URL-hash link it already had.
+  await upgradeArtifactLinks(artifacts, { date: new Date(cur.ts), dryRun: DRY_RUN });
   // Last-resort safety net for Telegram's hard 4096-char limit — the per-repo caps above (baseline
   // summary lines, formatPrList) should already keep any normal night well under this.
   const message = appendStandupArtifactsToMessage(rawMessage, artifacts, TELEGRAM_MAX_CHARS);

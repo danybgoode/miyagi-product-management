@@ -68,12 +68,44 @@ Redeploy checklist after fork changes:
 4. Generate one PMO weekly link and one daily standup link from the root scripts; confirm the branded
    shell/theme renders and the `16:9` story decks still open in presentation mode.
 
+## Report registry resolver (`/r/<slug>`, reporthub-as-notion S1.2)
+
+Read-through proxy from a short `/r/<slug>` link to the GCS report registry provisioned by
+`infra/gcp/provision-report-registry.sh` (Sprint 1, Story 1.1). NOT part of the stateful short-link
+system (`short-links/db.js`, gated behind `SDOCS_ENABLE_STATEFUL_APIS`) — it holds no state of its own
+(no SQLite) and stays available with `SDOCS_ENABLE_STATEFUL_APIS=0`, this instance's permanent setting.
+
+- Fork source: `report-registry.js` (server-side, the resolver logic) + the `'report-registry'` Source
+  registered in `public/sdocs-app.js` (client-side load/render + the friendly-404 copy) + the
+  `/api/report/:slug` route and the `/r/<slug>` app-shell dispatch entry in `server.js`.
+- Bucket: `REPORT_REGISTRY_BUCKET` env var, defaults to `miyagi-pmo-reports` (prod). Point at
+  `miyagi-pmo-reports-staging` for a staging deploy/smoke.
+- **Slug → object path mapping (must match `scripts/lib/report-registry.mjs` in
+  danybgoode/miyagi-product-management EXACTLY — a change on either side needs the same-wave change on
+  the other):**
+  - `daily-story-YYYY-MM-DD-<hash6>` → `daily/daily-story-YYYY-MM-DD-<hash6>.md` (90d TTL)
+  - `pmo-weekly-YYYY-MM-DD` / `pmo-monthly-YYYY-MM-DD` / `pmo-sheet-YYYY-MM-DD` →
+    `packets/<slug>.md` (kept forever)
+  - Any other slug not starting with `daily-` also lands under `packets/` (the `daily/` prefix is the
+    only thing the bucket's lifecycle rule keys off).
+- Missing/expired slug → `GET /api/report/<slug>` returns `404 {"error":"not_found"}`; the client Source
+  renders a friendly message explaining dailies expire at 90 days and the sender's original URL-hash
+  link (`#md=...`) still works. Any other upstream failure (network, non-200 from GCS) → `502
+  {"error":"upstream_error"}`, same friendly copy client-side. An invalid slug (path traversal, bad
+  chars) → `400 {"error":"invalid_slug"}`.
+- Test-only env var: `REPORT_REGISTRY_STORAGE_BASE_URL` overrides the GCS host so `test/test-http.js` can
+  run the `/api/report/:slug` + `/r/:slug` coverage against a local fixture, fully offline. Never set
+  this in a deployed environment.
+
 ## Smoke
 
 ```bash
 curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/
 curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/trust/manifest
 curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/short/example
+# report registry resolver (S1.2) — once the fork PR is merged + deployed:
+curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/report/does-not-exist-xyz   # -> 404 not_found
+curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/r/pmo-weekly-<a-real-YYYY-MM-DD> # -> 200 HTML
 ```
 
 Expected:
@@ -82,6 +114,16 @@ Expected:
 - `/trust` renders the SmallDocs Trust page and license/notices remain intact.
 - `/trust/manifest` reports the fork repo and deployed commit.
 - `/api/short/example` returns `{"error":"stateful_apis_disabled"}` with `HTTP 404`.
+- `/api/report/does-not-exist-xyz` returns `{"error":"not_found"}` with `HTTP 404`.
+- `/r/<a real slug>` returns `HTTP 200` HTML and the branded viewer renders the report (browser check).
+
+**Report registry resolver — status as of 2026-07-17: built, unit+integration tested (`node
+test/run.js`, 1097/1097 green including 16 new tests), and live-smoked locally against the real
+`gs://miyagi-pmo-reports-staging` bucket (`/api/report/pmo-weekly-2026-07-17` round-tripped the object
+`scripts/pmo-report.mjs --weekly --dry-run` uploaded). NOT YET deployed to `pmo-smalldocs` — PR open on
+the fork (danybgoode/smalldocs, branch `feat/report-registry-resolver`), owed: Daniel merges + redeploys
+per the checklist above, then re-run this smoke against the live URL and a browser check of the rendered
+viewer.**
 
 ## Smoke results
 

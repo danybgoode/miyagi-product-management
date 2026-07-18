@@ -24,6 +24,7 @@ import {
   validateBenchmarkDataset,
 } from './lib/pmo-benchmarks.mjs';
 import { buildSmallDocsUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
+import { upgradeArtifactLinks } from './lib/report-registry.mjs';
 import { parseStatusFlipsFromLog, filterFlipsToWindow } from './weekly-recap.mjs';
 import {
   baselineSummary,
@@ -249,6 +250,16 @@ async function main() {
 
   console.log(text);
   const artifacts = buildReportArtifacts(metrics, args);
+  // reporthub-as-notion S1.3: try to upgrade each artifact's URL-hash link to a short gs://-backed
+  // /r/<slug> link (scripts/lib/report-registry.mjs). Mutates `artifacts` in place; on any upload
+  // failure (no credentials, unreachable bucket, ...) the artifact keeps the URL-hash link it already
+  // had — printed below and, for --weekly, the one that reaches Telegram either way. `--dry-run` never
+  // writes to the registry (dryRun: args.dryRun) — it logs the would-be slug/link and keeps the
+  // URL-hash fallback, same as it already skips Telegram and the window log.
+  await upgradeArtifactLinks(artifacts, {
+    date: window.untilISO ? new Date(window.untilISO) : new Date(),
+    dryRun: args.dryRun,
+  });
   for (const artifact of artifacts) {
     console.log(`\nSmallDocs ${artifact.name}: ${artifact.url}`);
     if (args.open) {

@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-18 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -22,7 +22,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
 - [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 3/6 stories · risk: Low · #4
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
-- [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #5
+- [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 3/7 stories · risk: High · #5
 - [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #6
 
 ## ✅ Shipped (111)
@@ -149,7 +149,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (5)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (6)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -161,7 +161,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Comparador de costos — the stacking-costs sales tool on the homepage | Scaffolded | In progress |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 | Hyper-performant website | Scaffolded | In progress |
+| ReportHub as the Notion replacement | Scaffolded | In progress |
 | UI refresh before launch | Scaffolded | In progress |
 
 ---
-_Epics: 121 · seeds in funnel: 7 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 121 · seeds in funnel: 7 · status drift: 6. Regenerate with `node scripts/build-order.mjs`._
