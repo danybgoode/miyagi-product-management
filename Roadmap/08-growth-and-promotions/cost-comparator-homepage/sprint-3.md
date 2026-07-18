@@ -55,18 +55,40 @@ failure/timeout; anonymous throughout.
 - **SSRF hardening** (`lib/shop-url-analyzer-fetch.ts`, `server-only`) mirrors
   `lib/shopify-mcp-client.ts`'s connector discipline (this route is a fully open target — any
   public shop URL, not an allow-listed host like `app/api/img`): `isPublicDomainShape` shape
-  check → DNS-resolve every address and reject any loopback/private/link-local/reserved result
-  (closes the DNS-rebinding gap a shape check alone leaves open) → https-only →
-  `redirect: 'error'` → 8s timeout → 2 MB streamed byte-cap with a running counter (never buffers
-  an unbounded body) → `text/html`-only content-type gate.
+  check → DNS-resolve every address and reject any loopback/private/link-local/reserved result →
+  https-only → `redirect: 'error'` → 8s timeout → 2 MB streamed byte-cap with a running counter
+  (never buffers an unbounded body; the boundary chunk that crosses the cap is trimmed and kept,
+  not dropped whole) → `text/html`-only content-type gate.
+  **CORRECTION (2026-07-18 review round):** an earlier draft of this doc and the PR body
+  overclaimed the DNS-resolve step as "closing" the DNS-rebinding gap. It does not — it's
+  **substantially mitigated, not closed**: the resolve-then-`fetch()` pattern has an inherent
+  TOCTOU window identical to the pre-existing `lib/shopify-mcp-client.ts` connector's own
+  `assertPublicHost`. Bounded further by https-only (TLS certificate validation against the
+  original SNI/hostname — a rebound IP presenting the wrong cert can't silently succeed),
+  `redirect: 'error'`, the 8s timeout, the 2 MB cap, and — specific to this analyzer — the raw
+  fetched body is never returned to the caller (only derived counts/booleans), so even a
+  successful rebind can't exfiltrate arbitrary bytes through this endpoint. A real fix (DNS-pin
+  the resolved IP so the fetch can't re-resolve) is filed as a follow-up seed, not built here:
+  [`Roadmap/00-ideas/seeds/ssrf-dns-pinning.md`](../../00-ideas/seeds/ssrf-dns-pinning.md) — also
+  applies to the pre-existing `lib/shopify-mcp-client.ts`.
 - **Rate limit:** new `comparator_analyze` key in `lib/ratelimit.ts`, 8 analyses per IP per 10
   min (Upstash-backed, fails open if unconfigured, same contract as every other limiter).
 - **Prefill:** on a successful detection the calculator's `platform` select is set directly
   (`ComparadorTool`'s `setPlatform`) — tier/band/hosting stay at default (not reliably derivable
-  from a homepage scrape); documented as an honest limitation, not silently guessed.
+  from a homepage scrape); documented as an honest limitation, not silently guessed. Volume/AOV
+  are explicitly NOT derived from the catalog/section counts (no sensible mapping — catalog size
+  and monthly sales volume are unrelated dimensions) — the UI copy says so directly rather than
+  implying a prefill that isn't happening; the visitor still enters volume/AOV manually.
+- **Review round 2 (2026-07-18):** fresh reviewer approved the code, recommended a Daniel merge
+  (first fully-open SSRF surface in the codebase) rather than auto-merge, and caught the
+  DNS-rebinding overclaim above plus three should-fixes, all applied: (a) the byte-cap boundary
+  chunk is now trimmed+kept instead of dropped; (b) the "prellenamos" copy no longer implies a
+  volume/catalog prefill that wasn't happening (see Prefill note above); (c) natural es-MX
+  pluralization (`pluralEs` helper — "1 producto" / "2 productos") replaces the `producto(s)`
+  shorthand.
 - **PR:** [#280](https://github.com/danybgoode/miyagisanchezcommerce/pull/280) — risk tier MED
-  per this doc (external fetch); orchestrator merges after review, not auto-merged. NOT merged
-  by this agent.
+  per this doc (external fetch); **Daniel merges** per the round-2 reviewer's recommendation
+  (first fully-open SSRF surface in the codebase), not auto-merged. NOT merged by this agent.
 
 ## Sprint 3 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com
