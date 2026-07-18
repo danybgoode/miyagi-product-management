@@ -1,10 +1,10 @@
 # Comparador de costos — Sprint 1: Calculator + dataset + teaser
 
-**Status:** ⬜ not started
+**Status:** ✅ built, PR open — merge + Daniel's browser smoke owed (see below)
 
 ## Stories
 
-### Story 1.1 — Pure cost model
+### Story 1.1 — Pure cost model ✅ `f631e4d`
 **As a** merchant, **I want** my stacked platform costs computed correctly from my volume, AOV, plan
 tier, commission band, and paid apps, **so that** the comparison is arithmetic, not marketing.
 **Acceptance:** a next-free `lib/cost-comparator.ts` computes monthly + annual stacked cost per
@@ -13,7 +13,7 @@ own site" combos) and Miyagi (SKU costs only, 0% commission); every input user-o
 specs cover each platform shape + an override + the Miyagi side.
 **Risk:** low
 
-### Story 1.2 — Sourced, editable dataset
+### Story 1.2 — Sourced, editable dataset ✅ `c4a8754`
 **As an** admin, **I want** every competitor figure sourced + dated and editable without a deploy,
 **so that** the tool stays honest as prices change.
 **Acceptance:** baseline versioned JSON in-repo with source + date on every figure; merged through the
@@ -24,7 +24,7 @@ missing prod `platform_copy_overrides` table is applied — owed to Daniel; fail
 working regardless.)*
 **Risk:** low
 
-### Story 1.3 — `/comparador` calculator UI
+### Story 1.3 — `/comparador` calculator UI ✅ `f3a946b`
 **As a** merchant (or consultant on a phone), **I want** an anonymous, mobile-first calculator with
 stacked cost bars, **so that** I see my real numbers next to Miyagi's in under a minute.
 **Acceptance:** `/comparador` renders anonymous (no login path anywhere); platform picker(s), monthly
@@ -33,7 +33,7 @@ volume + AOV inputs, premium-app toggles each showing typical price with the Miy
 hardcoded-opaque; all copy es-MX; usable at 360/390/414px with no overflow.
 **Risk:** low
 
-### Story 1.4 — Homepage teaser + attribution
+### Story 1.4 — Homepage teaser + attribution ✅ `6b17f28`
 **As a** visitor, **I want** to discover the comparator from the homepage, **so that** the sales tool
 actually gets traffic.
 **Acceptance:** a teaser card on `/` links `/comparador`; `/` remains a static prerender (no new
@@ -44,8 +44,15 @@ dynamic API — assert in the spec); Clarity events + UTM attribution wired like
 - **api spec(s):** unit specs on `lib/cost-comparator.ts` + the dataset merge/guard (1.1, 1.2);
   `e2e/comparador.spec.ts` — route renders, key figures + verified-date present, prefill of a known
   input produces the lib's number (1.3); homepage spec asserts `/` still static + card present (1.4).
+  47 new specs total (32 + 15 unit, +3 route, +1 homepage). Every one observed RED once before green:
+  the unit/dataset specs by breaking the code/data under test and reverting; the route-level specs
+  (`comparador.spec.ts`, the new `home-static.spec.ts` case) genuinely 404'd against production (branch
+  unmerged) before going green against a local `npm run dev` server.
 - **browser smoke owed:** yes, to Daniel — phone, anonymous: teaser → comparison → inline override.
-- **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge
+- **deterministic gate:** `tsc --noEmit` ✅ + `npm run build` ✅ (`/` still `○`, 1m/1y) + Playwright `api`
+  green before merge — full suite run locally against `npm run dev` (2375 passed; the 12 failures are
+  pre-existing, unrelated, and need a live Medusa backend + seeded catalog that isn't running in this
+  worktree — catalog/embed/cars/discovery/profit/own-shop-seo specs, none touching the comparator).
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)

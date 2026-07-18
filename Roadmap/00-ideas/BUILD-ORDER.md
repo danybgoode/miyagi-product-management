@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-18 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -15,18 +15,17 @@
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 
-## 📋 Ready to build (scaffolded, not started) (8)
+## 📋 Ready to build (scaffolded, not started) (7)
 
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
-- [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 0/8 stories · risk: Low · Wave 3
-- [Build-order CI self-heal](../../09-platform-infra/build-order-ci-self-heal/README.md) — 09 Platform-infra · 0/1 stories · risk: Low · #1
+- [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 7/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
-- [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 0/6 stories · risk: Low · #4
+- [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 3/6 stories · risk: Low · #4
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 3/7 stories · risk: High · #5
-- [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/6 stories · risk: High · #6
+- [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #6
 
-## ✅ Shipped (110)
+## ✅ Shipped (111)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -105,6 +104,7 @@
 - [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 9/9 stories
 - [agy drift doctor — self-healing for the Antigravity CLI pin](../../09-platform-infra/agy-drift-doctor/README.md) — 09 Platform-infra · 2/2 stories
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 6/6 stories · risk: High
+- [Build-order CI self-heal](../../09-platform-infra/build-order-ci-self-heal/README.md) — 09 Platform-infra · 1/1 stories · risk: Low · #1
 - [Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)](../../09-platform-infra/routines-enablement/README.md) — 09 Platform-infra · 1 sprints
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
@@ -141,7 +141,7 @@
 
 ## ⬜ Funnel — seeds not yet scaffolded (7)
 
-- [Audit: which NEXT_PUBLIC_* client reads are actually inlined at Cloud Run build time](seeds/nextpublic-buildtime-inlining-audit.md) — Raw · Spike
+- [AI-adoption maturity: benchmark vs the Steps-of-AI-Adoption ladder + the harness plan](seeds/ai-adoption-maturity-benchmark.md) — Ready · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
@@ -149,7 +149,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (6)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -158,8 +158,11 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
+| Comparador de costos — the stacking-costs sales tool on the homepage | Scaffolded | In progress |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
+| Hyper-performant website | Scaffolded | In progress |
 | ReportHub as the Notion replacement | Scaffolded | In progress |
+| UI refresh before launch | Scaffolded | In progress |
 
 ---
-_Epics: 121 · seeds in funnel: 7 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 121 · seeds in funnel: 7 · status drift: 6. Regenerate with `node scripts/build-order.mjs`._

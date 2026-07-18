@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: build-order-ci-self-heal
 ---
 

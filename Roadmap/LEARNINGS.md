@@ -238,6 +238,27 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   session — cheaper and safer than a fresh agent redoing the sprint. *(2026-07-17,
   miyagi-partners S2 — extends the existing failed-fork rule from "distrust the report" to
   "salvage the tree".)*
+- **Sharpens "salvage the tree": a session-limit-killed agent RESUMES from its transcript —
+  message the same agent id instead of re-spawning cold.** In a 5-concurrent-agent batch, a
+  shared session cap killed ALL agents mid-flight, twice. Every one resumed via a message to its
+  existing id (context intact) with a one-paragraph state recap: what its worktree held
+  (git status output pasted in), what it was mid-way through (its dying narration names this),
+  and "re-derive state before trusting memory of what passed." Total loss across two mass kills:
+  ~zero — every builder finished its sprint. The recap matters: a resumed agent's first instinct
+  is to trust its pre-kill memory; the paste of actual `git status` grounds it. Also: builders'
+  sprint-doc commits to the shared root checkout land on LOCAL main — the orchestrator owns
+  pushing those (`git push origin main`), and a `git pull` before any close-out commit, since
+  multiple builders tick docs concurrently. *(2026-07-17, four-epic batch session — hyper-perf,
+  cost-comparator, reporthub, prose-draft builders + 2 reviewers.)*
+- **In a multi-epic batch, run the reviewer layers CONCURRENTLY with the next build, not after
+  it.** The shape that worked: builder opens PR → orchestrator immediately fires codex
+  (cross-review.mjs, ~2 min) AND a fresh pr-reviewer subagent, then starts the next sprint's
+  builder while both run → findings route back to the ORIGINAL builder (context intact, fixes
+  cheap) via one message citing the PR comment. Codex caught real bugs in 3 of 4 PRs (missing
+  source-tooltip UI, an unbounded arrayBuffer DoS, dry-run writing to a prod bucket, a shell-
+  string injection); the fresh reviewer caught what codex missed (redirect-following SSRF
+  bypass, uncommitted-WIP-not-on-the-PR). Neither layer was redundant once. *(2026-07-17,
+  four-epic batch session.)*
 ## Tooling gotchas
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
   AFTER it already landed** — the push itself succeeds (visible on `origin/main`), but a denial message
@@ -826,6 +847,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   tagged by SHA — no rebuild needed). After back-to-back merges, verify prod serves the LAST
   commit's behavior (or check `gcloud builds log`'s "revision [...] deployed" lines against merge
   order), don't stop at both builds being SUCCESS. *(2026-07-17, miyagi-partners S2/S3 merges.)*
+- **A guard on a DERIVED artifact should self-heal, not fail.** A stale generated file
+  (`BUILD-ORDER.md`) is a forgotten regen command, not a judgment call — so the guard's job is to
+  run the generator, not to red the next passer-by's PR. Heal at the cheapest layer first
+  (pre-commit regenerates + stages path-scoped into the same commit) with CI as the fallback for
+  hookless clones (bot commit to the PR branch; GITHUB_TOKEN pushes don't retrigger workflows, so
+  no recursion). Keep two loud-fail edges: the regen itself erroring, and a regen that's
+  byte-identical after a failed `--check` (generator nondeterminism). Reserve fail-the-build for
+  files a human authored. *(2026-07-17, build-order-ci-self-heal — PR #93.)*
 - **A classifier/permission block on a prod DB write is the named-category checkpoint working —
   design merges so "stop and hand the write to Daniel" is safe, then actually stop.** The
   miyagi-partners S1 migration (new tables + a flag row on the shared prod Supabase) was blocked
