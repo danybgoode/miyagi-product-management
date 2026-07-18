@@ -161,7 +161,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
 | Comparador de costos — the stacking-costs sales tool on the homepage | Scaffolded | In progress |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
-| Hyper-performant website | Scaffolded | In progress |
+| Hyper-performant website | Scaffolded | Shipped |
 | UI refresh before launch | Scaffolded | In progress |
 
 ---
