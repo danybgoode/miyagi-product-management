@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildSmallDocsUrl } from './pmo-templates.mjs';
+import { isFunnelSeed } from './roadmap-status-buckets.mjs';
 
 const DEFAULT_SOURCE_BASE = 'https://github.com/danybgoode/miyagi-product-management/blob/main';
 const HASH_BASE = 'https://pmo-smalldocs.local';
@@ -121,7 +122,12 @@ export function summarizeRoadmapRows(rows) {
     shippedEpics: epics.filter((row) => row.status === 'Shipped').length,
     activeEpics: epics.filter((row) => row.status === 'In progress').length,
     scaffoldedEpics: epics.filter((row) => row.status === 'Scaffolded').length,
-    funnelSeeds: seeds.length,
+    // reporthub-as-notion S2.1 fix: a seed that already shipped/scaffolded/archived is still
+    // grain:'Seed' in the projection but is NOT a funnel member — matches
+    // Roadmap/00-ideas/BUILD-ORDER.md's "Funnel" count exactly (scripts/build-order.mjs uses the SAME
+    // scripts/lib/roadmap-status-buckets.mjs definition). Previously this counted every seed row
+    // unconditionally, overcounting the hub's "Ideas en funnel" stat.
+    funnelSeeds: rows.filter(isFunnelSeed).length,
     byStatus: countBy(epics, 'status'),
     byArea: countBy(epics, 'area'),
   };
@@ -278,7 +284,9 @@ function buildShippedMarkdown(rows, generatedAt) {
 }
 
 function buildFunnelMarkdown(rows, generatedAt) {
-  const seeds = rows.filter((row) => row.grain === 'Seed').sort(byStatusThenAreaThenName);
+  // S2.1 fix: only Raw/Ready/Queued seeds are funnel members (see isFunnelSeed) — a shipped/scaffolded/
+  // archived seed used to leak into this view too.
+  const seeds = rows.filter(isFunnelSeed).sort(byStatusThenAreaThenName);
   const lines = [
     frontmatter('Idea funnel - Miyagi Reports', ['roadmap', 'funnel']),
     '# Idea funnel',

@@ -30,6 +30,15 @@ export const RESOLVER_BASE_URL = 'https://pmo-smalldocs-oehqqtyoia-uk.a.run.app'
 export const DEFAULT_BUCKET = 'miyagi-pmo-reports';
 export const DAILY_PREFIX = 'daily/';
 export const PACKETS_PREFIX = 'packets/';
+// reporthub-as-notion S2.1: a THIRD prefix for artifacts that need to be repeatedly overwritten in
+// place at a stable, well-known key (a live JSON/markdown snapshot the hub reads on every page load) —
+// unlike daily/ and packets/ objects, which are one-shot immutable artifacts protected by
+// `if-generation-match: 0` (see uploadViaRest/uploadViaGcloud below), live/ objects are written with
+// `allowOverwrite: true` and are expected to change on every publish run. Not covered by the bucket's
+// 90d lifecycle rule (infra/gcp/provision-report-registry.sh only expires daily/ — a live/ object is a
+// single small rolling snapshot, not an accumulating log, so "kept forever" is fine and matches
+// packets/'s default).
+export const LIVE_PREFIX = 'live/';
 
 const GCS_UPLOAD_SCOPE = 'https://www.googleapis.com/auth/devstorage.read_write';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -121,6 +130,13 @@ export function slugForArtifact({ name, date = new Date(), markdown = '' }) {
 // infra/gcp/provision-report-registry.sh's `DAILY_PREFIX="daily/"` lifecycle rule exactly.
 export function objectPathForSlug(slug) {
   return slug.startsWith('daily-') ? `${DAILY_PREFIX}${slug}.md` : `${PACKETS_PREFIX}${slug}.md`;
+}
+
+// live/<key>.<ext> — the object path for an overwrite-allowed live artifact (Story 2.1/2.2). `key` is
+// sanitized the same way an unrecognized artifact name is (see sanitizeSlugPart below) because it's
+// still a GCS object-key/URL path segment; a caller-supplied key should never be interpolated raw.
+export function liveObjectPath(key, ext = 'json') {
+  return `${LIVE_PREFIX}${sanitizeSlugPart(key)}.${ext}`;
 }
 
 export function registryUrl({ slug, baseUrl = RESOLVER_BASE_URL }) {
@@ -221,20 +237,33 @@ function isPreconditionFailure(text) {
   return /\b412\b|precondition/i.test(String(text ?? ''));
 }
 
-export async function uploadViaRest({ bucket, objectPath, markdown, token, fetchImpl = fetch }) {
+export async function uploadViaRest({
+  bucket,
+  objectPath,
+  markdown,
+  token,
+  fetchImpl = fetch,
+  contentType = 'text/markdown; charset=utf-8',
+  // Story 2.1: live/ objects are meant to be overwritten on every publish run — set true to skip the
+  // generation-0 precondition entirely. Every existing caller (daily/packets uploads) leaves this false
+  // and keeps the original never-overwrite behavior unchanged.
+  allowOverwrite = false,
+}) {
   try {
+    const headers = {
+      'Content-Type': contentType,
+      Authorization: `Bearer ${token}`,
+    };
+    // Overwrite protection: generation 0 means "only succeed if no object exists at this name yet" — an
+    // existing /r/<slug> object can never be silently replaced by a later run. Skipped for live/ objects,
+    // which are expected to change on every publish.
+    if (!allowOverwrite) headers['x-goog-if-generation-match'] = '0';
     const res = await fetchImpl(
       `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(bucket)}/o` +
         `?uploadType=media&name=${encodeURIComponent(objectPath)}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'text/markdown; charset=utf-8',
-          Authorization: `Bearer ${token}`,
-          // Overwrite protection: generation 0 means "only succeed if no object exists at this name yet"
-          // — an existing /r/<slug> object can never be silently replaced by a later run.
-          'x-goog-if-generation-match': '0',
-        },
+        headers,
         body: markdown,
         signal: AbortSignal.timeout(15000),
       }
@@ -252,22 +281,27 @@ function gcloudAvailable(spawnSyncImpl) {
   return r.status === 0;
 }
 
-export function uploadViaGcloud({ bucket, objectPath, markdown, spawnSyncImpl = spawnSync }) {
+export function uploadViaGcloud({
+  bucket,
+  objectPath,
+  markdown,
+  spawnSyncImpl = spawnSync,
+  contentType = 'text/markdown; charset=utf-8',
+  allowOverwrite = false,
+}) {
   if (!gcloudAvailable(spawnSyncImpl)) return { ok: false, reason: 'gcloud-not-available' };
   // `cp -` (stdin) has no filename to sniff a content-type from — pin it explicitly so the object serves
   // as `text/markdown` (matching the REST path's Content-Type) instead of defaulting to
   // application/octet-stream, which some renderers refuse to treat as text.
   // --if-generation-match=0: same overwrite protection as the REST path's x-goog-if-generation-match
   // header — `gcloud storage cp` supports this flag directly (confirmed: `gcloud storage cp --help`).
-  const r = spawnSyncImpl(
-    'gcloud',
-    [
-      'storage', 'cp', '-', `gs://${bucket}/${objectPath}`,
-      '--content-type=text/markdown; charset=utf-8',
-      '--if-generation-match=0',
-    ],
-    { input: markdown, encoding: 'utf8' }
-  );
+  // Skipped when allowOverwrite is true (live/ objects — see uploadViaRest's comment).
+  const args = [
+    'storage', 'cp', '-', `gs://${bucket}/${objectPath}`,
+    `--content-type=${contentType}`,
+  ];
+  if (!allowOverwrite) args.push('--if-generation-match=0');
+  const r = spawnSyncImpl('gcloud', args, { input: markdown, encoding: 'utf8' });
   if (r.status === 0) return { ok: true };
   const stderr = (r.stderr || '').trim();
   if (isPreconditionFailure(stderr)) return { ok: true, reason: 'already-exists' };
@@ -285,14 +319,18 @@ export async function uploadReportPayload({
   env = process.env,
   fetchImpl = fetch,
   spawnSyncImpl = spawnSync,
+  // Story 2.1: override the slug->path derivation (used by publishLiveArtifact below to target live/
+  // instead of daily//packets/) and the content-type (JSON payloads, not just markdown). Both default to
+  // the original packet/daily behavior, so every existing caller is unaffected.
+  objectPath = objectPathForSlug(slug),
+  contentType = 'text/markdown; charset=utf-8',
+  allowOverwrite = false,
 }) {
-  const objectPath = objectPathForSlug(slug);
-
   const key = loadServiceAccountKey(env);
   if (key) {
     const token = await getAccessTokenFromServiceAccountKey(key, { fetchImpl });
     if (token) {
-      const result = await uploadViaRest({ bucket, objectPath, markdown, token, fetchImpl });
+      const result = await uploadViaRest({ bucket, objectPath, markdown, token, fetchImpl, contentType, allowOverwrite });
       if (result.ok) return result;
       // A key was configured but the upload itself failed (bad IAM binding, wrong bucket, etc.) — still
       // worth trying the gcloud path in case ADC on this machine covers it, before giving up.
@@ -300,10 +338,39 @@ export async function uploadReportPayload({
   }
 
   if (gcloudAvailable(spawnSyncImpl)) {
-    return uploadViaGcloud({ bucket, objectPath, markdown, spawnSyncImpl });
+    return uploadViaGcloud({ bucket, objectPath, markdown, spawnSyncImpl, contentType, allowOverwrite });
   }
 
   return { ok: false, reason: 'no-credentials' };
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Story 2.1/2.2 — publish a LIVE artifact (a well-known, repeatedly-overwritten key under live/), for
+// the hub's auto-refreshed roadmap/sprint views and PMO chart views. This is deliberately a SEPARATE
+// call site from buildReportLink/upgradeArtifactLinks above: those upgrade a Telegram artifact's
+// fallback URL to a one-shot, overwrite-PROTECTED packet link; this publishes a rolling snapshot at a
+// STABLE address the hub always fetches from — no fallback-URL concept, just "did the publish
+// succeed?". Never throws (same soft-mode contract as uploadReportPayload); a routine calling this
+// degrades gracefully — the hub's client-side fetch (public/reports.js) falls back to its last-known
+// bundled snapshot on any failure, so a failed publish is a staleness issue, not an outage.
+// ---------------------------------------------------------------------------------------------------
+export async function publishLiveArtifact({
+  bucket = resolveBucket(),
+  key,
+  content,
+  ext = 'json',
+  contentType = ext === 'json' ? 'application/json; charset=utf-8' : 'text/markdown; charset=utf-8',
+  env = process.env,
+  uploader = uploadReportPayload,
+}) {
+  const objectPath = liveObjectPath(key, ext);
+  try {
+    const result = await uploader({ bucket, objectPath, markdown: content, env, contentType, allowOverwrite: true });
+    if (result?.ok) return { ok: true, objectPath };
+    return { ok: false, objectPath, reason: result?.reason || 'unknown' };
+  } catch (err) {
+    return { ok: false, objectPath, reason: `uploader-threw: ${(err && err.message) || err}` };
+  }
 }
 
 // ---------------------------------------------------------------------------------------------------

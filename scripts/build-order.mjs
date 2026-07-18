@@ -14,6 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { EPIC_STATUS_ORDER, SEED_FUNNEL_STATUSES } from './lib/roadmap-status-buckets.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(__dirname, '..');
@@ -31,13 +32,16 @@ function extract() {
 // here — a scaffolded epic's seed is funnel-only; the epic README owns its status.
 
 // Epic status → bucket. Sprints are folded into their epic via sprint_progress; seeds are the funnel.
-const EPIC_BUCKETS = [
-  { key: 'In progress', emoji: '🏗️', title: 'Building now' },
-  { key: 'Scaffolded',  emoji: '📋', title: 'Ready to build (scaffolded, not started)' },
-  { key: 'Shipped',     emoji: '✅', title: 'Shipped' },
-];
-// Seeds not yet scaffolded = the funnel.
-const SEED_FUNNEL = new Set(['Raw', 'Ready', 'Queued']);
+// The bucket KEYS/ORDER and the seed-funnel status set live in scripts/lib/roadmap-status-buckets.mjs —
+// shared with pmo-report-hub-data.mjs (reporthub-as-notion S2.1) so the hub's live views can never
+// independently drift from this board's counts. Emoji/title here are this board's own presentation.
+const EPIC_BUCKET_META = {
+  'In progress': { emoji: '🏗️', title: 'Building now' },
+  Scaffolded: { emoji: '📋', title: 'Ready to build (scaffolded, not started)' },
+  Shipped: { emoji: '✅', title: 'Shipped' },
+};
+const EPIC_BUCKETS = EPIC_STATUS_ORDER.map((key) => ({ key, ...EPIC_BUCKET_META[key] }));
+const SEED_FUNNEL = SEED_FUNNEL_STATUSES;
 
 function line(r) {
   const bits = [`[${r.name}](../../${r.doc_link.replace(/^Roadmap\//, '')})`];

@@ -2,20 +2,24 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   DEFAULT_BUCKET,
+  LIVE_PREFIX,
   RESOLVER_BASE_URL,
   buildReportLink,
   contentSuffix,
   dailyStorySlug,
   dateStamp,
+  liveObjectPath,
   objectPathForSlug,
   pmoMonthlySlug,
   pmoSheetSlug,
   pmoWeeklySlug,
+  publishLiveArtifact,
   registryUrl,
   resolveBucket,
   sanitizeSlugPart,
   shouldFallbackToUrlHash,
   slugForArtifact,
+  uploadReportPayload,
   uploadViaGcloud,
   uploadViaRest,
   upgradeArtifactLinks,
@@ -348,4 +352,143 @@ test('uploadViaGcloud still fails on a genuine non-precondition error', () => {
   assert.equal(result.ok, false);
   assert.match(result.reason, /gcloud-cp-failed/);
   assert.match(result.reason, /403 Forbidden/);
+});
+
+// ---- Story 2.1: live/ objects — allowOverwrite skips the never-overwrite precondition ----------------
+
+test('liveObjectPath lives under live/, sanitizes the key, and defaults to a .json extension', () => {
+  assert.equal(liveObjectPath('roadmap-status'), `${LIVE_PREFIX}roadmap-status.json`);
+  assert.equal(liveObjectPath('Weird Key!!', 'md'), `${LIVE_PREFIX}weird-key.md`);
+});
+
+test('uploadViaRest with allowOverwrite:true omits the x-goog-if-generation-match header', async () => {
+  let seenHeaders;
+  const result = await uploadViaRest({
+    bucket: 'b', objectPath: 'live/roadmap-status.json', markdown: '{}', token: 'tok', allowOverwrite: true,
+    fetchImpl: async (url, opts) => {
+      seenHeaders = opts.headers;
+      return { ok: true, status: 200 };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal('x-goog-if-generation-match' in seenHeaders, false);
+});
+
+test('uploadViaRest respects a custom contentType', async () => {
+  let seenHeaders;
+  await uploadViaRest({
+    bucket: 'b', objectPath: 'live/x.json', markdown: '{}', token: 'tok',
+    contentType: 'application/json; charset=utf-8', allowOverwrite: true,
+    fetchImpl: async (url, opts) => {
+      seenHeaders = opts.headers;
+      return { ok: true, status: 200 };
+    },
+  });
+  assert.equal(seenHeaders['Content-Type'], 'application/json; charset=utf-8');
+});
+
+test('uploadViaGcloud with allowOverwrite:true omits --if-generation-match=0', () => {
+  let seenArgs;
+  uploadViaGcloud({
+    bucket: 'b', objectPath: 'live/x.json', markdown: '{}', allowOverwrite: true,
+    spawnSyncImpl: (cmd, args) => {
+      seenArgs = args;
+      return { status: 0 };
+    },
+  });
+  assert.equal(seenArgs.includes('--if-generation-match=0'), false);
+});
+
+test('default uploadViaRest/uploadViaGcloud calls are unaffected (allowOverwrite defaults to false)', async () => {
+  let seenHeaders;
+  await uploadViaRest({
+    bucket: 'b', objectPath: 'packets/x.md', markdown: '# x', token: 'tok',
+    fetchImpl: async (url, opts) => { seenHeaders = opts.headers; return { ok: true, status: 200 }; },
+  });
+  assert.equal(seenHeaders['x-goog-if-generation-match'], '0');
+
+  let seenArgs;
+  uploadViaGcloud({
+    bucket: 'b', objectPath: 'packets/x.md', markdown: '# x',
+    spawnSyncImpl: (cmd, args) => { seenArgs = args; return { status: 0 }; },
+  });
+  assert.ok(seenArgs.includes('--if-generation-match=0'));
+});
+
+test('uploadReportPayload accepts an objectPath override (bypasses slug->path derivation)', async () => {
+  let seenPath;
+  const result = await uploadReportPayload({
+    bucket: 'b',
+    objectPath: 'live/custom.json',
+    markdown: '{}',
+    env: { GOOGLE_APPLICATION_CREDENTIALS_JSON: '' },
+    spawnSyncImpl: (cmd, args) => {
+      seenPath = args.find((a) => a.startsWith('gs://'));
+      return cmd === 'gcloud' && args[0] === '--version' ? { status: 0 } : { status: 0 };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(seenPath, 'gs://b/live/custom.json');
+});
+
+// ---- publishLiveArtifact: the Story 2.1/2.2 orchestrator, no fallback-URL concept, never throws -------
+
+test('publishLiveArtifact uploads to live/<key>.<ext> with allowOverwrite:true', async () => {
+  let seenArgs;
+  const result = await publishLiveArtifact({
+    bucket: 'b',
+    key: 'roadmap-status',
+    content: '{"a":1}',
+    uploader: async (args) => {
+      seenArgs = args;
+      return { ok: true };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.objectPath, 'live/roadmap-status.json');
+  assert.equal(seenArgs.allowOverwrite, true);
+  assert.equal(seenArgs.objectPath, 'live/roadmap-status.json');
+  assert.equal(seenArgs.contentType, 'application/json; charset=utf-8');
+});
+
+test('publishLiveArtifact supports a markdown ext/contentType for chart views', async () => {
+  let seenArgs;
+  const result = await publishLiveArtifact({
+    bucket: 'b',
+    key: 'pmo-live-metrics',
+    content: '# chart doc',
+    ext: 'md',
+    uploader: async (args) => {
+      seenArgs = args;
+      return { ok: true };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.objectPath, 'live/pmo-live-metrics.md');
+  assert.equal(seenArgs.contentType, 'text/markdown; charset=utf-8');
+});
+
+test('publishLiveArtifact degrades to { ok: false, reason } on upload failure, never throws', async () => {
+  const result = await publishLiveArtifact({
+    bucket: 'b',
+    key: 'roadmap-status',
+    content: '{}',
+    uploader: async () => ({ ok: false, reason: 'no-credentials' }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'no-credentials');
+});
+
+test('publishLiveArtifact never throws even when the uploader itself REJECTS', async () => {
+  const result = await publishLiveArtifact({
+    bucket: 'b',
+    key: 'roadmap-status',
+    content: '{}',
+    uploader: async () => {
+      throw new Error('boom');
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /uploader-threw/);
+  assert.match(result.reason, /boom/);
 });

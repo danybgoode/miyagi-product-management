@@ -131,3 +131,45 @@ test('buildReportArtifacts treats monthly as packet plus sheet', () => {
   const artifacts = buildReportArtifacts(metrics, parseArgs(['--monthly']));
   assert.deepEqual(artifacts.map((a) => a.name), ['monthly', 'sheet']);
 });
+
+// reporthub-as-notion S2.2 acceptance: "weekly PMO Telegram message links a chart view." This is
+// already true today — scripts/pmo/templates/weekly-story-deck.md embeds ```chart fenced blocks, and
+// Sprint 1's report-registry upgrades that artifact's URL to a short /r/<slug> link before it reaches
+// Telegram (see pmo-report.mjs's main()). Locking it here so a future template edit that accidentally
+// drops the chart block fails a test, not a live Telegram send.
+test('buildReportArtifacts: the weekly artifact embeds at least one chart fenced block', () => {
+  const metrics = {
+    window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
+    throughput: { shippedStories: 1, shippedEpics: 1, closedEpics: 1 },
+    prCycleTime: { medianHours: 2, averageHours: 3, p90Hours: 4 },
+    epicLeadTime: { medianDays: 5, averageDays: 6 },
+    deployFrequency: { total: 7 },
+    changeFailProxy: { count: 0 },
+    docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
+  };
+  const [weekly] = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: false });
+  const blocks = [...weekly.markdown.matchAll(/```chart\n(.+?)\n/g)].map((m) => m[1]);
+  assert.ok(blocks.length >= 1, 'weekly deck must embed at least one ```chart fenced block');
+  for (const block of blocks) assert.ok(JSON.parse(block).type, 'each chart block must be valid, typed JSON');
+});
+
+// reporthub-as-notion S2.2 acceptance: "monthly artifact mode stays stateless (window log untouched —
+// shouldPersistWindow test extended)." The monthly artifact ALSO embeds a chart block (a snapshot bar
+// chart + benchmarks table); this test ties that chart-bearing artifact production directly to the
+// statelessness guarantee, so the two can't silently decouple (e.g. a future change that starts
+// persisting the window whenever a chart artifact is built).
+test('buildReportArtifacts: the monthly artifact embeds a chart block, and shouldPersistWindow stays false for --monthly', () => {
+  const metrics = {
+    window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
+    throughput: { shippedStories: 1, shippedEpics: 1, closedEpics: 1 },
+    prCycleTime: { medianHours: 2, averageHours: 3, p90Hours: 4 },
+    epicLeadTime: { medianDays: 5, averageDays: 6 },
+    deployFrequency: { total: 7 },
+    changeFailProxy: { count: 0 },
+    docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
+  };
+  const args = parseArgs(['--monthly']);
+  const [monthly] = buildReportArtifacts(metrics, args);
+  assert.match(monthly.markdown, /```chart/);
+  assert.equal(shouldPersistWindow(args), false, 'a chart-bearing monthly artifact must not advance the PMO window log');
+});
