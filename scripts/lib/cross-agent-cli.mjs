@@ -36,10 +36,10 @@ export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 // Harmless here since AGY_MODEL/AGY_FALLBACK_MODEL below are always valid, listed model names (checked via
 // `agy models`), but it means a future typo in either constant would silently review with the WRONG model
 // instead of failing loud — watch for that if either constant is ever edited.
-// agy-doctor: last verified 2026-07-17 against 1.1.3.
+// agy-doctor: last verified 2026-07-18 against 1.1.4.
 //   ^ machine-managed marker — `node scripts/agy-doctor.mjs --fix` rewrites it (with the constant
 //   below) after a green live contract probe. Don't hand-edit the marker's shape.
-export const AGY_PINNED = '1.1.3';
+export const AGY_PINNED = '1.1.4';
 
 // agy's `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
 // nothing (exit 0, empty stdout — the error lands only in agy's log, see --log-file) when the model is
