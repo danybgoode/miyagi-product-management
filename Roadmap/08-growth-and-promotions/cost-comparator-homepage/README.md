@@ -88,4 +88,6 @@ pricing is researched + cited **at build time** (web-verify, never training memo
 ## Sprints
 - [sprint-1.md](sprint-1.md) — Calculator + dataset + teaser.
 - [sprint-2.md](sprint-2.md) — Report + consultant mode + agent surface. 🟡 Built, [PR #278](https://github.com/danybgoode/miyagisanchezcommerce/pull/278) open (not merged) — owed Daniel's phone smoke.
-- [sprint-3.md](sprint-3.md) — URL analyzer (conditional — rides migrations parity module).
+- [sprint-3.md](sprint-3.md) — URL analyzer (conditional — rides migrations parity module). 🟡
+  Built, [PR #280](https://github.com/danybgoode/miyagisanchezcommerce/pull/280) open (not
+  merged) — condition confirmed met, owed Daniel's live-URL browser smoke.

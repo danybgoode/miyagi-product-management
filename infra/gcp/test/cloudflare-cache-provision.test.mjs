@@ -51,3 +51,17 @@ test('cloudflare-cache-provision.mjs: scoped to the apex/www host only, never a 
   assert.match(src, /http\.host eq "www\.\$\{DOMAIN\}"/, 'expected an exact-match host check against www.<DOMAIN>')
   assert.doesNotMatch(src, /http\.host contains/, 'a "contains" host match could accidentally catch a custom domain or shop subdomain')
 })
+
+test('cloudflare-cache-provision.mjs: the /api/img proxy rule exists, exact-path, respect-origin, own description (hyper-performant-website S1 infra ask)', () => {
+  assert.match(src, /IMG_PROXY_RULE_DESCRIPTION = 'miyagi-web edge cache — \/api\/img proxy variants/)
+  // Exact path match — a prefix/contains match could catch an unrelated future /api/img* sibling.
+  assert.match(src, /http\.request\.uri\.path eq "\/api\/img"/)
+  // Both own rules must be filtered by description before the PUT so a re-run stays idempotent
+  // and preserves hand-added rules.
+  assert.match(src, /OWN_DESCRIPTIONS = new Set\(\[RULE_DESCRIPTION, IMG_PROXY_RULE_DESCRIPTION\]\)/)
+  // The img rule must respect origin Cache-Control (the route marks success immutable and errors
+  // uncacheable) — never a forced edge TTL that would cache 4xx/5xx.
+  const imgIdx = src.indexOf('const imgProxyRule')
+  const imgBlock = src.slice(imgIdx, src.indexOf('}', src.indexOf('edge_ttl', imgIdx)) + 1)
+  assert.match(imgBlock, /respect_origin/)
+})

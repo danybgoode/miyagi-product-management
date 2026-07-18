@@ -824,6 +824,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   mid-build. *(2026-07-10, frontend-vercel-to-cloudrun S4.3.)*
 
 ## Repo & deploy hygiene
+- **GitHub Actions minutes only bill on PRIVATE repos — a chatty private docs repo can silently
+  eat the whole plan while the busy public app repo costs nothing.** The 2,000-min/month plan hit
+  100% mid-cycle (2026-07-18); the breakdown showed the private root repo was the entire bill
+  (389 build-order-guard + 321 notion-sync at ~5-6 min each + 155 notion-pr-sync runs, mostly
+  pre-consolidation), while the public app repo's 408 CI runs were free. Fixes, in order of
+  leverage: (1) make docs/tooling repos PUBLIC when nothing secret is tracked (root repo flipped
+  2026-07-18 after a credentials grep — repo secrets survive the flip); (2) the local-first push
+  (pre-commit/pre-push hooks + PR-only consolidated guards) — already done 2026-07-16, it's what
+  capped the bleed; (3) never give a chatty workflow a `push: main` trigger on a private repo.
+  **Quota-exhaustion protocol** while waiting on a flip/reset: the builder-run local gate + the
+  green Vercel preview (Vercel-side, unaffected) are the merge signal — state "CI quota exhausted,
+  local gate green: <details>" in the PR body. *(2026-07-18, multi-epic batch.)*
 - **An npm `prepare` script runs on EVERY `npm ci` — including inside Docker build stages, where
   git (and your repo) don't exist. A git-touching `prepare` must end in `|| true`.** The
   local-first pre-push hook chore (frontend #264 / backend #96, 2026-07-16) added

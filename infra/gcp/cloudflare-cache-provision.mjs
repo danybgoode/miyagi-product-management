@@ -71,6 +71,16 @@ const CACHE_RULE_EXPRESSION = `${HOST_EXPRESSION} and (${PATH_EXPRESSION})`
 
 const RULE_DESCRIPTION = 'miyagi-web edge cache — confirmed-static paths only (Sprint 3, deploy-pipeline-tuning)'
 
+// hyper-performant-website S1's image proxy (/api/img) — extension-less, so Cloudflare's default
+// file-extension caching never touches it and EVERY request re-fetched + re-encoded on Cloud Run
+// (13-14 s per variant, cf-cache-status: DYNAMIC — measured live 2026-07-18, the exact miss the
+// nightly browser-smoke timeouts surfaced). The route itself marks success responses
+// `public, max-age=31536000, immutable` (URLs are content-addressed by url+w+q+format) and its
+// error responses carry NO Cache-Control — so respect_origin caches exactly the good encodes and
+// never the 4xx/5xx paths. Same-host scoping as the static rule.
+const IMG_PROXY_RULE_DESCRIPTION = 'miyagi-web edge cache — /api/img proxy variants (S1, hyper-performant-website)'
+const IMG_PROXY_EXPRESSION = `${HOST_EXPRESSION} and (http.request.uri.path eq "/api/img")`
+
 ;(async () => {
   const zoneList = await cfApi(`/zones?name=${encodeURIComponent(DOMAIN)}`)
   const zone = zoneList.result?.[0]
@@ -105,14 +115,25 @@ const RULE_DESCRIPTION = 'miyagi-web edge cache — confirmed-static paths only 
     description: RULE_DESCRIPTION,
     enabled: true,
   }
-  const otherRules = existingRules.filter((r) => r.description !== RULE_DESCRIPTION)
-  const newRules = [...otherRules, ownRule]
+  const imgProxyRule = {
+    expression: IMG_PROXY_EXPRESSION,
+    action: 'set_cache_settings',
+    action_parameters: {
+      cache: true,
+      edge_ttl: { mode: 'respect_origin' },
+    },
+    description: IMG_PROXY_RULE_DESCRIPTION,
+    enabled: true,
+  }
+  const OWN_DESCRIPTIONS = new Set([RULE_DESCRIPTION, IMG_PROXY_RULE_DESCRIPTION])
+  const otherRules = existingRules.filter((r) => !OWN_DESCRIPTIONS.has(r.description))
+  const newRules = [...otherRules, ownRule, imgProxyRule]
 
   await cfApi(`/zones/${zone.id}/rulesets/phases/http_request_cache_settings/entrypoint`, {
     method: 'PUT',
     body: JSON.stringify({ rules: newRules }),
   })
-  console.log(`  = cache rule in place for ${CONFIRMED_STATIC_PATHS.join(', ')} (${otherRules.length} other rule(s) preserved untouched)`)
+  console.log(`  = cache rules in place for ${CONFIRMED_STATIC_PATHS.join(', ')} + /api/img (${otherRules.length} other rule(s) preserved untouched)`)
 
-  console.log('\n✓ Done. Verify: curl -sI https://miyagisanchez.com/ (run twice — first may be MISS, second should show cf-cache-status: HIT)')
+  console.log('\n✓ Done. Verify: curl -sI https://miyagisanchez.com/ and any /api/img?url=…&w=… URL (run twice — first MISS, second should show cf-cache-status: HIT)')
 })().catch((e) => { console.error(e.message || e); process.exit(1) })
