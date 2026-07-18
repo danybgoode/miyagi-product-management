@@ -176,6 +176,26 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-17/18 — Six-epic batch SHIPPED across two days (the third Fable 5 multi-epic
+  experiment: pre-authorized merges, Fable orchestrates + Sonnet builds + codex/fresh-reviewer
+  concurrent review): comparador de costos (3 sprints), hyper-performant website (2 sprints),
+  UI refresh (3 sprints), ReportHub S1+S2, build-order CI self-heal, and the NEXT_PUBLIC audit
+  close — 16 PRs merged across 4 repos.** Standout finds: GTM analytics had been silently DARK in
+  prod since the 07-10 Cloud Run cutover (Vercel-only env var; fixed, live-verified, and the whole
+  class closed by a source-scan gate); the image proxy went from 13–16 s/request to 0.3 s with an
+  edge Cache Rule (MISS→HIT proven live); PageSpeed's 2.6 MB image + 204 KiB render-blocking CSS
+  findings are gone from prod. New durable tooling: `prose-draft.mjs` (cheap-model close-out
+  drafts, plugin-ported to dobby-foundation), the build-order guard now self-heals, and the
+  GitHub Actions quota crisis (private root repo ate 2000 min/mo) is structurally fixed — root
+  repo now public + local-first gates. Cross-agent review caught real bugs in 5 of 8 app PRs
+  (OOM vector, SSRF redirect bypass, a guard that would have red-flagged its own fix, false
+  "verificado" citations). All Daniel smokes green incl. the Stripe-4242 checkout pass.
+  ReportHub S3 (Notion decommission) deliberately open behind its 2–4 week parallel-run gate. See
+  [08 › cost-comparator](08-growth-and-promotions/cost-comparator-homepage/),
+  [09 › hyper-performant-website](09-platform-infra/hyper-performant-website/),
+  [09 › ui-refresh-launch](09-platform-infra/ui-refresh-launch/),
+  [09 › reporthub-as-notion](09-platform-infra/reporthub-as-notion/),
+  [09 › build-order-ci-self-heal](09-platform-infra/build-order-ci-self-heal/).
 - **2026-07-16 — Four-epic batch: mschz full coverage + agent-readability hardening + MCP parity
   (config) SHIPPED; Miyagi Partners merged dark (all 3 sprints) — all in ONE session (the second Fable 5
   multi-epic experiment, merges pre-authorized).** Overlap validation up front cut real work:

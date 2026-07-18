@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: ui-refresh-launch
 ---
 
@@ -43,9 +43,9 @@ Frontend only, per-sprint merges. Sprint 1 touches `globals.css`/tokens — cros
 every merge (no budget regression). Checkout polish (3.2) is HIGH: Daniel merges, real-money smoke owed.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough
-- [ ] This README marked ✅; sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written · poster updated · memory updated · learnings promoted
-- [ ] Kill-switch: **carve-out — pure visual layer, revert = `git revert` of token commits; no runtime seam**
-- [ ] Feature branch deleted; **frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough
+- [x] This README marked ✅; sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written · poster updated · memory updated · learnings promoted
+- [x] Kill-switch: **carve-out — pure visual layer, revert = `git revert` of token commits; no runtime seam**
+- [x] Feature branch deleted; **frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)

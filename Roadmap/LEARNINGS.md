@@ -859,6 +859,24 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   tagged by SHA — no rebuild needed). After back-to-back merges, verify prod serves the LAST
   commit's behavior (or check `gcloud builds log`'s "revision [...] deployed" lines against merge
   order), don't stop at both builds being SUCCESS. *(2026-07-17, miyagi-partners S2/S3 merges.)*
+- **A perf/transfer budget guard must measure what it polices.** Playwright's `body()` returns
+  DECOMPRESSED bytes — a raw-byte budget red-flags a data-URI-heavy asset that costs 15 KiB
+  brotli on the wire (the guard would have failed on its own fix post-deploy). Scope
+  render-blocking budgets to the third-party class they exist to catch (or measure real transfer
+  size), and verify the guard against the BUILT artifact before claiming "self-resolves at
+  deploy" — the reviewer who built the artifact is the one who caught it. *(2026-07-18,
+  hyper-performant-website S2, PR #279.)*
+- **An extension-less dynamic route gets zero default CDN caching** — a proxy can set immutable
+  Cache-Control and still re-execute origin-side on every request (13–16 s/request live) until an
+  explicit Cache Rule exists for its path. Ship the edge rule (idempotent script + invariant
+  test) in the same wave as the route, and prove it with a MISS→HIT probe, not response headers.
+  *(2026-07-18, hyper-performant-website S1 — /api/img, MISS 16.2 s → HIT 0.3 s.)*
+- **When honesty IS the product claim, guard the presentation layer's promises, not just the
+  data** — a CI guard on `{source, verifiedAt}` per figure passed while the UI promised
+  source-on-hover it didn't render and exports cited "verificado" for user-EDITED figures. Both
+  caught only by cross-agent review. Corollary: don't wire a prefill just because the data exists
+  (catalog size ≠ sales volume) — fabricating a plausible number is worse than an empty field.
+  *(2026-07-18, cost-comparator S1–S3.)*
 - **A guard on a DERIVED artifact should self-heal, not fail.** A stale generated file
   (`BUILD-ORDER.md`) is a forgotten regen command, not a judgment call — so the guard's job is to
   run the generator, not to red the next passer-by's PR. Heal at the cheapest layer first

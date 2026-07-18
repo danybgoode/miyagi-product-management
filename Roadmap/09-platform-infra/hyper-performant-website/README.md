@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: hyper-performant-website
 ---
 
@@ -38,8 +38,8 @@ Frontend only; Story 1.1 may add a Cloudflare rule / image-resizing config → s
 Nothing money-path; images degrade gracefully (old URLs keep serving).
 
 ## Definition of Done (epic)
-- [ ] All sprints merged + smoke-tested; **PageSpeed mobile re-run ≥ 90** (Daniel, URL-level)
-- [ ] Each `sprint-N.md` has its smoke walkthrough
-- [ ] This README marked ✅; sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written · poster updated · memory updated · learnings promoted
-- [ ] Feature branch deleted; **frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)
+- [x] All sprints merged + smoke-tested; **PageSpeed mobile re-run ≥ 90** (Daniel, URL-level)
+- [x] Each `sprint-N.md` has its smoke walkthrough
+- [x] This README marked ✅; sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written · poster updated · memory updated · learnings promoted
+- [x] Feature branch deleted; **frontmatter `status: shipped`** (run `node scripts/build-order.mjs`)

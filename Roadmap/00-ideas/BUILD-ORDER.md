@@ -16,16 +16,13 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (6)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
-- [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 7/8 stories · risk: Low · Wave 3
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
-- [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 6/6 stories · risk: Low · #4
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
-- [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 0/7 stories · risk: High · #6
 
-## ✅ Shipped (111)
+## ✅ Shipped (114)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -91,6 +88,7 @@
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
 - [Admin content & announcements — runtime marketing copy + platform banners ✅ shipped 2026-07-09](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 8/8 stories
 - [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 12/12 stories · risk: High · tbd
+- [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 8/8 stories · risk: Low · Wave 3
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 3/3 stories · risk: Low
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 3/3 stories
 - [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 19/19 stories
@@ -119,6 +117,7 @@
 - [Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 17/17 stories · risk: High · Next up
 - [GitHub Actions minutes — local-first checks, GH Actions as fallback](../../09-platform-infra/github-actions-local-first/README.md) — 09 Platform-infra · 1/1 stories
 - [Groom archetype-lens wiring — optional Stage-2 archetype tag](../../09-platform-infra/groom-archetype-lens/README.md) — 09 Platform-infra · 2/2 stories
+- [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 6/6 stories · risk: Low · #4
 - [In-house feature flags (replace Flagsmith)](../../09-platform-infra/feature-flags-inhouse/README.md) — 09 Platform-infra · 7/7 stories
 - [Model split — Sonnet 5 builds · Opus 4.8 plans · escalate-don't-guess ✅ COMPLETE 2026-07-01](../../09-platform-infra/model-split-sonnet5-execution/README.md) — 09 Platform-infra · 1/1 stories
 - [Navigation & Settings Reorg](../../09-platform-infra/navigation-settings-reorg/README.md) — 09 Platform-infra · 9/9 stories · risk: High
@@ -134,6 +133,7 @@
 - [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 4/4 stories
 - [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 3/3 stories
 - [Static marketplace shell — kill the per-request homepage function ✅](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 9/9 stories
+- [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 7/7 stories · risk: High · #6
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 3/3 stories · risk: Low · Wave 0 Enablers
 - [Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 5/5 stories · risk: Low · Wave 1
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
@@ -150,7 +150,7 @@
 - [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](seeds/ssrf-dns-pinning.md) — Raw · Chore
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (5)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -159,10 +159,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
-| Comparador de costos — the stacking-costs sales tool on the homepage | Scaffolded | In progress |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
-| Hyper-performant website | Scaffolded | Shipped |
-| UI refresh before launch | Scaffolded | In progress |
 
 ---
-_Epics: 121 · seeds in funnel: 8 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 121 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

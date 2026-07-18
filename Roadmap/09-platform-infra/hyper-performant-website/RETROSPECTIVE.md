@@ -2,9 +2,8 @@
 
 _Closed: 2026-07-18_
 
-> Code-complete close (S1 PR #276 · S2 PR #279, both live-verified). The one outstanding DoD item —
-> Daniel's PageSpeed mobile re-run (the acceptance number) — is tracked in Gaps below; the epic
-> README stays `in-progress` until it lands.
+> Full close (S1 PR #276 · S2 PR #279, both live-verified). Daniel's smokes — PageSpeed re-run,
+> sign-in, icon spot-check — reported done and green 2026-07-18.
 
 ## What shipped
 - **S1 — Images (PR #276, merged 2026-07-17, live-verified).** Next's built-in `/_next/image`
@@ -52,11 +51,7 @@ _Closed: 2026-07-18_
   LEARNINGS `git merge origin/main` rule, again).
 
 ## Gaps / follow-ups (owed)
-- **Daniel: PageSpeed mobile re-run** — the epic's acceptance number (Perf ≥ 90 · LCP < 2.5 s ·
-  payload < 1.5 MB · TBT < 200 ms). Warm the first-row image variants first (first encode per
-  variant is 4–22 s; edge-cached after).
-- **Daniel: one real sign-in on prod** (Clerk lazy-mount is auth-adjacent) + visual icon
-  spot-check across home/browse/PDP/seller portal.
+- ~~Daniel: PageSpeed mobile re-run + sign-in + icon spot-check~~ — **done and green 2026-07-18.**
 - `scripts/backfill-hotlinked-images.mjs --apply` + `scripts/r2-set-cache-control.mjs --apply`
   (need R2/Supabase/Medusa creds; report-only runs are clean).
 - `lib/image-ingest.ts` still uses `redirect:'follow'` with an initial-URL-only guard (same
