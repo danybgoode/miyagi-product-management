@@ -139,7 +139,7 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (8)
 
 - [AI-adoption maturity: benchmark vs the Steps-of-AI-Adoption ladder + the harness plan](seeds/ai-adoption-maturity-benchmark.md) — Ready · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
@@ -147,6 +147,7 @@
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [PDP: single-image listings get lightbox + back/share chrome](seeds/pdp-single-image-gallery-parity.md) — Ready · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
+- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](seeds/ssrf-dns-pinning.md) — Raw · Chore
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (5)
@@ -164,4 +165,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | UI refresh before launch | Scaffolded | In progress |
 
 ---
-_Epics: 121 · seeds in funnel: 7 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 121 · seeds in funnel: 8 · status drift: 5. Regenerate with `node scripts/build-order.mjs`._

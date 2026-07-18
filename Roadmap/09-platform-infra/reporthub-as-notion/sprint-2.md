@@ -1,6 +1,6 @@
 # ReportHub as the Notion replacement — Sprint 2: Live views (the Notion parity layer)
 
-**Status:** 🟡 built + tested, PRs open — Daniel merges + deploys (both stories touch the hub, no
+**Status:** ✅ shipped — root #98 + fork #4 merged, revision pmo-smalldocs-00005-pg7 deployed 2026-07-18; first publish live (446 items, /api/live/roadmap-status 200, /r/pmo-live-metrics 200)
 runtime flag; deploy order matters, see handoff below)
 
 ## Stories
