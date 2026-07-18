@@ -99,6 +99,21 @@ test('summarizeRoadmapRows counts public roadmap grains', () => {
   });
 });
 
+// S2.1 regression: a seed that already shipped/scaffolded is NOT a funnel member, even though it's
+// still grain:'Seed' — matches Roadmap/00-ideas/BUILD-ORDER.md's "Funnel" definition exactly (both this
+// module and scripts/build-order.mjs import the funnel-status set from
+// scripts/lib/roadmap-status-buckets.mjs, so this can't silently re-diverge).
+test('summarizeRoadmapRows.funnelSeeds excludes seeds that have shipped/scaffolded/archived', () => {
+  const rowsWithGraduatedSeed = [
+    ...ROWS,
+    { name: 'Graduated idea', slug: 'graduated-idea', grain: 'Seed', status: 'Shipped', area: '09 Platform-infra', doc_link: 'Roadmap/00-ideas/seeds/graduated-idea.md' },
+    { name: 'Retired idea', slug: 'retired-idea', grain: 'Seed', status: 'Archived', area: '09 Platform-infra', doc_link: 'Roadmap/00-ideas/seeds/retired-idea.md' },
+  ];
+  const stats = summarizeRoadmapRows(rowsWithGraduatedSeed);
+  assert.equal(stats.seeds, 3, 'all 3 seed rows still counted as seeds');
+  assert.equal(stats.funnelSeeds, 1, 'only the Ready seed is a funnel member');
+});
+
 test('buildRoadmapItemMarkdown emits a polished SmallDocs report, not raw markdown', () => {
   const md = buildRoadmapItemMarkdown(ROWS[0], {
     markdown: DOCS.get(ROWS[0].doc_link),

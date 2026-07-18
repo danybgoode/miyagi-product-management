@@ -10,8 +10,12 @@ Sprint: `Roadmap/09-platform-infra/pmo-operational-reports/sprint-2.md`
 - URL: `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`
 - Canonical Cloud Run URL: `https://pmo-smalldocs-91083034475.us-east4.run.app`
 - Fork: `https://github.com/danybgoode/smalldocs`
-- Deployed fork commit: `eee8803b784f0577d15227e29d0d56fff317f1a8`
-- Latest deployed revision: `pmo-smalldocs-00003-zkb` (2026-07-14)
+- Deployed fork commit: `494997c4f7668921636f4043631263b11bdc0f79` (PR #3, `feat/report-registry-resolver`)
+- Latest deployed revision: `pmo-smalldocs-00004-kbc` (2026-07-17) — env includes
+  `REPORT_REGISTRY_BUCKET=miyagi-pmo-reports`
+- Verified live 2026-07-18 (this session, read-only): `/trust/manifest` reports commit `494997c...`;
+  `/` and `/reports` return `HTTP 200`; `/api/live/roadmap-status` returns `HTTP 404` (expected —
+  reporthub-as-notion S2.1's `/api/live/:key` route is NOT on this revision yet, see below).
 
 ## Operating mode
 
@@ -97,6 +101,49 @@ system (`short-links/db.js`, gated behind `SDOCS_ENABLE_STATEFUL_APIS`) — it h
   run the `/api/report/:slug` + `/r/:slug` coverage against a local fixture, fully offline. Never set
   this in a deployed environment.
 
+## Live-view registry (`/api/live/<key>`, reporthub-as-notion S2.1)
+
+Read-through proxy from `/api/live/<key>` to a `live/<key>.json` object in the SAME GCS report registry
+bucket as the `/r/<slug>` resolver above — the JSON counterpart, for a payload the hub's client-side SPA
+state needs raw (not rendered through the `/docs` markdown viewer). Also NOT part of the stateful
+short-link system; no state of its own.
+
+- Fork source: `report-registry.js`'s `fetchLiveJson`/`liveObjectPath`/`buildLiveObjectUrl` + the
+  `/api/live/:key` route in `server.js`.
+- Write side: `scripts/publish-live-views.mjs` in danybgoode/miyagi-product-management, invoked by a
+  routine (nightly, or on-merge) — env-var config only (`REPORT_REGISTRY_BUCKET`,
+  `GOOGLE_APPLICATION_CREDENTIALS_JSON`/`GOOGLE_APPLICATION_CREDENTIALS`, same two `report-registry.mjs`
+  already reads). Publishes `live/roadmap-status.json` (the full hosted `/reports` library payload,
+  `scripts/lib/pmo-report-hub-data.mjs`'s `buildReportHubData` output, refreshed WITHOUT a fork
+  redeploy) with `allowOverwrite: true` — unlike every other registry write, this object is expected to
+  change on every publish run, not be a one-shot immutable artifact.
+- Client side: `public/reports.js` fetches `/api/live/roadmap-status` FIRST and falls back to the
+  build-time-baked `/public/reports-data.json` on ANY failure (network error, 404 nothing published
+  yet, malformed JSON) — same carve-out philosophy as the `/r/<slug>` fallback: an additive read path,
+  no flag, the hub still renders (just as fresh as the last redeploy) if the live fetch fails. The
+  `#generated-at` line labels which source rendered (`en vivo` vs `instantanea local, no en vivo`) so a
+  browser smoke can tell at a glance.
+- The PMO trend/chart view (`scripts/lib/pmo-trend-view.mjs`'s throughput/DORA-ish/doc-ops charts,
+  built from the `claude/pmo-reports-log` window history) is published by the SAME script to a STABLE
+  `packets/pmo-live-metrics.md` slug (also `allowOverwrite: true`) — this one needs NO fork-side change
+  at all, because it resolves through the EXISTING, already-deployed `/r/pmo-live-metrics` resolver
+  (any non-`daily-` slug already maps to `packets/<slug>.md` on the read side).
+- Error shapes match `/api/report/:slug`'s: `400 {"error":"invalid_key"}` (path traversal/bad chars),
+  `404 {"error":"not_found"}` (nothing published at this key yet), `502 {"error":"upstream_error"}`
+  (network/non-200 from GCS), `502 {"error":"invalid_json"}` (object exists but isn't parseable JSON —
+  should never happen in steady state; guards a publish caught mid-write).
+- Test-only env var: `REPORT_REGISTRY_STORAGE_BASE_URL` (same override as the `/r/<slug>` resolver) lets
+  `test/test-http.js` cover `/api/live/:key` fully offline.
+
+**Status as of 2026-07-18: built, unit+integration tested (`node test/run.js`, 1106/1106 green — 9 new
+vs. the 1097 baseline; `npx playwright test test/reports-library.spec.js`, 5/5 green including 2 new
+live/fallback specs), and live-smoked against the real `gs://miyagi-pmo-reports-staging` bucket from the
+root repo side (`scripts/publish-live-views.mjs` published + a second run proved the overwrite, both
+verified via `gcloud storage objects describe`). NOT YET deployed to `pmo-smalldocs` — PR open on the
+fork (danybgoode/smalldocs, branch `feat/live-views`). `/api/live/roadmap-status` against the currently
+deployed revision correctly 404s (route not present yet) — confirmed this session, read-only, no
+redeploy performed.**
+
 ## Smoke
 
 ```bash
@@ -106,6 +153,11 @@ curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/short/example
 # report registry resolver (S1.2) — once the fork PR is merged + deployed:
 curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/report/does-not-exist-xyz   # -> 404 not_found
 curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/r/pmo-weekly-<a-real-YYYY-MM-DD> # -> 200 HTML
+# live-view registry (S2.1) — once danybgoode/smalldocs#<PR> (feat/live-views) is merged + deployed,
+# AND scripts/publish-live-views.mjs has run at least once against the prod bucket:
+curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/live/does-not-exist-xyz    # -> 404 not_found
+curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/live/roadmap-status        # -> 200 JSON
+curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/r/pmo-live-metrics             # -> 200 HTML (chart view)
 ```
 
 Expected:
