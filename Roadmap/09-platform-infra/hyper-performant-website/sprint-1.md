@@ -197,3 +197,15 @@ Env: production · https://miyagisanchez.com — **run after merge + deploy**
    `cache-control: public, max-age=31536000, immutable`.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+## Post-merge infra ask — APPLIED (orchestrator, 2026-07-18)
+
+The Cloudflare Cache Rule for `/api/img` is live (`infra/gcp/cloudflare-cache-provision.mjs`,
+second rule, respect-origin, exact-path, own description + invariant test). Measured live before:
+`cf-cache-status: DYNAMIC`, 13–16 s per request (every request re-encoded — this is what timed out
+the nightly browser smoke). After: MISS 16.2 s → HIT **0.3 s** on the same URL.
+
+**Residual for S2/PageSpeed run:** the FIRST request per variant still costs 4–22 s (origin fetch +
+AVIF encode; larger widths are 147–224 KB). If Daniel's PageSpeed run lands before the edge is warm
+it will look bad — warm the first-row variants first (fetch each once), and consider lowering sharp
+AVIF effort or defaulting webp for w≥640 as an S2 fast-follow if encode latency stays visible.
