@@ -131,4 +131,4 @@ coupling: if 1.2 ever changes the base accent, the engine hardcodes `CORE_ACCENT
   surfaces; use the existing `ui-serif` system stack (as `[data-shop-preset="papel"]` already does) if a serif
   is ever wanted. No new asset may enter in 1.2.
 
-**Status: PENDING Daniel approval — 1.2 does not start until this is approved.**
+**Status: ✅ APPROVED by Daniel 2026-07-17 — 1.2 may start (sequenced after hyper-perf S2 perf guard merges).**
