@@ -1,8 +1,14 @@
 # Comparador de costos — Sprint 2: Report + consultant mode + agent surface
 
 **Status:** 🟡 built, PR open — [PR #278](https://github.com/danybgoode/miyagisanchezcommerce/pull/278)
-(`feat/cost-comparator-s2`, 4 commits). Deterministic gate green (tsc + build + Playwright `api`,
-homepage stays static). Not merged — owed: Daniel's phone smoke (walkthrough below), then merge.
+(`feat/cost-comparator-s2`, 7 commits). Deterministic gate green (tsc + build + Playwright `api`,
+homepage stays static). A cross-agent review round (codex + a second-opinion pass) found 3
+blocking + 3 should-fix + 1 nit, all addressed: honest override citations in the exported report
+(a hand-edited figure no longer cites the original dataset source as if it verified the edit),
+a tier-param bleed between Shopify/Tiendanube share links, line overrides now included in the
+share-link codec, `window.open` popup-blocking hardening, stricter MCP enum validation, and an
+es-MX copy sweep on `/agent`. See the PR's review-round comment for the full list. Not merged —
+owed: Daniel's phone smoke (walkthrough below), then merge.
 
 ## Stories
 
