@@ -37,9 +37,18 @@ if ! command -v node >/dev/null 2>&1; then
   exit 0
 fi
 
-current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
-if [ "$current_branch" != "main" ]; then
-  echo "pre-push: skipping full Notion projection from branch ${current_branch:-detached}; main/push workflow owns it." >&2
+# Git provides the actual local/remote ref pairs on stdin. Gate on those, not HEAD: a developer can
+# be checked out on main while explicitly pushing/deleting some other ref. Only a normal
+# refs/heads/main → refs/heads/main push may project the working tree; every other shape relies on
+# the reliable post-push workflow.
+pushes_main=false
+while read -r local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$local_ref" = "refs/heads/main" ] && [ "$remote_ref" = "refs/heads/main" ]; then
+    pushes_main=true
+  fi
+done
+if [ "$pushes_main" != "true" ]; then
+  echo "pre-push: skipping full Notion projection for a non-main ref; main/push workflow owns it." >&2
   exit 0
 fi
 

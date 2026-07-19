@@ -45,8 +45,8 @@ this repo's own low-risk convention.
 - [x] `.githooks/pre-commit` (blocking) covers build-order, doc-format, scripts/ + infra/ node:test,
       each path-gated to only run when relevant.
 - [x] `.githooks/pre-push` (advisory — never blocks) runs the Roadmap → Notion sync locally when
-      `NOTION_TOKEN` is present and the current branch is `main`; feature branches skip because a
-      full projection from branch state could clobber parallel work.
+      `NOTION_TOKEN` is present and Git's stdin ref pair is exactly local `main` → remote `main`;
+      feature/deletion/refspec pushes skip because a full branch projection could clobber parallel work.
 - [x] The pre-push background log resolves through `git rev-parse --git-path`, so the sync starts
       from both the main checkout and linked worktrees (`.git` is a file in the latter).
 - [x] `package.json`'s `prepare` script auto-activates `core.hooksPath` on `npm install`/`npm ci` —
