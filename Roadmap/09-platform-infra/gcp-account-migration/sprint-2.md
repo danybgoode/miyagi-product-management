@@ -1,7 +1,20 @@
 # GCP account migration — Sprint 2: CI/CD, schedulers, monitoring — all switched off
 
-**Status:** 🟡 2026-07-19 — everything done and verified OFF **except the ALB** (blocked on Daniel's
-Cloudflare Origin-CA cert go-ahead; named to him in-session per the TLS-category rule)
+**Status:** ✅ done 2026-07-19 — everything provisioned and verified OFF/dark
+
+**ALB record (completed after Daniel's cert go-ahead):** new Origin CA cert issued
+(`miyagi-web-origin-cert-20260719`, apex+wildcard SANs, expires 2041 — key generated locally,
+never left the machine, never committed); full stack on static IP **136.69.97.223** with the
+approved `api.miyagisanchez.com → medusa-web` host rule (§6b) provisioned dark. Verified: probing
+the IP with apex/api SNI returns **403 from Cloud Armor** (22-CIDR Cloudflare allowlist doing its
+job against a non-Cloudflare source) — serving, locked, dark. Two script hardenings landed: an
+add-backend "resource not ready" bounded retry (bit twice live — the portName-PATCH op can still
+be in flight when its value check passes), and **the S3-critical fix: all 7 `cloudflare-*.mjs`
+scripts hardcoded the OLD project id** — `cloudflare-cutover-flip.mjs` would have resolved the OLD
+ALB's IP and silently "cut over" DNS to where it already points. All 7 are now `PROJECT_ID`-env
+overridable, the flip selection covers the 4 real records (apex/wildcard/www/api, closed name-set,
+primary domain only), and a **real dry-run against the live zone** plots exactly the four correct
+flips to 136.69.97.223. Suite 147/147.
 
 **Story 2.1 record:** Daniel connected both repos via the console OAuth step (one connection,
 `cloud-build-github-connection`, us-east4). `cicd-setup.sh` + `cicd-setup-frontend.sh` ran green
