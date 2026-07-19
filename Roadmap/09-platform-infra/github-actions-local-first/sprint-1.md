@@ -12,8 +12,9 @@
 - `.githooks/pre-commit` blocks on stale `BUILD-ORDER.md`, `doc-format` drift, or a failing
   `scripts/`/`infra/` node:test suite — each gated to only run when the commit touches that area.
 - `.githooks/pre-push` runs `node scripts/roadmap-to-notion.mjs --sync` locally when `Roadmap/**`
-  changed, `NOTION_TOKEN` is set, and Git reports local `main` → remote `main` on hook stdin;
-  advisory only, never blocks the push. Other ref shapes skip the full-board projection. Its log path is resolved with
+  changed, `NOTION_TOKEN` is set, `main` is checked out, and Git reports local `main` → remote
+  `main` on hook stdin; advisory only, never blocks the push. Other checkout/ref shapes skip the
+  full-board projection. Its log path is resolved with
   `git rev-parse --git-path` so the detached process also starts from linked worktrees.
 - `package.json`'s `prepare` script sets `core.hooksPath` automatically on install.
 **Risk:** Low

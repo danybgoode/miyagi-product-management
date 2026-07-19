@@ -18,10 +18,11 @@ test('Notion pre-push log path works in linked worktrees', () => {
 })
 
 test('full Notion projection is main-only and hosted sync is path-gated to main', () => {
+  assert.match(prePush, /current_branch=.*git symbolic-ref/)
+  assert.match(prePush, /"\$current_branch" != "main"/)
   assert.match(prePush, /while read -r local_ref _local_sha remote_ref _remote_sha/)
   assert.match(prePush, /"\$local_ref" = "refs\/heads\/main"/)
   assert.match(prePush, /"\$remote_ref" = "refs\/heads\/main"/)
-  assert.doesNotMatch(prePush, /git symbolic-ref/)
 
   const workflow = readFileSync(join(root, '.github', 'workflows', 'notion-sync.yml'), 'utf8')
   assert.match(workflow, /push:\s*\n\s*branches:\s*\[main\]/)
