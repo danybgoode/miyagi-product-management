@@ -1,12 +1,20 @@
 # Fixed overlays trapped under the platform chrome — Sprint 1: portal the lightbox, close the class
 
-**Status:** ⬜ not started
+**Status:** ✅ complete — frontend PR [#285](https://github.com/danybgoode/miyagisanchezcommerce/pull/285), squash `ca702d3`
+
+> **Close correction (2026-07-19):** the header interception reproduced exactly; the groomed PDP
+> tab-bar claim did not (the tab bar does not mount on PDP routes). The audit portalled the real
+> buyer-shell siblings—Make Offer and the `/l` mobile filter—and excluded four seller-shell
+> overlays. Story 1.3 was dropped because a shell/breakpoint-aware source guard was not reliable.
+> Fresh review found a mobile→desktop resize regression in the filter portal; commit `bf18428`
+> added a `matchMedia` close/cleanup and a browser regression before merge.
 
 > **Root cause (proven 2026-07-19, don't re-derive):** `app/globals.css:1089-1093` —
 > `.platform-main-shell { position: relative; isolation: isolate }` creates a stacking context, and
 > `:1112-1115` pins its children to `z-index: 1` in the **root** context. `PlatformShell.tsx:38-45`
-> renders the sticky header at `zIndex: 50` and `:330` the `MobileTabBar` at `zIndex: 100`, both as
-> root-context siblings of `<main>` (`:302`). `Gallery.tsx:401`'s `Lightbox` is
+> renders the sticky header at `zIndex: 50` as a root-context sibling of `<main>` (`:302`).
+> `MobileTabBar` is another structural sibling, but is hidden on PDP routes and was not part of the
+> reproduced defect. `Gallery.tsx:401`'s `Lightbox` is
 > `position: fixed; zIndex: 100` but mounts **inline inside `<main>`** (`:313-325`) — so its 100 is
 > scoped inside a subtree worth 1. **Raising the z-index cannot fix this. No value works.**
 
@@ -19,7 +27,8 @@
 (overlay z-layer token if none exists).
 **Acceptance:** on a PDP, mobile **and** desktop, opening the lightbox shows the "Cerrar" X fully
 visible in the top-right, above the header; clicking/tapping it closes. The tab bar no longer
-overlaps the lightbox. Esc and tap-out still close. Background scroll stays locked. A 2+ photo
+overlaps the lightbox on routes where it is mounted. Esc and tap-out still close. Background scroll
+stays locked. A 2+ photo
 listing keeps arrows + the "N / total" counter; a 1-photo listing still shows neither (PR #247's
 behaviour is unchanged). The lightbox still mounts **only on open** — no cost when closed.
 **Implementation note:** use `createPortal` to `document.body` with the `mounted` guard from
@@ -72,6 +81,12 @@ already documented by 1.2. Do not spend a sprint on it.
   is structurally not headless-smokeable (LEARNINGS: never "fix" a spec by forcing it there). Also
   owed: the light **and** dark platform-theme check, because portalling moves the lightbox out of
   the theme subtree and any custom property scoped to `.platform-main-shell` would be silently lost.
+
+**Recorded result:** `tsc` + build + PR gate green (2,492 API tests; 52 browser smokes). The
+fixture-backed exact-head preview and production runs both performed a real click on `Cerrar` and
+passed. The 390→800 resize regression ran and passed on preview and production. Still owed to
+Daniel: physical installed-PWA safe-area/tab-bar judgment, light/dark real-device pass, and the
+authenticated Make Offer visual flow.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: the PR's Vercel preview while pre-merge, then production · https://miyagisanchez.com after merge

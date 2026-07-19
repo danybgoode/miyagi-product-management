@@ -17,19 +17,17 @@
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (6)
+## 📋 Ready to build (scaffolded, not started) (3)
 
-- [Fixed overlays trapped under the platform chrome — the PDP lightbox close button](../../01-discovery-and-shopping/pdp-lightbox-close-button-occluded/README.md) — 01 Discovery · 0/3 stories · risk: Low
-- [Catalog orphan-listing sweep — drain the seller-less listings the 2026-07-15 fix left behind](../../03-selling-and-shops/catalog-orphan-listing-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High
-- [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
 - [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
 
-## ✅ Shipped (114)
+## ✅ Shipped (117)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
+- [Fixed overlays trapped under the platform chrome — the PDP lightbox close button](../../01-discovery-and-shopping/pdp-lightbox-close-button-occluded/README.md) — 01 Discovery · 3/3 stories · risk: Low
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
 - [Homepage Selección: bug sweep + admin curation + dynamic rotation](../../01-discovery-and-shopping/homepage-seleccion-curation/README.md) — 01 Discovery · 8/8 stories
 - [Neighborhood Pulse — online community feed](../../01-discovery-and-shopping/neighborhood-pulse/README.md) — 01 Discovery · 7/7 stories · risk: Low
@@ -44,6 +42,7 @@
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 8/8 stories
 - [Bulk Import & Express Migration](../../03-selling-and-shops/bulk-import-migration/README.md) — 03 Selling & Shops · 17/17 stories · risk: High
 - [Catalog management — one Catálogo home for every product, channel, price & quantity ✅](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 16/16 stories · risk: High · Wave 1
+- [Catalog shop-slug invariant — the “orphan” was a null-slot read failure](../../03-selling-and-shops/catalog-orphan-listing-sweep/README.md) — 03 Selling & Shops · 3/3 stories · risk: High
 - [Configurable & Personalized Products](../../03-selling-and-shops/configurable-personalized-products/README.md) — 03 Selling & Shops · 10/10 stories · risk: High
 - [Custom print products — the sticker-shop buy experience](../../03-selling-and-shops/custom-print-products/README.md) — 03 Selling & Shops · 13/13 stories
 - [Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)](../../03-selling-and-shops/gem-claim-loop/README.md) — 03 Selling & Shops · 9/9 stories
@@ -59,6 +58,7 @@
 - [Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps](../../03-selling-and-shops/seller-agent-connect-mcp-url/README.md) — 03 Selling & Shops · 4/4 stories
 - [Seller Agent Operations](../../03-selling-and-shops/seller-agent-operations/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller Coupon Codes](../../03-selling-and-shops/promotions/README.md) — 03 Selling & Shops · 4/4 stories
+- [Seller-catalog null-slot sweep — 23 unsafe reads across 21 runtime files](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 3/3 stories · risk: High · tbd
 - [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 4/4 stories · risk: Low · Wave 1
 - [Shop Settings refactor](../../03-selling-and-shops/shop-settings-refactor/README.md) — 03 Selling & Shops · 21/21 stories · risk: Low
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 5/5 stories

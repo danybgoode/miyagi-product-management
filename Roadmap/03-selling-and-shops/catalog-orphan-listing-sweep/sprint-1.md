@@ -1,20 +1,23 @@
 # Catalog orphan-listing sweep — Sprint 1: report, unpublish, make it unrepeatable
 
-**Status:** ⬜ not started
+**Status:** ✅ complete — validation folded the runtime fix into backend PR [#104](https://github.com/danybgoode/medusa-bonsai-backend/pull/104) (`f813206`); frontend invariant PR [#286](https://github.com/danybgoode/miyagisanchezcommerce/pull/286) (`b1a8311`)
 
-> **Root cause (proven 2026-07-19, don't re-derive):** `lib/ucp/schema.ts:367-384` emits
-> `slug: ''` for a listing with **no linked shop** — deliberately, and the comment explains why a
-> placeholder slug was tried and reverted. The prod-smoke failure is that fallback firing on a real
-> row. `seller-product-create.ts` already made product-create + seller-link atomic (2026-07-15), so
-> **no new orphan can be created** — these are pre-fix rows still published.
->
-> ⚠️ **The one thing that would invalidate this plan:** if Story 1.1's report shows orphans created
-> **after 2026-07-15**, the atomic-create assumption is wrong, there is a second unfixed path, and
-> you must **stop and escalate** rather than sweep. Sweeping would hide an active bug.
+> **Close correction (2026-07-19):** Story 1.1 disproved the premise. Product
+> `prod_01KXGXMQ3X6WPMGDG2BMP64H7K` had an active seller link to live shop `andrea-shops`, zero
+> orders, and eight soft-deleted sibling products. The apparent orphan was the null-slot
+> attribution failure tracked by `seller-catalog-null-slot-sweep`. Story 1.2 was therefore
+> cancelled as an unsafe data mutation: **zero products unpublished, zero production writes**.
+
+> **Corrected root cause (proven 2026-07-19, don't re-derive):** `lib/ucp/schema.ts:367-384`
+> deliberately emits `slug: ''` when its input has no resolved shop. The input was incomplete, not
+> the relationship: `store/listings` caught the seller→products sparse-slot exception and discarded
+> that seller's entire attribution map. Backend PR #104 fixed the shared read class. The existing
+> atomic product-create/link seam remains useful prevention for true missing links, but it was not
+> the cause of this incident.
 
 ## Stories
 
-### Story 1.1 — Report the orphans (read-only; stop here and show Daniel)
+### Story 1.1 — Validate the apparent orphans bidirectionally (read-only)
 **As** Daniel, **I want** to see exactly which published listings have no seller link, **so that** I
 can confirm unpublishing them is safe before anything mutates.
 **Acceptance:** a read-only query/script lists every published, catalog-visible listing with no
@@ -24,7 +27,7 @@ warning above) and any row with `order_count > 0`.
 **QA:** the script's own output is the evidence; no spec needed for a read-only report.
 **Risk:** LOW. **→ Do not start Story 1.2 until Daniel has read this.**
 
-### Story 1.2 — Unpublish the orphans
+### Story 1.2 — Unpublish confirmed orphans (cancelled: none found)
 **As** a buyer or AI agent, **I want** every catalog result to belong to a real shop, **so that**
 everything I can see is something I can actually buy.
 **Acceptance:** every row from 1.1's list is **unpublished, not hard-deleted** (reversible). Rows
@@ -34,6 +37,9 @@ idempotent and re-runnable. Re-running 1.1's report afterwards returns an empty 
 escalated rows).
 **QA:** post-run, `curl https://miyagisanchez.com/api/ucp/catalog | jq '[.items[] | select(.shop.slug == "")] | length'` → `0`.
 **Risk:** **HIGH — Daniel merges.** Mutates published commerce data.
+
+**Close result:** not executed. The read-only report found zero true orphans; unpublishing the
+reported product would have removed a valid live listing.
 
 ### Story 1.3 — The invariant + the CI hole
 **As the** team, **I want** an empty `shop.slug` to fail the gate, **so that** an orphan can never
@@ -47,9 +53,8 @@ again reach production and be caught days later by a human reading an email.
    green on the live defect.
 3. The daily prod-smoke check 4 keeps its strict assertion — **confirm, change nothing.** It behaved
    correctly. Per the `smoke-triage` routine's own rule: never make a red smoke pass by weakening it.
-**QA:** both specs observed **red** at least once (point the catalog spec at a fixture containing an
-orphan, or run it pre-sweep against prod where the orphan still exists — the second is free and more
-honest).
+**QA:** both specs observed **red** against production before the backend read fix, then green
+against production after deployment. The exact linked product was the regression witness.
 **Risk:** LOW.
 
 ## Sprint QA
@@ -62,6 +67,12 @@ honest).
 - **No backend preview** — state the post-merge prod-smoke split in the PR (WAYS-OF-WORKING §5).
 - **browser smoke owed:** **yes, to Daniel** — after the sweep, confirm no legitimate seller lost a
   listing (browse the homepage and one known shop page). The agent owns the API-level checks.
+
+**Recorded result:** old production spec = one pass / one skip; corrected spec = red on the exact
+empty slug; after backend deployment = two passes. The guard fetched all 71 advertised catalog
+items over two pages (50 + 21), found zero blank slugs, and the exact product returned
+`andrea-shops`. Schema fallback unchanged. No “did we unpublish something real” smoke is owed
+because no data mutation occurred.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com (backend has no preview — this runs post-merge)

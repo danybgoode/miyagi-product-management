@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: pdp-lightbox-close-button-occluded
 ---
 
@@ -17,9 +17,11 @@ we never taught. It reads as broken.
 The interesting part is that this is **not a lightbox bug**. `.platform-main-shell` carries
 `isolation: isolate` (for the platform-theme background pattern) and pins its children to
 `z-index: 1` in the root stacking context. Any `position: fixed` overlay rendered inside `<main>` is
-therefore trapped below the header (z-50) and the tab bar (z-100), **no matter what z-index it
-declares**. The lightbox is simply the first surface where a user noticed. Six other overlays carry
-the same latent defect.
+therefore trapped below the header (z-50), **no matter what z-index it declares**. The lightbox is
+simply the first surface where a user noticed. The build-time audit found two other affected
+buyer-shell overlays (Make Offer and the mobile catalog filter); four groomed candidates render
+under the seller shell and were never inside this stacking context. The mobile tab bar also does
+not mount on PDP routes, so the groomed bottom-overlap claim was stale.
 
 ## Medusa-first note
 
@@ -45,21 +47,22 @@ N/A — frontend-only render/CSS change. No model, route, table, or flag. Commer
 |---|---|---|
 | 1 | 1.1 Portal the lightbox to `body` + an overlay z-layer token — **the reported bug** | low |
 | 1 | 1.2 Document the constraint at `isolation: isolate` + audit the 6 sibling overlays | low |
-| 1 | 1.3 Anti-recurrence guard: unportalled fixed overlay under `app/(shell)/` — optional, drop if not cheap | low |
+| 1 | 1.3 Anti-recurrence guard — **dropped:** shell/breakpoint-aware source scanning was noisy; use the source comment + browser regressions | low |
 
 ## Deploy order
 
-Frontend-only (`apps/miyagisanchez`), single PR, LOW tier — reviewer may merge on a green gate.
+Frontend-only (`apps/miyagisanchez`), single LOW-tier PR
+[#285](https://github.com/danybgoode/miyagisanchezcommerce/pull/285), squash `ca702d3`.
 Per-branch Vercel preview available, so the deterministic gate covers this fully pre-merge. No
 kill-switch — Stage 6b carve-out: no runtime seam, no commerce path, rollback is `git revert`.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b): frontend render location only, fail-safe, no runtime seam
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b): frontend render location only, fail-safe, no runtime seam
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
