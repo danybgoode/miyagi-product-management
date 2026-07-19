@@ -10,19 +10,19 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (4)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
+- [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 0/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (7)
+## 📋 Ready to build (scaffolded, not started) (6)
 
 - [Fixed overlays trapped under the platform chrome — the PDP lightbox close button](../../01-discovery-and-shopping/pdp-lightbox-close-button-occluded/README.md) — 01 Discovery · 0/3 stories · risk: Low
 - [Catalog orphan-listing sweep — drain the seller-less listings the 2026-07-15 fix left behind](../../03-selling-and-shops/catalog-orphan-listing-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
-- [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 0/9 stories · risk: High
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
 - [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
 
