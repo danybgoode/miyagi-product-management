@@ -56,6 +56,12 @@ gcloud artifacts repositories describe "$AR_REPO" --location="$REGION" >/dev/nul
 say "Least-privilege job SA $BACKUP_SA_EMAIL"
 gcloud iam service-accounts describe "$BACKUP_SA_EMAIL" >/dev/null 2>&1 || \
   gcloud iam service-accounts create "$BACKUP_SA" --display-name="db-backup job (R2 escrow)"
+  # Bounded wait: a just-created SA is eventually consistent — an immediate IAM grant can 400
+  # ("does not exist"; hit live 3x in gcp-account-migration S0-S2 fresh-project runs).
+  for _ in $(seq 1 12); do
+    gcloud iam service-accounts describe "${BACKUP_SA_EMAIL}" >/dev/null 2>&1 && break
+    sleep 5
+  done
 
 say "Secret shells + accessor for $BACKUP_SA"
 for s in "${SECRETS[@]}" TELEGRAM_BOT_TOKEN TELEGRAM_CICD_CHAT_ID; do

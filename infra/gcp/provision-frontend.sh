@@ -45,7 +45,10 @@ NEW_SECRETS=(
   VAPID_PRIVATE_KEY       # fresh keypair generated for this deploy (Daniel confirmed: existing Vercel push subscriptions are accepted as a one-time regression during the dark shadow-soak — not user-facing while Vercel serves prod)
   TELEGRAM_CHAT_ID_APP    # the app's own admin-notification chat (distinct from the backend CI/CD chat's TELEGRAM_CICD_CHAT_ID)
   VERCEL_API_TOKEN
-  SERPAPI_KEY
+  # SERPAPI_KEY retired here (gcp-account-migration S1): the secret was an empty shell even in
+  # the old project and live miyagi-web never bound it — an unresolvable :latest would
+  # fail-close every fresh-project revision. Re-add to BOTH this array and deploy-frontend.sh's
+  # --set-secrets (same change) if the SerpAPI feature ever gets a real key.
   # Real credential material only — bucket names / account IDs / public URLs
   # aren't sensitive and go in deploy-frontend.sh's plain --set-env-vars instead.
   R2_ACCESS_KEY_ID
@@ -152,7 +155,7 @@ cat <<EOF
      fresh value vs Daniel's judgment call):
        printf '%s' "<value>" | gcloud secrets versions add STRIPE_WEBHOOK_SECRET --data-file=-
        # …RESEND_API_KEY, VAPID_PRIVATE_KEY, TELEGRAM_CHAT_ID_APP,
-       #   VERCEL_API_TOKEN, SERPAPI_KEY, R2_*_ACCESS_KEY_ID, R2_*_SECRET_ACCESS_KEY,
+       #   VERCEL_API_TOKEN, R2_*_ACCESS_KEY_ID, R2_*_SECRET_ACCESS_KEY,
        #   UPSTASH_REDIS_REST_TOKEN, ADMIN_SECRET, CLAIM_JWT_SECRET,
        #   ENCRYPTION_KEY, ENCRYPTION_SECRET, CRON_SECRET
   2) Populate the PUBLIC_BUILD_SECRETS shells with the SAME live values already

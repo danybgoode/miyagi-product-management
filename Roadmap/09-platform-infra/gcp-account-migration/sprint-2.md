@@ -1,6 +1,35 @@
 # GCP account migration — Sprint 2: CI/CD, schedulers, monitoring — all switched off
 
-**Status:** ⬜ not started
+**Status:** 🟡 2026-07-19 — everything done and verified OFF **except the ALB** (blocked on Daniel's
+Cloudflare Origin-CA cert go-ahead; named to him in-session per the TLS-category rule)
+
+**Story 2.1 record:** Daniel connected both repos via the console OAuth step (one connection,
+`cloud-build-github-connection`, us-east4). `cicd-setup.sh` + `cicd-setup-frontend.sh` ran green
+(SAs, deploy rights, build-arg secret grants). Both triggers verified **disabled: True** via
+`gcloud beta builds triggers export` → `disabled: true` → import (the non-beta surface has no
+export). Old project's `backend-staging-deploy` deliberately deferred with the rest of staging.
+`frontend-build-args.test.js` green. **The CI pipeline itself was rehearsed for real**: the
+frontend cloudbuild.yaml ran manually against the new project (`SHORT_SHA=s2rehearsal`, 7m59s,
+SUCCESS, buildx cache primed) and its image-only deploy step rolled `miyagi-web-00002-dfd` — the
+revision now serving. Two S1-adjacent fixes that surfaced here: `deploy-frontend.sh`'s bare
+`--tag` build path documented as non-bootable post-buildargs-hardening (Clerk fail-fast, hit
+live); SERPAPI_KEY retired from provision+deploy scripts (empty shell everywhere, unbound live —
+an unresolvable `:latest` would have fail-closed every fresh revision).
+
+**Story 2.2 record:** all **6** schedulers (the doc's 4 frontend crons + `db-backup-daily` +
+`cloudsql-backup-check-daily` the inventory added) exist on the new project, verified **PAUSED**,
+frontend crons targeting the new `miyagi-web-zsl7ltapsq-uk.a.run.app` URL; old project's 6 still
+ENABLED (prod untouched). Backup pipelines fully provisioned (jobs, SAs, `medusa-ops` AR repo,
+images). Monitoring: `MiyagiDevopsTele` webhook channel re-created; 6 policies + `[medusa-web]
+health` uptime check — exact old-project parity. IAM eventual-consistency bounded-wait fix
+applied to both backup provision scripts (third+fourth occurrence of the S0.1 race).
+**ALB: NOT provisioned yet** — needs a new Cloudflare Origin CA cert (additive; old ALB untouched).
+Recommendation recorded: at S3, move `api.miyagisanchez.com` behind the ALB/Cloudflare-proxied
+path (cert SANs already cover it) instead of racing the single-project Cloud Run domain-mapping
+claim inside the cutover window.
+**Deferred to S4 (recorded):** `miyagi-pmo-reports` bucket — GLOBAL name owned by the old project;
+delete old bucket → recreate → restore objects (~600 KB) at decommission. `pmo-smalldocs`,
+`print-pdf`, staging surface, Telegram notifier functions — post-cutover redeploys, per inventory.
 
 > ⚠️ **The single most likely self-inflicted outage in this whole epic:** two projects both
 > deploying on a push to `main`, or both running the same cron against the same database.
