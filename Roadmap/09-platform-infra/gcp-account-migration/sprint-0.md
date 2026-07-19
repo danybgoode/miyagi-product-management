@@ -1,6 +1,17 @@
 # GCP account migration — Sprint 0: stand up the empty twin
 
-**Status:** 🟡 in progress — Story 0.2 (inventory) done 2026-07-19; Story 0.1 awaiting Daniel's `lolis-profile` auth
+**Status:** ✅ done 2026-07-19 — Story 0.2 (inventory) + Story 0.1 (twin provisioned)
+
+**Story 0.1 record:** project **`miyagisanchez-prod`** under `lolis8755@gmail.com`, billing
+**`019B4F-8DBBBA-3EE80C`** (OPEN), region us-east4. `provision.sh` green first run;
+`provision-frontend.sh` green after two real fresh-project bugs were found + fixed in the script
+(commit refs in this branch): (1) an IAM eventual-consistency race — an immediate grant against a
+just-created SA 400s ("does not exist") — now a bounded wait; (2) the `REUSED_SECRETS` grant loop
+assumed shells that only accumulated organically in the old project (`SUPABASE_*`,
+`TELEGRAM_BOT_TOKEN`, `ML_APP_SECRET`) — now create-if-absent. Smoke walkthrough steps 1–6 all
+pass: AR `medusa`+`frontend` · `medusa-redis` READY (`10.195.49.211`) · `medusa-conn` READY
+`10.8.0.0/28` (no overlap — fresh default network) · `billingEnabled: true` · 36 secret shells ·
+prod `https://miyagisanchez.com` 200 and untouched. ADC quota project set to `miyagisanchez-prod`.
 
 > **Zero production exposure.** Nothing in this sprint points at, reads from, or changes the live
 > stack. At the end you have a live, empty twin project and a verified inventory. This is the sprint

@@ -94,6 +94,13 @@ say "Memorystore endpoint: $REDIS_URL_VALUE"
 say "Service account: $RUN_SA_EMAIL"
 if ! gcloud iam service-accounts describe "$RUN_SA_EMAIL" >/dev/null 2>&1; then
   gcloud iam service-accounts create "$RUN_SA" --display-name="Medusa Cloud Run"
+  # A just-created SA is eventually consistent — an immediate IAM grant against it can 400
+  # ("Service account … does not exist"; hit on provision-frontend.sh's first fresh-project
+  # run, gcp-account-migration S0.1). Bounded wait until the SA is visible before granting.
+  for _ in $(seq 1 12); do
+    gcloud iam service-accounts describe "$RUN_SA_EMAIL" >/dev/null 2>&1 && break
+    sleep 5
+  done
 fi
 
 # ── 7. Secret shells + grant accessor ─────────────────────────────────────────

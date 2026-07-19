@@ -106,10 +106,23 @@ fi
 say "Runtime service account: $RUN_SA_EMAIL"
 if ! gcloud iam service-accounts describe "$RUN_SA_EMAIL" >/dev/null 2>&1; then
   gcloud iam service-accounts create "$RUN_SA" --display-name="Frontend Cloud Run (miyagi-web)"
+  # A just-created SA is eventually consistent — an immediate IAM grant against it can 400
+  # ("Service account … does not exist"). Hit for real on the first miyagisanchez-prod run
+  # (gcp-account-migration S0.1). Bounded wait until the SA is visible before granting.
+  for _ in $(seq 1 12); do
+    gcloud iam service-accounts describe "$RUN_SA_EMAIL" >/dev/null 2>&1 && break
+    sleep 5
+  done
 fi
 
 say "Granting access to REUSED (backend-owned) secrets"
 for s in "${REUSED_SECRETS[@]}"; do
+  # On a FRESH project only provision.sh's shells pre-exist — the rest of the reused set
+  # (SUPABASE_*, TELEGRAM_BOT_TOKEN, ML_APP_SECRET) accumulated live in the old project, so
+  # create the empty shell here if absent (values populated separately, never by this script).
+  if ! gcloud secrets describe "$s" >/dev/null 2>&1; then
+    gcloud secrets create "$s" --replication-policy=automatic
+  fi
   gcloud secrets add-iam-policy-binding "$s" \
     --member="serviceAccount:${RUN_SA_EMAIL}" \
     --role="roles/secretmanager.secretAccessor" >/dev/null
