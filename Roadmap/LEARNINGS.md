@@ -860,9 +860,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (389 build-order-guard + 321 notion-sync at ~5-6 min each + 155 notion-pr-sync runs, mostly
   pre-consolidation), while the public app repo's 408 CI runs were free. Fixes, in order of
   leverage: (1) make docs/tooling repos PUBLIC when nothing secret is tracked (root repo flipped
-  2026-07-18 after a credentials grep — repo secrets survive the flip); (2) the local-first push
-  (pre-commit/pre-push hooks + PR-only consolidated guards) — already done 2026-07-16, it's what
-  capped the bleed; (3) never give a chatty workflow a `push: main` trigger on a private repo.
+  2026-07-18 after a credentials grep — repo secrets survive the flip); (2) local pre-commit
+  guards + PR-only consolidated hosted guards — already done 2026-07-16, which capped the bleed;
+  (3) never give a chatty workflow a `push: main` trigger on a private repo. Once the root became
+  public, restore the path-gated Notion push writer and retire the local network-writing pre-push
+  hook: a linked worktree missed it, and running both writers would duplicate concurrent PATCHes.
   **Quota-exhaustion protocol** while waiting on a flip/reset: the builder-run local gate + the
   green Vercel preview (Vercel-side, unaffected) are the merge signal — state "CI quota exhausted,
   local gate green: <details>" in the PR body. *(2026-07-18, multi-epic batch.)*

@@ -2,7 +2,7 @@
 # Sibling to notion-sync.yml, which is the docs-truth full rebuild on its nightly/manual rail. This workflow does
 # NOT rebuild the board — it PATCHes only the epic row(s) a PR actually touches, so the board shows an
 # epic as "In review" while its PR is open, then clears that overlay on merge. The push-to-main
-# notion-sync workflow performs the reliable full rebuild; local pre-push is a faster best effort.
+# notion-sync workflow performs the single reliable full rebuild.
 #
 # Why scoped (not --sync): --sync is a full rebuild keyed by slug. Running it from a feature branch would
 # overwrite every OTHER epic's row with one branch's worldview, and parallel branches would clobber each

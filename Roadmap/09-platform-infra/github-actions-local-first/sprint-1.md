@@ -12,10 +12,7 @@
 - `.githooks/pre-commit` blocks on stale `BUILD-ORDER.md`, `doc-format` drift, or a failing
   `scripts/`/`infra/` node:test suite — each gated to only run when the commit touches that area.
 - `.githooks/pre-push` runs `node scripts/roadmap-to-notion.mjs --sync` locally when `Roadmap/**`
-  changed, `NOTION_TOKEN` is set, `main` is checked out, and Git reports local `main` → remote
-  `main` on hook stdin; advisory only, never blocks the push. Other checkout/ref shapes skip the
-  full-board projection. Its log path is resolved with
-  `git rev-parse --git-path` so the detached process also starts from linked worktrees.
+  changed and `NOTION_TOKEN` is set; advisory only, never blocks the push.
 - `package.json`'s `prepare` script sets `core.hooksPath` automatically on install.
 **Risk:** Low
 **Status:** ✅ shipped
@@ -36,5 +33,11 @@
    notion-sync.yml` or read the file). Historical result: only `schedule` + `workflow_dispatch`
    remained while the repo was private. After the repo became public, a path-gated `main` push
    trigger was safely restored to guarantee post-merge freshness.
+
+**Post-epic correction (2026-07-19):** retire `.githooks/pre-push`. A root PR pushed from a linked
+worktree proved the local replacement was not reliable enough to own board freshness, and running
+it beside the restored public-repo workflow would duplicate full-board PATCHes. The original
+private-minute mitigation remains valid historically; the repository visibility change removed
+the billing constraint that justified the local network write.
 
 If any step fails, note the step number + what you saw — that's the bug report.

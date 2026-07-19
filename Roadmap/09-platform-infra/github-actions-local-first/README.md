@@ -44,12 +44,10 @@ this repo's own low-risk convention.
       merged roadmap state cannot depend on one machine's hook.
 - [x] `.githooks/pre-commit` (blocking) covers build-order, doc-format, scripts/ + infra/ node:test,
       each path-gated to only run when relevant.
-- [x] `.githooks/pre-push` (advisory — never blocks) runs the Roadmap → Notion sync locally when
-      `NOTION_TOKEN` is present, `main` is checked out, and Git's stdin ref pair is exactly local
-      `main` → remote `main`; feature/deletion/refspec pushes skip because a full branch projection
-      could clobber parallel work.
-- [x] The pre-push background log resolves through `git rev-parse --git-path`, so the sync starts
-      from both the main checkout and linked worktrees (`.git` is a file in the latter).
+- [x] The temporary `.githooks/pre-push` full-sync replacement was retired after the repo became
+      public. It missed linked-worktree pushes, and keeping it beside the restored hosted trigger
+      would create duplicate concurrent Notion PATCHes. `.githooks/pre-commit` remains local-first;
+      the public push workflow is the sole real-time board writer.
 - [x] `package.json`'s `prepare` script auto-activates `core.hooksPath` on `npm install`/`npm ci` —
       no manual per-clone step.
 - [x] GH `*-guard.yml` workflows consolidated into one `guards.yml` job + demoted to PR-only.

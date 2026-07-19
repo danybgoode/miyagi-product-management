@@ -2,16 +2,15 @@
 # Docs are the only source of truth; the Notion board is a rebuilt projection, so a
 # re-sync keeps it from lagging merged work (board edits are overwritten).
 #
-# LOCAL-FIRST (2026-07-16): `.githooks/pre-push` makes a best-effort direct-main sync using
-# local history. The push trigger was temporarily removed while this repo was private because
-# each full-history run billed ~5-6 minutes. The repo became public on 2026-07-18, so hosted
-# minutes are no longer metered; push-to-main was restored after a linked-worktree push left
-# the board stale. Feature branches never run a full projection.
+# The push trigger was temporarily removed while this repo was private because each full-history
+# run billed ~5-6 minutes. The repo became public on 2026-07-18, so hosted minutes are no longer
+# metered; push-to-main was restored after the local pre-push replacement missed a linked-worktree
+# push and left the board stale. That local full-sync hook is now retired: one hosted writer avoids
+# duplicate concurrent PATCHes, while `.githooks/pre-commit` retains the fast local guards.
 #
 # Triggers now:
 #   • push to main for Roadmap/projection changes — reliable post-merge freshness.
-#   • nightly cron — the drift safety-net: catches anything pushed without the local hook
-#     (a GitHub web edit, a different machine, NOTION_TOKEN missing locally that session).
+#   • nightly cron — the drift safety-net.
 #   • workflow_dispatch — manual on-demand run (GitHub Actions "Run workflow" button,
 #     `gh workflow run notion-sync.yml`, or the API) to force a resync without a doc
 #     change — e.g. after the board was edited by hand, or to re-sync after setting
