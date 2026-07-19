@@ -60,16 +60,16 @@ Cloud SQL `medusa-pg` · Cloud Run `medusa-web` + `miyagi-web` · Artifact Regis
 
 ## Scope — stories
 
-| Sprint | Story | Risk |
-|---|---|---|
-| 0 | 0.1 New project + billing + APIs; `provision.sh` + `provision-frontend.sh` green; verify inventory vs script defaults | low |
-| 1 | 1.1 Copy all ~40 secret values (do **not** rotate) | high |
-| 1 | 1.2 Restore a Cloud SQL **backup** into the new instance; boot `medusa-web` against it; **measure the sync duration** | high |
-| 2 | 2.1 Cloud Build triggers on both repos (GitHub OAuth = Daniel's console step), left **disabled** | low |
-| 2 | 2.2 Scheduler jobs, monitoring, ALB — provisioned, schedulers **paused** | low |
-| 3 | 3.1 Final DB sync + Cloudflare origin flip | high |
-| 3 | 3.2 Repoint Stripe / MP webhooks + ML redirect URI; enable new triggers, disable old; resume new schedulers, pause old | high |
-| 4 | 4.1 Decommission the old project — **deferred, separate sprint** | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 0 | 0.1 New project + billing + APIs; `provision.sh` + `provision-frontend.sh` green; verify inventory vs script defaults | low | ✅ 2026-07-19 `44bdaba` |
+| 1 | 1.1 Copy all secret values — 56 real, not ~40 (do **not** rotate) | high | ✅ 2026-07-19 `7861b69` |
+| 1 | 1.2 Restore a Cloud SQL **backup** into the new instance; boot `medusa-web` against it; **measure the sync duration** (3.5 min) | high | ✅ 2026-07-19 `7861b69` |
+| 2 | 2.1 Cloud Build triggers on both repos (GitHub OAuth = Daniel's console step), left **disabled** | low | ✅ 2026-07-19 `39a95f5` |
+| 2 | 2.2 Scheduler jobs (6, not 4), monitoring, ALB + api host rule — provisioned, schedulers **paused** | low | ✅ 2026-07-19 `315a15f` |
+| 3 | 3.1 Final DB sync + Cloudflare origin flip (4 records incl. www + api) | high | ✅ 2026-07-19 `8ce5c1a` |
+| 3 | 3.2 Webhooks verified domain-based (zero repoints); enable new triggers, disable old; resume new schedulers, pause old | high | ✅ 2026-07-19 `8ce5c1a` |
+| 4 | 4.1 Decommission the old project — **deferred, separate sprint** (see sprint-4.md incl. items added at S3 close) | low | ⏸️ gated on Daniel's go after ≥2-week soak |
 
 ## Deploy order
 
@@ -85,13 +85,16 @@ re-running `cloudflare-cutover-flip.mjs` against the old origin, which is exactl
 separate and deferred. Stage 6b carve-out recorded here.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] `infra/gcp/README.md` + `tasks/backend-recovery-runbook.md` updated to the new project — **the docs must not still name the old project after cutover**
-- [ ] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b): rollback is the intact old project, not a flag
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints (S0–S3) merged to `main` + smoke-tested — **gaps stated: Daniel's money-path
+  checkout, Stripe/MP dashboard delivery check, session check, next-morning cron check; S4 deferred**
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs) + execution record
+- [x] Every executed sprint status ticked with commit refs (README stays in-progress until S4)
+- [x] `RETROSPECTIVE.md` written (S0–S3; S4 close-out note added when it runs)
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] `infra/gcp/README.md` + `tasks/backend-recovery-runbook.md` updated to the new project —
+  46 refs across 32 files swept 2026-07-19; the one remaining old-project mention documents the rollback
+- [x] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b): rollback is the intact old project, not a flag
+- [ ] S4 executed after soak → then: feature branch deleted; **frontmatter `status: shipped`**
+  (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)

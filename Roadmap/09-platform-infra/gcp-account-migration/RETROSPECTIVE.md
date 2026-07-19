@@ -1,14 +1,76 @@
 # gcp-account-migration — Retrospective
 
-_Closed: <date>_
+_Closed: 2026-07-19_
+
+S0–S3 executed and cut over in one session. S4 (decommission) is deliberately deferred ≥2 weeks —
+this retro covers the executed migration; S4 gets a close-out note when it runs.
 
 ## What shipped
-<!-- The capability now live, by sprint, with commit/PR refs. -->
+
+Production moved from `miyagisanchezback-497722` (leroytramafat) to **`miyagisanchez-prod`**
+(lolis8755, billing `019B4F-8DBBBA-3EE80C`) with zero code changes and zero data loss, in a single
+session, on the epic feature branch (S0 `44bdaba` · S1 `7861b69` · S2 `39a95f5`+`06af903`+`315a15f`
+· S3 `8ce5c1a`):
+
+- **S0** — twin project provisioned via the existing `provision*.sh` (two fresh-project script bugs
+  found+fixed); inventory of the live old project corrected the epic README on every count
+  (7 services not 2, 6 schedulers not 4, 60 secrets not ~40, plus 2 jobs/2 functions it missed).
+- **S1** — 56 secrets copied by value-pipe with byte-length verification (zero rotation, zero
+  values ever printed); Cloud SQL export→GCS→import rehearsed and **measured** (178s+19s ≈ 3.5 min);
+  `medusa-web` booted against the imported copy and served real listings.
+- **S2** — CI/CD triggers (created disabled), all 6 schedulers (created/verified paused),
+  monitoring parity (6 policies + uptime + Telegram channel), backup pipelines, and the ALB with a
+  fresh Origin CA cert + Cloud Armor Cloudflare-allowlist + the approved `api.` host rule —
+  everything dark. The frontend CI pipeline itself was rehearsed manually (`cloudbuild.yaml`,
+  `--substitutions=SHORT_SHA=…`) and produced the revision that later served the cutover.
+- **S3** — final sync 3.7 min, dumps byte-identical (zero writes in window, proven not assumed);
+  4-record DNS flip via the extended `cloudflare-cutover-flip.mjs` with auto-snapshot; webhooks
+  needed zero repointing (verified domain-based via Stripe API); automation swapped atomically;
+  46 doc/script references updated to the new project.
 
 ## What went well
 
-## What we learned
-<!-- Promote the durable, generalizable items to Roadmap/LEARNINGS.md (one-liner + why + date). Dedupe. -->
+- **The epic's own premise held: reuse beat rebuild.** Almost every step was an existing script
+  with `PROJECT_ID` overridden. New code written: one ALB host-rule block, one flip-script
+  selection widening, four bounded-wait/retry hardenings. Everything else was configuration.
+- **Sprint 0.2's "verify inventory against reality" earned its keep fourfold** — it caught the
+  undercounted secrets/schedulers/services, the deleted-uuid-secret landmine on the notifier
+  functions, the global-name bucket claim, and cleared the egress-IP fear (no NAT exists).
+- **Dark rehearsal converted the cutover from experiment to flip.** Every HIGH element (data path,
+  CI pipeline, ALB+cert, DNS flip dry-run against the live zone) had already run for real before
+  the window opened. The flip itself took under a minute.
+- **The permission classifier worked as a second gate, not an obstacle** — it blocked exactly the
+  three highest-consequence actions (bucket+IAM grant, rehearsal-DB delete, production DNS flip);
+  each got a named, specific confirmation from Daniel per the LEARNINGS rule, at a cost of seconds.
+
+## What we learned (promoted to Roadmap/LEARNINGS.md)
+
+1. **A just-created service account is eventually consistent** — an immediate IAM grant 400s
+   "does not exist". Hit 4× across 4 scripts in one epic; bounded-wait after create.
+2. **A fresh-project rebuild surfaces every config that only ever accumulated live** — secret
+   shells no provision script owned, and an empty shell whose `:latest` binding fail-closes any
+   fresh revision (`SERPAPI_KEY`). Provision scripts are now create-if-absent for the full reused
+   set; the dead secret was retired via the existing trio rule.
+3. **A cutover tool whose target resolution defaults to the SOURCE environment no-ops silently.**
+   All 7 `cloudflare-*.mjs` hardcoded the old project — the flip would have resolved the old ALB IP
+   and "flipped" DNS to where it already pointed. Found only because the S3 prep re-derived every
+   input against the target and dry-ran against the live zone.
+4. **Global-name resources are account-scoped claims, not values** — bucket names, project ids,
+   and Cloud Run domain mappings cannot coexist in two projects. `api.`'s domain mapping became an
+   ALB host rule (better architecture anyway); the PMO bucket deferred to S4's delete-then-recreate.
+5. **`"$VAR…"` with a trailing UTF-8 ellipsis breaks under a C-locale shell** — bash swallows the
+   multibyte char into the identifier ("unbound variable"). Brace variables adjacent to non-ASCII.
+6. **Prove zero-loss with an identical-dump diff instead of engineering a write-quiet window** —
+   rehearsal dump vs final dump row-count diff == empty is direct evidence no write was missed.
 
 ## Gaps / follow-ups
-<!-- Smoke gaps owed to Daniel, deferred slices, known limitations. -->
+
+- **Owed to Daniel (walkthrough steps that cannot be automated):** real-money checkout; Stripe+MP
+  dashboard webhook-delivery 200s; signed-in session check; next-morning single-fire cron check.
+- **S4 (deferred ≥2 weeks, gate: Daniel's explicit go):** final export to durable storage →
+  reference grep → stop old services/pause old SQL → delete project. Added at S3 close: delete old
+  `miyagi-pmo-reports` bucket then recreate+restore in new project (global name); redeploy
+  `pmo-smalldocs`/`print-pdf`/notifier functions/staging surface; new `pmo-report-writer` SA key
+  into the claude.ai routine env; delete the old `api.` domain mapping.
+- The old project's monitoring still watches the shared domain (now serving the new project) —
+  harmless double-cover until S4 tears it down.

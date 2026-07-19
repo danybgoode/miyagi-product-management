@@ -260,6 +260,36 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   bypass, uncommitted-WIP-not-on-the-PR). Neither layer was redundant once. *(2026-07-17,
   four-epic batch session.)*
 ## Tooling gotchas
+- **GCP account-migration cluster (2026-07-19, gcp-account-migration S0–S3 — one session, cut over
+  with zero loss; full story in that epic's RETROSPECTIVE):**
+  (1) **A just-created service account is eventually consistent** — an immediate IAM grant against
+  it 400s "does not exist"; hit 4× across 4 provision scripts in one epic. Bounded-wait
+  (describe-until-visible) after every SA create; same shape for the async backend-service PATCH →
+  add-backend "resource not ready" race (hit 2×, retry loop).
+  (2) **A fresh-project rebuild surfaces every config that only ever accumulated live** — secret
+  shells no provision script owned (create-if-absent the full reused set), and an EMPTY shell whose
+  `:latest` a deploy binds **fail-closes every fresh revision** (SERPAPI_KEY — empty even in the
+  old project and unbound live; retired via the trio rule instead of inventing a junk value).
+  (3) **A cutover tool whose target-resolution defaults to the SOURCE environment no-ops
+  silently** — all 7 `cloudflare-*.mjs` hardcoded the old project id, so the DNS flip would have
+  resolved the OLD ALB IP and "flipped" DNS to where it already pointed, indistinguishable from
+  success until you look at traffic. Before any cutover window: make ids env-overridable, re-derive
+  every input against the TARGET, and dry-run against the live system reading the resolved values.
+  (4) **Global-name resources are account-scoped CLAIMS** — GCS bucket names, project ids, and
+  Cloud Run domain mappings cannot coexist in two projects; enumerate them at inventory time
+  (the fix for `api.`'s domain mapping was moving it onto the ALB as a host rule — architecture
+  win, not just a workaround).
+  (5) **`"$VAR…"` with an adjacent UTF-8 char breaks under a C-locale shell** — bash swallows the
+  multibyte ellipsis into the identifier ("unbound variable"); brace `${VAR}` next to non-ASCII.
+  (6) **Prove a zero-loss data cutover with an identical-dump diff, don't engineer a write-quiet
+  window you can't verify** — rehearsal-dump vs final-dump per-table row counts diffing empty IS
+  the evidence nothing was written/lost in between. Also: `sql export --offload` is a consistent
+  serverless snapshot at zero prod load, and the measured rehearsal duration (not an estimate) is
+  the cutover window.
+  (7) **A manual `gcloud builds submit --tag` of the frontend CANNOT produce a bootable image**
+  post-buildargs-hardening (no NEXT_PUBLIC build args → Clerk fail-fast at startup) — build through
+  `cloudbuild.yaml` manually (`--config` + `--substitutions=SHORT_SHA=…`), which doubles as a real
+  rehearsal of the CI pipeline itself.
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
   AFTER it already landed** — the push itself succeeds (visible on `origin/main`), but a denial message
   attaches to a *later* tool call, reads like it's blocking that unrelated call, and doesn't roll anything
