@@ -72,7 +72,7 @@ custom-format dump restorable by any PG17 client) — independent of the runner.
 #       GRANT pg_read_all_data TO backup_ro;     -- PG14+; else GRANT SELECT on schemas
 #    Build the two DSNs.
 # 2. Provision (creates SA + secret shells + image + Job + Scheduler; idempotent):
-gcloud config configurations activate bonsai-profile
+gcloud config configurations activate lolis-profile
 export R2_BACKUP_BUCKET='miyagi-db-escrow'
 export R2_ACCESS_KEY_ID='…' R2_SECRET_ACCESS_KEY='…' R2_ENDPOINT='https://<acct>.r2.cloudflarestorage.com'
 export SUPABASE_DSN='postgresql://backup_ro:…@db.<ref>.supabase.co:5432/postgres'
@@ -101,7 +101,7 @@ Use a **PG17** `pg_restore` (matches the dump). RTO is a few minutes for the non
 Cloud SQL restore/PITR is console- or `gcloud`-driven — no R2 dump involved for commerce:
 ```bash
 # List automated backups:
-gcloud sql backups list --instance=medusa-pg --project=miyagisanchezback-497722
+gcloud sql backups list --instance=medusa-pg --project=miyagisanchez-prod
 # Restore a backup into a SCRATCH instance (never straight over prod), then repoint if needed:
 gcloud sql backups restore <BACKUP_ID> --restore-instance=medusa-pg-scratch --backup-instance=medusa-pg
 # Point-in-time restore (within the 7-day PITR window) → a clone at a timestamp:
@@ -123,7 +123,7 @@ success heartbeat** (declined by Daniel).
 | Runner | Cloud Run **Job** `cloudsql-backup-check` (region `us-east4`, SA `medusa-backup-check`, max-retries 1, 120s, 512Mi) |
 | Schedule | Cloud Scheduler `cloudsql-backup-check-daily`, cron `0 12 * * *` UTC (a few h after the 09:00 backup window) → `:run` the job |
 | Image | `…/medusa-ops/cloudsql-backup-check:<tag>` (`google-cloud-cli:slim` — gcloud + python3 + bash + curl) |
-| Check | `gcloud sql backups list --instance=medusa-pg --project=miyagisanchezback-497722 --format=json` → the pure freshness predicate |
+| Check | `gcloud sql backups list --instance=medusa-pg --project=miyagisanchez-prod --format=json` → the pure freshness predicate |
 | Health rule | HEALTHY iff a **SUCCESSFUL AUTOMATED** backup exists within `MAX_AGE_HOURS` (default 26). A failed `gcloud` listing also alerts (a blind listing is itself a blind spot). |
 | Alerts | best-effort Telegram via the reused `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CICD_CHAT_ID` secrets — same idiom as `db-backup.sh` |
 
@@ -135,7 +135,7 @@ unit-tested freshness predicate — `infra/gcp/test/cloudsql-backup-check.test.j
 
 **Stand it up (owed to Daniel — live GCP writes):**
 ```bash
-gcloud config configurations activate bonsai-profile
+gcloud config configurations activate lolis-profile
 bash infra/gcp/backups/provision-cloudsql-backup-check.sh
 # Smoke — real instance → silent (Succeeded); bogus instance → a Telegram failure alert:
 gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait                       # expect Succeeded, no alert

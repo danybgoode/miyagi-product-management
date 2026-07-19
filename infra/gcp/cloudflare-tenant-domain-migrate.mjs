@@ -25,7 +25,7 @@
 //   node infra/gcp/cloudflare-tenant-domain-migrate.mjs --rollback foo.mx --apply   # delete that domain's Cloudflare custom hostname
 //
 // Credentials — env var first, else `gcloud secrets versions access latest` against project
-// miyagisanchezback-497722: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, SUPABASE_URL,
+// miyagisanchez-prod: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, SUPABASE_URL,
 // SUPABASE_SERVICE_ROLE_KEY, VERCEL_API_TOKEN, VERCEL_PROJECT_ID. Zero npm deps — Node 18+ (global
 // fetch). Deliberately does NOT import apps/miyagisanchez/lib/cloudflare-domains.ts — infra scripts
 // in this repo are a separate, dependency-free runtime from the Next.js app (matches every other
@@ -35,7 +35,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchez-prod' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const CF_API = 'https://api.cloudflare.com/client/v4'
 const VERCEL_API = 'https://api.vercel.com'
 const FALLBACK_ORIGIN = 'cname.miyagisanchez.com' // matches lib/domain-utils.ts CNAME_TARGET

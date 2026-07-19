@@ -9,7 +9,7 @@
 # read access to them + Cloud SQL.
 #
 # Owed to Daniel — these gcloud writes touch live GCP infra (he holds the creds):
-#   gcloud config configurations activate bonsai-profile     # leroytramafat@gmail.com
+#   gcloud config configurations activate lolis-profile     # lolis8755@gmail.com
 #   bash infra/gcp/backups/provision-cloudsql-backup-check.sh
 # Then smoke it (see BACKUPS.md → "Cloud SQL backup-failure check"):
 #   gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait                 # real → silent
@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-medusa-ops}"                 # reuse the db-backup ops-image repo
 JOB="${JOB:-cloudsql-backup-check}"

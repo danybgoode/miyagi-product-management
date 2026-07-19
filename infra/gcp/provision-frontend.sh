@@ -4,7 +4,7 @@
 # step checks for existence before creating. Review before running.
 # (09-platform-infra frontend-vercel-to-cloudrun, S1.3.)
 #
-#   PROJECT_ID=miyagisanchezback-497722 bash infra/gcp/provision-frontend.sh
+#   PROJECT_ID=miyagisanchez-prod bash infra/gcp/provision-frontend.sh
 #
 # Unlike the backend, the frontend does NOT need the medusa-conn VPC
 # connector — it never talks to Cloud SQL or Redis directly (Supabase and
@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-frontend}"
 RUN_SA="${RUN_SA:-miyagi-web-run}"

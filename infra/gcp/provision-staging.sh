@@ -5,7 +5,7 @@
 # Redis is OFF on staging → there is deliberately NO REDIS_URL_STAGING secret.
 #
 #   # export the sourced dev/test creds first (see below), then:
-#   PROJECT_ID=miyagisanchezback-497722 bash infra/gcp/provision-staging.sh
+#   PROJECT_ID=miyagisanchez-prod bash infra/gcp/provision-staging.sh
 #
 # Values are read from env vars — NEVER hard-coded here, never echoed.
 #   Auto-generated fresh (openssl rand -hex 32): JWT / COOKIE / MEDUSA_INTERNAL.
@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 RUN_SA="${RUN_SA:-medusa-run}"
 RUN_SA_EMAIL="${RUN_SA}@${PROJECT_ID}.iam.gserviceaccount.com"
 

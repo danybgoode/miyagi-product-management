@@ -13,7 +13,7 @@
 //   node infra/gcp/cloudflare-zone-stage.mjs --domain foo.com  # override the domain (default miyagisanchez.com)
 //
 // Credentials — env var first, else `gcloud secrets versions access latest` against project
-// miyagisanchezback-497722: VERCEL_API_TOKEN, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID. Never
+// miyagisanchez-prod: VERCEL_API_TOKEN, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID. Never
 // reads .env/.env.local — this domain's real DNS is prod, there is no "dev" zone to rehearse
 // against (LEARNINGS: seed/activation scripts must use prod Secret Manager creds).
 //
@@ -24,7 +24,7 @@
 import { execFileSync } from 'node:child_process'
 import { diffRecords, normalizeVercelRecord, normalizeCloudflareRecord } from './lib/cloudflare-zone-diff.mjs'
 
-const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchez-prod' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const VERCEL_API = 'https://api.vercel.com'
 const CF_API = 'https://api.cloudflare.com/client/v4'
 

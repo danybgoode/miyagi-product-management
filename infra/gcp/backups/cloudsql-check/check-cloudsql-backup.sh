@@ -16,14 +16,14 @@
 #
 #   Env (optional — sane prod defaults):
 #     INSTANCE        Cloud SQL instance to check        (default medusa-pg)
-#     PROJECT         GCP project                        (default miyagisanchezback-497722)
+#     PROJECT         GCP project                        (default miyagisanchez-prod)
 #     MAX_AGE_HOURS   freshness window, hours            (default 26 — read by the predicate)
 #     TELEGRAM_BOT_TOKEN / TELEGRAM_CICD_CHAT_ID         best-effort failure alert (from Secret Manager)
 
 set -euo pipefail
 
 INSTANCE="${INSTANCE:-medusa-pg}"
-PROJECT="${PROJECT:-miyagisanchezback-497722}"
+PROJECT="${PROJECT:-miyagisanchez-prod}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*"; }

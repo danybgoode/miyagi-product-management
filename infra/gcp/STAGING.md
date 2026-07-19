@@ -12,7 +12,7 @@ is a **parameterized re-run**, not new architecture.
 | | **prod** | **staging** |
 |---|---|---|
 | Cloud Run service | `medusa-web` | `medusa-web-staging` |
-| Region / project | us-east4 · `miyagisanchezback-497722` | same |
+| Region / project | us-east4 · `miyagisanchez-prod` | same |
 | Deploy trigger | `backend-main-deploy` on `^main$` | `backend-staging-deploy` on `^staging$` |
 | min / max instances | 1 / 4 | **0** / 2 (scale-to-zero, ~$0 idle) |
 | Database | Neon prod (pooled) → **Cloud SQL `medusa` (S2)** | **Cloud SQL `medusa_staging`** (private IP, us-east4) — repointed in [postgres-neon-to-cloudsql S1](../../Roadmap/09-platform-infra/postgres-neon-to-cloudsql/sprint-1.md) |
@@ -45,7 +45,7 @@ Both triggers reuse the backend repo's single `cloudbuild.yaml`; the staging tri
 ## Stand it up (first time)
 
 ```bash
-gcloud config configurations activate bonsai-profile   # leroytramafat@gmail.com
+gcloud config configurations activate lolis-profile   # lolis8755@gmail.com
 
 # 1. Neon staging branch — capture its POOLED connection string.
 neonctl branches create --name staging --project-id <medusa-neon-project>
@@ -111,8 +111,8 @@ rotation on **2026-06-11** (see *Executed* below). Rotate on a cadence thereafte
 > **low-traffic window**, coordinated with the owner.
 
 ```bash
-gcloud config configurations activate bonsai-profile
-PROJECT=miyagisanchezback-497722
+gcloud config configurations activate lolis-profile
+PROJECT=miyagisanchez-prod
 
 # 1. Add a new version to each prod secret (values via stdin — never echoed). Capture the version numbers.
 JV=$(printf '%s' "$(openssl rand -hex 32)" | gcloud secrets versions add JWT_SECRET    --project="$PROJECT" --data-file=- --format='value(name)' | sed 's#.*/##')

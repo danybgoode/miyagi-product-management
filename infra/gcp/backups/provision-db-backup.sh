@@ -12,7 +12,7 @@
 #   • A read-only Postgres role on each DB                  → *_BACKUP_DSN values below
 #
 # Run:
-#   gcloud config configurations activate bonsai-profile     # leroytramafat@gmail.com
+#   gcloud config configurations activate lolis-profile     # lolis8755@gmail.com
 #   export R2_BACKUP_BUCKET='miyagi-db-escrow'
 #   export R2_ACCESS_KEY_ID='…' R2_SECRET_ACCESS_KEY='…'
 #   export R2_ENDPOINT='https://<accountid>.r2.cloudflarestorage.com'
@@ -22,7 +22,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-medusa-ops}"                 # dedicated ops-image repo (separate CVE surface from the app)
 JOB="${JOB:-db-backup}"

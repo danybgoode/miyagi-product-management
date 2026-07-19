@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="us-east4"
 TARGET="${TARGET:-staging}"
 

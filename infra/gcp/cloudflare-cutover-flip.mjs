@@ -19,14 +19,14 @@
 //   node infra/gcp/cloudflare-cutover-flip.mjs --rollback <snapshot-file>   # revert from a snapshot
 //
 // Credentials — env var first, else `gcloud secrets versions access latest` against project
-// miyagisanchezback-497722: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (same as
+// miyagisanchez-prod: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (same as
 // cloudflare-zone-stage.mjs). Zero npm deps — Node 18+ (global fetch).
 
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchez-prod' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const CF_API = 'https://api.cloudflare.com/client/v4'
 const ALB_IP_NAME = 'miyagi-web-lb-ip' // matches provision-alb-frontend.sh's IP_NAME
 const REGION_GLOBAL = true

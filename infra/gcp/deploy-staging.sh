@@ -24,7 +24,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-medusa}"
 CONNECTOR="${CONNECTOR:-medusa-conn}"   # shared with prod — VPC egress to Cloud SQL private IP

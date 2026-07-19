@@ -3,7 +3,7 @@
 # service. Run AFTER provision-frontend.sh and AFTER the NEW secret shells
 # have real values. (09-platform-infra frontend-vercel-to-cloudrun, S1.3.)
 #
-#   PROJECT_ID=miyagisanchezback-497722 bash infra/gcp/deploy-frontend.sh
+#   PROJECT_ID=miyagisanchez-prod bash infra/gcp/deploy-frontend.sh
 #
 # No VPC connector (see provision-frontend.sh) — the frontend never talks to
 # Cloud SQL/Redis directly. --allow-unauthenticated: same posture as
@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-frontend}"
 RUN_SA="${RUN_SA:-miyagi-web-run}"

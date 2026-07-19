@@ -10,10 +10,11 @@
 set -euo pipefail
 
 # ── Variables ────────────────────────────────────────────────────────────────
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
-# OPEN billing account under leroytramafat@gmail.com. Project + link already done;
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
+# OPEN billing account under lolis8755@gmail.com (gcp-account-migration, 2026-07-19). Project +
+# link already done;
 # the create/link steps below are idempotent and will be skipped.
-BILLING_ACCOUNT="${BILLING_ACCOUNT:-01BCB8-AA3451-6EC373}"
+BILLING_ACCOUNT="${BILLING_ACCOUNT:-019B4F-8DBBBA-3EE80C}"
 REGION="${REGION:-us-east4}"            # N. Virginia — adjacent to Neon AWS us-east-1
 AR_REPO="${AR_REPO:-medusa}"
 NETWORK="${NETWORK:-default}"

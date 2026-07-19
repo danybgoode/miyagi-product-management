@@ -25,7 +25,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 RUN_SERVICE="${RUN_SERVICE:-miyagi-web}"
 P=(--project="$PROJECT_ID")   # per-call, no global `gcloud config set project`
