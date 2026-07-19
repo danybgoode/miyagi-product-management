@@ -46,5 +46,5 @@ test('cloudflare-saas-fallback-provision.mjs: does NOT attempt to reissue the or
 test('cloudflare-saas-fallback-provision.mjs: credential resolution matches the epic convention (env var, else Secret Manager in the backend project)', () => {
   assert.match(src, /resolveSecret\('CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_API_TOKEN'\)/)
   assert.match(src, /resolveSecret\('CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_ACCOUNT_ID'\)/)
-  assert.match(src, /miyagisanchezback-497722/)
+  assert.match(src, /miyagisanchez-prod/)
 })

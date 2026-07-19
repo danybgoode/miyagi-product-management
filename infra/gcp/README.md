@@ -11,15 +11,16 @@ Readiness S3). Admin-exposure decision: **KEEP `/app` + harden** (`DISABLE_MEDUS
 
 ## Billing — resolved
 
-Project **`miyagisanchezback-497722`** is created under `leroytramafat@gmail.com` and linked
-to **OPEN** billing account **`01BCB8-AA3451-6EC373`** (MXN). The scripts default to these.
-Run as the `bonsai-profile` config (the `leroytramafat@gmail.com` identity).
+Project **`miyagisanchez-prod`** is created under `lolis8755@gmail.com` and linked to **OPEN**
+billing account **`019B4F-8DBBBA-3EE80C`** (gcp-account-migration cutover, 2026-07-19 — the old
+`miyagisanchezback-497722`/leroytramafat project is the retained rollback until Sprint 4). The
+scripts default to these. Run as the `lolis-profile` config (the `lolis8755@gmail.com` identity).
 
 ## Order
 
 ```bash
 # 0. Use the right identity
-gcloud config configurations activate bonsai-profile
+gcloud config configurations activate lolis-profile
 
 # 1. Enable APIs, provision AR + Memorystore + VPC connector + SA + secret shells
 #    (project + billing-link steps are idempotent — already done, will be skipped)

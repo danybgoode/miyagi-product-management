@@ -25,7 +25,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 RUN_SERVICE="${RUN_SERVICE:-miyagi-web}"
 P=(--project="$PROJECT_ID")   # per-call, no global `gcloud config set project`
@@ -192,11 +192,17 @@ fi
 # add-backend is not idempotent by itself — check membership via the parent describe first.
 if ! gcloud compute backend-services describe "$BACKEND_NAME" --global "${P[@]}" \
       --format='value(backends[].group)' | grep -q "/networkEndpointGroups/${NEG_NAME}\$"; then
-  gcloud compute backend-services add-backend "$BACKEND_NAME" \
-    --global \
-    --network-endpoint-group="$NEG_NAME" \
-    --network-endpoint-group-region="$REGION" \
-    "${P[@]}"
+  # Bounded retry: the portName PATCH above is async — its op can still be in flight when the
+  # value check passes, and add-backend then errors "resource is not ready" (hit twice live,
+  # gcp-account-migration S2). Idempotent either way; retry instead of forcing a manual re-run.
+  for _ in $(seq 1 6); do
+    gcloud compute backend-services add-backend "$BACKEND_NAME" \
+      --global \
+      --network-endpoint-group="$NEG_NAME" \
+      --network-endpoint-group-region="$REGION" \
+      "${P[@]}" && break
+    sleep 15
+  done
 fi
 
 gcloud compute backend-services update "$BACKEND_NAME" \
@@ -212,6 +218,72 @@ gcloud compute url-maps create "$URLMAP_NAME" \
   --default-service="$BACKEND_NAME" \
   "${P[@]}"
 echo "  = URL map: $URLMAP_NAME"
+
+# --- 6b · api.miyagisanchez.com host routing → medusa-web (gcp-account-migration S2) -----------
+# Daniel approved 2026-07-19: at the account-migration cutover, api.miyagisanchez.com moves OFF
+# the Cloud Run domain mapping (a single-project claim that can't pre-exist in a second project)
+# and onto this ALB, Cloudflare-proxied like the apex — the origin cert's *.miyagisanchez.com SAN
+# already covers it. Idempotent, additive: a host rule on a url-map only matters once DNS for the
+# host actually targets this ALB's IP, so provisioning it dark is zero-impact anywhere.
+API_HOST="${API_HOST:-api.miyagisanchez.com}"
+API_RUN_SERVICE="${API_RUN_SERVICE:-medusa-web}"
+API_NEG_NAME="medusa-web-neg"
+API_BACKEND_NAME="medusa-web-backend"
+
+gcloud compute network-endpoint-groups describe "$API_NEG_NAME" --region="$REGION" "${P[@]}" >/dev/null 2>&1 || \
+gcloud compute network-endpoint-groups create "$API_NEG_NAME" \
+  --region="$REGION" \
+  --network-endpoint-type=serverless \
+  --cloud-run-service="$API_RUN_SERVICE" \
+  "${P[@]}"
+
+if ! gcloud compute backend-services describe "$API_BACKEND_NAME" --global "${P[@]}" >/dev/null 2>&1; then
+  gcloud compute backend-services create "$API_BACKEND_NAME" \
+    --global \
+    --load-balancing-scheme=EXTERNAL \
+    --protocol=HTTPS \
+    --no-enable-cdn \
+    "${P[@]}"
+fi
+# Same serverless-NEG portName gotcha as step 5 — clear gcloud's auto-filled "https" first.
+if [ "$(gcloud compute backend-services describe "$API_BACKEND_NAME" --global "${P[@]}" --format='value(portName)')" = "https" ]; then
+  curl -s -X PATCH \
+    -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+    -H "Content-Type: application/json" \
+    "https://compute.googleapis.com/compute/v1/projects/${PROJECT_ID}/global/backendServices/${API_BACKEND_NAME}" \
+    -d '{"portName": null}' >/dev/null
+  for _ in $(seq 1 30); do
+    [ "$(gcloud compute backend-services describe "$API_BACKEND_NAME" --global "${P[@]}" --format='value(portName)')" != "https" ] && break
+    sleep 2
+  done
+fi
+if ! gcloud compute backend-services describe "$API_BACKEND_NAME" --global "${P[@]}" \
+      --format='value(backends[].group)' | grep -q "/networkEndpointGroups/${API_NEG_NAME}\$"; then
+  for _ in $(seq 1 6); do   # same not-ready retry as step 5
+    gcloud compute backend-services add-backend "$API_BACKEND_NAME" \
+      --global \
+      --network-endpoint-group="$API_NEG_NAME" \
+      --network-endpoint-group-region="$REGION" \
+      "${P[@]}" && break
+    sleep 15
+  done
+fi
+gcloud compute backend-services update "$API_BACKEND_NAME" \
+  --global \
+  --security-policy="$ARMOR_POLICY" \
+  "${P[@]}" >/dev/null
+
+# Host rule + path matcher, keyed by matcher name (add-path-matcher is not idempotent bare).
+if ! gcloud compute url-maps describe "$URLMAP_NAME" --global "${P[@]}" --format=json \
+      | grep -q '"name": "api-matcher"'; then
+  gcloud compute url-maps add-path-matcher "$URLMAP_NAME" \
+    --global \
+    --path-matcher-name=api-matcher \
+    --default-service="$API_BACKEND_NAME" \
+    --new-hosts="$API_HOST" \
+    "${P[@]}"
+fi
+echo "  = api host routing: $API_HOST → $API_BACKEND_NAME ($API_RUN_SERVICE)"
 
 # --- 7 · target HTTPS proxy (global, self-managed cert attached) -------------------------------
 gcloud compute target-https-proxies describe "$PROXY_NAME" --global "${P[@]}" >/dev/null 2>&1 || \

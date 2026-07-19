@@ -9,7 +9,7 @@
 # read access to them + Cloud SQL.
 #
 # Owed to Daniel — these gcloud writes touch live GCP infra (he holds the creds):
-#   gcloud config configurations activate bonsai-profile     # leroytramafat@gmail.com
+#   gcloud config configurations activate lolis-profile     # lolis8755@gmail.com
 #   bash infra/gcp/backups/provision-cloudsql-backup-check.sh
 # Then smoke it (see BACKUPS.md → "Cloud SQL backup-failure check"):
 #   gcloud run jobs execute cloudsql-backup-check --region=us-east4 --wait                 # real → silent
@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-medusa-ops}"                 # reuse the db-backup ops-image repo
 JOB="${JOB:-cloudsql-backup-check}"
@@ -50,6 +50,12 @@ gcloud artifacts repositories describe "$AR_REPO" --location="$REGION" >/dev/nul
 say "Least-privilege job SA $CHECK_SA_EMAIL"
 gcloud iam service-accounts describe "$CHECK_SA_EMAIL" >/dev/null 2>&1 || \
   gcloud iam service-accounts create "$CHECK_SA" --display-name="cloudsql-backup-check job (read-only backup health)"
+  # Bounded wait: a just-created SA is eventually consistent — an immediate IAM grant can 400
+  # ("does not exist"; hit live 3x in gcp-account-migration S0-S2 fresh-project runs).
+  for _ in $(seq 1 12); do
+    gcloud iam service-accounts describe "${CHECK_SA_EMAIL}" >/dev/null 2>&1 && break
+    sleep 5
+  done
 
 say "Granting the SA read access to Cloud SQL backups (roles/cloudsql.viewer)"
 # cloudsql.viewer is read-only — it can LIST backups/instances but cannot mutate the DB.

@@ -176,6 +176,22 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-19 — GCP account migration CUT OVER (S0–S3 in ONE session): miyagisanchez.com now
+  serves from `miyagisanchez-prod` under the new `lolis8755` account — zero code changes, zero
+  data loss, zero webhook repoints.** The reuse-heaviest epic on the board ran on the existing
+  `infra/gcp/` scripts with `PROJECT_ID` overridden: twin project provisioned + live-verified
+  inventory (which corrected every count in the scope doc), 56 secrets copied unrotated with
+  byte-length verification, the Cloud SQL path rehearsed AND measured (3.5 min), all automation
+  provisioned dark (triggers disabled, 6 crons paused, monitoring parity, ALB + fresh Origin CA
+  cert + Cloud Armor Cloudflare-allowlist), then a 3.7-minute final sync with **byte-identical
+  dump row counts proving zero writes lost** and a 4-record DNS flip (apex/wildcard/www/api —
+  `api.` moved off its Cloud Run domain mapping onto the ALB, killing a single-project-claim
+  race). Biggest catch: all 7 `cloudflare-*.mjs` tools hardcoded the OLD project id — the flip
+  would have silently no-op'd; found by re-deriving inputs + a live dry-run before the window.
+  The old project is intact and IS the rollback (one-command snapshot restore) until Sprint 4's
+  gated decommission (≥2-week soak). Owed to Daniel: money-path checkout, Stripe/MP dashboard
+  delivery check, session check, morning single-fire cron check. See
+  [09 › gcp-account-migration](09-platform-infra/gcp-account-migration/).
 - **2026-07-17/18 — Six-epic batch SHIPPED across two days (the third Fable 5 multi-epic
   experiment: pre-authorized merges, Fable orchestrates + Sonnet builds + codex/fresh-reviewer
   concurrent review): comparador de costos (3 sprints), hyper-performant website (2 sprints),

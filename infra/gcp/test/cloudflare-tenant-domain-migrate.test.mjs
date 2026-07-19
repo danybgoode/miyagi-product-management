@@ -57,7 +57,7 @@ test('cloudflare-tenant-domain-migrate.mjs: credential resolution matches the ep
   assert.match(src, /resolveSecret\('SUPABASE_URL', 'SUPABASE_URL'\)/)
   assert.match(src, /resolveSecret\('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SERVICE_ROLE_KEY'\)/)
   assert.match(src, /resolveSecret\('VERCEL_API_TOKEN', 'VERCEL_API_TOKEN'\)/)
-  assert.match(src, /miyagisanchezback-497722/)
+  assert.match(src, /miyagisanchez-prod/)
 })
 
 test('cloudflare-tenant-domain-migrate.mjs: concurrency pool mirrors vercel-prune-previews.mjs (8 workers)', () => {

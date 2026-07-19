@@ -4,7 +4,7 @@
 # step checks for existence before creating. Review before running.
 # (09-platform-infra frontend-vercel-to-cloudrun, S1.3.)
 #
-#   PROJECT_ID=miyagisanchezback-497722 bash infra/gcp/provision-frontend.sh
+#   PROJECT_ID=miyagisanchez-prod bash infra/gcp/provision-frontend.sh
 #
 # Unlike the backend, the frontend does NOT need the medusa-conn VPC
 # connector — it never talks to Cloud SQL or Redis directly (Supabase and
@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-frontend}"
 RUN_SA="${RUN_SA:-miyagi-web-run}"
@@ -45,7 +45,10 @@ NEW_SECRETS=(
   VAPID_PRIVATE_KEY       # fresh keypair generated for this deploy (Daniel confirmed: existing Vercel push subscriptions are accepted as a one-time regression during the dark shadow-soak — not user-facing while Vercel serves prod)
   TELEGRAM_CHAT_ID_APP    # the app's own admin-notification chat (distinct from the backend CI/CD chat's TELEGRAM_CICD_CHAT_ID)
   VERCEL_API_TOKEN
-  SERPAPI_KEY
+  # SERPAPI_KEY retired here (gcp-account-migration S1): the secret was an empty shell even in
+  # the old project and live miyagi-web never bound it — an unresolvable :latest would
+  # fail-close every fresh-project revision. Re-add to BOTH this array and deploy-frontend.sh's
+  # --set-secrets (same change) if the SerpAPI feature ever gets a real key.
   # Real credential material only — bucket names / account IDs / public URLs
   # aren't sensitive and go in deploy-frontend.sh's plain --set-env-vars instead.
   R2_ACCESS_KEY_ID
@@ -106,10 +109,23 @@ fi
 say "Runtime service account: $RUN_SA_EMAIL"
 if ! gcloud iam service-accounts describe "$RUN_SA_EMAIL" >/dev/null 2>&1; then
   gcloud iam service-accounts create "$RUN_SA" --display-name="Frontend Cloud Run (miyagi-web)"
+  # A just-created SA is eventually consistent — an immediate IAM grant against it can 400
+  # ("Service account … does not exist"). Hit for real on the first miyagisanchez-prod run
+  # (gcp-account-migration S0.1). Bounded wait until the SA is visible before granting.
+  for _ in $(seq 1 12); do
+    gcloud iam service-accounts describe "$RUN_SA_EMAIL" >/dev/null 2>&1 && break
+    sleep 5
+  done
 fi
 
 say "Granting access to REUSED (backend-owned) secrets"
 for s in "${REUSED_SECRETS[@]}"; do
+  # On a FRESH project only provision.sh's shells pre-exist — the rest of the reused set
+  # (SUPABASE_*, TELEGRAM_BOT_TOKEN, ML_APP_SECRET) accumulated live in the old project, so
+  # create the empty shell here if absent (values populated separately, never by this script).
+  if ! gcloud secrets describe "$s" >/dev/null 2>&1; then
+    gcloud secrets create "$s" --replication-policy=automatic
+  fi
   gcloud secrets add-iam-policy-binding "$s" \
     --member="serviceAccount:${RUN_SA_EMAIL}" \
     --role="roles/secretmanager.secretAccessor" >/dev/null
@@ -139,7 +155,7 @@ cat <<EOF
      fresh value vs Daniel's judgment call):
        printf '%s' "<value>" | gcloud secrets versions add STRIPE_WEBHOOK_SECRET --data-file=-
        # …RESEND_API_KEY, VAPID_PRIVATE_KEY, TELEGRAM_CHAT_ID_APP,
-       #   VERCEL_API_TOKEN, SERPAPI_KEY, R2_*_ACCESS_KEY_ID, R2_*_SECRET_ACCESS_KEY,
+       #   VERCEL_API_TOKEN, R2_*_ACCESS_KEY_ID, R2_*_SECRET_ACCESS_KEY,
        #   UPSTASH_REDIS_REST_TOKEN, ADMIN_SECRET, CLAIM_JWT_SECRET,
        #   ENCRYPTION_KEY, ENCRYPTION_SECRET, CRON_SECRET
   2) Populate the PUBLIC_BUILD_SECRETS shells with the SAME live values already

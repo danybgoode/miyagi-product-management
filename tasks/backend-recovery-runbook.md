@@ -1,7 +1,7 @@
 # Backend Recovery & Rollback Runbook — miyagisanchez backend
 
 > **Scope:** recovering the Medusa backend Cloud Run service (`medusa-web`, us-east4, project
-> `miyagisanchezback-497722`) from a bad deploy or a sick instance. Pairs with the data-loss runbook
+> `miyagisanchez-prod`) from a bad deploy or a sick instance. Pairs with the data-loss runbook
 > ([backup-and-restore-runbook.md](backup-and-restore-runbook.md)) — *this* file is for **code/deploy**
 > failure; that one is for **data** failure. Written for
 > [Backend Production Readiness, Sprint 3](../Roadmap/09-platform-infra/backend-production-readiness/sprint-3.md).
@@ -36,7 +36,7 @@ good revision** in seconds. *(Revision names below are illustrative — always r
 list; don't copy a stale name.)*
 
 ```bash
-gcloud config configurations activate bonsai-profile        # leroytramafat@gmail.com
+gcloud config configurations activate lolis-profile        # lolis8755@gmail.com
 REGION=us-east4
 
 # 1. List recent revisions; the current live one is at 100% (latestRevision).
@@ -255,8 +255,8 @@ Cloud Function (verified `ACTIVE` 2026-06-12 — not rebuilt). Run:
 TARGET=staging bash infra/gcp/provision-monitoring.sh   # rehearse first
 TARGET=prod    bash infra/gcp/provision-monitoring.sh   # owed to Daniel
 # verify:
-gcloud monitoring uptime list-configs --project=miyagisanchezback-497722 --format='value(displayName)'
-gcloud alpha monitoring policies list --project=miyagisanchezback-497722 --format='value(displayName)'
+gcloud monitoring uptime list-configs --project=miyagisanchez-prod --format='value(displayName)'
+gcloud alpha monitoring policies list --project=miyagisanchez-prod --format='value(displayName)'
 ```
 **Dependency/CVE scanning** (gap #13) ships as Dependabot in the backend repo (`.github/dependabot.yml`).
 

@@ -1,6 +1,50 @@
 # GCP account migration — Sprint 3: the cutover
 
-**Status:** ⬜ not started
+**Status:** ✅ executed 2026-07-19 (~18:20 UTC) — Daniel opened the window and approved across the
+board; the DNS flip and new-DB swap each got an additional explicit named confirmation in-session.
+**Held open for Daniel's owed steps: real-money checkout (walkthrough step 6), Stripe/MP dashboard
+webhook-delivery check (step 7), signed-in session check (step 4), next-morning cron check (step 11).**
+
+**Story 3.1 record:** final export 179s (`--offload`, zero prod load) → new-instance DB swap
+(terminate rehearsal-pool backends via server-side SQL import → drop → create → import) 42s.
+**Total data window ≈ 3.7 min, matching the S1 measurement.** Row counts final-vs-rehearsal dump:
+**identical on all 154 tables** — zero writes occurred between rehearsal and cutover, nothing lost.
+`medusa-web` bounced (`00002-fjj`) and verified serving the final data before the flip. Flip via
+`cloudflare-cutover-flip.mjs --apply`: all 4 records (apex/wildcard/www/api) → `136.69.97.223`,
+pre-flip snapshot saved (session scratchpad `cf-cutover-snapshots/miyagisanchez.com-2026-07-19T18-20-53`).
+Post-flip: homepage/www/PDP 200, `api.miyagisanchez.com/health` 200 **through the ALB** (first time
+— previously the domain-mapping CNAME), UCP catalog 20 items, and the new project's `miyagi-web`
+logs show the real hostname traffic. Old project untouched and intact = rollback.
+
+**Story 3.2 record:** **webhooks needed ZERO repointing** — verified via Stripe API: both live
+endpoints are domain-based (`miyagisanchez.com/api/webhooks/stripe`,
+`api.miyagisanchez.com/hooks/payment/pp_stripe-connect_stripe-connect`) and the domains moved with
+the flip; signing secrets were copied unrotated, same endpoint objects. ML redirect URI domain-based
+likewise. MP uses backend-generated per-preference notification URLs — Daniel eyeballs the MP
+dashboard at his money smoke. Automation swapped atomically: new triggers ENABLED (2) / old
+DISABLED (3, staging included); new schedulers RESUMED (6) / old PAUSED (6). Docs sweep done same
+change: 46 old-project-id references across 32 infra/runbook files + billing/identity references →
+`miyagisanchez-prod` / `lolis-profile` / `019B4F-8DBBBA-3EE80C` (the one remaining leroytramafat
+mention deliberately documents the rollback). Suite 147/147.
+
+**Deviations from the walkthrough:** none in substance; the "write-quiet state" proved unnecessary
+(zero traffic writes in the window, proven by identical dumps rather than assumed).
+
+> **Approved runbook change (Daniel, 2026-07-19): `api.miyagisanchez.com` moves onto the ALB.**
+> Today `api.` is a **DNS-only CNAME → `ghs.googlehosted.com`** (Cloud Run domain mapping in the
+> old project — a single-project claim that cannot pre-exist in the new one). The new project's
+> ALB already carries the approved host rule `api.miyagisanchez.com → medusa-web-backend`
+> (provision-alb-frontend.sh §6b, provisioned dark). At the flip, `api.` becomes a **proxied A
+> record → the NEW ALB IP `136.69.97.223`** — same edge pattern as the apex. The old domain
+> mapping is left in place, orphaned (delete at S4).
+>
+> **Flip-tool gap to close before the window:** `cloudflare-cutover-flip.mjs` flips apex +
+> wildcard only. Live zone truth (read 2026-07-19): apex, `*.`, AND an explicit **`www`** A record
+> all sit at the old ALB IP `136.68.90.56` proxied; `api.` is the DNS-only CNAME above. The S3
+> flip must cover **four** records — apex, wildcard, www (content swap), and api (CNAME→A +
+> proxied flip) — extend the script (its snapshot/rollback shape already fits) rather than
+> hand-editing DNS. Old ALB IP `136.68.90.56` is the rollback content for all four.
+> New-project measured sync window (S1.2): **export 178s + import 19s ≈ 3.5 min** write-quiet.
 
 > 🔴 **The only user-visible sprint in this epic. Daniel picks the window and merges.**
 >

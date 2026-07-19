@@ -5,7 +5,7 @@ Sprint: `Roadmap/09-platform-infra/pmo-operational-reports/sprint-2.md`
 ## Service
 
 - Service: `pmo-smalldocs`
-- Project: `miyagisanchezback-497722`
+- Project: `miyagisanchez-prod`
 - Region: `us-east4`
 - URL: `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`
 - Canonical Cloud Run URL: `https://pmo-smalldocs-91083034475.us-east4.run.app`
@@ -39,7 +39,7 @@ The fork has a Cloud Run Dockerfile. Deploy from a clean checkout of `danybgoode
 gcloud run deploy pmo-smalldocs \
   --source /path/to/smalldocs \
   --region us-east4 \
-  --project miyagisanchezback-497722 \
+  --project miyagisanchez-prod \
   --allow-unauthenticated \
   --set-env-vars SDOCS_ENABLE_STATEFUL_APIS=0,SDOCS_REPO_URL=https://github.com/danybgoode/smalldocs,SDOCS_COMMIT=<fork-commit>
 ```

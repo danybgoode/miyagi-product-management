@@ -17,13 +17,13 @@
 # staging database (`medusa_staging`, repointed THIS sprint to rehearse the migration).
 #
 # Cloud SQL BILLS ON CREATION → this script is owed to Daniel (paid infra).
-#   PROJECT_ID=miyagisanchezback-497722 bash infra/gcp/provision-cloudsql.sh
+#   PROJECT_ID=miyagisanchez-prod bash infra/gcp/provision-cloudsql.sh
 #
 # Needs: gcloud + openssl (password generation). Reversible: `gcloud sql instances delete medusa-pg`.
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 NETWORK="${NETWORK:-default}"            # same VPC as the medusa-conn connector + Redis
 INSTANCE="${INSTANCE:-medusa-pg}"

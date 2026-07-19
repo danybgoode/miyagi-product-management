@@ -20,7 +20,7 @@ test('registry buckets are the canonical names (prod + staging), in us-east4', (
   assert.match(src, /BUCKET="miyagi-pmo-reports"/)
   assert.match(src, /BUCKET="miyagi-pmo-reports-staging"/)
   assert.match(src, /REGION="us-east4"/)
-  assert.match(src, /PROJECT_ID:-miyagisanchezback-497722/)
+  assert.match(src, /PROJECT_ID:-miyagisanchez-prod/)
 })
 
 test('lifecycle: only daily/ expires, at 90 days', () => {

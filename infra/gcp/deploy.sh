@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-miyagisanchezback-497722}"
+PROJECT_ID="${PROJECT_ID:-miyagisanchez-prod}"
 REGION="${REGION:-us-east4}"
 AR_REPO="${AR_REPO:-medusa}"
 CONNECTOR="${CONNECTOR:-medusa-conn}"
@@ -42,7 +42,7 @@ else
   gcloud builds submit apps/backend --tag "$IMAGE"
 fi
 
-echo "▶ Deploying $SERVICE_WEB…"
+echo "▶ Deploying ${SERVICE_WEB}…"
 # Health probes (Backend Production Readiness S3): replace the bare TCP:8080 startup
 # probe with an HTTP GET /health check (Medusa's built-in 200) so traffic only reaches
 # a *ready* instance, and add a liveness probe so a wedged instance is auto-recycled.
