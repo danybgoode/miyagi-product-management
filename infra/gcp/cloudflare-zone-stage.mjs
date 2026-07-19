@@ -24,7 +24,7 @@
 import { execFileSync } from 'node:child_process'
 import { diffRecords, normalizeVercelRecord, normalizeCloudflareRecord } from './lib/cloudflare-zone-diff.mjs'
 
-const GCP_PROJECT = 'miyagisanchezback-497722'
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const VERCEL_API = 'https://api.vercel.com'
 const CF_API = 'https://api.cloudflare.com/client/v4'
 

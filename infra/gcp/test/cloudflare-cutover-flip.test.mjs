@@ -18,9 +18,19 @@ test('cloudflare-cutover-flip.mjs: dry-run by default (APPLY gated on --apply)',
   assert.match(src, /if \(!APPLY\) \{[\s\S]{0,80}DRY-RUN/, 'must print a DRY-RUN notice and skip writes when --apply is absent')
 })
 
-test('cloudflare-cutover-flip.mjs: only ever selects the apex and wildcard records, nothing else', () => {
+test('cloudflare-cutover-flip.mjs: selection is a closed name-set — apex, wildcard, and EXTRA_HOSTS only', () => {
+  // gcp-account-migration S3 widened the selection from the original apex+wildcard pair to a
+  // Set built from apex + wildcard + the --extra-hosts list (www/api default for
+  // miyagisanchez.com only — the live zone carries an explicit www A record the wildcard never
+  // matches, and api moves off its DNS-only domain-mapping CNAME onto the ALB). The invariant
+  // this test protects is unchanged: membership in a CLOSED, explicitly-constructed name set —
+  // never a suffix/regex match that could sweep up Clerk, email, or tenant hostnames.
   assert.match(src, /function selectCutoverRecords/)
-  assert.match(src, /r\.name === apexName \|\| r\.name === wildcardName/)
+  assert.match(src, /const names = new Set\(\[domain, `\*\.\$\{domain\}`, \.\.\.EXTRA_HOSTS\.map\(\(h\) => `\$\{h\}\.\$\{domain\}`\)\]\)/)
+  assert.match(src, /names\.has\(r\.name\)/)
+  // The default stays scoped to the primary domain — any other --domain gets NO extra hosts
+  // unless passed explicitly (protects mschz.org's original semantics).
+  assert.match(src, /DOMAIN === 'miyagisanchez\.com' \? 'www,api' : ''/)
 })
 
 test('cloudflare-cutover-flip.mjs: filters by ROUTING record type too, not name alone (regression: CAA/TXT at the apex)', () => {

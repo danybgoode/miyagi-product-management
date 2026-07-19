@@ -38,7 +38,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-const GCP_PROJECT = 'miyagisanchezback-497722'
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const CF_API = 'https://api.cloudflare.com/client/v4'
 const VALIDITY_DAYS = 5475 // 15 years — Cloudflare's max, avoids near-term rotation
 

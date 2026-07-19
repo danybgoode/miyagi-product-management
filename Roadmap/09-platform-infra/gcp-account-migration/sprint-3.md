@@ -1,6 +1,22 @@
 # GCP account migration — Sprint 3: the cutover
 
-**Status:** ⬜ not started
+**Status:** ⬜ not started — prep facts below recorded 2026-07-19 (S2)
+
+> **Approved runbook change (Daniel, 2026-07-19): `api.miyagisanchez.com` moves onto the ALB.**
+> Today `api.` is a **DNS-only CNAME → `ghs.googlehosted.com`** (Cloud Run domain mapping in the
+> old project — a single-project claim that cannot pre-exist in the new one). The new project's
+> ALB already carries the approved host rule `api.miyagisanchez.com → medusa-web-backend`
+> (provision-alb-frontend.sh §6b, provisioned dark). At the flip, `api.` becomes a **proxied A
+> record → the NEW ALB IP `136.69.97.223`** — same edge pattern as the apex. The old domain
+> mapping is left in place, orphaned (delete at S4).
+>
+> **Flip-tool gap to close before the window:** `cloudflare-cutover-flip.mjs` flips apex +
+> wildcard only. Live zone truth (read 2026-07-19): apex, `*.`, AND an explicit **`www`** A record
+> all sit at the old ALB IP `136.68.90.56` proxied; `api.` is the DNS-only CNAME above. The S3
+> flip must cover **four** records — apex, wildcard, www (content swap), and api (CNAME→A +
+> proxied flip) — extend the script (its snapshot/rollback shape already fits) rather than
+> hand-editing DNS. Old ALB IP `136.68.90.56` is the rollback content for all four.
+> New-project measured sync window (S1.2): **export 178s + import 19s ≈ 3.5 min** write-quiet.
 
 > 🔴 **The only user-visible sprint in this epic. Daniel picks the window and merges.**
 >

@@ -35,7 +35,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const GCP_PROJECT = 'miyagisanchezback-497722'
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const CF_API = 'https://api.cloudflare.com/client/v4'
 const VERCEL_API = 'https://api.vercel.com'
 const FALLBACK_ORIGIN = 'cname.miyagisanchez.com' // matches lib/domain-utils.ts CNAME_TARGET

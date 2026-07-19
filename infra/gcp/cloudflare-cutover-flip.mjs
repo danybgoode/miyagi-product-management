@@ -26,7 +26,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const GCP_PROJECT = 'miyagisanchezback-497722'
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const CF_API = 'https://api.cloudflare.com/client/v4'
 const ALB_IP_NAME = 'miyagi-web-lb-ip' // matches provision-alb-frontend.sh's IP_NAME
 const REGION_GLOBAL = true
@@ -107,10 +107,17 @@ async function fetchAllRecords(zoneId) {
 // (miyagisanchez.com carries 3 CAA + 1 TXT record at the apex) before this filter was added;
 // without it, --apply would have overwritten those non-routing records with an A record.
 const ROUTING_TYPES = new Set(['A', 'AAAA', 'CNAME'])
+// gcp-account-migration S3 (Daniel approved 2026-07-19): the account-migration cutover must flip
+// FOUR names, not two — live zone truth carries an explicit `www` A record the wildcard never
+// matches, and `api` moves off its DNS-only CNAME→ghs.googlehosted.com (Cloud Run domain mapping)
+// onto the ALB as a proxied A record (host rule provisioned dark in provision-alb-frontend.sh §6b).
+// Defaulted for miyagisanchez.com only — other domains (mschz.org) keep the original apex+wildcard
+// semantics unless --extra-hosts is passed explicitly.
+const EXTRA_HOSTS = String(arg('extra-hosts', DOMAIN === 'miyagisanchez.com' ? 'www,api' : ''))
+  .split(',').map((h) => h.trim()).filter(Boolean)
 function selectCutoverRecords(records, domain) {
-  const apexName = domain
-  const wildcardName = `*.${domain}`
-  return records.filter((r) => (r.name === apexName || r.name === wildcardName) && ROUTING_TYPES.has(r.type))
+  const names = new Set([domain, `*.${domain}`, ...EXTRA_HOSTS.map((h) => `${h}.${domain}`)])
+  return records.filter((r) => names.has(r.name) && ROUTING_TYPES.has(r.type))
 }
 
 async function patchRecord(zoneId, record, { content, proxied, type }) {
@@ -169,7 +176,7 @@ function groupByName(records) {
     return
   }
 
-  console.log(`▶ Cutover flip for ${DOMAIN} (apex + wildcard only)`)
+  console.log(`▶ Cutover flip for ${DOMAIN} (apex + wildcard${EXTRA_HOSTS.length ? ' + ' + EXTRA_HOSTS.join('/') : ''})`)
   const albIp = resolveAlbStaticIp()
   console.log(`  ALB static IP: ${albIp}`)
 

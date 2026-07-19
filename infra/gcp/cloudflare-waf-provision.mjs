@@ -15,7 +15,7 @@
 
 import { execFileSync } from 'node:child_process'
 
-const GCP_PROJECT = 'miyagisanchezback-497722'
+const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchezback-497722' // env-overridable since gcp-account-migration S2 — the .sh family always was
 const CF_API = 'https://api.cloudflare.com/client/v4'
 const DOMAIN = 'miyagisanchez.com'
 
