@@ -2,13 +2,10 @@
 # Local-first pre-push — ADVISORY (never blocks the push, exits 0 regardless). Auto-enabled
 # via package.json's "prepare" script (git config core.hooksPath .githooks).
 #
-# Runs the Roadmap → Notion sync that notion-sync.yml's GH Actions `push` trigger used to run
-# on every push — moved local-first because it was this repo's single largest Actions-minutes
-# cost (~5-6 billed min/push, full-history clone). Local is a strictly better fit for this one:
-# git history is already present (no fetch-depth:0 clone needed), and it still fires within
-# ~a minute of the push, same guarantee the old workflow trigger provided. GH Actions keeps a
-# nightly cron + workflow_dispatch as the drift safety-net for pushes this hook can't cover
-# (a GitHub web edit, a different machine, NOTION_TOKEN unset locally).
+# Runs a best-effort Roadmap → Notion sync for direct pushes from local `main`. It must never run
+# from a feature branch: `--sync` is a full-board rebuild, and projecting one branch's worldview
+# would clobber parallel work. The public root repo's path-gated push workflow is the reliable
+# post-merge rail; local history makes this hook a faster, unmetered first attempt.
 #
 # Advisory by design: a slow/failed Notion sync should never block a push. Requires
 # NOTION_TOKEN — either already in your shell env, or in a root .env.local (gitignored;
@@ -17,9 +14,17 @@
 
 load_dotenv_var() {
   # Minimal, safe parse of a single KEY=VALUE line — not a full shell-source of the file (dotenv
-  # syntax isn't guaranteed to be valid shell, e.g. unescaped # in a value). Prints the value.
-  [ -f .env.local ] || return 0
-  val=$(grep -E "^$1=" .env.local | head -1 | cut -d= -f2-)
+  # syntax isn't guaranteed to be valid shell, e.g. unescaped # in a value). A linked worktree
+  # does not carry the primary checkout's untracked .env.local, so fall back to the directory that
+  # owns the shared git common-dir. Prints the value.
+  dotenv_file=".env.local"
+  if [ ! -f "$dotenv_file" ]; then
+    common_dir=$(git rev-parse --git-common-dir 2>/dev/null)
+    primary_root=$(dirname "$common_dir")
+    dotenv_file="$primary_root/.env.local"
+  fi
+  [ -f "$dotenv_file" ] || return 0
+  val=$(grep -E "^$1=" "$dotenv_file" | head -1 | cut -d= -f2-)
   printf '%s' "$val" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
 }
 
@@ -29,6 +34,12 @@ changed_roadmap() {
 }
 
 if ! command -v node >/dev/null 2>&1; then
+  exit 0
+fi
+
+current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
+if [ "$current_branch" != "main" ]; then
+  echo "pre-push: skipping full Notion projection from branch ${current_branch:-detached}; main/push workflow owns it." >&2
   exit 0
 fi
 
@@ -56,9 +67,12 @@ fi
 
 export NOTION_TOKEN NOTION_DB_ID
 # Detached background run — the sync is advisory and network-bound (10-60s against Notion's API),
-# so it must never hold the push. Log goes to .git/ (never tracked); the nightly cron in
-# notion-sync.yml remains the safety net if a background run dies with the terminal.
-echo "pre-push: syncing Roadmap → Notion in background (log: .git/notion-sync.last.log)..." >&2
-nohup node scripts/roadmap-to-notion.mjs --sync >.git/notion-sync.last.log 2>&1 &
+# so it must never hold the push. Resolve the per-worktree git path instead of assuming `.git/`
+# is a directory: in a linked worktree `.git` is a pointer file, and redirecting below it prevents
+# the background process from starting at all. The public push workflow remains the safety net.
+notion_log=$(git rev-parse --git-path notion-sync.last.log 2>/dev/null)
+[ -n "$notion_log" ] || notion_log=".git/notion-sync.last.log"
+echo "pre-push: syncing Roadmap → Notion in background (log: $notion_log)..." >&2
+nohup node scripts/roadmap-to-notion.mjs --sync >"$notion_log" 2>&1 &
 
 exit 0

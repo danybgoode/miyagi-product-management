@@ -70,7 +70,28 @@ session, on the epic feature branch (S0 `44bdaba` · S1 `7861b69` · S2 `39a95f5
 - **S4 (deferred ≥2 weeks, gate: Daniel's explicit go):** final export to durable storage →
   reference grep → stop old services/pause old SQL → delete project. Added at S3 close: delete old
   `miyagi-pmo-reports` bucket then recreate+restore in new project (global name); redeploy
-  `pmo-smalldocs`/`print-pdf`/notifier functions/staging surface; new `pmo-report-writer` SA key
-  into the claude.ai routine env; delete the old `api.` domain mapping.
+  `pmo-smalldocs`/`print-pdf`/staging surface; new `pmo-report-writer` SA key into the claude.ai
+  routine env; delete the old `api.` domain mapping. **Correction during soak:** the two Telegram
+  build-notifier functions moved immediately rather than waiting for S4, because observability is
+  a soak precondition, not teardown work.
 - The old project's monitoring still watches the shared domain (now serving the new project) —
   harmless double-cover until S4 tears it down.
+
+## Post-cutover validation correction (2026-07-19)
+
+The four expected GitHub `📦` merge alerts arrived, but no Cloud Build `🚀` terminal alerts did.
+The builds themselves were healthy: backend `f813206` and frontend `ca702d3`, `b1a8311`, and
+`50a93dc` all reached `SUCCESS`, and Cloud Run served the newest revisions. The missing alerts
+exposed two independent migration gaps:
+
+- the `cloud-builds` Pub/Sub topic and the two Gen2 notifier functions still existed only in the
+  rollback project; secrets and build triggers alone do not recreate event-driven consumers;
+- the frontend GitHub workflow still polled a Vercel production deployment that no longer exists,
+  spending about 15 hosted minutes per merge before timing out green.
+
+The repair moved both functions to `miyagisanchez-prod`, removed the obsolete Vercel poller, and
+made the notifier deploy script project-explicit (no global `gcloud config set`). A second live
+finding was also fixed: the frontend Docker builder received `NEXT_PUBLIC_MEDUSA_STORE_URL` but not
+the server-side `MEDUSA_STORE_URL`, so the initial homepage prerender could freeze an empty catalog
+until ISR repaired it. The builder now exports the server alias and a deterministic guard locks the
+relationship.

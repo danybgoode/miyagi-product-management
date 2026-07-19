@@ -12,7 +12,9 @@
 - `.githooks/pre-commit` blocks on stale `BUILD-ORDER.md`, `doc-format` drift, or a failing
   `scripts/`/`infra/` node:test suite — each gated to only run when the commit touches that area.
 - `.githooks/pre-push` runs `node scripts/roadmap-to-notion.mjs --sync` locally when `Roadmap/**`
-  changed and `NOTION_TOKEN` is set; advisory only, never blocks the push.
+  changed, `NOTION_TOKEN` is set, and the checkout is on `main`; advisory only, never blocks the
+  push. Feature branches skip the full-board projection. Its log path is resolved with
+  `git rev-parse --git-path` so the detached process also starts from linked worktrees.
 - `package.json`'s `prepare` script sets `core.hooksPath` automatically on install.
 **Risk:** Low
 **Status:** ✅ shipped
@@ -30,6 +32,8 @@
 3. Push a commit touching `Roadmap/**` with `NOTION_TOKEN` unset.
    → `pre-push` prints a skip message, push proceeds normally (never blocks).
 4. Confirm `notion-sync.yml` on GitHub no longer has a `push` trigger (`gh workflow view
-   notion-sync.yml` or read the file) — only `schedule` + `workflow_dispatch` remain.
+   notion-sync.yml` or read the file). Historical result: only `schedule` + `workflow_dispatch`
+   remained while the repo was private. After the repo became public, a path-gated `main` push
+   trigger was safely restored to guarantee post-merge freshness.
 
 If any step fails, note the step number + what you saw — that's the bug report.

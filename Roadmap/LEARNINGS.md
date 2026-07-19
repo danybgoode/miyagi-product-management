@@ -14,13 +14,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 ## Multi-agent & async deploy coordination
 *Several agents work in parallel on their own branches, against two repos that deploy independently.*
 
-- **Two repos, two deploy rails, different speeds.** Frontend (`apps/miyagisanchez`) → Vercel on
-  merge, with a per-branch **preview**. Backend (`apps/backend`) → Cloud Build us-east4 → Cloud Run
-  on merge, **~12 min, no preview**. When a frontend feature reads data a backend change produces,
+- **Two repos, one production platform, different preview shapes.** Both frontend
+  (`apps/miyagisanchez` → `miyagi-web`) and backend (`apps/backend` → `medusa-web`) deploy on merge
+  through regional Cloud Build in `us-east4` to Cloud Run; Vercel remains only the frontend's
+  per-branch **preview**, never its production deploy. When a frontend feature reads data a backend change produces,
   **merge backend first (or together)** and make the frontend **degrade gracefully** (`?? []`,
   null-safe) so the deploy-lag window never breaks prod. *(2026-06-05, Configurable & Personalized
-  Products — frontend read `order.personalization ?? []`, a safe no-op until the backend normalizer
-  shipped.)*
+  Products; production rail corrected after the 2026-07-10 frontend Cloud Run cutover.)*
 - **Render is not the active backend deploy rail.** If a stale Render service appears in local CLI
   history, ignore it for Miyagi backend shipping. The source of truth is the backend repo's
   `cloudbuild.yaml`: Cloud Build trigger `backend-main-deploy` in `us-east4`, deploying Cloud Run
@@ -866,6 +866,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   **Quota-exhaustion protocol** while waiting on a flip/reset: the builder-run local gate + the
   green Vercel preview (Vercel-side, unaffected) are the merge signal — state "CI quota exhausted,
   local gate green: <details>" in the PR body. *(2026-07-18, multi-epic batch.)*
+- **Remove retired-platform observers at the cutover, not later.** After frontend production moved
+  from Vercel to Cloud Run, its GHA notifier kept polling `target=production` 60 times and timing
+  out green, burning ~15 hosted minutes per merge while reporting nothing. Observability code is
+  part of the deploy topology: when a rail is retired, delete its pollers and prove the replacement
+  against a real terminal event. *(2026-07-19, GCP account-migration post-cutover audit.)*
+- **A project migration must inventory event sources and consumers, not just secrets, services,
+  and triggers.** Copying the Telegram secrets and recreating Cloud Build triggers did not move the
+  project-local `cloud-builds` topic, Eventarc subscriptions, or Gen2 notifier functions; builds
+  succeeded in the new project while terminal alerts stayed attached to the old one. During a
+  cutover, enumerate `topic → subscription/trigger → function/service` as one unit and smoke it
+  before calling the soak observable. *(2026-07-19, GCP account-migration post-cutover audit.)*
 - **An npm `prepare` script runs on EVERY `npm ci` — including inside Docker build stages, where
   git (and your repo) don't exist. A git-touching `prepare` must end in `|| true`.** The
   local-first pre-push hook chore (frontend #264 / backend #96, 2026-07-16) added
@@ -1746,13 +1757,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
-- **CI/CD → Telegram: mirror the message *format*, not the runtime function, and poll Vercel (free tier)
-  from a GHA job.** `lib/telegram.ts` is an *app-runtime* helper — a GitHub Action can't import it, so the
-  pipelines reuse its HTML/`esc()` style by convention, not by call. Vercel configurable webhooks are
-  **Pro-only**, so on Hobby/free a GHA job polls the Vercel API (reuse `ci.yml`'s resolve-by-commit-SHA +
-  poll loop, scoped `target=production`). And Cloud Build aborts on first failure, so subscribe to the
-  `cloud-builds` **Pub/Sub** topic for a success-AND-failure backend deploy hook (a trailing cloudbuild
-  step only reports success). *(2026-06-06, cicd-telegram-notifications.)*
+- **CI/CD → Telegram: mirror the message *format*, not the runtime function; terminal production
+  status comes from Cloud Build Pub/Sub for both apps.** `lib/telegram.ts` is an app-runtime helper,
+  so pipeline observers reuse its HTML/`esc()` style by convention, not by import. Cloud Build
+  aborts on first failure, so a trailing YAML step cannot report both outcomes: subscribe
+  project-local notifier functions to `cloud-builds`, one filtered instance per app trigger.
+  The former Vercel API poller was correct while Vercel hosted production but became pure quota
+  waste after the Cloud Run cutover and was removed. *(2026-06-06, cicd-telegram-notifications;
+  sharpened 2026-07-19 after the GCP migration audit.)*
 - **An authoritative, money-adjacent scheduled action belongs in the BACKEND scheduled job (internal auth +
   idempotency), not a Vercel/edge cron.** "Pick the sweepstakes winner once" started on a one-minute Vercel
   cron and was moved onto a Medusa scheduled job on Cloud Run with internal auth — a public/edge cron is the

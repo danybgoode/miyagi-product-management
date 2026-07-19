@@ -5,9 +5,10 @@
 # Stands up the proactive observability the backend lacked (audit gaps #2/#7): an
 # uptime check + Cloud Run alert policies (5xx, p95 latency, memory, saturation) +
 # an ERROR-log alert (Error Reporting auto-groups the same logs), ALL routed to the
-# existing MiyagiDevopsTele notification channel. Deploy-event pings already ship via
-# the cicd-telegram-build-notifier Cloud Function (verified ACTIVE — not rebuilt here;
-# the frontend gets its OWN second instance, see deploy-cicd-telegram-notifier-frontend.sh).
+# existing MiyagiDevopsTele notification channel. Deploy-event pings are a separate,
+# project-local Pub/Sub rail: deploy both cicd-telegram-build-notifier functions with the
+# backend repo's deploy-cicd-telegram-notifier*.sh scripts whenever the project changes.
+# This script does not create or verify those functions.
 #
 # Idempotent: every resource is create-if-absent (matched by displayName), so a re-run
 # is safe and only fills gaps. To change a threshold, delete the policy and re-run.

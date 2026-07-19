@@ -1,7 +1,8 @@
 # In-flight overlay for the Roadmap → Notion projection (the "PR is open" signal).
-# Sibling to notion-sync.yml, which is the docs-truth full rebuild on push-to-main. This workflow does
+# Sibling to notion-sync.yml, which is the docs-truth full rebuild on its nightly/manual rail. This workflow does
 # NOT rebuild the board — it PATCHes only the epic row(s) a PR actually touches, so the board shows an
-# epic as "In review" while its PR is open, then hands back to notion-sync.yml on merge.
+# epic as "In review" while its PR is open, then clears that overlay on merge. The push-to-main
+# notion-sync workflow performs the reliable full rebuild; local pre-push is a faster best effort.
 #
 # Why scoped (not --sync): --sync is a full rebuild keyed by slug. Running it from a feature branch would
 # overwrite every OTHER epic's row with one branch's worldview, and parallel branches would clobber each
@@ -12,8 +13,8 @@
 #   • DRAFT PR (opened/synchronize/reopened/converted_to_draft while draft) → Lifecycle="In progress".
 #   • READY PR (ready_for_review, or opened/synchronize while not draft)     → Lifecycle="In review".
 #     (both set the PR link on the touched epic's row(s)).
-#   • closed (merged OR not)          → --clear the overlay. On merge, the push to main triggers
-#                                       notion-sync.yml, which re-derives Status from the merged docs.
+#   • closed (merged OR not)          → --clear the overlay. On merge, push-to-main notion-sync
+#                                       re-derives Status from the merged docs.
 #
 # Requires the SAME NOTION_TOKEN secret as notion-sync.yml, plus two NEW Notion properties on the
 # Marketplace Roadmap DB — Lifecycle (Select) and "PR link" (URL). Notion rejects a PATCH to an unknown
@@ -76,7 +77,7 @@ jobs:
           label=$(node scripts/roadmap-to-notion.mjs --lifecycle)
           echo "Lifecycle decision: $label"
           if [ "$label" = "clear" ]; then
-            # merged → notion-sync.yml takes over via the push to main; unmerged → just revert. Both clear.
+            # merged → push-to-main notion-sync owns docs Status; unmerged → just revert. Both clear.
             node scripts/roadmap-to-notion.mjs --pr "$slugs" --clear
           else
             node scripts/roadmap-to-notion.mjs --pr "$slugs" --status "$label" --link "$PR_URL"
