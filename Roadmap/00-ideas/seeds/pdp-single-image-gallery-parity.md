@@ -1,17 +1,34 @@
 ---
 title: "PDP: single-image listings get lightbox + back/share chrome"
 slug: pdp-single-image-gallery-parity
-status: ready
+status: shipped
 area: "01"
 type: bug
 priority: null
 risk: low
 epic: null
 build_order: null
-updated: 2026-07-12
+updated: 2026-07-19
 ---
 
 # Scope — PDP single-image gallery parity
+
+> **✅ SHIPPED 2026-07-13 — frontend PR
+> [#247](https://github.com/danybgoode/miyagisanchezcommerce/pull/247) (`1ec8bd6`),
+> *"fix(pdp): give single-image and zero-image galleries lightbox + back/share parity"*.**
+> Landed as a single standalone fix PR (LOW tier) — no epic folder was scaffolded, which is why
+> this seed sat at `status: ready` until the 2026-07-19 grooming pass caught the drift.
+>
+> **Verified against the code on 2026-07-19:** `app/(shell)/l/[id]/Gallery.tsx` no longer has the
+> `count === 1` early return — a single image renders on the main path with `cursor: 'zoom-in'` and
+> an `onClick` that opens the `Lightbox` (L197-202); the `count === 0` placeholder branch now
+> carries the back + share `cornerBtn` chrome (L117-128). Regression spec shipped in the same PR:
+> `e2e/pdp-gallery.browser.spec.ts` (+70 lines).
+>
+> **Follow-up filed at the same pass:** the lightbox's own close button is obscured by the
+> navigation layer — see [`pdp-lightbox-close-button-occluded.md`](./pdp-lightbox-close-button-occluded.md).
+> That is a *different* defect (the lightbox chrome, not the gallery entry points) and does not
+> reopen this seed.
 
 ## Outcome & signal
 A listing with exactly one photo behaves like any other PDP: tapping the photo opens the
