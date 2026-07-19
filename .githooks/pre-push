@@ -55,10 +55,10 @@ if [ -z "$NOTION_DB_ID" ]; then
 fi
 
 export NOTION_TOKEN NOTION_DB_ID
-echo "pre-push: syncing Roadmap → Notion..." >&2
-if ! node scripts/roadmap-to-notion.mjs --sync; then
-  echo "pre-push: Notion sync failed — push is proceeding anyway (advisory, not a gate)." >&2
-  echo "pre-push: the nightly cron or 'gh workflow run notion-sync.yml' will catch it up." >&2
-fi
+# Detached background run — the sync is advisory and network-bound (10-60s against Notion's API),
+# so it must never hold the push. Log goes to .git/ (never tracked); the nightly cron in
+# notion-sync.yml remains the safety net if a background run dies with the terminal.
+echo "pre-push: syncing Roadmap → Notion in background (log: .git/notion-sync.last.log)..." >&2
+nohup node scripts/roadmap-to-notion.mjs --sync >.git/notion-sync.last.log 2>&1 &
 
 exit 0
