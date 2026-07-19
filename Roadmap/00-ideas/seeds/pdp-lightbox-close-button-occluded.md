@@ -1,12 +1,12 @@
 ---
 title: "Fixed overlays are trapped under the platform chrome — the PDP lightbox close button is unreachable"
 slug: pdp-lightbox-close-button-occluded
-status: ready
+status: scaffolded
 area: "01"                           # reported on the PDP gallery; the root cause is shared 09 chrome
 type: bug                            # class: Bug (stacking-context trap) · archetype: Sweeper/Maintainer
 priority: null
 risk: low                            # frontend-only render/portal change; no commerce, auth, or data path
-epic: null
+epic: "01-discovery-and-shopping/pdp-lightbox-close-button-occluded"
 build_order: null
 updated: 2026-07-19
 ---

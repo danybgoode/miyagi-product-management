@@ -1,4 +1,4 @@
-# Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes — Retrospective
+# ssrf-dns-pinning — Retrospective
 
 _Closed: <date>_
 

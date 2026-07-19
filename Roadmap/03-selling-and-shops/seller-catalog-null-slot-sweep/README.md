@@ -5,7 +5,13 @@ slug: seller-catalog-null-slot-sweep
 
 # Epic: Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes
 
-> **Area:** 03-selling-and-shops · **Risk:** high · **Scope seed:** [`00-ideas/seeds/seller-catalog-null-slot-sweep.md`](../../00-ideas/seeds/seller-catalog-null-slot-sweep.md) · **Archetype:** Sweeper/Maintainer
+> **Area:** 03 · Selling & Shops · **Risk:** high · **Class:** Bug · **Scope seed:** [`00-ideas/seeds/seller-catalog-null-slot-sweep.md`](../../00-ideas/seeds/seller-catalog-null-slot-sweep.md) · **Archetype:** Sweeper/Maintainer
+
+> ⚠️ **Not started.** The frontmatter `status: scaffolded` above is the SSOT and it is accurate —
+> no story has been built. At a re-grooming pass this epic was twice mistaken for shipped (the
+> scaffolded `RETROSPECTIVE.md` stub reads as evidence of a close that never happened). Verify
+> against the code, not the folder contents: `resolveSellerProductIds()` is still called from only
+> the four sites the original hotfix PR converted, and the `{ includeDeleted }` option does not exist.
 
 ## Why
 

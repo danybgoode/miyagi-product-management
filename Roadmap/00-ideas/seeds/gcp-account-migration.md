@@ -1,12 +1,12 @@
 ---
 title: "GCP account migration — leroytramafat → lolis8755 (new project, rebuild + cutover)"
 slug: gcp-account-migration
-status: ready
+status: scaffolded
 area: "09"
 type: chore                          # infra move, no user-facing change — but the highest-stakes chore on the board
 priority: null
 risk: high                           # production commerce DB + all of prod hosting moves; a real cutover window
-epic: null
+epic: "09-platform-infra/gcp-account-migration"
 build_order: null
 updated: 2026-07-19
 ---
@@ -135,11 +135,12 @@ gcloud config configurations list      # expect: bonsai-profile (leroytramafat),
 gcloud billing accounts list
 ```
 
-Three things to check and report back before Sprint 0 starts:
+Two things to confirm before Sprint 0 starts:
 
-1. **Is there a billing account on `lolis8755` with a payment method attached?** A brand-new Google
-   account often has **no** billing account, only the free tier. Cloud SQL + Memorystore + a VPC
-   connector will **not** provision without one. This is the most likely thing to block day one.
+1. ~~Is there a billing account with a payment method?~~ **✅ Resolved 2026-07-19 — Daniel confirmed
+   the `lolis8755` account is fully paid and unlocked.** The day-one blocker is gone; Sprint 0 can
+   provision Cloud SQL + Memorystore + the VPC connector immediately. Still capture the **billing
+   account id** (`gcloud billing accounts list`) — `provision.sh` needs it as `BILLING_ACCOUNT`.
 2. **Do you want to keep the existing project name/id or take a fresh one?** Project **ids are
    globally unique and permanently immutable** — `miyagisanchezback-497722` cannot be reused while
    the old project exists. Expect a new id; nothing depends on it except our own script defaults.
@@ -178,7 +179,8 @@ is a separate, deferred sprint. Record this carve-out at epic scaffold time (Sta
 
 ## Open risks / research
 
-- **Billing account on the new identity is the #1 blocker.** Verify before anything else.
+- ~~Billing account on the new identity is the #1 blocker.~~ **Cleared 2026-07-19 — fully paid,
+  unlocked account.** With that gone, the **Cloud SQL cutover window** below is now the #1 risk.
 - **Cloud SQL cross-project move**: confirm the current path (export to GCS → import, vs. a
   cross-project backup restore) and, critically, **how long the final sync takes** — that duration
   *is* the cutover window. Measure it in Sprint 1's rehearsal; don't estimate it.

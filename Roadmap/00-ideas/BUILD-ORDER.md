@@ -16,11 +16,15 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (7)
 
+- [Fixed overlays trapped under the platform chrome — the PDP lightbox close button](../../01-discovery-and-shopping/pdp-lightbox-close-button-occluded/README.md) — 01 Discovery · 0/3 stories · risk: Low
+- [Catalog orphan-listing sweep — drain the seller-less listings the 2026-07-15 fix left behind](../../03-selling-and-shops/catalog-orphan-listing-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High
 - [Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 0/3 stories · risk: High · tbd
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
+- [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 0/9 stories · risk: High
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
+- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
 
 ## ✅ Shipped (114)
 
@@ -139,17 +143,16 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (6)
 
 - [AI-adoption maturity: benchmark vs the Steps-of-AI-Adoption ladder + the harness plan](seeds/ai-adoption-maturity-benchmark.md) — Ready · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
-- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](seeds/ssrf-dns-pinning.md) — Raw · Chore
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -158,8 +161,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
-| Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes | Scaffolded | Shipped |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 
 ---
-_Epics: 121 · seeds in funnel: 7 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 125 · seeds in funnel: 6 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

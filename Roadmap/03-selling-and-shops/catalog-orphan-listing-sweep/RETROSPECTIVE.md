@@ -1,4 +1,4 @@
-# Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes — Retrospective
+# catalog-orphan-listing-sweep — Retrospective
 
 _Closed: <date>_
 

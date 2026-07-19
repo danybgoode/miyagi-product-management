@@ -1,4 +1,4 @@
-# Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes — Retrospective
+# gcp-account-migration — Retrospective
 
 _Closed: <date>_
 
