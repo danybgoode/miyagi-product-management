@@ -1,6 +1,29 @@
 # GCP account migration — Sprint 1: secrets + the data rehearsal
 
-**Status:** ⬜ not started
+**Status:** ✅ done 2026-07-19 — both stories; awaiting Daniel's read of the measured window + row counts (Sprint QA "owed" item)
+
+**Story 1.1 record:** **56 secrets copied** old→new (of 60: excluded `github-github-oauthtoken-*`
+account-scoped; `DATABASE_URL`/`REDIS_URL` env-specific, set fresh; `SERPAPI_KEY` turned out to be
+an **empty shell even in the old project** — which retroactively explains why live `miyagi-web`
+never bound it). Zero rotation. Verified per-secret by byte-length equality; values never printed
+nor written to disk (direct `access | add` pipe). `medusa-run` granted accessor on all 16 of
+`deploy.sh`'s bindings.
+
+**Story 1.2 record:** path = **export→GCS→import** (not cross-project backup-restore): DB is tiny,
+it avoids granting old-account identities on the new instance, and it rehearses the exact S3
+final-sync mechanism. Bucket `gs://miyagisanchez-prod-db-migration` (Daniel approved the two
+cross-project service-agent grants). **Measured: export (`--offload`, zero prod load) 178s +
+import 19s ≈ 3.5 min** — that is the S3 write-quiet window, plus flip overhead. Row counts from
+the dump (exact old-side truth at export time, 154 tables): product **106** · product_variant
+**106** · `"order"` **17** · order_line_item **18** · payment **17** · payment_collection **49** ·
+cart **68** · customer **7** · seller **25** · region **2**. Full per-table list in the session
+scratchpad; re-derive the same way at S3. `medusa-web` deployed
+(`medusa-web-00001-6ml`, image `backend:20260719-102613`) and **boots against the imported DB** —
+`/health` 200 (startup probe gates traffic, so serving = booted), `/store/listings` returns real
+rows with the copied publishable key. Smoke steps 1–7 all pass; prod untouched (200, old project).
+Infra suite: **147/147**. One script fix shipped: `deploy.sh`/`deploy-frontend.sh` had
+`"$SERVICE_WEB…"` — under a C-locale shell bash swallows the UTF-8 ellipsis into the identifier
+("unbound variable"); braced to `${SERVICE_WEB}…`.
 
 > **Still zero production exposure** — this sprint restores a **backup**, never the live database,
 > and nothing in prod points at the new project. But it is tagged HIGH because it handles production

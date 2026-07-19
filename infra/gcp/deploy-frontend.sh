@@ -74,7 +74,7 @@ else
   gcloud builds submit apps/miyagisanchez --tag "$IMAGE"
 fi
 
-echo "▶ Deploying $SERVICE_WEB…"
+echo "▶ Deploying ${SERVICE_WEB}…"
 gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
