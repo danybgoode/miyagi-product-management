@@ -71,8 +71,8 @@ Actual order: read-only production audit → backend PR #104/deploy → producti
 test-only frontend PR #286. Story 1.2 never ran because Story 1.1 invalidated its authorization
 premise. This is the intended behavior of the stop-before-mutation gate, not unfinished work.
 
-No kill-switch — Stage 6b carve-out: unpublishing is reversible by republishing, and the guard is
-fail-safe by construction. Rollback is republish + `git revert`.
+No kill-switch — the shipped change is a test-only invariant and the proposed production mutation
+never ran. Rollback is `git revert` of frontend PR #286; there is no catalog data rollback.
 
 ## Definition of Done (epic)
 - [x] All sprints merged to `main` + smoke-tested (gaps stated)
