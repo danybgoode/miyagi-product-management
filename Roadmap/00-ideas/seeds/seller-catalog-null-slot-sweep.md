@@ -1,14 +1,14 @@
 ---
 title: "Seller-catalog null-slot sweep — resolveSellerProductIds() pattern across ~20 sites"
 slug: seller-catalog-null-slot-sweep
-status: scaffolded                   # raw | ready | queued | scaffolded | in-progress | shipped | archived — funnel-only now; epic README frontmatter is the SSOT
+status: shipped                      # raw | ready | queued | scaffolded | in-progress | shipped | archived — funnel-only now; epic README frontmatter is the SSOT
 area: "03"                           # primary home: Selling & Shops; several affected routes are money-path order routes (02 checkout)
 type: bug                            # class: Bug (fan-out sweep) · archetype: Sweeper/Maintainer
 priority: tbd
 risk: high                           # money-path order routes (confirm-payment, release-escrow, ship) — Daniel merges those
 epic: "03-selling-and-shops/seller-catalog-null-slot-sweep"
 build_order: null
-updated: 2026-07-11
+updated: 2026-07-19
 ---
 
 # Seller-catalog null-slot sweep — scope doc (groomed 2026-07-11)

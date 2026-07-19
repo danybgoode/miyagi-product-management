@@ -1,7 +1,7 @@
 ---
 title: "Orphan listings still in the public catalog — empty shop.slug breaks the embed surface"
 slug: catalog-orphan-listing-sweep
-status: scaffolded
+status: shipped
 area: "03"                           # Selling & Shops (the seller↔product link); surfaces on 07 embed + 01 browse
 type: bug                            # class: Bug (residual bad data + missing invariant) · archetype: Sweeper/Maintainer
 priority: null

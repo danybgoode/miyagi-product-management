@@ -1,17 +1,16 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: seller-catalog-null-slot-sweep
 ---
 
-# Epic: Seller-catalog null-slot sweep — resolveSellerProductIds() across ~20 routes
+# Epic: Seller-catalog null-slot sweep — 23 unsafe reads across 21 runtime files
 
 > **Area:** 03 · Selling & Shops · **Risk:** high · **Class:** Bug · **Scope seed:** [`00-ideas/seeds/seller-catalog-null-slot-sweep.md`](../../00-ideas/seeds/seller-catalog-null-slot-sweep.md) · **Archetype:** Sweeper/Maintainer
 
-> ⚠️ **Not started.** The frontmatter `status: scaffolded` above is the SSOT and it is accurate —
-> no story has been built. At a re-grooming pass this epic was twice mistaken for shipped (the
-> scaffolded `RETROSPECTIVE.md` stub reads as evidence of a close that never happened). Verify
-> against the code, not the folder contents: `resolveSellerProductIds()` is still called from only
-> the four sites the original hotfix PR converted, and the `{ includeDeleted }` option does not exist.
+> ✅ **Shipped 2026-07-19.** Backend
+> [PR #104](https://github.com/danybgoode/medusa-bonsai-backend/pull/104), squash `f813206`, migrated
+> the full re-derived inventory in one HIGH release and deployed as Cloud Run revision
+> `medusa-web-00003-jgv`.
 
 ## Why
 
@@ -45,26 +44,25 @@ survive deletes — shipped product behavior, reconfirmed by Daniel at grooming 
 
 | Sprint | Story | Risk |
 |---|---|---|
-| 1 | 1.1 Money-path orders family + public shop page (ownership incl. soft-deleted) — **PR A** | high |
-| 1 | 1.2 Remaining ~9 sites (plain null-filter / inline guards) — **PR B** | low |
-| 1 | 1.3 Anti-recurrence static guard (allow-list ends empty) — rides **PR B** | low |
+| 1 | 1.1 Money-path orders family + public shop page (ownership incl. soft-deleted) | high |
+| 1 | 1.2 Remaining sites, including the seed-missed home-personalization read and historical ticket redemption | high |
+| 1 | 1.3 Import-aware TypeScript-AST inventory guard + fail-closed all-item ownership seam | high |
 
 ## Deploy order
 
-Backend-only (`apps/backend`), no frontend change. Two PRs by tier (Daniel's call at grooming):
-**PR A** (Story 1.1) is HIGH — Daniel merges; **PR B** (Stories 1.2 + 1.3) is LOW — reviewer may
-merge on green CI, after PR A lands (the guard's allow-list must reflect PR A's migrations). No
-kill-switch — Stage 6b carve-out recorded in the seed: defensive hardening of existing reads, no new
-runtime seam, fail-safe by construction; rollback is `git revert` on `main`. Backend deploys
-post-merge via Cloud Build (~12 min, no preview) — prod smoke follows deploy.
+Backend-only (`apps/backend`), one HIGH PR. Validation showed the planned LOW half contained the
+active production attribution failure and shared the same helper/root cause, so splitting it would
+have left the incident live through a second review/deploy. The consolidated gate and fresh review
+also found and fixed ticket redemption plus pre-existing fail-open/partial order ownership paths.
+No kill-switch — defensive hardening of existing reads; rollback is `git revert` on `main`.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b, see seed): no runtime seam, fail-safe by construction
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b, see seed): no runtime seam, fail-safe by construction
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)

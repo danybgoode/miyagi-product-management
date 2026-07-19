@@ -1,6 +1,13 @@
 # Seller-catalog null-slot sweep — Sprint 1: money-path + public shop · remaining sites · anti-recurrence guard
 
-**Status:** ⬜ not started
+**Status:** ✅ complete — backend PR [#104](https://github.com/danybgoode/medusa-bonsai-backend/pull/104), squash `f813206`; Cloud Run `medusa-web-00003-jgv`
+
+> **Close correction (2026-07-19):** build-time re-grep found 23 unsafe reads across 21 runtime
+> files, including `store/home/personalization`, which the seed missed. The planned HIGH/LOW split
+> became one HIGH PR because `store/listings`—the active production failure—was in the nominally
+> LOW half and shared the same helper/deploy. Fresh review also identified historical ticket
+> redemption and pre-existing fail-open/partial order ownership paths; the final PR makes all 11
+> order authorization seams fail closed and all 12 historical reads deleted-inclusive.
 
 > **Root cause (proven, don't re-derive):** `remoteQuery.graph({ entity: 'seller', fields: ['id',
 > 'products.id'] })` returns a **null array slot** for every soft-deleted product; a bare
@@ -17,7 +24,7 @@
 
 ## Stories
 
-### Story 1.1 — Money-path orders family + public shop page (PR A)
+### Story 1.1 — Money-path orders family + public shop page
 **As a** seller, **I want** my order actions (view, confirm payment, release escrow, ship, return,
 proof, pickup appointment, tags, bulk status) and my public shop page to keep working after I delete
 any listing, **so that** deleting a product never strands my in-flight orders or takes my shop
@@ -33,9 +40,9 @@ containing the *deleted* product — ownership still passes; (c) an order contai
 seller's* product is still 403 (fail-closed preserved — the sweep must not loosen ownership).
 **QA:** extend `seller-catalog-query.unit.spec.ts` — null-slot + `includeDeleted` (deleted id
 present, other-seller id absent) cases.
-**Risk:** HIGH (money path) — **Daniel merges PR A.**
+**Risk:** HIGH (money path) — shipped in the consolidated PR after the batch authorization.
 
-### Story 1.2 — Remaining-sites sweep (PR B)
+### Story 1.2 — Remaining-sites sweep
 **As a** buyer or admin, **I want** browse, listing detail, support resolution, shipping quotes,
 profit apply-price, admin seller list, ML publish, and ticket redeem to tolerate a seller's deleted
 products, **so that** no surface silently misattributes, duplicates, or drops data after a delete.
@@ -50,9 +57,10 @@ products; `support-product` reuses (never duplicates) the existing support primi
 still honors the shop's Envía grant / Correos settings; each remaining route returns 200 with
 correct data. Every site either calls the helper or carries an explicit null-guard. No behavior
 refactor beyond the resolver swap (e.g. `store/listings/route.ts` keeps its per-seller loop shape).
-**Risk:** LOW — reviewer may merge PR B on green, **after PR A lands**.
+**Risk:** LOW in isolation; shipped with Story 1.1 because the production failure and shared helper
+made an intermediate deploy lower-value than one HIGH-reviewed PR.
 
-### Story 1.3 — Anti-recurrence static guard (rides PR B)
+### Story 1.3 — Anti-recurrence static guard
 **As a** future builder, **I want** a backend unit test that fails on any bare
 `(…?.products ?? []).map(` shape under `src/api` outside an explicit allow-list, **so that** the
 21st call site can't silently reintroduce the crash.
@@ -69,6 +77,13 @@ over what the sweep actually swept.
   on an order containing a since-deleted listing). Agent owns the API-level prod probes.
 - **deterministic gate:** `medusa build` → `tsc --noEmit` → `npm run test:unit` green before merge
   (backend has no per-branch preview; live confirmation is post-merge against prod).
+
+**Recorded result:** backend/admin build + `tsc` + 44 suites / 450 unit tests green; import-aware
+AST inventory leaves every `products.*` relation selection behind the typed helper. Production
+revision deployed successfully; the formerly ownerless catalog product now resolves to
+`andrea-shops`, and the full 71-item catalog invariant is green. Still owed to Daniel: authed
+confirm-payment/ship/release-escrow and cross-seller 403 browser smokes on a disposable historical
+order, plus a real scanner redemption of a ticket whose listing was deleted.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com — **post-merge** (backend deploys via Cloud Build,

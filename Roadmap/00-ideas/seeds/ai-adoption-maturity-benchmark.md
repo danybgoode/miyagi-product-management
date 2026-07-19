@@ -142,6 +142,61 @@ rather than a guessed one:
    nothing starts without a human reading a message. Deliberately narrow — one data source, one
    task type, kept advisory (draft only, never auto-merge) exactly as `smoke-triage` is.
 
+## Controlled trial — Codex/Sol orchestrates OpenAI workers (2026-07-19)
+
+This three-epic batch tested the same pre-authorized, merge-on-green operating shape with
+**GPT-5.6 Sol as top-level architect** and risk/type-based OpenAI delegation:
+
+- **Terra/medium:** bounded codebase audits, frontend overlay work, and the test-only catalog
+  invariant.
+- **Sol/high:** live overlap adjudication, Medusa nested-relation semantics, order authorization,
+  production deploy sequencing, and final reviewer agents.
+- **Deterministic rail:** isolated worktrees → local red/green → GitHub CI → fresh independent
+  reviewer → risk-authorized merge → Cloud Build/Cloud Run → production smoke.
+
+### Result
+
+- Three groomed epics became **three app PRs**, but not the three implementations originally
+  described. Validation proved the catalog “orphan” was already linked and was only *presented* as
+  ownerless by the null-slot epic’s read failure. That deleted one HIGH production-data mutation
+  story and avoided unpublishing a valid live listing.
+- The planned two-PR backend split became one HIGH PR because the active production incident lived
+  in the nominally LOW half and shared the same helper/deploy. Story commits preserved review
+  boundaries. Final backend gate: 44 suites / 450 tests.
+- Fresh review found material issues twice: a body-portalled mobile filter broke after crossing its
+  CSS breakpoint, and ticket/order historical ownership was not fully fail-closed. Both were fixed
+  before merge and gained regressions.
+- Production outcome: zero catalog writes, backend `medusa-web-00003-jgv`, repaired slug
+  `andrea-shops`, 71/71 catalog items valid, and real Chromium lightbox/resize smokes green.
+
+### What was different from the Fable trial
+
+- OpenAI model routing was effective when expressed as **risk + boundedness**, not a blanket
+  “cheaper model builds” rule. Terra handled local, reversible work; Sol retained cross-epic
+  deletion decisions, commerce authorization, and release orchestration.
+- Codex’s external-data boundary blocked `prose-draft` from sending Roadmap contents to its
+  configured different-family service, so retros were written locally from the completed evidence.
+- The Antigravity cross-review wrapper could not pass its local `gh auth status` preflight even
+  though the same session could create, edit, inspect, and merge PRs. The advisory layer was
+  attempted and recorded but, correctly, did not block CI + fresh-reviewer approval.
+- A Vercel Git-hook miss on a review-fix commit exposed a worktree footgun: `vercel deploy` from an
+  unlinked worktree infers a new project. The command was stopped, the unintended project removed,
+  and the existing project explicitly linked before creating the exact-SHA preview.
+
+### Recommendation for the next Codex/Sol batch
+
+1. Keep **validation agents first** and delay builder fan-out until overlap is adjudicated; deleted
+   work was the largest value in this run.
+2. Keep Sol/high on Medusa, auth/money, production state, and scope-merging decisions; use
+   Terra/medium for narrow UI/tests/audits with explicit file ownership.
+3. Repair the local GitHub CLI authentication state before starting so the advisory cross-family
+   rail can run normally; do not weaken or bypass its auth preflight.
+4. Decide whether Roadmap prose may be sent to the configured draft model. If not, make the Codex
+   path explicitly local rather than discovering the export boundary at close-out.
+5. Persist/reuse the existing Vercel project link in worktrees or wait for the Git integration;
+   never run `vercel deploy` from an unlinked worktree.
+
 ## Out of scope
-Model-tier changes (the Opus-plans/Sonnet-builds split memory stays authoritative — this session
-validated Fable-orchestrates/Sonnet-builds as its successor shape for multi-epic batches).
+
+Changing the standing Claude-family Opus/Sonnet policy from this single trial. The Codex result is
+recorded as an additional proven orchestration shape, not a replacement policy.

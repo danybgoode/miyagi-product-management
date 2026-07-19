@@ -1031,6 +1031,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   that was "owed to Daniel" the moment its fixture exists. Many client-island assertions work
   **anonymously** (e.g. the personalized buy box renders + intercepts before any sign-in), so reach
   for those first — they need no credentials. *(2026-06-05.)*
+- **Never make a missing invariant green by skipping on the invariant value itself.**
+  `test.skip(!shopSlug)` converted the exact defect—catalog items with `shop.slug === ''`—into a
+  passing run. Separate “the source collection is genuinely empty” (legitimate skip) from “the
+  collection exists but one item is invalid” (hard fail), and assert every advertised page rather
+  than sampling `items[0]`. *(2026-07-19, catalog-orphan-listing-sweep.)*
 - **State the smoke gap honestly.** The agent owns API/build/Playwright; the **authed browser
   money-path** smoke is owed to Daniel (he holds the sessions). Say so in the PR rather than implying
   "build passes, therefore done." Corollary: **don't write a "verified locally" claim you didn't run** —
@@ -1495,6 +1500,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   empty CSS selector.)*
 
 ## Medusa gotchas
+- **A missing projection is not proof of a missing Medusa link: validate both directions before a
+  data repair.** A public listing emitted an empty shop slug even though product→link→seller was
+  intact; eight soft-deleted sibling products left sparse seller→products slots, the read threw, and
+  a per-seller catch discarded every attribution mapping. Before unpublishing/relinking, inspect the
+  link row, live seller, inverse relation, soft-deleted siblings, and order history. Also, nested
+  deleted-inclusive reads need both top-level `withDeleted: true` **and**
+  `context: { products: QueryContext({}) }`; verify the installed query lowering. *(2026-07-19,
+  catalog-orphan-listing-sweep + seller-catalog-null-slot-sweep.)*
 - **Product Collection is `belongsTo` (one per product); Product Category is `manyToMany` — picking the
   wrong one structurally fails a "belongs to several groups" acceptance, and don't guess which is which
   from the name.** Reading `@medusajs/product`'s installed model source directly (not documentation
@@ -2007,6 +2020,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   repetitive checking); and this file is itself the human **"shortcut library"** (distilled past successes so
   the next agent skips rediscovery). The research's headline — an assembly-line SOP beats hierarchical
   agent-to-agent conversation — is the architecture we already run. *(2026-06-08.)*
+- **In a multi-epic batch, spend parallelism on disproving scope before multiplying builders.**
+  Three bounded audits plus one read-only production check showed that a planned HIGH orphan-data
+  sweep was the same null-slot read bug as a sibling epic, eliminating the mutation story entirely
+  and collapsing a planned two-PR backend split to one reviewed deploy. The best assembly-line
+  output can be deleted work; route model effort by risk after this validation (frontier/high for
+  Medusa authorization and deploy decisions, lower/medium for bounded UI/tests/audits). *(2026-07-19,
+  first Codex/Sol epic batch.)*
 - **Model tiers are now named, with an escalate-don't-guess guardrail — one SSOT, don't fork a second
   trigger list.** `WAYS-OF-WORKING.md` → *Conventions → Model tiers* names **Opus 4.8** for
   planning/grooming/spikes/plan-mode/review and **Sonnet 5** for per-story execution, and the per-sprint
