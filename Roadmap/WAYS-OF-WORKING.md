@@ -313,9 +313,9 @@ Claude has authenticated CLI access to the full delivery toolchain and can run t
 | Tool | Used for |
 |------|----------|
 | **git / gh** | Version control, feature branches, pull requests + merges, GitHub operations |
-| **Vercel CLI** (`vercel`) | Frontend deployment status/inspection and environment variables for linked project `miyagisanchez`; production deploys remain git-driven only |
+| **Vercel CLI** (`vercel`) | Frontend **preview** deployment status/inspection and environment variables for linked project `miyagisanchez`. Vercel no longer serves frontend production (2026-07-10 cutover) — it is the per-PR preview + CI target only, and deploys stay git-driven |
 | **Supabase CLI** (`supabase`) | Migrations & SQL against the linked project (editorial/non-commerce data) |
-| **gcloud** (Cloud Run, Cloud Build, Artifact Registry) | Build & deploy backend / standalone services to GCP (us-east4) |
+| **gcloud** (Cloud Run, Cloud Build, Artifact Registry) | Build & deploy **both** apps to GCP (us-east4) — frontend `miyagi-web` and backend `medusa-web` — plus standalone services |
 | **Docker** | Build & smoke-test container images locally before deploying |
 | **node / npm** | Type-check (`tsc`), lint (`eslint`), build (`npm run build`), local dev server |
 
