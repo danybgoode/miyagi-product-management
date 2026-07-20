@@ -108,10 +108,15 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
 
 **Every PR declares a risk tier** (in the PR body); that tier decides who may merge:
 - **Low-risk → an agent other than the builder may merge** once CI is green and the **cross-agent review is
-  clean or its findings are answered** — the reviewer when one ran, otherwise the orchestrating agent. (The
-  fresh-reviewer pass being optional here doesn't lower the bar; it moves the bar onto the mandatory
-  cross-agent layer.) LOW = docs/copy, non-commerce UI, additive agent tools behind auth, tests, internal
-  tooling.
+  clean or its findings are answered**. (The fresh-reviewer pass being optional here doesn't lower the bar;
+  it moves the bar onto the mandatory cross-agent layer.) LOW = docs/copy, non-commerce UI, additive agent
+  tools behind auth, tests, internal tooling.
+  - **The builder never merges their own PR — no exceptions, and skipping the fresh reviewer doesn't create
+    one.** In a single-session batch the orchestrator often *is* the builder; when that's the case, the
+    fresh-reviewer pass stops being optional and becomes the thing that supplies the second pair of eyes,
+    or Daniel merges. "Different model family" (the cross-agent pass) is not the same as "different agent
+    than the one holding the diff's context" — the whole section opens on that distinction, and this is the
+    one place it could quietly erode.
 - **High-risk → always a Daniel merge** (a human green-light, never an autonomous ship): anything touching
   **payments / checkout / fulfillment / auth / DB migrations / shared infra / money**. This preserves the
   live-commerce guardrail — an agent never deploys real-money paths to production on its own. HIGH also

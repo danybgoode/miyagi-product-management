@@ -16,7 +16,7 @@ dev — the "communication tax" of re-passing large context (see the research no
 - `<epic-slug>` — e.g. `discovery-polish`
 - `<NN-macro>` — macro-section folder, e.g. `01-discovery-and-shopping`
 - `<N>` — sprint number
-- `<risk>` — **LOW** (reviewer may auto-merge on green CI) / **HIGH** (Daniel merges)
+- `<risk>` — **LOW** (an agent other than the builder may merge on green CI, once the cross-agent review is clean or answered) / **HIGH** (Daniel merges; the fresh-reviewer pass is mandatory)
 
 ## Command shorthands
 A small, fixed vocabulary so the *instruction* half of a message is unambiguous — each verb just **points**
@@ -28,12 +28,12 @@ cost nothing — the leverage is the defined verb, not trimming "great work."
 | **Groom: \<ask\>** | §1 — groom a raw ask |
 | **Build S\<N\> of \<epic\>** | §2 — build a sprint |
 | **Spike \<name\>** | §3 — run a spike |
-| **Review PR #\<N\>** | §4 — fresh-reviewer single pass |
-| **Cross-review PR #\<N\> [codex\|antigravity]** | §4 advisory line — run locally on every PR, `node scripts/cross-review.mjs` (never gates) |
+| **Review PR #\<N\>** | §4 — fresh-reviewer single pass (mandatory on HIGH, optional on LOW) |
+| **Cross-review PR #\<N\> [codex\|antigravity]** | §4 — **REQUIRED on every PR**, run locally: `node scripts/cross-review.mjs`. Resolve every finding before merge; the run itself never authorizes one |
 | **Panel: \<scope-doc \| ask\>** | advisory second opinion on a *plan* — `node scripts/cross-panel.mjs <doc> --lens both --agent codex\|antigravity` (single-pass, print-only, never gates; surfaced at groom Stage 2/4) |
 | **Wrap S\<N\>** | tick the sprint doc status + emit the §7 sprint-wrap terminal summary |
 | **Close epic \<slug\>** | §6 — full epic Definition of Done |
-| **Clear to merge — LOW** / **Daniel-merge** | the risk-tier gate: reviewer auto-merges on green CI / Daniel merges |
+| **Clear to merge — LOW** / **Daniel-merge** | the risk-tier gate: an agent other than the builder merges on green CI (cross-agent review clean or answered) / Daniel merges |
 | **Next** | proceed to the next story/sprint per the current `sprint-N.md` |
 
 ---
@@ -79,9 +79,14 @@ I sign off the decision before anything gets groomed.
 Review PR #<N> as a fresh reviewer — you did NOT build it. Run gh pr diff <N> and read the changed files.
 SINGLE PASS on a green CI gate — no iterative refine loop. Check correctness + the five AGENTS rules
 (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk untouched · es-MX copy).
-Do not use /code-review ultra. Post findings; <LOW: auto-merge on green CI / HIGH: hand to Daniel>.
-On EVERY PR, run a different-model-family second opinion locally (advisory only) —
-node scripts/cross-review.mjs <N> --agent codex|antigravity (single-pass, never gates; --skip-trivial for tiny diffs).
+Do not use /code-review ultra. Read the PR's cross-agent review comment FIRST and do not restate what it
+already found and the builder fixed; DO re-check anything the builder argued down. Post findings;
+<LOW: merge on green CI once every cross-agent finding is resolved / HIGH: hand to Daniel>.
+On EVERY PR the cross-agent pass is REQUIRED (not advisory) — run it locally:
+node scripts/cross-review.mjs <N> --agent codex|antigravity (single-pass; --skip-trivial for tiny diffs).
+Every finding must be fixed or answered on the PR before merge; the run itself authorizes nothing.
+This fresh-reviewer pass is mandatory on HIGH tier and optional on LOW — if you skip it on a LOW PR, say so
+in the PR body with the reason.
 ```
 
 ## 5 · Strategy / process work — Cowork (strong model)

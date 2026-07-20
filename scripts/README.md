@@ -154,13 +154,15 @@ caller-supplied model pair). House voice lives in [`prose-draft.prompt.md`](./pr
 are thin — the first live dogfood invented two "owed" items. Treat output as a scaffold; the
 editor's factual pass is not optional.
 
-## cross-review.mjs — advisory cross-agent second opinion on a PR
+## cross-review.mjs — the required cross-agent review of a PR
 
 Pipes a PR diff into a **different model family's** CLI (Codex or Antigravity) for one pass and posts the
-findings as a clearly-labeled, **non-authoritative** PR comment. It exists to catch a same-family
-reviewer's blind spots — **suggested on HIGH-risk PRs, optional on any, advisory only**: it never gates,
-blocks, or authorizes a merge (CI + the Claude reviewer + the risk-tier rule stay authoritative), and it
-is **single-pass** (no debate loop).
+findings as a clearly-labeled PR comment. It exists to catch a same-family reviewer's blind spots, and it
+is **mandatory on every PR** (2026-07-14 policy flip — WAYS-OF-WORKING → *Review & merge*): every finding
+must be fixed, or answered on the PR with the reason it isn't a bug, before merge. It still **never
+authorizes** a merge — CI + the risk-tier rule stay the merge authority, and HIGH-tier PRs also get a fresh
+`pr-reviewer` pass. It is **single-pass** (no debate loop). Because it runs locally (a CI runner has no
+codex/agy auth), nothing enforces it but the agent: an unrun cross-review is a blocked merge.
 
 ```bash
 # Review the open PR for the CURRENT branch (PR# is optional — resolved via `gh pr view`):

@@ -5,7 +5,10 @@
 // (scripts/cross-review.prompt.md = the five AGENTS rules + WAYS single-pass discipline) and prints the
 // findings. It is dev tooling, not app code, and it is deliberately:
 //   • SINGLE-PASS — one read, no debate / iterate-to-convergence loop (our #1 token sink, out of scope).
-//   • ADVISORY ONLY — never gates, blocks, or merges. CI + the Claude reviewer + the risk-tier rule decide.
+//   • REQUIRED ON EVERY PR (2026-07-14 policy flip) — its findings must be fixed, or answered on the PR,
+//     before merge. It still never approves or merges: CI + the risk-tier rule are the merge authority,
+//     and HIGH-tier PRs also get a fresh `pr-reviewer` pass. Enforcement is by convention, not by a
+//     required check — this runs locally, since a CI runner has no codex/agy auth.
 //
 // Usage:
 //   node scripts/cross-review.mjs [PR#] --agent codex|antigravity [--repo owner/repo] [--force] [--dry-run]

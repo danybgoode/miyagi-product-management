@@ -10,18 +10,18 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (6)
 
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
+- [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 4/4 stories · risk: Low · #3
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
+- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (1)
 
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
-- [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 4/4 stories · risk: Low · #3
-- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
 
 ## ✅ Shipped (117)
 
@@ -163,7 +163,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
-| Process token-diet | Scaffolded | In progress |
+| SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch | In progress | Scaffolded |
 
 ---
 _Epics: 125 · seeds in funnel: 6 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._

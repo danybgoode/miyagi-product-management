@@ -87,8 +87,8 @@ no restating the diff back.
 - Start the comment with this banner so it's never mistaken for a gate:
   > 🤖 **Routine A — advisory cross-review (Claude, cloud).** Advisory only — not a gate.
 
-End the comment with one line: *"Advisory only — not a gate. CI + the Claude reviewer + the risk-tier
-rule decide."*
+End the comment with one line: *"Advisory only — not a gate, and not the required cross-agent pass.
+CI + the mandatory cross-agent review + the fresh reviewer (HIGH tier) + the risk-tier rule decide."*
 
 ## If the run can't complete (optional failure ping)
 A healthy run reaches Daniel via the PR comment above — no other notice is needed. But a run that
