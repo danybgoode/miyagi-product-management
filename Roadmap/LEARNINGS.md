@@ -259,6 +259,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   string injection); the fresh reviewer caught what codex missed (redirect-following SSRF
   bypass, uncommitted-WIP-not-on-the-PR). Neither layer was redundant once. *(2026-07-17,
   four-epic batch session.)*
+- **Review stack is now right-sized by risk (2026-07-14, Daniel's call): cross-agent review MANDATORY on
+  every PR — every finding fixed or answered on the PR before merge, though the run never *authorizes* a
+  merge — and the fresh `pr-reviewer` pass MANDATORY on HIGH, OPTIONAL on LOW.** On LOW, run it anyway on a
+  named trigger (diff wider than its story · a shared/`lib/` seam other epics import · a security-shaped
+  change · an un-re-derived "everything else is fine" sweep · a cross-agent finding you argued down); skipping
+  it is a judgment call to STATE in the PR body, not a silent default. The builder never merges their own PR —
+  in a single-session batch where orchestrator == builder, the fresh pass supplies the second pair of eyes or
+  Daniel merges. Proven on the flip's own epic: the optional-on-LOW pass, invoked on those exact triggers, is
+  what caught the ssrf-dns-pinning body-stream blocker AND the six-artifact policy-sweep miss below.
+  *(2026-07-14 decision; shipped 2026-07-20, process-token-diet S1.3.)*
+- **A policy/convention change isn't shipped until every artifact that ASSERTS the policy is re-swept — and
+  "every" means a re-derived grep over the whole population, not the files the story named.** The canonical
+  prose can be perfect while the PR template, the session-kickoff SSOT, a script's own header comment, and a
+  poster line still teach the old rule — and those are what agents actually read. Sample-then-claim ("no
+  artifact left stale") is exactly how the overclaim survives; the fresh reviewer refuted precisely that claim
+  by re-deriving the population and finding six live stale artifacts. Same shape as the code-comment overclaim
+  the sibling ssrf epic exists to kill. *(2026-07-20, process-token-diet S1.3.)*
 ## Tooling gotchas
 - **GCP account-migration cluster (2026-07-19, gcp-account-migration S0–S3 — one session, cut over
   with zero loss; full story in that epic's RETROSPECTIVE):**
@@ -978,6 +995,30 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **`undici.fetch()` resolves at HEADERS, not at body-complete — so tearing its dispatcher down in a
+  `finally` truncates the response body, and a status-only spec cannot see it.** Pinning the dial target
+  for SSRF hardening means a per-request `undici.Agent` (a `connect.lookup` that only answers with the
+  pre-validated address set); the trap is cleanup. A `finally { await agent.destroy() }` after `fetch()`
+  runs the instant headers arrive, killing the socket while the caller is still streaming the body —
+  small payloads pass by luck (they fit the same TCP flush as the headers), anything over ~64 KB throws
+  `TypeError: terminated`. It is a **race**, so it flickers green in small-body tests. Fix: destroy the
+  Agent only on the **throw** path (there, no Response was ever handed back to drain); on success let the
+  per-request socket self-close (`keepAliveTimeout: 1` + a `Connection: close` header). Any spec guarding
+  this MUST read a body larger than one flush (>256 KB, ideally delayed/multi-chunk) or it is a false
+  negative — and prove it non-vacuous with a mutation (reintroduce the destroy → red). Also: on early-return
+  paths that never drain the body (`!res.ok`, wrong content-type), `res.body?.cancel()` or the pinned
+  socket lingers until the abort timeout. *(2026-07-20, ssrf-dns-pinning — both review layers + an
+  empirical repro; the original 6 specs all passed against the broken code because none read a body.)*
+- **DNS-rebinding is closed in the DISPATCHER, not the URL: resolve once, validate the whole set, hand a
+  per-request `Agent` a `connect.lookup` that only ever answers with that validated set — and leave
+  `url.hostname` untouched so TLS SNI still validates the cert against the real host.** Pin the *set*, not
+  `results[0]`, with `autoSelectFamily: true` + `hints: dns.ADDRCONFIG` in the resolve, or you silently
+  drop dual-stack failover on IPv4-only egress (Cloud Run). `autoSelectFamily` is an Agent/client
+  top-level option (undici reads it at `dispatcher/client.js` and forwards it to the connector), NOT a
+  `connect:{}` key — a reviewer's "it's ignored at root" was refuted by source + an empirical probe.
+  Verify the "undici got bundled into the standalone output" claim by inspecting the built chunk (no
+  external `require("undici")`, the Agent impl inlined), not a grep-for-filename — verify by running.
+  *(2026-07-20, ssrf-dns-pinning.)*
 - **Match a regression spec's TIER to where the fix actually lives, rather than defaulting to whatever
   test type the original scope doc named.** A service/rental card-payment fix lived entirely in backend
   logic (a pure derivation function + a route guard) — the sprint doc's original QA plan assumed a
@@ -2016,7 +2057,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   breaking parity — and Daniel's smoke would have "failed" on correct behavior. Grep for the
   claimed guard first; if it isn't there, correct the doc (with the reasoning) rather than
   implementing the fiction. *(2026-07-16, mcp-parity-core S3.1 — confirmed independently by both
-  review passes.)*
+  review passes.)* **Also true docs-side: when a story's stated PREMISE is already satisfied, that IS the
+  deliverable — say so and fix the real drift, don't implement the fiction.** process-token-diet had two of
+  four stories like this: the smoke-skeleton was ~90% pre-built and already in the right place, and the
+  "cadence step 7 still says Vercel prod" target had already been corrected — so the story became "sweep for
+  the drift this was reaching for" (three *other* stale deploy-rail claims). Padding either out to look like
+  new work would have been the make-work the honest record exists to prevent. *(2026-07-20,
+  process-token-diet S1.2/S1.4.)*
 - **A "same semantics as X" justification must name the CONSTRAINT that makes X safe — the
   precedent may be safe only inside a boundary your new call site doesn't share.** apply_price's
   first card-mirror write claimed parity with `update_listing`'s unconditional `price_cents`
