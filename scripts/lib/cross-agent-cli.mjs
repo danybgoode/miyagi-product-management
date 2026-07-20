@@ -11,12 +11,17 @@
 // (post a PR comment vs print a panel) stay in each consuming script. Zero npm deps — Node 18+.
 //
 // ── Codex → Antigravity auto-fallback ───────────────────────────────────────────────────────────────────
-// When the local Codex token has lapsed, `codex exec` exits non-zero with an AUTH error on stderr (e.g.
-// "Your session has ended. Please log in again." / "refresh token was revoked" / 401). `runWithCodexFallback`
-// detects that specific auth signal (NOT every error — a non-auth break or an empty diff still fails clearly)
-// and retries once with Antigravity, returning `{ fellBack: true, from: 'codex', to: 'antigravity' }` so the
-// caller can label the output. The trigger lives in the pure, testable `decideCodexFallback`; restoring Codex
-// is `codex login` (see scripts/README.md → "Restoring a lapsed Codex token").
+// `runWithCodexFallback` retries once with Antigravity on either of TWO recoverable "codex can't run here,
+// agy can" failures, and only those (a non-auth/non-stale break or an empty diff still fails clearly):
+//   (a) AUTH lapse — `codex exec` exits non-zero with an auth error on stderr (e.g. "Your session has
+//       ended. Please log in again." / "refresh token was revoked" / 401). Restore: `codex login`.
+//   (b) STALE CLI — the installed codex is too old for the model it runs (its own default, or CODEX_MODEL),
+//       e.g. "The 'gpt-5.6-sol' model requires a newer version of Codex." (hit all through the 2026-07-20
+//       batch — codex 0.142.5 vs its default gpt-5.6-sol). Restore: `node scripts/codex-doctor.mjs` names
+//       the upgrade, or set CODEX_MODEL to a model the installed CLI supports as a stopgap.
+// Both return `{ fellBack: true, from: 'codex', to: 'antigravity' }` so the caller can label the output; the
+// banner text branches on the cause. The triggers live in the pure, testable `decideCodexFallback` (fed
+// `isCodexAuthError` + `isCodexOutdated`). See scripts/README.md → "When Codex can't run".
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
@@ -283,10 +288,19 @@ function lastLine(stderr) {
   return (stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
 }
 
+// OPT-IN model override for codex. Unlike agy (whose --model is REQUIRED or it prints nothing), `codex
+// exec` uses its OWN configured default model when no -m is passed — which is exactly how a codex CLI can
+// end up too old for its own default (e.g. an installed codex that predates `gpt-5.6-sol` fatals with
+// "requires a newer version of Codex"). Left null by default (preserve codex's own default, zero behaviour
+// change); set CODEX_MODEL to a model the INSTALLED codex supports (`codex exec -m <model>`) as a stopgap
+// when you can't upgrade the CLI. codex-doctor.mjs recommends this when it detects the stale-CLI class.
+export const CODEX_MODEL = process.env.CODEX_MODEL || null;
+
 // Low-level codex exec: prompt rides as an argv string, context is piped on stdin (codex appends it as a
 // <stdin> block). Returns the raw spawn result — callers decide how to interpret status/stdout/stderr.
 function execCodex(prompt, stdin) {
-  return spawnSync('codex', ['exec', prompt], {
+  const args = CODEX_MODEL ? ['exec', '-m', CODEX_MODEL, prompt] : ['exec', prompt];
+  return spawnSync('codex', args, {
     input: stdin,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
@@ -314,6 +328,12 @@ export function tryCodex(prompt, stdin) {
     // See stripGeneratedFileDiffs' header comment: checked on both streams because codex's own trailing
     // diagnostics can land on either, depending on the exact failure path.
     contextOverflow: r.status !== 0 && (isContextWindowOverflow(stdout) || isContextWindowOverflow(stderr)),
+    // Stale-CLI: the installed codex is too old for the model it's asked to run (its own default, or
+    // CODEX_MODEL). Like an auth lapse, codex simply can't run here and agy can — so it triggers the same
+    // one-shot fallback rather than surfacing an opaque `(non-auth): <json>` and forcing a manual
+    // `--agent antigravity`. Distinct flag (not folded into authFailed) so the fallback banner names the
+    // real cause and points at codex-doctor.
+    cliOutdated: r.status !== 0 && isCodexOutdated(`${stdout}\n${stderr}`),
     stderr,
   };
 }
@@ -329,15 +349,30 @@ export function isCodexAuthError(stderr) {
   );
 }
 
+// True when codex fails because the INSTALLED CLI is too old for the model it's running — a distinct class
+// from an auth lapse or a context overflow. Confirmed live (2026-07-20, codex-cli 0.142.5): its own default
+// model `gpt-5.6-sol` fatals with
+//   ERROR: {"…","message":"The 'gpt-5.6-sol' model requires a newer version of Codex. Please upgrade to the
+//   latest app or CLI and try again."}
+// Kept tight to the upgrade-Codex signal so a genuine bad-model-name typo (a different 400) doesn't get
+// masked as "just upgrade". Checked against combined stdout+stderr since codex prints this on either.
+export function isCodexOutdated(output) {
+  return /requires a newer version of codex|upgrade to the latest (?:app or )?cli|update codex|codex (?:is )?out of date/i.test(
+    output || ''
+  );
+}
+
 // Pure fallback decision — the unit under test. Given the outcome of a codex attempt and whether agy is
 // available, return the action to take. No I/O, no exit.
-export function decideCodexFallback({ codexOk, authFailed, contextOverflow, agyAvailable }) {
+export function decideCodexFallback({ codexOk, authFailed, cliOutdated, contextOverflow, agyAvailable }) {
   if (codexOk) return 'use-codex';
-  // Checked BEFORE authFailed: an overflow is a distinct failure class from auth (retrying with a fallback
-  // model wouldn't help — the input itself is too big, not the credential), so it gets its own clear
-  // message rather than falling through to the generic "(non-auth): <cryptic tail line>" text.
+  // Checked BEFORE the recoverable classes: an overflow is distinct from auth/stale-CLI (retrying with a
+  // fallback model wouldn't help — the input itself is too big, not the credential/binary), so it gets its
+  // own clear message rather than falling through to the generic "(non-auth): <cryptic tail line>" text.
   if (contextOverflow) return 'fail-context-overflow';
-  if (!authFailed) return 'fail-non-auth'; // codex broke for a non-auth reason — don't mask it behind a fallback
+  // Both an auth lapse AND a too-old CLI mean "codex can't run here, agy can" → the same one-shot fallback.
+  // A genuine non-auth, non-stale break (empty diff, internal error) still surfaces plainly, unmasked.
+  if (!authFailed && !cliOutdated) return 'fail-non-auth';
   if (!agyAvailable) return 'fail-both-dead';
   return 'fallback';
 }
@@ -360,9 +395,16 @@ export function runWithCodexFallback(
   const action = decideCodexFallback({
     codexOk: codex.ok,
     authFailed: codex.authFailed,
+    cliOutdated: codex.cliOutdated,
     contextOverflow: codex.contextOverflow,
     agyAvailable: hasCmdFn('agy'),
   });
+
+  // The two recoverable causes want different operator guidance — a lapsed token vs a stale binary — so the
+  // banner/fatal text branches on the flag even though the ACTION (fall back to agy) is the same.
+  const cause = codex.cliOutdated
+    ? { blurb: 'Codex CLI is behind its model requirement', restore: 'upgrade codex (see `node scripts/codex-doctor.mjs`)' }
+    : { blurb: 'Codex token revoked', restore: '`codex login`' };
 
   switch (action) {
     case 'use-codex':
@@ -379,12 +421,12 @@ export function runWithCodexFallback(
       return failFn(`codex exec failed (non-auth): ${lastLine(codex.stderr)}`);
     case 'fail-both-dead':
       return failFn(
-        'Codex token revoked AND Antigravity unavailable — restore Codex with `codex login`, ' +
+        `${cause.blurb} AND Antigravity unavailable — restore Codex (${cause.restore}), ` +
           'or install + authenticate the Antigravity CLI (agy).'
       );
     case 'fallback':
     default:
-      warn('⚠ Codex unavailable (token revoked) → falling back to Antigravity. Restore: `codex login`.');
+      warn(`⚠ ${cause.blurb} → falling back to Antigravity. Restore: ${cause.restore}.`);
       return {
         findings: runAntigravityFn(antigravityArgv),
         fellBack: true,

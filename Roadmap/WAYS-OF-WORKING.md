@@ -75,14 +75,19 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
   3 of 4 PRs in the 2026-07-17 batch alone (see `LEARNINGS.md`). **Run it on every PR, and resolve every
   finding before merge** — fix it, or answer it on the PR with the reason it isn't a bug. An unanswered
   finding blocks the merge; the *run* still never **authorizes** one (CI + the risk-tier rule below stay
-  the sole sources of merge authority). It is **single-pass** (no debate loop) and reads the same shared
-  prompt the Claude reviewer does (`scripts/cross-review.prompt.md` — the five `AGENTS.md` rules + this
-  single-pass discipline).
+  the sole sources of merge authority). It is **single-pass** (no debate loop) and runs from
+  `scripts/cross-review.prompt.md` — which carries the same *substance* the fresh `pr-reviewer` works from
+  (the five `AGENTS.md` rules + this single-pass discipline), though the subagent reads it via its own
+  `.claude/agents/pr-reviewer.md`, not this file.
   `--skip-trivial` skips docs-only / tiny diffs. The agy path is **version-pinned and fail-loud**
   (a young CLI's print contract breaks on minor bumps); when the pin check dies, agents are
   **pre-authorized** to run `node scripts/agy-doctor.mjs --fix` — it re-verifies the live contract and
   bumps the pin only on a green probe — and commit the one-line bump (LOW tier). Model swaps or a
-  failed probe still escalate to Daniel. *(It runs **locally**, not in CI: a GitHub runner has no
+  failed probe still escalate to Daniel. **When Codex itself can't run** (a lapsed token, or a CLI too old
+  for its model — `The '…' model requires a newer version of Codex`), `cross-review.mjs` **auto-falls-back
+  to Antigravity** for that run; `node scripts/codex-doctor.mjs` (pre-authorized, LOW) diagnoses which class
+  it is and names the fix (`codex login`, upgrade the CLI, or set `CODEX_MODEL`). Upgrading the codex binary
+  is a system change agents don't run unattended — escalate that step. *(It runs **locally**, not in CI: a GitHub runner has no
   codex/agy auth — codex needs a token-billed API key + a cross-repo PAT and agy has no headless auth at all;
   epic `09-platform-infra/cross-agent-review-always` chose local-only. Mandatory therefore means **an agent
   must run it before merging**, not that a required status check enforces it.)*

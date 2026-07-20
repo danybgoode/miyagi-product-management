@@ -26,6 +26,7 @@ import {
   AGY_ARG_LIMIT,
   stripGeneratedFileDiffs,
   isContextWindowOverflow,
+  isCodexOutdated,
 } from './cross-agent-cli.mjs';
 
 // The real stderr a live revoked Codex token emits (captured 2026-06-21) — the trigger must match THIS.
@@ -54,11 +55,47 @@ test('decideCodexFallback: exhaustive truth table', () => {
   // codexOk short-circuits regardless of the rest.
   assert.equal(decideCodexFallback({ codexOk: true, authFailed: false, agyAvailable: false }), 'use-codex');
   assert.equal(decideCodexFallback({ codexOk: true, authFailed: true, agyAvailable: true }), 'use-codex');
-  // non-auth failure never falls back.
+  // non-auth, non-stale failure never falls back.
   assert.equal(decideCodexFallback({ codexOk: false, authFailed: false, agyAvailable: true }), 'fail-non-auth');
   // auth failure + agy present → fall back; agy absent → both-dead.
   assert.equal(decideCodexFallback({ codexOk: false, authFailed: true, agyAvailable: true }), 'fallback');
   assert.equal(decideCodexFallback({ codexOk: false, authFailed: true, agyAvailable: false }), 'fail-both-dead');
+  // stale-CLI (cliOutdated) recovers exactly like an auth lapse — fall back when agy is present, both-dead when not.
+  assert.equal(decideCodexFallback({ codexOk: false, authFailed: false, cliOutdated: true, agyAvailable: true }), 'fallback');
+  assert.equal(decideCodexFallback({ codexOk: false, authFailed: false, cliOutdated: true, agyAvailable: false }), 'fail-both-dead');
+  // a plain non-auth, non-stale break with agy present still surfaces, not masked by a fallback.
+  assert.equal(decideCodexFallback({ codexOk: false, authFailed: false, cliOutdated: false, agyAvailable: true }), 'fail-non-auth');
+});
+
+test('isCodexOutdated: the real stale-CLI stderr → true; auth/other → false', () => {
+  assert.equal(
+    isCodexOutdated(`ERROR: {"message":"The 'gpt-5.6-sol' model requires a newer version of Codex. Please upgrade to the latest app or CLI and try again."}`),
+    true,
+  );
+  assert.equal(isCodexOutdated('update codex to continue'), true);
+  assert.equal(isCodexOutdated(REVOKED_TOKEN_STDERR), false); // an auth lapse is a different class
+  assert.equal(isCodexOutdated('PR #5 has an empty diff (wrong number or repo?).'), false);
+  assert.equal(isCodexOutdated(''), false);
+});
+
+test('runWithCodexFallback: stale-CLI codex failure → falls back to Antigravity, banner names the upgrade not codex login', () => {
+  const d = deps({
+    codex: { ok: false, text: '', authFailed: false, cliOutdated: true, stderr: "The 'gpt-5.6-sol' model requires a newer version of Codex." },
+    agyAvailable: true,
+  });
+  const r = runWithCodexFallback(ARGS, d);
+  assert.deepEqual(r, { findings: 'ANTIGRAVITY FINDINGS', fellBack: true, from: 'codex', to: 'antigravity' });
+  assert.equal(d.calls.antigravity, 1);
+  assert.match(d.calls.warnMsg, /behind its model requirement/);
+  assert.match(d.calls.warnMsg, /codex-doctor/); // points at the diagnosis, not `codex login`
+});
+
+test('runWithCodexFallback: stale-CLI + agy absent → fails naming the upgrade, not a token restore', () => {
+  const d = deps({
+    codex: { ok: false, text: '', authFailed: false, cliOutdated: true, stderr: 'requires a newer version of Codex' },
+    agyAvailable: false,
+  });
+  assert.throws(() => runWithCodexFallback(ARGS, d), /behind its model requirement.*Antigravity unavailable/s);
 });
 
 // --- orchestrator with mocked runners -------------------------------------------------------------------
@@ -107,7 +144,7 @@ test('runWithCodexFallback: dead token + agy present → falls back to Antigravi
     to: 'antigravity',
   });
   assert.equal(d.calls.antigravity, 1);
-  assert.match(d.calls.warnMsg, /Codex unavailable.*codex login/i); // restore hint emitted
+  assert.match(d.calls.warnMsg, /Codex token revoked.*codex login/i); // restore hint emitted
 });
 
 test('runWithCodexFallback: non-auth codex failure → fails clearly, NO fallback', () => {

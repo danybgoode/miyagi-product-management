@@ -207,29 +207,38 @@ quota is exhausted — the substitution is announced on stderr. Override either 
 **`AGY_FALLBACK_MODEL`**. The shared reviewer prompt lives in [`cross-review.prompt.md`](./cross-review.prompt.md)
 — the single source both this command and a human reviewer read. Zero npm deps — Node 18+.
 
-### Restoring a lapsed Codex token (auto-fallback to Antigravity)
+### When Codex can't run (auto-fallback to Antigravity)
 
-The Codex CLI's token expires periodically. **You don't have to stop:** when `--agent codex` hits a dead
-token, `cross-review.mjs` automatically falls back to Antigravity for that run — the comment is headed
-`🔎 Cross-agent review (Antigravity — Codex unavailable)` and stderr prints
-`⚠ Codex unavailable (token revoked) → falling back to Antigravity. Restore: codex login.` (The fallback
-needs `agy` present; if both are unavailable it exits with a one-line message naming both fixes.) The
-fallback fires **only on the auth signal** — a non-auth error or an empty diff still fails clearly.
+Codex fails to run in two operator-fixable ways, and **you don't have to stop for either** — when
+`--agent codex` hits one, `cross-review.mjs` automatically falls back to Antigravity for that run (comment
+headed `🔎 Cross-agent review (Antigravity — Codex unavailable)`; the stderr banner names the cause). The
+fallback needs `agy` present; if both are down it exits with a one-line message naming both fixes. A
+genuine non-auth, non-stale error (empty diff, internal break) still fails clearly — no masking.
 
-**Detect** a dead token:
+The two recoverable causes:
+
+1. **Lapsed token** — `⚠ Codex token revoked → falling back to Antigravity. Restore: codex login.`
+   Restore interactively: `codex login`.
+2. **Stale CLI** — `⚠ Codex CLI is behind its model requirement → falling back to Antigravity.` The
+   installed codex is too old for the model it runs (its own default, or `CODEX_MODEL`), e.g.
+   `The 'gpt-5.6-sol' model requires a newer version of Codex.` (hit all through the 2026-07-20 batch).
+
+**Diagnose** with the doctor — it runs a live `codex exec` probe and tells you which class you're in and
+the exact fix (agents are pre-authorized to run it, LOW tier):
 
 ```bash
-codex exec "ping" </dev/null
-# Authed   → a clean reply, exit 0.
-# Lapsed   → exit 1, stderr like "Your session has ended. Please log in again."
-#            / "your refresh token was revoked" / "401 Unauthorized: refresh_token_invalidated".
+node scripts/codex-doctor.mjs
+# → auth-lapsed  → `codex login`
+# → cli-outdated → `npm install -g @openai/codex@latest` (or your channel), OR set CODEX_MODEL to a
+#                  model the installed CLI supports as a stopgap (cross-review then runs `codex exec -m …`)
+# → missing / broken → named plainly
 ```
 
-**Restore** it (interactive, opens a browser):
+Unlike `agy-doctor`, there is **no `--fix`**: codex isn't version-pinned in the repo (nothing to bump),
+and upgrading a global binary is an environment-specific system change the script won't run on its own.
+It diagnoses and names the fix. After fixing, re-run cross-review with `--agent codex` and the header reads
+`(Codex)` again — the fallback is per-invocation, not a persisted mode.
 
-```bash
-codex login
-```
-
-Then re-run cross-review with `--agent codex` and the header will read `(Codex)` again. Nothing else needs
-resetting — the fallback is per-invocation, not a persisted mode.
+**`CODEX_MODEL` stopgap.** By default cross-review lets codex pick its own configured model; set
+`CODEX_MODEL="<a model the installed CLI supports>"` to force `codex exec -m <model>` when you can't
+upgrade the CLI right away.
