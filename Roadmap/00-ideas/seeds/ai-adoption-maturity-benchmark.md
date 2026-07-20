@@ -1,17 +1,98 @@
 ---
-title: "AI-adoption maturity: benchmark vs the Steps-of-AI-Adoption ladder + the harness plan"
+title: "AI-adoption guardrails — close the step-1/2 gaps the ladder names (browser smoke · security review · proactive monitor · OTel)"
 slug: ai-adoption-maturity-benchmark
 status: ready
 area: "09"
-type: spike
+type: chore
 priority: null
 risk: low
 epic: null
 build_order: null
-updated: 2026-07-19
+updated: 2026-07-20
 ---
 
 # Scope — where this team sits on the AI-adoption ladder, and what moves it up
+
+> ## 🔀 Rescoped 2026-07-20 — this seed split three ways (Daniel, golden-beans groom session)
+>
+> This document was three asks wearing one filename: a **benchmark**, a **plan of guardrail moves**,
+> and a **trial log**. They have different correct homes, and grooming them as one thing was
+> deferring the urgent part behind the interesting part.
+>
+> **A · Stays here — and it's the whole of this seed now.** The four guardrail moves below. These
+> are guardrails on *our own rung*; they build on medusa-bonsai's own schedule and depend on
+> nothing external. See "Part A — the scope, narrowed" for the actual list.
+>
+> **B · The benchmark went to golden-beans.** Not as its own epic — as **one LOW story (2.4) on the
+> already-scaffolded E3 `pod-report`**, which already ships the `report_artifacts` primitive, the
+> `roadmap-push` rail, the computation over *this repo's* 104-epic dataset, and the
+> cite-external-benchmarks-never-republish posture. Scope doc:
+> `~/dobby/golden-beans/Roadmap/00-ideas/seeds/ai-adoption-maturity-lens.md`.
+> **medusa-bonsai becomes tenant #1 — the scored repo, not the building repo.** The reasoning: a
+> maturity assessment that can only ever describe one repo is a retrospective; one that scores an
+> arbitrary tenant is a product, and it's the interpretation layer E3's delivery metrics were
+> missing ("how fast / how stable" → "why, and what's next").
+>
+> **C · Process distribution went to `dobby-foundation`** (this repo, area 09, scaffolded): the
+> `prose-draft` port (old plan item 1) and the wakeup-resilient orchestration note (old item 3).
+> Neither is product; both should reach every `~/dobby/` sibling from one versioned place.
+>
+> **Kept here as evidence, not work:** the 2026-07-17 benchmark, the 2026-07-19 re-benchmark, and
+> the Codex/Sol controlled-trial log. They are the record that justifies part A's priorities. Old
+> plan item 4 (golden-beans as the dogfood target) is now literally true in a stronger sense than
+> written — gb doesn't just *run* the step-3 loop, it *scores* it.
+>
+> **The one dependency worth reading in both directions:** the OTel/analytics export below is a
+> *step-1* guardrail we skipped, and it is also the only thing that flips golden-beans' lens rows
+> from **"not instrumented"** to computed. Doing it here upgrades a product there, at zero cost to
+> that product's contract.
+
+---
+
+## Part A — the scope, narrowed (what this seed now covers)
+
+Four moves. All are named criteria on the ladder's own step-1/step-2 guardrail lists — not inferred
+from trajectory, which was the 2026-07-17 assessment's error.
+
+1. **Credentialed browser smoke in CI** — *highest priority.* The re-benchmark correctly reframed
+   this: the full ladder lists Claude-powered end-to-end verification under **step-2 guardrails**,
+   so the standing owed-smoke ledger isn't us reaching for the next rung, it's an unfinished
+   guardrail on the rung we're already on. Revive `browser-smoke.yml` with `MS_TEST_BROWSER_AUTH=1`
+   against the preview (the `browser-smoke-ci-gap` memory enumerates the wiring gap). Converts the
+   largest human-owed verification category into gate coverage. One sprint, MED (test-credential
+   handling).
+2. **Automatic security review** — the clearest unclaimed item on the step-2/3 lists, verified
+   repo-wide 2026-07-20: outside this seed and the reference, "security review" appears in this repo
+   exactly once, as a *manual* requirement in one epic's cross-cutting risks
+   (`07-agentic-and-federated-commerce/custom-domain-checkout`, for the open-redirect surface). That
+   is an ad-hoc human step on one epic, not a gate. **Do not assume `cross-review.mjs` counts** — it
+   is advisory and single-pass by design, and the ladder lists security review separately from code
+   review at both step 2 and step 3. Research first: does an existing product cover it, or is it a
+   `scripts/` addition alongside `cross-review.mjs`? One story.
+3. **One proactive monitor** — the smallest honest version of the ladder's own 2→3 instruction, "let
+   Claude kick off Claude." A monitor on the daily prod-smoke output that **opens the work** (a seed
+   or a draft PR) instead of emailing Daniel. We already have the detector and the `smoke-triage`
+   routine; the missing link is that nothing starts without a human reading a message. Deliberately
+   narrow — one data source, one task type, **draft-only, never auto-merge**, exactly as
+   `smoke-triage` is. *(Evidence it matters: the 2026-07-19 grooming batch found a prod smoke
+   failing since that morning and an epic scaffolded but never started — both would have been caught
+   by a monitor that opens work rather than a human who notices.)*
+4. **Token/cost telemetry export (OTel or the Analytics API)** — a **step-1** guardrail we skipped,
+   and step 3's second named bottleneck. `process-token-diet` addresses consumption but there is no
+   export, so cost is managed by discipline rather than measured. Dual value: see the dependency
+   note above.
+
+**Explicitly not in this seed any more:** building, rendering, or productising the maturity
+assessment itself (that's golden-beans E3 story 2.4), and the `prose-draft`/orchestration-note
+distribution work (that's `dobby-foundation`).
+
+**Unchanged by the split:** the HIGH-tier human-merge rule on money paths stays. Step 3 for us means
+widening what's *provably* LOW via better guards, never loosening the rule — the fuller reference
+left that reading intact.
+
+---
+
+## Evidence — the assessments that justify Part A (record, not work)
 
 Reference: `references/Steps-of-AI-Adoption.md` (Boris Cherny, 2026-07-16). The ladder: 0 Gated →
 1 Assisted (you + one agent, ~1) → 2 Parallel (one orchestrator, 5–10 agents, auto mode always on)
@@ -105,7 +186,14 @@ review).
    cutover). The doc's core thesis (automation compounds across the agent army) is measurably
    true here: every guard written this way has fired for real within days.
 
-## The plan (what to actually do)
+## The plan — ⚠️ SUPERSEDED 2026-07-20 by "Part A" above
+
+> Kept verbatim for provenance. Routing of the seven items after the split:
+> **1** → `dobby-foundation` (part C) · **2** → Part A move 1 (unchanged content, higher priority) ·
+> **3** → `dobby-foundation` (part C) · **4** → now true in a stronger sense: golden-beans doesn't
+> just run the step-3 loop, its E3 story 2.4 *scores* it, with this repo as tenant #1 ·
+> **5** → absorbed into Part A move 1 · **6** → Part A move 2 · **7** → Part A move 3.
+> The OTel gap, named only in passing below, is promoted to Part A move 4.
 
 1. **Port `prose-draft` into the `ways-of-work` plugin** (dobby-foundation) once root PR #95
    merges: skill doc wrapping `scripts/prose-draft.mjs` (babysit-pr distribution-note pattern) +

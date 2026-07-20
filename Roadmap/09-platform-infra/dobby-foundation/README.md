@@ -54,6 +54,14 @@ Miyagi-specific and becomes a *per-project slot* in the template's AGENTS skelet
 | 1 | 1.2 medusa-bonsai consumes the plugin; in-repo skill copies retired | LOW — **shared surface, announce** |
 | 1 | 1.3 Project template skeleton (Roadmap · WAYS-OF-WORKING generalized · AGENTS skeleton · CI · scripts · e2e) | LOW |
 | 1 | 1.4 Spawn `golden-beans` from the template under `~/dobby/`; groom + build-order + CI green there | LOW |
+| 2 | 2.1 Port `prose-draft` into the `ways-of-work` plugin (skill doc + `template/scripts/`) | LOW |
+| 2 | 2.2 Wakeup-resilient orchestration codified into the distributed WAYS-OF-WORKING + kickoff docs | LOW |
+
+**[Sprint 2](sprint-2.md) added 2026-07-20** as *part C* of the three-way split of
+[`00-ideas/seeds/ai-adoption-maturity-benchmark.md`](../../00-ideas/seeds/ai-adoption-maturity-benchmark.md)
+— process distribution that is neither medusa-bonsai product nor golden-beans product, and so
+belongs in the thing every sibling installs. Sprint 2 depends on root PR #95 (for 2.1) but not on
+Sprint 1 being closed out.
 
 ## Deploy order
 
