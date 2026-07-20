@@ -83,7 +83,9 @@ succeeded, but terminal Telegram alerts did not: the `cloud-builds` topic and tw
 functions remained project-local to the rollback project. They were moved during the soak (not
 deferred to S4), and the retired frontend Vercel-production poller was removed. The same audit
 caught the frontend Docker builder omitting the server-side Medusa URL during prerender; that
-bridge now has a deterministic app-repo guard. See the retrospective for build/revision evidence.
+bridge now has a deterministic app-repo guard. The repair builds also surfaced and closed a shared
+Node 20→22 runtime-floor drift across Docker, package metadata, and hosted CI. See the retrospective
+for build/revision evidence.
 
 ## Kill-switch
 

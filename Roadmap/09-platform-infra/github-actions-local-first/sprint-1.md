@@ -40,4 +40,9 @@ it beside the restored public-repo workflow would duplicate full-board PATCHes. 
 private-minute mitigation remains valid historically; the repository visibility change removed
 the billing constraint that justified the local network write.
 
+Repair execution evidence: a direct full sync created 0 rows, updated 465, and scanned 466 existing
+rows. API read-back then confirmed the three batch epics
+(`pdp-lightbox-close-button-occluded`, `catalog-orphan-listing-sweep`, and
+`seller-catalog-null-slot-sweep`) all report `Status=Shipped` with a clear `Lifecycle` overlay.
+
 If any step fails, note the step number + what you saw — that's the bug report.

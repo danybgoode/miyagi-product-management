@@ -263,9 +263,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **GCP account-migration cluster (2026-07-19, gcp-account-migration S0–S3 — one session, cut over
   with zero loss; full story in that epic's RETROSPECTIVE):**
   (1) **A just-created service account is eventually consistent** — an immediate IAM grant against
-  it 400s "does not exist"; hit 4× across 4 provision scripts in one epic. Bounded-wait
-  (describe-until-visible) after every SA create; same shape for the async backend-service PATCH →
-  add-backend "resource not ready" race (hit 2×, retry loop).
+  it 400s "does not exist"; hit 4× across 4 provision scripts in one epic. **Retry the consumer
+  operation that actually observes propagation** (here, Secret Manager's IAM grant), not an IAM
+  `service-accounts describe`: the creating API can see the principal before a different service
+  can resolve it. Same rule for the async backend-service PATCH → add-backend "resource not ready"
+  race (hit 2×, retry the add).
   (2) **A fresh-project rebuild surfaces every config that only ever accumulated live** — secret
   shells no provision script owned (create-if-absent the full reused set), and an EMPTY shell whose
   `:latest` a deploy binds **fail-closes every fresh revision** (SERPAPI_KEY — empty even in the
@@ -879,6 +881,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   succeeded in the new project while terminal alerts stayed attached to the old one. During a
   cutover, enumerate `topic → subscription/trigger → function/service` as one unit and smoke it
   before calling the soak observable. *(2026-07-19, GCP account-migration post-cutover audit.)*
+- **Treat the production image runtime as one contract across Docker, package engines/types, and
+  hosted CI.** A dependency refresh raised Supabase's floor to Node 22, but both app Dockerfiles and
+  CI stayed on Node 20; PR checks remained green while Cloud Build emitted `EBADENGINE`. Move all
+  surfaces together and lock the relationship with a source-level invariant—the production build
+  log is the compatibility smoke, not the first place to discover drift. *(2026-07-19,
+  GCP account-migration post-cutover audit.)*
 - **An npm `prepare` script runs on EVERY `npm ci` — including inside Docker build stages, where
   git (and your repo) don't exist. A git-touching `prepare` must end in `|| true`.** The
   local-first pre-push hook chore (frontend #264 / backend #96, 2026-07-16) added
