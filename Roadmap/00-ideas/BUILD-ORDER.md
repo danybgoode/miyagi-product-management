@@ -17,7 +17,7 @@
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 4/4 stories · risk: Low · #3
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
-- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
+- [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 2/2 stories · risk: Low
 
 ## 📋 Ready to build (scaffolded, not started) (1)
 
@@ -153,7 +153,7 @@
 - [SSRF: create_checkout's artwork_url is an unauthenticated, fully-open server-side fetch](seeds/ssrf-artwork-url-mcp.md) — Ready · Feature
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (4)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -164,7 +164,6 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
-| SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch | In progress | Scaffolded |
 
 ---
-_Epics: 125 · seeds in funnel: 7 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 125 · seeds in funnel: 7 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._

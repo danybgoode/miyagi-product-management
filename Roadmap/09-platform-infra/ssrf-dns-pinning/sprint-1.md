@@ -1,14 +1,26 @@
 # SSRF DNS-pinning — Sprint 1: the shared pinned-fetch seam + both call sites
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — [PR #290](https://github.com/danybgoode/miyagisanchezcommerce/pull/290) (LOW)
 
-> **Settle the design fork first** (README § "The design fork"): `undici` is not a direct dep, only
-> transitively hoisted. Pick (A) add `undici` as a direct dependency, or (B) `node:https.request`
-> with a `lookup` override. **Recommendation is (A).** Do not import the hoisted transitive dep.
+> **Design fork settled: (A)** — `undici` added as a direct dependency of `apps/miyagisanchez`; `fetch`
+> AND `Agent` imported from it (not the global fetch + a duck-typed dispatcher), so the dispatcher type
+> matches the fetch consuming it and the Node-22 runtime's own bundled undici version is irrelevant. The
+> `server-only` open question was decided **no** (same reason as `ssrf-guard.ts`: the Playwright `api`
+> runner must import it, and `server-only` throws outside a Next build).
+>
+> **Review round (2026-07-20):** mandatory cross-agent (Antigravity — codex CLI behind its model
+> requirement) + an independent `pr-reviewer` pass (run on 3 named LOW-tier judgment triggers:
+> security-shaped · shared `lib/` seam · new dependency). Both independently caught a **body-stream
+> blocker** (a `finally { agent.destroy() }` that killed the socket at headers, before either caller
+> read the body — >64 KB threw `terminated`); the pr-reviewer also caught IPv6-first pinning dropping
+> failover on IPv4-only Cloud Run egress, and an unguarded test-only bypass. All fixed + regression-
+> specced (a mutation-verified >256 KB delayed-body spec). A cross-review re-run then caught unconsumed
+> bodies holding the pinned socket on early-return paths (fixed) and a false-positive `autoSelectFamily`
+> finding (answered with source + an empirical probe). Full disposition on the PR.
 
 ## Stories
 
-### Story 1.1 — The shared pinned-fetch helper
+### Story 1.1 — The shared pinned-fetch helper ✅ `329327f`
 **As a** builder, **I want** one primitive that resolves a hostname once and then physically dials
 that exact address, **so that** a second independent resolve can't substitute a different IP.
 **Files:** `lib/ssrf-guard.ts` (or a new `lib/ssrf-fetch.ts` beside it — one or the other, **not a
@@ -26,7 +38,7 @@ preserved for TLS SNI/cert validation**. Pure `lib/` seam, unit-testable with no
    satisfy the connection.
 **Risk:** LOW.
 
-### Story 1.2 — Adopt at both call sites + correct the overclaim
+### Story 1.2 — Adopt at both call sites + correct the overclaim ✅ `bca6e63` (review fixes: `f78bc9a`, `2cf29e8`, `2a83bfa`)
 **As a** reader of this code, **I want** the doc comments to describe what the code actually
 guarantees, **so that** nobody builds on a mitigation they think is a closure.
 **Files:** `lib/shop-url-analyzer-fetch.ts` (`assertPublicHost` + the `fetch()` in `analyzeShopUrl`)
