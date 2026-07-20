@@ -43,13 +43,21 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
    - **Live confirmation can be async + divided** (it's *confirmation*, not the gate): the agent owns API-level smoke (`curl`/Playwright) where it has access; **Daniel owns the browser / real-seller-session smoke** (he's notified when Cloud Run finishes and holds the live sessions/tokens). Exercise real behaviour — a disposable/test shop for anything that mutates data; clean up after (revoke test tokens).
    - **Backend (Cloud Run) has no per-branch preview** — it can only be confirmed *post-merge* against prod. The agent does the API-level prod smoke + a route-deployed probe; Daniel picks up the seller/browser parts. State this split in the PR.
 6. **Push as you go.** Each push updates the preview; the reviewer (and Daniel) can test per story without touching production.
-7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). **Flip the PR draft → ready-for-review the moment the deterministic gate is green and the self-QA note is posted** (updated 2026-07-15): a draft means *still building*, ready means *review me* — this is also what the roadmap board's Lifecycle overlay reads (draft PR → In progress, ready PR → In review), so leaving finished work in draft hides it in the "In review" column. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. Trigger the reviewer (a fresh agent, not the builder — see *Review & merge* below). When the deterministic gate is green, the review is clean, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
+7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). **Flip the PR draft → ready-for-review the moment the deterministic gate is green and the self-QA note is posted** (updated 2026-07-15): a draft means *still building*, ready means *review me* — this is also what the roadmap board's Lifecycle overlay reads (draft PR → In progress, ready PR → In review), so leaving finished work in draft hides it in the "In review" column. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. Run the **mandatory cross-agent review** (`node scripts/cross-review.mjs <PR#>`), plus the fresh-reviewer subagent if the tier or your judgment calls for it — either way a fresh agent, never the builder (see *Review & merge* below). When the deterministic gate is green, every review finding is resolved, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
 8. **Continue / close.** Roll into the next story. At **sprint close**, emit the sprint-wrap terminal summary (`SESSION-KICKOFFS.md` §7) — a thin pointer to the sprint doc + what's owed/next, never a re-summary. At **epic close**, do the epic Definition of Done (below) — including updating the product poster. **Close-out prose (retro, poster entry, sprint-wrap) may be first-drafted by `node scripts/prose-draft.mjs`** (cheap different-family model, house-voice prompt, file-derived inputs only) — the coordinating agent **must edit the draft for factual accuracy before committing** (drafts invent plausible gaps; the banner says so). PR bodies stay with the builder — they're cheapest written by the agent holding the context.
 
 ## Review & merge — cross-agent
 With multiple agents running in parallel, the agent that **builds** a PR is not the one that **approves** it — a
-fresh reviewer re-derives intent from the diff alone and catches what the author's context-bias hides. Two layers
-do this, and they're complementary:
+fresh pair of eyes re-derives intent from the diff alone and catches what the author's context-bias hides.
+**Three layers** do this, and the review stack is now **right-sized by risk** (Daniel's call, 2026-07-14):
+CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier or on judgment**.
+
+| Layer | When | Blocks merge? |
+|---|---|---|
+| **CI** — deterministic gate | Every PR, both repos | Yes — red CI blocks |
+| **Cross-agent review** (`cross-review.mjs`) | **Mandatory, every PR** | Its **findings** must be resolved before merge; the run itself never *authorizes* one |
+| **Fresh reviewer subagent** (`pr-reviewer`) | **Mandatory on HIGH tier.** Optional on LOW once cross-review findings are addressed | Only when run: an unresolved blocking finding blocks merge |
+
 - **CI (determinism):** GitHub Actions runs a deterministic gate on every PR in **both repos** — the tireless
   gate that never forgets or runs out of tokens; a red CI blocks merge.
   - **Frontend** (`apps/miyagisanchez`): `tsc` + `next build` + the Playwright suite against the PR's Vercel
@@ -60,37 +68,54 @@ do this, and they're complementary:
     integration tests are out of the gate (they need Postgres). The `Type-check + build + unit` check is wired
     into the backend repo's branch protection as a **required status check** on `main`, so a red run blocks
     merge (configured 2026-06-14).
-- **Reviewer (judgment):** a **fresh reviewer agent** re-derives intent from the diff alone and checks
-  correctness, architecture, and the five rules from `AGENTS.md`. The path is a **repo-local reviewer
-  subagent** — `.claude/agents/pr-reviewer.md`, invoked as *"use the pr-reviewer subagent on PR #N"*
-  (paste the builder's report; it falls back to the PR body). It verifies the report's claims against
-  the real diff, `origin/main`, sibling-repo PR state, and these process docs — read-only, single-pass;
-  it composes with parallel agents and needs no external service. Keep review a **single pass on a green CI gate** — not an
-  iterative refine loop (that loop is the dominant token cost in multi-agent dev; let the deterministic gate,
-  `tsc` + `build` + Playwright, carry the repetitive checking and have the reviewer read once). **Do not use
-  the `/code-review ultra` cloud command — it is not set up for this repo.** The reviewer must be a different
-  agent than the one that built the PR.
-- **Cross-agent second opinion (advisory) — run locally on every PR:** `node scripts/cross-review.mjs <PR#>
+- **Cross-agent review (MANDATORY on every PR):** `node scripts/cross-review.mjs <PR#>
   --agent codex|antigravity` pipes the PR diff into a **different model family's** CLI (Codex or Antigravity)
-  for one pass and posts the findings as a clearly-labeled PR comment. It exists only to surface another
-  family's blind spots. **Run it on every PR** (it's proven valuable), but **advisory only** — it never
-  gates, blocks, or authorizes a merge (CI + the Claude reviewer + the risk-tier rule below stay the sole
-  sources of truth), and it is **single-pass** (no debate loop). It reads the same shared prompt the human
-  reviewer does (`scripts/cross-review.prompt.md` — the five `AGENTS.md` rules + this single-pass discipline).
+  for one pass and posts the findings as a clearly-labeled PR comment. It exists to surface another
+  family's blind spots, and it has earned the promotion from advisory to required — it caught real bugs in
+  3 of 4 PRs in the 2026-07-17 batch alone (see `LEARNINGS.md`). **Run it on every PR, and resolve every
+  finding before merge** — fix it, or answer it on the PR with the reason it isn't a bug. An unanswered
+  finding blocks the merge; the *run* still never **authorizes** one (CI + the risk-tier rule below stay
+  the sole sources of merge authority). It is **single-pass** (no debate loop) and reads the same shared
+  prompt the Claude reviewer does (`scripts/cross-review.prompt.md` — the five `AGENTS.md` rules + this
+  single-pass discipline).
   `--skip-trivial` skips docs-only / tiny diffs. The agy path is **version-pinned and fail-loud**
   (a young CLI's print contract breaks on minor bumps); when the pin check dies, agents are
   **pre-authorized** to run `node scripts/agy-doctor.mjs --fix` — it re-verifies the live contract and
   bumps the pin only on a green probe — and commit the one-line bump (LOW tier). Model swaps or a
   failed probe still escalate to Daniel. *(It runs **locally**, not in CI: a GitHub runner has no
-  codex/agy auth — codex needs a token-billed API key + a cross-repo PAT and agy has no headless auth at all,
-  not worth it for an advisory aid; epic `09-platform-infra/cross-agent-review-always` chose local-only.)*
+  codex/agy auth — codex needs a token-billed API key + a cross-repo PAT and agy has no headless auth at all;
+  epic `09-platform-infra/cross-agent-review-always` chose local-only. Mandatory therefore means **an agent
+  must run it before merging**, not that a required status check enforces it.)*
+- **Fresh reviewer (judgment) — MANDATORY on HIGH tier, optional on LOW:** a **fresh reviewer agent**
+  re-derives intent from the diff alone and checks correctness, architecture, and the five rules from
+  `AGENTS.md`. The path is a **repo-local reviewer subagent** — `.claude/agents/pr-reviewer.md`, invoked as
+  *"use the pr-reviewer subagent on PR #N"* (paste the builder's report; it falls back to the PR body). It
+  verifies the report's claims against the real diff, `origin/main`, sibling-repo PR state, and these process
+  docs — read-only, single-pass; it composes with parallel agents and needs no external service. It must be a
+  different agent than the one that built the PR.
+  - **HIGH tier → always run it.** It repeatedly caught real money-path issues the cross-agent pass missed
+    (catalog-management S6's IDOR, arranged-only-delivery S2, and the redirect-following SSRF bypass in the
+    2026-07-17 batch). On HIGH, the two layers have never been redundant.
+  - **LOW tier → optional**, once cross-review findings are addressed. Run it anyway when judgment says to:
+    a diff wider than its story, a shared-surface or `lib/` seam other epics import, a security-shaped
+    change, a sweep whose "everything else is fine" claim nobody has re-derived, or anything the cross-agent
+    pass flagged and you argued down. Skipping it is a **judgment call to state in the PR body**, not a
+    default to exercise silently.
+  Either way, keep review a **single pass on a green CI gate** — not an iterative refine loop (that loop is
+  the dominant token cost in multi-agent dev; let the deterministic gate, `tsc` + `build` + Playwright, carry
+  the repetitive checking and have the reviewer read once). **Do not use the `/code-review ultra` cloud
+  command — it is not set up for this repo.**
 
 **Every PR declares a risk tier** (in the PR body); that tier decides who may merge:
-- **Low-risk → reviewer may auto-merge** once CI is green and the review is clean: docs/copy, non-commerce UI,
-  additive agent tools behind auth, tests, internal tooling.
+- **Low-risk → an agent other than the builder may merge** once CI is green and the **cross-agent review is
+  clean or its findings are answered** — the reviewer when one ran, otherwise the orchestrating agent. (The
+  fresh-reviewer pass being optional here doesn't lower the bar; it moves the bar onto the mandatory
+  cross-agent layer.) LOW = docs/copy, non-commerce UI, additive agent tools behind auth, tests, internal
+  tooling.
 - **High-risk → always a Daniel merge** (a human green-light, never an autonomous ship): anything touching
   **payments / checkout / fulfillment / auth / DB migrations / shared infra / money**. This preserves the
-  live-commerce guardrail — an agent never deploys real-money paths to production on its own.
+  live-commerce guardrail — an agent never deploys real-money paths to production on its own. HIGH also
+  carries the **mandatory fresh-reviewer pass** above.
 When unsure which tier, treat it as high-risk. High-risk epics are also *planned behind a kill-switch*
 at grooming (the flag is decided + sliced there, verified at epic DoD — not a new gate); see
 the `groom` skill (`ways-of-work` plugin, dobby-foundation marketplace) Stage 6b.
@@ -249,8 +274,11 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   are bilingual). On the product poster (`README.md`), **✅ means enforced in code**, not merely intended —
   partial/aspirational is 🚧. Run a lightweight **drift audit** periodically (paths · imports · env vars · routes ·
   key policy claims vs the codebase); it's a strong fit for a Claude Code dynamic-workflow doc-audit.
-- **Never use the Vercel CLI to deploy.** Deploys are git-driven only (push a branch = preview; merge to
-  `main` = production). The Vercel CLI would push out-of-band with git history.
+- **Never use the Vercel CLI to deploy.** Deploys are git-driven only. For the frontend, pushing a branch
+  gets you a **Vercel preview** and merging to `main` builds the **production image on Cloud Build → Cloud Run
+  `miyagi-web`** — Vercel prod deploys have been disabled since the 2026-07-10 cutover, so `vercel --prod`
+  would not even reach production; it would push a stray out-of-band deployment. Same rule for the backend
+  (merge to `main` → Cloud Build → Cloud Run `medusa-web`).
 - Commit messages end with the `Co-Authored-By: Claude` trailer.
 - **Language.** Docs are written in **English** — everything under `Roadmap/` (epic READMEs, sprint files,
   retrospectives, the poster, `LEARNINGS.md`), `tasks/`, code comments, and PR descriptions. The **only**
