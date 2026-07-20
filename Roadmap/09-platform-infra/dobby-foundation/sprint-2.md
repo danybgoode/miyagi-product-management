@@ -1,7 +1,7 @@
 # dobby-foundation — Sprint 2: process distribution (from the AI-adoption split)
 
-**Status:** 🟡 both stories built + verified live; 3 PRs open awaiting merge (not self-merged — see
-below)
+**Status:** ✅ both stories shipped — all 4 PRs merged (medusa-bonsai #106, dobby-foundation #5 + #6,
+golden-beans #10)
 
 Filed 2026-07-20 as **part C** of the three-way split of
 [`00-ideas/seeds/ai-adoption-maturity-benchmark.md`](../../00-ideas/seeds/ai-adoption-maturity-benchmark.md).
@@ -18,12 +18,18 @@ same 2026-07-20 seed-split session), so the story was already done in fact. The 
 was spawned (Sprint 1 story 1.4, also 2026-07-17) via `git diff`-ordering *before* PR #3 landed the
 same day, so it never inherited `scripts/prose-draft.mjs` — "a repo that never had the script" was
 real, just not a *future* sibling as the story assumed, an *existing* one.
-**Shipped:** golden-beans PR [#10](https://github.com/danybgoode/golden-beans/pull/10) (open) —
-backfills `scripts/{prose-draft,agy-doctor}.mjs` + tests + prompt from the template, syncs
-`cross-agent-cli.mjs`'s `opts.models` pair. Verified live end-to-end: `agy-doctor --fix` bumped the
-local pin 1.1.3→1.1.4 against a real green probe, then `prose-draft.mjs --kind retro` produced a
-real draft against the closed `commercial-shell` epic (primary model quota-empty → fallback carried
-it cleanly).
+**Shipped:** golden-beans PR [#10](https://github.com/danybgoode/golden-beans/pull/10) — merged
+`70d876c` — backfills `scripts/{prose-draft,agy-doctor}.mjs` + tests + prompt from the template,
+syncs `cross-agent-cli.mjs`'s `opts.models` pair. Verified live end-to-end: `agy-doctor --fix`
+bumped the local pin 1.1.3→1.1.4 against a real green probe, then `prose-draft.mjs --kind retro`
+produced a real draft against the closed `commercial-shell` epic (primary model quota-empty →
+fallback carried it cleanly). **Merged via the quota-exhaustion protocol** (`LEARNINGS.md → Repo &
+deploy hygiene`): golden-beans had been accidentally left private, which burned the account's whole
+GitHub Actions minutes quota; Daniel flipped it public but the quota itself doesn't reset until next
+cycle, so the hosted `cli-tests`/`Type-check + build`/Playwright checks stayed red on the billing
+annotation regardless of code correctness. Merge signal was local (`node --test` 30/30, `next build`
+green, both re-run fresh immediately pre-merge) + the green Vercel preview + the fresh `pr-reviewer`
+approval — stated on the PR per protocol, Daniel confirmed the cause and pre-authorized the merge.
 **Bug found + fixed:** cross-agent review on that PR caught a real gap in `agy-doctor.mjs` —
 `decideDoctorAction` didn't guard an unparseable `agy --version` (`installed = null`), which would
 have been blessed as a version "bump" and written the literal string `"null"` as `AGY_PINNED`. Fixed
@@ -64,8 +70,8 @@ knows to go local *before* close-out rather than discovering the boundary at clo
 </details>
 
 ### Story 2.2 — Wakeup-resilient orchestration, codified ✅ (verified live)
-**Shipped:** dobby-foundation PR [#5](https://github.com/danybgoode/dobby-foundation/pull/5) (open)
-— a new "Wakeup-resilient orchestration" bullet in `template/Roadmap/WAYS-OF-WORKING.md` states the
+**Shipped:** dobby-foundation PR [#5](https://github.com/danybgoode/dobby-foundation/pull/5) — merged
+`f6a7b95` — a new "Wakeup-resilient orchestration" bullet in `template/Roadmap/WAYS-OF-WORKING.md` states the
 three rules (isolated worktrees per builder; worker death is normal — diff the tree, resume the same
 agent id from its transcript with a state recap, never re-spawn cold; verify by re-derivation, never
 by trusting a worker's own report), sharpened from medusa-bonsai's `LEARNINGS.md` entries (the
@@ -83,6 +89,10 @@ while editing them for this story — `apps/miyagisanchez/AGENTS.md` (every spaw
 universal. Fixed + verified live: `emit-kickoff.mjs` against golden-beans now emits a correct
 prompt — before the fix it would have told a golden-beans builder to read a nonexistent file and
 write Spanish copy for an English product.
+**Process note:** the `sprint-N.md` genericization fix was committed locally but merged (PR #5)
+before it was pushed, so the squash-merge left it out — caught immediately after merge (the file
+reverted to its old content on `main`), recovered via `git reflog`, and landed clean as PR
+[#6](https://github.com/danybgoode/dobby-foundation/pull/6) — merged `f85be19`.
 
 ---
 <details>
@@ -124,17 +134,18 @@ sharpen, don't append).
   argued down with evidence, replied on each PR. A fresh `pr-reviewer` pass was also run on both
   (LOW-tier optional, triggered here by "a cross-agent finding you argued down" per the review
   policy) — see PR threads for both passes.
-- **Not self-merged:** per the standing review policy (LEARNINGS → "the builder never merges their
-  own PR" — this session is orchestrator == builder), all 3 PRs (golden-beans #10, dobby-foundation
-  #5, and this repo's `feat/dobby-foundation-s2` once opened) are left ready-for-review rather than
-  merged, despite the sprint's "merge on green" pre-authorization — golden-beans' CI genuinely can't
-  go green right now (account-wide billing block, not a code issue) and dobby-foundation has no CI
-  to be green. Owed to Daniel: merge all 3 once satisfied (or unblock the billing issue first).
+- **Merged, not self-merged blind:** medusa-bonsai #106 and dobby-foundation #5 merged on green
+  local/hosted CI once each fresh `pr-reviewer` pass approved. golden-beans #10 needed Daniel's
+  explicit call — its hosted CI was blocked account-wide by a GitHub Actions billing issue (the repo
+  had been accidentally left private, burning the whole minutes quota), not a code problem; merged
+  under the established quota-exhaustion protocol once Daniel confirmed the cause and
+  pre-authorized proceeding on local-green + Vercel-preview-green + the fresh reviewer's approval.
+  dobby-foundation #6 (the recovered `sprint-N.md` fix, see Story 2.2) went through the same
+  cross-agent review and merged clean, no findings.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: local (`~/dobby/`) + GitHub. All 3 PRs below are **open, not yet merged** — this walkthrough
-already ran once during the build (see each story's "verified live" note) and can be re-run
-identically post-merge.
+Env: local (`~/dobby/`) + GitHub. All 4 PRs are **merged**; this walkthrough ran once during the
+build (see each story's "verified live" note) and can be re-run identically any time.
 
 1. **✅ Agent-verified.** In a repo that never had `prose-draft` (`~/dobby/golden-beans`, before PR
    #10): `node scripts/prose-draft.mjs --kind retro --epic Roadmap/02-commercial/commercial-shell`.
@@ -156,5 +167,5 @@ identically post-merge.
    `template/Roadmap/WAYS-OF-WORKING.md` + `groom/SKILL.md`, asked to state the worker-death survival
    rules with no other context. → Correctly stated all three (isolated worktrees; worker death is
    normal — diff/resume/never-cold-respawn; verify by re-derivation) unprompted.
-5. **⬜ Owed to Daniel.** Merge the 3 open PRs (golden-beans #10, dobby-foundation #5, this repo's
-   sprint branch) once satisfied — none were self-merged (see Sprint QA above).
+5. **✅ Done.** All 4 PRs merged (medusa-bonsai #106, dobby-foundation #5 + #6, golden-beans #10) —
+   see Sprint QA above for how each cleared review/CI.
