@@ -18,9 +18,9 @@
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-_None._
+- [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 0/7 stories · risk: High · #1-fm
 
 ## ✅ Shipped (119)
 
@@ -144,8 +144,12 @@ _None._
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (11)
 
+- [Founding merchant activation operations — CRM projection and field intake](seeds/founding-merchant-activation-ops.md) — Raw · Feature · #2-fm
+- [Tiendas Fundadoras acquisition surface](seeds/tiendas-fundadoras-acquisition.md) — Raw · Feature · #3-fm
+- [Merchant activation scorecard — conversion, aging, and cohort retention](seeds/merchant-activation-scorecard.md) — Raw · Feature · #4-fm
+- [Merchant Partner portfolio — follow-up, ownership SLA, and retention](seeds/merchant-partner-lifecycle.md) — Raw · Feature · #5-fm
 - [AI-adoption guardrails — close the step-1/2 gaps the ladder names (browser smoke · security review · proactive monitor · OTel)](seeds/ai-adoption-maturity-benchmark.md) — Ready · Chore
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
@@ -167,4 +171,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 
 ---
-_Epics: 125 · seeds in funnel: 7 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 126 · seeds in funnel: 11 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
