@@ -3,14 +3,20 @@
 **Status:** ⬜ not started — **deliberately deferred** (cutover ran 2026-07-19; soak clock started)
 
 **Added at S3 close (2026-07-19) — items the cutover deferred here:**
+- ✅ **Closed during the soak, not deferred to teardown:** redeployed
+  `cicd-telegram-build-notifier(-frontend)` in `miyagisanchez-prod`. The post-cutover audit proved
+  that copying the Telegram secrets did not migrate the old project's Pub/Sub subscriptions or
+  Gen2 functions, so successful new-project builds had no deploy-finish alerts. Keeping this
+  observability gap open until destructive teardown would have hidden failures during the exact
+  period meant to establish confidence.
 - Delete old `miyagi-pmo-reports` bucket **before** project deletion (frees the GLOBAL name
   immediately) → recreate via `provision-report-registry.sh` in the new project → restore the
   ~600 KB of objects from the final export.
 - Mint a new `pmo-report-writer@miyagisanchez-prod` SA key and replace it in the claude.ai
   routine's env var (the old-project key dies with the project).
-- Redeploy post-cutover-deferred surfaces in the new project: `pmo-smalldocs`, `print-pdf`,
-  `cicd-telegram-build-notifier(-frontend)` (old ones bind deleted uuid-secrets anyway), and the
-  staging stack (`provision-staging.sh`/`deploy-staging.sh` + `backend-staging-deploy` trigger).
+- Redeploy the remaining post-cutover-deferred surfaces in the new project: `pmo-smalldocs`,
+  `print-pdf`, and the staging stack (`provision-staging.sh`/`deploy-staging.sh` +
+  `backend-staging-deploy` trigger).
 - Delete the old project's `api.miyagisanchez.com` Cloud Run domain mapping (orphaned by the flip;
   `api.` now rides the ALB host rule).
 - Old-project monitoring/uptime still watches the shared domain — tear down with the project.

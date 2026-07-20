@@ -14,13 +14,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 ## Multi-agent & async deploy coordination
 *Several agents work in parallel on their own branches, against two repos that deploy independently.*
 
-- **Two repos, two deploy rails, different speeds.** Frontend (`apps/miyagisanchez`) → Vercel on
-  merge, with a per-branch **preview**. Backend (`apps/backend`) → Cloud Build us-east4 → Cloud Run
-  on merge, **~12 min, no preview**. When a frontend feature reads data a backend change produces,
+- **Two repos, one production platform, different preview shapes.** Both frontend
+  (`apps/miyagisanchez` → `miyagi-web`) and backend (`apps/backend` → `medusa-web`) deploy on merge
+  through regional Cloud Build in `us-east4` to Cloud Run; Vercel remains only the frontend's
+  per-branch **preview**, never its production deploy. When a frontend feature reads data a backend change produces,
   **merge backend first (or together)** and make the frontend **degrade gracefully** (`?? []`,
   null-safe) so the deploy-lag window never breaks prod. *(2026-06-05, Configurable & Personalized
-  Products — frontend read `order.personalization ?? []`, a safe no-op until the backend normalizer
-  shipped.)*
+  Products; production rail corrected after the 2026-07-10 frontend Cloud Run cutover.)*
 - **Render is not the active backend deploy rail.** If a stale Render service appears in local CLI
   history, ignore it for Miyagi backend shipping. The source of truth is the backend repo's
   `cloudbuild.yaml`: Cloud Build trigger `backend-main-deploy` in `us-east4`, deploying Cloud Run
@@ -263,9 +263,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **GCP account-migration cluster (2026-07-19, gcp-account-migration S0–S3 — one session, cut over
   with zero loss; full story in that epic's RETROSPECTIVE):**
   (1) **A just-created service account is eventually consistent** — an immediate IAM grant against
-  it 400s "does not exist"; hit 4× across 4 provision scripts in one epic. Bounded-wait
-  (describe-until-visible) after every SA create; same shape for the async backend-service PATCH →
-  add-backend "resource not ready" race (hit 2×, retry loop).
+  it 400s "does not exist"; hit 4× across 4 provision scripts in one epic. **Retry the consumer
+  operation that actually observes propagation** (here, Secret Manager's IAM grant), not an IAM
+  `service-accounts describe`: the creating API can see the principal before a different service
+  can resolve it. Same rule for the async backend-service PATCH → add-backend "resource not ready"
+  race (hit 2×, retry the add).
   (2) **A fresh-project rebuild surfaces every config that only ever accumulated live** — secret
   shells no provision script owned (create-if-absent the full reused set), and an EMPTY shell whose
   `:latest` a deploy binds **fail-closes every fresh revision** (SERPAPI_KEY — empty even in the
@@ -860,12 +862,31 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   (389 build-order-guard + 321 notion-sync at ~5-6 min each + 155 notion-pr-sync runs, mostly
   pre-consolidation), while the public app repo's 408 CI runs were free. Fixes, in order of
   leverage: (1) make docs/tooling repos PUBLIC when nothing secret is tracked (root repo flipped
-  2026-07-18 after a credentials grep — repo secrets survive the flip); (2) the local-first push
-  (pre-commit/pre-push hooks + PR-only consolidated guards) — already done 2026-07-16, it's what
-  capped the bleed; (3) never give a chatty workflow a `push: main` trigger on a private repo.
+  2026-07-18 after a credentials grep — repo secrets survive the flip); (2) local pre-commit
+  guards + PR-only consolidated hosted guards — already done 2026-07-16, which capped the bleed;
+  (3) never give a chatty workflow a `push: main` trigger on a private repo. Once the root became
+  public, restore the path-gated Notion push writer and retire the local network-writing pre-push
+  hook: a linked worktree missed it, and running both writers would duplicate concurrent PATCHes.
   **Quota-exhaustion protocol** while waiting on a flip/reset: the builder-run local gate + the
   green Vercel preview (Vercel-side, unaffected) are the merge signal — state "CI quota exhausted,
   local gate green: <details>" in the PR body. *(2026-07-18, multi-epic batch.)*
+- **Remove retired-platform observers at the cutover, not later.** After frontend production moved
+  from Vercel to Cloud Run, its GHA notifier kept polling `target=production` 60 times and timing
+  out green, burning ~15 hosted minutes per merge while reporting nothing. Observability code is
+  part of the deploy topology: when a rail is retired, delete its pollers and prove the replacement
+  against a real terminal event. *(2026-07-19, GCP account-migration post-cutover audit.)*
+- **A project migration must inventory event sources and consumers, not just secrets, services,
+  and triggers.** Copying the Telegram secrets and recreating Cloud Build triggers did not move the
+  project-local `cloud-builds` topic, Eventarc subscriptions, or Gen2 notifier functions; builds
+  succeeded in the new project while terminal alerts stayed attached to the old one. During a
+  cutover, enumerate `topic → subscription/trigger → function/service` as one unit and smoke it
+  before calling the soak observable. *(2026-07-19, GCP account-migration post-cutover audit.)*
+- **Treat the production image runtime as one contract across Docker, package engines/types, and
+  hosted CI.** A dependency refresh raised Supabase's floor to Node 22, but both app Dockerfiles and
+  CI stayed on Node 20; PR checks remained green while Cloud Build emitted `EBADENGINE`. Move all
+  surfaces together and lock the relationship with a source-level invariant—the production build
+  log is the compatibility smoke, not the first place to discover drift. *(2026-07-19,
+  GCP account-migration post-cutover audit.)*
 - **An npm `prepare` script runs on EVERY `npm ci` — including inside Docker build stages, where
   git (and your repo) don't exist. A git-touching `prepare` must end in `|| true`.** The
   local-first pre-push hook chore (frontend #264 / backend #96, 2026-07-16) added
@@ -1746,13 +1767,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 - **Gate new behaviour on a feature flag / presence check to shrink blast radius.** The personalized
   buy box only mounts when a listing actually has custom fields, so the 99% non-personalized checkout
   path stayed byte-for-byte unchanged — a high-risk seam touched safely.
-- **CI/CD → Telegram: mirror the message *format*, not the runtime function, and poll Vercel (free tier)
-  from a GHA job.** `lib/telegram.ts` is an *app-runtime* helper — a GitHub Action can't import it, so the
-  pipelines reuse its HTML/`esc()` style by convention, not by call. Vercel configurable webhooks are
-  **Pro-only**, so on Hobby/free a GHA job polls the Vercel API (reuse `ci.yml`'s resolve-by-commit-SHA +
-  poll loop, scoped `target=production`). And Cloud Build aborts on first failure, so subscribe to the
-  `cloud-builds` **Pub/Sub** topic for a success-AND-failure backend deploy hook (a trailing cloudbuild
-  step only reports success). *(2026-06-06, cicd-telegram-notifications.)*
+- **CI/CD → Telegram: mirror the message *format*, not the runtime function; terminal production
+  status comes from Cloud Build Pub/Sub for both apps.** `lib/telegram.ts` is an app-runtime helper,
+  so pipeline observers reuse its HTML/`esc()` style by convention, not by import. Cloud Build
+  aborts on first failure, so a trailing YAML step cannot report both outcomes: subscribe
+  project-local notifier functions to `cloud-builds`, one filtered instance per app trigger.
+  The former Vercel API poller was correct while Vercel hosted production but became pure quota
+  waste after the Cloud Run cutover and was removed. *(2026-06-06, cicd-telegram-notifications;
+  sharpened 2026-07-19 after the GCP migration audit.)*
 - **An authoritative, money-adjacent scheduled action belongs in the BACKEND scheduled job (internal auth +
   idempotency), not a Vercel/edge cron.** "Pick the sweepstakes winner once" started on a one-minute Vercel
   cron and was moved onto a Medusa scheduled job on Cloud Run with internal auth — a public/edge cron is the

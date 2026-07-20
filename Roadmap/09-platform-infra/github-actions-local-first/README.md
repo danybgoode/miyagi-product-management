@@ -39,14 +39,17 @@ Repo-tooling only — no backend/frontend deploy involved. Direct-to-`main`, pat
 this repo's own low-risk convention.
 
 ## Definition of Done (epic)
-- [x] `notion-sync.yml`'s `push` trigger removed; cron + `workflow_dispatch` remain as the safety net.
+- [x] `notion-sync.yml`'s billed `push` trigger was removed while the repo was private; after the
+      repo became public (unmetered hosted minutes), path-gated push-to-main sync was restored so
+      merged roadmap state cannot depend on one machine's hook.
 - [x] `.githooks/pre-commit` (blocking) covers build-order, doc-format, scripts/ + infra/ node:test,
       each path-gated to only run when relevant.
-- [x] `.githooks/pre-push` (advisory — never blocks) runs the Roadmap → Notion sync locally when
-      `NOTION_TOKEN` is present; no-ops with a clear message when it isn't.
+- [x] The temporary `.githooks/pre-push` full-sync replacement was retired after the repo became
+      public. It missed linked-worktree pushes, and keeping it beside the restored hosted trigger
+      would create duplicate concurrent Notion PATCHes. `.githooks/pre-commit` remains local-first;
+      the public push workflow is the sole real-time board writer.
 - [x] `package.json`'s `prepare` script auto-activates `core.hooksPath` on `npm install`/`npm ci` —
       no manual per-clone step.
-- [ ] GH `*-guard.yml` workflows consolidated into one job + demoted to PR-only (fast-follow, not
-      blocking the urgent fix — the guards are a second-order cost next to `notion-sync`).
+- [x] GH `*-guard.yml` workflows consolidated into one `guards.yml` job + demoted to PR-only.
 - [ ] `dobby-foundation` template updated with the same local-first pattern + the public-vs-private
       Actions-billing distinction documented explicitly, so future scaffolded repos start local-first.

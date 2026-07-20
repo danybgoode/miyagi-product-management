@@ -54,3 +54,15 @@ swaps the image; Cloud Run preserves env/secrets/connector/SA set by `deploy.sh`
 # One-time GitHub connection is a console step (OAuth) — see cicd-setup.sh header.
 bash infra/gcp/cicd-setup.sh   # grants Cloud Build SA deploy rights; creates the trigger
 ```
+
+Terminal success/failure notifications are separate project-local resources; they do not migrate
+with the trigger or Secret Manager values. Provision both filtered consumers after any project
+move, from the backend repo under `lolis-profile`:
+
+```bash
+PROJECT_ID=miyagisanchez-prod bash infra/gcp/deploy-cicd-telegram-notifier.sh
+PROJECT_ID=miyagisanchez-prod bash infra/gcp/deploy-cicd-telegram-notifier-frontend.sh
+```
+
+Both subscribe to the new project's `cloud-builds` topic. A real terminal event (or a controlled
+synthetic Pub/Sub event) is the smoke; the functions merely existing is not sufficient evidence.

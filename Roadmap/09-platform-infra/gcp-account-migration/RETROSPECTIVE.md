@@ -46,7 +46,8 @@ session, on the epic feature branch (S0 `44bdaba` · S1 `7861b69` · S2 `39a95f5
 ## What we learned (promoted to Roadmap/LEARNINGS.md)
 
 1. **A just-created service account is eventually consistent** — an immediate IAM grant 400s
-   "does not exist". Hit 4× across 4 scripts in one epic; bounded-wait after create.
+   "does not exist". Hit 4× across 4 scripts in one epic; retry the failing consumer operation,
+   not a `describe` call on the API that created the principal.
 2. **A fresh-project rebuild surfaces every config that only ever accumulated live** — secret
    shells no provision script owned, and an empty shell whose `:latest` binding fail-closes any
    fresh revision (`SERPAPI_KEY`). Provision scripts are now create-if-absent for the full reused
@@ -70,7 +71,55 @@ session, on the epic feature branch (S0 `44bdaba` · S1 `7861b69` · S2 `39a95f5
 - **S4 (deferred ≥2 weeks, gate: Daniel's explicit go):** final export to durable storage →
   reference grep → stop old services/pause old SQL → delete project. Added at S3 close: delete old
   `miyagi-pmo-reports` bucket then recreate+restore in new project (global name); redeploy
-  `pmo-smalldocs`/`print-pdf`/notifier functions/staging surface; new `pmo-report-writer` SA key
-  into the claude.ai routine env; delete the old `api.` domain mapping.
+  `pmo-smalldocs`/`print-pdf`/staging surface; new `pmo-report-writer` SA key into the claude.ai
+  routine env; delete the old `api.` domain mapping. **Correction during soak:** the two Telegram
+  build-notifier functions moved immediately rather than waiting for S4, because observability is
+  a soak precondition, not teardown work.
 - The old project's monitoring still watches the shared domain (now serving the new project) —
   harmless double-cover until S4 tears it down.
+
+## Post-cutover validation correction (2026-07-19)
+
+The four expected GitHub `📦` merge alerts arrived, but no Cloud Build `🚀` terminal alerts did.
+The builds themselves were healthy: backend `f813206` and frontend `ca702d3`, `b1a8311`, and
+`50a93dc` all reached `SUCCESS`, and Cloud Run served the newest revisions. The missing alerts
+exposed two independent migration gaps:
+
+- the `cloud-builds` Pub/Sub topic and the two Gen2 notifier functions still existed only in the
+  rollback project; secrets and build triggers alone do not recreate event-driven consumers;
+- the frontend GitHub workflow still polled a Vercel production deployment that no longer exists,
+  spending about 15 hosted minutes per merge before timing out green.
+
+The repair moved both functions to `miyagisanchez-prod`, removed the obsolete Vercel poller, and
+made the notifier deploy script project-explicit (no global `gcloud config set`). A second live
+finding was also fixed: the frontend Docker builder received `NEXT_PUBLIC_MEDUSA_STORE_URL` but not
+the server-side `MEDUSA_STORE_URL`, so the initial homepage prerender could freeze an empty catalog
+until ISR repaired it. The builder now exports the server alias and a deterministic guard locks the
+relationship.
+
+The repair's own production build logs then exposed a shared runtime-floor drift: current Supabase
+packages require Node 22, while both application images still built on Node 20. Frontend PR
+[#289](https://github.com/danybgoode/miyagisanchezcommerce/pull/289) and backend PR
+[#107](https://github.com/danybgoode/medusa-bonsai-backend/pull/107) moved Docker build/runtime
+stages, package engines/types, and hosted CI together, with deterministic guards so those four
+surfaces cannot silently diverge again.
+
+### Repair execution evidence (2026-07-19 local / 2026-07-20 UTC)
+
+- The original alert-less builds were all `SUCCESS`: backend `f813206`; frontend `ca702d3`,
+  `b1a8311`, and `50a93dc`. GitHub Actions quota was not their blocker: all three repos are public,
+  so their hosted checks are unmetered despite the account's exhausted private-repo allowance.
+- Backend repair builds `c1032c8a…` (`a3e453e`, notifier hardening) and `00a66cf0…` (`7fd2a44`,
+  Node 22) both reached `SUCCESS`; final revision `medusa-web-00006-zm8` owns 100% traffic and both
+  the direct Cloud Run `/health` and `https://api.miyagisanchez.com/health` returned 200.
+- Frontend repair builds `d8e2d931…` (`e684432`, server-side Medusa URL + retired poller) and
+  `8e43394e…` (`b4f45ee`, Node 22) both reached `SUCCESS`; final revision
+  `miyagi-web-00007-7xj` owns 100% traffic. A real production Chromium smoke returned 200 and
+  rendered a populated catalog on first load.
+- `cicd-telegram-build-notifier` and `-frontend` are ACTIVE Gen2/Node 22 functions in
+  `miyagisanchez-prod`. Natural terminal events from both final builds invoked both functions with
+  HTTP 200 and no Telegram-send warning; this verifies the replacement rail without a synthetic
+  alert.
+- One unrelated browser-console 400 remains: a listing image from `teatrounam.com.mx` is outside
+  the image-proxy allowlist. It does not affect catalog data or deploy health and belongs to the
+  asset-host hygiene follow-up, not this migration repair.

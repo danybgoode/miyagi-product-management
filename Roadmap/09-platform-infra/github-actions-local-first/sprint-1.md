@@ -30,6 +30,19 @@
 3. Push a commit touching `Roadmap/**` with `NOTION_TOKEN` unset.
    → `pre-push` prints a skip message, push proceeds normally (never blocks).
 4. Confirm `notion-sync.yml` on GitHub no longer has a `push` trigger (`gh workflow view
-   notion-sync.yml` or read the file) — only `schedule` + `workflow_dispatch` remain.
+   notion-sync.yml` or read the file). Historical result: only `schedule` + `workflow_dispatch`
+   remained while the repo was private. After the repo became public, a path-gated `main` push
+   trigger was safely restored to guarantee post-merge freshness.
+
+**Post-epic correction (2026-07-19):** retire `.githooks/pre-push`. A root PR pushed from a linked
+worktree proved the local replacement was not reliable enough to own board freshness, and running
+it beside the restored public-repo workflow would duplicate full-board PATCHes. The original
+private-minute mitigation remains valid historically; the repository visibility change removed
+the billing constraint that justified the local network write.
+
+Repair execution evidence: a direct full sync created 0 rows, updated 465, and scanned 466 existing
+rows. API read-back then confirmed the three batch epics
+(`pdp-lightbox-close-button-occluded`, `catalog-orphan-listing-sweep`, and
+`seller-catalog-null-slot-sweep`) all report `Status=Shipped` with a clear `Lifecycle` overlay.
 
 If any step fails, note the step number + what you saw — that's the bug report.

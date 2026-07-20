@@ -2,25 +2,21 @@
 # Docs are the only source of truth; the Notion board is a rebuilt projection, so a
 # re-sync keeps it from lagging merged work (board edits are overwritten).
 #
-# LOCAL-FIRST (2026-07-16): the real-time sync now runs from `.githooks/pre-push` on this
-# machine — `git log -G` history is already local (no fetch-depth:0 full-clone cost), and
-# it fires the moment you push, same "within ~a minute" guarantee this workflow's `push`
-# trigger used to provide. This workflow's `push` trigger was REMOVED because it was the
-# single largest GitHub Actions minutes cost in this repo (~5-6 billed min per push touching
-# Roadmap/**, and this repo gets pushed to very frequently) — see
-# Roadmap/09-platform-infra/github-actions-local-first/ for the full rationale.
+# The push trigger was temporarily removed while this repo was private because each full-history
+# run billed ~5-6 minutes. The repo became public on 2026-07-18, so hosted minutes are no longer
+# metered; push-to-main was restored after the local pre-push replacement missed a linked-worktree
+# push and left the board stale. That local full-sync hook is now retired: one hosted writer avoids
+# duplicate concurrent PATCHes, while `.githooks/pre-commit` retains the fast local guards.
 #
 # Triggers now:
-#   • nightly cron — the drift safety-net: catches anything pushed without the local hook
-#     (a GitHub web edit, a different machine, NOTION_TOKEN missing locally that session).
+#   • push to main for Roadmap/projection changes — reliable post-merge freshness.
+#   • nightly cron — the drift safety-net.
 #   • workflow_dispatch — manual on-demand run (GitHub Actions "Run workflow" button,
 #     `gh workflow run notion-sync.yml`, or the API) to force a resync without a doc
 #     change — e.g. after the board was edited by hand, or to re-sync after setting
 #     the NOTION_TOKEN secret.
 # concurrency coalesces overlapping runs: the sync is a full idempotent rebuild, so
-# cancelling an in-flight run for a newer trigger is always correct. Note: a cancelled run
-# still bills its elapsed wall-clock time — concurrency caps waste, it doesn't zero it out,
-# which is exactly why the frequent `push` trigger (not just its overlaps) had to go.
+# cancelling an in-flight run for a newer trigger is always correct.
 #
 # Secrets: NOTION_TOKEN (required — `gh secret set NOTION_TOKEN`, a Notion internal-
 # integration token with access to the database). NOTION_DB_ID is optional; the
@@ -34,6 +30,11 @@
 name: notion-sync
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'Roadmap/**'
+      - 'scripts/roadmap-to-notion.mjs'
   schedule:
     - cron: '0 8 * * *' # nightly, 08:00 UTC ≈ 02:00 CDMX — drift safety-net
   workflow_dispatch:     # manual on-demand resync

@@ -78,6 +78,15 @@ while prod keeps serving from the old one. Sprint 3 is the only user-visible mom
 picks the window and merges. **Sprint 4 does not run until an agreed quiet period has passed with
 the new project healthy** — keeping the old project alive *is* the rollback plan.
 
+**Post-cutover correction (2026-07-19):** the application builds and Cloud Run revisions all
+succeeded, but terminal Telegram alerts did not: the `cloud-builds` topic and two notifier
+functions remained project-local to the rollback project. They were moved during the soak (not
+deferred to S4), and the retired frontend Vercel-production poller was removed. The same audit
+caught the frontend Docker builder omitting the server-side Medusa URL during prerender; that
+bridge now has a deterministic app-repo guard. The repair builds also surfaced and closed a shared
+Node 20→22 runtime-floor drift across Docker, package metadata, and hosted CI. See the retrospective
+for build/revision evidence.
+
 ## Kill-switch
 
 **N/A as a feature flag — the rollback is the old project.** Sprint 3's cutover is reversible by
