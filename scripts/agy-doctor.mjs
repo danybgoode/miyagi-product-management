@@ -27,7 +27,10 @@
 // and fixed — on a machine where agy runs. The distribution point is checkAgyVersion's own failure
 // message, which names this command.
 //
-// Zero npm deps — Node 18+. Pure decision logic exported for node:test (isMain-guarded, per LEARNINGS).
+// Zero npm deps — Node 21+ (the --fix flow's `node --test 'scripts/lib/*.test.mjs' 'scripts/*.test.mjs'` relies on the test
+// runner's own glob expansion under spawnSync(..., {shell:false}), which Node added in 21; below that,
+// the literal, unexpanded pattern silently matches nothing). Pure decision logic exported for node:test
+// (isMain-guarded, per LEARNINGS).
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -53,6 +56,7 @@ const LIB_PATH = join(__dirname, 'lib', 'cross-agent-cli.mjs');
 // (non-zero exit) | 'skipped'.
 export function decideDoctorAction({ installed, pinned, helpOk, primaryListed, fallbackListed, probes }) {
   const notes = [];
+  if (!installed) return { action: 'contract-broken', notes: ['`agy --version` output didn\'t contain a parseable X.Y.Z — a version this blind cannot be bumped (would write the literal string "null" as the pin).'] };
   if (!helpOk) return { action: 'contract-broken', notes: ['`agy --help` no longer shows the -p/--model print contract.'] };
   if (probes.primary === 'error' || probes.fallback === 'error')
     return { action: 'contract-broken', notes: ['a live `agy -p … --model …` probe exited non-zero (not the quota signature — a real interface error).'] };
