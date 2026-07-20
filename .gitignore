@@ -40,6 +40,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Codex CLI: the shared agent/hook config IS tracked (.codex/hooks.json, .codex/agents/**), but
+# config.toml carries live MCP bearer tokens in http_headers — credential material, never commit.
+# See .codex/config.example.toml for the shape.
+.codex/config.toml
+
 # Local env files
 **/.env
 **/.env.local

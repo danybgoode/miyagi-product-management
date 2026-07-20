@@ -1,0 +1,12 @@
+# Codex CLI config — TEMPLATE. Copy to .codex/config.toml (gitignored) and fill in real values.
+#
+# config.toml is NOT tracked because `http_headers` carries live bearer tokens. Everything else
+# under .codex/ (hooks.json, agents/**) is shared config and IS tracked.
+
+[mcp_servers.mercadopago]
+url = "https://mcp.mercadopago.com/mcp"
+
+[mcp_servers.mercadopago.http_headers]
+# MercadoPago access token. TEST-… for the sandbox, APP_USR-… for live.
+# Get it from the MP dashboard → Your integrations → <app> → Credentials.
+Authorization = "Bearer <MP_ACCESS_TOKEN>"
