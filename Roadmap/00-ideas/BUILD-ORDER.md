@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-19 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-20 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -20,7 +20,7 @@
 ## 📋 Ready to build (scaffolded, not started) (3)
 
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 4/4 stories
-- [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 0/4 stories · risk: Low · #3
+- [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 4/4 stories · risk: Low · #3
 - [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 0/2 stories · risk: Low
 
 ## ✅ Shipped (117)
@@ -152,7 +152,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (4)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -163,6 +163,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
 | dobby-foundation — portable ways-of-work (plugin marketplace + project template) | Scaffolded | Shipped |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
+| Process token-diet | Scaffolded | In progress |
 
 ---
-_Epics: 125 · seeds in funnel: 6 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 125 · seeds in funnel: 6 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._
