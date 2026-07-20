@@ -5,7 +5,10 @@
 // (scripts/cross-review.prompt.md = the five AGENTS rules + WAYS single-pass discipline) and prints the
 // findings. It is dev tooling, not app code, and it is deliberately:
 //   • SINGLE-PASS — one read, no debate / iterate-to-convergence loop (our #1 token sink, out of scope).
-//   • ADVISORY ONLY — never gates, blocks, or merges. CI + the Claude reviewer + the risk-tier rule decide.
+//   • REQUIRED ON EVERY PR (2026-07-14 policy flip) — its findings must be fixed, or answered on the PR,
+//     before merge. It still never approves or merges: CI + the risk-tier rule are the merge authority,
+//     and HIGH-tier PRs also get a fresh `pr-reviewer` pass. Enforcement is by convention, not by a
+//     required check — this runs locally, since a CI runner has no codex/agy auth.
 //
 // Usage:
 //   node scripts/cross-review.mjs [PR#] --agent codex|antigravity [--repo owner/repo] [--force] [--dry-run]
@@ -55,11 +58,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = join(__dirname, 'cross-review.prompt.md');
 
 const BANNER =
-  '> **Advisory only — not a gate, does not authorize merge.** ' +
-  'CI + the Claude reviewer + the risk-tier rule remain authoritative. ' +
+  '> **Required cross-agent review — resolve every finding before merge, but this does not authorize one.** ' +
+  'Fix each finding or answer it on this PR with the reason it is not a bug. ' +
+  'CI + the risk-tier merge rule remain authoritative (HIGH tier also gets a fresh `pr-reviewer` pass). ' +
   'This is a single-pass second opinion from a different model family.';
 
-const HELP = `cross-review.mjs — advisory cross-agent second opinion on a PR diff.
+const HELP = `cross-review.mjs — the required cross-agent review of a PR diff (run on EVERY PR).
 
 Usage:
   node scripts/cross-review.mjs [PR#] --agent codex|antigravity [--repo owner/repo] [--force] [--dry-run]
@@ -80,7 +84,8 @@ Flags:
 With no [PR#], resolves the branch's PR via \`gh pr view\` and refuses a stale local HEAD unless --force.
 An explicit [PR#] overrides resolution and bypasses the stale guard.
 
-Advisory only — the output never gates, blocks, or authorizes a merge.`;
+Mandatory on every PR (WAYS-OF-WORKING → Review & merge). Its findings must be resolved or answered
+before merge; the output itself never approves, merges, or authorizes anything.`;
 
 function parseArgs(argv) {
   const out = {

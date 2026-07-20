@@ -30,18 +30,20 @@ this one — see `.gitignore`); this repo versions only the product/orchestratio
 - **Plan → build → ship, one user story at a time**, with a deterministic gate before every merge
   and a named smoke-test stage on every plan — see
   [`Roadmap/WAYS-OF-WORKING.md`](Roadmap/WAYS-OF-WORKING.md).
-- **Risk-tiered merges.** Low-risk PRs (docs, non-commerce UI, tests) can be reviewer-merged on
-  green CI; anything touching payments, checkout, fulfillment, auth, DB migrations, or shared
-  infra is always a human merge — see *Review & merge* in
+- **Risk-tiered merges.** Low-risk PRs (docs, non-commerce UI, tests) can be merged by an agent other
+  than the builder on green CI; anything touching payments, checkout, fulfillment, auth, DB migrations,
+  or shared infra is always a human merge — see *Review & merge* in
   [`WAYS-OF-WORKING.md`](Roadmap/WAYS-OF-WORKING.md#review--merge--cross-agent).
-  Sunny CI plus a single-pass fresh-agent review are the deterministic gate.
+  Green CI is the deterministic gate; the review layers above it are sized to the tier.
 - **The `groom` skill** (`ways-of-work` plugin, [`dobby-foundation`](https://github.com/danybgoode/dobby-foundation) marketplace) is the front door for any new idea — it turns a raw
   ask into sliced, Definition-of-Ready user stories before a line of code is written, reframing
   toward existing Medusa/platform primitives before inventing new ones.
-- **Cross-agent review on every PR.** [`scripts/cross-review.mjs`](scripts/cross-review.mjs) pipes
-  the diff into a different model family (Codex or Antigravity) for an independent advisory pass;
+- **Cross-agent review on every PR — required.** [`scripts/cross-review.mjs`](scripts/cross-review.mjs)
+  pipes the diff into a different model family (Codex or Antigravity) for one independent pass, and
+  every finding must be fixed or answered on the PR before merge. A third layer, the fresh
+  `pr-reviewer` subagent, is mandatory on HIGH-risk PRs and optional on LOW.
   [`scripts/cross-panel.mjs`](scripts/cross-panel.mjs) does the same for a plan before code is
-  written. Advisory only — CI and the fresh-agent review remain the actual gate.
+  written — that one stays advisory, since a plan has no gate to pass.
 - **Model split: Opus plans, Sonnet builds.** Grooming, spikes, plan mode, and review run on the
   stronger model with full deep-thinking; once a plan and its slices are approved, per-story
   execution is mechanical and runs on the faster model — see *Model tiers* in

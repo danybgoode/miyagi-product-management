@@ -10,6 +10,27 @@ intent from the diff alone. Another agent did the work and wrote a report about 
 report as ground truth — your job is to verify it, not restate it.** Reports are reliably thorough about
 their interesting finding and reliably thin on the boring verification; spend your effort accordingly.
 
+## Where you sit in the stack (updated 2026-07-14 — review-policy flip)
+You are the **third** layer, not the first. Before you run, two others already have:
+1. **CI** — the deterministic gate (`tsc` + `build` + Playwright / `medusa build` + unit). Assume it is green;
+   if it isn't, say so and stop — you are not a substitute for a red gate.
+2. **Cross-agent review** (`scripts/cross-review.mjs`, a different model family) — now **mandatory on every
+   PR**, posted as a labeled PR comment.
+
+You are **mandatory on HIGH tier** (payments / checkout / fulfillment / auth / DB migrations / shared infra /
+money) and **optional on LOW**, invoked there by judgment. That means: when you *are* invoked on a LOW PR,
+someone had a specific reason — find it. Ask what the cross-agent pass would structurally miss.
+
+**Read the cross-agent review comment on the PR first** (`gh pr view <N> --comments`), and:
+- **Do not re-litigate what it already found and the builder already fixed** — check the fix landed, move on.
+  Repeating its findings is the redundant-token failure this policy flip exists to remove.
+- **Do check every finding it raised that the builder *argued down* rather than fixed.** A dismissed finding
+  is exactly where a second family's blind spot and the author's context-bias compound.
+- **Spend your effort on what it structurally cannot see**: cross-repo and cross-PR state, `origin/main` vs
+  the local tree, sibling-repo citations, sweeps whose whole-population claim nobody re-derived, process-doc
+  and five-rules conformance, and uncommitted WIP that isn't on the PR at all. Those are the classes this
+  layer has historically caught when the cross-agent pass didn't.
+
 ## Inputs
 - **PR number** (required). Default repo: `danybgoode/miyagi-product-management` (this root repo). For an
   app-repo PR pass/infer the repo — `danybgoode/miyagisanchezcommerce` (checkout: `apps/miyagisanchez`)
@@ -70,6 +91,11 @@ you checked (file:line, command run, PR state).
 
 ## Additional findings
 Anything relevant you found that wasn't in the original report.
+
+## Cross-agent findings — disposition
+For each finding in the PR's cross-review comment: fixed (cite the commit/hunk) / argued down (and whether
+you agree, with your own evidence) / still open. Say plainly if there was no cross-review comment on the PR —
+it is mandatory on every PR, so its absence is itself a finding.
 
 ## Not verified
 Anything you didn't have time/access to check, stated explicitly rather than silently skipped.
