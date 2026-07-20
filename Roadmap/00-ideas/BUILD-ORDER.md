@@ -143,13 +143,14 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (6)
+## ⬜ Funnel — seeds not yet scaffolded (7)
 
 - [AI-adoption maturity: benchmark vs the Steps-of-AI-Adoption ladder + the harness plan](seeds/ai-adoption-maturity-benchmark.md) — Ready · Spike
 - [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
+- [SSRF: create_checkout's artwork_url is an unauthenticated, fully-open server-side fetch](seeds/ssrf-artwork-url-mcp.md) — Ready · Feature
 - [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
 ## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (4)
@@ -166,4 +167,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch | In progress | Scaffolded |
 
 ---
-_Epics: 125 · seeds in funnel: 6 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 125 · seeds in funnel: 7 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._
