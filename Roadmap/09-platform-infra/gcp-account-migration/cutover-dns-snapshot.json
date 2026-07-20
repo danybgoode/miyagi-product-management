@@ -1,0 +1,38 @@
+{
+  "domain": "miyagisanchez.com",
+  "flippedAt": "2026-07-19T18:20:53.837Z",
+  "records": [
+    {
+      "id": "24ca255c6b13a207636238bb1fbf10c8",
+      "name": "*.miyagisanchez.com",
+      "type": "A",
+      "content": "136.68.90.56",
+      "proxied": true,
+      "action": "patch"
+    },
+    {
+      "id": "e1c5e2bfbe4f70d464599b2698f3dfcc",
+      "name": "miyagisanchez.com",
+      "type": "A",
+      "content": "136.68.90.56",
+      "proxied": true,
+      "action": "patch"
+    },
+    {
+      "id": "98efe7235b4e28e925519d735afd9983",
+      "name": "www.miyagisanchez.com",
+      "type": "A",
+      "content": "136.68.90.56",
+      "proxied": true,
+      "action": "patch"
+    },
+    {
+      "id": "d7fddd4d72d6052c689531293b1c0289",
+      "name": "api.miyagisanchez.com",
+      "type": "CNAME",
+      "content": "ghs.googlehosted.com",
+      "proxied": false,
+      "action": "patch"
+    }
+  ]
+}

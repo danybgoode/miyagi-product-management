@@ -11,7 +11,18 @@ webhook-delivery check (step 7), signed-in session check (step 4), next-morning 
 **identical on all 154 tables** — zero writes occurred between rehearsal and cutover, nothing lost.
 `medusa-web` bounced (`00002-fjj`) and verified serving the final data before the flip. Flip via
 `cloudflare-cutover-flip.mjs --apply`: all 4 records (apex/wildcard/www/api) → `136.69.97.223`,
-pre-flip snapshot saved (session scratchpad `cf-cutover-snapshots/miyagisanchez.com-2026-07-19T18-20-53`).
+pre-flip snapshot committed alongside this doc as **`cutover-dns-snapshot.json`** (moved out of the
+ephemeral session scratchpad 2026-07-20 — it is the machine-readable input to
+`cloudflare-cutover-flip.mjs --rollback`, so a `/tmp` sweep must not be able to delete it; contains
+record ids + the old ALB IP only, no credentials).
+
+> ⚠️ **The rollback is no longer loss-free, and gets less so every day** (assessed 2026-07-20).
+> A DNS-only rollback returns traffic to the old project's Cloud SQL, which is frozen at the
+> 18:20Z cutover — **everything written to the new DB since is not there.** Measured at T+15h:
+> 370 writes, all non-money (209 listing-view counters, 160 cart-scan rows, 1 autoconfirm cron),
+> so today's exposure is genuinely low. **But the moment a real order lands, DNS-only rollback
+> becomes a money-losing action.** From then on the rollback procedure is: export new → import
+> old → *then* flip DNS (≈4 min, the same measured path as the cutover), not a bare flip.
 Post-flip: homepage/www/PDP 200, `api.miyagisanchez.com/health` 200 **through the ALB** (first time
 — previously the domain-mapping CNAME), UCP catalog 20 items, and the new project's `miyagi-web`
 logs show the real hostname traffic. Old project untouched and intact = rollback.
