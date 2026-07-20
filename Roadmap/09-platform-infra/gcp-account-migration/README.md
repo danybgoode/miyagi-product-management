@@ -94,8 +94,10 @@ re-running `cloudflare-cutover-flip.mjs` against the old origin, which is exactl
 separate and deferred. Stage 6b carve-out recorded here.
 
 ## Definition of Done (epic)
-- [x] All sprints (S0–S3) merged to `main` + smoke-tested — **gaps stated: Daniel's money-path
-  checkout, Stripe/MP dashboard delivery check, session check, next-morning cron check; S4 deferred**
+- [x] All sprints (S0–S3) merged to `main` + smoke-tested — **cron check DONE 2026-07-20 (all 6
+  fired exactly once on the new project; old project's 6 PAUSED with no attempt — cross-confirmed
+  by exactly one `/internal/autoconfirm-delivered` hit in the backend logs). Remaining gaps:
+  Daniel's money-path checkout, Stripe/MP dashboard delivery check, session check; S4 deferred**
 - [x] Each `sprint-N.md` has its smoke walkthrough (real URLs) + execution record
 - [x] Every executed sprint status ticked with commit refs (README stays in-progress until S4)
 - [x] `RETROSPECTIVE.md` written (S0–S3; S4 close-out note added when it runs)

@@ -42,7 +42,14 @@ path (cert SANs already cover it) instead of racing the single-project Cloud Run
 claim inside the cutover window.
 **Deferred to S4 (recorded):** `miyagi-pmo-reports` bucket — GLOBAL name owned by the old project;
 delete old bucket → recreate → restore objects (~600 KB) at decommission. `pmo-smalldocs`,
-`print-pdf`, staging surface, Telegram notifier functions — post-cutover redeploys, per inventory.
+`print-pdf`, staging surface — post-cutover redeploys, per inventory.
+**Corrected 2026-07-19 (same day, during soak):** the two Telegram build-notifier functions were
+originally in that deferred list — **that was a misjudgment and it cost the first evening's deploy
+alerts.** Deploy observability is a *soak precondition*, not teardown work: with the functions
+still project-local to the rollback project, four healthy builds shipped with no `🚀` alert. They
+were moved to `miyagisanchez-prod` immediately (backend PRs #105/#106) rather than waiting for S4.
+Generalized in `RETROSPECTIVE.md` → "What we learned": when a migration defers a resource, ask
+whether it is something you need *in order to watch the soak*, not just something the product needs.
 
 > ⚠️ **The single most likely self-inflicted outage in this whole epic:** two projects both
 > deploying on a push to `main`, or both running the same cron against the same database.
