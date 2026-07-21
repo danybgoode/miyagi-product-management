@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: founding-merchant-consent-previews
 ---
 
@@ -59,9 +59,21 @@ publication; only claim transfers ownership and unlocks the claimed-shop path.
 
 `promoter.private_preview_enabled` is an **enablement** flag in `platform_flags`, default **false** and created
 disabled in every environment. It gates the promoter setup/listing orchestration seam: ON creates private draft
-products and signed preview access; OFF preserves the current route for rollback. Public readers also receive a
-permanent regression invariant proving private/draft rows cannot leak. Flip only after a disposable shop passes
-the full channel matrix.
+products and signed preview access. Public readers also receive a permanent regression invariant proving
+private/draft rows cannot leak. Flip only after a disposable shop passes the full channel matrix.
+
+**What OFF actually does (corrected during Sprint 1 review — the earlier "OFF preserves the current route for
+rollback" was wrong once implemented).** OFF stops *new* previews being created, so any shop that was never
+anchored behaves exactly as it does today. It is **not a per-shop undo**: a shop that already carries a
+non-activated anchor stays private regardless of the flag, because a flag flip is not merchant consent (locked
+decision #3) — gating the privacy guard on the flag would make privacy fail-open, publishing shops whose
+merchants never approved. Un-hiding one shop is deliberate: activate the approved snapshot (Sprint 2), let the
+merchant claim it (a claim stops the anchor hiding the shell, while publishing nothing), or
+`DELETE FROM merchant_previews WHERE shop_id = …`.
+
+**The Sprint 1 migration is a deploy dependency, not a post-merge chore.** The privacy guard runs on every public
+shop render and is *not* flag-gated, so until `20260721140000_consent_previews_s1.sql` is applied the guard's
+Supabase read errors on every shop page. It fails open (shops stay visible), but apply it with the deploy.
 
 ## Deploy order
 

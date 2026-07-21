@@ -50,20 +50,30 @@ Env: production · https://miyagisanchez.com
 4. Repeat the committed channel-sweep smoke for marketplace, PDP, agent/API, embed, sitemap, subdomain and
    custom-domain paths.
    → Every channel refuses or omits the private shop/products.
-5. Open each shop **sub-page** directly: `/s/<slug>/acerca`, `/faq`, `/politicas`, `/claim`, a collection
-   `/s/<slug>/c/<any>`, and `/convocatoria` (on the marketplace host **and**, if the shop has one, on its
-   subdomain/custom domain — middleware rewrites only `/` and `/convocatoria`, so the others are
-   marketplace-host only).
-   → Every one returns not-found; none renders the merchant's name.
+5. Open each shop **sub-page** directly on the marketplace host: `/s/<slug>/acerca`, `/faq`, `/politicas`,
+   `/claim`, a collection `/s/<slug>/c/<any>`, and `/convocatoria`.
+   → Every one returns not-found; none renders the merchant's name (check the browser tab title too).
+5b. If the shop has a subdomain or custom domain, repeat on it: `<domain>/acerca`, `/faq`, `/politicas`,
+   `/c/<any>`, `/convocatoria`. **These are served by different files** — middleware rewrites only `/` and
+   `/convocatoria`, so every other path renders the channel-native page, not the `/s/<slug>/…` one.
+   → Every one returns not-found, and the white-label header never shows the merchant's name or logo.
 6. Load the embed widget for the shop — the iframe at `/embed/s/<slug>` and the resolver
    `GET /api/embed/shop?key=<the shop's embed key>` (this one is CORS-open to any origin).
    → The iframe 404s and the resolver returns `{ valid: false }`.
 7. Revoke the preview link and reopen it.
    → It returns the ordinary not-found experience and reveals no shop data.
 
-**Owed before the flag flip (not agent-verifiable):** confirm the guard **fails open** — with
-`merchant_previews` absent or Supabase unreachable, a normal public shop must still render. The flag gate
-short-circuits before the table read, so a flag-OFF environment never touches it; the check matters for the
-window after the flag flips but before the migration is confirmed.
+8. **The claim path** — claim the disposable shop through its WhatsApp link, then reopen `/s/<slug>`.
+   → The storefront is reachable again (a claimed shop is never hidden), and its products are still **not**
+   public — they remain drafts until the merchant publishes them or Sprint 2's activation runs. This step
+   exists because an earlier revision permanently 404'd the shop here, with no recovery.
+
+**Owed before the flag flip (not agent-verifiable):**
+- Confirm the guard **fails open**: with `merchant_previews` absent or Supabase unreachable, a normal public
+  shop must still render. The guard is **not** flag-gated (that would make privacy fail-open), so it runs on
+  every public shop render — which is why the migration must land **with the deploy**, not after it.
+- Confirm an **already-public** promoter shop is untouched: add a listing to one that already has live
+  listings and verify it stays visible and the listing publishes (the anchor is refused for that population,
+  per locked decision #4).
 
 If any step fails, note the step number + URL — that's the bug report.

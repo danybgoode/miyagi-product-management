@@ -10,16 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (4)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
+- [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 0/7 stories · risk: High · #1-fm
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (5)
+## 📋 Ready to build (scaffolded, not started) (4)
 
 - [Founding merchant activation operations — CRM projection and field intake](../../08-growth-and-promotions/founding-merchant-activation-ops/README.md) — 08 Growth · 0/9 stories · risk: High · #2-fm
-- [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 0/7 stories · risk: High · #1-fm
 - [Merchant activation scorecard](../../08-growth-and-promotions/merchant-activation-scorecard/README.md) — 08 Growth · 0/6 stories · risk: Low · #4-fm
 - [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 0/9 stories · risk: High · #5-fm
 - [Tiendas Fundadoras acquisition](../../08-growth-and-promotions/tiendas-fundadoras-acquisition/README.md) — 08 Growth · 0/6 stories · risk: High · #3-fm
@@ -155,7 +155,7 @@
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -163,8 +163,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Founding merchant consent-safe previews | Scaffolded | In progress |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 
 ---
-_Epics: 130 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 130 · seeds in funnel: 4 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
