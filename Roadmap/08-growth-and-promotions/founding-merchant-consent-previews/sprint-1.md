@@ -1,6 +1,6 @@
 # Founding merchant consent-safe previews — Sprint 1: Private means private
 
-**Status:** 🟦 In review
+**Status:** ✅ Merged — FE #292 (`afcfc22`) + hardening FE #293 (`2bb91a0`) / BE #108 (`3d7751b`); flag OFF, smoke owed to Daniel
 
 ## Stories
 
