@@ -1675,6 +1675,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   must also be defensive at the render boundary (guard `Intl.NumberFormat` against a bad currency code,
   `?? 0` numeric fields). *(2026-06-22, marketplace-static-shell S3/S4 — cross-review caught a
   stale-personalization leak on sign-out/account-switch: clear island state + add `userId` to effect deps.)*
+- **A `NEXT_PUBLIC_*` read inside a client island is fixed at `next build`; Cloud Run runtime env cannot rescue
+  it.** The homepage personalization island silently called `http://localhost:9000` after the deploy rail moved
+  builds away from the environment that used to provide the public variables. Thread runtime-resolved public
+  configuration from a Server Component into the island as serialized props, and log the fail-open branch—an
+  intentionally empty error state otherwise turns a production outage invisible. On ISR, remember the first
+  prerender can carry build-time fallbacks until regeneration, so smoke after the revalidate window.
+  *(2026-07-20, home-dynamic-rows-restore-and-polish S1.)*
 - **To feed a static shell component per-page data, thread it through a client *context* island a server
   page renders — and make the unmount cleanup compare-and-clear, not a blind null.** Mount a tiny client
   `Context` provider in the layout; each server page renders a render-null `'use client'` setter that

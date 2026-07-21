@@ -1,15 +1,26 @@
 ---
 title: "Buy-me-a-coffee tip widget"
 slug: buy-me-a-coffee-widget
-status: raw
+status: archived
 area: "08"
 type: feature
 priority: null
 risk: low
 epic: null
 build_order: null
-updated: 2026-06-08
+updated: 2026-07-20
 ---
+
+# Reconciliation — superseded by the shipped Support Widget epic
+
+> **Archived 2026-07-20 as a duplicate, not dropped work.** The requested capability shipped through
+> [`07-agentic-and-federated-commerce/support-widget`](../../07-agentic-and-federated-commerce/support-widget/README.md)
+> (frontend PR #25, backend PR #7; later polish PRs #29/#8/#32). Sellers now manage it at
+> `/shop/manage/settings/apoyo`; `public/embed.js` serves the external launcher/lightbox, and
+> `/api/embed/support{,/checkout}` provides guest-first Stripe Connect / Mercado Pago handoff with presets,
+> custom amount, optional name/message/privacy and the hidden Medusa support product. The product poster and
+> retrospective already carry the remaining live-money confirmation, so this raw duplicate must not stay in
+> the active funnel.
 
 ## Context
 

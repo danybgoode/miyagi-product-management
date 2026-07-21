@@ -1,15 +1,34 @@
 ---
 title: "URL / slug bug report"
 slug: url-stuff
-status: raw
+status: archived
 area: "07"
 type: chore
 priority: null
 risk: low
 epic: null
 build_order: null
-updated: 2026-06-08
+updated: 2026-07-20
 ---
+
+# Reconciliation — all four bundled asks shipped elsewhere
+
+> **Archived 2026-07-20 as a superseded omnibus seed.** Its individual asks are already represented by shipped
+> epics and code, so keeping this mixed raw document active duplicates the product truth:
+>
+> - Custom-domain DNS/setup bug →
+>   [`custom-domain-polish`](../../07-agentic-and-federated-commerce/custom-domain-polish/README.md), including
+>   the apex-record verification fix (`e9597fd`) and the later Cloudflare-for-SaaS provider migration.
+> - Customizable `/s/[slug]` + availability/reserved words/90-day alias →
+>   [`custom-slugs`](../../07-agentic-and-federated-commerce/custom-slugs/README.md).
+> - Wildcard `<slug>.miyagisanchez.com` routing and isolation →
+>   [`subdomains`](../../07-agentic-and-federated-commerce/subdomains/README.md), later governed by the shipped
+>   `subdomain-pricing` entitlement rail.
+> - `mschz.org/<shop-or-product>` 301s, dashboard copy UI and branded 404 →
+>   [`short-links`](../../07-agentic-and-federated-commerce/short-links/README.md), extended by
+>   [`mschz-full-coverage`](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md).
+>
+> The original report remains below as historical input; the linked epic READMEs are the current SSOT.
 
 ## Bug report
 Custom domain feature:

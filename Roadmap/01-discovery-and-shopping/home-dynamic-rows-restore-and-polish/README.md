@@ -1,11 +1,11 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # ✅ CLOSED 2026-07-20 — all 3 PRs merged; anonymous prod Chromium green. Signed-in identity-specific smoke remains stated in the retro.
 slug: home-dynamic-rows-restore-and-polish
 ---
 
 # Epic: Homepage dynamic rows — restore on prod + polish to spec
 
-> **Area:** 01-discovery-and-shopping · **Risk:** low · **Scope seed:** [`00-ideas/seeds/home-dynamic-rows-restore-and-polish.md`](../../00-ideas/seeds/home-dynamic-rows-restore-and-polish.md)
+> **Area:** 01 · Discovery & Shopping · **Risk:** low · **Class:** Feature · **Scope seed:** [`00-ideas/seeds/home-dynamic-rows-restore-and-polish.md`](../../00-ideas/seeds/home-dynamic-rows-restore-and-polish.md)
 
 ## Why
 The homepage lost its "welcome back" energy when personalization was stripped for the static-shell
@@ -52,19 +52,17 @@ asset** — `next build` must keep the static marker for `/` (no `ƒ`), and `hom
 must stay green (signed-in testids absent from anonymous HTML).
 
 ## Definition of Done (epic)
-All 3 sprints are now merged to `main` (2026-07-15). **Epic close held back on real gaps, not
-formality:** Daniel's live prod smoke is still owed for S1+S2 (the signed-in personalization
-islands — retoma rail, offer alerts, price-drop badge, recently-viewed — need a real authed
-session to confirm), and S3's visual-design eyeball (anonymous surface, but colors/spacing/layout
-fidelity against the mockup needs a human). Retrospective/poster/LEARNINGS promotion intentionally
-NOT done yet — they belong at true epic close, once those smokes land, not before.
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch (only if one was planned at grooming — Stage 6b):** n/a — risk:low; the islands
+All 3 sprints merged to `main` by 2026-07-15. The anonymous production surface was re-verified with real
+Chromium on 2026-07-20 (HTTP 200; intended rows/sections present); the signed-in rows remain an explicitly
+owed identity-specific smoke because no authenticated production session was available. That gap is recorded
+in the retrospective rather than keeping merged, live work falsely in progress.
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status reconciled with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory carried through the epic/sprint docs and product poster
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (deduped into the static-island guidance)
+- [x] **Kill-switch (only if one was planned at grooming — Stage 6b):** n/a — risk:low; the islands
       are already fail-open progressive enhancement (inherent kill behavior).
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] Feature branches deleted; **this README's frontmatter is `status: shipped`** (the SSOT)

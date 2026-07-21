@@ -1,15 +1,14 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # ✅ CLOSED 2026-07-20 — both sprints and all cross-repo PRs merged; plugin exercised from this Codex session.
 slug: dobby-foundation
 ---
 
 # Epic: dobby-foundation — portable ways-of-work (plugin marketplace + project template)
 
-> **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore
+> **Area:** 09 · Platform & Infra · **Risk:** low · **Class:** Chore · **Scope seed:** [`00-ideas/2. readyforscope/golden-beans-growth-engine.md`](../../00-ideas/2.%20readyforscope/golden-beans-growth-engine.md)
 
-Scope doc: [`00-ideas/2. readyforscope/golden-beans-growth-engine.md`](../../00-ideas/2.%20readyforscope/golden-beans-growth-engine.md)
-(this epic is that doc's **S0 workstream**; the Growth Engine sprints S1–S4 scaffold in the new
-`golden-beans` repo's own Roadmap once story 1.4 creates it).
+This epic is that scope doc's **S0 workstream**; the Growth Engine sprints S1–S4 scaffold in the new
+`golden-beans` repo's own Roadmap once story 1.4 creates it.
 
 ## Why
 
@@ -71,13 +70,13 @@ Nothing in the Growth Engine starts until 1.4 is done — the engine's epic docs
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Kill-switch: N/A for this epic (docs/tooling; the scope doc's `growth.telemetry_enabled` flag
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) already reflects the portable tooling/template batch
+- [x] Durable operating state is recorded in the sprint docs, foundation repo and spawned Golden Beans repo
+- [x] Durable learnings already promoted to `Roadmap/LEARNINGS.md` and the distributed template (deduped)
+- [x] Kill-switch: N/A for this epic (docs/tooling; the scope doc's `growth.telemetry_enabled` flag
       belongs to the Growth Engine's S1 in golden-beans, verified at *that* epic's DoD)
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] Feature branches/PRs reconciled; **this README's frontmatter is `status: shipped`** (the SSOT)

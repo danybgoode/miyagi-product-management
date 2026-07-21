@@ -1,7 +1,7 @@
 ---
 title: "SSRF: create_checkout's artwork_url is an unauthenticated, fully-open server-side fetch"
 slug: ssrf-artwork-url-mcp
-status: ready
+status: shipped
 area: "09"
 type: bug
 priority: null
@@ -12,6 +12,13 @@ updated: 2026-07-20
 ---
 
 # Scope — SSRF: `create_checkout`'s `artwork_url`
+
+> **✅ SHIPPED 2026-07-20 as the approved fast-follow.** Frontend PR
+> [#291](https://github.com/danybgoode/miyagisanchezcommerce/pull/291), squash `0e07d32`, routes the
+> caller-supplied URL through `lib/artwork-url-fetch.ts` → `pinnedFetch`, requires HTTPS, refuses redirects,
+> enforces a streamed byte cap and collapses download failures to one generic message. Dedicated coverage lives
+> in `e2e/artwork-url-fetch.spec.ts`, with the shared redirect rejection in `e2e/migrations-mapper.spec.ts`.
+> This intentionally shipped without an epic scaffold because it was an urgent, bounded security fast-follow.
 
 > **Found while building `09-platform-infra/ssrf-dns-pinning` Sprint 1**, whose "out of scope" says: *"Auditing
 > for other untrusted-domain fetches. If you find a third, file a seed — don't absorb it."* This is that third

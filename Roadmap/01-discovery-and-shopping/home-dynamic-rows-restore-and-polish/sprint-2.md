@@ -1,6 +1,6 @@
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 2: Signed-in polish to spec — ribbon gating, price-drop badge, recently-viewed
 
-**Status:** ✅ built, PR review pending — Daniel's signed-in prod smoke owed before merge
+**Status:** ✅ merged `5ac54d5` (PR #251, squash-merged to `main` 2026-07-15) — Daniel's signed-in prod smoke remains owed
 
 > Reference mockup: `marketplace_search_results_mobile.png` — rail cards carry "Visto ayer" /
 > "↓ Bajó $300" / "Favorito" meta; the value-prop ribbon is gone for signed-in ("su trabajo ya

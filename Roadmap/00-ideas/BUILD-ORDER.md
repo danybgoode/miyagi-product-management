@@ -5,28 +5,31 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-20 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-21 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (5)
+## 🏗️ Building now (3)
 
-- [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 8/8 stories
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (5)
 
+- [Founding merchant activation operations — CRM projection and field intake](../../08-growth-and-promotions/founding-merchant-activation-ops/README.md) — 08 Growth · 0/9 stories · risk: High · #2-fm
 - [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 0/7 stories · risk: High · #1-fm
+- [Merchant activation scorecard](../../08-growth-and-promotions/merchant-activation-scorecard/README.md) — 08 Growth · 0/6 stories · risk: Low · #4-fm
+- [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 0/9 stories · risk: High · #5-fm
+- [Tiendas Fundadoras acquisition](../../08-growth-and-promotions/tiendas-fundadoras-acquisition/README.md) — 08 Growth · 0/6 stories · risk: High · #3-fm
 
-## ✅ Shipped (119)
+## ✅ Shipped (121)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
 - [Fixed overlays trapped under the platform chrome — the PDP lightbox close button](../../01-discovery-and-shopping/pdp-lightbox-close-button-occluded/README.md) — 01 Discovery · 3/3 stories · risk: Low
+- [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
 - [Homepage Selección: bug sweep + admin curation + dynamic rotation](../../01-discovery-and-shopping/homepage-seleccion-curation/README.md) — 01 Discovery · 8/8 stories
 - [Neighborhood Pulse — online community feed](../../01-discovery-and-shopping/neighborhood-pulse/README.md) — 01 Discovery · 7/7 stories · risk: Low
@@ -114,6 +117,7 @@
 - [Design-Token / Design-System Foundation](../../09-platform-infra/design-token-foundation/README.md) — 09 Platform-infra · 5/5 stories · risk: Low · Wave 0 Enablers
 - [Dev-tooling reliability (backend CI + cross-agent review hardening)](../../09-platform-infra/dev-tooling-reliability/README.md) — 09 Platform-infra · 8/8 stories
 - [DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)](../../09-platform-infra/devops-reliability-cleanup/README.md) — 09 Platform-infra · 4/4 stories
+- [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 8/8 stories
 - [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 2/2 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 2/2 stories
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · Wave 0 Enablers
@@ -144,21 +148,14 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (11)
+## ⬜ Funnel — seeds not yet scaffolded (4)
 
-- [Founding merchant activation operations — CRM projection and field intake](seeds/founding-merchant-activation-ops.md) — Raw · Feature · #2-fm
-- [Tiendas Fundadoras acquisition surface](seeds/tiendas-fundadoras-acquisition.md) — Raw · Feature · #3-fm
-- [Merchant activation scorecard — conversion, aging, and cohort retention](seeds/merchant-activation-scorecard.md) — Raw · Feature · #4-fm
-- [Merchant Partner portfolio — follow-up, ownership SLA, and retention](seeds/merchant-partner-lifecycle.md) — Raw · Feature · #5-fm
 - [AI-adoption guardrails — close the step-1/2 gaps the ladder names (browser smoke · security review · proactive monitor · OTel)](seeds/ai-adoption-maturity-benchmark.md) — Ready · Chore
-- [Buy-me-a-coffee tip widget](seeds/buy-me-a-coffee-widget.md) — Raw · Feature
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
-- [SSRF: create_checkout's artwork_url is an unauthenticated, fully-open server-side fetch](seeds/ssrf-artwork-url-mcp.md) — Ready · Feature
-- [URL / slug bug report](seeds/url-stuff.md) — Raw · Chore
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -166,9 +163,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Homepage dynamic rows — restore on prod + polish to spec | In progress | Shipped |
-| dobby-foundation — portable ways-of-work (plugin marketplace + project template) | In progress | Shipped |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 
 ---
-_Epics: 126 · seeds in funnel: 11 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 130 · seeds in funnel: 4 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
