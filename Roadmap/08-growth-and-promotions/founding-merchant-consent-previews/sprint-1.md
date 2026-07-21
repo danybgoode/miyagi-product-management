@@ -1,6 +1,6 @@
 # Founding merchant consent-safe previews — Sprint 1: Private means private
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review
 
 ## Stories
 
@@ -50,7 +50,20 @@ Env: production · https://miyagisanchez.com
 4. Repeat the committed channel-sweep smoke for marketplace, PDP, agent/API, embed, sitemap, subdomain and
    custom-domain paths.
    → Every channel refuses or omits the private shop/products.
-5. Revoke the preview link and reopen it.
+5. Open each shop **sub-page** directly: `/s/<slug>/acerca`, `/faq`, `/politicas`, `/claim`, a collection
+   `/s/<slug>/c/<any>`, and `/convocatoria` (on the marketplace host **and**, if the shop has one, on its
+   subdomain/custom domain — middleware rewrites only `/` and `/convocatoria`, so the others are
+   marketplace-host only).
+   → Every one returns not-found; none renders the merchant's name.
+6. Load the embed widget for the shop — the iframe at `/embed/s/<slug>` and the resolver
+   `GET /api/embed/shop?key=<the shop's embed key>` (this one is CORS-open to any origin).
+   → The iframe 404s and the resolver returns `{ valid: false }`.
+7. Revoke the preview link and reopen it.
    → It returns the ordinary not-found experience and reveals no shop data.
+
+**Owed before the flag flip (not agent-verifiable):** confirm the guard **fails open** — with
+`merchant_previews` absent or Supabase unreachable, a normal public shop must still render. The flag gate
+short-circuits before the table read, so a flag-OFF environment never touches it; the check matters for the
+window after the flag flips but before the migration is confirmed.
 
 If any step fails, note the step number + URL — that's the bug report.
