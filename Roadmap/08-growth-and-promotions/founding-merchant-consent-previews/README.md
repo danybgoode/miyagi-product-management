@@ -67,9 +67,18 @@ the flag, and complete Daniel's owed smokes. See "Owed before the flag flip" bel
    rolled-back transactions (0 rows persisted). `sprint-2.md` has the exact command — and the
    project-wide **migration-history drift** it uncovered: 44 local migration files are unrecorded
    remotely, so **`supabase db push` is unsafe in this repo**.
-2. **Daniel's owed smokes** — the S1 walkthrough (never run), plus the S2 and S3 walkthroughs.
-3. **The two S1 fail-open/already-public confirmations** still listed in `sprint-1.md`.
-4. **A disposition call on the 168 imported public/unclaimed shops** the S3 inventory surfaced.
+2. **🚨 Merge PR #296** — the post-merge review found a CRITICAL bypass: the MCP surface
+   could publish a merchant's products into a preview-private shop with **no consent check at
+   all**. `autoGrantPartnerOnClose` mints the promoter a `manager` partner grant on the very shop
+   `shop/setup` anchors private, `partner-auth` resolves from `partner_grants` with no anchor
+   check, and only `create_listing` consulted the anchor — so `set_listing_status` bypassed
+   approval, the checklist and `canActivate` entirely. Gated by `partners.mcp_enabled`, a
+   **different flag from this epic's kill-switch**, so flipping this epic's flag never controlled
+   it. #296 also fixes an activation TOCTOU and makes consent writes compare-and-set.
+   *Not self-merged: HIGH-tier security fix, and the builder wrote the bug.*
+3. **Daniel's owed smokes** — the S1 walkthrough (never run), plus the S2 and S3 walkthroughs.
+4. **The two S1 fail-open/already-public confirmations** still listed in `sprint-1.md`.
+5. **A disposition call on the 168 imported public/unclaimed shops** the S3 inventory surfaced.
    The promoter-created backlog this epic assumed would need triage is **empty** (0 rows); the real
    population is scraped imports, which locked decision #4 covers but this epic never scoped.
 
@@ -113,3 +122,21 @@ router is not live yet.
 - [ ] `promoter.private_preview_enabled` exists with enablement polarity, born OFF; disposable channel sweep passes before Daniel flips it
 - [ ] Every additive Supabase migration confirmed against live schema, not inferred from CI
 - [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** and `node scripts/build-order.mjs` run
+
+## Accepted risks (named at review, 2026-07-22)
+
+- **A promoter can self-approve.** The promoter mints and holds the preview token, so a promoter
+  clicking "Aprobar" on the merchant's behalf is **indistinguishable in the record** from genuine
+  merchant consent. `grant_id` and `actor_ip_hash` describe the link and the network, not the
+  person; the migration is honest that this is "NOT a legal signature". No code change fixes this —
+  Daniel's real-merchant-identity smoke is the only control, which is why it is a hard gate rather
+  than an owed nicety.
+- **The PDP has no preview guard.** `app/(shell)/l/[id]` relies on Medusa draft filtering alone, so
+  a partially-failed activation leaves orphan public product pages while `/s/<slug>` 404s. The
+  content is content the merchant approved, so this is not a consent violation — but a 502 from
+  activation is not harmless, and the promoter should retry promptly.
+- **What protects checkout is not the claim flag.** Traced 2026-07-22: `isShopClaimed()` gates the
+  PDP/checkout *pages* and the UCP surfaces, but there is no claim check on the charge path. Before
+  activation the protection is structural (drafts are unreachable via `/store/products/:id`); after
+  activation it is that an unclaimed shop has no connected payment provider, and MCP refuses to set
+  `bank_transfer`/CLABE. The outcome holds; the earlier "checkout stays claim-gated" wording did not.
