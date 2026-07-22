@@ -64,16 +64,31 @@ Env: production · https://miyagisanchez.com
 
 If any step fails, note the step number + preview version — that's the bug report.
 
-## ⚠️ Blocking prerequisite for this walkthrough
+## Migration — ✅ APPLIED + VERIFIED (2026-07-22)
 
-`supabase/migrations/20260721150000_consent_previews_s2.sql` is **not applied in production** —
-verified read-only 2026-07-21: `merchant_preview_decisions` → 404 (PGRST205),
-`merchant_previews.approved_snapshot_hash` / `.activated_at` → 42703 (undefined column). S1's two
-tables *are* applied.
+`supabase/migrations/20260721150000_consent_previews_s2.sql` is **applied in production**.
 
-Until it is applied, every S2 path fails **closed** (a decision can't be recorded; activation
-refuses because the approved hash is unreadable) — safe, but the walkthrough cannot run. Apply it in
-the Supabase SQL editor, then verify:
+**The mechanism (use this, not the SQL editor):** the Supabase CLI is authenticated and linked to
+`xljxqymsuyhlnorfrnno`, and applies a single migration file through the Management API:
+
+```bash
+cd apps/miyagisanchez
+supabase db query --linked --file supabase/migrations/20260721150000_consent_previews_s2.sql
+supabase migration repair --status applied 20260721150000 --linked   # record it in history
+```
+
+**Do NOT use `supabase db push`** — see the migration-history warning below.
+
+Verified end-to-end after applying (all green): table created; `approved_snapshot_hash` /
+`approved_at` / `activated_at` all present; RLS `true` with `0` policies (service-role only, as
+designed); both indexes and both FKs present; the app's own PostgREST path returns 200 on every new
+column and the new table (it returned 404/42703 before); a decision insert round-trips its JSONB
+snapshot; the CHECK constraint rejects a decision value outside
+`('approved','changes_requested')` (`23514`); the FK rejects an orphan decision (`23503`). All write
+tests ran inside transactions that were rolled back — 0 rows persisted.
+
+Note the verification queries below are **`SELECT`s — they only check, they never apply.** Running
+them against an unmigrated database correctly returns `NULL` / 0 rows.
 
 ```sql
 SELECT to_regclass('public.merchant_preview_decisions');           -- expect: merchant_preview_decisions
@@ -81,6 +96,21 @@ SELECT column_name FROM information_schema.columns
  WHERE table_name = 'merchant_previews'
    AND column_name IN ('approved_snapshot_hash','approved_at','activated_at');  -- expect 3 rows
 ```
+
+## ⚠️ Migration-history drift (project-wide, predates this epic)
+
+`supabase migration list --linked` reports **44 local migration files as not applied remotely** —
+including S1's `20260721140000`, which is demonstrably applied (its tables exist and serve traffic).
+The cause: migrations here are applied by hand, which never records them in
+`supabase_migrations.schema_migrations`. So the schema is fine; the **history table** is what's
+wrong.
+
+**Consequence: `supabase db push` is unsafe in this repo** — it would try to replay all 44
+unrecorded migrations. Only the two consent-preview migrations have been repaired (after verifying
+they are genuinely applied). The other 42 were deliberately left alone: marking a migration
+`applied` without verifying it permanently hides a real gap, which is exactly the failure this
+project has already hit three times. Reconciling them is its own task — verify each against live
+schema first, then repair.
 
 ## What shipped (implementation notes)
 

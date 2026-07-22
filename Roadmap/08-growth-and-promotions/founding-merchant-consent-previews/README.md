@@ -61,11 +61,12 @@ the flag, and complete Daniel's owed smokes. See "Owed before the flag flip" bel
 
 ## Owed before the flag flip
 
-1. **Apply `20260721150000_consent_previews_s2.sql`** — verified NOT applied in production
-   (2026-07-21, read-only): `merchant_preview_decisions` → 404, `approved_snapshot_hash` /
-   `activated_at` → undefined column. S1's tables *are* applied. Everything fails closed without it,
-   so the merge was safe, but S2/S3 cannot function until it lands. Verification SQL is in
-   `sprint-2.md`.
+1. ~~Apply `20260721150000_consent_previews_s2.sql`~~ — ✅ **DONE 2026-07-22.** Applied via the
+   Supabase CLI Management API (`supabase db query --linked --file …`) and verified end-to-end:
+   schema, RLS, indexes, FKs, the app's own PostgREST path, plus CHECK/FK rejection tests run in
+   rolled-back transactions (0 rows persisted). `sprint-2.md` has the exact command — and the
+   project-wide **migration-history drift** it uncovered: 44 local migration files are unrecorded
+   remotely, so **`supabase db push` is unsafe in this repo**.
 2. **Daniel's owed smokes** — the S1 walkthrough (never run), plus the S2 and S3 walkthroughs.
 3. **The two S1 fail-open/already-public confirmations** still listed in `sprint-1.md`.
 4. **A disposition call on the 168 imported public/unclaimed shops** the S3 inventory surfaced.
