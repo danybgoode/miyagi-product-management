@@ -1,6 +1,6 @@
 # Founding merchant consent-safe previews — Sprint 2: Approval and activation
 
-**Status:** ⬜ not started
+**Status:** ✅ Merged — FE #294 (`626f0b1`); flag OFF, S2 migration NOT yet applied, smoke owed to Daniel
 
 ## Stories
 
@@ -63,3 +63,39 @@ Env: production · https://miyagisanchez.com
    to claim/finish setup rather than accepting an unclaimed purchase.
 
 If any step fails, note the step number + preview version — that's the bug report.
+
+## ⚠️ Blocking prerequisite for this walkthrough
+
+`supabase/migrations/20260721150000_consent_previews_s2.sql` is **not applied in production** —
+verified read-only 2026-07-21: `merchant_preview_decisions` → 404 (PGRST205),
+`merchant_previews.approved_snapshot_hash` / `.activated_at` → 42703 (undefined column). S1's two
+tables *are* applied.
+
+Until it is applied, every S2 path fails **closed** (a decision can't be recorded; activation
+refuses because the approved hash is unreadable) — safe, but the walkthrough cannot run. Apply it in
+the Supabase SQL editor, then verify:
+
+```sql
+SELECT to_regclass('public.merchant_preview_decisions');           -- expect: merchant_preview_decisions
+SELECT column_name FROM information_schema.columns
+ WHERE table_name = 'merchant_previews'
+   AND column_name IN ('approved_snapshot_hash','approved_at','activated_at');  -- expect 3 rows
+```
+
+## What shipped (implementation notes)
+
+- **2.1** `POST /api/preview/[token]/decision` — opaque-token authed (the merchant has no Clerk
+  account), with an `expectedHash` guard so a decision can never apply to a proposal the merchant
+  didn't see. `/preview/[token]` renders the approve / request-changes island and marks the anchor
+  `delivered` on open (draft → delivered only; never rewinds a later status).
+- **2.2** The close/listing route calls `invalidateIfMaterialChange` after each new draft product.
+  Adding a product is material, so a current approval goes stale and returns to review; a cosmetic
+  or no-op save leaves consent untouched (structural snapshot hash).
+- **2.3** `POST /api/promoter/preview/activate` — owner-scoped, requires a current approval.
+  **Run order is the safety property:** publish the exact approved set first, then flip the anchor
+  to `activated` (the flip is what un-hides the public shell). A partial publish leaves the anchor
+  `approved`, so nothing is ever half-public and a retry is safe; re-activation is a no-op.
+  Checkout stays claim-gated throughout.
+- The promoter workspace gained a preview/activation step, and `GET /api/promoter/preview` is the
+  single server-derived consent state the merchant page, the workspace and the activation route all
+  read — so they cannot disagree about whether consent is current.

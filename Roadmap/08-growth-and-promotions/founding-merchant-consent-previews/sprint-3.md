@@ -1,6 +1,6 @@
 # Founding merchant consent-safe previews — Sprint 3: Checklist, migration posture, and telemetry
 
-**Status:** ⬜ not started
+**Status:** ✅ Merged — FE #295; flag OFF, smoke owed to Daniel
 
 ## Stories
 
@@ -51,3 +51,43 @@ Env: production · https://miyagisanchez.com
    → Existing rows are grouped for manual review; no shop or product changed as a result of generating it.
 
 If any step fails, note the step number + merchant/shop id — that's the bug report.
+
+## What shipped (implementation notes)
+
+- **3.1 checklist** — `lib/preview-checklist.ts` (pure, zero imports) declares eight **required**
+  items: merchant identity, merchant contact, product facts, prices, asset provenance, merchant
+  review, current approval, steward — plus the derived next action. `checkActivation` now composes
+  BOTH pure rules (`canActivate` for current approval AND `checklistComplete`), so the workspace,
+  the activation route and the specs read one rule. It fails **closed**: an unreadable shop row
+  reads as "no contact/location" ⇒ incomplete ⇒ no publication. An already-activated preview stays
+  idempotently activatable, so adding a checklist item later can't break re-runs.
+- **3.1 events** — `lib/preview-events.ts` (pure) builds the payload; `lib/preview-lifecycle.ts`
+  (server) emits it. The payload is an **allow-list** — ids, version and counts only — so a future
+  caller has nowhere to put a name, email, WhatsApp number or raw token; the subject is the shop
+  mirror UUID. Gated by `growth.telemetry_enabled`, emitted only AFTER the canonical write, and
+  structurally unable to fail the merchant action. Each transition fires exactly once
+  (`preview_created` via `ensureShopPreviewReportingCreation`; `_delivered` only on the real
+  draft→delivered flip; `_invalidated` only when consent actually went stale; `_activated` only
+  after publish AND the anchor flip).
+- **3.2 inventory** — `lib/preview-inventory.ts` (pure) classifies provenance
+  (`promoter` / `import` / `unknown`, with unknown **labeled**, never guessed), claim state, public
+  product count, last activity and a recommended review category.
+  `scripts/preview-inventory.ts` does GET-only Supabase reads and renders a deterministic Markdown
+  artifact (no timestamp in the body, so a rerun over an unchanged dataset is byte-identical).
+
+  Run it with:
+  ```bash
+  node --experimental-strip-types --env-file=.env.local scripts/preview-inventory.ts
+  ```
+
+### Live inventory result (2026-07-21, read-only against production)
+
+182 shops. **`public_unclaimed_promoter`: 0** — the historical population this epic worried about
+(promoter-created, public, unclaimed, unanchored) is **empty**. The 168 `public_unclaimed_other`
+rows are scraped/imported gem shops, a separate population with its own provenance question; 13 are
+merchant-owned (claimed), 1 has no public presence. Provenance split: 1 promoter, 167 import,
+14 unknown.
+
+**Consequence for step 4 of the walkthrough:** there is no promoter-created backlog to disposition.
+The decision Daniel actually owes is about the 168 imported public/unclaimed shops, which locked
+decision #4 covers but this epic never scoped — worth a separate call, not a silent bulk mutation.

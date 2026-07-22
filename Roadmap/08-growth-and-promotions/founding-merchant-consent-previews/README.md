@@ -45,15 +45,32 @@ publication; only claim transfers ownership and unlocks the claimed-shop path.
 
 ## Scope — stories
 
-| Sprint | Story | Risk |
-|---|---|---|
-| 1 | 1.1 Private preview publication state + enablement flag | high |
-| 1 | 1.2 Opaque revocable preview link + cross-channel leak guard | high |
-| 2 | 2.1 Merchant-readable versioned approval snapshot | high |
-| 2 | 2.2 Material-edit invalidation and request-changes path | high |
-| 2 | 2.3 Idempotent public activation of the approved snapshot | high |
-| 3 | 3.1 Preview-readiness checklist + Golden Beans events | high |
-| 3 | 3.2 Historical public/unclaimed inventory report | low |
+| Sprint | Story | Risk | Status |
+|---|---|---|---|
+| 1 | 1.1 Private preview publication state + enablement flag | high | ✅ #292 + #293/#108 |
+| 1 | 1.2 Opaque revocable preview link + cross-channel leak guard | high | ✅ #292 + #293/#108 |
+| 2 | 2.1 Merchant-readable versioned approval snapshot | high | ✅ #294 (`626f0b1`) |
+| 2 | 2.2 Material-edit invalidation and request-changes path | high | ✅ #294 (`626f0b1`) |
+| 2 | 2.3 Idempotent public activation of the approved snapshot | high | ✅ #294 (`626f0b1`) |
+| 3 | 3.1 Preview-readiness checklist + Golden Beans events | high | ✅ #295 |
+| 3 | 3.2 Historical public/unclaimed inventory report | low | ✅ #295 |
+
+**All three sprints are merged and deployed with the flag OFF.** What remains before epic close is
+activation, not construction: apply the S2 migration, run the disposable-shop channel sweep, flip
+the flag, and complete Daniel's owed smokes. See "Owed before the flag flip" below.
+
+## Owed before the flag flip
+
+1. **Apply `20260721150000_consent_previews_s2.sql`** — verified NOT applied in production
+   (2026-07-21, read-only): `merchant_preview_decisions` → 404, `approved_snapshot_hash` /
+   `activated_at` → undefined column. S1's tables *are* applied. Everything fails closed without it,
+   so the merge was safe, but S2/S3 cannot function until it lands. Verification SQL is in
+   `sprint-2.md`.
+2. **Daniel's owed smokes** — the S1 walkthrough (never run), plus the S2 and S3 walkthroughs.
+3. **The two S1 fail-open/already-public confirmations** still listed in `sprint-1.md`.
+4. **A disposition call on the 168 imported public/unclaimed shops** the S3 inventory surfaced.
+   The promoter-created backlog this epic assumed would need triage is **empty** (0 rows); the real
+   population is scraped imports, which locked decision #4 covers but this epic never scoped.
 
 ## Kill-switch
 
