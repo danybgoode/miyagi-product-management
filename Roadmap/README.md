@@ -177,6 +177,36 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-22 — Merchant lifecycle projection SHIPPED (HIGH; the Miyagi half of Golden Beans'
+  event-destination-router S3.1, [#298](https://github.com/danybgoode/miyagisanchezcommerce/pull/298)
+  `7ee0122`).** Six founding-merchant milestones now travel in a **loop**: Miyagi emits to Golden Beans'
+  `/api/v1/track` carrying `context.subject = {type:'merchant'}`, Golden Beans stores the canonical event
+  and fans it out, and a **signed webhook** delivers it back into a Miyagi-owned projection. Golden Beans
+  is the event system, Miyagi materializes relationship state, **Medusa stays commerce truth** —
+  `first_sale` is a milestone flag with no amount, order id or buyer anywhere in the schema, and
+  `lib/order-mirror.ts` is byte-identical to `main` (the money path is untouched). The receiver reads the
+  **raw body before parsing** (the HMAC covers exact bytes; verifying a re-serialized object fails every
+  time, looking like the producer's bug), verifies with a **verbatim copy** of Golden Beans' own verifier,
+  and **fails closed** when the secret is unset. Idempotency is a PRIMARY KEY on the envelope `id` inside
+  one plpgsql function, with `LEAST()`-based write-once-earliest milestones, so an at-least-once replay is
+  a no-op rather than a second milestone. The emit side is a real **outbox** (claims never deleted, payload
+  replayed verbatim under a stable idempotency key) plus a daily sweep that derives the threshold
+  milestones from Medusa *and backfills the hooked ones from state*, so a hook that never ran self-heals.
+  **Review found nine real defects** across six mandatory cross-agent rounds and a fresh `pr-reviewer`
+  pass — five of them the same shape: *an almost-right value becoming permanent* (a deny-list treating
+  unknown statuses as revenue; `now` frozen in place of a known timestamp; a drifted Supabase mirror
+  granting an unwithdrawable milestone; a telemetry flag checked before the outbox claim, which would
+  have discarded 100% of events while the flag sat off by default; a `limit+1` probe defeated by
+  PostgREST's own row ceiling, reporting a partial sweep as complete). All fixed or documented; durable
+  levers promoted to `LEARNINGS.md`. Both migrations applied to prod **before** merge and verified across
+  four layers; prod Cloud Build green; live endpoint smoked (401 on unsigned/forged/malformed/invalid-JSON,
+  405 on GET, no oracle in the body). **The loop is still DARK** — `DESTINATION_DELIVERY_ENABLED` is
+  Daniel's flip, and the deploy order is load-bearing: 401 is a *permanent* 4xx, so enabling delivery
+  before the Cloud Run secret lands would dead-letter the entire backlog in one pass. Owed: that ordered
+  runbook, a Cloud Scheduler job, a backend PR surfacing `payment_status` so `first_sale` requires a truly
+  captured order, and the disposable-merchant smoke. See
+  [08 · Growth & Promotions › Merchant lifecycle projection](08-growth-and-promotions/merchant-lifecycle-projection/).
+
 - **2026-07-20 — Two-epic platform batch SHIPPED (SSRF DNS-pinning + process token-diet; 3 PRs across 3
   repos, LOW throughout).** Built assembly-line from two parallel builders while the orchestrator ran the
   review layers concurrently. **SSRF DNS-pinning** ([PR #290](https://github.com/danybgoode/miyagisanchezcommerce/pull/290) `d50f92f`) closed the DNS-rebinding TOCTOU at the two server-side untrusted-domain fetches (comparador shop-URL analyzer + Shopify MCP connector): a new `lib/ssrf-fetch.ts` resolves once, validates the whole address set, and dials it via a per-request undici `Agent` whose `connect.lookup` only ever answers with that validated set — `url.hostname` left intact so TLS still validates the cert against the real host (design fork settled A: `undici` as a direct dep). The mandatory cross-agent pass **and** an independent `pr-reviewer` (run on 3 named LOW judgment triggers) both caught a production-breaking body-stream blocker — a `finally { agent.destroy() }` that killed the socket at headers before either caller read the body — empirically reproduced (`>64 KB → terminated`) and mutation-verified with a new >256 KB delayed-body spec; the reviewer added the IPv6-first-failover and unguarded-test-bypass catches. **Process token-diet** ([root #104](https://github.com/danybgoode/miyagi-product-management/pull/104) `889f5ba` + [dobby-foundation#4](https://github.com/danybgoode/dobby-foundation/pull/4) `6e5cfbb`) shipped the `emit-kickoff.mjs` generator and flipped the review policy: cross-agent review **mandatory on every PR**, fresh reviewer **mandatory on HIGH / optional on LOW**. Two of its four stories' premises turned out already-true (verified against the live artifacts, recorded as scope corrections not make-work), and the mandatory-review flip caught its own incompleteness — a re-derived whole-population grep found six live artifacts still teaching the old policy. **The batch found a bigger fish**: a *third*, unauthenticated, fully-open SSRF (`artwork_url` in the MCP route), then closed it in the approved HIGH-risk fast-follow ([frontend #291](https://github.com/danybgoode/miyagisanchezcommerce/pull/291) `0e07d32`): HTTPS-only, DNS-pinned, redirect-refusing, streamed-byte-capped and non-oracular. Durable levers promoted to LEARNINGS (dispatcher-level DNS pinning; `undici.fetch` resolves at headers so a `finally`-destroy truncates the body; a policy change isn't shipped until every asserting artifact is re-swept). Owed to Daniel: the SSRF post-merge live smoke + the S1.3 behavioural signal. See [09 · Platform & Infra › SSRF DNS-pinning](09-platform-infra/ssrf-dns-pinning/) and [› Process token-diet](09-platform-infra/process-token-diet/).

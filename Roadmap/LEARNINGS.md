@@ -277,6 +277,54 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   by re-deriving the population and finding six live stale artifacts. Same shape as the code-comment overclaim
   the sibling ssrf epic exists to kill. *(2026-07-20, process-token-diet S1.3.)*
 ## Tooling gotchas
+- **Signed-webhook consumers + write-once milestones (2026-07-22, `merchant-lifecycle-projection`,
+  PR #298 — six cross-agent rounds + a fresh reviewer found NINE real defects in one story; the
+  levers below are the ones that generalise):**
+  (1) **Read the RAW body before anything parses it.** An HMAC covers the exact bytes on the wire.
+  `await request.json()` and then verifying a re-serialized object fails 100% of the time — key
+  order, whitespace and number formatting all shift — and it fails *looking like the producer's
+  bug*. A request body can also only be consumed once, so the ordering isn't a preference.
+  (2) **A "write-once" fact is an unwithdrawable fact — every default around it must fail CLOSED.**
+  Five of the nine defects were the same shape: a value that was *almost* right became permanent.
+  A deny-list of bad statuses treats every unknown string as good (invert it: unknown ⇒ not
+  qualifying). `occurredAt: now` freezes the *discovery* time when the real timestamp was in hand.
+  A mirror row that drifted from the system of record grants a milestone nobody can take back.
+  Ask of every write-once path: *if this input is wrong, can anyone undo it?* If not, the unknown
+  case must decline, not grant — a deferred milestone is recoverable on the next run.
+  (3) **A checked flag must not gate the RECORDING of work, only its transmission.** Checking
+  `telemetry_enabled` *before* claiming the outbox row silently discarded every milestone while the
+  flag was off — and the flag is off by default, so the feature would have lost 100% of its events
+  until someone flipped it, with nothing to recover from. Claim always; send conditionally.
+  (4) **Delete-on-failure cannot express an AMBIGUOUS failure.** A send that timed out may have
+  been accepted. Releasing the claim double-emits; keeping it burns the milestone if the send truly
+  failed. The resolution is an outbox that never deletes: store the payload, mark `delivered_at`
+  only on a confirmed 2xx, and let a sweep drain it under a stable **idempotency key the receiver
+  deduplicates on**. Replay the STORED payload verbatim — receivers that fingerprint a payload
+  alongside its idempotency key reject a rebuild carrying a fresh timestamp.
+  (5) **A partial run that returns 2xx is how a broken cron survives for months.** `207` is still
+  2xx: schedulers and uptime monitors read it as success and neither retry nor alert. Return a
+  retryable **5xx** when the run was incomplete, and make retrying free (idempotent) so that's safe.
+  Distinguish "deliberately switched off" from "broken" — collapsing them makes the job alarm daily
+  for a condition nobody acts on.
+  (6) **Paging: never infer "is there more?" from how many rows came back.** PostgREST caps a
+  response at `db-max-rows` (default 1000), so a `limit + 1` probe with `PAGE_SIZE = 1000` reads
+  "no more" at exactly the ceiling and the walk stops early *reporting success*. Ask the server for
+  `count: 'exact'`. Also: a single `.limit(CAP)` read is not paging — it returns the same first CAP
+  rows on every run, so anything past it is starved forever, not merely delayed. Same class: order
+  a retry queue by `attempts` before age, or the oldest failures starve everything behind them.
+  (7) **Guard the population, not the door** (re-confirmed). `three_products_live` has six+ write
+  paths; deriving the threshold from resulting STATE is complete by construction and covers doors
+  added later. Better still, the state-derived sweep doubles as a **backfill safety net** for the
+  event-hooked milestones — hooks give timeliness, derivation gives completeness.
+  (8) **A colour-shaped string in prose is still a colour to a scanner.** `PR #298` in a code
+  comment is three hex digits and failed the raw-hex design-token guard in CI. Sibling of the
+  Tailwind-JIT-scans-comments trap already recorded below.
+  (9) **`git add -A` in a shared checkout silently commits another session's work** — and branching
+  off a local `main` that is ahead of `origin/main` puts a sibling's unmerged commits in your PR's
+  diff from birth. Both happened here; a cross-agent reviewer caught it as "you renamed a migration
+  version" before a human did. Stage explicit paths, branch off `origin/main`, and verify with
+  `git diff origin/main HEAD --stat` (NOT `git diff origin/main --stat`, which compares the working
+  tree and mixes in the sibling's uncommitted files).
 - **GCP account-migration cluster (2026-07-19, gcp-account-migration S0–S3 — one session, cut over
   with zero loss; full story in that epic's RETROSPECTIVE):**
   (1) **A just-created service account is eventually consistent** — an immediate IAM grant against

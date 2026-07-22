@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: merchant-lifecycle-projection
 ---
 
@@ -39,13 +39,27 @@ The six: `merchant.permission_granted` · `merchant.preview_approved` · `mercha
 | Signature verifier — **copied verbatim from golden-beans** | `lib/webhook-signature.ts` |
 | Pure seam: classify + build track payload (zero-import) | `lib/merchant-lifecycle.ts` |
 | Supabase writes, once-only emit guard | `lib/merchant-lifecycle-server.ts` |
-| State-derived milestones (3-products, 30d retention) | `lib/merchant-lifecycle-sweep.ts` |
+| State-derived milestones + backfill safety net | `lib/merchant-lifecycle-sweep.ts` |
 | Daily sweep endpoint | `app/api/cron/merchant-lifecycle-sweep/route.ts` |
-| Migration (applied to prod 2026-07-22) | `apps/miyagisanchez/supabase/migrations/20260722160000_merchant_lifecycle_projection.sql` |
-| Shared fixtures — byte-identical copy in golden-beans | `e2e/_fixtures/merchant-lifecycle.fixtures.json` |
+| Migration — projection + idempotency store | `supabase/migrations/20260722160000_merchant_lifecycle_projection.sql` |
+| Migration — the emit-side outbox | `supabase/migrations/20260722170000_merchant_lifecycle_emission_outbox.sql` |
+| Shared fixtures (sha256 pinned in a spec) | `e2e/_fixtures/merchant-lifecycle.fixtures.json` |
 
-Emit call sites: `app/api/preview/[token]/decision/route.ts` (approval),
-`app/api/claim/complete/route.ts` (claim), `lib/order-mirror.ts` (first sale).
+**Emit sources.** Hooks give timeliness, the sweep gives completeness — and the sweep also BACKFILLS
+the hooked ones from state, so a hook that never ran is self-healing rather than lost forever:
+
+| event | source |
+|---|---|
+| `merchant.preview_approved` | hook (`app/api/preview/[token]/decision/route.ts`) + sweep backfill |
+| `merchant.claimed` | hook (`app/api/claim/complete/route.ts`) + sweep backfill |
+| `merchant.first_sale` | **sweep only** — Medusa's earliest captured order |
+| `merchant.three_products_live` | sweep — Medusa published-product count ≥ 3 |
+| `merchant.retained_30d` | sweep — a captured order on/after the 30-day mark |
+| `merchant.permission_granted` | **not wired** — open contract question |
+
+**The money path is NOT touched.** `lib/order-mirror.ts` is byte-identical to `main`; `first_sale`
+briefly had a hook there and it was removed, because the reconcile-cron path reaches that writer long
+after the order and stamped the milestone with the *reconciliation* time.
 
 ## The four things that are easy to get wrong
 
@@ -69,10 +83,63 @@ Emit call sites: `app/api/preview/[token]/decision/route.ts` (approval),
 - `GROWTH_ENGINE_URL` / `GROWTH_ENGINE_API_KEY` — already present; the emit half reuses them.
 - Emission is gated by the existing `growth.telemetry_enabled` flag.
 
-## Status
+## Status — ✅ MERGED 2026-07-22, endpoint LIVE, loop still DARK
 
-See the PR and `sprint-3.md` in golden-beans. Delivery is **dark** until Daniel flips
-`DESTINATION_DELIVERY_ENABLED` in Golden Beans — that flip is deliberately not part of this work.
+PR [#298](https://github.com/danybgoode/miyagisanchezcommerce/pull/298) (`7ee0122`), 17 files.
+Both migrations applied to prod and recorded in migration history. Cloud Build `7ef807b5` SUCCESS.
+
+**Live-verified on prod after deploy:** unsigned / forged / malformed-header / invalid-JSON POSTs
+all → `401`; `GET` → `405`; the rejection body carries no oracle. The cron sweep → `401` unauthenticated.
+
+The response body currently reads `{"error":"Unauthorized"}` rather than `{"error":"Invalid signature"}`
+— that is the **fail-closed path**, because `GOLDEN_BEANS_WEBHOOK_SECRET` is not set in Cloud Run yet.
+Correct and expected. The two are deliberately indistinguishable from outside.
+
+Review: six cross-agent rounds (Codex) + a fresh `pr-reviewer` pass, which approved with no blocking
+defects. Between them they found **nine real defects**, several of the permanent-corruption class.
+
+### ⚠️ Deploy order is LOAD-BEARING
+
+`401` is a **permanent** 4xx in Golden Beans' classification — it dead-letters immediately, no retries.
+So if delivery is enabled before the secret reaches Cloud Run, **the entire queued backlog dead-letters
+in a single pass** and recovery is manual, per-delivery operator replay.
+
+1. Set `GOLDEN_BEANS_WEBHOOK_SECRET` in Cloud Run **and confirm the endpoint is 401-ing because a
+   signature is wrong, not because the secret is missing** (check the logs — the unset case logs
+   `GOLDEN_BEANS_WEBHOOK_SECRET is not set`).
+2. Only then create the destination in Golden Beans' owner-only UI, and use **Send test**.
+3. Only then flip `DESTINATION_DELIVERY_ENABLED`.
+
+### Smoke steps 2–3 have no UI — run them as SQL
+
+The projection is intentionally **write-only from the app's side**: nothing reads
+`merchant_lifecycle` yet, so sprint-3's "open Miyagi's merchant activation record" is not executable
+as written. An operator view is a reasonable follow-up; until then:
+
+```sql
+-- Step 2: the merchant's lifecycle projection
+SELECT * FROM merchant_lifecycle WHERE merchant_id = '<marketplace_shops.id>';
+
+-- Step 3: after replaying the SAME delivery in Golden Beans, re-run the above.
+-- The milestone timestamps must be UNCHANGED, and this must still be one row:
+SELECT event_id, event_type, occurred_at, delivery_id, received_at
+  FROM merchant_lifecycle_deliveries
+ WHERE merchant_id = '<marketplace_shops.id>' ORDER BY occurred_at;
+
+-- Emit-side outbox: anything stuck?
+SELECT merchant_id, event_type, delivered_at, attempts, last_error
+  FROM merchant_lifecycle_emissions WHERE delivered_at IS NULL;
+```
+
+### Known limitation, owed before the flip
+
+`merchant.first_sale` can be granted by an order that is not actually captured.
+`normalizeMedusaOrder` (backend `store/sellers/me/orders`) initialises `status = 'paid'` and only
+demotes it for cancel/refund/return or an uncaptured **manual** payment — so a card/MercadoPago order
+sitting at `payment_status: 'authorized'` normalises to `'paid'`. The frontend allow-list cannot close
+this, because that function does not return `payment_status` at all. **Fix is a backend PR: surface
+`payment_status` (or a boolean `captured`) from `/internal/sellers/orders` and gate on it.** Bounded
+meanwhile — nothing emits until the flip, and this is a CRM milestone, not money.
 
 ## Definition of Done (epic)
 
@@ -85,9 +152,14 @@ What must be true on the Miyagi side:
       replay-dedupe, ignore and dead-letter branches all exercised
 - [x] Signature specs mutation-checked (a spec that passes against a broken verifier proves nothing)
 - [x] Shared lifecycle fixtures with a pinned digest, so "identical in both repos" is a checked fact
-- [ ] The golden-beans copy of `merchant-lifecycle.fixtures.json` added, with the same digest pinned
-- [ ] `GOLDEN_BEANS_WEBHOOK_SECRET` set in the Cloud Run env, and the destination created + enabled
-- [ ] Cloud Scheduler job registered for `/api/cron/merchant-lifecycle-sweep`
+- [x] Merged (`7ee0122`), prod Cloud Build green, live endpoint smoked (401/405, fail-closed)
+- [x] Mandatory cross-agent review (6 rounds) + the HIGH-tier fresh `pr-reviewer` pass — approved
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md`; this README's `status: shipped`
+- [ ] **Backend:** surface `payment_status` from `/internal/sellers/orders` so `first_sale` requires a
+      genuinely captured order (see Known limitation) — **before the flip**
+- [ ] `GOLDEN_BEANS_WEBHOOK_SECRET` in Cloud Run → verify → create the destination → flip. **In that
+      order** (see above)
+- [ ] Cloud Scheduler job for `/api/cron/merchant-lifecycle-sweep` (daily, `Authorization: Bearer $CRON_SECRET`)
 - [ ] The disposable-merchant end-to-end smoke (golden-beans `sprint-3.md`, steps 1–3) — Daniel
-- [ ] `merchant.permission_granted` mapped to a real Miyagi moment (see the PR body — open question)
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md`; this README's `status: shipped`
+- [ ] `merchant.permission_granted` mapped to a real Miyagi moment (open contract question)
+- [ ] Golden Beans repo: the byte-identical fixture copy + digest pin, and this story's sprint-3 ticks

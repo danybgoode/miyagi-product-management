@@ -10,11 +10,10 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (5)
+## 🏗️ Building now (4)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 7/10 stories · risk: High · #1-fm
-- [Merchant lifecycle projection — the Miyagi half of Golden Beans' event router](../../08-growth-and-promotions/merchant-lifecycle-projection/README.md) — 08 Growth · 0 sprints
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
@@ -25,7 +24,7 @@
 - [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 0/9 stories · risk: High · #5-fm
 - [Tiendas Fundadoras acquisition](../../08-growth-and-promotions/tiendas-fundadoras-acquisition/README.md) — 08 Growth · 0/6 stories · risk: High · #3-fm
 
-## ✅ Shipped (121)
+## ✅ Shipped (122)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -97,6 +96,7 @@
 - [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 12/12 stories · risk: High · tbd
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 8/8 stories · risk: Low · Wave 3
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 3/3 stories · risk: Low
+- [Merchant lifecycle projection — the Miyagi half of Golden Beans' event router](../../08-growth-and-promotions/merchant-lifecycle-projection/README.md) — 08 Growth · 0 sprints
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 3/3 stories
 - [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 19/19 stories
 - [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 12/12 stories
@@ -164,7 +164,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | In progress | Scaffolded |
+| Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 
 ---
