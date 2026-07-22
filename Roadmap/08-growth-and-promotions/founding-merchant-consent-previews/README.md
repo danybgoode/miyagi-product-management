@@ -126,12 +126,19 @@ router is not live yet.
 
 ## Accepted risks (named at review, 2026-07-22)
 
-- **A promoter can self-approve.** The promoter mints and holds the preview token, so a promoter
-  clicking "Aprobar" on the merchant's behalf is **indistinguishable in the record** from genuine
-  merchant consent. `grant_id` and `actor_ip_hash` describe the link and the network, not the
-  person; the migration is honest that this is "NOT a legal signature". No code change fixes this —
-  Daniel's real-merchant-identity smoke is the only control, which is why it is a hard gate rather
-  than an owed nicety.
+- **A promoter can self-approve — MITIGATED by S4 (PR #302), with a residual.** S4 (merchant-verified
+  approval) sends a one-time code to the merchant's contact and requires it to approve, so a promoter
+  clicking "Aprobar" without the code can no longer approve. **Residual (fresh-reviewer, 2026-07-22):**
+  the code is sent to `marketplace_shops.metadata.merchant_email`, which the **promoter populates** at
+  onboarding. A malicious promoter who set `merchant_email` to *their own* inbox receives the code and
+  self-approves — and the record then shows `verified_via='email'`, i.e. **false** assurance, arguably
+  worse than an honest NULL. So S4 raises the bar (a code is now required) but does not fully close the
+  vector; the guarantee is only as good as the independence of `merchant_email` from the promoter.
+  **Daniel's owed browser smoke must target exactly this:** confirm a real, independent merchant
+  contact actually receives the code — not the promoter. A future hardening would verify the merchant
+  contact through a channel the promoter doesn't control (e.g. captured directly from the merchant at
+  claim, or a claim-time re-verification). Until then, S4 is a meaningful tightening, not a proof of
+  identity — and the copy says so ("confirma tu contacto, no es una firma legal").
 - ~~The PDP has no preview guard.~~ ✅ **FIXED (PR #297).** `app/(shell)/l/[id]` now calls
   `assertShopNotPreviewPrivate`, and a structural spec enforces that every public shop/product
   render surface calls a guard. The residual risk it closed: a partially-failed activation left
