@@ -80,14 +80,23 @@ If any step fails, note the step number + merchant/shop id — that's the bug re
   node --experimental-strip-types --env-file=.env.local scripts/preview-inventory.ts
   ```
 
-### Live inventory result (2026-07-21, read-only against production)
+### Live inventory result — CORRECTED 2026-07-22
 
-182 shops. **`public_unclaimed_promoter`: 0** — the historical population this epic worried about
-(promoter-created, public, unclaimed, unanchored) is **empty**. The 168 `public_unclaimed_other`
-rows are scraped/imported gem shops, a separate population with its own provenance question; 13 are
-merchant-owned (claimed), 1 has no public presence. Provenance split: 1 promoter, 167 import,
-14 unknown.
+⚠️ The 2026-07-21 run of `scripts/preview-inventory.ts` reported "168 `public_unclaimed_other`"
+based on `marketplace_listings.status='active'` in the **Supabase mirror** — which had drifted from
+Medusa. Probing every shop's live storefront on production told a very different story, and it's the
+accurate one:
 
-**Consequence for step 4 of the walkthrough:** there is no promoter-created backlog to disposition.
-The decision Daniel actually owes is about the 168 imported public/unclaimed shops, which locked
-decision #4 covers but this epic never scoped — worth a separate call, not a silent bulk mutation.
+- **183 shops total; only 18 render any visible product.** 159 returned **404** — they had no Medusa
+  seller at all, existing only as orphan mirror rows.
+- **154 of those 159** were unclaimed + had no `medusa_seller_id`: test/scrape data created
+  2026-05-18..22 (project start), sourced from `maps.google.com` and `example-marketplace.com`. Per
+  Daniel's call (2026-07-22) these were **deleted** — 154 shops + 218 cascade listings; backup at
+  `/Users/cosmo/dobby/backups/2026-07-22-orphan-shop-cleanup/`. Zero conversations/offers/orders/
+  subscriptions touched; all 18 visible shops re-verified intact after.
+- Result: **183 → 29 shops.** The promoter-created backlog this epic worried about was always
+  empty; the real cleanup target was orphan mirror rows, not a disposition question.
+
+**Lesson for the tool:** `preview-inventory.ts` reads the mirror's `status`, which our own
+Medusa-first rule warns can drift. It should read live visibility (the storefront/catalog), not the
+mirror — otherwise its provenance/visibility counts mislead. Fix owed before the next audit.

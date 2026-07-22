@@ -78,9 +78,10 @@ the flag, and complete Daniel's owed smokes. See "Owed before the flag flip" bel
    *Not self-merged: HIGH-tier security fix, and the builder wrote the bug.*
 3. **Daniel's owed smokes** — the S1 walkthrough (never run), plus the S2 and S3 walkthroughs.
 4. **The two S1 fail-open/already-public confirmations** still listed in `sprint-1.md`.
-5. **A disposition call on the 168 imported public/unclaimed shops** the S3 inventory surfaced.
-   The promoter-created backlog this epic assumed would need triage is **empty** (0 rows); the real
-   population is scraped imports, which locked decision #4 covers but this epic never scoped.
+5. ~~A disposition call on the imported public/unclaimed shops.~~ ✅ **DONE 2026-07-22.** The S3
+   "168" figure was a mirror-drift artifact (see `sprint-3.md`). Live probing showed only 18 shops
+   render any product; 154 orphan test/scrape rows (404 everywhere, no Medusa seller) were deleted
+   per Daniel's call. **183 → 29 shops.** Backup + full rationale in the cleanup dir.
 
 ## Kill-switch
 
@@ -131,10 +132,10 @@ router is not live yet.
   person; the migration is honest that this is "NOT a legal signature". No code change fixes this —
   Daniel's real-merchant-identity smoke is the only control, which is why it is a hard gate rather
   than an owed nicety.
-- **The PDP has no preview guard.** `app/(shell)/l/[id]` relies on Medusa draft filtering alone, so
-  a partially-failed activation leaves orphan public product pages while `/s/<slug>` 404s. The
-  content is content the merchant approved, so this is not a consent violation — but a 502 from
-  activation is not harmless, and the promoter should retry promptly.
+- ~~The PDP has no preview guard.~~ ✅ **FIXED (PR #297).** `app/(shell)/l/[id]` now calls
+  `assertShopNotPreviewPrivate`, and a structural spec enforces that every public shop/product
+  render surface calls a guard. The residual risk it closed: a partially-failed activation left
+  orphan public product pages while `/s/<slug>` 404'd.
 - **What protects checkout is not the claim flag.** Traced 2026-07-22: `isShopClaimed()` gates the
   PDP/checkout *pages* and the UCP surfaces, but there is no claim check on the charge path. Before
   activation the protection is structural (drafts are unreachable via `/store/products/:id`); after
