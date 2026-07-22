@@ -99,3 +99,28 @@ SELECT column_name FROM information_schema.columns
 - The promoter workspace gained a preview/activation step, and `GET /api/promoter/preview` is the
   single server-derived consent state the merchant page, the workspace and the activation route all
   read — so they cannot disagree about whether consent is current.
+
+### Post-merge correctness fix (landed in S3's PR #295, `c444dc6`)
+
+Self-review found that 2.3's own acceptance — "failed partial writes surface and can replay
+safely" — was **not** met as first shipped. The publish set was derived from the shop's DRAFT
+products, so activation *consumes* it, producing two unrecoverable states:
+
+1. **Partial publish** — the live set shrinks, its hash stops matching the approved hash, and
+   `canActivate` refuses "la propuesta cambió" forever.
+2. **`markActivated` fails after all publishes succeed** — the live set is *empty*, so the retry
+   refuses with "no hay productos que publicar".
+
+Neither had a recovery path: a merchant's approval could never be acted on again.
+
+The fix adds a pure `isResumableActivation` (is the live proposal the approved one *minus products
+we already published*?) and makes `checkActivation` publish the **approved snapshot** from the
+stored decision row rather than the live draft list. It is strict and one-directional — a changed
+title/price/image/currency, a changed shop identity, or an ADDED product is still material and
+still invalidates.
+
+**Accepted limit (documented in the code):** a promoter-*deleted* product is indistinguishable from
+one we published, so it would not invalidate on this path. Safe today because no promoter delete
+path exists for a previewed shop, and publishing a subset of what the merchant approved never
+publishes anything unapproved. **If a delete path is ever added, it must invalidate the approval
+explicitly at its call site.**
