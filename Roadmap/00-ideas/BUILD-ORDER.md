@@ -10,10 +10,11 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (5)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 7/7 stories · risk: High · #1-fm
+- [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 7/10 stories · risk: High · #1-fm
+- [Merchant lifecycle projection — the Miyagi half of Golden Beans' event router](../../08-growth-and-promotions/merchant-lifecycle-projection/README.md) — 08 Growth · 0 sprints
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
@@ -163,8 +164,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Founding merchant consent-safe previews | In progress | Shipped |
+| Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | In progress | Scaffolded |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 
 ---
-_Epics: 130 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 131 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
