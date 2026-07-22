@@ -316,9 +316,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   paths; deriving the threshold from resulting STATE is complete by construction and covers doors
   added later. Better still, the state-derived sweep doubles as a **backfill safety net** for the
   event-hooked milestones — hooks give timeliness, derivation gives completeness.
-  (8) **A colour-shaped string in prose is still a colour to a scanner.** `PR #298` in a code
-  comment is three hex digits and failed the raw-hex design-token guard in CI. Sibling of the
-  Tailwind-JIT-scans-comments trap already recorded below.
+  (8) **Never write `#<number>` in source comments in this repo.** The raw-hex design-token guard
+  reads `#298` / `#109` as three-digit colours, and it broke CI **three times in one epic** before
+  the pattern (not just each instance) was swept. Write `PR 298`. Sibling of the
+  Tailwind-JIT-scans-comments trap already recorded below — a colour-shaped string in prose is
+  still a colour to a scanner.
+  (10) **Read a flag's LIVE state; the code default is not the answer.** A merged comment asserted
+  `growth.telemetry_enabled` was OFF in production because `DEFAULT_FLAGS` says `false` — it had
+  been ON since 2026-07-14. That inverted what the feature was actually doing (events being *sent*,
+  not queued). One `SELECT enabled FROM platform_flags WHERE key=…` settles it; infer it from the
+  default and you will eventually document the opposite of production.
+  (11) **A "fall-through default" is not an assertion.** `normalizeMedusaOrder` initialises
+  `status = 'paid'` and only demotes it, so an *authorized-not-captured* card order reads as paid.
+  Anything write-once that consumes such a field needs the underlying fact surfaced explicitly
+  (here: `payment_captured`), and the fix is only complete when the new field means ONE thing —
+  four review rounds each caught it quietly meaning slightly more than its name (the payment
+  method, then a refund sub-state, then fulfillment state). When a predicate spans two dimensions,
+  test them as a PAIR (`it.each(['card','spei'])`), or parity claims live only in prose.
   (9) **`git add -A` in a shared checkout silently commits another session's work** — and branching
   off a local `main` that is ahead of `origin/main` puts a sibling's unmerged commits in your PR's
   diff from birth. Both happened here; a cross-agent reviewer caught it as "you renamed a migration

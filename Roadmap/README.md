@@ -202,9 +202,18 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   four layers; prod Cloud Build green; live endpoint smoked (401 on unsigned/forged/malformed/invalid-JSON,
   405 on GET, no oracle in the body). **The loop is still DARK** — `DESTINATION_DELIVERY_ENABLED` is
   Daniel's flip, and the deploy order is load-bearing: 401 is a *permanent* 4xx, so enabling delivery
-  before the Cloud Run secret lands would dead-letter the entire backlog in one pass. Owed: that ordered
-  runbook, a Cloud Scheduler job, a backend PR surfacing `payment_status` so `first_sale` requires a truly
-  captured order, and the disposable-merchant smoke. See
+  before the Cloud Run secret lands would dead-letter the entire backlog in one pass. **Closed out the
+  same day:** the `first_sale` **capture gate** (backend PR 109 + frontend PR 300, both deployed —
+  `normalizeMedusaOrder`'s `status` is a *fall-through default*, initialised to `'paid'` and only
+  demoted, so an authorized-not-captured card order read as paid; four further cross-agent rounds plus a
+  fresh reviewer who enumerated all ten members of Medusa's `PaymentStatus` union × both payment-method
+  families to confirm no gap remained), the **daily Cloud Scheduler job**, and a **disposable-merchant
+  smoke on production** proving the emit half end-to-end — Golden Beans accepted the milestone on attempt
+  1, stamped with the real `approved_at` rather than the sweep's run time, and three consecutive sweeps
+  produced exactly one emission. Also corrected a merged claim that `growth.telemetry_enabled` was OFF in
+  prod: it has been ON since 2026-07-14, so emission is *live*, not queued — the code default is not the
+  live state. Owed to Daniel: only the ordered secret→verify→destination→flip runbook, and the return-leg
+  smoke that depends on it. See
   [08 · Growth & Promotions › Merchant lifecycle projection](08-growth-and-promotions/merchant-lifecycle-projection/).
 
 - **2026-07-20 — Two-epic platform batch SHIPPED (SSRF DNS-pinning + process token-diet; 3 PRs across 3

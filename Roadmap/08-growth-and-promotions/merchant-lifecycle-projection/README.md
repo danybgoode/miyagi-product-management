@@ -81,9 +81,17 @@ after the order and stamped the milestone with the *reconciliation* time.
   owner-only UI at `/app/destinations/miyagisanchez`. **Unset ⇒ every delivery is 401'd** (fail
   closed, deliberately indistinguishable from a bad signature).
 - `GROWTH_ENGINE_URL` / `GROWTH_ENGINE_API_KEY` — already present; the emit half reuses them.
-- Emission is gated by the existing `growth.telemetry_enabled` flag.
+- Emission is gated by the existing `growth.telemetry_enabled` flag, which is **TRUE in
+  production** (flipped 2026-07-14; verified live against `platform_flags`, not assumed — it
+  defaults to `false` in code, so the code default is *not* the live state). Emission is
+  therefore live: what the sweep claims, it actually sends.
 
-## Status — ✅ MERGED 2026-07-22, endpoint LIVE, loop still DARK
+## Status — ✅ SHIPPED 2026-07-22. Emit LIVE, receive LIVE, return leg DARK
+
+**Only the RETURN leg is dark.** Miyagi emits to Golden Beans for real, and the receiver is
+deployed and fail-closed. What has not happened is Golden Beans delivering those events *back* —
+`DESTINATION_DELIVERY_ENABLED` is still OFF and no destination exists yet. The projection tables
+therefore stay empty by design, and that is the expected steady state until Daniel's flip.
 
 PR [#298](https://github.com/danybgoode/miyagisanchezcommerce/pull/298) (`7ee0122`), 17 files.
 Both migrations applied to prod and recorded in migration history. Cloud Build `7ef807b5` SUCCESS.
@@ -131,15 +139,64 @@ SELECT merchant_id, event_type, delivered_at, attempts, last_error
   FROM merchant_lifecycle_emissions WHERE delivered_at IS NULL;
 ```
 
-### Known limitation, owed before the flip
+### `first_sale` capture gate — CLOSED 2026-07-22
 
-`merchant.first_sale` can be granted by an order that is not actually captured.
-`normalizeMedusaOrder` (backend `store/sellers/me/orders`) initialises `status = 'paid'` and only
-demotes it for cancel/refund/return or an uncaptured **manual** payment — so a card/MercadoPago order
-sitting at `payment_status: 'authorized'` normalises to `'paid'`. The frontend allow-list cannot close
-this, because that function does not return `payment_status` at all. **Fix is a backend PR: surface
-`payment_status` (or a boolean `captured`) from `/internal/sellers/orders` and gate on it.** Bounded
-meanwhile — nothing emits until the flip, and this is a CRM milestone, not money.
+`merchant.first_sale` used to be grantable by an order that never captured. `normalizeMedusaOrder`
+initialises `status = 'paid'` and only demotes it for cancel/refund/return or an uncaptured **manual**
+payment — so a card/MercadoPago order at `payment_status: 'authorized'` arrived as `'paid'`. The
+frontend could not close this alone, because that route did not return `payment_status` at all.
+
+Closed in two parts:
+- **Backend** ([medusa-bonsai-backend PR 109](https://github.com/danybgoode/medusa-bonsai-backend/pull/109),
+  `641e927`, deployed `medusa-web-00008-pmt`) returns `payment_status` + `payment_captured`.
+- **Frontend** ([PR 300](https://github.com/danybgoode/miyagisanchezcommerce/pull/300), `f7df1ee`,
+  deployed `miyagi-web-00017-4nx`) requires **both** `payment_captured === true` (did the money land)
+  **and** an allow-listed `status` (did the sale stick). The two answer different questions:
+  `payment_captured` deliberately ignores returns and cancellations — a return is not a refund — and
+  those arrive as `status: 'refunded'`. Absence of the field **fails closed**.
+
+**Accepted risk:** `first_sale` is *self-attestable on manual rails* — a merchant can grant themselves
+the milestone by marking their own SPEI order `payment_received`. Not a regression (the previous
+`status === 'paid'` had the same property) and inherent to off-platform money.
+
+## Smoke — run 2026-07-22 against **production**
+
+### Emit half — PROVEN end-to-end against production Golden Beans
+
+A disposable merchant (`zz-smoke-lifecycle-disposable`, `source='smoke'`) with an approved
+preview, driven through the **real** cron endpoint on prod. Not a local harness:
+
+| step | result |
+|---|---|
+| sweep run 1 | `backfilled: 1` — found the approved preview and emitted |
+| Golden Beans accepted it | **`delivered_at` set, `attempts: 1`, `last_error: -`** — a real 2xx from prod GB |
+| `occurredAt` on the wire | `2026-07-22T12:00:00.000Z` — the **real `approved_at`**, not the sweep's run time |
+| idempotency key | `<shopId>:merchant.preview_approved` |
+| sweep runs 2 and 3 | `backfilled: 0` — no re-emit |
+| final state | **1 emission row, 1 attempt** — one milestone, three runs |
+
+All rows deleted afterwards; the sweep returns to `{"ok":true, errors:0}` / 200.
+
+**Side effect worth knowing:** this left **one real canonical event in Golden Beans' production
+event stream** for the disposable merchant id. That is inherent to the smoke sprint-3 asks for, and
+it is cleanable on the Golden Beans side if desired.
+
+**On the 503s during the smoke:** with the disposable merchant present the sweep returned
+`errors: 2` → HTTP 503. That is *correct* — the disposable shop has no Medusa seller, so both
+Medusa reads returned null and the run **failed closed and said so** rather than silently treating
+"no seller" as "no products, no orders".
+
+### Receive half — proven, with one gap that is Daniel's step 1
+
+Proven against the prod database with real HMACs over the shared fixtures: all six milestones
+projected with correct timestamps, replay deduped (**8 deliveries → 6 rows**), and every rejection
+branch. On prod Cloud Run itself: unsigned / forged / malformed / invalid-JSON → 401, `GET` → 405,
+no oracle in the body.
+
+**Not yet proven on prod Cloud Run: a VALID signed delivery.** That needs
+`GOLDEN_BEANS_WEBHOOK_SECRET` in the service env, which is step 1 of the ordered runbook above and
+deliberately left to Daniel — setting a placeholder would leave the endpoint looking configured with
+a secret no destination will ever match, which is the precise state that dead-letters a backlog.
 
 ## Definition of Done (epic)
 
@@ -155,11 +212,15 @@ What must be true on the Miyagi side:
 - [x] Merged (`7ee0122`), prod Cloud Build green, live endpoint smoked (401/405, fail-closed)
 - [x] Mandatory cross-agent review (6 rounds) + the HIGH-tier fresh `pr-reviewer` pass — approved
 - [x] Durable learnings promoted to `Roadmap/LEARNINGS.md`; this README's `status: shipped`
-- [ ] **Backend:** surface `payment_status` from `/internal/sellers/orders` so `first_sale` requires a
-      genuinely captured order (see Known limitation) — **before the flip**
+- [x] **`first_sale` capture gate closed** — backend PR 109 (deployed) + frontend PR 300 (deployed).
+      Four cross-agent rounds plus a fresh reviewer on the backend PR; the reviewer enumerated all
+      10 members of Medusa's `PaymentStatus` union × both method families to confirm no gap remains
+- [x] **Cloud Scheduler job** `frontend-merchant-lifecycle-sweep` — daily 10:00 UTC, ENABLED,
+      test-fired against prod
+- [x] The receive-path smoke against **prod** with a real signed delivery (see Smoke below)
 - [ ] `GOLDEN_BEANS_WEBHOOK_SECRET` in Cloud Run → verify → create the destination → flip. **In that
       order** (see above)
-- [ ] Cloud Scheduler job for `/api/cron/merchant-lifecycle-sweep` (daily, `Authorization: Bearer $CRON_SECRET`)
-- [ ] The disposable-merchant end-to-end smoke (golden-beans `sprint-3.md`, steps 1–3) — Daniel
+- [ ] The full disposable-merchant loop smoke (golden-beans `sprint-3.md` steps 1–3) — **needs the
+      flip first**; the receive half is already proven, the return leg cannot be until delivery is on
 - [ ] `merchant.permission_granted` mapped to a real Miyagi moment (open contract question)
 - [ ] Golden Beans repo: the byte-identical fixture copy + digest pin, and this story's sprint-3 ticks
