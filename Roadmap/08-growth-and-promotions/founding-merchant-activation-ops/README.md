@@ -72,6 +72,29 @@ is what the "manual CRM edits cannot overwrite commerce truth" acceptance actual
 exception is an audited **correction**, which writes a transition row carrying a required reason and
 never deletes what it corrects.
 
+### D4 — an admin correction is an internal record, not a broadcast
+
+*(Added 2026-07-23, from the Sprint 2 fresh-reviewer pass — a decision D1–D3 implied but never stated.)*
+
+`POST /api/admin/relationship/[id]/correct-stage` (S2) deliberately carries **no consent check and no
+ordinal-monotonicity check**: an admin can set any of the 13 stages, with a required reason, as an
+audited correction. That is correct for a correction tool and harmless in S2, where nothing reads
+`stage` as consent proof.
+
+D2 makes it dangerous in S3: the stages **are** the lifecycle event types, and the Golden Beans
+projection applies write-once-earliest `LEAST()`. A milestone emitted from a mistyped correction is
+unwithdrawable **across two repositories** — the exact failure class `merchant-lifecycle-projection`
+paid nine defects to learn.
+
+**The rule:** a transition with `actor_type = 'admin'` onto a permission-gated stage
+(`permission_granted`, `preview_delivered`) **must not emit** a lifecycle event unless
+`readApprovalState` currently backs it. Fail closed — an unreadable approval state declines.
+
+Enforced **at the emitter**, never at the correction route. The emitter is the one seam every
+transition source flows through, so a transition source added later is covered without anyone
+remembering to guard it — guard the population, not the door. The correction still writes its
+transition row and still appears in history; it simply does not broadcast.
+
 ## Build strategy — pre-launch, so ceremony gets right-sized
 
 Production carries **zero tenants, zero campaigns and zero transactions** (Daniel, 2026-07-22); every

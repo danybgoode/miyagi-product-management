@@ -67,9 +67,28 @@ never regresses — a merchant who reached `first_sale` and later refunds does n
 absent facts **decline**, they never grant: every one of these milestones is write-once and
 unwithdrawable, which is exactly the trap `merchant-lifecycle-projection` paid nine defects to learn.
 
-The two permission-gated stages (`permission_received`, `preview_delivered`) require a
-`consentEvidence` fact derived from `merchant_preview_decisions` — a resolver that can reach them from
-a note is the bug this epic exists to prevent, so the spec asserts it directly.
+The two permission-gated stages (`permission_granted`, `preview_delivered`) each require **their own
+dedicated evidence field** — `permissionGrantedEvidence` and `previewDeliveredEvidence` — derived from
+the consent **anchor** via `readApprovalState`, never from a direct read of the decision log. A
+resolver that can reach either stage from a note is the bug this epic exists to prevent, so the spec
+asserts it directly.
+
+> **Corrected 2026-07-23.** This paragraph survived the first correction pass carrying *both* forks at
+> once: the dead slug `permission_received` (see the banner above) and a single shared `consentEvidence`
+> boolean read from `merchant_preview_decisions` — the same decision-log shortcut whose two holes were
+> already corrected out of `sprint-1.md`. Shipped is two distinct fields off the anchor. **Third
+> contract-vs-prose fork in this epic, and the second one in this file**, which is itself the finding:
+> a correction banner does not correct the rest of the document. When a fork is found, re-derive every
+> instance in the file — the fresh reviewer caught this one precisely by re-deriving instead of trusting
+> that the earlier fix had covered it.
+
+**Downstream constraint this creates for Sprint 3** (recorded here because S2 is where the surface is
+born): `POST /api/admin/relationship/[id]/correct-stage` deliberately has no consent check — it is an
+audited *internal* correction. That is safe while nothing reads `stage` as consent proof, which is true
+in S2. It stops being safe in S3, where D2 makes these stages the lifecycle event types under
+write-once-earliest `LEAST()` semantics. So **S3's emitter must refuse to emit a permission-gated stage
+whose transition has `actor_type = 'admin'` unless `readApprovalState` currently backs it** — enforced
+at the emitter, not the correction route, so every present and future transition source is covered.
 
 ### Migration `20260723110000_activation_crm_s2.sql`
 
