@@ -1,6 +1,6 @@
 # Founding merchant activation operations — Sprint 2: Lifecycle and stewardship
 
-**Status:** ⬜ not started
+**Status:** 🟨 In progress — building on `feat/founding-merchant-activation-ops-s2`
 
 ## Stories
 
@@ -40,9 +40,17 @@ not a partial record.
 
 ### The 13 stages, in canonical order
 
-`scouted · qualified · permission_received · preview_in_preparation · preview_delivered ·
+`scouted · qualified · permission_granted · preview_in_preparation · preview_delivered ·
 activation_scheduled · claimed · payments_ready · three_products_live · shared_externally ·
 first_inquiry · first_sale · retained_30d`
+
+> **Corrected 2026-07-22.** This list originally read `permission_received` at position 3. That was
+> wrong in the only way that matters: the S1 `CHECK` constraint (already applied to production),
+> README D2, and the live `MERCHANT_LIFECYCLE_EVENTS` vocabulary all say **`permission_granted`**, so a
+> resolver emitting `permission_received` would produce a value the database rejects. The builder
+> followed the schema over this prose and flagged it — the right call, and the second time this epic's
+> prose has forked from a shipped contract (see the S1 consent clause). Same lesson: when a decision is
+> already encoded in a constraint or a shipped constant, the sprint doc must cite it, not restate it.
 
 Ordinals are 1–13 and **frozen** — they are persisted in transition rows and read by the Sprint 3
 reconciliation view. Inserting a stage later means appending, never renumbering.
@@ -96,10 +104,18 @@ actor_clerk_user_id, at)`. Written by the reassign route in the same request as 
 - `GET /api/admin/relationships` — full cohort, filters: `stage`, `steward`, `blocker`,
   `missing_action`, `overdue`
 
-Scope resolution is **one shared helper**, `lib/relationship-scope.ts` →
+Scope resolution is **one shared helper** — shipped in S1 as **`lib/relationship-access.ts`** (this
+doc originally guessed the filename `relationship-scope.ts`; use the real one) →
 `resolveRelationshipAccess(clerkUserId, relationshipId)` returning
-`{ ok: true, role: 'owner'|'granted'|'admin' } | { ok: false }`. Every route above calls it; no route
-re-implements the check. Guarding the population, not the door.
+`{ ok: true, relationship, role: 'owner'|'admin'|'manager'|'viewer' } | { ok: false }`. Every route
+above calls it, and every **write** route additionally calls `canWriteRelationship(role)` so a
+`partner_grants` **`viewer` cannot write** — the denial `lib/partner-auth.ts` already enforces at the
+MCP layer. No route re-implements the check. Guarding the population, not the door.
+
+Also shipped beyond this contract's route list: **`GET /api/promoter/relationship/[id]/history`**.
+Story 2.3's acceptance ("each row opens history and evidence") needs it and the contract omitted it;
+it sits under the existing relationship prefix and reuses `resolveRelationshipAccess`, so admin
+inherits it rather than needing a duplicate admin route.
 
 ### Views
 
