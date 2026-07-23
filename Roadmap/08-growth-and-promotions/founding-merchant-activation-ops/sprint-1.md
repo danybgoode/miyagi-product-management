@@ -37,6 +37,60 @@ intake never treats claim, link delivery or silence as publication permission.
 
 **Risk:** high — consent boundary and immutable attribution; Daniel merges.
 
+## Build contract (locked by the architect before the builder started)
+
+Migration `supabase/migrations/20260723100000_activation_crm_s1.sql` — additive, RLS ON with no
+policies (same posture as `merchant_previews`: these rows are merchant contact data and the app reaches
+Supabase only through the service-role key).
+
+**`merchant_relationships`** — the canonical record. `id` is the opaque merchant subject id (README D1).
+- identity: `business_name` (required), `contact_name`, `phone_e164`, `email_normalized`,
+  `whatsapp_e164`, `instagram_handle`
+- context: `estado`, `municipio`, `location_note`, `category`, `current_channels TEXT[]`,
+  `preferred_channel` CHECK (`whatsapp|phone|email|instagram|in_person`), `qualification`
+  CHECK (`unknown|strong|medium|weak|disqualified`), `fit_note`, `objections`
+- attribution: `promoter_id` → `marketplace_promoters(id)`, `cohort`, `source`
+- stewardship: `steward_clerk_user_id`
+- links: `shop_id UUID` **UNIQUE NULL**, `preview_id UUID` → `merchant_previews(id)`
+- lifecycle: `stage` CHECK over the 13 stages default `scouted`, `stage_entered_at`, `intake_complete`
+- audit: `created_by`, `created_at`, `updated_at`
+
+Indexes: `(phone_e164)`, `(email_normalized)`, `(promoter_id, stage)`, `lower(business_name)`.
+Deliberately **non-unique** on phone/email — a family business legitimately shares a number, so a
+collision must prompt a human, not 23505 the intake. Uniqueness lives on `shop_id` only, because two
+relationship records pointing at one shop is a genuine data error.
+
+**`merchant_relationship_field_audit`** — append-only `(relationship_id, field, old_value, new_value,
+actor_clerk_user_id, at)`. Attribution and consent fields are audited on every edit (acceptance 1.3).
+
+**Backfill (README D1):** one `merchant_relationships` row per existing `marketplace_shops` row,
+`business_name` from the shop name, `shop_id` set, `intake_complete=false`, `created_by='backfill'`.
+29 shops live; the backfill is `INSERT … SELECT … ON CONFLICT DO NOTHING` and is re-runnable.
+
+**Flag:** `promoter.activation_crm_enabled`, enablement polarity, `false`, `ON CONFLICT DO NOTHING`.
+
+**Routes** (all `promoter.activation_crm_enabled`-gated; OFF ⇒ 404, indistinguishable from absent):
+- `POST /api/promoter/relationship` — create/update. Server-side dedupe runs **before** the insert in
+  this precedence: (1) `shop_id` exact, (2) `phone_e164` exact, (3) `email_normalized` exact. A hit
+  returns **409** with the existing relationship id and a `match_reason`; the client re-posts with
+  `confirm_new: true` to override. Fuzzy `business_name` similarity returns **200 with a `suggestions`
+  array** — a prompt, never a block (epic Decision 3).
+- `GET /api/promoter/relationship/[id]` — resume. Scope: the caller's own `promoter_id`, an active
+  `partner_grants` row for the linked shop, or admin. Anything else is **403 with no body fields** —
+  not a partial record.
+- `POST /api/promoter/relationship/[id]/consent` — attach consent evidence. Reads
+  `merchant_preview_decisions` for the linked preview and requires `decision='approved'` at the
+  preview's `current_version`; anything else is **422** and the record stays saved. A note is never
+  evidence.
+
+**Normalization** lives in a zero-import `lib/merchant-identity.ts` (`normalizePhoneE164`,
+`normalizeEmail`, `businessNameKey`) so the `api` spec calls every branch directly — the split the
+`lib/seller-mode.ts` convention already prescribes.
+
+**UI:** a new `RelationshipStep` in `/promotor/cerrar`, rendered only with the flag ON and placed
+**first** (the merchant record precedes the shop). Phone-size targets, explicit save state, resume by
+id from `localStorage`. Flag OFF ⇒ `PromoterCloseClient` renders exactly today's steps.
+
 ## Sprint QA
 
 - **api specs:** extend `e2e/promoter-close.spec.ts`; add relationship specs for flag states, partial resume,

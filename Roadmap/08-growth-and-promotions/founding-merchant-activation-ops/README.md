@@ -27,6 +27,68 @@ resolver reads Medusa facts and existing mirrors; it never creates a second comm
 4. Golden Beans events carry an opaque merchant id and no contact details, notes or objections.
 5. `promoter.activation_crm_enabled` is an enablement flag born OFF in every environment.
 
+## Build-time architecture decisions (2026-07-22, locked before Sprint 1)
+
+Three forks the scope doc left open, resolved against the live code and the live database before any
+builder started. Each is load-bearing for more than one sprint.
+
+### D1 — `merchant_relationships.id` becomes THE opaque merchant subject id
+
+The shipped lifecycle loop (`merchant-lifecycle-projection` S3.1) keys every Golden Beans event on
+`marketplace_shops.id`. This epic's record must be able to exist **before any shop does** (scouted,
+qualified, permission received, preview delivered all precede shop creation), so a shop-keyed subject
+would leave the first six stages with no subject at all — and epic acceptance 7 requires *every*
+transition on the rail under *one* id.
+
+So the relationship id becomes the subject, and the shop mirror id becomes a *link* on the relationship
+(`shop_id UUID UNIQUE NULL`). This is free right now and never will be again: verified live on
+2026-07-22, `merchant_lifecycle`, `merchant_lifecycle_deliveries` and `merchant_lifecycle_emissions`
+each hold **0 rows**, so there is no history to split across two identity namespaces.
+
+Guarding the population, not the door: the swap happens at the single seam
+(`emitMerchantLifecycle`), never at the call sites. A new `emitMerchantLifecycleForShop()` resolves
+shop → relationship and delegates, and a migration backfills one relationship row per existing
+`marketplace_shops` row so the resolution always hits. `resolveMerchantIdForSeller` returns a
+relationship id after this change, and its name follows.
+
+### D2 — one vocabulary: the 13 stages ARE the event types
+
+`MERCHANT_LIFECYCLE_EVENTS` grows from 6 to 14 — the 13 canonical stages plus the already-shipped
+`merchant.preview_approved` (which is a preview fact, not a stage, and keeps its own projection
+column). The projection table gains one nullable timestamp column per new stage and the plpgsql
+vocabulary CHECK is extended in step. Additive, and the same write-once-earliest `LEAST()` semantics
+apply unchanged.
+
+Miyagi's own `merchant_relationship_transitions` stays **canonical** for stage history; the Golden
+Beans projection remains the round-trip mirror. Two tables on purpose: one is the operational record
+we own, the other proves the rail is intact.
+
+### D3 — stage is DERIVED, corrections are the only writes
+
+The resolver is a pure function over facts (`lib/merchant-stage.ts`): consent evidence, commerce facts
+and CRM facts in, the furthest-reached stage out. A stage is never set by a UI checkbox. That makes
+milestone reconciliation (Story 3.3) almost free — re-running the resolver *is* the repair — and it
+is what the "manual CRM edits cannot overwrite commerce truth" acceptance actually needs. The one
+exception is an audited **correction**, which writes a transition row carrying a required reason and
+never deletes what it corrects.
+
+## Build strategy — pre-launch, so ceremony gets right-sized
+
+Production carries **zero tenants, zero campaigns and zero transactions** (Daniel, 2026-07-22); every
+`promoter.*` flag is already ON live. The sprints were scaffolded as if each shipped alone. They do
+not, and the plan says so rather than pretending otherwise:
+
+- **One feature branch, three sequential PRs** (`feat/founding-merchant-activation-ops`), built in an
+  isolated worktree because the shared app checkout sits on another session's branch. S2 depends on
+  S1's schema and S3 on S2's resolver, so stacking is honest and each PR still reviews on its own.
+- **All three PRs are HIGH tier** — DB migrations + an authenticated write path + a cross-repo privacy
+  contract. Full review stack on each: mandatory cross-agent pass, mandatory fresh `pr-reviewer`, and
+  the builder never merges their own PR.
+- **Migrations are applied live by hand before the code that reads them merges**, then verified with
+  `to_regclass` — a merged file is not an applied migration.
+- **The kill-switch still ships** and is still born OFF. Zero operations makes a bad flip cheap, not
+  free: the flag is what lets Daniel put `/promotor/cerrar` back the way it is today in one row update.
+
 ## What already exists (reuse, don't rebuild)
 
 | Capability | Existing seam | Reuse |

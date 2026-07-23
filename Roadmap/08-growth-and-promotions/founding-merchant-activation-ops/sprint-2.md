@@ -36,6 +36,80 @@ not a partial record.
 
 **Risk:** high — tenant authorization and contact data; Daniel merges.
 
+## Build contract (locked by the architect before the builder started)
+
+### The 13 stages, in canonical order
+
+`scouted · qualified · permission_received · preview_in_preparation · preview_delivered ·
+activation_scheduled · claimed · payments_ready · three_products_live · shared_externally ·
+first_inquiry · first_sale · retained_30d`
+
+Ordinals are 1–13 and **frozen** — they are persisted in transition rows and read by the Sprint 3
+reconciliation view. Inserting a stage later means appending, never renumbering.
+
+### `lib/merchant-stage.ts` — pure, zero-import (README D3)
+
+```ts
+resolveStage(facts: StageFacts): { stage: Stage; reached: Stage[] }
+```
+
+`StageFacts` is a flat bag of already-fetched booleans/timestamps (consent evidence, commerce facts,
+CRM facts). The resolver is **monotonic**: it returns the furthest stage whose predicate holds, and
+never regresses — a merchant who reached `first_sale` and later refunds does not fall back. Unknown or
+absent facts **decline**, they never grant: every one of these milestones is write-once and
+unwithdrawable, which is exactly the trap `merchant-lifecycle-projection` paid nine defects to learn.
+
+The two permission-gated stages (`permission_received`, `preview_delivered`) require a
+`consentEvidence` fact derived from `merchant_preview_decisions` — a resolver that can reach them from
+a note is the bug this epic exists to prevent, so the spec asserts it directly.
+
+### Migration `20260723110000_activation_crm_s2.sql`
+
+**`merchant_relationship_transitions`** — immutable history.
+`(id, relationship_id, from_stage, to_stage, to_stage_ordinal, actor_type CHECK
+('promoter'|'admin'|'system'|'commerce_fact'), actor_id, reason, evidence_ref JSONB, dedupe_key TEXT,
+occurred_at, created_at)`. `UNIQUE (relationship_id, dedupe_key)` is what makes replay a no-op —
+enforced by the constraint inside one statement, never by a SELECT-then-INSERT. The natural key is
+`<to_stage>` for a derived advance and `correction:<uuid>` for a correction. A correction **requires**
+`reason` (a CHECK, not a convention) and never deletes the row it corrects.
+
+**`merchant_relationship_interactions`** — append-only.
+`(id, relationship_id, kind CHECK ('note'|'call'|'whatsapp'|'visit'|'email'|'other'), body,
+author_clerk_user_id, occurred_at, created_at)`. No UPDATE path exists at all; an edit is a new row.
+
+**`merchant_relationship_tasks`** — the dated next action.
+`(id, relationship_id, title, due_at, assigned_to, completed_at, completed_by, created_by,
+created_at)`. Partial index `WHERE completed_at IS NULL` — "the next action" is the earliest-due open
+task. Completing writes `completed_at`; it never deletes.
+
+**`merchant_relationship_owner_history`** — `(id, relationship_id, from_steward, to_steward,
+actor_clerk_user_id, at)`. Written by the reassign route in the same request as the
+`merchant_relationships.steward_clerk_user_id` update.
+
+### Routes (all flag-gated; unauthorized id ⇒ 403 with no record fields)
+
+- `POST /api/promoter/relationship/[id]/interaction`
+- `POST /api/promoter/relationship/[id]/task` · `POST …/task/[taskId]/complete`
+- `POST /api/promoter/relationship/[id]/owner` — reassign, writes owner history
+- `POST /api/admin/relationship/[id]/correct-stage` — admin only, `reason` required, 422 without it
+- `GET /api/promoter/relationships` — the caller's owned + granted records
+- `GET /api/admin/relationships` — full cohort, filters: `stage`, `steward`, `blocker`,
+  `missing_action`, `overdue`
+
+Scope resolution is **one shared helper**, `lib/relationship-scope.ts` →
+`resolveRelationshipAccess(clerkUserId, relationshipId)` returning
+`{ ok: true, role: 'owner'|'granted'|'admin' } | { ok: false }`. Every route above calls it; no route
+re-implements the check. Guarding the population, not the door.
+
+### Views
+
+- `/promotor/relaciones` — promoter pipeline. Owned/granted only, showing stage, **age in stage**,
+  next action (or a visible "sin próxima acción" warning), consent state and blocker.
+- `/admin/relaciones` — full cohort with the filters above; each row opens history + evidence.
+
+Both are Iconoir + semantic tokens, es-MX only (not on the bilingual allow-list), and 404 with the
+flag OFF.
+
 ## Sprint QA
 
 - **api specs:** pure stage-transition table; transition replay/correction; owner/task audit; partner/grant scope;
