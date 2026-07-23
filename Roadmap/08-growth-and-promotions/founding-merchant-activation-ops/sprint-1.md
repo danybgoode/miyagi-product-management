@@ -1,6 +1,11 @@
 # Founding merchant activation operations — Sprint 1: Field record and consent-safe intake
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — PR 303 (`4df3d87` S1.1 · `3fb1961` S1.2 · `b18ae84` S1.3)
+
+Migration `20260723100000_activation_crm_s1.sql` **applied and verified live** 2026-07-22: both tables
+present by `to_regclass`, backfill 29/29 rows linked to a shop, `promoter.activation_crm_enabled`
+present with enablement polarity and `enabled = false`, RLS ON with 0 policies on both tables,
+`schema_migrations` version aligned to the file.
 
 ## Stories
 

@@ -53,6 +53,15 @@ subset Sprint 2's resolver consumes:
 | `retained30d` | first-sale timestamp + a captured order ≥ 30 days later | the shipped retention sweep's rule |
 | `sharedExternally`, `firstInquiry` | CRM facts (an interaction of that kind) | not commerce — these two stay CRM-sourced |
 
+**Most of this already exists — reuse it, do not rebuild it.** `lib/merchant-lifecycle-sweep.ts`
+already derives `three_products_live` (Medusa `GET /store/sellers/{slug}/products`), `first_sale` and
+`retained_30d` (Medusa `GET /internal/sellers/orders` + `isCapturedOrder`), with paging, fail-closed
+reads and a per-read timeout budget already argued through six review rounds. The genuinely new fact
+is `paymentsReady`, and it is a pure read of an existing helper:
+`computeShopCompletion(shop).pagos` in `lib/setup-guide.ts` (Stripe `charges_enabled` OR MercadoPago
+`connected` OR a bank-transfer CLABE — and note its recorded trap: `shop.mp_enabled` is an opt-OUT
+column, never a connected-state flag).
+
 Every one of these is **state-derived**, so the sweep is complete by construction and covers write
 paths added later — and it doubles as the backfill safety net for the event-hooked milestones. No
 adapter writes to Medusa; a spec asserts the module exports no mutation and the reconciliation route
