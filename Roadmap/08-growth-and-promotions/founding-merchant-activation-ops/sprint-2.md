@@ -1,6 +1,18 @@
 # Founding merchant activation operations — Sprint 2: Lifecycle and stewardship
 
-**Status:** 🟨 In progress — building on `feat/founding-merchant-activation-ops-s2`
+**Status:** 🟦 In review — PR 304 (`ff98cc5` S2.1 · `fca9112` S2.2 · `1581627` S2.3 · `e2c8102` review fixes)
+
+Migration `20260723110000_activation_crm_s2.sql` **applied and verified live** 2026-07-23: all four
+tables present by `to_regclass`, `UNIQUE (relationship_id, dedupe_key)` present, RLS ON with 0 policies
+across all six `merchant_relationship*` tables, every CHECK matching the values the code emits,
+`schema_migrations` version aligned to the file.
+
+**C1 changed the access model** (review finding): a reassigned steward now resolves to role `manager`
+on the **read side** — `resolveRelationshipAccess` and `listScopedRelationships` both consult
+`steward_clerk_user_id`, and the decision lives in the pure `lib/relationship-role.ts`. No
+`partner_grants` row is ever auto-inserted; deliberate human grants stay untouched. Precedence is
+admin > promoter-owner > steward > grant, with steward deliberately ahead of the grant so a current
+stewardship beats a stale `viewer` grant on the same shop.
 
 ## Stories
 
