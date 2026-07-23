@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: founding-merchant-activation-ops
 ---
 

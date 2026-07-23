@@ -83,10 +83,37 @@ actor_clerk_user_id, at)`. Attribution and consent fields are audited on every e
 - `GET /api/promoter/relationship/[id]` — resume. Scope: the caller's own `promoter_id`, an active
   `partner_grants` row for the linked shop, or admin. Anything else is **403 with no body fields** —
   not a partial record.
-- `POST /api/promoter/relationship/[id]/consent` — attach consent evidence. Reads
-  `merchant_preview_decisions` for the linked preview and requires `decision='approved'` at the
-  preview's `current_version`; anything else is **422** and the record stays saved. A note is never
-  evidence.
+- `POST /api/promoter/relationship/[id]/consent` — attach consent evidence.
+
+  **CORRECTED 2026-07-22 after the fresh-reviewer pass on PR 303 — the original clause here was
+  wrong, and the builder implemented it faithfully.** It said "read `merchant_preview_decisions` and
+  require `decision='approved'` at the preview's `current_version`". That is a *weaker, re-derived*
+  rule than the one `founding-merchant-consent-previews` already shipped, and the epic README's reuse
+  table explicitly says to reuse that contract rather than restate it. Two holes it left open:
+
+  1. **Invalidation does not bump `current_version`.** `invalidateIfMaterialChange` sets
+     `status='invalidated'` and clears `approved_snapshot_hash`/`approved_at`, leaving
+     `current_version` and the decision row untouched. So a merchant approves at v3, the promoter
+     then changes prices, `checkActivation` correctly refuses — and the decision-log rule still
+     returns 200 and writes a permanent audit row for a proposal the merchant never saw.
+  2. **`verified_via IS NULL` slips through.** The S4 migration states it plainly: a flag-ON approval
+     with `verified_via IS NULL` is not a current approval. `promoter.preview_verified_approval_enabled`
+     is **ON in production** (verified live 2026-07-22), so this one is not hypothetical.
+
+  **The rule is:** route the check through `readApprovalState(preview)` in `lib/preview-consent.ts`
+  and require `status === 'approved' && !stale`, plus `approvedVerifiedVia !== null` when
+  `promoter.preview_verified_approval_enabled` is on. Anything else is **422** and the record stays
+  saved. Keep `consentSatisfiesEvidence` as the pure inner rule fed anchor-derived facts, so it stays
+  branch-testable.
+
+  The `previewId` in the request body is an **assertion to verify, never a lookup key to trust**: it
+  must bind to the relationship's own `shop_id`. Without that check a promoter can attach one
+  merchant's genuine approval to a different merchant's record — and per D1 that record's id is the
+  merchant subject id every later sprint keys on. A note is never evidence.
+
+  *Transferable lesson for the retro: when a reuse table says "reuse contract X", the sprint doc must
+  name X's actual entry point, not paraphrase its rule. A paraphrase is a fork, and a forked
+  consent rule drifts toward permissive.*
 
 **Normalization** lives in a zero-import `lib/merchant-identity.ts` (`normalizePhoneE164`,
 `normalizeEmail`, `businessNameKey`) so the `api` spec calls every branch directly — the split the
