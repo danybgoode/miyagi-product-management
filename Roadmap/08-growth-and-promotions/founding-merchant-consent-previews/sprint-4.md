@@ -1,6 +1,6 @@
 # Founding merchant consent-safe previews — Sprint 4: Merchant-verified approval (OTP)
 
-**Status:** 🎨 Designed, not started — flag OFF; Daniel merges
+**Status:** ✅ Shipped — FE #302 (`7b15d1b`); flag OFF, real-merchant code smoke owed to Daniel
 
 > **Risk:** high — consent boundary + merchant-identity factor.
 
