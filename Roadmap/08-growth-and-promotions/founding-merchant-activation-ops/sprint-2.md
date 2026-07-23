@@ -10,9 +10,20 @@ across all six `merchant_relationship*` tables, every CHECK matching the values 
 **C1 changed the access model** (review finding): a reassigned steward now resolves to role `manager`
 on the **read side** — `resolveRelationshipAccess` and `listScopedRelationships` both consult
 `steward_clerk_user_id`, and the decision lives in the pure `lib/relationship-role.ts`. No
-`partner_grants` row is ever auto-inserted; deliberate human grants stay untouched. Precedence is
-admin > promoter-owner > steward > grant, with steward deliberately ahead of the grant so a current
-stewardship beats a stale `viewer` grant on the same shop.
+`partner_grants` row is ever auto-inserted; deliberate human grants stay untouched.
+
+Precedence is **admin > promoter-owner > steward > grant, with an explicit `viewer` grant flooring the
+steward at `viewer`.**
+
+> **The floor was added after a second review round — the architect's first call was wrong.** The
+> original rule put steward unconditionally ahead of the grant, reasoning that a grant can go stale
+> while stewardship is current. That inverts `LEARNINGS.md`'s "deliberate human decisions win" (the
+> entry the fix itself cited): a `viewer` grant is a deliberate *write-denial* and may be **newer** than
+> the stewardship, so naming someone steward silently upgraded an explicitly-restricted `viewer` to
+> `manager` — able to edit contact and qualification fields and reassign the steward onward. A promoter
+> assigning stewardship cannot see `partner_grants`, so they could not even know they were doing it.
+> **Transferable:** citing a learning is not the same as satisfying it — check the spirit (who decided
+> what, deliberately) against the mechanism, not just the letter (here, "don't write a grant row").
 
 ## Stories
 
@@ -42,9 +53,16 @@ silently overwritten.
 **As a** promoter or admin, **I want** the appropriate merchant pipeline, **so that** I can act on blockers and
 aging without seeing another partner's contacts.
 
-**Acceptance:** promoter view shows owned/granted records only; admin can filter the full cohort by stage,
-steward, blocker and missing/overdue action; each row opens history and evidence; unauthorized ids return 403,
-not a partial record.
+**Acceptance:** promoter view shows owned / **stewarded** / granted records only; admin can filter the full
+cohort by stage, steward, blocker and missing/overdue action; each row opens history and evidence;
+unauthorized ids return 403, not a partial record.
+
+> **Amended 2026-07-23 (C1).** This line read "owned/granted records only" until the review found that
+> reassigning a steward did not reassign access — the new steward could not see the record they had just
+> been made responsible for. Stewardship is now a fourth access path, resolved read-side. **Fourth
+> contract-vs-prose fork in this epic**, and the reviewer found it the same way as the third: by
+> re-deriving every statement of the rule instead of trusting that the header banner covered the file.
+> The rule's canonical home is `lib/relationship-access.ts`; this doc must agree with it, not restate it.
 
 **Risk:** high — tenant authorization and contact data; Daniel merges.
 
