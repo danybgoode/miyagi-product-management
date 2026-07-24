@@ -1,6 +1,6 @@
 # Tiendas Fundadoras acquisition — Sprint 2: Attributed application
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — PR #306 (frontend), commit c0cc552 (S2) + 550212e (fix)
 
 ## Stories
 

@@ -344,6 +344,28 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   not a table-keyed value) so a subject-key change on the Miyagi side needed no GB edit at all. Checking the
   digest was cheaper and safer than editing another repo you're cautious about touching. *(2026-07-23,
   founding-merchant-activation-ops S3.)*
+- **A fail-OPEN flag default composes badly with an anonymous public write — re-enforce the gate AT the
+  write, and fail the capacity/quota read CLOSED.** A public campaign page rendered its open/closed/full
+  state from a flag + a capacity count, but the *page* state is advisory: a stale page or a direct API POST
+  can bypass it. The apply route re-reads flag + capacity AFTER validation, independent of what the UI showed,
+  and a `null` capacity read (a DB hiccup) collapses to `full` — so a flag-read outage or a count failure can
+  never seat past a closed/full cohort, only under-admit. Same shape as the write-once "unknown ⇒ decline"
+  rule, applied to a public-intake gate. *(2026-07-24, tiendas-fundadoras-acquisition S2 — fresh reviewer
+  confirmed both the re-enforcement and the fail-closed count.)*
+- **"Once per X" telemetry (and admin pings) need a DURABLE per-X marker, not a request-scoped flag — an
+  idempotency KEY only catches an exact replay.** A campaign's `accepted` event first fired on every
+  dedupe-ENRICH (suppressed only on exact idempotency-key replay), so a returning applicant matched by
+  phone/email with a different/absent key re-emitted `accepted` for the same subject and re-pinged the admin,
+  inflating the funnel. The fix keys "first application" on the row's own `applied_at` being newly set — a
+  fill-only column that already answers exactly "did this happen before?" — so the event fires at most once
+  per relationship regardless of how many times the person re-applies. Reach for a persisted per-entity
+  timestamp/marker the second an event must be "once per entity," not "once per request." *(2026-07-24,
+  tiendas-fundadoras-acquisition S2 — fresh reviewer.)*
+- **A public form's cheap funnel PINGS must not share the real write's rate-limit bucket.** view/start/
+  validation_failed events fired against the same `fundadoras_apply` 5/hour bucket as the application POST, so
+  a page load + a fumbled form could 429 the ACTUAL application — worse behind one NAT/carrier IP, a
+  self-inflicted lockout on a finite-seat campaign. Give observability events their own looser bucket; the
+  write keeps its tight one. *(2026-07-24, tiendas-fundadoras-acquisition S2 — fresh reviewer.)*
 ## Tooling gotchas
 - **Signed-webhook consumers + write-once milestones (2026-07-22, `merchant-lifecycle-projection`,
   PR #298 — six cross-agent rounds + a fresh reviewer found NINE real defects in one story; the

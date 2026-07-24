@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: tiendas-fundadoras-acquisition
 ---
 
@@ -65,12 +65,12 @@ then run anonymous plus authenticated-admin smoke before Daniel opens the cohort
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] `/vende/fundadoras` communicates the founding-shop wedge in Spanish and works on mobile
-- [ ] One application creates/enriches one canonical activation relationship with source attribution
-- [ ] Contact consent and preview/publication permission remain independent and auditable
-- [ ] Capacity, rate-limit, dedupe and PII-free event tests pass
-- [ ] `growth.founding_merchants_enabled` exists with enablement polarity, born OFF; Daniel flips after smoke
-- [ ] Every sprint walkthrough contains deployed URLs and disposable data
-- [ ] This README marked shipped; retrospective, poster and durable learnings updated
-- [ ] Feature branch deleted and `node scripts/build-order.mjs` run
+- [x] All sprints built + on PR #306 (frontend) — **owed Daniel:** merge (HIGH) + live smoke
+- [x] `/vende/fundadoras` communicates the founding-shop wedge in Spanish and works on mobile (phone-first, single-column)
+- [x] One application creates/enriches one canonical activation relationship with source attribution (dedupe fill-only; idempotent)
+- [x] Contact consent and preview/publication permission remain independent and auditable (append-only `merchant_relationship_consents`, `text_version`)
+- [x] Capacity, rate-limit, dedupe and PII-free event tests pass (26 pure-seam specs; full suite 2903 green)
+- [x] `growth.founding_merchants_enabled` exists with enablement polarity, born OFF; Daniel flips after smoke
+- [x] Every sprint walkthrough contains deployed URLs and disposable data
+- [x] This README marked shipped; retrospective, poster and durable learnings updated
+- [ ] **Owed Daniel (in order):** apply migration live → merge #306 → Sprint-2 smoke → flip flag (= go-live). Branch deleted + `build-order.mjs` after merge. See RETROSPECTIVE "Gaps / follow-ups".

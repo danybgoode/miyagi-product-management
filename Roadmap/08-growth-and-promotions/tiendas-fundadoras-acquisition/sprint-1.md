@@ -1,6 +1,6 @@
 # Tiendas Fundadoras acquisition — Sprint 1: Campaign surface
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — PR #306 (frontend), commits c5bfc99 (S1) + 550212e (fix)
 
 ## Stories
 
