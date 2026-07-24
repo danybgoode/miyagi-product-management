@@ -91,6 +91,24 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
   codex/agy auth — codex needs a token-billed API key + a cross-repo PAT and agy has no headless auth at all;
   epic `09-platform-infra/cross-agent-review-always` chose local-only. Mandatory therefore means **an agent
   must run it before merging**, not that a required status check enforces it.)*
+- **Review-tooling roster — which CLI/model, and when (categorized 2026-07-24 after a session where codex
+  AND agy both hit their weekly quota and the cross-family layer went dark).** Every one of these is a
+  *different family from the Claude host*, which is the whole point — a second family re-derives the diff
+  and catches what context-bias hides. Reach for them in this order and switch the moment one reports a cap:
+
+  | Tool | Family / model | Quota pool | Diff passing | Use it when |
+  |---|---|---|---|---|
+  | **`codex`** (`--agent codex`, default) | GPT (OpenAI) | codex weekly | stdin | First choice — the established workhorse; auto-falls-back to agy on a dead token/stale CLI |
+  | **`agy`** (`--agent antigravity`) | Gemini → GPT-OSS | **two** pools: Google `gemini-*`, then `gpt-oss-120b-medium` (a genuinely separate pool, so it survives either being spent) | argv (256 KB cap) | Codex capped, or you want Google's read; `runAntigravity` walks the pool pair itself |
+  | **`devin`** (`--agent devin`) | Devin default | devin (a **third** independent pool) | `--prompt-file` (no size cap) | Both codex AND agy capped — the resort that keeps *some* cross-family pass alive. **Weaker signal on the sample it was tried on** (mostly false positives, no genuine catch), so treat its findings with extra skepticism and don't rely on it as the primary. |
+  | **`cursor-agent`** | multi-family (Grok, GPT-5.x, Opus, Fable) | — | — | **Not wired.** On the current *free* Cursor plan named models are paywalled and free Auto is usage-capped. Worth adding only on **Cursor Pro**, which unlocks Grok/GPT-5.x as distinct families — then it's the richest gateway of the four. |
+
+  The **fresh `pr-reviewer` subagent (same Claude family, different *agent*)** is a separate axis, not on
+  this table — it caught the real bugs these external tools missed all epic (the emission-gate flag, the
+  consent-boundary holes). Keep both axes: a different *family* (this table) AND a different *agent* (the
+  subagent). Health/pins: `node scripts/{codex,agy}-doctor.mjs` (pre-authorized, LOW) — but an **agy pin
+  bump coupled with a model swap** (a retired pinned model) escalates to Daniel, and **verify a confident
+  external finding before acting on it** — devin's two most concrete claims this session were both wrong.
 - **Fresh reviewer (judgment) — MANDATORY on HIGH tier, optional on LOW:** a **fresh reviewer agent**
   re-derives intent from the diff alone and checks correctness, architecture, and the five rules from
   `AGENTS.md`. The path is a **repo-local reviewer subagent** — `.claude/agents/pr-reviewer.md`, invoked as

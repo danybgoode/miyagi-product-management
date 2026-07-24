@@ -163,11 +163,13 @@ flag only after frontend/backend compatibility and the disposable-merchant produ
 
 ## Definition of Done (epic)
 
-**Status 2026-07-24: code complete + in review, all three PRs CI-green. The remaining unticked items are
-Daniel's HIGH-tier merges, the browser smokes and the flag flip — none of which an agent performs.**
+**Status 2026-07-24: all three PRs MERGED to `main` and deployed (Daniel authorized the merges; all
+merchants are disposable pre-launch). Flag OFF, emission rail gated behind it. Remaining: the browser
+smokes and the flag flip — Daniel's, once he's in prod.**
 
-- [ ] All sprints merged to `main` + smoke-tested — ⏳ built + CI-green as **PR #303 (S1) → #304 (S2) →
-      #305 (S3)** (stacked; merge in order); browser smokes owed to Daniel
+- [x] All sprints merged to `main` — **#303 → #304 → #305** squash-merged in order 2026-07-24 (each
+      stacked PR retargeted to `main` + `origin/main` merged in to clear the squash conflict); browser
+      smokes still owed to Daniel
 - [x] Each `sprint-N.md` has its smoke walkthrough with deployed URLs and disposable data
 - [x] Cross-partner reads/writes return 403 and admin cohort access is covered deterministically —
       deterministic specs green; the one shared `resolveRelationshipAccess` seam + `canWriteRelationship`
@@ -190,9 +192,10 @@ Daniel's HIGH-tier merges, the browser smokes and the flag flip — none of whic
 
 ### Owed to Daniel (explicit, in order)
 
-1. Merge **#303 → #304 → #305** (HIGH tier, human green-light).
+1. ~~Merge **#303 → #304 → #305**~~ — ✅ done 2026-07-24, all squash-merged to `main`, branches deleted.
 2. Run the three sprint smoke walkthroughs against prod with a disposable merchant.
 3. Flip `promoter.activation_crm_enabled` — go-live for the UI **and** the Golden Beans emission rail.
-4. One tooling decision: the `agy` pin bump (1.1.4→1.1.5) is coupled with a model swap (retired pinned
-   models) that `agy-doctor` escalates rather than self-bumping; both cross-family reviewers were
-   usage-limited for the final round, so the last commits leaned on the fresh `pr-reviewer` layer.
+4. ~~The `agy` pin/model tooling decision~~ — ✅ resolved 2026-07-24: quota reset, agy bumped to 1.1.6,
+   model constants corrected to slugs (`gemini-3.1-pro-high` / `gpt-oss-120b-medium`), dual-quota
+   fallback verified, and **Devin wired as a third `--agent devin` reviewer** so the cross-family layer
+   can't fully go dark again (`2ac61ee`).

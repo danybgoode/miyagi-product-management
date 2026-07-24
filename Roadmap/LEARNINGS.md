@@ -269,6 +269,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Daniel merges. Proven on the flip's own epic: the optional-on-LOW pass, invoked on those exact triggers, is
   what caught the ssrf-dns-pinning body-stream blocker AND the six-artifact policy-sweep miss below.
   *(2026-07-14 decision; shipped 2026-07-20, process-token-diet S1.3.)*
+- **The cross-family review layer needs THREE independent quota pools, because two can go dark at once —
+  and keep the different-*agent* axis alive independently of the different-*family* axis.** In one session
+  codex hit its weekly cap AND agy needed a pin+model escalation, so `cross-review.mjs` had no working
+  cross-family reviewer at all for the final PRs. Fix: `--agent codex` (GPT) → `--agent antigravity`
+  (Gemini, with its own gemini→gpt-oss cross-pool fallback) → `--agent devin` (a third pool,
+  `-p --prompt-file`, no argv cap). Roster + when-to-switch table now in WAYS-OF-WORKING. Two durable
+  sub-lessons: (a) **the fresh `pr-reviewer` subagent (same family, different agent) is a SEPARATE axis**
+  and it's what actually caught the real bugs all epic — never let a different-family tool substitute for
+  it; (b) **a young reviewer CLI silently drifts** — agy 1.1.6 started substituting a DEFAULT model for an
+  unrecognized name instead of erroring, so a stale model constant reviews with the wrong model AND defeats
+  quota detection (the display-name→slug rename bit exactly this); pin + `agy-doctor`/`codex-doctor` guard
+  it, and a pin-bump-coupled-with-a-model-swap escalates to Daniel. (c) **Verify a confident external
+  finding before acting** — Devin's review ran and was readily available, but on a real HIGH-tier diff its
+  signal was mostly false positives (its two most concrete claims — an "unused import" and a "Four→five
+  jobs" comment drift — were both wrong on inspection); it's a fallback-when-capped, not a primary. Cursor
+  (`cursor-agent`) stayed unwired: free-plan named models paywalled, free Auto usage-capped. *(2026-07-24,
+  founding-merchant-activation-ops tooling follow-up.)*
 - **A policy/convention change isn't shipped until every artifact that ASSERTS the policy is re-swept — and
   "every" means a re-derived grep over the whole population, not the files the story named.** The canonical
   prose can be perfect while the PR template, the session-kickoff SSOT, a script's own header comment, and a
