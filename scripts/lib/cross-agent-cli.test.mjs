@@ -19,6 +19,8 @@ import {
   isDocFile,
   resolveCurrentPr,
   runAntigravity,
+  runDevin,
+  AGENTS,
   checkAgyVersion,
   AGY_PINNED,
   AGY_MODEL,
@@ -461,12 +463,15 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // fixed). These lock the new invocation (a stubbed agy → non-empty capture, the --model + argv framing present,
 // empty stdout treated as failure, the size cap intact) and the fail-loud version gate.
 
-test('AGY_PINNED bumped to the verified 1.1.4 (guards the deliberate bump)', () => {
-  assert.equal(AGY_PINNED, '1.1.4');
+test('AGY_PINNED bumped to the verified 1.1.6 (guards the deliberate bump)', () => {
+  assert.equal(AGY_PINNED, '1.1.6');
   assert.equal(typeof AGY_MODEL, 'string');
   assert.ok(AGY_MODEL.length > 0, 'AGY_MODEL must default to a non-empty model name');
   assert.ok(AGY_FALLBACK_MODEL.length > 0, 'AGY_FALLBACK_MODEL must default to a non-empty model name');
   assert.notEqual(AGY_MODEL, AGY_FALLBACK_MODEL, 'the fallback must differ from the primary to be useful');
+  // Slug format, not the old display-name format that silently fell through to a default model on 1.1.6.
+  assert.match(AGY_MODEL, /^[a-z0-9.-]+$/, 'AGY_MODEL must be an `agy models` slug (lowercase/dash), not a display name');
+  assert.match(AGY_FALLBACK_MODEL, /^[a-z0-9.-]+$/, 'AGY_FALLBACK_MODEL must be an `agy models` slug');
 });
 
 // A stub `spawn` returning a fixed result for every call; records each call.
@@ -523,6 +528,52 @@ test('runAntigravity: BOTH primary and fallback empty → fail naming the quota 
   const out = runAntigravity('PROMPT+DIFF', { soft: true }, { spawn, warn: noWarn });
   assert.equal(out, null); // soft → null (non-soft die()s); the real message names RESOURCE_EXHAUSTED + both models
   assert.equal(calls.length, 2, 'tries primary then the fallback before giving up');
+});
+
+// ── runDevin — the third cross-family reviewer (prompt-file, no argv cap) ──────────────────────────────────
+// Injected fs deps so no real devin binary or filesystem is touched.
+function devinDeps(spawnResult, { failWrite = false } = {}) {
+  const calls = [];
+  const spawn = (cmd, args, opts) => { calls.push({ cmd, args, opts }); return spawnResult; };
+  const writes = [];
+  const writeFile = (f, data) => { if (failWrite) throw new Error('disk full'); writes.push({ f, data }); };
+  const removed = [];
+  return {
+    calls, writes, removed,
+    deps: {
+      spawn,
+      writeFile,
+      mkdtemp: (p) => `${p}XXXX`,
+      rm: (d) => removed.push(d),
+    },
+  };
+}
+
+test('AGENTS includes devin (a third selectable cross-family reviewer)', () => {
+  assert.equal(AGENTS.devin, 'Devin');
+});
+
+test('runDevin: stubbed devin → trimmed output via `-p --prompt-file <file>`, temp dir cleaned up', () => {
+  const { calls, writes, removed, deps } = devinDeps({ status: 0, stdout: 'DEVIN FINDINGS\n', stderr: '', error: null });
+  const out = runDevin('PROMPT+DIFF', {}, deps);
+  assert.equal(out, 'DEVIN FINDINGS');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].cmd, 'devin');
+  assert.equal(calls[0].args[0], '-p');
+  assert.equal(calls[0].args[1], '--prompt-file');
+  assert.equal(writes[0].data, 'PROMPT+DIFF', 'the whole prompt+diff is written to the file, not passed in argv');
+  assert.equal(removed.length, 1, 'the temp dir is always cleaned up');
+});
+
+test('runDevin: empty stdout (quota/auth) → soft fail (null), not a false clean review', () => {
+  const { deps } = devinDeps({ status: 0, stdout: '   \n', stderr: '', error: null });
+  assert.equal(runDevin('P', { soft: true }, deps), null);
+});
+
+test('runDevin: spawn error (binary missing) → soft fail naming the fix, temp dir still cleaned', () => {
+  const { removed, deps } = devinDeps({ status: null, stdout: '', stderr: '', error: new Error('ENOENT') });
+  assert.equal(runDevin('P', { soft: true }, deps), null);
+  assert.equal(removed.length, 1, 'cleanup runs even on a spawn error');
 });
 
 test('runAntigravity: a non-zero agy exit surfaces the stderr tail and does NOT burn the fallback', () => {

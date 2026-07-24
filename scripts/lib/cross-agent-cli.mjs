@@ -24,10 +24,24 @@
 // `isCodexAuthError` + `isCodexOutdated`). See scripts/README.md → "When Codex can't run".
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 // label per agent. Drives both the CLI dispatch and the human-readable header.
-export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
+export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity', devin: 'Devin' };
+
+// THIRD cross-family reviewer, added 2026-07-24 after codex AND agy were BOTH quota-exhausted in the same
+// session (the cross-family layer went fully dark mid-epic). Devin `-p --prompt-file` is a working,
+// non-interactive reviewer that gave accurate correctness analysis in a live probe. Unlike agy it takes the
+// prompt from a FILE, so there is no argv size cap — large diffs pass fine. It uses the account's default
+// model (no --model needed), and its quota is a THIRD independent pool, so `--agent devin` is the documented
+// resort when both codex and agy report a cap (WAYS-OF-WORKING review-tooling table). Empty stdout is
+// treated as failure, same discipline as agy (a quota-capped run prints nothing and exits 0).
+//
+// (Cursor's `cursor-agent` was evaluated the same day and NOT wired in: on the current free plan its named
+// models are paywalled and the free "Auto" tier is usage-capped — it errored out under the same probe. It
+// would earn a slot only on a paid Cursor plan, which unlocks Grok/GPT-5.x as genuinely distinct families.)
 
 // Antigravity's headless CLI is new and its print contract shifts between releases — pin the known-good
 // version and FAIL LOUD on a mismatch (checkAgyVersion). 1.0.7→1.0.10 silently changed `--print` so it
@@ -41,20 +55,37 @@ export const AGENTS = { codex: 'Codex', antigravity: 'Antigravity' };
 // Harmless here since AGY_MODEL/AGY_FALLBACK_MODEL below are always valid, listed model names (checked via
 // `agy models`), but it means a future typo in either constant would silently review with the WRONG model
 // instead of failing loud — watch for that if either constant is ever edited.
-// agy-doctor: last verified 2026-07-18 against 1.1.4.
+// agy-doctor: last verified 2026-07-24 against 1.1.6.
 //   ^ machine-managed marker — `node scripts/agy-doctor.mjs --fix` rewrites it (with the constant
 //   below) after a green live contract probe. Don't hand-edit the marker's shape.
-export const AGY_PINNED = '1.1.4';
+export const AGY_PINNED = '1.1.6';
 
 // agy's `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
 // nothing (exit 0, empty stdout — the error lands only in agy's log, see --log-file) when the model is
-// quota-exhausted or unreachable. Gemini is the ideal reviewer (a different family from BOTH the Claude host
-// and the GPT-family codex), so it's the default — but its per-subscription quota is tight and exhausts
-// ("RESOURCE_EXHAUSTED 429: Individual quota reached"), so runAntigravity AUTO-FALLS-BACK to
-// AGY_FALLBACK_MODEL (GPT-OSS, a separate quota pool that worked on the dev machine) when the primary yields
-// empty. Override either via env.
-export const AGY_MODEL = process.env.AGY_MODEL || 'Gemini 3.1 Pro (High)';
-export const AGY_FALLBACK_MODEL = process.env.AGY_FALLBACK_MODEL || 'GPT-OSS 120B (Medium)';
+// quota-exhausted or unreachable.
+//
+// TWO SEPARATE QUOTA POOLS, and the default chain spans BOTH so a review survives either being exhausted
+// (Daniel, 2026-07-24 — agy meters Google models on one subscription pool and the GPT-OSS / hosted-Anthropic
+// models on another):
+//   pool A — `gemini-*` (Google). The ideal reviewer: a different family from BOTH the Claude host and the
+//            GPT-family codex. `gemini-3.1-pro-high` is the strongest, so it's the primary.
+//   pool B — `gpt-oss-120b-medium` (and the `claude-*` models agy hosts, believed to share this pool).
+//            The cross-pool fallback: when pool A returns "RESOURCE_EXHAUSTED 429" (→ empty stdout),
+//            runAntigravity retries here, a genuinely different quota.
+// The `claude-*` agy models are deliberately NOT in the default chain — they'd review same-family as the
+// Claude host (no cross-family signal) AND likely share pool B with the GPT-OSS fallback (no quota gain).
+// runAntigravity walks this pair in order, moving on when one yields empty; add a third entry only if it
+// draws on a DISTINCT pool (a same-pool sibling can't help once that pool is capped). Override via env to
+// flip the order (e.g. start on pool B when you know Gemini is spent).
+//
+// MODEL NAMES ARE SLUGS, verified against `agy models` + a live `-p` probe (both returned real output
+// 2026-07-24). agy 1.1.6 silently substitutes a DEFAULT model for an unrecognized name instead of failing —
+// so a stale/typo'd slug here reviews with the WRONG model and quiet-fails the quota detection. That is
+// exactly what bit mid-epic (the old `'Gemini 3.1 Pro (High)'` display-name format stopped matching when agy
+// switched `agy models` to slugs). `agy-doctor` guards this: it fails loud when a constant isn't in
+// `agy models`, so a future rename is caught before it ships.
+export const AGY_MODEL = process.env.AGY_MODEL || 'gemini-3.1-pro-high';
+export const AGY_FALLBACK_MODEL = process.env.AGY_FALLBACK_MODEL || 'gpt-oss-120b-medium';
 
 // agy takes the prompt+context as a single `-p` argv string (stdin is not the prompt). Guard well under the
 // OS limit (macOS ARG_MAX is 1 MB incl. env) so a huge input fails clearly instead of an opaque E2BIG.
@@ -488,6 +519,45 @@ export function runAntigravity(fullArgv, opts = {}, deps = {}) {
     opts.soft,
     `agy returned no output for ${tried.map((m) => `"${m}"`).join(' and ')} — likely a quota cap ` +
       `("RESOURCE_EXHAUSTED 429") or an unavailable model. Set AGY_MODEL / AGY_FALLBACK_MODEL to a model ` +
-      `\`agy models\` lists with remaining quota, or use --agent codex.`
+      `\`agy models\` lists with remaining quota, or use --agent codex / --agent devin.`
   );
+}
+
+// ── Devin — the THIRD cross-family reviewer (independent quota pool) ─────────────────────────────────────
+// `devin -p --prompt-file <file>` runs non-interactively and prints the response. The prompt (framing +
+// diff) rides in a FILE, not argv, so there is NO size cap to guard — the whole reason to prefer prompt-file
+// over agy's argv path for large diffs. Empty stdout is a failure (a quota-capped devin, like agy, exits 0
+// with nothing). Uses the account default model. `deps` is injectable so a node:test drives it without a
+// real devin binary or touching the real filesystem.
+export function runDevin(prompt, opts = {}, deps = {}) {
+  const {
+    spawn = spawnSync,
+    writeFile = writeFileSync,
+    mkdtemp = mkdtempSync,
+    rm = rmSync,
+  } = deps;
+  let dir;
+  try {
+    dir = mkdtemp(join(tmpdir(), 'xrev-devin-'));
+  } catch (e) {
+    return fail(opts.soft, `could not create a temp dir for devin's prompt file: ${e.message}`);
+  }
+  const file = join(dir, 'prompt.md');
+  try {
+    writeFile(file, prompt, 'utf8');
+    const r = spawn('devin', ['-p', '--prompt-file', file], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    if (r.error) return fail(opts.soft, `devin not found or failed to spawn (${r.error.message}) — install the Devin CLI or use --agent codex/antigravity.`);
+    if (r.status !== 0) {
+      const last = (r.stderr || '').trim().split('\n').filter(Boolean).pop() || 'unknown error';
+      return fail(opts.soft, `devin -p failed: ${last}`);
+    }
+    const out = (r.stdout || '').trim();
+    if (!out) {
+      return fail(opts.soft, `devin returned no output — likely a quota cap or auth lapse (run \`devin auth\`), or use --agent codex/antigravity.`);
+    }
+    return out;
+  } finally {
+    // Best-effort cleanup — a leaked temp prompt file must never fail the review.
+    try { rm(dir, { recursive: true, force: true }); } catch { /* ignore */ }
+  }
 }

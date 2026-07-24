@@ -45,6 +45,7 @@ import {
   checkAgyVersion,
   loadPromptBody,
   runAntigravity,
+  runDevin,
   runWithCodexFallback,
   resolveCurrentPr,
   currentHeadSha,
@@ -71,7 +72,9 @@ Usage:
 [PR#] is optional — omit it to review the open PR for the CURRENT branch.
 
 Flags:
-  --agent <name>       reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex)
+  --agent <name>       reviewer CLI: ${Object.keys(AGENTS).join('|')} (default: codex).
+                       codex→antigravity auto-fall-back on a dead codex token; when BOTH codex and
+                       agy are quota-capped, use --agent devin (a third, independent quota pool).
   --repo  owner/repo   target a specific repo (default: the repo of the current directory)
   --force              proceed even when local HEAD differs from the resolved PR head (auto-resolve only)
   --skip-trivial       skip (exit 0, no comment) when the PR is docs-only or under --min-lines changed lines
@@ -162,6 +165,10 @@ function runReview(agent, prompt, diff) {
   }
   if (agent === 'antigravity') {
     return { findings: runAntigravity(agyArgv(prompt, diff)), fellBack: false };
+  }
+  if (agent === 'devin') {
+    // Devin takes the whole thing in a prompt FILE (no argv cap), so it reuses agy's embedded-diff framing.
+    return { findings: runDevin(agyArgv(prompt, diff)), fellBack: false };
   }
   die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 }

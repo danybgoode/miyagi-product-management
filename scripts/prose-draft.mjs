@@ -29,8 +29,11 @@ import { runAntigravity, checkAgyVersion, ensureCmd, die, need, AGY_ARG_LIMIT } 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
 
-export const PROSE_MODEL = process.env.PROSE_MODEL || 'Gemini 3.5 Flash (High)';
-export const PROSE_FALLBACK_MODEL = process.env.PROSE_FALLBACK_MODEL || 'GPT-OSS 120B (Medium)';
+// Slugs, not display names (agy 1.1.6 switched `agy models` to slugs; the old display-name format silently
+// falls through to a default model — see cross-agent-cli.mjs). Flash is the cheap tier: prose drafting isn't
+// review, and the coordinating agent edits the draft anyway. Cross-pool fallback, same as the reviewer pair.
+export const PROSE_MODEL = process.env.PROSE_MODEL || 'gemini-3.5-flash-high';
+export const PROSE_FALLBACK_MODEL = process.env.PROSE_FALLBACK_MODEL || 'gpt-oss-120b-medium';
 
 export const KINDS = ['retro', 'poster', 'sprint-wrap'];
 
