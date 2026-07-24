@@ -25,10 +25,14 @@ Both review layers ran and each caught a real issue, fixed pre-merge: Antigravit
 
 ## Gaps / follow-ups
 
-**Owed to Daniel (all HIGH, prod, coupled — in this order):**
-1. **Apply the migration** to the shared prod Supabase (additive, flag-OFF-safe): `supabase db query --linked --file supabase/migrations/20260724120000_fundadoras_acquisition.sql` then `supabase migration repair --status applied 20260724120000 --linked`. Verify live (`to_regclass('public.merchant_relationship_consents')`, the two new columns on `merchant_relationships`, and the flag row present + OFF). The orchestrator did **not** apply it autonomously — a prod-DB write surfaced for a human green-light.
-2. **Merge PR #306** (HIGH tier — Daniel merges; both review layers clean, CI green).
-3. **Sprint-2 smoke** (disposable data): submit an application with UTM + a promoter code → inspect the resulting admin relationship + consent rows (source/cohort/consent `text_version` auditable, no shop created) → force cohort full + direct API submit refused with no `accepted` event → confirm the Golden Beans accepted event carries no form values.
-4. **Flip `growth.founding_merchants_enabled` ON — this is the go-live** for the public campaign, only after the smoke passes.
+**Go-live EXECUTED 2026-07-24** (Daniel authorized all items once CI was green; site is pre-launch, 0 users):
+1. ✅ **Migration applied** to prod Supabase via the CLI (`db query --linked --file` + `migration repair`) and verified live — `merchant_relationship_consents` table, the three new `merchant_relationships` columns, the partial-unique idempotency index, and the flag row (`false/enablement`, born OFF).
+2. ✅ **PR #306 merged** (squash `4f40cb3`) → Cloud Build `2a593063` SUCCESS → Cloud Run revision `miyagi-web-00025-t68` serving 100%.
+3. ✅ **Prod smoke passed** on every checkable point: flag-OFF closed state renders (no form) and the apply route 404s; flag-ON open state renders; a disposable application wrote one canonical `merchant_relationships` row (`cohort=fundadoras`, `source=smoke-test`, full UTM, normalized E.164 phone, **invalid promoter code dropped to null**, `shop_id` null — no Medusa seller, `applied_at` set); the consent ledger recorded contact=true / preview=true / **marketing=false** (omission fabricated nothing); an idempotency-key replay produced **one** row and **one** consent set; a honeypot submission wrote **zero** rows. Disposable rows deleted afterward (consents cascade) — cohort back to **0/25**.
+4. ✅ **`growth.founding_merchants_enabled` flipped ON** — the campaign is **LIVE**.
 
-**Known limitation:** capacity is not atomically capped (see above) — acceptable pre-launch.
+**Not smoke-able live (covered otherwise, noted honestly):**
+- The **forced-full** state needs 25 seeded rows; its gate logic is unit-tested and the fail-closed refusal was verified live via the flag-OFF path (same `decideFundadorasGateState` branch selection).
+- The **Golden Beans accepted-event contents** can't be inspected from Miyagi's side; the payload is built server-side by construction (allowlisted event name + tag keys, opaque relationship-id subject) and unit-tested to drop any form value, and emission is fire-and-forget telemetry.
+
+**Known limitation (accepted, pre-launch):** capacity is read-count-then-write with no DB-level cap, so concurrent submissions near the boundary could seat 26+. Low risk for a slow, human-reviewed 25-seat cohort with 0 live tenants; revisit only if launch needs a hard cap (add a DB constraint).

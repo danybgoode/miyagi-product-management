@@ -65,7 +65,7 @@ then run anonymous plus authenticated-admin smoke before Daniel opens the cohort
 
 ## Definition of Done (epic)
 
-- [x] All sprints built + on PR #306 (frontend) — **owed Daniel:** merge (HIGH) + live smoke
+- [x] All sprints merged (PR #306, squash 4f40cb3) + smoke-tested LIVE on prod
 - [x] `/vende/fundadoras` communicates the founding-shop wedge in Spanish and works on mobile (phone-first, single-column)
 - [x] One application creates/enriches one canonical activation relationship with source attribution (dedupe fill-only; idempotent)
 - [x] Contact consent and preview/publication permission remain independent and auditable (append-only `merchant_relationship_consents`, `text_version`)
@@ -73,4 +73,4 @@ then run anonymous plus authenticated-admin smoke before Daniel opens the cohort
 - [x] `growth.founding_merchants_enabled` exists with enablement polarity, born OFF; Daniel flips after smoke
 - [x] Every sprint walkthrough contains deployed URLs and disposable data
 - [x] This README marked shipped; retrospective, poster and durable learnings updated
-- [ ] **Owed Daniel (in order):** apply migration live → merge #306 → Sprint-2 smoke → flip flag (= go-live). Branch deleted + `build-order.mjs` after merge. See RETROSPECTIVE "Gaps / follow-ups".
+- [x] **Go-live complete 2026-07-24:** migration applied + verified live → #306 merged + deployed (Cloud Run `miyagi-web-00025-t68`) → prod smoke passed → `growth.founding_merchants_enabled` flipped **ON**. Campaign is LIVE (0 real applicants; cohort 0/25). See RETROSPECTIVE "Gaps / follow-ups".

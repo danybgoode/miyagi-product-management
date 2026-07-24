@@ -1,6 +1,6 @@
 # Tiendas Fundadoras acquisition — Sprint 2: Attributed application
 
-**Status:** 🟦 In review — PR #306 (frontend), commit c0cc552 (S2) + 550212e (fix)
+**Status:** ✅ Shipped + LIVE — PR #306 merged 2026-07-24 (squash 4f40cb3); migration applied, flag ON, prod smoke passed
 
 ## Stories
 

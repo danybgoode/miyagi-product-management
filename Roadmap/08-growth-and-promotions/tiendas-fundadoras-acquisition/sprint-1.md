@@ -1,6 +1,6 @@
 # Tiendas Fundadoras acquisition — Sprint 1: Campaign surface
 
-**Status:** 🟦 In review — PR #306 (frontend), commits c5bfc99 (S1) + 550212e (fix)
+**Status:** ✅ Shipped + LIVE — PR #306 merged 2026-07-24 (squash 4f40cb3); migration applied, flag ON, prod smoke passed
 
 ## Stories
 
