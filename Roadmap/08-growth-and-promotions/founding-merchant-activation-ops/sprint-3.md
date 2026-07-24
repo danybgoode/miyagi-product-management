@@ -1,6 +1,15 @@
 # Founding merchant activation operations — Sprint 3: Commerce facts and event rail
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — PR 305 (`c83c51e` S3.1 · `1c95abf` S3.2 · `7a9651e` S3.3 · `4011de8` E1/E2)
+
+Migration `20260723120000_activation_crm_s3.sql` **applied and verified live** 2026-07-23: 17 `*_at`
+milestone columns on `merchant_lifecycle`, `last_evaluated_at` on `merchant_relationships`, the 14-type
+vocabulary CHECK + LEAST list rewritten in `apply_merchant_lifecycle_event`, `anon` execute revoked,
+0 rows (D1 meaning change straddles no data), `schema_migrations` aligned.
+
+**Built by a Sonnet agent; the E1/E2 fixes (`4011de8`) written by the orchestrator (Opus)** after both
+builders hit a weekly usage limit — so that commit gets the fresh-reviewer scrutiny the builder-agent
+pattern would normally supply, since the orchestrator cannot review its own diff.
 
 ## Stories
 
@@ -51,7 +60,21 @@ subset Sprint 2's resolver consumes:
 | `threeProductsLive` | count of Medusa products `status:'published'` for the seller | `>= 3`, derived from **state**, not from a publish hook |
 | `firstSale` | order mirror rows | `isCapturedOrder()` — reuse it, do not re-derive |
 | `retained30d` | first-sale timestamp + a captured order ≥ 30 days later | the shipped retention sweep's rule |
-| `sharedExternally`, `firstInquiry` | CRM facts (an interaction of that kind) | not commerce — these two stay CRM-sourced |
+| `firstInquiry` | a `marketplace_conversations` row for the shop | a buyer opening a conversation IS the inquiry — state-derived, complete by construction |
+| `sharedExternally` | `shop.metadata.settings.guide.share_done` | the shipped setup-guide "comparte" signal |
+
+> **Corrected 2026-07-23 during the S3 build.** This row originally read "CRM facts (an interaction of
+> that kind) — these two stay CRM-sourced", and the S2 interaction schema has no `kind` representing
+> either signal, so both facts had **no source at all**. Because the resolver walked a contiguous
+> prefix, that did not merely cap advancement at stage 9 — it made `first_sale` and `retained_30d`
+> permanently unreachable, quietly nullifying half of Story 3.1's commerce work. Both signals already
+> existed and the contract simply hadn't looked for them. See the resolver-semantics note in
+> `sprint-2.md`, which is the other half of this fix.
+>
+> On D3 ("stage is DERIVED, never set by a UI checkbox") for `share_done`: that is the **seller's own**
+> action on a shipped surface, not a CRM operator asserting commerce truth they don't own — which is
+> what D3 exists to prevent. Weaker provenance than a Medusa read, noted as such in the module, and
+> fail-closed on absence like every other fact here.
 
 **Most of this already exists — reuse it, do not rebuild it.** `lib/merchant-lifecycle-sweep.ts`
 already derives `three_products_live` (Medusa `GET /store/sellers/{slug}/products`), `first_sale` and

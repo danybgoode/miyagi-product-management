@@ -92,10 +92,24 @@ resolveStage(facts: StageFacts): { stage: Stage; reached: Stage[] }
 ```
 
 `StageFacts` is a flat bag of already-fetched booleans/timestamps (consent evidence, commerce facts,
-CRM facts). The resolver is **monotonic**: it returns the furthest stage whose predicate holds, and
-never regresses — a merchant who reached `first_sale` and later refunds does not fall back. Unknown or
+CRM facts). Predicates evaluate **independently**: `reached` is every stage whose predicate holds, and
+`stage` is the highest-ordinal member of `reached`. The resolver is **monotonic** and never regresses — a merchant who reached `first_sale` and later refunds does not fall back. Unknown or
 absent facts **decline**, they never grant: every one of these milestones is write-once and
 unwithdrawable, which is exactly the trap `merchant-lifecycle-projection` paid nine defects to learn.
+
+> **Clarified 2026-07-23 (S3 build).** This paragraph originally said only "returns the furthest stage
+> whose predicate holds," which is ambiguous between *highest satisfied* and *longest contiguous
+> prefix*. S2 reasonably implemented the prefix reading, and S3 exposed why that is wrong: the walk
+> `break`s on the first failing predicate, so a **soft CRM fact holds a hard commerce fact hostage** —
+> with `shared_externally` (10) unsatisfiable, `first_sale` (12) and `retained_30d` (13) become
+> permanently unreachable no matter what Medusa says, silently defeating epic acceptance 5. Each
+> milestone is emitted independently and is write-once, so the correct semantics is *emit every
+> milestone genuinely satisfied*, not *only the unbroken prefix*. Fail-closed is unchanged: an unknown
+> fact still declines its own stage — it simply no longer vetoes later ones.
+>
+> **Transferable:** a resolver's ORDER and its REACHABILITY are two different contracts. Saying stages
+> are "ordered" does not say whether one unsatisfied stage blocks the rest, and the difference only
+> shows up when some stage turns out to have no data source.
 
 The two permission-gated stages (`permission_granted`, `preview_delivered`) each require **their own
 dedicated evidence field** — `permissionGrantedEvidence` and `previewDeliveredEvidence` — derived from
