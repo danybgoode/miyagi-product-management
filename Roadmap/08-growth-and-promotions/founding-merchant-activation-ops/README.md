@@ -143,9 +143,16 @@ not, and the plan says so rather than pretending otherwise:
 ## Kill-switch
 
 `promoter.activation_crm_enabled` is an enablement flag in `platform_flags`, default **false** and created
-disabled everywhere. It gates new intake, relationship/pipeline pages and write routes. OFF preserves today's
+disabled everywhere. It gates new intake, relationship/pipeline pages, write routes **and — added after the
+S3 fresh-reviewer pass — the cron's Sprint-3 relationship-emission walk** (`sweepMerchantLifecycle` step 5).
+That last one is load-bearing: the walk emits **write-once, unwithdrawable** `merchant.<stage>` milestones to
+Golden Beans, and `growth.telemetry_enabled` (which otherwise gates emission) is ON in production — so without
+this gate the daily cron would emit permanent cross-repo milestones across the backfilled population *before*
+the smoke. The pre-existing shop-keyed sweep (steps 1–4) is unaffected by the flag. OFF preserves today's
 `/promotor/cerrar`; additive migrations remain and must be forward-compatible. Flip only after role-scope tests,
-live migration verification and one disposable merchant completes the smoke walkthrough.
+live migration verification and one disposable merchant completes the smoke walkthrough — and note that the flip
+is what first sends this epic's milestones to Golden Beans, so treat it as the go-live for the emission rail,
+not just a UI reveal.
 
 ## Deploy order
 
