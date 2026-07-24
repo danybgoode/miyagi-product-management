@@ -200,11 +200,12 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   promoter code + no shop, separate consent contact=t/preview=t/marketing=f, idempotency replay = one write,
   honeypot = zero write; disposable rows cleaned, cohort back to 0/25) → flag flipped **ON**. See
   [08 · Growth & Promotions › Tiendas Fundadoras acquisition](08-growth-and-promotions/tiendas-fundadoras-acquisition/).
-- **2026-07-24 — Founding merchant activation operations CODE-COMPLETE, in review (HIGH; area 08 ·
+- **2026-07-24 — Founding merchant activation operations SHIPPED + LIVE (HIGH; area 08 ·
   [#303](https://github.com/danybgoode/miyagisanchezcommerce/pull/303) →
   [#304](https://github.com/danybgoode/miyagisanchezcommerce/pull/304) →
-  [#305](https://github.com/danybgoode/miyagisanchezcommerce/pull/305), stacked, all CI-green; **not yet
-  merged, flag OFF — nothing live**).** One canonical Miyagi relationship record per founding merchant,
+  [#305](https://github.com/danybgoode/miyagisanchezcommerce/pull/305), stacked, all squash-merged;
+  migrations applied + verified live; `promoter.activation_crm_enabled` **ON** — emission rail live,
+  pre-launch so 29 backfilled relationships and a quiet rail).** One canonical Miyagi relationship record per founding merchant,
   scouting → 30-day retention, built over shipped primitives (`/promotor/cerrar`, `partner_grants`, the
   consent-preview contract, the Golden Beans lifecycle loop). Three architecture forks were locked against
   the **live DB** before any code: the relationship `id` becomes the opaque merchant subject (free exactly
@@ -216,8 +217,26 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   cross-repo** milestones across the backfilled population on deploy — now held behind the epic
   kill-switch, making the flip the true go-live for the emission rail. Durable lesson (× four this epic): a
   planning doc that *paraphrases* a shipped contract drifts from it, and drifts permissive — cite the
-  source, don't restate it. Owed to Daniel: the three merges, the browser smokes, the flag flip. See
+  source, don't restate it. Go-live: all three merged + deployed → migrations verified live → Daniel
+  flipped the flag ON (verified `platform_flags.enabled = true` 2026-07-24). Disposable-merchant browser
+  smokes descoped as pre-launch ceremony (zero real tenants). See
   [08 · Growth & Promotions › Founding merchant activation ops](08-growth-and-promotions/founding-merchant-activation-ops/).
+- **2026-07-24 — Founding merchant consent-safe previews SHIPPED + LIVE (HIGH; area 08 · S1
+  [#292](https://github.com/danybgoode/miyagisanchezcommerce/pull/292)/[#293](https://github.com/danybgoode/miyagisanchezcommerce/pull/293)
+  · S2 [#294](https://github.com/danybgoode/miyagisanchezcommerce/pull/294)
+  · S3 [#295](https://github.com/danybgoode/miyagisanchezcommerce/pull/295)
+  · S4 [#302](https://github.com/danybgoode/miyagisanchezcommerce/pull/302); security fixes
+  [#296](https://github.com/danybgoode/miyagisanchezcommerce/pull/296)/[#297](https://github.com/danybgoode/miyagisanchezcommerce/pull/297);
+  `promoter.private_preview_enabled` **ON**).** Makes the approved-field promise real: a partner prepares a
+  **private** shop preview (Medusa drafts behind a per-shop anchor), shares it over an opaque revocable link,
+  captures the merchant's **explicit, versioned** approval of the reviewed snapshot, and only then activates
+  that exact snapshot publicly — claim/checkout unchanged. The privacy guard is deliberately **not**
+  flag-gated (privacy must never fail-open on a flip). Two CRITICAL bypasses were caught *post-merge* by the
+  review stack re-examining the whole write surface: an MCP `set_listing_status` publish that skipped consent
+  (guard-the-door, not the population) and a missing PDP preview guard — both fixed. Durable lesson:
+  enumerate write primitives mechanically; a confident "from any writer" comment is not evidence. Smokes
+  descoped as pre-launch ceremony. See
+  [08 · Growth & Promotions › Founding merchant consent-safe previews](08-growth-and-promotions/founding-merchant-consent-previews/).
 - **2026-07-22 — Merchant lifecycle projection SHIPPED (HIGH; the Miyagi half of Golden Beans'
   event-destination-router S3.1, [#298](https://github.com/danybgoode/miyagisanchezcommerce/pull/298)
   `7ee0122`).** Six founding-merchant milestones now travel in a **loop**: Miyagi emits to Golden Beans'

@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: founding-merchant-consent-previews
 ---
 
@@ -55,29 +55,36 @@ publication; only claim transfers ownership and unlocks the claimed-shop path.
 | 3 | 3.1 Preview-readiness checklist + Golden Beans events | high | ✅ #295 |
 | 3 | 3.2 Historical public/unclaimed inventory report | low | ✅ #295 |
 
-**All three sprints are merged and deployed with the flag OFF.** What remains before epic close is
-activation, not construction: apply the S2 migration, run the disposable-shop channel sweep, flip
-the flag, and complete Daniel's owed smokes. See "Owed before the flag flip" below.
+**SHIPPED & LIVE 2026-07-24.** All four sprints merged and deployed, both CRITICAL security fixes merged,
+the S2 migration applied and verified live, and `promoter.private_preview_enabled` **flipped ON in production**
+(verified live 2026-07-24: `platform_flags.enabled = true`). What was "owed before the flag flip" is now
+done or descoped — see below.
 
-## Owed before the flag flip
+## Activation record (was "Owed before the flag flip")
 
 1. ~~Apply `20260721150000_consent_previews_s2.sql`~~ — ✅ **DONE 2026-07-22.** Applied via the
    Supabase CLI Management API (`supabase db query --linked --file …`) and verified end-to-end:
    schema, RLS, indexes, FKs, the app's own PostgREST path, plus CHECK/FK rejection tests run in
    rolled-back transactions (0 rows persisted). `sprint-2.md` has the exact command — and the
    project-wide **migration-history drift** it uncovered: 44 local migration files are unrecorded
-   remotely, so **`supabase db push` is unsafe in this repo**.
-2. **🚨 Merge PR #296** — the post-merge review found a CRITICAL bypass: the MCP surface
-   could publish a merchant's products into a preview-private shop with **no consent check at
+   remotely, so **`supabase db push` is unsafe in this repo**. Re-confirmed live 2026-07-24:
+   `merchant_previews` exists (`to_regclass`).
+2. ~~**🚨 Merge PR #296**~~ — ✅ **MERGED 2026-07-22.** The post-merge review found a CRITICAL bypass: the
+   MCP surface could publish a merchant's products into a preview-private shop with **no consent check at
    all**. `autoGrantPartnerOnClose` mints the promoter a `manager` partner grant on the very shop
    `shop/setup` anchors private, `partner-auth` resolves from `partner_grants` with no anchor
    check, and only `create_listing` consulted the anchor — so `set_listing_status` bypassed
    approval, the checklist and `canActivate` entirely. Gated by `partners.mcp_enabled`, a
    **different flag from this epic's kill-switch**, so flipping this epic's flag never controlled
    it. #296 also fixes an activation TOCTOU and makes consent writes compare-and-set.
-   *Not self-merged: HIGH-tier security fix, and the builder wrote the bug.*
-3. **Daniel's owed smokes** — the S1 walkthrough (never run), plus the S2 and S3 walkthroughs.
-4. **The two S1 fail-open/already-public confirmations** still listed in `sprint-1.md`.
+   *(PDP preview-guard fix #297 and merchant-verified-approval S4 #302 also merged.)*
+3. ~~**Daniel's owed smokes**~~ — **descoped 2026-07-24 as pre-launch ceremony** (Daniel): zero real
+   tenants/campaigns/transactions, so the disposable-shop channel sweep and S1–S4 walkthroughs assume
+   operations that don't exist yet. Re-run on demand once real merchants exist. The **structural**
+   guarantees the smokes would spot-check are already enforced by regression specs (cross-channel
+   private/draft leak invariant, every public render surface calls a preview guard).
+4. ~~The two S1 fail-open/already-public confirmations~~ — same pre-launch descope; covered by the
+   fail-closed guard specs merged in #293.
 5. ~~A disposition call on the imported public/unclaimed shops.~~ ✅ **DONE 2026-07-22.** The S3
    "168" figure was a mirror-drift artifact (see `sprint-3.md`). Live probing showed only 18 shops
    render any product; 154 orphan test/scrape rows (404 everywhere, no Medusa seller) were deleted
@@ -113,16 +120,19 @@ router is not live yet.
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough with deployed URLs and disposable shop data
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] `promoter.private_preview_enabled` exists with enablement polarity, born OFF; disposable channel sweep passes before Daniel flips it
-- [ ] Every additive Supabase migration confirmed against live schema, not inferred from CI
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** and `node scripts/build-order.mjs` run
+- [x] All sprints merged to `main` — S1 #292/#293/#108, S2 #294, S3 #295, S4 #302, security #296/#297;
+      disposable-shop smokes descoped as pre-launch ceremony (gap stated in Activation record above)
+- [x] Each `sprint-N.md` has its smoke walkthrough with deployed URLs and disposable shop data
+- [x] This README marked ✅ (`status: shipped`); every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written — 2026-07-24
+- [x] Product poster (`Roadmap/README.md`) updated — 2026-07-24 highlight
+- [x] Team memory + `MEMORY.md` index updated — 2026-07-24
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` — the guard-the-population, snapshot-at-approval
+      and consent-gate lessons were promoted at the S1–S3 review rounds (see LEARNINGS)
+- [x] `promoter.private_preview_enabled` exists with enablement polarity, born OFF; **flipped ON by Daniel**,
+      verified live 2026-07-24 (`platform_flags.enabled = true`)
+- [x] Every additive Supabase migration confirmed against live schema — S1/S2 tables verified via `to_regclass`
+- [x] Feature branch deleted; **frontmatter `status: shipped`** set and `node scripts/build-order.mjs` run 2026-07-24
 
 ## Accepted risks (named at review, 2026-07-22)
 

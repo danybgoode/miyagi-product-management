@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: founding-merchant-activation-ops
 ---
 
@@ -163,9 +163,13 @@ flag only after frontend/backend compatibility and the disposable-merchant produ
 
 ## Definition of Done (epic)
 
-**Status 2026-07-24: all three PRs MERGED to `main` and deployed (Daniel authorized the merges; all
-merchants are disposable pre-launch). Flag OFF, emission rail gated behind it. Remaining: the browser
-smokes and the flag flip — Daniel's, once he's in prod.**
+**Status 2026-07-24: SHIPPED & LIVE.** All three PRs merged to `main` and deployed; all four migrations
+applied and verified live (`to_regclass`); `promoter.activation_crm_enabled` **flipped ON in production by
+Daniel** (verified live 2026-07-24: `SELECT enabled FROM platform_flags` → `true`), so the Golden Beans
+emission rail is live. Formal disposable-merchant browser smokes were **descoped as pre-launch ceremony**
+(Daniel, 2026-07-24: zero real tenants/campaigns/transactions in production — the smoke walkthroughs assume
+regular operations that do not exist yet). Live DB state at close: 29 backfilled relationship rows, 0
+transitions/lifecycle/emissions — i.e. the rail is armed and quiet, exactly the pre-launch shape expected.
 
 - [x] All sprints merged to `main` — **#303 → #304 → #305** squash-merged in order 2026-07-24 (each
       stacked PR retargeted to `main` + `origin/main` merged in to clear the squash conflict); browser
@@ -183,18 +187,23 @@ smokes and the flag flip — Daniel's, once he's in prod.**
 - [x] `promoter.activation_crm_enabled` exists with enablement polarity, born OFF (verified live) —
       Daniel flips it after smoke; **the flip is now also the go-live for the emission rail** (see
       Kill-switch)
-- [ ] This README marked shipped; sprint headings carry commit refs — sprint headings carry refs;
-      `status:` stays **in-progress** until the merges + flip land (honest polarity — nothing is on
-      `main` or reachable yet)
+- [x] This README marked shipped; sprint headings carry commit refs — `status: shipped` set 2026-07-24;
+      all three sprint `Status:` lines flipped to ✅ Shipped with commit refs (fixes the BUILD-ORDER
+      "0/9 stories" staleness — the stories were built, the sprint status lines just still read "In review")
 - [x] `RETROSPECTIVE.md`, product poster and durable learnings updated — retro written; four durable
       lessons promoted to `LEARNINGS.md`; poster carries an in-review highlight (not a "live" claim)
-- [ ] Feature branch deleted and `node scripts/build-order.mjs` run — after merge
+- [x] Feature branch deleted and `node scripts/build-order.mjs` run — branches deleted at merge;
+      board regenerated 2026-07-24
 
 ### Owed to Daniel (explicit, in order)
 
 1. ~~Merge **#303 → #304 → #305**~~ — ✅ done 2026-07-24, all squash-merged to `main`, branches deleted.
-2. Run the three sprint smoke walkthroughs against prod with a disposable merchant.
-3. Flip `promoter.activation_crm_enabled` — go-live for the UI **and** the Golden Beans emission rail.
+2. ~~Run the three sprint smoke walkthroughs against prod with a disposable merchant.~~ — **descoped
+   2026-07-24 as pre-launch ceremony** (Daniel): zero real tenants/campaigns/transactions, so the
+   walkthroughs assume operations that don't exist. Re-run on demand once real merchants exist.
+3. ~~Flip `promoter.activation_crm_enabled`~~ — ✅ **DONE.** Flipped ON by Daniel; verified live
+   2026-07-24 (`platform_flags.enabled = true`). This was the go-live for the UI **and** the Golden
+   Beans emission rail.
 4. ~~The `agy` pin/model tooling decision~~ — ✅ resolved 2026-07-24: quota reset, agy bumped to 1.1.6,
    model constants corrected to slugs (`gemini-3.1-pro-high` / `gpt-oss-120b-medium`), dual-quota
    fallback verified, and **Devin wired as a third `--agent devin` reviewer** so the cross-family layer

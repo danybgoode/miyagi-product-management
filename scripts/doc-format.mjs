@@ -675,9 +675,18 @@ function runHook() {
     if (!existsSync(filePath)) process.exit(0);
 
     const content = readFileSync(filePath, 'utf8');
-    const base = relPath.split('/').pop();
+    const segs = relPath.split('/');
+    const base = segs.pop();
     let offenses = [];
-    if (base === 'README.md') offenses = checkEpicReadme(content, { slug: relPath.split('/').at(-2) });
+    // An epic README is exactly Roadmap/<macro-section>/<epic>/README.md (4 segments). The top-level
+    // poster (Roadmap/README.md, 2) and macro-section index READMEs (Roadmap/<section>/README.md, 3)
+    // share the README.md basename but are NOT epic docs — checkEpicReadme's frontmatter/Area/DoD
+    // rules don't apply to them (line 683's comment already names "the poster" as out of scope; the
+    // basename test alone let it through). segs still holds the dir path after the pop() above.
+    if (base === 'README.md') {
+      if (segs.length !== 3) process.exit(0); // ['Roadmap', section, epic] ⇒ epic README; else skip
+      offenses = checkEpicReadme(content, { slug: segs.at(-1) });
+    }
     else if (/^sprint-\d+\.md$/.test(base)) offenses = checkSprintDoc(content);
     else if (base === 'RETROSPECTIVE.md') offenses = checkRetrospective(content);
     else process.exit(0); // not an epic doc type this checker covers (e.g. a seed, the poster)

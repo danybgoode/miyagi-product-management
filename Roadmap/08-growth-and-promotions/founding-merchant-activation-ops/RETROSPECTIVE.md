@@ -1,6 +1,6 @@
 # Founding merchant activation operations — Retrospective
 
-_Closed: 2026-07-23 (code complete + in review; PRs merge on Daniel's HIGH-tier green-light)_
+_Closed: 2026-07-24 (shipped & live — all 3 PRs merged 2026-07-24, migrations verified live, `promoter.activation_crm_enabled` flipped ON by Daniel; pre-launch smokes descoped)_
 
 ## What shipped
 

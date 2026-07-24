@@ -1,6 +1,6 @@
 # Founding merchant activation operations — Sprint 2: Lifecycle and stewardship
 
-**Status:** 🟦 In review — PR 304 (`ff98cc5` S2.1 · `fca9112` S2.2 · `1581627` S2.3 · `e2c8102` review fixes)
+**Status:** ✅ Shipped — merged to `main`, PR 304 (`ff98cc5` S2.1 · `fca9112` S2.2 · `1581627` S2.3 · `e2c8102` review fixes)
 
 Migration `20260723110000_activation_crm_s2.sql` **applied and verified live** 2026-07-23: all four
 tables present by `to_regclass`, `UNIQUE (relationship_id, dedupe_key)` present, RLS ON with 0 policies

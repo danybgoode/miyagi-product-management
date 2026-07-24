@@ -1,6 +1,6 @@
 # Founding merchant activation operations — Sprint 3: Commerce facts and event rail
 
-**Status:** 🟦 In review — PR 305 (`c83c51e` S3.1 · `1c95abf` S3.2 · `7a9651e` S3.3 · `4011de8` E1/E2)
+**Status:** ✅ Shipped — merged to `main`, PR 305 (`c83c51e` S3.1 · `1c95abf` S3.2 · `7a9651e` S3.3 · `4011de8` E1/E2); Golden Beans emission rail live (flag ON)
 
 Migration `20260723120000_activation_crm_s3.sql` **applied and verified live** 2026-07-23: 17 `*_at`
 milestone columns on `merchant_lifecycle`, `last_evaluated_at` on `merchant_relationships`, the 14-type

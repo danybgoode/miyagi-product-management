@@ -1,6 +1,6 @@
 # Founding merchant activation operations — Sprint 1: Field record and consent-safe intake
 
-**Status:** 🟦 In review — PR 303 (`4df3d87` S1.1 · `3fb1961` S1.2 · `b18ae84` S1.3)
+**Status:** ✅ Shipped — merged to `main`, PR 303 (`4df3d87` S1.1 · `3fb1961` S1.2 · `b18ae84` S1.3); migrations applied + flag `promoter.activation_crm_enabled` verified ON live 2026-07-24
 
 Migration `20260723100000_activation_crm_s1.sql` **applied and verified live** 2026-07-22: both tables
 present by `to_regclass`, backfill 29/29 rows linked to a shop, `promoter.activation_crm_enabled`
