@@ -237,6 +237,26 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   enumerate write primitives mechanically; a confident "from any writer" comment is not evidence. Smokes
   descoped as pre-launch ceremony. See
   [08 · Growth & Promotions › Founding merchant consent-safe previews](08-growth-and-promotions/founding-merchant-consent-previews/).
+- **2026-07-24 — Merchant activation scorecard SHIPPED (LOW; area 08 ·
+  [#307](https://github.com/danybgoode/miyagisanchezcommerce/pull/307) squash `f608869`; read-only, no
+  migration, no flag).** A weekly ADMIN operating view of founding-merchant activation —
+  `/admin/promoter/activacion`: funnel (per-stage counts + conversion), aging (median/p90 time-in-stage),
+  overdue/missing next actions, and first-sale + 30-day retention outcomes — plus a resolver-identical CSV
+  export and a read-only admin agent (MCP) tool. **One versioned metric dictionary, one resolver**: the UI,
+  the CSV and the agent all render the same typed values, so a count can never disagree with its export or
+  its drill-through. Built read-only over the just-shipped activation-ops read model (no new commerce writes,
+  no new flag). The architecture was **locked before the build** (SD1–SD4, cited against live code): derive
+  from Miyagi's own canonical `merchant_relationship_transitions` (there is no consumable Golden Beans journey
+  read path, and the round-trip is empty pre-launch — GB is a freshness diagnostic only); and every metric
+  is `{value, health}` so **degraded telemetry is never a silent zero** — the headline invariant, and exactly
+  what renders today (29 backfilled merchants at `scouted`, everything else legibly empty). Assembly line:
+  Opus architected + reviewed, a Sonnet builder shipped all 6 stories in one PR; when the builder hit its
+  session limit mid-fix the orchestrator salvaged the tree and finished, with a fresh cross-family re-review
+  of the self-authored fixes. Both review layers caught the same real bug (a metric picked by `find()` over
+  an unordered read → non-deterministic activation time) and the fresh reviewer caught a degraded branch
+  hiding behind a fixture docblock that falsely claimed to cover it. Owed to Daniel: the admin-session
+  browser smoke (pre-launch). See
+  [08 · Growth & Promotions › Merchant activation scorecard](08-growth-and-promotions/merchant-activation-scorecard/).
 - **2026-07-22 — Merchant lifecycle projection SHIPPED (HIGH; the Miyagi half of Golden Beans'
   event-destination-router S3.1, [#298](https://github.com/danybgoode/miyagisanchezcommerce/pull/298)
   `7ee0122`).** Six founding-merchant milestones now travel in a **loop**: Miyagi emits to Golden Beans'

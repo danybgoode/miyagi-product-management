@@ -16,12 +16,11 @@
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-- [Merchant activation scorecard](../../08-growth-and-promotions/merchant-activation-scorecard/README.md) — 08 Growth · 0/6 stories · risk: Low · #4-fm
 - [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 0/9 stories · risk: High · #5-fm
 
-## ✅ Shipped (125)
+## ✅ Shipped (126)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -95,6 +94,7 @@
 - [Founding merchant activation operations — CRM projection and field intake](../../08-growth-and-promotions/founding-merchant-activation-ops/README.md) — 08 Growth · 9/9 stories · risk: High · #2-fm
 - [Founding merchant consent-safe previews](../../08-growth-and-promotions/founding-merchant-consent-previews/README.md) — 08 Growth · 10/10 stories · risk: High · #1-fm
 - [Marketplace positioning — title, OG & social card](../../08-growth-and-promotions/marketplace-positioning-meta/README.md) — 08 Growth · 3/3 stories · risk: Low
+- [Merchant activation scorecard](../../08-growth-and-promotions/merchant-activation-scorecard/README.md) — 08 Growth · 6/6 stories · risk: Low · #4-fm
 - [Merchant lifecycle projection — the Miyagi half of Golden Beans' event router](../../08-growth-and-promotions/merchant-lifecycle-projection/README.md) — 08 Growth · 0 sprints
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 3/3 stories
 - [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 19/19 stories

@@ -366,6 +366,35 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   a page load + a fumbled form could 429 the ACTUAL application — worse behind one NAT/carrier IP, a
   self-inflicted lockout on a finite-seat campaign. Give observability events their own looser bucket; the
   write keeps its tight one. *(2026-07-24, tiendas-fundadoras-acquisition S2 — fresh reviewer.)*
+- **A scope doc's "reuse projection X" can name a seam that has no consumable read path — verify the reused
+  thing actually EXISTS and is reachable before designing on it, and derive from the canonical table you own
+  instead.** The merchant-activation-scorecard scope table said "reuse Golden Beans time-in-stage/conversion
+  projection"; grepping `origin/main` showed Miyagi has **no read path** to any Golden Beans journey projection
+  (they live in the GB repo) and the round-trip is empty pre-launch. Deriving funnel/aging/conversion from the
+  canonical Miyagi table the sibling epic had already made authoritative (`merchant_relationship_transitions`)
+  was correct, self-contained, and needed no populated round-trip — with Golden Beans reduced to the freshness
+  diagnostic the scope's OTHER reuse row actually named. This sharpens the paraphrase-drift cluster above from
+  "don't restate a rule that lives in code" to "don't assume a *reused seam* exists just because a scope doc
+  names it — confirm the read path, then state the deviation." *(2026-07-24, merchant-activation-scorecard SD1.)*
+- **A metric selected by `.find()` over an unordered DB read is non-deterministic the moment the entity can
+  have MORE than one matching row — order at the query AND pick deterministically (earliest/min) at the
+  consumer.** `computeActivationTime` did `txs.find(t => t.toStage === ACTIVATION_STAGE)` on transitions loaded
+  with no `ORDER BY`; a stage correction/re-entry writes a *second* transition to the same stage, so `find`
+  returned an arbitrary one and the activation-time median flipped 10→50 purely on row order — reported with
+  `health: 'ok'`, i.e. a confidently-wrong number, which is worse than a degraded flag. Both reviewers caught
+  it; the fresh reviewer reproduced it. The write-once/earliest discipline the founding-merchant epics learned
+  for *emission* applies to READ-side metric *selection* too. Fix belt-and-suspenders: `.order()` at the loader
+  (population-guard, every consumer) AND earliest-of at the consumer (so a pure unit test proves it order-free).
+  *(2026-07-24, merchant-activation-scorecard, PR 307 review.)*
+- **A fixture's docblock is not the fixture — a comment claiming a degraded branch is covered is not coverage.**
+  A resolver had a real, loader-reachable `transitionsOk:false` branch (relationships load fine, the transitions
+  read fails independently) with ZERO tests, while the stale-journey fixture's docblock asserted it was covered
+  by a relationship that did not exist and a per-row flag the type doesn't even have. The fresh reviewer caught
+  it by reading the fixture body against its own comment. Add the fixture and a spec that exercises the branch
+  (here: cohort/funnel stay `ok`, transition-derived metrics go `stale`, never a false zero), or delete the
+  false claim — never let a docblock stand in for a test. The "a confident comment is not evidence" rule
+  ([[guard-the-population-not-the-door-you-found]]), applied to test fixtures. *(2026-07-24,
+  merchant-activation-scorecard, PR 307 fresh-reviewer.)*
 ## Tooling gotchas
 - **Signed-webhook consumers + write-once milestones (2026-07-22, `merchant-lifecycle-projection`,
   PR #298 — six cross-agent rounds + a fresh reviewer found NINE real defects in one story; the

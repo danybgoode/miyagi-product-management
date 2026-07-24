@@ -1,10 +1,10 @@
 # Merchant activation scorecard — Sprint 1: Metric contract and data adapter
 
-**Status:** ⬜ not started
+**Status:** ✅ Shipped — merged to `main`, PR 307 (squash `f608869`; `9a4b66d` S1.1 · `7b13407` S1.2 · `86d2119` S1.3 + review rounds `53db72c`/`dfc3072`); read-only, no migration, no flag
 
 ## Stories
 
-### Story 1.1 — Versioned metric dictionary and fixtures
+### Story 1.1 — Versioned metric dictionary and fixtures ✅
 
 **As an** activation lead, **I want** each metric to have one testable definition, **so that** weekly decisions
 do not change with the reader or dashboard query.
@@ -15,7 +15,7 @@ fixtures cover zero, incomplete, corrected, retained and stale journeys.
 
 **Risk:** low — read-only analytical contract.
 
-### Story 1.2 — Golden Beans journey and Medusa fact adapter
+### Story 1.2 — Golden Beans journey and Medusa fact adapter ✅
 
 **As a** scorecard consumer, **I want** journey and commerce facts joined predictably, **so that** stage and
 outcome measures share one merchant identity without copied data.
@@ -26,7 +26,7 @@ reported, not resolved by overwriting a source.
 
 **Risk:** low — read-only adapters over stable contracts.
 
-### Story 1.3 — Authenticated scorecard read model and degraded states
+### Story 1.3 — Authenticated scorecard read model and degraded states ✅
 
 **As an** admin, **I want** a filterable scorecard response with data health, **so that** I can distinguish zero
 performance from missing telemetry.
