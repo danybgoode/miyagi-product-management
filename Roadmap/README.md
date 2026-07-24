@@ -177,6 +177,24 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-24 — Founding merchant activation operations CODE-COMPLETE, in review (HIGH; area 08 ·
+  [#303](https://github.com/danybgoode/miyagisanchezcommerce/pull/303) →
+  [#304](https://github.com/danybgoode/miyagisanchezcommerce/pull/304) →
+  [#305](https://github.com/danybgoode/miyagisanchezcommerce/pull/305), stacked, all CI-green; **not yet
+  merged, flag OFF — nothing live**).** One canonical Miyagi relationship record per founding merchant,
+  scouting → 30-day retention, built over shipped primitives (`/promotor/cerrar`, `partner_grants`, the
+  consent-preview contract, the Golden Beans lifecycle loop). Three architecture forks were locked against
+  the **live DB** before any code: the relationship `id` becomes the opaque merchant subject (free exactly
+  once — `merchant_lifecycle*` held 0 rows), the 13 stages *are* the event vocabulary, and stage is
+  **derived** by a pure resolver (corrections are the only writes). Assembly-line delivery: Opus
+  architected + reviewed, Sonnet built; two independent review layers (Codex + a fresh `pr-reviewer`)
+  caught disjoint defect classes across every round. The most important catch was a fresh-reviewer find on
+  S3: the cron's milestone-emission walk was gated by the wrong flag, so it would have emitted **write-once
+  cross-repo** milestones across the backfilled population on deploy — now held behind the epic
+  kill-switch, making the flip the true go-live for the emission rail. Durable lesson (× four this epic): a
+  planning doc that *paraphrases* a shipped contract drifts from it, and drifts permissive — cite the
+  source, don't restate it. Owed to Daniel: the three merges, the browser smokes, the flag flip. See
+  [08 · Growth & Promotions › Founding merchant activation ops](08-growth-and-promotions/founding-merchant-activation-ops/).
 - **2026-07-22 — Merchant lifecycle projection SHIPPED (HIGH; the Miyagi half of Golden Beans'
   event-destination-router S3.1, [#298](https://github.com/danybgoode/miyagisanchezcommerce/pull/298)
   `7ee0122`).** Six founding-merchant milestones now travel in a **loop**: Miyagi emits to Golden Beans'

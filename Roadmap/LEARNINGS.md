@@ -276,6 +276,57 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   artifact left stale") is exactly how the overclaim survives; the fresh reviewer refuted precisely that claim
   by re-deriving the population and finding six live stale artifacts. Same shape as the code-comment overclaim
   the sibling ssrf epic exists to kill. *(2026-07-20, process-token-diet S1.3.)*
+- **A groomed/planning doc that PARAPHRASES a shipped contract drifts from it — and it drifts PERMISSIVE.
+  Name the source, don't restate it.** In one epic (founding-merchant-activation-ops) this bit **four
+  times**, every instance in the architect's own sprint docs: (1) a consent clause restated "require an
+  approved decision row" instead of pointing at `readApprovalState`, and the restatement silently dropped
+  the invalidation + `verified_via` checks the shipped contract enforced — so it accepted a stale/unverified
+  approval; (2) prose said stage slug `permission_received` where the already-applied CHECK says
+  `permission_granted` (a resolver emitting the prose value would be rejected by the DB); (3) the SAME file
+  still carried both forks in a paragraph a correction banner at the top hadn't reached; (4) a resolver
+  contract said "the furthest stage whose predicate holds" — ambiguous between *highest satisfied* and
+  *longest contiguous prefix* — and the prefix reading made write-once commerce milestones permanently
+  unreachable behind an unsatisfiable soft stage. **Rule:** when a decision already lives in a DB
+  constraint, a shipped constant, or a shipped function, the doc must CITE that entry point, never
+  re-describe the rule; and a correction banner does not correct the rest of the document — when you find
+  one fork, re-derive EVERY instance in the file (the fresh reviewer caught #3 by doing exactly that). The
+  builders implemented the forked docs faithfully every time — the defect originated in the paraphrase, not
+  the build. *(2026-07-23, founding-merchant-activation-ops S1–S3.)*
+- **Citing a learning is not the same as satisfying it — check the PRINCIPLE against your design, not just
+  the MECHANISM the old bug happened to take.** A steward-access fix cited the "deliberate human decisions
+  win" learning (the miyagi-partners auto-grant escalation) and honored its letter — it wrote no
+  `partner_grants` row, raced nothing, resurrected no revoke — while a read-side precedence it introduced
+  silently escalated a deliberate `viewer` grant to `manager` the moment that principal was named steward.
+  The banned mechanism (writing the authz table) was only the shape the original bug took; the principle was
+  about whose deliberate decision wins, and the fix re-created the same escalation through a path the old
+  learning never mentioned. Fixed: an explicit `viewer` grant floors the steward at `viewer`.
+  *(2026-07-23, founding-merchant-activation-ops S2.)*
+- **A resolver's ORDER and its REACHABILITY are two separate contracts, and the gap is invisible until some
+  stage has no data source.** "The stages are ordered 1..N" says nothing about whether one unsatisfied stage
+  blocks the rest. A 13-stage resolver walked a contiguous prefix and `break`-ed on the first gap; when a
+  soft CRM stage (`shared_externally`) turned out to have no signal, it held every hard commerce stage after
+  it (`first_sale`, `retained_30d`) permanently unreachable regardless of Medusa — and emitted nothing at
+  all for a shop claimed-and-sold outside the funnel (the common backfill shape). For **write-once**
+  milestones, evaluate each predicate INDEPENDENTLY (emit every milestone genuinely satisfied), keep
+  fail-closed PER-STAGE (an absent fact declines its own stage, never vetoes later ones), and let the caller
+  maintain monotonicity via permanent-memory merge. *(2026-07-23, founding-merchant-activation-ops S3 —
+  extends the write-once/fail-closed cluster in Tooling gotchas.)*
+- **A kill-switch must gate the IRREVERSIBLE side effect, not just the visible surface — enumerate every
+  unwithdrawable write the feature performs and confirm each is behind the SAME flag.** An activation-CRM
+  epic gated its intake step, pages and write routes behind `activation_crm_enabled`, but the daily cron's
+  new relationship walk emitted **write-once, cross-repo** milestones behind only a *different* flag
+  (`growth.telemetry_enabled`, ON in prod). So "flip the epic flag to reveal the UI" would silently also
+  have been "emit permanent milestones across the whole backfilled population, before any smoke validated
+  the projection." A fresh reviewer caught it pre-merge. The flip is now the true go-live for the emission
+  rail; skipping the walk while the flag is OFF is an operator state (like a telemetry-off run), not an
+  error. *(2026-07-23, founding-merchant-activation-ops S3.)*
+- **Verify a sibling repo's shared contract by matching BYTES, not by re-writing it.** The Golden Beans
+  lifecycle contract doc + its fixture were owed an update for this epic's 14-event vocabulary — but a
+  `shasum` showed the fixture was already byte-identical across the Miyagi worktree, the GB doc's pinned
+  SHA, and the GB fixture file, and the doc already kept the subject id OPAQUE (`<the Miyagi merchant id>`,
+  not a table-keyed value) so a subject-key change on the Miyagi side needed no GB edit at all. Checking the
+  digest was cheaper and safer than editing another repo you're cautious about touching. *(2026-07-23,
+  founding-merchant-activation-ops S3.)*
 ## Tooling gotchas
 - **Signed-webhook consumers + write-once milestones (2026-07-22, `merchant-lifecycle-projection`,
   PR #298 — six cross-agent rounds + a fresh reviewer found NINE real defects in one story; the

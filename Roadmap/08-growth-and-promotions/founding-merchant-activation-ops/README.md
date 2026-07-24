@@ -163,12 +163,36 @@ flag only after frontend/backend compatibility and the disposable-merchant produ
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough with deployed URLs and disposable data
-- [ ] Cross-partner reads/writes return 403 and admin cohort access is covered deterministically
-- [ ] Commerce milestones replay idempotently and PII contract tests pass
-- [ ] Additive Supabase migrations are confirmed against the live schema
-- [ ] `promoter.activation_crm_enabled` exists with enablement polarity, born OFF; Daniel flips it after smoke
-- [ ] This README marked shipped; sprint headings carry commit refs
-- [ ] `RETROSPECTIVE.md`, product poster and durable learnings updated
-- [ ] Feature branch deleted and `node scripts/build-order.mjs` run
+**Status 2026-07-24: code complete + in review, all three PRs CI-green. The remaining unticked items are
+Daniel's HIGH-tier merges, the browser smokes and the flag flip — none of which an agent performs.**
+
+- [ ] All sprints merged to `main` + smoke-tested — ⏳ built + CI-green as **PR #303 (S1) → #304 (S2) →
+      #305 (S3)** (stacked; merge in order); browser smokes owed to Daniel
+- [x] Each `sprint-N.md` has its smoke walkthrough with deployed URLs and disposable data
+- [x] Cross-partner reads/writes return 403 and admin cohort access is covered deterministically —
+      deterministic specs green; the one shared `resolveRelationshipAccess` seam + `canWriteRelationship`
+      (viewer-floored steward, S2 round 3)
+- [x] Commerce milestones replay idempotently and PII contract tests pass — replay is a no-op by the
+      `(relationship_id, dedupe_key)` UNIQUE constraint; the 14-type payload PII test asserts against a
+      fully-populated fixture
+- [x] Additive Supabase migrations are confirmed against the live schema — `20260723100000`,
+      `…110000` + `…115000`, `…120000` all applied by hand and verified (`to_regclass`, CHECKs, RLS,
+      REVOKE, row counts, `schema_migrations` version)
+- [x] `promoter.activation_crm_enabled` exists with enablement polarity, born OFF (verified live) —
+      Daniel flips it after smoke; **the flip is now also the go-live for the emission rail** (see
+      Kill-switch)
+- [ ] This README marked shipped; sprint headings carry commit refs — sprint headings carry refs;
+      `status:` stays **in-progress** until the merges + flip land (honest polarity — nothing is on
+      `main` or reachable yet)
+- [x] `RETROSPECTIVE.md`, product poster and durable learnings updated — retro written; four durable
+      lessons promoted to `LEARNINGS.md`; poster carries an in-review highlight (not a "live" claim)
+- [ ] Feature branch deleted and `node scripts/build-order.mjs` run — after merge
+
+### Owed to Daniel (explicit, in order)
+
+1. Merge **#303 → #304 → #305** (HIGH tier, human green-light).
+2. Run the three sprint smoke walkthroughs against prod with a disposable merchant.
+3. Flip `promoter.activation_crm_enabled` — go-live for the UI **and** the Golden Beans emission rail.
+4. One tooling decision: the `agy` pin bump (1.1.4→1.1.5) is coupled with a model swap (retired pinned
+   models) that `agy-doctor` escalates rather than self-bumping; both cross-family reviewers were
+   usage-limited for the final round, so the last commits leaned on the fresh `pr-reviewer` layer.
