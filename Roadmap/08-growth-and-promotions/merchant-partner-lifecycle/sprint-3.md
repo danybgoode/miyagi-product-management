@@ -1,6 +1,6 @@
 # Merchant Partner lifecycle — Sprint 3: Retention and agent parity
 
-**Status:** 🟦 In review — [PR #311](https://github.com/danybgoode/miyagisanchezcommerce/pull/311), stacked on Sprint 2; migration `20260725120000` not yet applied
+**Status:** ✅ Shipped — [PR #311](https://github.com/danybgoode/miyagisanchezcommerce/pull/311) merged (squash `5e8501c`); migration `20260725120000` applied + verified live 2026-07-25
 
 ## Stories
 
@@ -67,9 +67,18 @@ Sprint 2's build contracts — you import their layers, you do not reshape them.
     dedupe_key) WHERE dedupe_key IS NOT NULL`. The 0 existing rows keep working; manual tasks pass a null
     dedupe key and are never constrained.
   - `merchant_lifecycle_emissions`: add `dedupe_key TEXT NOT NULL DEFAULT ''` and move the primary key to
-    `(merchant_id, event_type, dedupe_key)`. **The table holds 0 rows in production (verified live
-    2026-07-24) — that is the only reason this is safe, and the migration header must say so.** Milestones
-    pass `''` and keep byte-identical write-once semantics.
+    `(merchant_id, event_type, dedupe_key)`. Milestones pass `''` and keep byte-identical write-once
+    semantics.
+
+    > **This contract's original safety argument was WRONG by the time the migration was applied, and the
+    > correction is the lesson.** It said "the table holds 0 rows in production (verified live 2026-07-24) —
+    > that is the only reason this is safe". Re-checked immediately before applying on 2026-07-25: **33
+    > rows**, all delivered, emitted by the daily sweep at ~10:00 UTC. The widening was still safe for a
+    > *different and stronger* reason — the new column is `NOT NULL DEFAULT ''`, so every pre-existing row
+    > takes `''`, and the OLD key was already unique across them, so the WIDENED key is unique over exactly
+    > the same set. **Re-verify a schema-change premise at APPLY time, not plan time** (now in
+    > `LEARNINGS.md`), and when the premise dies, write the real reason down rather than leaving a stale one
+    > standing in a shipped migration.
   - Outcome vocabulary: **do not restate it in SQL prose or in a CHECK constraint that duplicates the
     dictionary.** The allowed outcomes are exported from `lib/scorecard/dictionary.ts` and enforced in the
     route by importing them; if you add a DB CHECK, generate its value list from the same source in the
