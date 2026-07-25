@@ -1,6 +1,6 @@
 # Merchant Partner lifecycle — Sprint 2: Signed-human follow-up
 
-**Status:** ⬜ not started
+**Status:** 🟨 In progress — branch `feat/merchant-partner-lifecycle-s2`, stacked on Sprint 1
 
 ## Stories
 

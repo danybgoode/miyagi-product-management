@@ -10,15 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (4)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
+- [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 0/18 stories · risk: High · #5-fm
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 0/18 stories · risk: High · #5-fm
+_None._
 
 ## ✅ Shipped (126)
 
