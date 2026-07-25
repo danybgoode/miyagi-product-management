@@ -2263,11 +2263,26 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   matched it. *(2026-07-16, mcp-parity-core S3.2 — Codex catch, min-across-live-grid recompute.)*
 
 ## Working efficiently across a long epic
+- **EPIC-MODE IS THE DEFAULT NOW (2026-07-24). The single highest-leverage act in a whole-epic run is the
+  architect's locking pass BEFORE any builder starts: numbered decisions in the epic README + a per-sprint
+  "Build contract", each checked against the live code AND the live database.** Builders cite those decisions
+  instead of rediscovering them three times — that is what makes an epic an assembly line rather than three
+  independent explorations, and every sloppy version of this pass has cost real defects (see *a paraphrased
+  contract drifts permissive*). The locking pass must disprove scope (a scaffolded criterion describing a
+  guard/table/dependency the live system lacks is fiction — correct the doc, loudly), query row counts (a
+  schema fork that's free while a table is empty is free *only* then), name every deviation in the README
+  rather than leaving a builder to discover it, and say where each contract lives so it gets imported, never
+  restated. **The full SOP — stacked branches, model routing by risk with inverted review, what a
+  pre-authorized merge does and doesn't cover, pre-launch ceremony, migrations applied by the orchestrator —
+  lives in `WAYS-OF-WORKING.md` → *Epic-mode builds*. That is the single source of truth; don't fork a second
+  copy of the list here.** *(2026-07-24, merchant-partner-lifecycle — the fourth consecutive epic built this
+  way, and the first to write the practice down.)*
 - **Compact at sprint/PR boundaries.** The cost driver isn't orientation — it's running a whole
   multi-sprint epic in one session, where each sprint's file-level reads accrete. The durable state
-  (the **plan file**, the per-sprint docs, team memory) is *designed* to make re-entry cheap, so
-  `/compact` after each sprint ships sheds the detail without losing the thread. For a big epic,
-  a **fresh session per sprint** caps per-session context — re-orientation is cheap by design.
+  (the epic README's locked decisions, the per-sprint build contracts, team memory) is *designed* to make
+  re-entry cheap, so `/compact` after each sprint ships sheds the detail without losing the thread. A
+  fresh session per sprint is still the cheapest option when an epic is genuinely huge — re-orientation is
+  cheap by design — but it is no longer the default.
 - **Read targeted ranges, not whole files**, once you know where you're going.
 - **The two big multi-agent cost sinks are the "communication tax" and the review loop — our process already
   guards both.** Agentic-dev research (Tokenomics / Co-Saving, 2026): agents re-passing large context is the

@@ -46,6 +46,71 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
 7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). **Flip the PR draft → ready-for-review the moment the deterministic gate is green and the self-QA note is posted** (updated 2026-07-15): a draft means *still building*, ready means *review me* — this is also what the roadmap board's Lifecycle overlay reads (draft PR → In progress, ready PR → In review), so leaving finished work in draft hides it in the "In review" column. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. Run the **mandatory cross-agent review** (`node scripts/cross-review.mjs <PR#>`), plus the fresh-reviewer subagent if the tier or your judgment calls for it — either way a fresh agent, never the builder (see *Review & merge* below). When the deterministic gate is green, every review finding is resolved, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
 8. **Continue / close.** Roll into the next story. At **sprint close**, emit the sprint-wrap terminal summary (`SESSION-KICKOFFS.md` §7) — a thin pointer to the sprint doc + what's owed/next, never a re-summary. At **epic close**, do the epic Definition of Done (below) — including updating the product poster. **Close-out prose (retro, poster entry, sprint-wrap) may be first-drafted by `node scripts/prose-draft.mjs`** (cheap different-family model, house-voice prompt, file-derived inputs only) — the coordinating agent **must edit the draft for factual accuracy before committing** (drafts invent plausible gaps; the banner says so). PR bodies stay with the builder — they're cheapest written by the agent holding the context.
 
+## Epic-mode builds — the default for a scaffolded epic (2026-07-24)
+
+**A whole epic in one orchestrated session is now the normal unit of work, not the exception.** Per-sprint
+sessions remain valid for a one-sprint epic or when a sprint's outcome genuinely changes the next sprint's
+scope; everything else runs epic-mode. The cadence above still holds — this section says who does what.
+
+**One architect, many builders, assembly line.** The orchestrating agent (Opus) reads the epic + sprint docs
+and the shipped seams, then does the single most valuable thing in the whole run: **locks the architecture
+decisions against the live code and the live database before any builder starts**, and writes them into the
+epic `README.md` as numbered decisions (`D1…Dn`) plus a per-sprint **"Build contract (locked by the architect
+before the builder started)"** section. Builders *cite* those decisions; they never re-derive them. This is
+what turns three sprints into an assembly line instead of three independent rediscoveries — and it is where
+the last four epics' worst defects came from when it was done sloppily (see `LEARNINGS.md` → *a paraphrased
+contract drifts permissive*).
+
+The locking pass is not a summary of the sprint docs. It must:
+- **Disprove scope.** Read the code before believing the doc. A scaffolded acceptance criterion that describes
+  a guard, a table, a dependency or a flag state the live system doesn't have is fiction — correct the doc,
+  with the reasoning, and say so out loud. Two of the last three epics had a story whose premise was already
+  satisfied, and one had a story describing a guard that never existed.
+- **Query the live database, not just the migration files.** Row counts decide what is safe: a schema fork
+  that is free while a table is empty is *only* free then, and that window is worth spending deliberately.
+- **Name every deviation.** "The scope says model output; this repo has no LLM client, so the generator is a
+  versioned template composer" belongs in the README, decided, not discovered by a builder at 2am.
+- **Say where each contract lives, once.** Import the shipped rule; never restate it.
+
+**Stack the branches.** `feat/<slug>` → `-s2` → `-s3`, each cut from the previous, one PR per sprint, merged
+in order. Sprints in one epic share hot files by construction (a `lib/<feature>/` directory, a page, the flag
+registry, a count assertion, the migration set); siblings cut off one base pay a per-merge conflict tax —
+*stack or pay* (`LEARNINGS.md`, mcp-parity-core S2–S4). Stacking also makes a flag-count assertion a one-time
+edit. One PR for the whole epic is acceptable only when the sprints don't split cleanly along a review
+boundary — prefer per-sprint PRs so the authorization sprint gets reviewed as an authorization sprint.
+
+**Route models by risk, and invert it for review.** Assign the sprint that defines the contract everything
+else imports — the authorization boundary, the migration, the shared seam — to the stronger model; assign the
+sprints that are mechanical over a locked contract to the faster one. Review is inverted: the fresh
+`pr-reviewer` pass on the highest-risk PR runs on the stronger model. State the routing in the epic README so
+the choice is auditable.
+
+**The review stack does not shrink because the epic is being built at once.** Cross-agent review on every PR,
+fresh `pr-reviewer` on every HIGH PR, findings routed back to the original builder (context intact, fixes
+cheap) while the next sprint's builder starts. **The builder never merges their own PR** — and when the
+orchestrator finishes a builder's last mile itself (session limits will do this to you), a fresh independent
+agent must review those self-authored commits before merge.
+
+**Pre-authorized merges are a real gear, and they have a shape.** Daniel may pre-authorize merging HIGH PRs,
+applying migrations and flipping the epic's flag for a *named* epic. That authorization covers the plan as
+discussed — it is **not** a new category of production mutation (TLS/IAM/secrets, money/entitlement writes, a
+new external dependency or prod secret): name those in one focused question. And pre-authorization never
+skips the gate — it removes the round-trip at each step, not the review layers.
+
+**Pre-launch ceremony is right-sized, in writing.** With zero real tenants, smoke walkthroughs that
+presuppose live operations are **descoped as pre-launch ceremony** and named in the retrospective, not quietly
+dropped. Every deterministic gate still runs in full: typecheck, build, the Playwright `api` suite, and live
+migration verification.
+
+**Migrations: the orchestrator applies them, never the builder.** The builder writes the SQL file with its
+"how this gets applied" header and stops. The orchestrator applies it (Supabase MCP `apply_migration` — the
+auto-mode classifier blocks the `supabase db query` CLI path), aligns `schema_migrations` by hand, and
+verifies live. **Never `supabase db push`.** A merged migration file is not an applied migration.
+
+**Compact at sprint/PR boundaries.** The durable state — the epic README's decisions, the per-sprint build
+contracts, team memory — is *designed* to make re-entry cheap. That is what makes a whole epic in one session
+affordable.
+
 ## Review & merge — cross-agent
 With multiple agents running in parallel, the agent that **builds** a PR is not the one that **approves** it — a
 fresh pair of eyes re-derives intent from the diff alone and catches what the author's context-bias hides.
