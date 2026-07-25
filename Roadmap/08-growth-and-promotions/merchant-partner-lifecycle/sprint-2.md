@@ -1,6 +1,6 @@
 # Merchant Partner lifecycle — Sprint 2: Signed-human follow-up
 
-**Status:** 🟨 In progress — branch `feat/merchant-partner-lifecycle-s2`, stacked on Sprint 1
+**Status:** 🟦 In review — [PR #310](https://github.com/danybgoode/miyagisanchezcommerce/pull/310), stacked on Sprint 1; migration `20260725110000` not yet applied
 
 ## Stories
 

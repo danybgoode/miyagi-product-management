@@ -1,6 +1,6 @@
 # Merchant Partner lifecycle — Sprint 3: Retention and agent parity
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — [PR #311](https://github.com/danybgoode/miyagisanchezcommerce/pull/311), stacked on Sprint 2; migration `20260725120000` not yet applied
 
 ## Stories
 
@@ -20,9 +20,19 @@ sale facts do not create duplicate tasks; admin can see missing/overdue retentio
 **As an** authorized Merchant Partner using an agent, **I want** my portfolio and task actions available safely,
 **so that** assistance respects the same grants and human decisions as the UI.
 
-**Acceptance:** `ms_partner_` tools list/read only granted portfolio records; mutations are propose/confirm,
-bounded to task/interaction state and audited; confirmation cannot reassign ownership, change commerce facts or
-send merchant communication; cross-partner ids return 403; UI and tool results agree.
+**Acceptance:** `ms_partner_` tools list/read **exactly the population `/partner` shows the same person** —
+their own field-captured records (`promoter_id`), records they steward, and shops with an active
+`partner_grants` row; mutations are propose/confirm, bounded to task/interaction state and audited;
+confirmation cannot reassign ownership, change commerce facts or send merchant communication; cross-partner ids
+return 403; UI and tool results agree.
+
+> **Wording corrected 2026-07-25 (Daniel's ruling, on fresh-reviewer finding 5/6 of PR 311).** This line
+> originally said "list/read only **granted** portfolio records", which contradicted README D2 ("reuse the UI's
+> population verbatim") and the shipped four-actor rule in `lib/relationship-role.ts` — a partner's own
+> `promoter_id` records and stewarded records are in scope in `/partner` and always were. The scaffolded text
+> predated that rule. Daniel's call: **keep UI parity** — same person, same access, one population, so the UI
+> and the tool can never disagree and no second authorization rule exists to drift. Recorded here rather than
+> left as a silent divergence between the doc and the code.
 
 **Risk:** high — agent authorization and consequential task mutations; Daniel merges.
 
