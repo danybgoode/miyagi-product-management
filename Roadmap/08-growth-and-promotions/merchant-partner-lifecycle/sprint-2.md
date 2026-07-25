@@ -1,6 +1,6 @@
 # Merchant Partner lifecycle — Sprint 2: Signed-human follow-up
 
-**Status:** 🟦 In review — [PR #310](https://github.com/danybgoode/miyagisanchezcommerce/pull/310), stacked on Sprint 1; migration `20260725110000` not yet applied
+**Status:** ✅ Shipped — [PR #310](https://github.com/danybgoode/miyagisanchezcommerce/pull/310) merged (squash `946aa98`); migration `20260725110000` applied + verified live 2026-07-25
 
 ## Stories
 

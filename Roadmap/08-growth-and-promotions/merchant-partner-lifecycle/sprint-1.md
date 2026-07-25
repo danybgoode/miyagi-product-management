@@ -1,6 +1,6 @@
 # Merchant Partner lifecycle — Sprint 1: Portfolio and ownership SLA
 
-**Status:** 🟦 In review — [PR #308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308), CI green, migration `20260725100000` not yet applied
+**Status:** ✅ Shipped — [PR #308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308) merged (squash `33facbf`); migration `20260725100000` applied + verified live 2026-07-25
 
 ## Stories
 

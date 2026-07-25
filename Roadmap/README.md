@@ -178,6 +178,27 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-25 — Merchant Partner lifecycle SHIPPED (HIGH; area 08 · three stacked PRs
+  [#308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308) →
+  [#310](https://github.com/danybgoode/miyagisanchezcommerce/pull/310) →
+  [#311](https://github.com/danybgoode/miyagisanchezcommerce/pull/311); 3 migrations applied + verified
+  live BEFORE merge; `promoter.partner_portfolio_enabled` born OFF).** A Merchant Partner's **stewardship
+  portfolio** over the shipped activation CRM: who they are accountable for, what is overdue **and why**
+  (an explainable reason, not a boolean), help preparing a follow-up **they** send, a 30-day retention
+  loop off the write-once `first_sale` transition, and agent parity that reuses the UI's own population
+  rather than a second authorization rule. Nine architecture decisions were **locked against live code
+  and the live database before any builder started** — which is what turned three sprints into an
+  assembly line and caught three scope fictions up front: this repo has **no LLM client at all**, so
+  drafts are a versioned deterministic composer (Daniel's call, not a silent substitution);
+  `resolveToolShop` routes to one shop and is structurally wrong for a portfolio; and the Golden Beans
+  emission claim key had to widen. **"Cannot auto-send" is proved by absence** — no server-side path to a
+  merchant exists, so the browser opens the `wa.me`/`mailto:` link a human confirmed. The reviews were the
+  story: codex found the same *read-then-write* race in **three** places (a read is not a claim), the
+  fresh Opus pass found the epic's **worst** defect — the agent write path gated on a flag that is ON in
+  prod, with a shipped migration header falsely asserting otherwise — and round 2 on the *fixed* tips
+  found three more, two of them holes in the round-1 fixes. Owed to Daniel: five browser smokes,
+  descoped as pre-launch ceremony; the reminder cron has no scheduler entry yet. See
+  [08 · Growth & Promotions › Merchant Partner lifecycle](08-growth-and-promotions/merchant-partner-lifecycle/).
 - **2026-07-24 — Tiendas Fundadoras acquisition SHIPPED + LIVE (HIGH; area 08 ·
   [#306](https://github.com/danybgoode/miyagisanchezcommerce/pull/306) merged, squash `4f40cb3`; migration
   applied, prod smoke passed, `growth.founding_merchants_enabled` **ON** — live with 0 real applicants).** A

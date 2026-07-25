@@ -107,6 +107,20 @@ migration verification.
 auto-mode classifier blocks the `supabase db query` CLI path), aligns `schema_migrations` by hand, and
 verifies live. **Never `supabase db push`.** A merged migration file is not an applied migration.
 
+**Two things the merchant-partner-lifecycle run (2026-07-25) added to this SOP, both learned the hard way:**
+
+- **Apply the migrations BEFORE you merge, not after.** Merging deploys, and code that reads a new column
+  against an unmigrated table breaks an actively-used path rather than staying dark. Sequence:
+  apply → verify live (4-layer) → merge → confirm Cloud Build. Also **re-verify the migration's own premise
+  at apply time** — a "safe only while this table is empty" justification died between planning and applying
+  when a cron emitted 33 rows in between, and the header had to be corrected rather than left standing.
+  The MCP `apply_migration` records its OWN timestamp as the version, so realign
+  `supabase_migrations.schema_migrations` to the filename by hand afterwards.
+- **Re-run the cross-agent review on the FIXED tip, and expect a stacked PR's tip to move under a reviewer.**
+  Round 2 found three more real bugs, two of them holes in the round-1 fixes. Separately, a fresh reviewer
+  reported two findings as unaddressed because it had read the tip from before the fixes landed — verify
+  against the current head rather than accepting or dismissing the report wholesale.
+
 **Compact at sprint/PR boundaries.** The durable state — the epic README's decisions, the per-sprint build
 contracts, team memory — is *designed* to make re-entry cheap. That is what makes a whole epic in one session
 affordable.

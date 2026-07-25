@@ -286,6 +286,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   jobs" comment drift — were both wrong on inspection); it's a fallback-when-capped, not a primary. Cursor
   (`cursor-agent`) stayed unwired: free-plan named models paywalled, free Auto usage-capped. *(2026-07-24,
   founding-merchant-activation-ops tooling follow-up.)*
+  **UPDATE 2026-07-25 — the three pools are aspirational; in practice it ran as ONE, and a clean pass from
+  one pool is WEAK EVIDENCE.** Through merchant-partner-lifecycle, codex was weekly-capped for most of the
+  epic and devin is **not installed** on this machine (`agy-doctor --fix` reports `⚠ devin not found
+  (ENOENT)`), leaving antigravity alone. Antigravity returned **zero findings** on two diffs that codex
+  later found **blocking bugs** in (a lost-update race; a not-single-apply confirm). So: when only one
+  cross-family pool answers, say so in the PR body and lean on the fresh `pr-reviewer` axis, rather than
+  reading "clean" as clearance. **Also RE-RUN cross-review on the FIXED tip** — round 2 found three more
+  real bugs, two of which were holes in the round-1 fixes; a fix is a new change. And two `agy-doctor`
+  traps worth knowing: it folds the `devin not found` warning into a scary `✗ test suite FAILED` line, and
+  the pin-guard assertion it breaks lives in `scripts/lib/*.test.mjs` — running only `node --test
+  scripts/*.test.mjs` reports a clean 159/0 and HIDES it. Run both globs, as `.githooks/pre-commit` does.
 - **A policy/convention change isn't shipped until every artifact that ASSERTS the policy is re-swept — and
   "every" means a re-derived grep over the whole population, not the files the story named.** The canonical
   prose can be perfect while the PR template, the session-kickoff SSOT, a script's own header comment, and a
@@ -1176,6 +1187,29 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A SOURCE-TEXT GUARD FAILS ON GOOD CODE FAR MORE OFTEN THAN ON DEFECTS — scope it to code, anchor it
+  inside the function, and assert the INVARIANT rather than the spelling.** Five separate cases in one
+  epic (merchant-partner-lifecycle, 2026-07-25): **(a)** three negative-containment guards failed on a
+  module whose doc comment *names* the forbidden thing to explain that it deliberately avoids it — the
+  documentation IS the evidence, and the guard punished it, pressuring the next person to delete the
+  explanation. Strip comments first: `src.replace(/\/\*[\s\S]*?\*\//g,'').replace(/(^|[^:])\/\/.*$/gm,'$1')`
+  (the `[^:]` keeps `https://` intact). **(b)** an ordering guard compared `indexOf` across the whole
+  file and matched the *import* of the symbol, which naturally precedes everything — slice to the
+  function body first. **(c)** a guard pinned a literal call (`await tgSend(`) so a correct refactor to
+  a result-returning variant read as a regression — match either form, since the invariant was
+  "claim before delivery", not which function delivers. Corollary: when a guard fails, ask *"is the
+  code wrong, or is my assertion pinning something I don't actually care about?"* — three of these five
+  were the latter.
+- **A GATE RESULT IS ONLY AS CURRENT AS THE COMMIT IT RAN AGAINST, and a narrowed suite is not the
+  gate.** I reported CI green on a PR from a run that predated my own fix commits, and separately ran
+  only `e2e/portfolio-*` (green) while the full `--project=api` suite was red. Check the head SHA
+  explicitly — `gh api repos/O/R/commits/$(gh pr view N --json headRefOid -q .headRefOid)/check-runs` —
+  and run the whole project suite before claiming it. *(2026-07-25, merchant-partner-lifecycle; caught
+  by the fresh reviewer, not by me.)*
+- **`lib/design-token-audit.ts`'s raw-hex guard reads `#310` in a comment as a colour** (`/#[0-9a-fA-F]{3,8}\b/`
+  — PR numbers are valid hex). Write PR references **without** the hash (`PR 310`) anywhere under `app/`
+  or `lib/` outside `app/api/` and `app/(shell)/admin/`; the repo convention already is hash-free
+  (42 vs 15 before this epic). Cost two PRs a red gate. *(2026-07-25.)*
 - **`undici.fetch()` resolves at HEADERS, not at body-complete — so tearing its dispatcher down in a
   `finally` truncates the response body, and a status-only spec cannot see it.** Pinning the dial target
   for SSRF hardening means a per-request `undici.Agent` (a `connect.lookup` that only answers with the
@@ -1826,6 +1860,50 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   pricing-money-path-remediation S1 — backend PR #89.)*
 
 ## Architecture
+- **A READ IS NOT A CLAIM. Any "check a column, then write based on it" pair is a lost update waiting to
+  happen — and `.select()`-back is what makes it VISIBLE.** Codex found this exact class in **three**
+  places across one epic's three PRs (merchant-partner-lifecycle, 2026-07-25): two concurrent admin
+  `PUT`s both read policy version N and both wrote N+1; two concurrent agent confirms both saw
+  `confirmed_at IS NULL` and both inserted a task; and a completion reported `ok: true` after its
+  follow-up insert failed. The fix shape is one line of SQL thinking: make the write **conditional on the
+  value you read** (`.eq('version', seen)` / `.is('confirmed_at', null)`) — the predicate IS the
+  concurrency control, no advisory lock or transaction needed. **The trap: supabase-js reports NO error
+  for an UPDATE that matched nothing**, so a lost update is indistinguishable from a save unless you
+  `.select()` a column back and check `data.length === 0`. `.upsert()` cannot express either check, which
+  is precisely why it hides the race — prefer an explicit INSERT-or-conditional-UPDATE pair over
+  `upsert` anywhere a version, a claim, or a single-apply guarantee is involved.
+- **CLAIM ORDERING HAS THREE POSITIONS, not two: validate → claim → apply.** Apply-then-claim
+  double-applies. Claim-then-apply fixes that and introduces a new failure — an *unapplicable* payload
+  gets its claim permanently consumed, so every retry hits the "already claimed" branch and the request
+  is silently lost. Validation is **pure and side-effect-free**, so it belongs before the claim, and the
+  three-step order is strictly better than either two-step one. Found by re-reviewing the *fixed* tip.
+  *(2026-07-25, merchant-partner-lifecycle S3 — the round-1 fix caused the round-2 bug.)*
+- **A dark feature that NOTIFIES A HUMAN is not dark — the gating line is "does a person get contacted",
+  not "is it a cron".** A reminder cron shipped with no kill-switch check and delivered real web-push and
+  Telegram to stewards while its feature flag was OFF; the epic's own migration header had *rationalized*
+  the gap ("same posture the other cron takes"), which is how a gap becomes a convention. Background jobs
+  that write internal state or emit telemetry can legitimately run ungated (the flag lives at the route
+  layer, and a row nobody reads costs nothing); anything that contacts a person cannot. State which side
+  of that line each background path is on, explicitly, in the migration/route header.
+- **A fire-and-forget seam CANNOT report delivery, and "reachability" has two halves.** `notify()`
+  returns silently when VAPID is unconfigured; `tgSend()` returns silently with no token AND never
+  inspects its response, so a 401 counts as delivered. Pre-checking only the *subscription* (data) while
+  missing the *transport* (config) still records false successes — check both, or don't claim delivery.
+  When a caller genuinely needs an outcome, add an **additive** probe (`pushConfigured()`,
+  `tgSendWithResult()`) and leave the shared `Promise<void>` contract byte-identical for the call sites
+  that depend on it never throwing — then assert those signatures in a spec so a future "simplification"
+  fails loudly. *(2026-07-25, merchant-partner-lifecycle S2.)*
+- **RE-VERIFY A SCHEMA-CHANGE PREMISE AT APPLY TIME, NOT PLAN TIME — the "free while the table is empty"
+  window can close underneath you.** A PK widening was justified as "safe only because this table holds 0
+  rows (verified live)". True when written; **false when applied 24h later** — the daily sweep had emitted
+  33 rows in between. The change was still safe, for a *different and stronger* reason (`NOT NULL DEFAULT
+  ''` means every existing row takes the default, and the OLD key was already unique across them, so the
+  WIDENED key is unique over exactly the same set). Two rules: re-run the count immediately before
+  applying, and when the original justification dies, **write the real reason down** instead of leaving a
+  stale one standing — a shipped migration header asserting something false is the same defect as
+  paraphrasing a contract. Also verify a `DROP CONSTRAINT IF EXISTS <name>` really matches the live
+  constraint name first (`pg_constraint`), or it silently no-ops and the following `ADD` aborts mid-file.
+  *(2026-07-25, merchant-partner-lifecycle D8.)*
 - **A secret-auth internal route must fail CLOSED when its secret env is UNSET — and check idempotency
   BEFORE consuming a single-use credential.** Two money-route defects a cross-agent (Codex) pass caught on
   the launchpad coupon-mint path, both worth generalizing: (1) an `unauthorized()` that returns

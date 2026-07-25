@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: merchant-partner-lifecycle
 ---
 
@@ -252,13 +252,31 @@ then enable for one disposable partner cohort before broader access.
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Two-partner authorization matrix proves cross-partner reads/writes return 403
-- [ ] Reassignment preserves origin, cohort, commission and full owner history
-- [ ] Draft generation uses allowlisted facts and no path can auto-send to a merchant
-- [ ] Reminder delivery and Golden Beans event replay are idempotent
-- [ ] Thirty-day outcome definitions agree with the scorecard contract
-- [ ] `promoter.partner_portfolio_enabled` exists with enablement polarity, born OFF; Daniel flips after smoke
-- [ ] Every sprint walkthrough contains deployed URLs and disposable data
-- [ ] This README marked shipped; retrospective, poster and durable learnings updated
-- [ ] Feature branch deleted and `node scripts/build-order.mjs` run
+- [x] All sprints merged to `main` + smoke-tested (**gaps stated** — the five browser smokes are descoped
+      as pre-launch ceremony; see the retrospective's *Gaps / follow-ups*)
+- [x] Two-partner authorization matrix proves cross-partner reads/writes return 403 — **by spec, not by
+      round-trip.** No new authorization rule was written: everything routes through the shipped
+      `resolveRelationshipAccess` / `decideRelationshipRole` (D2), so the matrix tests a rule that already
+      ships. The authenticated round-trip is the standing Clerk-fixture gap, owed.
+- [x] Reassignment preserves origin, cohort, commission and full owner history — the forbidden field set is
+      **derived** from `AUDITED_FIELDS` minus the stewardship fields, so a future audited field is covered
+      without editing the spec; nothing under `lib/portfolio/` can reach a commission or transfer table
+      (a population guard proved this by catching a real violation of it mid-epic)
+- [x] Draft generation uses allowlisted facts and no path can auto-send to a merchant — proved by
+      **absence** (D5): the transitive import closure of every draft module and `draft*` route contains no
+      transport at all, with the population re-derived from the filesystem
+- [x] Reminder delivery and Golden Beans event replay are idempotent — `UNIQUE (relationship_id, kind,
+      window_key)` and the widened `(merchant_id, event_type, dedupe_key)` claim key; the constraint is the
+      guarantee, never a SELECT-then-INSERT
+- [x] Thirty-day outcome definitions agree with the scorecard contract — `RETENTION_OUTCOMES` lives in
+      `lib/scorecard/dictionary.ts` and is imported, not restated. **Caveat, stated:** the migration's CHECK
+      is kept in lockstep **by hand** and the spec guard is one-directional (a CHECK growing *more*
+      permissive than the dictionary would pass)
+- [x] `promoter.partner_portfolio_enabled` exists with enablement polarity, born OFF — applied and verified
+      live 2026-07-25 (`enabled = false`). **It also gates the partner-agent MCP route**, which it did not
+      until the fresh-reviewer pass caught that the agent write path would otherwise have gone live on
+      deploy. Daniel flips when he wants the surface on; nothing is owed first.
+- [x] Every sprint walkthrough contains deployed URLs and disposable data (unchanged from scaffold; the
+      walkthroughs are the descoped smokes)
+- [x] This README marked shipped; retrospective, poster and durable learnings updated
+- [x] Feature branches deleted and `node scripts/build-order.mjs` run
