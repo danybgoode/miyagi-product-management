@@ -105,10 +105,33 @@ export function parseMigrationListTable(text) {
     if (!localVer && !remoteVer) continue;
     rows.push({ local: localVer, remote: remoteVer });
   }
+  // A version is APPLIED if it appears in the remote column of ANY row — not merely of its own row.
+  // Two local files may share one timestamp (we have exactly that: 20260711120000 is used by both
+  // `..._migrations_connector_enabled_flag.sql` and `..._seller_shell_on_sell_enabled_flag.sql`).
+  // `schema_migrations` is keyed by version, so it can only ever record ONE of them, and the CLI then
+  // prints the pair as two rows: `local|remote` for the recorded one and `local|<blank>` for the other.
+  //
+  // Reading that blank row naively as "unapplied" is FALSE — verified live 2026-07-26: the version is in
+  // schema_migrations and both flag rows exist in platform_flags. Worse, it is false on the one signal
+  // that has to be trustworthy: it would send someone to re-apply an already-applied migration. So a
+  // version present anywhere in the remote column is applied, and the duplicate is reported as what it
+  // actually is — a version collision, which is a real (if minor) repo defect worth naming once.
+  const appliedVersions = new Set(rows.map((r) => r.remote).filter(Boolean));
+  const localVersions = rows.map((r) => r.local).filter(Boolean);
+  const localSet = new Set(localVersions);
+
+  const seen = new Set();
+  const duplicateLocalVersions = [];
+  for (const v of localVersions) {
+    if (seen.has(v) && !duplicateLocalVersions.includes(v)) duplicateLocalVersions.push(v);
+    seen.add(v);
+  }
+
   return {
     rows,
-    unappliedLocal: rows.filter((r) => r.local && !r.remote).map((r) => r.local),
-    appliedNoFile: rows.filter((r) => r.remote && !r.local).map((r) => r.remote),
+    unappliedLocal: [...new Set(localVersions.filter((v) => !appliedVersions.has(v)))],
+    appliedNoFile: [...new Set(rows.map((r) => r.remote).filter((v) => v && !localSet.has(v)))],
+    duplicateLocalVersions,
   };
 }
 
@@ -181,10 +204,20 @@ export function decidePrAnomalies(open) {
 //     applies nobody realigned — real, but historical and never actionable at session-resume time.
 //     Collapsed to ONE counted line that still names the versions, so the information is kept and the
 //     signal is not drowned. `--all-migrations` restores the per-item listing when that is the task.
-export function decideMigrationAnomalies({ repo, unappliedLocal, appliedNoFile, expandOrphans = false }) {
+export function decideMigrationAnomalies({ repo, unappliedLocal, appliedNoFile, duplicateLocalVersions, expandOrphans = false }) {
   const out = [];
   for (const v of unappliedLocal || []) {
     out.push({ repo, type: 'migration-unapplied', detail: `migration ${v} has a file but is NOT in the live schema_migrations table.` });
+  }
+  for (const v of duplicateLocalVersions || []) {
+    out.push({
+      repo,
+      type: 'migration-duplicate-version',
+      detail:
+        `two or more local migration files share version ${v}. schema_migrations is keyed by version, ` +
+        `so only one can ever be recorded — the others are permanently unrecordable. The effect may still ` +
+        `be applied; check before re-running anything.`,
+    });
   }
   const orphans = appliedNoFile || [];
   if (expandOrphans) {

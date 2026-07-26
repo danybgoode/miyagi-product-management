@@ -90,8 +90,47 @@ test('parseMigrationListTable: header and separator rows are not treated as data
   assert.equal(parsed.rows.some((r) => r.local === null && r.remote === null), false);
 });
 
+// Captured VERBATIM from the live CLI, 2026-07-26. Two local files genuinely share version
+// 20260711120000 (the connector-flag and seller-shell-flag seeds), so the CLI prints the pair as a
+// matched row PLUS a local-only row. Reading that second row as "unapplied" was a false positive on the
+// one signal that must be trustworthy — verified against the live DB: the version IS in
+// schema_migrations and both seeded flags exist in platform_flags.
+const DUPLICATE_VERSION_FIXTURE = [
+  '   Local          | Remote         | Time (UTC)          ',
+  '  ----------------|----------------|---------------------',
+  '   20260711120000 | 20260711120000 | 2026-07-11 12:00:00 ',
+  '   20260711120000 |                | 2026-07-11 12:00:00 ',
+  '                  | 20260711121000 | 2026-07-11 12:10:00 ',
+].join('\n');
+
+test('parseMigrationListTable: a version applied in ANY row is not reported unapplied (duplicate-version collision)', () => {
+  const parsed = parseMigrationListTable(DUPLICATE_VERSION_FIXTURE);
+  assert.deepEqual(parsed.unappliedLocal, [], 'an applied version must never be reported as unapplied');
+  assert.deepEqual(parsed.duplicateLocalVersions, ['20260711120000']);
+  assert.deepEqual(parsed.appliedNoFile, ['20260711121000']);
+});
+
+test('decideMigrationAnomalies: a duplicate version is named as a collision, not as unapplied', () => {
+  const out = decideMigrationAnomalies({
+    repo: 'r',
+    unappliedLocal: [],
+    appliedNoFile: [],
+    duplicateLocalVersions: ['20260711120000'],
+  });
+  assert.equal(out.length, 1);
+  assert.equal(out[0].type, 'migration-duplicate-version');
+  assert.match(out[0].detail, /only one can ever be recorded/);
+  assert.equal(out.some((a) => a.type === 'migration-unapplied'), false);
+});
+
 test('parseMigrationListTable: empty/garbage text → no rows, no throw', () => {
-  assert.deepEqual(parseMigrationListTable(''), { rows: [], unappliedLocal: [], appliedNoFile: [] });
+  // Assert the FIELDS, not the whole object — a whole-object deepEqual here made adding
+  // `duplicateLocalVersions` look like a regression when nothing about empty-input handling changed.
+  const empty = parseMigrationListTable('');
+  assert.deepEqual(empty.rows, []);
+  assert.deepEqual(empty.unappliedLocal, []);
+  assert.deepEqual(empty.appliedNoFile, []);
+  assert.deepEqual(empty.duplicateLocalVersions, []);
   assert.deepEqual(parseMigrationListTable('not a table at all').rows, []);
 });
 
