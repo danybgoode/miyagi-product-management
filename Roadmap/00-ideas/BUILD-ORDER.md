@@ -19,7 +19,7 @@
 ## 📋 Ready to build (scaffolded, not started) (5)
 
 - [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 0/3 stories
-- [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 0/10 stories · risk: Low
+- [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 1/10 stories · risk: Low
 - [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
 - [QA guardrail hardening — close the gaps between the documented DoD and what CI enforces](../../09-platform-infra/qa-guardrail-hardening/README.md) — 09 Platform-infra · 0/8 stories
 - [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 3/3 stories
@@ -170,6 +170,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
+| Executive prose rail — a CPO voice for the scheduled reports | Scaffolded | In progress |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 | Session continuity — surviving an orchestrator that dies mid-flight | Scaffolded | In progress |
 

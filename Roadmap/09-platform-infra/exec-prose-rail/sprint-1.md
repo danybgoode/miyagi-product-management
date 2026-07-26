@@ -1,6 +1,6 @@
 # Executive prose rail — Sprint 1: the shared guard, the CPO persona, the local writer rail
 
-**Status:** ⬜ not started
+**Status:** 🏗️ **IN PROGRESS** — branch `feat/exec-prose-rail` (monorepo-root). Story 1.1 ✅.
 
 > The foundation both other sprints import: a pure guard, a devin→agy writer with guard-and-retry,
 > the persona/task files, and the accumulating lessons file. Ends by proving the rail on a real
@@ -25,7 +25,7 @@ Cite `README.md` D1–D8. Do not re-derive them. Specifically:
 
 ## Stories
 
-### Story 1.1 — `scripts/lib/prose-guard.mjs`: the pure mechanical check ⬜
+### Story 1.1 — `scripts/lib/prose-guard.mjs`: the pure mechanical check ✅
 **As a** product owner, **I want** every machine-drafted report checked before I read it, **so that**
 a confident falsehood never reaches me as status.
 **Acceptance:**
