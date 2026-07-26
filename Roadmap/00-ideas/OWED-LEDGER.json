@@ -1,0 +1,11 @@
+{
+  "total": 75,
+  "files": 70,
+  "byCategory": {
+    "money-path": 16,
+    "auth-path": 14,
+    "admin-only": 4,
+    "other": 41
+  },
+  "generatedAt": "2026-07-26"
+}
