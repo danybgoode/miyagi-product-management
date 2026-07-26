@@ -10,16 +10,16 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (4)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
+- [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 10/10 stories · risk: Low
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (5)
+## 📋 Ready to build (scaffolded, not started) (4)
 
 - [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 0/3 stories
-- [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 1/10 stories · risk: Low
 - [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
 - [QA guardrail hardening — close the gaps between the documented DoD and what CI enforces](../../09-platform-infra/qa-guardrail-hardening/README.md) — 09 Platform-infra · 0/8 stories
 - [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 3/3 stories
@@ -170,7 +170,6 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
-| Executive prose rail — a CPO voice for the scheduled reports | Scaffolded | In progress |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 | Session continuity — surviving an orchestrator that dies mid-flight | Scaffolded | In progress |
 

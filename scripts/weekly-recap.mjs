@@ -29,13 +29,21 @@
 // node_modules/TS build here). Zero npm deps — Node >=20 (global fetch, spawnSync).
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, writeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
 import { searchMergedPrs } from './lib/gh-rest.mjs';
 import { formatPrList, truncateForTelegram } from './lib/telegram-format.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
+import { checkProse, findingsToRevisionNote } from './lib/prose-guard.mjs';
+import {
+  buildEvidencePack,
+  buildQuietBrief,
+  buildBrief,
+  deriveEvidenceFlags,
+  loadOwedLedger,
+} from './lib/prose-brief.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -50,6 +58,18 @@ const CONFIG_PATH = join(ROOT, '.claude/config/weekly-recap.json');
 
 const argv = process.argv.slice(2);
 const DRY_RUN = argv.includes('--dry-run');
+
+// ── Two-phase prose modes (exec-prose-rail S3) — mirrors standup.mjs exactly ─────────────────
+// Same contract, higher altitude and a longer budget. Deliberately NOT a shared main(): the two
+// scripts have genuinely different gather stages and window strategies (see the header note on why
+// the window tracker here is not the standup's delta-snapshot diffing).
+const BRIEF = argv.includes('--brief');
+const POST = argv.includes('--post');
+const FORCE_POST = argv.includes('--force-post');
+const PROSE_FILE = argValue('--prose-file');
+
+// A weekly is read at a desk, not on a lock screen — but the budget is still a budget, not a target.
+const WEEKLY_MAX_WORDS = 160;
 function argValue(flag) {
   const i = argv.indexOf(flag);
   return i !== -1 ? argv[i + 1] : null;
@@ -360,7 +380,51 @@ async function main() {
   const repoResults = REPOS.map((repo) => gatherMergedPrs(repo, sinceISO, untilISO));
   const shippedEpics = gatherShippedEpics(sinceISO, untilISO);
 
-  const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics });
+  // ── Phase 1: --brief ──────────────────────────────────────────────────────────────────────
+  if (BRIEF) {
+    const windowLabel = `the week of ${sinceISO.slice(0, 10)} to ${untilISO.slice(0, 10)}`;
+    const prCount = repoResults.reduce((n, r) => n + (r.available ? r.prs.length : 0), 0);
+    const epics = shippedEpics.available ? shippedEpics.epics : [];
+
+    // D7: nothing shipped AND nothing merged is the only genuinely quiet week.
+    if (!epics.length && prCount === 0) {
+      writeSync(1, `${buildQuietBrief(windowLabel)}\n`);
+      return;
+    }
+
+    // Shipped/closed epics lead — the highest-altitude product input we own, written in product
+    // language by the people who did the work, with their retro digests attached.
+    const roadmapDeltas = epics.map((e) =>
+      `Epic "${e.name}" moved to ${e.status}${e.retroDigest ? ` — from its retrospective: ${e.retroDigest}` : ''}`
+    );
+
+    const pack = buildEvidencePack({
+      windowLabel,
+      roadmapDeltas,
+      owed: loadOwedLedger(join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json')),
+      repoSignals: [`${prCount} pull request(s) merged across the three repositories this week.`],
+      liveFlags: { available: false, flags: [] },
+    });
+    writeSync(1, `${buildBrief({ scriptsDir: __dirname, surface: 'weekly', pack })}\n`);
+    return;
+  }
+
+  // ── Phase 3: --post --prose-file ──────────────────────────────────────────────────────────
+  let prose = null;
+  if (POST && PROSE_FILE) {
+    const draft = readFileSync(resolve(ROOT, PROSE_FILE), 'utf8').trim();
+    const evidence = deriveEvidenceFlags({ subjects: [], areas: [], liveFlags: [], maxWords: WEEKLY_MAX_WORDS });
+    const verdict = checkProse(draft, evidence);
+    if (!verdict.ok && !FORCE_POST) {
+      process.stderr.write(`${findingsToRevisionNote(verdict.findings)}\n`);
+      process.exit(2);
+    }
+    prose = verdict.ok ? draft : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
+  }
+
+  const base = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics });
+  // Prose leads, the existing tallies follow — same shape decision as the standup.
+  const message = prose ? base.replace(/\n/, `\n\n${prose}\n`) : base;
   console.log(message.replace(/<\/?[^>]+>/g, ''));
 
   if (!DRY_RUN) {

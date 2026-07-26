@@ -1,6 +1,6 @@
 # Executive prose rail — Sprint 2: the daily standup, written by the routine
 
-**Status:** ⬜ not started
+**Status:** ✅ Built — branch `feat/exec-prose-rail` (c0e3d29)
 
 > The first scheduled surface. `standup.mjs` gains a two-phase mode so the routine's own model writes
 > the prose in-context and the same pure guard checks it. Prose leads; the actionable signals stay.
@@ -24,7 +24,7 @@ Cite `README.md` D2, D4, D7, D8 — and S1's modules as **given**, not to be re-
 
 ## Stories
 
-### Story 2.1 — `--brief`: the deterministic evidence pack ⬜
+### Story 2.1 — `--brief`: the deterministic evidence pack ✅
 **As the** nightly routine, **I want** one command that hands me everything I need to write, **so that**
 I never guess at repo state.
 **Acceptance:**
@@ -40,7 +40,7 @@ I never guess at repo state.
 - **Empty window (D7):** emits an explicit "quiet night — do NOT write prose" instruction instead of
   an evidence pack. Unit-tested: an empty window must never produce a writable brief.
 
-### Story 2.2 — `--post --prose-file`: guard, then post ⬜
+### Story 2.2 — `--post --prose-file`: guard, then post ✅
 **As the** nightly routine, **I want** my draft mechanically checked before it posts, **so that** a
 falsehood doesn't reach the channel as status.
 **Acceptance:**
@@ -55,7 +55,7 @@ falsehood doesn't reach the channel as status.
   deck link. Prose is HTML-escaped through the existing helper.
 - `--post --prose-file` composes with `--dry-run` (guard + print, post nothing) — the mode agents test with.
 
-### Story 2.3 — `ops-nightly.prompt.md` teaches the loop ⬜
+### Story 2.3 — `ops-nightly.prompt.md` teaches the loop ✅
 **As the** routine, **I want** the write→guard→revise loop written down, **so that** it runs the same
 way every night.
 **Acceptance:**

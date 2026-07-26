@@ -31,14 +31,47 @@ running as Daniel. Your job is one step, then stop: post the week's executive re
 Everything you do is **advisory/observability only** — read-only aggregation plus one Telegram post and
 one log-commit; you never merge, approve, block, or touch any repo's code.
 
-## The one step — `weekly-recap`
-Use the `weekly-recap` skill exactly — it handles the config check (chat id from
-`.claude/config/weekly-recap.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
-actually works in this unattended routine session, since `config.json` is gitignored and can't survive
-between separate runs; if genuinely BOTH are unset, that's a hard stop, use the failure ping below
-instead of guessing — never `AskUserQuestion` here, no interactive human is present), the
-`TELEGRAM_BOT_TOKEN` secret check, running `node scripts/weekly-recap.mjs`, and reporting the result
-(merged-PR/deploy/shipped-epic counts, any retro-digest excerpts).
+## The one step — `weekly-recap`, written by YOU in three phases
+
+The recap is no longer a tally: **you write it, as the CPO persona, and a mechanical guard checks
+your draft before it posts.** Same rail as the nightly standup, one altitude higher.
+
+**You must write the prose yourself, in this session. Do NOT call `devin`, `agy`, `codex`, or
+`prose-draft.mjs`** — none of them is authenticated here, and reaching for one produces no report at
+all rather than an obvious failure. This is the single most important line in this file.
+
+Config/secrets first, as before: chat id from `.claude/config/weekly-recap.json` if present, else the
+`TELEGRAM_CHAT_ID` env var (the env var is what actually works in this unattended session, since
+`config.json` is gitignored and can't survive between runs). If genuinely BOTH are unset, that's a
+hard stop — use the failure ping below; never `AskUserQuestion`, no interactive human is present.
+`TELEGRAM_BOT_TOKEN` must be set.
+
+**Phase 1 — get the brief.**
+```
+node scripts/weekly-recap.mjs --brief
+```
+It prints your persona, the accumulated lessons, and the week's evidence — **shipped and closed epics
+first, with excerpts from their retrospectives**, then merged-PR volume as corroboration. It writes
+nothing and sends nothing. **If it returns the "Nothing to report" brief, stop** and let the script
+post its standard quiet-week line; do not manufacture content.
+
+**Phase 2 — write the prose.** Answer one question: *what is now possible that was not possible on
+Monday, and what is still owed?* Group by **theme**, never by commit or by repository — a list of
+merges is not a report, and the word budget is not permission to enumerate. Name the decision that
+shaped the week if there was one. State what is owed; a weekly that quietly omits a known gap is the
+one unforgivable error here. Save your draft to a temp file.
+
+**Phase 3 — guard, then post.**
+```
+node scripts/weekly-recap.mjs --post --prose-file <your-file>
+```
+- **Exit 0** → posted.
+- **Non-zero exit** → it prints a numbered revision note. Rewrite the draft in full against every
+  point, then re-run once with `--force-post`. A flagged-but-posted report beats a missing one, and
+  the label tells a human it did not converge.
+- One revision, then post. Do not loop further.
+
+Report the result afterwards (merged-PR / shipped-epic counts, whether the guard passed clean).
 
 ## Nothing else
 No PR, no comment, no code change of your own — the Telegram post (plus the `scripts/weekly-recaps.log`

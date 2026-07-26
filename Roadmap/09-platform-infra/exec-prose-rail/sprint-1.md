@@ -1,6 +1,6 @@
 # Executive prose rail — Sprint 1: the shared guard, the CPO persona, the local writer rail
 
-**Status:** 🏗️ **IN PROGRESS** — branch `feat/exec-prose-rail` (monorepo-root). Story 1.1 ✅.
+**Status:** ✅ Built — branch `feat/exec-prose-rail`; all 4 stories (a5c72b4, 4495533, b25c433, a571d7c)
 
 > The foundation both other sprints import: a pure guard, a devin→agy writer with guard-and-retry,
 > the persona/task files, and the accumulating lessons file. Ends by proving the rail on a real
@@ -43,7 +43,7 @@ a confident falsehood never reaches me as status.
   why** — a guard that rejects correct English teaches people to bypass it).
 - Each finding's `note` is written to be handed straight back to a writer as an instruction.
 
-### Story 1.2 — `scripts/lib/prose-writer.mjs`: devin → agy, guard-and-retry ⬜
+### Story 1.2 — `scripts/lib/prose-writer.mjs`: devin → agy, guard-and-retry ✅
 **As an** agent drafting internal prose, **I want** one rail with a fallback and a retry, **so that**
 a capped writer or a flawed draft doesn't cost the artifact.
 **Acceptance:**
@@ -64,7 +64,7 @@ a capped writer or a flawed draft doesn't cost the artifact.
   "helpfully" restores a Gemini fallback.
 - Unit tests drive both writers through injected `deps` — no real CLI, no network, no temp files.
 
-### Story 1.3 — the CPO persona + task files + lessons file ⬜
+### Story 1.3 — the CPO persona + task files + lessons file ✅
 **As a** reader, **I want** the reports written in one deliberate voice, **so that** quality is
 consistent instead of per-run luck.
 **Acceptance:**
@@ -79,7 +79,7 @@ consistent instead of per-run luck.
 - The file documents its own contract: quote the real sentence; if mechanically detectable, **also**
   add a guard rule + test. A lesson reduces a mistake; a guard catches it. Prefer both.
 
-### Story 1.4 — `prose-draft.mjs` rides the shared rail ⬜
+### Story 1.4 — `prose-draft.mjs` rides the shared rail ✅
 **As the** coordinating agent, **I want** retro/poster/sprint-wrap drafts guarded too, **so that** the
 rail is proven on a real surface before the routines depend on it.
 **Acceptance:**
