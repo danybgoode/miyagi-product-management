@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-26 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-27 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -13,18 +13,15 @@
 ## 🏗️ Building now (4)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 10/10 stories · risk: Low
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
+- [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (4)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 0/3 stories
-- [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
-- [QA guardrail hardening — close the gaps between the documented DoD and what CI enforces](../../09-platform-infra/qa-guardrail-hardening/README.md) — 09 Platform-infra · 0/8 stories
-- [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 3/3 stories
+_None._
 
-## ✅ Shipped (127)
+## ✅ Shipped (131)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -116,6 +113,7 @@
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 6/6 stories · risk: High
 - [Build-order CI self-heal](../../09-platform-infra/build-order-ci-self-heal/README.md) — 09 Platform-infra · 1/1 stories · risk: Low · #1
 - [Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)](../../09-platform-infra/routines-enablement/README.md) — 09 Platform-infra · 1 sprints
+- [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 3/3 stories
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent review on every PR (CI auto-run + policy)](../../09-platform-infra/cross-agent-review-always/README.md) — 09 Platform-infra · 5/5 stories
@@ -126,6 +124,7 @@
 - [dobby-foundation — portable ways-of-work (plugin marketplace + project template)](../../09-platform-infra/dobby-foundation/README.md) — 09 Platform-infra · 8/8 stories
 - [Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill](../../09-platform-infra/doc-hygiene-learnings-sweep/README.md) — 09 Platform-infra · 2/2 stories
 - [Emoji → Iconoir sweep — one icon language, finally](../../09-platform-infra/emoji-to-iconoir-sweep/README.md) — 09 Platform-infra · 2/2 stories
+- [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 10/10 stories · risk: Low
 - [Feature flags & kill-switches (Flagsmith)](../../09-platform-infra/feature-flags-killswitches/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · Wave 0 Enablers
 - [Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10](../../09-platform-infra/frontend-vercel-to-cloudrun/README.md) — 09 Platform-infra · 17/17 stories · risk: High · Next up
 - [GitHub Actions minutes — local-first checks, GH Actions as fallback](../../09-platform-infra/github-actions-local-first/README.md) — 09 Platform-infra · 1/1 stories
@@ -141,10 +140,12 @@
 - [Process iteration — UX rails at grooming + observed-red DoD ✅](../../09-platform-infra/process-ux-rails-and-red-green/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · tbd
 - [Process token-diet](../../09-platform-infra/process-token-diet/README.md) — 09 Platform-infra · 4/4 stories · risk: Low · #3
 - [PWA Liquid-Glass Nav Polish](../../09-platform-infra/pwa-liquid-glass-nav-polish/README.md) — 09 Platform-infra · 6/6 stories · risk: Low
+- [QA guardrail hardening — close the gaps between the documented DoD and what CI enforces](../../09-platform-infra/qa-guardrail-hardening/README.md) — 09 Platform-infra · 8/8 stories
 - [Repo cleanup + per-repo READMEs — value prop, engineering practice, product story](../../09-platform-infra/repo-readmes-branding/README.md) — 09 Platform-infra · 2/2 stories · risk: Low · Wave 3
 - [Roadmap doc-format consistency — rules, sweep, and an automatic checker](../../09-platform-infra/doc-format-consistency/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Seller nav consolidation + breadcrumb standardization (`/shop/manage`)](../../09-platform-infra/seller-nav-consolidation/README.md) — 09 Platform-infra · 6/6 stories
 - [Seller-portal rails foundation — one design language](../../09-platform-infra/seller-portal-rails-foundation/README.md) — 09 Platform-infra · 4/4 stories
+- [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 3/3 stories
 - [Site-wide analytics: GTM container (GA4 + Clarity)](../../09-platform-infra/site-wide-analytics-gtm/README.md) — 09 Platform-infra · 3/3 stories
 - [SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch](../../09-platform-infra/ssrf-dns-pinning/README.md) — 09 Platform-infra · 2/2 stories · risk: Low
 - [Static marketplace shell — kill the per-request homepage function ✅](../../09-platform-infra/marketplace-static-shell/README.md) — 09 Platform-infra · 9/9 stories
@@ -171,7 +172,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 |---|---|---|
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
-| Session continuity — surviving an orchestrator that dies mid-flight | Scaffolded | In progress |
+| Pipeline throughput — shard the gate, cache the uncacheable install | In progress | Shipped |
 
 ---
 _Epics: 136 · seeds in funnel: 4 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
