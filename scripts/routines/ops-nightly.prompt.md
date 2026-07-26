@@ -60,17 +60,50 @@ number`), then use the `babysit-pr` skill once per open PR (`node scripts/babysi
 --repo <repo>`). A clean PR gets no comment — that's correct, not a skipped step. Never merge, never
 rebase a conflicting branch, never touch any commit-status/check-run API.
 
-## Step 4 — `standup-post`
-Use the `standup-post` skill exactly — it handles the config check (chat id from
-`.claude/config/standup-post.json` if present, else the `TELEGRAM_CHAT_ID` env var — the env var is what
-actually works in this unattended routine session, since `config.json` is gitignored and can't survive
-between separate runs; if genuinely BOTH are unset, that's a hard stop, use the failure ping below
-instead of guessing — never `AskUserQuestion` here, no interactive human is present), the
-`TELEGRAM_BOT_TOKEN` secret check, running `node scripts/standup.mjs`, and reporting the result. The
-Telegram message keeps the plain standup text and appends a `SmallDocs standup:` story-deck link for
-mobile reading/forwarding. Its own CI-red and merge-conflict signals are read fresh at this point —
-after steps 1–3 had a chance to fix/flag things — so they reflect the current state, not a stale pre-run
-snapshot.
+## Step 4 — `standup-post`, written by YOU in three phases
+
+The standup is no longer a dump of delta lines: **you write it, as the CPO persona, and a mechanical
+guard checks your draft before it posts.**
+
+**You must write the prose yourself, in this session. Do NOT call `devin`, `agy`, `codex`, or
+`prose-draft.mjs`** — none of them is authenticated here, and reaching for one produces no report at
+all rather than an obvious failure. This is the single most important line in this file.
+
+Config/secrets first, exactly as before: chat id from `.claude/config/standup-post.json` if present,
+else the `TELEGRAM_CHAT_ID` env var (the env var is what actually works in this unattended session,
+since `config.json` is gitignored and can't survive between runs). If genuinely BOTH are unset, that's
+a hard stop — use the failure ping below instead of guessing; never `AskUserQuestion`, no interactive
+human is present. `TELEGRAM_BOT_TOKEN` must be set.
+
+**Phase 1 — get the brief.**
+```
+node scripts/standup.mjs --brief
+```
+This prints your persona, the accumulated lessons, and a deterministic evidence pack. It writes
+nothing and sends nothing. **If it returns the "Nothing to report" brief, stop:** post nothing beyond
+the standard quiet-night message and move on. A quiet night is a successful run — do not manufacture
+an update.
+
+**Phase 2 — write the prose.** Follow the persona and the task block in the brief exactly. Lead with
+what is now true that was not true before, in product terms. Note the constraints that trip drafts
+most often: never name files, tools or frameworks; never state a deadline or sign-off; never call a
+capability live unless the evidence pack lists its flag as on; and if the work was internal, say so
+plainly rather than inventing a customer benefit. Save your draft to a temp file.
+
+**Phase 3 — guard, then post.**
+```
+node scripts/standup.mjs --post --prose-file <your-file>
+```
+- **Exit 0** → posted. Done.
+- **Non-zero exit** → it prints a numbered revision note. **Rewrite the draft in full against every
+  point**, then re-run once with `--force-post` added. A flagged-but-posted report beats a missing
+  one, and the second attempt is labelled so a human can see it did not converge.
+- Do not loop more than that. One revision, then post.
+
+The posted message is prose first, then the compact actionable signals (CI red, conflicts, stale
+board), then the `SmallDocs standup:` deck link. Its CI-red and merge-conflict signals are read fresh
+at this point — after steps 1–3 had a chance to fix/flag things — so they reflect current state, not a
+stale pre-run snapshot.
 
 ## Nothing else
 No PR beyond what steps 1 and 3 produce as their normal output; no extra comment; no code change of

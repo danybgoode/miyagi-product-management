@@ -372,3 +372,34 @@ test('unfinished: allowsMarkdown does NOT excuse a genuine mid-clause fragment',
   const draft = 'The rail is built and the reminder schedule still has no runner, so broader error handling is';
   assert.ok(checkProse(draft, { allowsMarkdown: true, maxWords: 4000, minWords: 5 }).findings.some((f) => f.code === 'unfinished'));
 });
+
+// ---- beneficiary mentions that DENY impact (regression: the guard contradicted its own brief) ----
+//
+// prose-lessons.md ends with "Say 'no user-visible effect' when that is the truth", and the persona
+// tells the writer to state plainly that customers are unaffected for internal work. The beneficiary
+// rule then fired on exactly that compliant sentence (measured 2026-07-26). A guard that rejects the
+// sentence its own lessons demand teaches the writer to avoid the honest phrasing.
+
+test('invented-beneficiary: a NO-IMPACT mention is allowed even when allowsBeneficiary is false', () => {
+  for (const draft of [
+    'Most of today went into the delivery rail rather than anything a shopper would see, and the work is internal.',
+    'This has no user-visible effect; the beneficiary is whoever builds here next and the effect is a bug class caught earlier.',
+    'Merchants are unaffected by this work, which tightened an internal check that used to depend on memory.',
+  ]) {
+    const findings = checkProse(draft, { allowsBeneficiary: false, maxWords: 200, minWords: 5 }).findings;
+    assert.equal(
+      findings.some((f) => f.code === 'invented-beneficiary'),
+      false,
+      `a no-impact mention must not be flagged: ${draft}`
+    );
+  }
+});
+
+test('invented-beneficiary: a POSITIVE claim about the same nouns is still flagged', () => {
+  const draft = 'Merchants can now hand a shop to a partner and buyers get a faster checkout as a result.';
+  assert.ok(
+    checkProse(draft, { allowsBeneficiary: false, maxWords: 200, minWords: 5 }).findings.some(
+      (f) => f.code === 'invented-beneficiary'
+    )
+  );
+});

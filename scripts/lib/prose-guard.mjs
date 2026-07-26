@@ -155,6 +155,32 @@ const BENEFICIARY_PATTERNS = [
 ];
 
 /**
+ * Sentences that mention a beneficiary only to DENY impact on them.
+ *
+ * Without this the guard contradicts its own brief. prose-lessons.md ends with "Say 'no user-visible
+ * effect' when that is the truth", and the persona instructs the writer to state plainly that
+ * customers are unaffected when work is internal — then the beneficiary rule fired on the very
+ * sentence that complied. Measured 2026-07-26 on a hand-written draft whose opening clause was
+ * "…rather than anything a shopper would see": flagged as an invented beneficiary.
+ *
+ * A guard that rejects the sentence its own lessons file demands is worse than no guard: it teaches
+ * the writer to avoid the honest phrasing, which is precisely the failure the rule exists to prevent.
+ * So a beneficiary mention inside a no-impact construction is allowed; a positive claim still is not.
+ */
+const NO_IMPACT_PATTERNS = [
+  /\bno (?:user|customer|tenant|merchant|buyer)[- ]visible\b/i,
+  /\b(?:nothing|none|no)\b[^.]{0,40}\b(?:customers?|tenants?|users?|clients?|buyers?|merchants?|shoppers?|subscribers?)\b[^.]{0,40}\b(?:see|saw|notice|noticed|observe)\b/i,
+  /\b(?:customers?|tenants?|users?|clients?|buyers?|merchants?|shoppers?|subscribers?)\b[^.]{0,40}\b(?:are|is|were|was)\s+(?:not|un)(?:affected|changed|impacted)\b/i,
+  /\b(?:not|nothing)\b[^.]{0,30}\b(?:a|any)\s+(?:customers?|tenants?|users?|clients?|buyers?|merchants?|shoppers?|subscribers?)\b[^.]{0,30}\b(?:would|will|can|could)\s+(?:see|notice|observe)\b/i,
+  /\bunaffected\b/i,
+  // "…rather than anything a shopper would see" — the phrasing a real draft actually used. The
+  // negation here is carried by "rather than"/"instead of"/"other than", not by a "no"/"not" token,
+  // which is why the patterns above missed it.
+  /\b(?:rather than|instead of|other than)\b[^.]{0,60}\b(?:customers?|tenants?|users?|clients?|buyers?|merchants?|shoppers?|subscribers?)\b/i,
+  /\banything\b[^.]{0,30}\b(?:customers?|tenants?|users?|clients?|buyers?|merchants?|shoppers?|subscribers?)\b[^.]{0,30}\b(?:would|will|could|can)\s+(?:see|notice|observe)\b/i,
+];
+
+/**
  * ── NEW RULE, ours, not golden-beans' (README D6) ─────────────────────────────────────────────
  * `flag-state-claim` — a draft asserting a capability is live/enabled/available/in production when
  * the evidence pack does not say so.
@@ -380,7 +406,9 @@ export function checkProse(draft, evidence = {}) {
   }
 
   if (!allowsBeneficiary) {
-    const named = BENEFICIARY_PATTERNS.some((re) => re.test(text));
+    // A mention that DENIES impact is the honest internal framing the persona asks for — never a finding.
+    const deniesImpact = NO_IMPACT_PATTERNS.some((re) => re.test(text));
+    const named = !deniesImpact && BENEFICIARY_PATTERNS.some((re) => re.test(text));
     if (named) {
       findings.push({
         code: 'invented-beneficiary',
