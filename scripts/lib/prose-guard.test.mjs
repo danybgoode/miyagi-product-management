@@ -340,3 +340,35 @@ test('flagTokens: a plain capability name works, for a change with no flag at al
   // The escape valve, and it is shaped like evidence rather than like a boolean.
   assert.deepEqual(flagTokens('standup prose rail'), ['standup', 'prose', 'rail']);
 });
+
+// ---- `unfinished` vs structural markdown (regression: the first real prose-draft run) ----
+//
+// Measured 2026-07-26: every `--kind poster` draft ends with the house table row and was flagged
+// `unfinished` on BOTH writers through all four attempts. A guard that rejects correct output trains
+// people to ignore it, which hides the findings it exists to surface.
+
+test('unfinished: a markdown table row is a clean ending when the surface allows markdown', () => {
+  const draft = 'A real poster paragraph that ends properly.\n\n| [slug](slug/) | what it does | ✅ **Shipped 2026-07-02** |';
+  assert.equal(checkProse(draft, { allowsMarkdown: true, maxWords: 4000, minWords: 5 }).findings.some((f) => f.code === 'unfinished'), false);
+});
+
+test('unfinished: the SAME draft is still flagged on a prose-only surface', () => {
+  const draft = 'A real poster paragraph that ends properly.\n\n| [slug](slug/) | what it does | ✅ **Shipped 2026-07-02** |';
+  assert.ok(checkProse(draft, { allowsMarkdown: false, maxWords: 4000, minWords: 5 }).findings.some((f) => f.code === 'unfinished'));
+});
+
+test('unfinished: headings, list items and fenced blocks also end cleanly under allowsMarkdown', () => {
+  for (const tail of ['## Gaps / follow-ups', '- one owed smoke', '```', '[GAP: no close date in the sources]']) {
+    const draft = `Some real content in a sentence.\n\n${tail}`;
+    assert.equal(
+      checkProse(draft, { allowsMarkdown: true, maxWords: 4000, minWords: 5 }).findings.some((f) => f.code === 'unfinished'),
+      false,
+      `expected "${tail}" to count as a clean ending`
+    );
+  }
+});
+
+test('unfinished: allowsMarkdown does NOT excuse a genuine mid-clause fragment', () => {
+  const draft = 'The rail is built and the reminder schedule still has no runner, so broader error handling is';
+  assert.ok(checkProse(draft, { allowsMarkdown: true, maxWords: 4000, minWords: 5 }).findings.some((f) => f.code === 'unfinished'));
+});

@@ -233,8 +233,30 @@ export function flagTokens(flagKey) {
  * Sentence-final punctuation, or a close-paren/quote after it. Used to detect a draft that ran out
  * of room mid-clause — a trailing fragment reads as a broken tool, not as brevity.
  */
-function endsCleanly(text) {
-  return /[.!?]["')\]]?\s*$/.test(text.trim());
+// The `unfinished` check exists for CHAT-MESSAGE surfaces, where a trailing fragment reads as a broken
+// tool. It misfires on INTERNAL artifacts, which legitimately end in structural markdown — and that
+// misfire is not cosmetic: measured on the first real prose-draft run (2026-07-26), every `--kind poster`
+// draft ended with the house table row
+//   | [slug](slug/) | one-line what | ✅ **Shipped …** |
+// and was flagged `unfinished` on both writers, through all four attempts. A guard that rejects correct
+// output is worse than one that misses a rare fault: it trains whoever maintains this to ignore the
+// flag, which then hides the real findings it exists to surface (the same reasoning that keeps bare
+// `react`/`next` out of BANNED_TOOL_NAMES).
+//
+// So a structural ending — a table row, a list item, a heading, a fenced block — counts as clean when
+// the surface is allowed structural markdown. Prose surfaces keep the strict sentence-final rule.
+function endsCleanly(text, { allowsMarkdown = false } = {}) {
+  const trimmed = String(text ?? '').trim();
+  if (/[.!?]["')\]]?\s*$/.test(trimmed)) return true;
+  if (!allowsMarkdown) return false;
+  const lastLine = trimmed.split('\n').pop().trim();
+  return (
+    /\|\s*$/.test(lastLine) || // a markdown table row
+    /^#{1,6}\s/.test(lastLine) || // a heading
+    /^([-*+]|\d+\.)\s/.test(lastLine) || // a list item
+    /^```/.test(lastLine) || // a fenced block delimiter
+    /^\[GAP:/.test(lastLine) // the documented "source material insufficient" marker
+  );
 }
 
 /** Split into sentences well enough to count them. Not linguistics — just a length sanity check. */
@@ -277,6 +299,10 @@ export function checkProse(draft, evidence = {}) {
     liveFlags = [],
     maxWords = 60,
     minWords = 8,
+    // Internal engineering artifacts (retros, poster entries, sprint-wraps) are REQUIRED to use
+    // structural markdown; chat-message reports are forbidden from it. Only the `unfinished` check
+    // varies on this — every other rule applies identically to both surfaces.
+    allowsMarkdown = false,
   } = evidence;
   const text = String(draft ?? '').trim();
   const findings = [];
@@ -299,7 +325,7 @@ export function checkProse(draft, evidence = {}) {
     });
   }
 
-  if (!endsCleanly(text)) {
+  if (!endsCleanly(text, { allowsMarkdown })) {
     findings.push({
       code: 'unfinished',
       note: 'The last sentence is unfinished. End on a complete sentence — stop at the previous full stop rather than starting a clause you cannot complete.',
