@@ -16,9 +16,12 @@
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (5)
 
+- [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 0/3 stories
 - [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 0/10 stories · risk: Low
+- [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
+- [QA guardrail hardening — close the gaps between the documented DoD and what CI enforces](../../09-platform-infra/qa-guardrail-hardening/README.md) — 09 Platform-infra · 0/8 stories
 - [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 0/3 stories
 
 ## ✅ Shipped (127)
@@ -170,4 +173,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 
 ---
-_Epics: 133 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 136 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
