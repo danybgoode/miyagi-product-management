@@ -79,6 +79,31 @@ registry, a count assertion, the migration set); siblings cut off one base pay a
 edit. One PR for the whole epic is acceptable only when the sprints don't split cleanly along a review
 boundary — prefer per-sprint PRs so the authorization sprint gets reviewed as an authorization sprint.
 
+**Delegating to Codex subagents (Daniel's call, 2026-07-26 — codex is a paid account).** Codex is no
+longer only a second *opinion* (`cross-review.mjs`); it is a second **worker pool** with an independent
+quota, dispatched via `node scripts/codex-delegate.mjs --task <kind> --prompt-file <f>`. That
+independence is the point: a shared Claude session cap killed three builders at once, twice in one day
+(`LEARNINGS.md` → session limits are the new flakiness), and a second family is the only structural
+answer to it.
+
+- **The roster is PROBED, never assumed.** Accepted today: **`gpt-5.6-sol`** (frontier) and
+  **`gpt-5.6-terra`** (workhorse, the config default at effort `high`). Everything else — including
+  `gpt-5-codex`, which the CLI *reports itself to be* — is rejected as `invalid_request_error`. Model
+  self-reports are unreliable; re-probe with `codex exec -m <slug> 'say OK'` before trusting a slug.
+- **Route by risk and boundedness, not by "cheaper model builds"** — the 2026-07-19 Codex/Sol trial
+  found the blanket rule failed and this one worked. Frontier keeps commerce authorization, money
+  paths, production state and scope-merging calls; the workhorse takes narrow UI/test/audit/CI work
+  with explicit file ownership. `--task` encodes this; `--list-tasks` prints the table.
+- **Read-only by default for anything that isn't a build**, so an audit cannot "helpfully" fix what it
+  finds. `danger-full-access` is unreachable from the tool.
+- **A delegated subagent never merges, pushes, opens a PR, or applies a migration.** It returns a diff
+  and a report; the orchestrator verifies and lands it. A different *family* building something does
+  not make it self-approving — that is the same distinction the review section opens on.
+- **Verify the report against the diff.** On its first real dispatch the subagent correctly rejected
+  the architect's brief (a locked spec count was wrong) and stopped — which is the contract working.
+  On its second it delivered, and a review pass still found a real defect the report did not mention
+  (`fail-fast` defaulting to true would have let one failing shard hide the others).
+
 **Route models by risk, and invert it for review.** Assign the sprint that defines the contract everything
 else imports — the authorization boundary, the migration, the shared seam — to the stronger model; assign the
 sprints that are mechanical over a locked contract to the faster one. Review is inverted: the fresh
