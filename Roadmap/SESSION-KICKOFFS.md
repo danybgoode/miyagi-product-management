@@ -11,6 +11,34 @@ dev — the "communication tax" of re-passing large context (see the research no
 > `AGENTS.md` "Start here" already chains to `WAYS-OF-WORKING.md` + `LEARNINGS.md` + team memory, so naming
 > **AGENTS + the one sprint/scope doc** is usually all the orientation an agent needs.
 
+## 0 · Before any kickoff — derive the state, don't remember it
+
+```
+node scripts/session-resume.mjs
+```
+
+Run this **first, every session**, and especially when resuming one that ended unexpectedly. It
+re-derives across all three repos — current branch, dirty trees, worktrees, open PRs with CI and
+mergeability, and migration drift in both directions — and leads with what is *surprising* rather than
+dumping state. `--json` for machine use; `--all-migrations` to expand the collapsed orphan summary.
+
+**Why derive rather than read a status file:** almost everything above changes between sessions, so a
+stored snapshot is stale by the time anyone reads it — and a stale snapshot is worse than none, because
+it reads as authoritative. The only thing that *can't* be derived is **intent**, which is what the
+journal carries:
+
+```
+node scripts/session-note.mjs --kind decision "chose X over Y because Z" --refs PR#312,D4
+```
+
+Write a line at each locked decision and each sprint/PR boundary. It is append-only and fails soft, so
+it can never break the work it is recording. **The one thing neither tool can recover is a decision
+nobody journalled** — that is the honest boundary, and the reason to write the line.
+
+*(This complements, and does not replace, the subagent-resume rule: when a **worker** dies, message the
+same agent id and it resumes from its transcript. That covers a dead worker; this covers a dead
+orchestrator. See `LEARNINGS.md` → salvage the tree.)*
+
 ## Fill-in values
 - `<ask>` — the raw one-line request
 - `<epic-slug>` — e.g. `discovery-polish`

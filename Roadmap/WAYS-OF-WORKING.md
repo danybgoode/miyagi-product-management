@@ -125,6 +125,19 @@ verifies live. **Never `supabase db push`.** A merged migration file is not an a
 contracts, team memory — is *designed* to make re-entry cheap. That is what makes a whole epic in one session
 affordable.
 
+**Assume the orchestrator dies too — derive state, journal intent.** Session limits kill whole agent
+trees mid-flight, repeatedly (`LEARNINGS.md`), and the existing answer — message a killed *worker's*
+agent id, it resumes from its transcript — only covers the case where the orchestrator survives to send
+that message. When the **orchestrator** dies, the docs record *decided* state, never *in-flight* state.
+Two habits close it, and they split on one line: **derive what is derivable; journal only what isn't.**
+- **`node scripts/session-resume.mjs`** opens every session. It re-derives branches, dirty trees,
+  worktrees, open PRs (CI + mergeability) and migration drift across all three repos, and leads with
+  anomalies. Never store this — a stored snapshot is stale by the time it is read, and a stale snapshot
+  is worse than none because it reads as authoritative.
+- **`node scripts/session-note.mjs --kind decision "…"`** at each locked decision and each sprint/PR
+  boundary. Append-only, fails soft. Intent is the *only* thing a resume cannot re-derive, and a
+  decision nobody journalled is the one thing genuinely lost.
+
 ## Review & merge — cross-agent
 With multiple agents running in parallel, the agent that **builds** a PR is not the one that **approves** it — a
 fresh pair of eyes re-derives intent from the diff alone and catches what the author's context-bias hides.

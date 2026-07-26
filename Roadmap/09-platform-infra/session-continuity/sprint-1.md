@@ -1,6 +1,6 @@
 # Session continuity — Sprint 1: derive the state, journal the intent
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — all 3 stories built; branch `feat/session-continuity`
 
 ## Build contract (locked by the architect before the builder started)
 
@@ -21,7 +21,7 @@ Cite `README.md` D1–D5.
 
 ## Stories
 
-### Story 1.1 — `scripts/session-note.mjs`: the intent journal ⬜
+### Story 1.1 — `scripts/session-note.mjs`: the intent journal ✅ (b2ae350)
 **As an** orchestrating agent, **I want** to record a decision in one cheap call, **so that** my
 intent survives a session that ends without warning.
 **Acceptance:**
@@ -34,7 +34,7 @@ intent survives a session that ends without warning.
   the work the agent was actually doing.
 - Pure line-builder unit-tested separately from the I/O.
 
-### Story 1.2 — `scripts/session-resume.mjs`: derive live, lead with the surprising ⬜
+### Story 1.2 — `scripts/session-resume.mjs`: derive live, lead with the surprising ✅ (2d831f3)
 **As the** next agent, **I want** one command that tells me the true state, **so that** I never trust
 stale memory or a stale doc.
 **Acceptance:**
@@ -51,7 +51,7 @@ stale memory or a stale doc.
   unavailable DB each yield a partial brief naming the gap. Proven by a test per degradation path.
 - `--json` for machine consumption; default is human-readable.
 
-### Story 1.3 — wire it into how sessions actually start ⬜
+### Story 1.3 — wire it into how sessions actually start ✅
 **As the** team, **I want** resume to be the default opening move, **so that** continuity doesn't
 depend on remembering.
 **Acceptance:**
@@ -64,7 +64,24 @@ depend on remembering.
   the honest boundary, and stating it is what makes agents write the line.
 
 ## Definition of Done (sprint)
-- [ ] `node --test scripts/` green; every new spec observed red once.
-- [ ] Real `session-resume.mjs` output pasted in the PR, including the stray-branch anomaly.
-- [ ] Degradation proven live (unauthenticated `gh`, empty journal).
+- [x] `node --test scripts/` green; every new spec observed red once (two mutations on the orphan
+      collapse: disabling it → 2 red; hardcoding the count → 1 red; restored → 40 pass).
+- [x] Real `session-resume.mjs` output captured — found THREE stray branches (incl. the `apps/backend`
+      one that motivated the epic), a conflicted+red root PR #97, and one genuinely unapplied migration.
+- [x] Degradation proven live (missing repo, gh unavailable, empty journal, migration CLI unavailable —
+      each yields a partial brief naming the gap, exit 0).
+- [x] Journal round-trip dogfooded: 3 real decisions from this session written and read back.
 - [ ] Cross-agent review run; findings resolved.
+- [ ] **Fresh `pr-reviewer` — MANDATORY**: the orchestrator finished this sprint's last mile after a
+      session cap killed the builder, so these commits are partly self-authored. Per WAYS-OF-WORKING,
+      a fresh independent agent must review them before merge.
+
+## Sprint note — the signal-to-noise fix came from running it, not reviewing it
+
+The first real run emitted **47 anomalies, 36 of them migration orphans**, burying the 3 actionable
+items — the precise attention failure D3 exists to prevent. Orphans turned out to be the *expected*
+residue of the documented MCP-timestamp/filename divergence, so they now collapse to one counted line
+(`--all-migrations` expands). The dangerous direction is never collapsed. **47 → 10.**
+
+This is the sprint's own argument for "verify by running, not by existence": every unit test passed
+before and after; only executing it against real repos exposed the defect.

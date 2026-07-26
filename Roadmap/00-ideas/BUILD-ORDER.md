@@ -22,7 +22,7 @@
 - [Executive prose rail — a CPO voice for the scheduled reports](../../09-platform-infra/exec-prose-rail/README.md) — 09 Platform-infra · 0/10 stories · risk: Low
 - [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
 - [QA guardrail hardening — close the gaps between the documented DoD and what CI enforces](../../09-platform-infra/qa-guardrail-hardening/README.md) — 09 Platform-infra · 0/8 stories
-- [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 0/3 stories
+- [Session continuity — surviving an orchestrator that dies mid-flight](../../09-platform-infra/session-continuity/README.md) — 09 Platform-infra · 3/3 stories
 
 ## ✅ Shipped (127)
 
@@ -161,7 +161,7 @@
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -171,6 +171,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 |---|---|---|
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
+| Session continuity — surviving an orchestrator that dies mid-flight | Scaffolded | In progress |
 
 ---
-_Epics: 136 · seeds in funnel: 4 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 136 · seeds in funnel: 4 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
