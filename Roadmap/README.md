@@ -197,10 +197,13 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   real defects in *both* directions: a genuine duplicate-sales-channel race, a false-green ledger
   check, a guard that contradicted its own lessons file, and a skip-counter that missed the very skips
   it was built to count — and two confident external findings that were simply wrong and were argued
-  down with evidence. **Owed:** the credentialed-smoke PR (#314, held — Actions stalled, not merging
-  on a stale green), two Cloud Build measurements for the unmeasured cache mount, the first live fire
-  of both routines, Daniel's Clerk dev-instance test users, and a fixture-provisioning gap the smoke
-  work surfaced. Declined with reasons: Nx, repo-merge, Turborepo-in-CI.
+  down with evidence. **All 13 PRs merged**, the last few on the local gate (Actions quota exhausted — the
+  documented protocol). Also cleared in the same run: **15 duplicate production sales channels pruned**
+  (17→2, backfill-first so nothing could be orphaned), the ML find-or-create race closed across
+  instances with a distributed lock, a production diagnostic that had been returning `unknown_error`
+  repaired, and the two test-fixture ids that had been silently skipping two specs identified and
+  verified. **Owed:** the first live fire of both routines, and two production oddities this surfaced —
+  70 of 72 `api_key` link rows unusable, and the ML create path never yet exercised. Declined with reasons: Nx, repo-merge, Turborepo-in-CI.
 
 - **2026-07-25 — Merchant Partner lifecycle SHIPPED (HIGH; area 08 · three stacked PRs
   [#308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308) →

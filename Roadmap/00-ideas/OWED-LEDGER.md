@@ -3,16 +3,16 @@
 > **GENERATED — do not hand-edit.** `node scripts/owed-ledger.mjs`.
 > Re-derived from the spec tree on every run, never from a maintained list.
 
-_Generated: 2026-07-26_
+_Generated: 2026-07-27_
 
-**75 check(s) owed across 70 spec file(s).**
+**82 check(s) owed across 76 spec file(s).**
 
 | Category | Count | What it means |
 |---|---|---|
 | money-path | 16 | Touches checkout, payment or order state — run these first |
 | auth-path | 14 | Needs a real signed-in session a script cannot mint against production |
 | admin-only | 4 | Behind an admin surface |
-| other | 41 | Everything the rules could not confidently place — **not a bin, a to-triage list** |
+| other | 48 | Everything the rules could not confidently place — **not a bin, a to-triage list** |
 
 ## money-path (16)
 
@@ -57,7 +57,7 @@ _Generated: 2026-07-26_
 - `apps/miyagisanchez/e2e/admin-seleccion.browser.spec.ts:10` — The full pin → drag → homepage-reflects flow is owed to Daniel on prod.
 - `apps/miyagisanchez/e2e/promoter-commission.spec.ts:22` — NOT covered (owed to Daniel — sprint-3.md smoke): the dashboard + admin settlement
 
-## other (41)
+## other (48)
 
 - `apps/miyagisanchez/e2e/agent-connector.spec.ts:19` — NOT covered (owed to Daniel — sprint-2.md smoke walkthrough steps 2–4): the live
 - `apps/miyagisanchez/e2e/agent-prompt.browser.spec.ts:14` — owed to Daniel.
@@ -72,6 +72,7 @@ _Generated: 2026-07-26_
 - `apps/miyagisanchez/e2e/growth-track-api.spec.ts:9` — 200-skipped / 202-forwarded paths are owed to Daniel (Sprint 1 smoke —
 - `apps/miyagisanchez/e2e/home-announcement.spec.ts:9` — persists, no layout shift" round-trip is owed to Daniel (sprint smoke walkthrough),
 - `apps/miyagisanchez/e2e/home-personalization.browser.spec.ts:17` — confirm hydration on prod. The real signed-in eyeball is therefore owed to Daniel
+- `apps/miyagisanchez/e2e/merchant-commerce-facts.spec.ts:27` — transition" claim needs a real database and is owed to Daniel as a browser/
 - `apps/miyagisanchez/e2e/migrations-estimate.spec.ts:20` — only; the real DB round-trip is owed to Daniel, per convention).
 - `apps/miyagisanchez/e2e/migrations-mapper.spec.ts:23` — live-Shopify-domain pull + parity-report eyeball is owed to Daniel. See
 - `apps/miyagisanchez/e2e/migrations-parity.spec.ts:10` — pull + parity-report eyeball is owed to Daniel. See sprint-1.md.
@@ -89,9 +90,15 @@ _Generated: 2026-07-26_
 - `apps/miyagisanchez/e2e/promoter-cadence.spec.ts:34` — assertion) is owed to Daniel — see sprint-2.md.
 - `apps/miyagisanchez/e2e/promoter-close-migration.spec.ts:12` — (a real quote closed, cash + net-remittance variants) is owed to Daniel —
 - `apps/miyagisanchez/e2e/promoter-close.spec.ts:22` — NOT covered (owed to Daniel — sprint-4.md smoke): the live card charge on a
+- `apps/miyagisanchez/e2e/promoter-close.spec.ts:164` — NOT covered here (owed to Daniel — sprint-1.md smoke walkthrough, and the
 - `apps/miyagisanchez/e2e/promoter-landing-mobile.browser.spec.ts:8` — on-screen-keyboard viewport, safe-area insets) stay owed to Daniel.
 - `apps/miyagisanchez/e2e/promoter-program.spec.ts:28` — NOT covered (owed to Daniel — sprint-1.md smoke walkthrough): the live discount
 - `apps/miyagisanchez/e2e/promoter-transfer.spec.ts:25` — NOT covered (owed to Daniel — sprint-4.md smoke): a real transfer → approve →
+- `apps/miyagisanchez/e2e/relationship-consent.spec.ts:121` — database — the route-level DB read is owed to Daniel (no two-promoter,
+- `apps/miyagisanchez/e2e/relationship-operating-views.spec.ts:11` — NOT covered here (owed to Daniel — sprint-2.md's smoke walkthrough): the
+- `apps/miyagisanchez/e2e/relationship-reconciliation-routes.spec.ts:10` — NOT covered here (owed to Daniel — sprint-3.md's smoke walkthrough steps
+- `apps/miyagisanchez/e2e/relationship-stewardship.spec.ts:13` — NOT covered here (owed to Daniel — sprint-2.md's smoke walkthrough): the
+- `apps/miyagisanchez/e2e/scorecard-endpoint-routes.spec.ts:18` — are owed to Daniel as the Sprint 1 smoke walkthrough (step 2).
 - `apps/miyagisanchez/e2e/seller-acquisition-mobile.browser.spec.ts:7` — insets) still evade headless viewport checks and stay owed to Daniel (see sprint-4.md walkthrough).
 - `apps/miyagisanchez/e2e/seller-mode.spec.ts:95` — sprint's stated "owed to Daniel" browser smokes (sprint-6.md);
 - `apps/miyagisanchez/e2e/seller-unclaimed-s3.browser.spec.ts:18` — Until that fixture exists the 375px sub-nav check is owed to Daniel.

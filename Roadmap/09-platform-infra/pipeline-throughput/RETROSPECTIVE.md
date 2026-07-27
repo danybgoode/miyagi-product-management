@@ -7,8 +7,14 @@ _Closed: 2026-07-26 (S2 incomplete by design — see gaps)_
 **S1 — the frontend gate, sharded** — ✅ **MERGED** as PR #313 (delegated to Codex). A `prep` job resolves the Vercel
 preview **once** and publishes it as an output; a 4-way matrix consumes it and runs only Playwright.
 
-**S2 — BuildKit cache mount** (`1546fd5`). The `# syntax=docker/dockerfile:1` directive the Dockerfile
-lacked, plus a cache mount on the runner stage's uncacheable `npm ci --omit=dev`. **Unmeasured.**
+**S2 — BuildKit cache mount** — ✅ **MERGED via #116**, measured, and the conclusion corrected twice.
+
+Total build time could not answer it (five builds: 7m49s→23m24s). The per-**layer** timing could:
+**~300s when the runner install runs, ~1.3s when the layer cache hits** — which also disproved the
+Dockerfile's own "invalidates every build" comment. Then a fresh reviewer showed the mount is **inert
+in Cloud Build**: a fresh `docker-container` builder starts each ephemeral VM with empty mount state,
+and mounts are not exported by `cache-to registry`. Kept on honest grounds — free, helps local
+iterative builds — and the two contradicting docs (`Dockerfile` vs `cloudbuild.yaml`) were reconciled.
 
 ## What went well
 
