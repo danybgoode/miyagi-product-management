@@ -76,6 +76,12 @@ export function buildStatusRollup({ combinedStatus, checkRuns }) {
 
 // REST pull-list item → the shape standup.mjs's gatherRepoPrs already builds `byNumber`/open/merged sets
 // from (state OPEN/MERGED/CLOSED matching GraphQL's PullRequestState enum casing).
+//
+// `headRefName` (the PR's source branch) was added 2026-07-26 for session-resume.mjs's stray-branch check
+// (README.md D3: "a non-main branch with no open PR") — it needs to correlate a repo's current local
+// branch against open PRs by branch NAME, which the list endpoint already returns as `head.ref` but no
+// existing consumer had asked for yet. Purely additive: every field standup.mjs/babysit-pr.mjs already
+// read is unchanged.
 export function normalizePullListItem(p) {
   return {
     number: p.number,
@@ -87,6 +93,7 @@ export function normalizePullListItem(p) {
     updatedAt: p.updated_at,
     url: p.html_url,
     headSha: p.head?.sha || null,
+    headRefName: p.head?.ref || null,
   };
 }
 

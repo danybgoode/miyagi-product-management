@@ -65,10 +65,10 @@ test('buildStatusRollup: both sources missing/null → empty rollup, not a throw
 // ---- normalizePullListItem ----
 
 test('normalizePullListItem: an open PR', () => {
-  const p = { number: 5, title: 'x', state: 'open', draft: false, merged_at: null, created_at: 'a', updated_at: 'b', html_url: 'https://x', head: { sha: 'abc' } };
+  const p = { number: 5, title: 'x', state: 'open', draft: false, merged_at: null, created_at: 'a', updated_at: 'b', html_url: 'https://x', head: { sha: 'abc', ref: 'feat/x' } };
   assert.deepEqual(normalizePullListItem(p), {
     number: 5, title: 'x', state: 'OPEN', isDraft: false, mergedAt: null,
-    createdAt: 'a', updatedAt: 'b', url: 'https://x', headSha: 'abc',
+    createdAt: 'a', updatedAt: 'b', url: 'https://x', headSha: 'abc', headRefName: 'feat/x',
   });
 });
 
@@ -80,6 +80,11 @@ test('normalizePullListItem: a closed-and-merged PR → state MERGED', () => {
 test('normalizePullListItem: a closed-but-not-merged PR → state CLOSED', () => {
   const p = { number: 7, title: 'z', state: 'closed', draft: false, merged_at: null, created_at: 'a', updated_at: 'b', html_url: 'https://x' };
   assert.equal(normalizePullListItem(p).state, 'CLOSED');
+});
+
+test('normalizePullListItem: missing head.ref (unexpected shape) → headRefName null, not a throw', () => {
+  const p = { number: 8, title: 'w', state: 'open', draft: false, merged_at: null, created_at: 'a', updated_at: 'b', html_url: 'https://x' };
+  assert.equal(normalizePullListItem(p).headRefName, null);
 });
 
 // ---- normalizeSearchPrItem ----
