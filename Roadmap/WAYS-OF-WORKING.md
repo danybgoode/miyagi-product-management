@@ -192,7 +192,16 @@ and is checked by **one pure guard** (`scripts/lib/prose-guard.mjs`) before a hu
 | Surface | Writer | Why |
 |---|---|---|
 | Daily standup, weekly recap | **The Claude Routine itself**, in-context, via a two-phase `--brief` → guard → `--post` loop | A routine runs on Anthropic infra with **no local CLI credentials** — `devin`/`agy` are absent there, so a direct writer call returns "no writer available" and the report silently becomes nothing |
+| **Merge / deploy notification** | **devin → agy locally** (`scripts/merge-report.mjs`), fired by a `post-merge` git hook | Prose needs a local writer, and the GitHub Actions notifier could not host it even with quota. The hook fires on the machine that pulled the merge |
 | Retro, poster entry, sprint-wrap | **devin → agy locally** (`scripts/prose-draft.mjs`) | Quota already paid for, and it keeps routine capacity for the scheduled reports |
+
+**The merge surface is hook-driven and exactly-once.** `notify-telegram.yml` still posts the machine
+facts (commit header, author, diff link); `merge-report.mjs` adds the product paragraph beside it.
+Hooks over-fire by design — a pull that fetched nothing, a rebase, any checkout — so the once-per-commit
+guarantee lives in a state file under `.git/`, which advances **only after a confirmed send**. A failed
+post is retried next run; a success is never repeated. The hook is backgrounded and always exits 0: a
+prose report must never slow down or fail a git operation. Installed in all three repos via
+`core.hooksPath=.githooks`.
 
 The guard, the persona, and `scripts/prose-lessons.md` are **shared by both**, so a correction
 improves every surface at once. The two-phase shape exists because a routine *is* the model and cannot

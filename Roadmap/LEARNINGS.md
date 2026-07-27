@@ -1228,6 +1228,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **WHEN GITHUB ACTIONS QUOTA IS EXHAUSTED, the local gate IS the merge signal — and say so in the PR.**
+  Protocol (2026-07-18, re-used 2026-07-27): run the full gate locally (`tsc` + build + lint + suite),
+  pair it with the green Vercel preview (Vercel-side, unaffected), and state *"CI quota exhausted, local
+  gate green: <details>"* in the PR body. The trap to avoid is the opposite of impatience: a PR whose
+  last CI run predates your fix shows a **stale green**, and merging on it is exactly the unverified
+  claim the whole review stack exists to prevent — hold the PR instead. Diagnose before assuming an
+  outage: no runs appearing repo-wide looks identical to a GitHub incident and is usually just quota.
+  *(2026-07-27.)*
 - **A READ-THEN-WRITE RACE MATTERS EXACTLY WHEN THE WRITE *CREATES* SOMETHING — do not generalize one
   benign-ness judgement across sites that only look alike.** A new lint rule flagged six
   `require-atomic-updates` cache sites; the architect assessed all six as "very likely benign — the
