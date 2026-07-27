@@ -58,9 +58,11 @@ a visible stall to demonstrate.
 - **Cross-agent review and a fresh `pr-reviewer` are owed before merge.** The orchestrator finished
   this sprint's last mile after the builder died, so some commits are self-authored and cannot be
   self-approved.
-- **The migration-version collision is a real defect, unfixed.** Two files share `20260711120000`. Both
-  seed flags with `ON CONFLICT DO NOTHING` and both flags exist live, so it is currently benign —
-  renaming one file is the fix, deliberately left out of scope here.
+- **The migration-version collision was NOT a repo defect — corrected 2026-07-27.** I reported it as
+  one. On `HEAD` the two files have distinct versions (`…120000` and `…121000`); the collision exists
+  only in an **uncommitted local rename** in the frontend working tree, alongside other in-flight work
+  that is not mine. The tool reported the working tree accurately; my *interpretation* overstated it
+  into a committed defect. Nothing to fix in the repo — the local tree is whoever owns that work.
 - **`apps/backend` is still on `feat/order-payment-capture-state`** and `apps/miyagisanchez` on
   `docs/lifecycle-flag-state-correction`. The tool now surfaces them; nobody has decided their fate.
 - **Root PR #97** is conflicted with red CI — a build-order regeneration PR, likely stale and safe to
