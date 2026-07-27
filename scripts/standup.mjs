@@ -76,6 +76,7 @@ function argAfter(flag) {
   return i !== -1 ? process.argv[i + 1] : null;
 }
 const PROSE_FILE = argAfter('--prose-file');
+const QUIET = process.argv.includes('--quiet');
 
 // The standup is a chat message read on a phone. This is the length budget the guard enforces.
 const STANDUP_MAX_WORDS = 90;
@@ -245,6 +246,25 @@ export function gatherLiveFlags(deps = {}) {
   } catch {
     return { available: false, flags: [] };
   }
+}
+
+// Commit subjects + touched areas for the window — the inputs `deriveEvidenceFlags` needs to decide
+// whether a fix claim or a customer mention is legitimate. Degrades to empty (the closed, safe
+// default) rather than failing the post.
+export function gatherWindowFacts(sinceExpr = '1 day ago', deps = {}) {
+  const { run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }) } = deps;
+  const log = run(['log', '--no-merges', `--since=${sinceExpr}`, '--format=%s']);
+  const subjects = log.status === 0 ? (log.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean) : [];
+  const names = run(['log', '--no-merges', `--since=${sinceExpr}`, '--name-only', '--format=']);
+  const paths = names.status === 0 ? (names.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean) : [];
+  const areas = [...new Set(paths.map((p) => {
+    if (p.startsWith('Roadmap/')) return 'roadmap docs';
+    if (p.startsWith('scripts/')) return 'internal tooling';
+    if (p.includes('/app/')) return 'storefront pages';
+    if (p.includes('/e2e/')) return 'test suite';
+    return p.split('/')[0] || 'other';
+  }))];
+  return { subjects, areas };
 }
 
 // ---- config / secrets ----
@@ -459,12 +479,25 @@ async function main() {
 
   // ── Phase 3: --post --prose-file ───────────────────────────────────────────────────────────
   // Guards a routine-written draft with the SAME pure module the local rail uses, then posts.
+  // `--post` REQUIRES an explicit mode. Cross-review caught that `--post` alone fell through to the
+  // legacy unguarded send, so a typo could publish a report with no guard and no error at all.
+  if (POST && !PROSE_FILE && !QUIET) {
+    die(
+      '--post needs either --prose-file <path> (a guarded prose post) or --quiet (the one-line\n' +
+        '  quiet-window message). Refusing to fall through to an unguarded send.'
+    );
+  }
+
   let prose = null;
   if (POST && PROSE_FILE) {
     const draft = readFileSync(resolve(ROOT, PROSE_FILE), 'utf8').trim();
+    // Evidence is DERIVED from the window, never hardcoded. Cross-review caught that these were
+    // fixed empty arrays, which made `allowsFixClaim`/`allowsBeneficiary` permanently false — so a
+    // genuine `fix:` in the window, or real customer-facing work, had its compliant prose rejected.
+    const windowFacts = gatherWindowFacts();
     const evidence = deriveEvidenceFlags({
-      subjects: [],
-      areas: [],
+      subjects: windowFacts.subjects,
+      areas: windowFacts.areas,
       liveFlags: gatherLiveFlags().flags,
       maxWords: STANDUP_MAX_WORDS,
     });

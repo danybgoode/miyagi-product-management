@@ -205,10 +205,19 @@ const LIVENESS_CLAIM_PATTERNS = [
   /\b(?:enabled|turned on|switched on|flipped on|rolled out|shipped|released)\s+(?:to|for|in)\s+(?:everyone|all|production|prod)\b/i,
   /\b(?:runs|running|available|enabled|active)\s+in production\b/i,
   /\bin production (?:now|today)\b/i,
-  // DELIBERATELY ABSENT: a bare "can now". D5 asks the persona to lead with what someone can DO
-  // now, so "a merchant can now hand a partner a portfolio" is the register we are trying to buy.
-  // Banning it would reject the sentences the persona exists to produce — golden-beans' `react`/
-  // `next` lesson, applied to our own rule. The liveness verbs above are the unambiguous claims.
+  // "can now <do X>" — ADDED after cross-review found the original omission was a real hole.
+  //
+  // The omission was reasoned as "D5 asks the persona to lead with what someone can DO now, so
+  // banning this would reject the sentences the epic exists to buy", and a test pinned it as legal.
+  // That reasoning conflated two different escape valves. "A shop owner can now hand a partner one
+  // shop" is FALSE when the flag is off — in substance it is a liveness claim, and it is precisely
+  // the shape prose-lessons.md warns about.
+  //
+  // The right valve is not "don't match the pattern"; it is "match it, and let EVIDENCE clear it" —
+  // exactly how every rule above works. With the flag on, `liveFlags` corroborates and the sentence
+  // passes; with it off, the claim is caught. The persona keeps its register and the guard keeps its
+  // teeth, where the omission gave up the teeth to protect the register.
+  /\bcan now\b/i,
 ];
 
 /**

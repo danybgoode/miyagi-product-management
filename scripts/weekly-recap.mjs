@@ -67,6 +67,7 @@ const BRIEF = argv.includes('--brief');
 const POST = argv.includes('--post');
 const FORCE_POST = argv.includes('--force-post');
 const PROSE_FILE = argValue('--prose-file');
+const QUIET = argv.includes('--quiet');
 
 // A weekly is read at a desk, not on a lock screen — but the budget is still a budget, not a target.
 const WEEKLY_MAX_WORDS = 160;
@@ -410,10 +411,23 @@ async function main() {
   }
 
   // ── Phase 3: --post --prose-file ──────────────────────────────────────────────────────────
+  // `--post` requires an explicit mode — see standup.mjs. A quiet WEEK matters more here than a quiet
+  // night: this script tracks a WINDOW, so if the routine stops without posting, `windowEnd` never
+  // advances and the next run re-counts the same period. Cross-review caught exactly that.
+  if (POST && !PROSE_FILE && !QUIET) {
+    die(
+      '--post needs either --prose-file <path> (a guarded prose post) or --quiet (the one-line\n' +
+        '  quiet-week message, which also ADVANCES the window log). Refusing an unguarded send.'
+    );
+  }
+
   let prose = null;
   if (POST && PROSE_FILE) {
     const draft = readFileSync(resolve(ROOT, PROSE_FILE), 'utf8').trim();
-    const evidence = deriveEvidenceFlags({ subjects: [], areas: [], liveFlags: [], maxWords: WEEKLY_MAX_WORDS });
+    // Derived from the window, not hardcoded — see standup.mjs.
+    const subjects = repoResults.flatMap((r) => (r.available ? r.prs.map((p) => p.title || '') : []));
+    const areas = shippedEpics.available && shippedEpics.epics.length ? ['storefront pages'] : [];
+    const evidence = deriveEvidenceFlags({ subjects, areas, liveFlags: [], maxWords: WEEKLY_MAX_WORDS });
     const verdict = checkProse(draft, evidence);
     if (!verdict.ok && !FORCE_POST) {
       process.stderr.write(`${findingsToRevisionNote(verdict.findings)}\n`);

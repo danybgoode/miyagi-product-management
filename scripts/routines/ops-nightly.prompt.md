@@ -80,9 +80,10 @@ human is present. `TELEGRAM_BOT_TOKEN` must be set.
 node scripts/standup.mjs --brief
 ```
 This prints your persona, the accumulated lessons, and a deterministic evidence pack. It writes
-nothing and sends nothing. **If it returns the "Nothing to report" brief, stop:** post nothing beyond
-the standard quiet-night message and move on. A quiet night is a successful run — do not manufacture
-an update.
+nothing and sends nothing. **If it returns the "Nothing to report" brief**, do NOT write prose — run
+`node scripts/standup.mjs --post --quiet` instead. That posts the one-line quiet message **and
+advances the log**, which matters: stopping without it leaves the window unadvanced and the next
+run re-counts the same period. A quiet night is a successful run — do not manufacture an update.
 
 **Phase 2 — write the prose.** Follow the persona and the task block in the brief exactly. Lead with
 what is now true that was not true before, in product terms. Note the constraints that trip drafts

@@ -320,10 +320,28 @@ test('D6: every liveness phrasing is caught, not just "is live"', () => {
   }
 });
 
-test('D6: "can now" stays legal — it is the register the persona is built to produce', () => {
-  // The deliberate omission, pinned. D5 tells the writer to lead with what someone can DO now;
-  // banning that phrasing would reject the sentences the whole epic exists to buy.
+// This test previously asserted the OPPOSITE — that a bare "can now" was always legal. Cross-review
+// showed that pinned a hole: with the flag off, "a shop owner can now …" is simply false, and it is
+// the exact shape prose-lessons.md warns about. The register is protected by EVIDENCE, not by an
+// omission: the same sentence passes the moment the pack can prove the capability is on.
+test('D6: "can now" is a liveness claim — caught when nothing corroborates it', () => {
   const draft = 'A shop owner can now hand a partner one shop instead of the whole account.';
+  const r = checkProse(draft, { allowsBeneficiary: true, liveFlags: [], minWords: 1 });
+  assert.ok(codes(r).includes('flag-state-claim'), JSON.stringify(r.findings));
+});
+
+test('D6: the SAME "can now" sentence passes once the pack proves the capability is on', () => {
+  const draft = 'A shop owner can now hand a partner one shop instead of the whole account.';
+  const r = checkProse(draft, {
+    allowsBeneficiary: true,
+    liveFlags: ['promoter.partner_portfolio_enabled'],
+    minWords: 1,
+  });
+  assert.ok(!codes(r).includes('flag-state-claim'), JSON.stringify(r.findings));
+});
+
+test('D6: an explicitly dark "can now" is still legal — the negation valve holds', () => {
+  const draft = 'Nobody can now hand a partner a shop, because the rail stays dark until the flag flips.';
   const r = checkProse(draft, { allowsBeneficiary: true, liveFlags: [], minWords: 1 });
   assert.ok(!codes(r).includes('flag-state-claim'), JSON.stringify(r.findings));
 });

@@ -52,8 +52,10 @@ node scripts/weekly-recap.mjs --brief
 ```
 It prints your persona, the accumulated lessons, and the week's evidence — **shipped and closed epics
 first, with excerpts from their retrospectives**, then merged-PR volume as corroboration. It writes
-nothing and sends nothing. **If it returns the "Nothing to report" brief, stop** and let the script
-post its standard quiet-week line; do not manufacture content.
+nothing and sends nothing. **If it returns the "Nothing to report" brief**, do NOT write prose — run
+`node scripts/weekly-recap.mjs --post --quiet` instead. It posts the one-line quiet-week message
+**and advances the window log**; stopping without it leaves `windowEnd` unmoved and the next run
+double-counts. Do not manufacture content.
 
 **Phase 2 — write the prose.** Answer one question: *what is now possible that was not possible on
 Monday, and what is still owed?* Group by **theme**, never by commit or by repository — a list of
