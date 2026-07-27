@@ -2,7 +2,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { categorise, extractMarkers, buildLedger, renderMarkdown, CATEGORIES } from './owed-ledger.mjs';
+import { categorise, extractMarkers, buildLedger, renderMarkdown, listSpecFiles, CATEGORIES } from './owed-ledger.mjs';
 
 // ---- extraction ----
 
@@ -106,4 +106,24 @@ test('renderMarkdown: an empty category is omitted rather than printed as a bare
   const md = renderMarkdown(buildLedger([{ file: 'e2e/checkout.spec.ts', line: 1, text: 'payment owed' }]), '2026-07-26');
   assert.match(md, /## money-path/);
   assert.doesNotMatch(md, /## admin-only \(0\)/);
+});
+
+// ---- cross-review findings on PR #110 ----
+
+test('listSpecFiles: an unreadable subtree THROWS rather than under-reporting', () => {
+  // Swallowing it emitted a smaller ledger as authoritative — the same "confident empty result" this
+  // repo deleted two backend test scripts for.
+  const read = (d) => {
+    if (d === '/root') return ['ok', 'denied'];
+    if (d === '/root/ok') return ['a.spec.ts'];
+    throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
+  };
+  const stat = (p) => ({ isDirectory: () => !p.endsWith('.spec.ts') });
+  assert.throws(() => listSpecFiles('/root', { read, stat }), /UNDER-report|could not be read/);
+});
+
+test('listSpecFiles: a fully readable tree returns sorted spec files', () => {
+  const read = (d) => (d === '/r' ? ['b.spec.ts', 'a.spec.ts', 'notes.md'] : []);
+  const stat = (p) => ({ isDirectory: () => !/\.(spec\.ts|md)$/.test(p) });
+  assert.deepEqual(listSpecFiles('/r', { read, stat }), ['/r/a.spec.ts', '/r/b.spec.ts']);
 });

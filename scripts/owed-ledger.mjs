@@ -68,12 +68,17 @@ export function categorise({ file, text }) {
 export function listSpecFiles(dir, deps = {}) {
   const { read = readdirSync, stat = statSync } = deps;
   const out = [];
+  // Cross-review caught this: swallowing an unreadable subtree emitted a SMALLER ledger as
+  // authoritative. A ledger that under-reports is worse than one that fails — it is the same
+  // "confident empty result" this repo deleted two test scripts for. Collect and surface instead.
+  const unreadable = [];
   const walk = (d) => {
     let entries;
     try {
       entries = read(d);
-    } catch {
-      return; // an unreadable directory is not a reason to lose the whole ledger
+    } catch (e) {
+      unreadable.push(`${d}: ${e.code || e.message}`);
+      return;
     }
     for (const name of entries) {
       const p = join(d, name);
@@ -88,6 +93,15 @@ export function listSpecFiles(dir, deps = {}) {
     }
   };
   walk(dir);
+  if (unreadable.length) {
+    const err = new Error(
+      `owed-ledger: ${unreadable.length} directory/ies could not be read, so the ledger would ` +
+        `UNDER-report:\n  ${unreadable.join('\n  ')}\n` +
+        `Refusing to emit a count that looks authoritative but is incomplete.`
+    );
+    err.code = 'UNREADABLE_SUBTREE';
+    throw err;
+  }
   return out.sort();
 }
 
@@ -196,14 +210,24 @@ function main() {
   const json = `${JSON.stringify({ total: ledger.total, files: ledger.files, byCategory: ledger.byCategory, generatedAt }, null, 2)}\n`;
 
   if (check) {
-    // Compare on the COUNTS, not the whole file: the generated-at date changes daily and would make
-    // every run look stale, which is how a staleness gate gets disabled.
+    // Counts are compared rather than the whole JSON because `generatedAt` changes daily and would
+    // make every run look stale — which is how a staleness gate gets disabled.
+    //
+    // But the MARKDOWN is a committed artifact too, and cross-review caught that comparing counts
+    // alone let a stale/edited/missing OWED-LEDGER.md pass green whenever the totals happened to be
+    // unchanged — e.g. an item moving between categories with the same per-category totals, or the
+    // file being hand-edited. That is precisely the false-green this script exists to remove, so the
+    // markdown is compared too, with only the volatile date line normalised away.
+    const stripDate = (t) => String(t ?? '').replace(/^_Generated: \d{4}-\d{2}-\d{2}_$/m, '_Generated: <date>_');
     const prev = existsSync(OUT_JSON) ? JSON.parse(readFileSync(OUT_JSON, 'utf8')) : null;
+    const prevMd = existsSync(OUT_MD) ? readFileSync(OUT_MD, 'utf8') : null;
     const same =
       prev &&
+      prevMd !== null &&
       prev.total === ledger.total &&
       prev.files === ledger.files &&
-      JSON.stringify(prev.byCategory) === JSON.stringify(ledger.byCategory);
+      JSON.stringify(prev.byCategory) === JSON.stringify(ledger.byCategory) &&
+      stripDate(prevMd) === stripDate(md);
     if (!same) {
       process.stderr.write(
         `owed-ledger: the committed ledger is stale — run \`node scripts/owed-ledger.mjs\`.\n` +
