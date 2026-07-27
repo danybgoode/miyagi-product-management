@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: shipped
 slug: session-continuity
 ---
 

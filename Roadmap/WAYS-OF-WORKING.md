@@ -79,6 +79,51 @@ registry, a count assertion, the migration set); siblings cut off one base pay a
 edit. One PR for the whole epic is acceptable only when the sprints don't split cleanly along a review
 boundary — prefer per-sprint PRs so the authorization sprint gets reviewed as an authorization sprint.
 
+**Onboarding a delegated builder — `AGENTS.md` is the contract, and it is auto-loaded.** Codex reads
+`AGENTS.md` natively (verified by probe: it recites the rules without reading a file), and Claude reads
+the same file via a one-line `CLAUDE.md` → `@AGENTS.md` pointer. **One file, both families, zero
+per-dispatch prompt cost.** All three repos now have one; before 2026-07-26 only the frontend did, and
+a Codex probe in the backend answered literally `NO PROJECT CONTEXT LOADED`.
+
+What belongs in it — the heuristic is *load-bearing, non-obvious from reading the code, and expensive
+to get wrong*. Everything else is the linter's job:
+1. **Invariants that cannot be violated** (the five rules pattern) — not preferences.
+2. **The handful of patterns you will reach for daily** (route shape, DI, error handling).
+3. **Traps: things that look right and are not.** The highest-value section, because it is the only
+   one a competent stranger cannot infer.
+4. **The gate** — the exact commands that mean "done".
+5. **A delegated-subagent section**: never push/PR/merge/migrate, and *a false premise is a reason to
+   STOP*.
+
+**Keep it short enough to be read every time.** Deep detail belongs in routed files loaded on demand
+(the frontend's `.claude/context/*.md` — shared by all agents despite the directory name), not inline.
+A file long enough to skim is a file nobody reads twice.
+
+**Delegating to Codex subagents (Daniel's call, 2026-07-26 — codex is a paid account).** Codex is no
+longer only a second *opinion* (`cross-review.mjs`); it is a second **worker pool** with an independent
+quota, dispatched via `node scripts/codex-delegate.mjs --task <kind> --prompt-file <f>`. That
+independence is the point: a shared Claude session cap killed three builders at once, twice in one day
+(`LEARNINGS.md` → session limits are the new flakiness), and a second family is the only structural
+answer to it.
+
+- **The roster is PROBED, never assumed.** Accepted today: **`gpt-5.6-sol`** (frontier) and
+  **`gpt-5.6-terra`** (workhorse, the config default at effort `high`). Everything else — including
+  `gpt-5-codex`, which the CLI *reports itself to be* — is rejected as `invalid_request_error`. Model
+  self-reports are unreliable; re-probe with `codex exec -m <slug> 'say OK'` before trusting a slug.
+- **Route by risk and boundedness, not by "cheaper model builds"** — the 2026-07-19 Codex/Sol trial
+  found the blanket rule failed and this one worked. Frontier keeps commerce authorization, money
+  paths, production state and scope-merging calls; the workhorse takes narrow UI/test/audit/CI work
+  with explicit file ownership. `--task` encodes this; `--list-tasks` prints the table.
+- **Read-only by default for anything that isn't a build**, so an audit cannot "helpfully" fix what it
+  finds. `danger-full-access` is unreachable from the tool.
+- **A delegated subagent never merges, pushes, opens a PR, or applies a migration.** It returns a diff
+  and a report; the orchestrator verifies and lands it. A different *family* building something does
+  not make it self-approving — that is the same distinction the review section opens on.
+- **Verify the report against the diff.** On its first real dispatch the subagent correctly rejected
+  the architect's brief (a locked spec count was wrong) and stopped — which is the contract working.
+  On its second it delivered, and a review pass still found a real defect the report did not mention
+  (`fail-fast` defaulting to true would have let one failing shard hide the others).
+
 **Route models by risk, and invert it for review.** Assign the sprint that defines the contract everything
 else imports — the authorization boundary, the migration, the shared seam — to the stronger model; assign the
 sprints that are mechanical over a locked contract to the faster one. Review is inverted: the fresh
@@ -248,6 +293,39 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
   the dominant token cost in multi-agent dev; let the deterministic gate, `tsc` + `build` + Playwright, carry
   the repetitive checking and have the reviewer read once). **Do not use the `/code-review ultra` cloud
   command — it is not set up for this repo.**
+
+### Routing the reviewers — `node scripts/review-route.mjs --builder <who> --tier <low|high> <PR#>`
+
+Once **three families can build** (Claude, Codex, agy), "run cross-review" stopped being unambiguous:
+the default `--agent codex` on a Codex-built diff is **Codex reviewing Codex** — a same-family pass
+wearing a cross-family label, and a silent downgrade nothing in the old flow would catch. The router
+makes the policy executable and auditable; it prints its reasoning and the exact command to run.
+
+| Builder | Cross-family reviewer | Fresh `pr-reviewer` |
+|---|---|---|
+| Codex | **agy** | HIGH only |
+| agy | **codex** | HIGH only |
+| Claude | **codex** (then agy) | HIGH only |
+
+Three rules, and rule 3 is the one that saves tokens:
+1. **A family never reviews its own diff.**
+2. **The cross-family reviewer rotates to the highest-preference family that did not build.** Order is
+   codex → agy → devin; devin is last because its findings were mostly false positives on the sample
+   tried and it now carries prose duty.
+3. **The fresh `pr-reviewer` is MANDATORY on HIGH, and skipped on LOW.**
+
+Rule 3 rests on the distinction this section opens with, and the two axes are **not interchangeable**:
+*family* independence (different blind spots) and *context* independence (an agent that did not hold
+the diff while writing it). The fresh Claude reviewer is the second axis, and it is the one that caught
+the emission-gate flag and the consent-boundary holes every external tool missed — so it stays
+mandatory on HIGH **even when a different family built the diff**. On LOW it is skipped, which costs
+zero Claude review tokens. That is only safe because the deterministic gate got materially stronger
+(lint now runs in both repos, coverage is measured, the owed ledger is generated, a security lens
+exists) — this section's own instruction is to let the gate carry the repetitive checking.
+
+**A missing layer must be loud.** If no other family is installed the router reports the cross-family
+layer as **DARK** rather than silently substituting; say so in the PR body, because a missing layer
+that reads like a clean one is worse than no layer at all.
 
 **Every PR declares a risk tier** (in the PR body); that tier decides who may merge:
 - **Low-risk → an agent other than the builder may merge** once CI is green and the **cross-agent review is

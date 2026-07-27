@@ -12,6 +12,47 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 ---
 
 ## Multi-agent & async deploy coordination
+- **`AGENTS.md` is the onboarding contract, it is AUTO-LOADED by Codex, and two of three repos didn't
+  have one.** Verified by probe, not assumption: Codex recites the five rules without reading a file,
+  and a probe in `apps/backend` answered literally `NO PROJECT CONTEXT LOADED`. Claude reads the same
+  file via a one-line `CLAUDE.md` → `@AGENTS.md` pointer, so it is **one file, both families, zero
+  per-dispatch prompt cost**. Both of that day's successful Codex delegations happened to land in the
+  one repo that already had context. What goes in it: *load-bearing, non-obvious from the code, and
+  expensive to get wrong* — invariants, the daily patterns, **the traps** (highest value: the only
+  section a competent stranger cannot infer), the gate, and a delegated-subagent clause. Keep it short
+  enough to be read every time; deep detail goes in routed files. *(2026-07-26.)*
+- **Once more than one family can BUILD, "run cross-review" is ambiguous — rotate the reviewer off the
+  builder.** The default `--agent codex` on a Codex-built diff is Codex reviewing Codex: a same-family
+  pass wearing a cross-family label, and nothing in the old flow would catch it.
+  `scripts/review-route.mjs` makes it executable. Keep the two axes distinct — **family** independence
+  (different blind spots) and **context** independence (an agent that didn't hold the diff while
+  writing it) — because they are not substitutes: the fresh same-family reviewer is what caught the
+  emission-gate flag and the consent-boundary holes every external tool missed. So it stays mandatory
+  on HIGH *even when another family built the diff*, and is skipped on LOW, which is where the token
+  saving comes from — affordable only because the deterministic gate got stronger. **A missing layer
+  must be reported as DARK, never silently substituted.** *(2026-07-26.)*
+- **Assume the ORCHESTRATOR dies too — derive state, journal intent.** The existing rule (message a
+  killed *worker's* agent id; it resumes from its transcript) only covers the case where the orchestrator
+  survives to send that message. When the orchestrator dies, the docs record *decided* state and nothing
+  records *in-flight* state. Two habits close it, split on one line: **`node scripts/session-resume.mjs`**
+  re-derives branches, dirty trees, worktrees, open PRs and migration drift across all three repos and
+  leads with anomalies; **`node scripts/session-note.mjs --kind decision "…"`** journals the one thing a
+  resume cannot re-derive. Never STORE derivable state — a stored snapshot is stale by the time it is read
+  and reads as authoritative, the same reason `BUILD-ORDER.md` is generated. Proven the hard way in the
+  same session: a builder died holding six files of uncommitted work and zero commits, recovered only by
+  re-deriving `git status` in its worktree and handing that back as grounding. *(2026-07-26,
+  session-continuity.)*
+- **Delegate to a different model FAMILY for an independent quota — and tell it that a false premise is a
+  reason to STOP.** A shared Claude session cap killed three builders at once, twice in one day; a paid
+  Codex account is the structural answer (`scripts/codex-delegate.mjs`, routed by risk + boundedness per
+  the 2026-07-19 trial, not by "cheaper model builds"). The single highest-value line in the delegation
+  contract: *"if the task rests on a false premise, stop and say so — reporting it is a successful
+  outcome."* On its first real dispatch the subagent rejected the architect's brief because a locked spec
+  count was wrong, and it was right. **Verify the report against the diff anyway** — on the second
+  dispatch it delivered, and a review pass still found a defect the report never mentioned (`fail-fast`
+  defaulting to true would have let one failing shard hide the others). **Probe model slugs, never assume
+  them:** the CLI reported itself as `gpt-5-codex`, which the API rejects; only `gpt-5.6-sol` and
+  `gpt-5.6-terra` are accepted. *(2026-07-26.)*
 *Several agents work in parallel on their own branches, against two repos that deploy independently.*
 
 - **Two repos, one production platform, different preview shapes.** Both frontend
@@ -1187,6 +1228,50 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A READ-THEN-WRITE RACE MATTERS EXACTLY WHEN THE WRITE *CREATES* SOMETHING — do not generalize one
+  benign-ness judgement across sites that only look alike.** A new lint rule flagged six
+  `require-atomic-updates` cache sites; the architect assessed all six as "very likely benign — the
+  cached values are stable ids, so a lost race costs a duplicate fetch". A delegated Codex review
+  **contradicted that and was right**: one of them was a find-or-**create**, so two concurrent callers
+  could both find nothing and both create — leaving duplicate persistent sales channels that no retry
+  cleans up. The others really were benign read-only lookups. Fix for the create case: cache the
+  **in-flight promise**, not the resolved value, and clear the slot on failure so a transient error
+  cannot poison later calls. Observed red against the original: 4 concurrent callers → 4 creates
+  (expected 1). Note the meta-lesson — this is *guard the population* applied to an ASSESSMENT: six
+  sites got one verdict because they shared a lint code, not a shape. *(2026-07-26.)*
+- **A GUARD THAT REJECTS CORRECT OUTPUT IS WORSE THAN ONE THAT MISSES A RARE FAULT — and the worst case
+  is a guard that contradicts its own brief.** Shipped twice in one epic (exec-prose-rail, 2026-07-26),
+  both caught by RUNNING the rail rather than reviewing it: **(a)** an `unfinished` rule flagged every
+  poster draft because the house artifact legitimately ends in a markdown table row, on both writers,
+  through all four attempts; **(b)** worse, the `invented-beneficiary` rule fired on a draft that
+  *complied* with our own lessons file — `prose-lessons.md` says "Say 'no user-visible effect' when that
+  is the truth" and the persona asks for exactly that on internal work, then the guard rejected the
+  sentence that did it. A guard punishing the honest phrasing teaches the writer to avoid it, which is
+  the precise failure it existed to prevent. Fix: scope the rule to the surface (structural endings are
+  fine where markdown is required), and always allow the NEGATION of the thing you ban.
+- **"Unknown" and "none" are different facts — never collapse them in a report.** The standup's evidence
+  pack reported an unreadable flag state as an empty flag list, which would have told the writer nothing
+  was live when the truth was unknown: a confident falsehood produced by the very module built to prevent
+  them. Any gathered signal needs three states — known-present, known-absent, unavailable — and the third
+  must say so out loud. *(2026-07-26, exec-prose-rail S2.)*
+- **A hand-counted number is stale on arrival — generate it or don't cite it.** An external audit counted
+  80 owed-verification markers across 75 files on 2026-07-24; two days later it was 76/71, and the
+  spec-file count had moved 323→353 in the same window. Neither count was wrong when written. The drift IS
+  the argument for a generator (`scripts/owed-ledger.mjs`, the `build-order.mjs` pattern). Corollary: a
+  locked build contract quoting a hand-counted number will be rejected by a careful builder — as one was.
+  *(2026-07-26, qa-guardrail-hardening S3.)*
+- **Downgrading rules to make a full-tree gate green is worse than no gate: it looks enforcing while
+  enforcing nothing.** The audit called "wire `npm run lint` into CI" a one-line fix; a clean checkout
+  had **238 problems, 124 errors, none auto-fixable**, 52 of them React Hooks *correctness* rules on live
+  commerce surfaces. The honest options are an incremental gate or an honest absence — never a green lie.
+  We took incremental (`lint-changed.mjs`, judged on the merge-base three-dot diff), which is the pattern
+  `doc-format.mjs` already uses: enforce the swept set, keep the rest visible, grow it by sweeping.
+  *(2026-07-26, qa-guardrail-hardening S1.)*
+- **A script that exits green having run nothing is worse than no script.** `test:integration:http`
+  matched a directory that had never existed, so it found zero tests and passed; `test:integration:modules`
+  was a second label over the unit suite. Both deleted rather than repaired — inventing tests to justify an
+  existing script is not a reason to write them, and an honest "we have no integration tier" is more useful
+  than a false gate. *(2026-07-26, qa-guardrail-hardening S2.)*
 - **A SOURCE-TEXT GUARD FAILS ON GOOD CODE FAR MORE OFTEN THAN ON DEFECTS — scope it to code, anchor it
   inside the function, and assert the INVARIANT rather than the spelling.** Five separate cases in one
   epic (merchant-partner-lifecycle, 2026-07-25): **(a)** three negative-containment guards failed on a

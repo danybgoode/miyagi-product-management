@@ -178,6 +178,24 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-26 — Delivery-rail hardening: five epics on the process itself (area 09, LOW/MED, all
+  internal tooling — no commerce surface, no migration, no flag).** A response to an external QA audit
+  plus two asks from Daniel, run epic-mode in one session. **Executive prose rail** — the daily standup
+  and weekly recap are now written as product prose by the routine's own model against a CPO persona,
+  checked by a pure guard shared with the local devin→agy rail that drafts retros and poster entries.
+  **Session continuity** — `session-resume.mjs` re-derives state across all three repos and leads with
+  anomalies; `session-note.mjs` journals the intent a resume cannot re-derive. **QA guardrails** — lint
+  finally runs in CI in both repos (incrementally, because a clean checkout had 124 unactionable
+  errors), the two false-green backend integration scripts are gone, the owed-verification ledger is
+  generated (**75 checks owed** across 70 spec files) and `cross-review.mjs` gained a `--lens security`
+  plus reviewer-model attribution. **Pipeline** — the Playwright gate is sharded 4 ways behind a single
+  preview resolve. **Credentialed smoke** — the auth switch is wired to the preview and, more usefully,
+  silent skips are now counted and reported. Also new: **Codex delegation** (`codex-delegate.mjs`),
+  routed by risk and boundedness, giving us a worker pool with a quota independent of Claude's session
+  cap. The locking pass disproved four audit premises before anyone built. **Owed:** cross-agent +
+  fresh-reviewer passes on every PR, the first live fire of both routines, two Cloud Build measurements,
+  and Daniel's Clerk dev-instance test users. Declined with reasons: Nx, repo-merge, Turborepo-in-CI.
+
 - **2026-07-25 — Merchant Partner lifecycle SHIPPED (HIGH; area 08 · three stacked PRs
   [#308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308) →
   [#310](https://github.com/danybgoode/miyagisanchezcommerce/pull/310) →

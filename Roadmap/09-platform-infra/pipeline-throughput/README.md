@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress
 slug: pipeline-throughput
 ---
 
@@ -13,7 +13,7 @@ slug: pipeline-throughput
 concurrency skip). The audit found two pieces of headroom that epic did not touch, both small and
 reversible — *tune, don't rebuild*:
 
-1. **The frontend PR gate runs 323 spec files unsharded**, after waiting up to 10 minutes for a Vercel
+1. **The frontend PR gate runs 312 spec files unsharded** (corrected 2026-07-26: 353 `*.spec.ts` total − 38 browser − 3 staging; the original 323 came from a dirty checkout and never subtracted staging), after waiting up to 10 minutes for a Vercel
    preview to go READY. The gate is the long pole on every single PR.
 2. **The backend's second `npm ci --omit=dev` in the runner stage is uncached by design.** The team's
    own comment explains why: `.medusa/server/package.json` isn't byte-stable across builds, so the

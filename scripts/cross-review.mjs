@@ -34,8 +34,10 @@
 // lockfile itself.
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import {
   AGENTS,
   die,
@@ -57,6 +59,11 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = join(__dirname, 'cross-review.prompt.md');
+// `--lens security` swaps the prompt only. Everything else — agent selection, the codex→agy fallback,
+// --skip-trivial, the version pin, the comment shape — is untouched, so the lens cannot regress the
+// rail that reviews every other PR.
+const SECURITY_PROMPT_PATH = join(__dirname, 'cross-review.security.prompt.md');
+export const LENSES = ['security'];
 
 const BANNER =
   '> **Required cross-agent review — resolve every finding before merge, but this does not authorize one.** ' +
@@ -98,6 +105,7 @@ function parseArgs(argv) {
     force: false,
     dryRun: false,
     skipTrivial: false,
+    lens: null,
     minLines: 10,
     includeLockfiles: false,
     help: false,
@@ -111,12 +119,19 @@ function parseArgs(argv) {
     else if (a === '--include-lockfiles') out.includeLockfiles = true;
     else if (a === '--min-lines') out.minLines = parseMinLines(need(argv[++i], '--min-lines'));
     else if (a.startsWith('--min-lines=')) out.minLines = parseMinLines(a.slice('--min-lines='.length));
+    else if (a === '--lens') out.lens = need(argv[++i], '--lens');
+    else if (a.startsWith('--lens=')) out.lens = a.slice('--lens='.length);
     else if (a === '--agent') out.agent = need(argv[++i], '--agent');
     else if (a.startsWith('--agent=')) out.agent = a.slice('--agent='.length);
     else if (a === '--repo') out.repo = need(argv[++i], '--repo');
     else if (a.startsWith('--repo=')) out.repo = a.slice('--repo='.length);
     else if (!a.startsWith('-') && out.pr === null) out.pr = a;
     else die(`unknown argument '${a}' (try --help)`);
+  }
+  // Validate the lens at parse time so the CLI fails fast with a clear message, matching every other
+  // bad-argument path here. promptPathFor throws for programmatic callers.
+  if (out.lens && !LENSES.includes(out.lens)) {
+    die(`unknown --lens '${out.lens}' (expected: ${LENSES.join(' | ')})`);
   }
   return out;
 }
@@ -173,10 +188,56 @@ function runReview(agent, prompt, diff) {
   die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 }
 
-function buildComment(agentLabel, findings, fellBack) {
+// Reads the model that codex would actually use: CODEX_MODEL if set, else the `model = "..."` line in
+// ~/.codex/config.toml. Returns null when it cannot be determined — the caller prints "unrecorded"
+// rather than a plausible-looking guess, because a wrong attribution is worse than a missing one.
+export function resolveReviewModel(agent, fellBack, deps = {}) {
+  const { env = process.env, readCfg = defaultReadCodexConfig } = deps;
+  if (fellBack || agent === 'antigravity') return env.AGY_MODEL || 'agy default pair';
+  if (agent === 'devin') return 'devin default';
+  if (env.CODEX_MODEL) return env.CODEX_MODEL;
+  const cfg = readCfg();
+  const m = cfg && /^\s*model\s*=\s*"([^"]+)"/m.exec(cfg);
+  if (!m) return null;
+  const effort = cfg && /^\s*model_reasoning_effort\s*=\s*"([^"]+)"/m.exec(cfg);
+  return effort ? `${m[1]} (effort: ${effort[1]})` : m[1];
+}
+
+function defaultReadCodexConfig() {
+  try {
+    return readFileSync(join(homedir(), '.codex', 'config.toml'), 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+// THROWS rather than die()s: a pure function that exits the process cannot be unit-tested, and
+// silently defaulting to the general prompt would be the worst failure available here — the operator
+// would believe a security pass ran while a general review actually did. The CLI still validates at
+// parse time (below), so the user-facing error is unchanged.
+export function promptPathFor(lens) {
+  if (!lens) return PROMPT_PATH;
+  if (!LENSES.includes(lens)) throw new Error(`unknown lens '${lens}' (expected: ${LENSES.join(' | ')})`);
+  return SECURITY_PROMPT_PATH;
+}
+
+// `model` is recorded because the reviewer model is MACHINE-LOCAL state that no artifact used to
+// capture: CODEX_MODEL defaults to null, so cross-review inherits whatever ~/.codex/config.toml says.
+// If that config drifts, review strength changes family and nothing notices. Naming it makes the
+// review auditable; when it genuinely cannot be resolved we say so rather than printing a default
+// that may be wrong.
+export function buildComment(agentLabel, findings, fellBack, { lens = null, model = null } = {}) {
   // When codex fell back, make it unmistakable so nobody reads an Antigravity review as a Codex one.
   const header = fellBack ? `${AGENTS.antigravity} — Codex unavailable` : agentLabel;
-  return `### 🔎 Cross-agent review (${header})\n\n${BANNER}\n\n---\n\n${findings}\n`;
+  const title = lens
+    ? `### 🔐 Cross-agent review — ${lens} lens (${header})`
+    : `### 🔎 Cross-agent review (${header})`;
+  const attribution = `\n\n_Model: ${model || 'unrecorded — resolve failed'}._`;
+  // A security pass that reads as a clean bill of health is worse than none. State the limit inline.
+  const limit = lens === 'security'
+    ? `\n\n> **Scope of this pass:** one advisory, single-pass read by a different model family. It is **not** static analysis, not exhaustive, and not a required check. A clean result here is not a security guarantee.`
+    : '';
+  return `${title}\n\n${BANNER}${attribution}${limit}\n\n---\n\n${findings}\n`;
 }
 
 function postComment(pr, repo, body) {
@@ -192,7 +253,7 @@ function postComment(pr, repo, body) {
 }
 
 function main() {
-  let { pr, agent, repo, force, dryRun, skipTrivial, minLines, includeLockfiles, help } = parseArgs(
+  let { pr, agent, repo, force, dryRun, skipTrivial, lens, minLines, includeLockfiles, help } = parseArgs(
     process.argv.slice(2)
   );
   if (help) {
@@ -242,7 +303,7 @@ function main() {
     checkAgyVersion();
   }
 
-  const prompt = loadPromptBody(PROMPT_PATH);
+  const prompt = loadPromptBody(promptPathFor(lens));
   const rawDiff = ghDiff(pr, repo);
   let diff = rawDiff;
   if (!includeLockfiles) {
@@ -258,7 +319,12 @@ function main() {
   const { findings, fellBack } = runReview(agent, prompt, diff);
   if (!findings) die(`${fellBack ? AGENTS.antigravity : AGENTS[agent]} returned no output.`);
 
-  const body = buildComment(AGENTS[agent], findings, fellBack);
+  // Resolve the model actually used. CODEX_MODEL wins when set; otherwise codex inherits its config
+  // default, which we read rather than guess. agy/devin report their own via the runner.
+  const body = buildComment(AGENTS[agent], findings, fellBack, {
+    lens,
+    model: resolveReviewModel(agent, fellBack),
+  });
   if (dryRun) {
     process.stdout.write(body);
     process.stderr.write('\n(dry-run — no comment posted)\n');
@@ -268,4 +334,8 @@ function main() {
   }
 }
 
-main();
+// Guarded like every other script here (build-order, standup, prose-draft…). It used to call main()
+// unconditionally, which meant merely IMPORTING this module ran a review — so its pure helpers could
+// not be unit-tested at all. That is why `resolveReviewModel` and `promptPathFor` now have coverage.
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) main();
