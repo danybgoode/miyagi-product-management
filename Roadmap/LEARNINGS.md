@@ -12,6 +12,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 ---
 
 ## Multi-agent & async deploy coordination
+- **A SPEC THAT ASSERTS "THE WRAPPER WAS CALLED" DOES NOT PROTECT WHAT THE WRAPPER IS FOR — assert the
+  ORDERING.** Shipped this exact hole: a lock spec checked that `locking.execute` was invoked with a
+  stable key, so hoisting the critical read OUT of the lock — destroying the whole property — left it
+  **green**, and its inline comment claimed the opposite. Fix: record a trace from inside the wrapper
+  and the wrapped call, then assert `['lock-enter','read','lock-exit']`. Caught by the fresh
+  `pr-reviewer`, which mutation-tested the spec rather than reading it. **Corollary on review axes,
+  measured the same day:** the different-FAMILY passes returned "no findings" on that PR while SEVEN
+  real ones sat in the diff, two of them in my own test and my own comment; across the session the
+  family axis produced 3 confidently-wrong blocking claims out of ~12, the fresh-agent axis none. Keep
+  both, weight them accordingly. *(2026-07-27.)*
 - **`AGENTS.md` is the onboarding contract, it is AUTO-LOADED by Codex, and two of three repos didn't
   have one.** Verified by probe, not assumption: Codex recites the five rules without reading a file,
   and a probe in `apps/backend` answered literally `NO PROJECT CONTEXT LOADED`. Claude reads the same
