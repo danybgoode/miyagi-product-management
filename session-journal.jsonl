@@ -4,3 +4,4 @@
 {"ts":"2026-07-26T16:52:36.645Z","session":"2026-07-26","kind":"decision","text":"session-resume: duplicate migration version reported as collision, not unapplied. Real defect found by RUNNING, not reviewing.","refs":["9811fe2"]}
 {"ts":"2026-07-26T16:52:39.117Z","session":"2026-07-26","kind":"next","text":"Epic E S1 built (3 commits, 42 tests). Owed: cross-review + MANDATORY fresh pr-reviewer (orchestrator self-authored last mile), then PR.","refs":[]}
 {"ts":"2026-07-27T13:40:24.257Z","session":"2026-07-27","kind":"next","text":"Wrap-up done: 8/9 PRs merged. Owed: #314 (CI stalled), cache-mount measurement, routine live fires, Clerk fixtures, fixture-data gap.","refs":[]}
+{"ts":"2026-07-27T14:54:09.506Z","session":"2026-07-27","kind":"blocked","text":"PROD: 16 'Default Sales Channel' rows (15 prunable). NO 'Mercado Libre' channel exists — the #113 race never fired. prune-sales-channels dry-run ready; deletion needs Daniel.","refs":["PR115"]}
