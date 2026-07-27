@@ -487,3 +487,30 @@ test('main(): --help prints usage and exits 0 without gathering anything', async
   assert.equal(spawnCalled, false);
   assert.match(out, /Usage: node scripts\/session-resume\.mjs/);
 });
+
+// ---- cross-review findings on PR #109: silent degradation ----
+//
+// D4 says degrade and NAME the gap. A failed probe that renders as silence is indistinguishable from
+// a clean result — the "unknown is not none" rule this repo already learned once, applied to itself.
+
+test('buildGaps: a failed working-tree probe is reported as UNKNOWN, not silently as clean', () => {
+  const gaps = buildGaps({
+    repoStates: [
+      { repo: 'r', dir: '.', git: { available: true, branch: 'main', dirtyFiles: null, dirtyProbeFailed: true, worktrees: [] }, gh: { available: true, open: [] } },
+    ],
+    migrationResults: [],
+    journalAvailable: true,
+  });
+  assert.ok(gaps.some((g) => /UNKNOWN, not clean/.test(g)), 'a failed dirty probe must name a gap');
+});
+
+test('buildGaps: a successful clean tree produces NO dirty gap', () => {
+  const gaps = buildGaps({
+    repoStates: [
+      { repo: 'r', dir: '.', git: { available: true, branch: 'main', dirtyFiles: 0, dirtyProbeFailed: false, worktrees: [] }, gh: { available: true, open: [] } },
+    ],
+    migrationResults: [],
+    journalAvailable: true,
+  });
+  assert.equal(gaps.some((g) => /UNKNOWN/.test(g)), false);
+});

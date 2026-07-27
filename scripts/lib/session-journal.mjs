@@ -43,7 +43,11 @@ export function buildJournalEntry({ kind, text, session, refs, ts, now } = {}) {
   if (!isValidKind(kind)) {
     throw new Error(`invalid --kind "${kind}" — must be one of: ${VALID_KINDS.join(' | ')}`);
   }
-  const trimmed = (text || '').trim();
+  // Normalise embedded line breaks to a single space. JSON.stringify escapes them so the FILE stays
+  // one-line-per-entry, but the rendered report prints `text` verbatim — so `$'decision A\nfake entry'`
+  // displayed as two journal lines, one of which never happened. A journal that can be made to show
+  // fabricated entries is worse than no journal, and this is an intent record a later agent trusts.
+  const trimmed = (text || '').replace(/[\r\n]+/g, ' ').trim();
   if (!trimmed) {
     throw new Error('journal text must not be empty');
   }

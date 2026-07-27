@@ -141,3 +141,17 @@ test('formatEntry: no refs → no trailing bracket', () => {
   const entry = { ts: 't', session: 's', kind: 'next', text: 'do Y', refs: [] };
   assert.equal(formatEntry(entry), '[next] t (s) — do Y');
 });
+
+// ---- cross-review finding on PR #109 ----
+
+test('buildJournalEntry: embedded newlines are normalised, so one note cannot render as two entries', () => {
+  // The file stayed valid JSONL (stringify escapes them), but the rendered report prints `text`
+  // verbatim — so a crafted note displayed a second line that never happened.
+  const e = buildJournalEntry({ kind: 'decision', text: 'real decision\nfake entry [decision]' });
+  assert.ok(!e.text.includes('\n'));
+  assert.equal(e.text, 'real decision fake entry [decision]');
+});
+
+test('buildJournalEntry: a text of only newlines is still rejected as empty', () => {
+  assert.throws(() => buildJournalEntry({ kind: 'decision', text: '\n\n  \r\n' }), /must not be empty/);
+});

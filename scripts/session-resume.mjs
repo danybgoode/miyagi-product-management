@@ -272,6 +272,11 @@ export function buildGaps({ repoStates, migrationResults, journalAvailable, jour
   const gaps = [];
   for (const rs of repoStates || []) {
     if (!rs.git?.available) gaps.push(`${rs.repo}: git state unavailable — ${rs.git?.reason || 'unknown reason'}.`);
+    // A failed dirty-probe is UNKNOWN, not clean. Without this the report renders no dirty-tree
+    // anomaly and no gap — indistinguishable from a clean tree.
+    else if (rs.git.dirtyProbeFailed) {
+      gaps.push(`${rs.repo}: could not read working-tree status — dirty/clean is UNKNOWN, not clean.`);
+    }
     if (!rs.gh?.available) {
       gaps.push(
         `${rs.repo}: PR/CI state unavailable — ${rs.gh?.reason || 'gh unavailable'}. Stray-branch/CI/conflict checks skipped.`
@@ -410,7 +415,12 @@ function gatherRepoGit({ dir, root, existsSyncFn, spawn }) {
   const detached = branch === 'HEAD';
 
   const statusRes = git(['status', '--porcelain'], path, spawn);
-  const dirtyFiles = statusRes.status === 0 ? statusRes.stdout.split('\n').filter(Boolean).length : null;
+  // `null` here means the probe FAILED, which is not the same fact as "the tree is clean" — and
+  // decideDirtyTree treats any falsy value as "no anomaly". Cross-review caught that a failed
+  // `git status` therefore rendered as silence. The flag below turns it into a named gap, which is
+  // D4's whole point and the "unknown is not none" rule this repo already learned once.
+  const dirtyProbeFailed = statusRes.status !== 0;
+  const dirtyFiles = dirtyProbeFailed ? null : statusRes.stdout.split('\n').filter(Boolean).length;
 
   // Best-effort, local-refs-only (no fetch — a read-only resume must not have a network side effect on
   // every invocation); a stale origin/main tracking ref just means a stale ahead/behind count, reported
@@ -435,7 +445,7 @@ function gatherRepoGit({ dir, root, existsSyncFn, spawn }) {
       });
   }
 
-  return { available: true, path, branch, detached, ahead, behind, dirtyFiles, worktrees };
+  return { available: true, path, branch, detached, ahead, behind, dirtyFiles, dirtyProbeFailed, worktrees };
 }
 
 function gatherRepoGh({ repo, listPullsFn, mergeFn, rollupFn }) {
@@ -594,17 +604,17 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     // Last-resort net (D4: degrade, never die) — should be unreachable given every gather function above
     // already catches its own failure mode, but a resume tool must never stack-trace on a bad day.
     warn(`⚠ session-resume: unexpected error, showing a partial/empty brief instead of crashing: ${e.message}`);
-    log(
-      renderHumanReport(
-        buildReport({
-          repoStates: [],
-          migrationResults: [],
-          journalEntries: [],
-          journalAvailable: false,
-          journalReason: `session-resume crashed before the journal could be read: ${e.message}`,
-        })
-      )
-    );
+    // Honour --json even here. Cross-review caught that this path emitted the HUMAN report
+    // unconditionally, so a machine consumer asking for JSON received prose on stdout with exit 0 —
+    // it would parse-fail or, worse, be treated as an empty result.
+    const fallback = buildReport({
+      repoStates: [],
+      migrationResults: [],
+      journalEntries: [],
+      journalAvailable: false,
+      journalReason: `session-resume crashed before the journal could be read: ${e.message}`,
+    });
+    log(args?.json ? JSON.stringify(fallback, null, 2) : renderHumanReport(fallback));
     return 0;
   }
 }
