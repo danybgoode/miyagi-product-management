@@ -3,3 +3,4 @@
 {"ts":"2026-07-26T16:38:37.260Z","session":"2026-07-26","kind":"blocked","text":"3 builders killed by shared session cap, resets 14:50. Orchestrator finishing last mile => fresh reviewer MANDATORY before merge.","refs":[]}
 {"ts":"2026-07-26T16:52:36.645Z","session":"2026-07-26","kind":"decision","text":"session-resume: duplicate migration version reported as collision, not unapplied. Real defect found by RUNNING, not reviewing.","refs":["9811fe2"]}
 {"ts":"2026-07-26T16:52:39.117Z","session":"2026-07-26","kind":"next","text":"Epic E S1 built (3 commits, 42 tests). Owed: cross-review + MANDATORY fresh pr-reviewer (orchestrator self-authored last mile), then PR.","refs":[]}
+{"ts":"2026-07-27T13:40:24.257Z","session":"2026-07-27","kind":"next","text":"Wrap-up done: 8/9 PRs merged. Owed: #314 (CI stalled), cache-mount measurement, routine live fires, Clerk fixtures, fixture-data gap.","refs":[]}
