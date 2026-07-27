@@ -1228,6 +1228,21 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **MEASURE THE LAYER, NOT THE BUILD — total build time can be pure noise.** Asked to prove whether a
+  BuildKit cache mount helps, the obvious measurement (two consecutive Cloud Build runs vs baseline) is
+  **incapable of answering**: five consecutive backend builds ranged **7m49s → 23m24s**, a 15-minute
+  spread that swamps any plausible ~60s saving. The answerable measurement is the per-layer timing
+  BuildKit already prints — `gcloud builds log <id> | grep '#17 DONE'` for the runner-stage install.
+  Doing that revealed the premise was also wrong: that layer is **~300s when it runs and ~1.3s when the
+  registry layer cache hits**, and it hit on 3 of 5 builds — so the Dockerfile's "invalidates every
+  time" comment is false, and a cache mount would only pay on the minority of builds where the layer
+  actually re-runs. *(2026-07-27.)*
+- **A fixture-gated spec that has never run is not passing — it is unmeasured.** Wiring `MS_TEST_*`
+  fixtures into CI un-skipped two API specs that immediately **failed**, because the configured listing
+  has no instant payment method. They had been silently skipping for as long as the fixtures were unset.
+  Two lessons: scope test fixtures to the JOB/STEP that needs them (job-level env reached the
+  deterministic gate and reddened it), and treat "provisioning a fixture" as a change that can turn a
+  green gate red — because it converts silence into a result. *(2026-07-27, credentialed-browser-smoke.)*
 - **WHEN GITHUB ACTIONS QUOTA IS EXHAUSTED, the local gate IS the merge signal — and say so in the PR.**
   Protocol (2026-07-18, re-used 2026-07-27): run the full gate locally (`tsc` + build + lint + suite),
   pair it with the green Vercel preview (Vercel-side, unaffected), and state *"CI quota exhausted, local
