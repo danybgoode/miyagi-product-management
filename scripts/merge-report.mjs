@@ -184,9 +184,28 @@ function loadChatId() {
   return process.env.TELEGRAM_CHAT_ID || null;
 }
 
+/**
+ * Resolve the bot token.
+ *
+ * A git hook does NOT reliably inherit an interactive shell's environment — fired from an editor, a
+ * GUI client or a background process it may see almost nothing. So the env var alone is not a
+ * dependable source for an automatic rail, and the token falls back to a gitignored `.env.local`,
+ * which is the same place golden-beans' rail reads it from. Never logged, never committed.
+ */
+function resolveBotToken() {
+  if (process.env.TELEGRAM_BOT_TOKEN) return process.env.TELEGRAM_BOT_TOKEN;
+  const envFile = join(__dirname, '..', '.env.local');
+  if (!existsSync(envFile)) return null;
+  for (const line of readFileSync(envFile, 'utf8').split('\n')) {
+    const m = line.match(/^\s*TELEGRAM_BOT_TOKEN\s*=\s*(.+?)\s*$/);
+    if (m) return m[1].replace(/^["']|["']$/g, '');
+  }
+  return null;
+}
+
 async function sendTelegram(chatId, text) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return { ok: false, error: 'TELEGRAM_BOT_TOKEN is not set' };
+  const token = resolveBotToken();
+  if (!token) return { ok: false, error: 'TELEGRAM_BOT_TOKEN not set and absent from .env.local' };
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
