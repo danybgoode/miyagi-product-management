@@ -10,9 +10,10 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (5)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
+- [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 0/3 stories
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [Pipeline throughput — shard the gate, cache the uncacheable install](../../09-platform-infra/pipeline-throughput/README.md) — 09 Platform-infra · 0/4 stories
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
@@ -21,7 +22,7 @@
 
 _None._
 
-## ✅ Shipped (131)
+## ✅ Shipped (130)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -113,7 +114,6 @@ _None._
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 6/6 stories · risk: High
 - [Build-order CI self-heal](../../09-platform-infra/build-order-ci-self-heal/README.md) — 09 Platform-infra · 1/1 stories · risk: Low · #1
 - [Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)](../../09-platform-infra/routines-enablement/README.md) — 09 Platform-infra · 1 sprints
-- [Credentialed browser smoke — wire the switch, and count what still skips](../../09-platform-infra/credentialed-browser-smoke/README.md) — 09 Platform-infra · 3/3 stories
 - [Cross-agent code review (second-opinion command)](../../09-platform-infra/cross-agent-code-review/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent planning panel (single-pass advisory second opinions on plans)](../../09-platform-infra/cross-agent-planning-panel/README.md) — 09 Platform-infra · 4/4 stories · risk: Low
 - [Cross-agent review on every PR (CI auto-run + policy)](../../09-platform-infra/cross-agent-review-always/README.md) — 09 Platform-infra · 5/5 stories
@@ -162,7 +162,7 @@ _None._
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (4)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -171,8 +171,9 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
+| Credentialed browser smoke — wire the switch, and count what still skips | In progress | Shipped |
 | GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover) | In progress | Shipped |
 | Pipeline throughput — shard the gate, cache the uncacheable install | In progress | Shipped |
 
 ---
-_Epics: 136 · seeds in funnel: 4 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 136 · seeds in funnel: 4 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._

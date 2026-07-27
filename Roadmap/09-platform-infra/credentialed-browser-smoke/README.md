@@ -1,5 +1,5 @@
 ---
-status: shipped
+status: in-progress
 slug: credentialed-browser-smoke
 ---
 

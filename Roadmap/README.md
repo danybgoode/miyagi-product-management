@@ -192,9 +192,15 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   preview resolve. **Credentialed smoke** — the auth switch is wired to the preview and, more usefully,
   silent skips are now counted and reported. Also new: **Codex delegation** (`codex-delegate.mjs`),
   routed by risk and boundedness, giving us a worker pool with a quota independent of Claude's session
-  cap. The locking pass disproved four audit premises before anyone built. **Owed:** cross-agent +
-  fresh-reviewer passes on every PR, the first live fire of both routines, two Cloud Build measurements,
-  and Daniel's Clerk dev-instance test users. Declined with reasons: Nx, repo-merge, Turborepo-in-CI.
+  cap. The locking pass disproved four audit premises before anyone built. **8 of 9 PRs merged** after a full review pass — cross-family review on every one
+  (rotated off whoever built it) plus a fresh reviewer on the HIGH-tier money-path fix. Review caught
+  real defects in *both* directions: a genuine duplicate-sales-channel race, a false-green ledger
+  check, a guard that contradicted its own lessons file, and a skip-counter that missed the very skips
+  it was built to count — and two confident external findings that were simply wrong and were argued
+  down with evidence. **Owed:** the credentialed-smoke PR (#314, held — Actions stalled, not merging
+  on a stale green), two Cloud Build measurements for the unmeasured cache mount, the first live fire
+  of both routines, Daniel's Clerk dev-instance test users, and a fixture-provisioning gap the smoke
+  work surfaced. Declined with reasons: Nx, repo-merge, Turborepo-in-CI.
 
 - **2026-07-25 — Merchant Partner lifecycle SHIPPED (HIGH; area 08 · three stacked PRs
   [#308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308) →

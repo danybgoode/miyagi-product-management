@@ -4,7 +4,7 @@ _Closed: 2026-07-26 (S2 incomplete by design — see gaps)_
 
 ## What shipped
 
-**S1 — the frontend gate, sharded** (`f69fd9a`, delegated to Codex). A `prep` job resolves the Vercel
+**S1 — the frontend gate, sharded** — ✅ **MERGED** as PR #313 (delegated to Codex). A `prep` job resolves the Vercel
 preview **once** and publishes it as an output; a 4-way matrix consumes it and runs only Playwright.
 
 **S2 — BuildKit cache mount** (`1546fd5`). The `# syntax=docker/dockerfile:1` directive the Dockerfile
