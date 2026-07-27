@@ -1,6 +1,6 @@
 # Executive prose rail — Sprint 3: the weekly recap at exec altitude, and the lessons loop
 
-**Status:** ⬜ not started
+**Status:** ✅ Built — branch `feat/exec-prose-rail`
 
 > The second scheduled surface, at a higher altitude — themes, not events. Then the loop that makes
 > the rail improve rather than merely exist.
@@ -23,7 +23,7 @@ does not redesign it.
 
 ## Stories
 
-### Story 3.1 — `--brief` / `--post --prose-file` on `weekly-recap.mjs` ⬜
+### Story 3.1 — `--brief` / `--post --prose-file` on `weekly-recap.mjs` ✅
 **As a** product owner, **I want** the weekly recap to read like a CPO wrote it, **so that** I get the
 week's through-line instead of a merge tally.
 **Acceptance:**
@@ -37,7 +37,7 @@ week's through-line instead of a merge tally.
 - Empty window → the existing one-line "quiet week" message. **No writer call** (D7).
 - `--dry-run` stays fully read-only; `--since`/`--until` still work.
 
-### Story 3.2 — `weekly-recap.prompt.md` teaches the same loop ⬜
+### Story 3.2 — `weekly-recap.prompt.md` teaches the same loop ✅
 **As the** weekly routine, **I want** the identical write→guard→revise loop, **so that** both scheduled
 surfaces behave the same way.
 **Acceptance:**
@@ -45,7 +45,7 @@ surfaces behave the same way.
   line and the `--force-post` second attempt.
 - Preserves the existing failure-ping and advisory-only guarantees verbatim.
 
-### Story 3.3 — the lessons loop, wired and documented ⬜
+### Story 3.3 — the lessons loop, wired and documented ✅
 **As the** team, **I want** each caught mistake to protect every future report, **so that** the rail
 improves instead of repeating itself.
 **Acceptance:**

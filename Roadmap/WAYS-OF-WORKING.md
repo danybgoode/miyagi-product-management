@@ -138,6 +138,34 @@ Two habits close it, and they split on one line: **derive what is derivable; jou
   boundary. Append-only, fails soft. Intent is the *only* thing a resume cannot re-derive, and a
   decision nobody journalled is the one thing genuinely lost.
 
+## The prose rail — how generated reports get written
+
+Every generated report in this repo writes through **one house voice** (`scripts/prose/cpo-persona.md`)
+and is checked by **one pure guard** (`scripts/lib/prose-guard.mjs`) before a human sees it. There are
+**two writer backends**, and the split is not arbitrary:
+
+| Surface | Writer | Why |
+|---|---|---|
+| Daily standup, weekly recap | **The Claude Routine itself**, in-context, via a two-phase `--brief` → guard → `--post` loop | A routine runs on Anthropic infra with **no local CLI credentials** — `devin`/`agy` are absent there, so a direct writer call returns "no writer available" and the report silently becomes nothing |
+| Retro, poster entry, sprint-wrap | **devin → agy locally** (`scripts/prose-draft.mjs`) | Quota already paid for, and it keeps routine capacity for the scheduled reports |
+
+The guard, the persona, and `scripts/prose-lessons.md` are **shared by both**, so a correction
+improves every surface at once. The two-phase shape exists because a routine *is* the model and cannot
+pipe itself through a check: `--brief` emits a deterministic evidence pack (roadmap deltas first,
+commits as corroboration), the routine writes, and `--post --prose-file` runs the same pure guard,
+exiting non-zero with a numbered revision note. **Determinism stays in code; only sentence-making is
+model work.**
+
+**When a report gets something wrong, fix the class, not the instance.** Add a line to
+`prose-lessons.md` quoting the *actual* bad sentence — an abstract rule changes nothing, a verbatim
+failure is what a model pattern-matches against — and, when the failure is mechanically detectable,
+**also** add a guard rule with a test. A lesson reduces a mistake; a guard catches it. Prefer both.
+
+Two cautions learned building it, both from running the rail rather than reviewing it: a guard that
+rejects *correct* output is worse than one that misses a rare fault (it trains people to ignore the
+flag), and **"unknown" and "none" are different facts** — a report that says nothing is live when it
+merely failed to check is exactly the confident falsehood the guard exists to stop.
+
 ## Review & merge — cross-agent
 With multiple agents running in parallel, the agent that **builds** a PR is not the one that **approves** it — a
 fresh pair of eyes re-derives intent from the diff alone and catches what the author's context-bias hides.

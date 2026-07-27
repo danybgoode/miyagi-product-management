@@ -31,7 +31,7 @@
 // node_modules/TS build). Zero npm deps — Node >=20 (global fetch, spawnSync).
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, writeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
@@ -40,6 +40,15 @@ import { formatPrList, telegramHtmlToConsoleText } from './lib/telegram-format.m
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { appendStandupArtifactsToMessage, buildStandupArtifacts } from './lib/standup-deck.mjs';
 import { upgradeArtifactLinks } from './lib/report-registry.mjs';
+import { checkProse, findingsToRevisionNote } from './lib/prose-guard.mjs';
+import {
+  buildEvidencePack,
+  buildQuietBrief,
+  buildBrief,
+  deriveEvidenceFlags,
+  loadOwedLedger,
+} from './lib/prose-brief.mjs';
+import { parseStatusFlipsFromLog } from './weekly-recap.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -55,6 +64,26 @@ const LOG_BRANCH = 'claude/standup-log';
 const LOG_BRANCH_PATH = 'standups.log';
 
 const DRY_RUN = process.argv.includes('--dry-run');
+
+// ── Two-phase prose modes (exec-prose-rail S2; README D2) ────────────────────────────────────
+// `--brief` prints the persona + lessons + evidence pack and EXITS — writes nothing, sends nothing,
+// touches no git. `--post --prose-file <p>` guards a routine-written draft and posts it.
+const BRIEF = process.argv.includes('--brief');
+const POST = process.argv.includes('--post');
+const FORCE_POST = process.argv.includes('--force-post');
+function argAfter(flag) {
+  const i = process.argv.indexOf(flag);
+  return i !== -1 ? process.argv[i + 1] : null;
+}
+const PROSE_FILE = argAfter('--prose-file');
+const QUIET = process.argv.includes('--quiet');
+
+// The standup is a chat message read on a phone. This is the length budget the guard enforces.
+const STANDUP_MAX_WORDS = 90;
+
+// Written by epic B story 3 when it lands. Absent is normal and must degrade cleanly — neither epic
+// may hard-depend on the other's merge order.
+const OWED_LEDGER_PATH = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json');
 
 // Confirmed via `git remote -v` in each checkout (2026-07-02) — see the epic README for the deploy topology.
 const REPOS = [
@@ -155,6 +184,87 @@ function gatherStalePreviews() {
   if (r.status !== 0 && !r.stdout) return { available: false };
   const m = (r.stdout || '').match(/Preview deployments to remove[^:]*:\s*(\d+)/);
   return { available: m != null, count: m ? Number(m[1]) : null };
+}
+
+// ---- gather: roadmap deltas (D4 — the product-language input that LEADS the evidence pack) ----
+
+// Epic README `status:` frontmatter flips + sprint `**Status:**` line changes in the window. Reuses
+// weekly-recap.mjs's `parseStatusFlipsFromLog` rather than writing a second parser for the same
+// format (the epic-status SSOT is that frontmatter key — see scripts/build-order.mjs).
+export function gatherRoadmapDeltas(sinceExpr = '1 day ago', deps = {}) {
+  const { run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }) } = deps;
+
+  const epicLog = run(['log', `--since=${sinceExpr}`, '--date=iso-strict', '-p', '--', 'Roadmap/*/*/README.md']);
+  const flips = epicLog.status === 0 ? parseStatusFlipsFromLog(epicLog.stdout || '') : [];
+
+  const deltas = flips.map((f) => {
+    const slug = f.file.split('/').slice(-2)[0];
+    return `Epic "${slug}" moved to ${f.status}.`;
+  });
+
+  // Sprint docs that changed at all in the window — named in product terms, not as file paths.
+  const sprintLog = run(['log', `--since=${sinceExpr}`, '--name-only', '--format=', '--', 'Roadmap/*/*/sprint-*.md']);
+  if (sprintLog.status === 0) {
+    const touched = [...new Set((sprintLog.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean))];
+    for (const f of touched.slice(0, 8)) {
+      const parts = f.split('/');
+      const slug = parts[parts.length - 2];
+      const sprint = (parts[parts.length - 1] || '').replace(/\.md$/, '');
+      deltas.push(`Sprint doc updated: ${slug} / ${sprint}.`);
+    }
+  }
+  return deltas;
+}
+
+// Flags currently ON — real input for the guard's `flag-state-claim` rule (README D6).
+//
+// Source is the in-house `platform_flags` table (epic 09 feature-flags-inhouse), NOT scripts/flags.mjs
+// — that one still drives the retired Flagsmith Admin API and has no read for the live store.
+//
+// Returns `{ available, flags }`, and the distinction is load-bearing: "no flags are on" and "I could
+// not check" are different facts, and collapsing them to an empty array would let the brief tell the
+// writer nothing is live when the truth is unknown. Unavailable is the expected case in a routine
+// sandbox with no database credentials, so it must read as unknown, not as a negative finding.
+export function gatherLiveFlags(deps = {}) {
+  const {
+    run = () =>
+      spawnSync(
+        'supabase',
+        ['db', 'query', '--linked', '--csv', 'SELECT key FROM platform_flags WHERE enabled IS TRUE ORDER BY key'],
+        { cwd: join(ROOT, 'apps/miyagisanchez'), encoding: 'utf8', timeout: 60000 }
+      ),
+  } = deps;
+  try {
+    const r = run();
+    if (!r || r.status !== 0) return { available: false, flags: [] };
+    const rows = (r.stdout || '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .filter((l) => l.toLowerCase() !== 'key');
+    return { available: true, flags: rows };
+  } catch {
+    return { available: false, flags: [] };
+  }
+}
+
+// Commit subjects + touched areas for the window — the inputs `deriveEvidenceFlags` needs to decide
+// whether a fix claim or a customer mention is legitimate. Degrades to empty (the closed, safe
+// default) rather than failing the post.
+export function gatherWindowFacts(sinceExpr = '1 day ago', deps = {}) {
+  const { run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }) } = deps;
+  const log = run(['log', '--no-merges', `--since=${sinceExpr}`, '--format=%s']);
+  const subjects = log.status === 0 ? (log.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean) : [];
+  const names = run(['log', '--no-merges', `--since=${sinceExpr}`, '--name-only', '--format=']);
+  const paths = names.status === 0 ? (names.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean) : [];
+  const areas = [...new Set(paths.map((p) => {
+    if (p.startsWith('Roadmap/')) return 'roadmap docs';
+    if (p.startsWith('scripts/')) return 'internal tooling';
+    if (p.includes('/app/')) return 'storefront pages';
+    if (p.includes('/e2e/')) return 'test suite';
+    return p.split('/')[0] || 'other';
+  }))];
+  return { subjects, areas };
 }
 
 // ---- config / secrets ----
@@ -342,7 +452,72 @@ async function main() {
   const deltaLines = diffSnapshots(prev, cur, repoSignals);
 
   const header = `<b>Standup · ${cur.ts.slice(0, 10)}</b>`;
-  const rawMessage = deltaLines.length ? [header, ...deltaLines].join('\n') : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
+
+  // ── Phase 1: --brief ───────────────────────────────────────────────────────────────────────
+  // Prints persona + lessons + evidence and exits. Fully read-only: no log append, no git, no
+  // Telegram, no registry write — the same guarantee --dry-run carries.
+  if (BRIEF) {
+    const roadmapDeltas = gatherRoadmapDeltas();
+    const windowLabel = `since the last standup (${cur.ts.slice(0, 10)})`;
+    // D7: an empty window must never produce a writable brief. Roadmap movement AND repo movement
+    // both absent is the only case that counts as quiet.
+    if (!roadmapDeltas.length && !deltaLines.length) {
+      writeSync(1, `${buildQuietBrief(windowLabel)}\n`);
+      return;
+    }
+    const pack = buildEvidencePack({
+      windowLabel,
+      roadmapDeltas,
+      owed: loadOwedLedger(OWED_LEDGER_PATH),
+      repoSignals: deltaLines.map((l) => telegramHtmlToConsoleText(l)),
+      liveFlags: gatherLiveFlags(),
+      smoke: smoke.available ? smoke.conclusion || smoke.status : null,
+    });
+    writeSync(1, `${buildBrief({ scriptsDir: __dirname, surface: 'standup', pack })}\n`);
+    return;
+  }
+
+  // ── Phase 3: --post --prose-file ───────────────────────────────────────────────────────────
+  // Guards a routine-written draft with the SAME pure module the local rail uses, then posts.
+  // `--post` REQUIRES an explicit mode. Cross-review caught that `--post` alone fell through to the
+  // legacy unguarded send, so a typo could publish a report with no guard and no error at all.
+  if (POST && !PROSE_FILE && !QUIET) {
+    die(
+      '--post needs either --prose-file <path> (a guarded prose post) or --quiet (the one-line\n' +
+        '  quiet-window message). Refusing to fall through to an unguarded send.'
+    );
+  }
+
+  let prose = null;
+  if (POST && PROSE_FILE) {
+    const draft = readFileSync(resolve(ROOT, PROSE_FILE), 'utf8').trim();
+    // Evidence is DERIVED from the window, never hardcoded. Cross-review caught that these were
+    // fixed empty arrays, which made `allowsFixClaim`/`allowsBeneficiary` permanently false — so a
+    // genuine `fix:` in the window, or real customer-facing work, had its compliant prose rejected.
+    const windowFacts = gatherWindowFacts();
+    const evidence = deriveEvidenceFlags({
+      subjects: windowFacts.subjects,
+      areas: windowFacts.areas,
+      liveFlags: gatherLiveFlags().flags,
+      maxWords: STANDUP_MAX_WORDS,
+    });
+    const verdict = checkProse(draft, evidence);
+    if (!verdict.ok && !FORCE_POST) {
+      // Non-zero exit + the numbered revision note. The routine revises once and re-runs with
+      // --force-post (D3: a labelled imperfect report beats a missing one).
+      process.stderr.write(`${findingsToRevisionNote(verdict.findings)}\n`);
+      process.exit(2);
+    }
+    prose = verdict.ok ? draft : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
+  }
+
+  // D8: prose leads, compact signals below. The guard forbids naming specifics, so a red CI cannot
+  // survive the paragraph — the signal block is where the actionable pointers live, not decoration.
+  const rawMessage = prose
+    ? [header, '', esc(prose).replace(/&lt;i&gt;/g, '<i>').replace(/&lt;\/i&gt;/g, '</i>'), '', ...deltaLines].join('\n')
+    : deltaLines.length
+      ? [header, ...deltaLines].join('\n')
+      : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
   const artifacts = buildStandupArtifacts({ snapshot: cur, deltaLines, generatedAt: new Date(cur.ts) });
   // reporthub-as-notion S1.3: try to upgrade the standup deck's URL-hash link to a short gs://-backed
   // /r/<slug> link (scripts/lib/report-registry.mjs). `--dry-run` must stay fully read-only, so it's
