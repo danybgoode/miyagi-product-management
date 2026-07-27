@@ -12,6 +12,25 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
 ---
 
 ## Multi-agent & async deploy coordination
+- **`AGENTS.md` is the onboarding contract, it is AUTO-LOADED by Codex, and two of three repos didn't
+  have one.** Verified by probe, not assumption: Codex recites the five rules without reading a file,
+  and a probe in `apps/backend` answered literally `NO PROJECT CONTEXT LOADED`. Claude reads the same
+  file via a one-line `CLAUDE.md` → `@AGENTS.md` pointer, so it is **one file, both families, zero
+  per-dispatch prompt cost**. Both of that day's successful Codex delegations happened to land in the
+  one repo that already had context. What goes in it: *load-bearing, non-obvious from the code, and
+  expensive to get wrong* — invariants, the daily patterns, **the traps** (highest value: the only
+  section a competent stranger cannot infer), the gate, and a delegated-subagent clause. Keep it short
+  enough to be read every time; deep detail goes in routed files. *(2026-07-26.)*
+- **Once more than one family can BUILD, "run cross-review" is ambiguous — rotate the reviewer off the
+  builder.** The default `--agent codex` on a Codex-built diff is Codex reviewing Codex: a same-family
+  pass wearing a cross-family label, and nothing in the old flow would catch it.
+  `scripts/review-route.mjs` makes it executable. Keep the two axes distinct — **family** independence
+  (different blind spots) and **context** independence (an agent that didn't hold the diff while
+  writing it) — because they are not substitutes: the fresh same-family reviewer is what caught the
+  emission-gate flag and the consent-boundary holes every external tool missed. So it stays mandatory
+  on HIGH *even when another family built the diff*, and is skipped on LOW, which is where the token
+  saving comes from — affordable only because the deterministic gate got stronger. **A missing layer
+  must be reported as DARK, never silently substituted.** *(2026-07-26.)*
 - **Assume the ORCHESTRATOR dies too — derive state, journal intent.** The existing rule (message a
   killed *worker's* agent id; it resumes from its transcript) only covers the case where the orchestrator
   survives to send that message. When the orchestrator dies, the docs record *decided* state and nothing
@@ -1209,6 +1228,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A READ-THEN-WRITE RACE MATTERS EXACTLY WHEN THE WRITE *CREATES* SOMETHING — do not generalize one
+  benign-ness judgement across sites that only look alike.** A new lint rule flagged six
+  `require-atomic-updates` cache sites; the architect assessed all six as "very likely benign — the
+  cached values are stable ids, so a lost race costs a duplicate fetch". A delegated Codex review
+  **contradicted that and was right**: one of them was a find-or-**create**, so two concurrent callers
+  could both find nothing and both create — leaving duplicate persistent sales channels that no retry
+  cleans up. The others really were benign read-only lookups. Fix for the create case: cache the
+  **in-flight promise**, not the resolved value, and clear the slot on failure so a transient error
+  cannot poison later calls. Observed red against the original: 4 concurrent callers → 4 creates
+  (expected 1). Note the meta-lesson — this is *guard the population* applied to an ASSESSMENT: six
+  sites got one verdict because they shared a lint code, not a shape. *(2026-07-26.)*
 - **A GUARD THAT REJECTS CORRECT OUTPUT IS WORSE THAN ONE THAT MISSES A RARE FAULT — and the worst case
   is a guard that contradicts its own brief.** Shipped twice in one epic (exec-prose-rail, 2026-07-26),
   both caught by RUNNING the rail rather than reviewing it: **(a)** an `unfinished` rule flagged every
