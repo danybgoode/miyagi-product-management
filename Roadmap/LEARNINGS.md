@@ -1228,6 +1228,14 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A BARE `except`/`catch` AROUND A PROBE TURNS AN OUTAGE INTO A CONFIDENT WRONG ANSWER.** Sampling the
+  live catalog for a usable test fixture, a loop with `except: pass` reported **"0 of 14 listings
+  qualify"** — a clean, plausible, completely false result. The endpoint was returning **403** to the
+  scripted client; every probe failed and every failure was swallowed. Re-run with `curl` and an
+  explicit status check: **4 of 12 qualified.** The rule this repo already applies to scripts
+  ("degrade, but NAME the gap"; "unknown is not none") applies just as hard to a throwaway
+  investigation — and an investigation's wrong answer is more dangerous, because nobody reviews it.
+  Always assert the transport succeeded before interpreting an empty result. *(2026-07-27.)*
 - **MEASURE THE LAYER, NOT THE BUILD — total build time can be pure noise.** Asked to prove whether a
   BuildKit cache mount helps, the obvious measurement (two consecutive Cloud Build runs vs baseline) is
   **incapable of answering**: five consecutive backend builds ranged **7m49s → 23m24s**, a 15-minute
