@@ -13,7 +13,7 @@
 ## 🏗️ Building now (4)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [A headless writer for the prose rail — get the merge report off the git hook](../../09-platform-infra/prose-rail-headless/README.md) — 09 Platform-infra · 4/4 stories
+- [A third prose writer, and the worktree bug that swallowed reports](../../09-platform-infra/prose-rail-headless/README.md) — 09 Platform-infra · 3/3 stories
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 

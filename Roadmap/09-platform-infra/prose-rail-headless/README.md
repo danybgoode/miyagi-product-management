@@ -3,102 +3,104 @@ status: in-progress
 slug: prose-rail-headless
 ---
 
-# Epic: A headless writer for the prose rail — get the merge report off the git hook
+# Epic: A third prose writer, and the worktree bug that swallowed reports
 
 > **Area:** 09 · Platform & Infra · **Risk:** Low · **Class:** Chore · **Follows:** [`exec-prose-rail`](../exec-prose-rail/README.md)
 
 ## Why
 
-The merge report is **hit and miss**, and the log says why. Two causes, both structural rather than
-flaky, and neither fixed by retrying harder:
+The merge report is **hit and miss**. The log says why — two causes, both structural rather than
+flaky, and neither fixed by retrying harder.
 
-1. **A git hook only fires on the machine that PULLS.** `.githooks/post-merge` drives
-   `merge-report.mjs` locally. A squash-merge on GitHub that nobody pulled is never reported at
-   all. The evidence is the log itself: 25 entries in the root repo against **4** in the storefront
-   — and the storefront is the repo that actually deploys.
-2. **The hook could not even run in a worktree.** It redirected to `"$root/.git/merge-report.log"`,
-   but in a linked worktree `.git` is a **file**, so the redirect died with `Not a directory` before
-   the script was reached — silently, because the whole thing is backgrounded. This repo runs five
-   worktrees at a time. `merge-report.mjs` carried the same bug in its state-file path.
-3. **The writers had no headless path.** `writeProse` shells out to devin → agy, neither of which
-   authenticates without a human, so the report could not move to CI even in principle. Separately,
-   devin is the flakiest link locally: `Permission denied: We're currently facing high demand for
-   this model` on 6 of the last 25 runs.
+**1. devin refuses, and two writers is one bad day from no report.** The log shows
+`Permission denied: We're currently facing high demand for this model` on **6 of 25** runs. The
+devin → agy fallback already handles this correctly and has been observed carrying a report devin
+refused (`posted 28225f6 (agy, guard clean)`) — so the rail is not broken. But agy shares its quota
+with the cross-family review layer, which has **already gone fully dark mid-epic** when codex and
+agy were capped in the same session. Two pools is thin cover for a surface Daniel reads as status.
 
-The blocker was never Actions quota. That claim is stale twice over — the hook comment asserts the
-notifier is "out of hosted-minutes quota", but this repo went **public on 2026-07-18** and public
-repos do not meter standard-runner minutes.
+**2. The hook could not run in a worktree at all.** `.githooks/post-merge` redirected to
+`"$root/.git/merge-report.log"`, but in a linked worktree `.git` is a **file**, so the redirect died
+with `Not a directory` before the script was ever reached — silently, because the whole thing is
+backgrounded and `|| true`-ed. `merge-report.mjs` carried the same bug in its state-file path. This
+repo runs five worktrees at a time, and **all three repos ship the identical buggy hook**, so this
+is a large share of the reports that never appeared.
+
+## Rejected: moving the rail to GitHub Actions
+
+Worth recording, because the premise looked solid and is wrong. Actions quota is genuinely no longer
+a constraint — this repo went public on 2026-07-18 and public repos do not meter standard-runner
+minutes — so a push-to-main workflow would fix the "a hook only fires on the machine that pulls" gap.
+
+**But every writer in the roster is an interactive CLI with no headless auth.** devin, agy and codex
+all require a human login; none authenticates from a runner. The only way to write prose in CI is a
+paid hosted API key, and **the entire point of this rail is to use the cheap/free model CLIs we
+already pay for** (Daniel, 2026-07-28). A workflow would therefore skip on every merge.
+
+So the rail stays local, the hook stays the trigger, and the worktree bug above is what actually
+buys back the missing reports. **The pull-dependency gap remains open and is accepted** — it is the
+cost of a CLI-only roster, and it should be re-opened only if a free headless writer appears.
 
 ## Medusa-first note
 
 **N/A — zero commerce surface.** AGENTS rules 1–4 untouched. Rule 5 (es-MX): N/A — internal English
 reports to one reader. Touch surface: `scripts/lib/prose-writer.mjs`, `scripts/merge-report.mjs`,
-`.githooks/post-{merge,checkout}`, `.github/workflows/merge-report.yml`. No app code, no migration,
-no flag.
+`.githooks/post-{merge,checkout}` in **all three repos**. No app code, no migration, no flag.
 
 ## What already exists (reuse, don't rebuild)
 
 | Asset | Reuse as |
 |---|---|
-| `planWriters` / `writeProse` (`prose-writer.mjs`) | Already an ordered list plus injected runners — a third backend is an array entry, not a refactor |
-| `prose-guard.mjs`, `cpo-persona.md`, `prose-lessons.md` | Untouched and shared — a lesson learned on any backend protects all three |
-| `merge-report.mjs` gather/diff/state/send stages | Correct and unchanged; only the writer and the state path move |
-| `notify-telegram.yml` (app repos) | Proves push-to-main is a reliable trigger — it has been green throughout |
+| `tryCodex` (`cross-agent-cli.mjs`) | Already the structured, never-dies codex runner — it separates an auth lapse and a stale CLI from an ordinary failure, which is the whole reason to use it over `runCodex` |
+| `planWriters` / `writeProse` | Already an ordered list plus injected runners — a third writer is an array entry, not a refactor |
+| `prose-guard.mjs`, `cpo-persona.md`, `prose-lessons.md` | Untouched and shared — a lesson learned on any writer protects all three |
+| `merge-report.mjs` gather/diff/state/send | Correct and unchanged; only the state path moves |
 
 ---
 
 ## Architect's locked decisions (D1–D4)
 
-### D1 · A third writer backend, last in the router
+### D1 · codex is the third writer, and it goes LAST
 
-`draftWithAnthropic` joins `devin → agy → anthropic`. **The position is the whole design.** One
-ordered list covers both environments with no mode flag and no env sniffing at the call site:
-locally devin/agy are installed and win (their quota is already paid for); in a runner neither
-binary exists, so the API is the only writer standing. It doubles as a genuine third quota pool for
-the local rail, which the devin failures above say we need.
+Roster: **devin → agy → codex**. devin leads as the dedicated prose writer; agy's `gpt-oss-120b-medium`
+follows on a separate pool; codex is the last resort.
 
-Availability is **a key plus a transport** (`!!ANTHROPIC_API_KEY && hasCmd('curl')`), not `hasCmd`
-— there is no `anthropic` binary to look for. Both halves are required: claiming availability
-without a key turns a clean "not installed" into a guaranteed 401 plus a wasted retry.
+codex is last **because it is the primary code reviewer**. The review layer's quota is the scarce
+resource in this repo, and prose should only draw on it once both dedicated writers have failed —
+which the log says does happen, so a third independent pool is the difference between a late report
+and no report. Availability is plain `hasCmd('codex')`, same as the other two.
 
-### D2 · curl + `spawnSync`, not `fetch`
+### D2 · The prompt rides STDIN, not argv
 
-`writeProse` is **synchronous by contract** because devin/agy are `spawnSync`. Making it async for
-one writer would ripple through both callers and all 22 existing specs for no behavioural gain.
-Shelling out keeps **one** runner contract — "spawn something, get text or null". The pure seam is
-preserved where it matters: `buildAnthropicRequest` and `parseAnthropicResponse` are pure and
-unit-tested; only the spawn is I/O. Zero npm deps either way (AGENTS rule 4), which also rules out
-the Anthropic SDK.
+`execCodex(prompt, stdin)` puts `prompt` in **argv** — the exact cap that already bites agy, whose
+`draftWithAgy` refuses oversized prompts non-retryably for this reason. A prose prompt carries the
+persona, the accumulated lessons *and* a full evidence pack, so it is precisely the payload that
+overflows argv. codex is designed to take its context on stdin, so the body goes there and argv
+carries only a short constant directive. No cap to hit, and nothing to guard.
 
-**The key rides a 0600 curl config file**, never argv — argv is world-readable via `ps`. Note curl
-does **not** expand `$VAR` inside a header value (that is a shell feature, and there is no shell
-here), so an env var is not an option on this path.
+### D3 · An auth lapse and a stale CLI are NON-retryable
 
-### D3 · Three states in the response parser, not two
+`tryCodex` distinguishes three failure classes and they must not be collapsed:
 
-Every failure mode here arrives as a **successful HTTP 200**, which is exactly how an empty success
-gets manufactured:
+- **auth lapsed** → codex cannot run here; a second identical attempt cannot log it in. Fail fast and
+  name `codex login`.
+- **CLI too old for its model** → same shape; name `node scripts/codex-doctor.mjs`.
+- **anything else** (a cap, a transient empty response) → retryable, gets the one retry the rail
+  already gives.
 
-- **Collect text blocks by TYPE, never by index.** Thinking is on by default on Opus 5, so
-  `content[0]` is a thinking block whose text is empty — indexing hands the guard an empty string
-  and calls it a clean draft.
-- **A refusal is a failure.** `stop_reason: "refusal"` returns 200 with no prose.
-- **Retryable is derived from the error type**, never assumed: `overloaded_error` / `api_error` /
-  `rate_limit_error` are worth the one retry the rail already gives; `authentication_error` is not,
-  and retrying it only delays the fallback.
+Retrying the first two is pure latency spent on the **last** writer in the chain, which is the worst
+possible place to spend it. And **exit 0 with whitespace-only stdout is a failure**, not an empty
+success — trim before testing, or the guard is handed `""` to approve.
 
-`max_tokens` is deliberately generous (8192) for a ~60-word output, because **thinking and visible
-text share the budget** — sizing it to the prose would spend it all on thinking and return nothing.
+### D4 · The hook stays; the bug in it does not
 
-### D4 · The workflow is the authoritative trigger; the hook survives as a fallback
+The trigger remains `.githooks/post-{merge,checkout}`, now resolving its log path via
+`git rev-parse --git-common-dir` rather than `"$root/.git"`. Sharing one state file across a clone's
+worktrees is **correct**: it is what keeps the once-per-commit guarantee honest, so checking the same
+merge out in a second worktree cannot re-report it.
 
-`.github/workflows/merge-report.yml` fires on push to main and does not depend on anyone pulling.
-The hook stays for offline work and for repos without the workflow, with its `.git`-is-a-file bug
-fixed — but it is no longer the only path, which is the point.
-
-A missing `ANTHROPIC_API_KEY` **skips with a warning rather than failing the job** (rule 5: say so,
-never a confident empty result), because the report is a nicety, not a gate — but it must never
-silently degrade to a bare commit header that looks like the rail working.
+**All three repos need this** — root, storefront and backend ship byte-identical hooks, and the app
+repos borrow the root's `scripts/`. Separate repos mean separate PRs (AGENTS rule 1).
 
 ## Risk tier
 
@@ -108,11 +110,9 @@ is what the unchanged shared guard is for.
 
 ## Definition of Done (epic)
 
-- [x] `draftWithAnthropic` + the two pure helpers, wired into `planWriters`/`writeProse`.
+- [x] `draftWithCodex` wired into `planWriters`/`writeProse` as the third, last writer.
 - [x] Specs for the new seam; **every one observed red** via a break-the-implementation mutation.
-- [x] The `.git`-is-a-file bug fixed in both hooks and in `merge-report.mjs`'s state path.
-- [x] `merge-report.yml` added for this repo.
-- [ ] `ANTHROPIC_API_KEY` set as a repo secret (**Daniel** — a secret is not the builder's to set).
-- [ ] The sibling workflow added to the app repos (separate repos, separate PRs — AGENTS rule 1).
-- [ ] A real merge observed producing a report from CI.
+- [x] The `.git`-is-a-file bug fixed in this repo's hooks and in `merge-report.mjs`'s state path.
+- [ ] The same hook fix landed in `miyagisanchezcommerce` and `backend` (separate PRs).
+- [ ] A merge observed reporting from a worktree checkout, where it previously died silently.
 - [ ] `RETROSPECTIVE.md`; poster + `LEARNINGS.md` updated; memory + `MEMORY.md` index.
