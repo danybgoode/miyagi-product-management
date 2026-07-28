@@ -75,29 +75,40 @@ test('formatHits: names the offending file and states the replacement', () => {
 // cross-agent review of PR #112: a stale URL in `scripts/lib/nested/thing.mjs`, or in a `.json`/`.md`
 // sitting beside the code, is exactly as dead as one in a top-level `.mjs` — and a guard that reports
 // green over files it never opened is the "exits green having run nothing" failure AGENTS.md bans.
-// Binary files are not a concern here (scripts/lib/ is source), but read as utf8 and skip anything
-// that fails to decode rather than throwing, so one odd file cannot take the whole guard down.
+// A file we could not READ is a third state — not "clean". Swallowing the read error would let the
+// guard go green over an unchecked file while `files.length > 0` still held, which is the
+// "confident empty result" AGENTS.md bans (and is precisely the hole the round-1 version of this
+// function shipped). So: return the unreadable paths alongside the readable ones and let the caller
+// fail on them by name. Known-clean, known-stale, and could-not-check are three different facts.
 function collectFiles(dir, relPrefix) {
-  const out = [];
+  const files = [];
+  const unreadable = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const abs = join(dir, entry.name);
     const rel = `${relPrefix}/${entry.name}`;
     if (entry.isDirectory()) {
-      out.push(...collectFiles(abs, rel));
+      const nested = collectFiles(abs, rel);
+      files.push(...nested.files);
+      unreadable.push(...nested.unreadable);
       continue;
     }
     if (!entry.isFile()) continue;
     try {
-      out.push({ path: rel, content: readFileSync(abs, 'utf8') });
-    } catch {
-      // unreadable/undecodable — skip the file, never the guard
+      files.push({ path: rel, content: readFileSync(abs, 'utf8') });
+    } catch (err) {
+      unreadable.push(`${rel} (${err.code || err.message})`);
     }
   }
-  return out;
+  return { files, unreadable };
 }
 
 test('guard: no file under scripts/lib/ references the decommissioned GCP project', () => {
-  const files = collectFiles(LIB_DIR, 'scripts/lib');
+  const { files, unreadable } = collectFiles(LIB_DIR, 'scripts/lib');
+  assert.deepEqual(
+    unreadable,
+    [],
+    `could not read ${unreadable.length} file(s) under scripts/lib/, so the guard cannot claim they are clean:\n  ${unreadable.join('\n  ')}`,
+  );
   assert.ok(files.length > 0, 'expected to find files under scripts/lib/ — did the directory move?');
 
   const hits = findOldProjectReferences(files);

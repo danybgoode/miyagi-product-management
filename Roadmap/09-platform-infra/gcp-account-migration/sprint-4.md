@@ -153,10 +153,16 @@ built from on 2026-07-19, so its restorability is established by production itse
 - two `\restrict` / `\unrestrict` tokens (pg_dump emits a fresh random token per run — not data)
 - `link_module_migrations_id_seq` advanced 53231 → 53428
 
-Structure is identical: 154 `CREATE TABLE`, 154 `COPY` blocks, complete trailer. **Zero business-data
-drift in 9 days.** The sequence advance is Medusa's link-module migration counter ticking on each
-boot — evidence the old `medusa-web` was still starting up against the old DB (it was being
-redeployed by the re-enabled trigger), and evidence that nothing else wrote to it.
+Structure is identical: 154 `CREATE TABLE`, 154 `COPY` blocks, complete trailer.
+
+**State the claim precisely: this is FINAL-STATE equivalence, not proof that no writes occurred.**
+The two dumps describe identical business data 9 days apart. They cannot rule out a write that was
+subsequently reverted — an insert-then-delete, or an update-then-restore, leaves no trace in a dump
+diff. What it does establish is the thing the teardown actually needs: **the export about to become
+the last exit contains the same data the cutover dump did**, so nothing was silently lost during the
+soak. The one moving value, `link_module_migrations_id_seq`, is Medusa's link-module counter
+advancing on each boot — consistent with the old `medusa-web` still starting up against the old DB
+(it was being redeployed by the re-enabled trigger) and with no *net* business-data change.
 
 ### Parity — old project vs. new, at the end of this sprint
 

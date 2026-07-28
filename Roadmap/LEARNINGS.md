@@ -591,7 +591,12 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `\restrict` tokens and one sequence `setval`. That is stronger and cheaper than restoring into a
   scratch instance, **and the diff is diagnostic**: the lone sequence advance
   (`link_module_migrations_id_seq`) was Medusa's boot-time counter, which is how we knew the old
-  service was still starting up and that nothing else had written a single row.
+  service was still starting up. **Say what a dump diff actually proves, though** — an empty diff is
+  FINAL-STATE equivalence, not "no writes happened": an insert-then-delete or an update-then-revert
+  leaves it clean. That is enough for a teardown (the last exit holds the same data the cutover dump
+  did, so nothing was lost) and NOT enough to assert a quiet window. The 2026-07-19 cutover's own
+  row-count proof has the same shape and the same limit — it was accepted because the write path was
+  independently stopped, not because the diff alone showed it.
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
   AFTER it already landed** — the push itself succeeds (visible on `origin/main`), but a denial message
   attaches to a *later* tool call, reads like it's blocking that unrelated call, and doesn't roll anything
