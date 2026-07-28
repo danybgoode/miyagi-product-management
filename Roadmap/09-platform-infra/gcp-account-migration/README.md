@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped       # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: gcp-account-migration
 ---
 
@@ -112,6 +112,8 @@ separate and deferred. Stage 6b carve-out recorded here.
   staging/`print-pdf`/`pmo-smalldocs` carried over, PMO buckets moved with MD5 proof, all 7 old
   Cloud Run services `ingress=internal`, old Cloud SQL `STOPPED`). Sprint 3's "zero repoints, old
   triggers disabled" premise was **disproved on both halves** — see the sprint-4 execution record.
-- [ ] **Held for Daniel — the one irreversible step:** unlink billing `01BCB8-AA3451-6EC373` and
-  delete `miyagisanchezback-497722`. Then: feature branch deleted; **frontmatter `status: shipped`**
-  (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] **The irreversible step, done 2026-07-28 on Daniel's explicit go** (he overrode this sprint's
+  own "an agent should not delete a production project" carve-out in the moment): billing
+  `01BCB8-AA3451-6EC373` unlinked, `miyagisanchezback-497722` → `DELETE_REQUESTED` (30-day undelete
+  window). Production re-smoked immediately after: all 7 surfaces green. Feature branch deleted;
+  **frontmatter `status: shipped`**

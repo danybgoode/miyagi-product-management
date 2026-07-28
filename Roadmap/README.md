@@ -406,11 +406,13 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   over: `pmo-smalldocs`, `print-pdf`, the staging stack (whose 10 `*_STAGING` secrets turned out to
   have values but **no IAM bindings** since S1 — nothing had consumed them in 9 days), and the PMO
   report registry's two global-named buckets (MD5-verified out and back). Old project is now fully
-  dark — 7 services `ingress=internal`, Cloud SQL `STOPPED`, all triggers **deleted** (disabling alone
-  is what failed) — with the final
-  dump durable in the *new* project. **Held for Daniel: the deletion itself + unlinking billing**
-  (an agent should not delete a production project), plus the still-owed money-path checkout,
-  Stripe/MP dashboard delivery check and session check. See
+  dark, then **DELETED 2026-07-28** (`DELETE_REQUESTED`, 30-day undelete window; billing unlinked but
+  the account left open — it also carries an unrelated Gemini project) — with the final
+  dump durable in the *new* project. **Epic SHIPPED.** Still owed: the money-path
+  checkout, Stripe/MP dashboard delivery check and session check (all outstanding from S3), a
+  `pmo-report-writer` SA key for the claude.ai routine, and — for a genuinely complete account
+  offboard — auditing and removing leroytramafat's remaining `gen-lang-client-0305197114` Gemini
+  project. See
   [09 › gcp-account-migration](09-platform-infra/gcp-account-migration/).
 - **2026-07-17/18 — Six-epic batch SHIPPED across two days (the third Fable 5 multi-epic
   experiment: pre-authorized merges, Fable orchestrates + Sonnet builds + codex/fresh-reviewer

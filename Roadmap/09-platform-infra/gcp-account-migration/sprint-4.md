@@ -1,7 +1,8 @@
 # GCP account migration — Sprint 4: decommission the old project
 
-**Status:** 🟩 executed 2026-07-28 (9-day soak) — **every reversible step done and verified; the
-single irreversible step, project deletion, is held for Daniel** (see *Execution record* below).
+**Status:** ✅ COMPLETE 2026-07-28 (9-day soak) — every step executed and verified, including the
+deletion: Daniel gave an explicit go and overrode this sprint's own "an agent should not delete a
+production project" carve-out. `miyagisanchezback-497722` is `DELETE_REQUESTED`.
 
 **Added at S3 close (2026-07-19) — items the cutover deferred here:**
 - ✅ **Closed during the soak, not deferred to teardown:** redeployed
@@ -226,3 +227,30 @@ against a deliberately reintroduced reference before being accepted green.
 `MP_ACCESS_TOKEN` in `miyagisanchez-prod` resolves to a Mercado Pago **test** user
 (`TESTUSER2253456974030934063`, site `MLM`). Pre-existing, unrelated to the migration, not touched
 here — flagged because it surfaced during the provider check and is worth a deliberate look.
+
+### Deletion executed — 2026-07-28
+
+Daniel was offered the carve-out (the sprint's own QA reserves this step for a human) and explicitly
+chose to have the agent do it. Order and evidence:
+
+1. **Pre-flight caught something worth catching:** the old billing account `01BCB8-AA3451-6EC373`
+   also carries `gen-lang-client-0305197114` ("Default Gemini Project"). So the account was **not**
+   closed — only this project was unlinked from it. Closing the billing account would have taken an
+   unrelated project's billing with it.
+2. Confirmed the last exit lives **outside** the project being deleted:
+   `gs://miyagisanchez-prod-db-migration/medusa-DECOMM-20260728-154226.sql`, in `miyagisanchez-prod`.
+3. `gcloud beta billing projects unlink miyagisanchezback-497722` → `billingEnabled: false`.
+4. `gcloud projects delete miyagisanchezback-497722` → **`DELETE_REQUESTED`** (30-day
+   `gcloud projects undelete` window).
+5. Re-smoked production immediately: `miyagisanchez.com`, `www.`, `api./health`, `mschz.org/panfleto`,
+   `gcp.`, the PMO resolver `/r/<slug>`, and `print-pdf/health` — **all green**.
+
+**A verification trap worth recording:** `gcloud projects list` still shows the project as `ACTIVE`
+minutes after deletion — that listing is eventually consistent. `gcloud projects describe` is the
+authoritative read and correctly reports `DELETE_REQUESTED`. Do not use `list` to confirm a deletion,
+which is exactly what this sprint's own smoke walkthrough (step 5) told you to do.
+
+**Still under `leroytramafat@gmail.com`:** `gen-lang-client-0305197114`, a Default Gemini Project.
+Out of this epic's GCP-migration scope and deliberately untouched — it may hold a Gemini API key
+something still uses. Genuinely finishing the account offboard means auditing that project
+separately, then deleting it and closing the billing account.
