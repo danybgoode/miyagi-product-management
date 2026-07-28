@@ -1,11 +1,13 @@
 #!/bin/sh
 # post-merge — fire the prose merge report after a git operation that brought new commits.
 #
-# This is a LOCAL, best-effort trigger for scripts/merge-report.mjs. The authoritative trigger is
-# now .github/workflows/merge-report.yml, which fires on push to main in the app repos and does not
-# depend on anyone pulling. This hook survives as the path that still works offline and on a repo
-# without the workflow — but it is no longer the only way a merge gets reported, which is the point:
-# a hook only fires on the machine that PULLS, so a squash-merge nobody pulled was never reported.
+# This is the ONLY trigger for scripts/merge-report.mjs, and deliberately so. Moving it to a GitHub
+# Actions workflow was considered and rejected: every prose writer in the roster (devin, agy, codex)
+# is an interactive CLI with no headless auth, so a runner has nothing to write with. See
+# Roadmap/09-platform-infra/prose-rail-headless/README.md.
+#
+# The known cost: a hook only fires on the machine that PULLS, so a squash-merge nobody pulled is
+# never reported. That gap is accepted — it is the price of a CLI-only roster.
 #
 # Over-triggering is safe and deliberate: the hook fires on every merge-y git operation, including a
 # pull that fetched nothing. merge-report.mjs owns the once-per-commit guarantee via its state file
