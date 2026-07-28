@@ -552,6 +552,51 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   post-buildargs-hardening (no NEXT_PUBLIC build args → Clerk fail-fast at startup) — build through
   `cloudbuild.yaml` manually (`--config` + `--substitutions=SHORT_SHA=…`), which doubles as a real
   rehearsal of the CI pipeline itself.
+  **(S4 teardown, 2026-07-28 — four more, all found because the teardown re-derived live state
+  instead of trusting S3's own close-out ticks. Both halves of S3's recorded outcome had drifted.)**
+  (8) **"Disabled" is not a durable state when the resource can be re-created from a config export.**
+  `gcloud builds triggers import` of a body that merely *omits* `disabled` silently re-ENABLES the
+  trigger — so replaying a stale exported definition resurrected the old project's whole deploy rail
+  nine days after it was disabled, and every merge then deployed to BOTH projects. The observable
+  signal was a **duplicated side-effect** (two Telegram deploy notifications naming two project
+  numbers), not an error anywhere. Two rules: prefer **deleting** a decommissioned trigger over
+  disabling it, and when a disable must hold, assert it from the live API on a schedule — a state
+  that only one command-shape respects will be undone by the next command shape. `Cloud Audit Logs`
+  → `protoPayload.methodName=CloudBuild.UpdateBuildTrigger` names the exact principal, timestamp and
+  user-agent; go there first rather than theorising.
+  (9) **A cutover checklist enumerates the doors you already knew about — the ORIGIN'S OWN ACCESS
+  LOGS enumerate the population.** S3 declared the DNS cutover complete at four records; three more
+  (`mschz.org` — the short-link/QR redirector, 666 req/7d — plus the Cloudflare-for-SaaS fallback
+  origin `cname.` and the verification host `gcp.`) were still resolving to the old ALB. None was
+  findable by re-reading the checklist; all three fell out of one query — *"group the old origin's
+  requests by `Host` header and ask who is still knocking."* Run that query before declaring any
+  origin retired. This is the third repeat of the same family (see the exact-name selector lesson
+  below), and the tooling was never the gap: the flip script already supported `--domain mschz.org`
+  and `--extra-hosts`.
+  (10) **Order a TLS-fronted cutover cert-first: verify SNI selection at the NEW origin BEFORE
+  touching DNS.** `openssl s_client -connect <new-ip>:443 -servername <host>` must already return
+  the right SAN set while DNS still points at the old origin — otherwise the first person to prove
+  the cert is missing is a real user getting a 525. Cert-plane changes also take minutes to
+  propagate, so this check is *re-run until green*, never once. (Cloud Armor 403s a direct-to-ALB
+  request, so use the handshake, not the response body, as the signal.)
+  (11) **Secret VALUES copy between projects; IAM BINDINGS do not — and the gap stays invisible
+  until something consumes them.** S1 copied all 10 `*_STAGING` secrets into the new project, but
+  never granted the runtime SA `secretAccessor` on any of them; nothing read them for nine days, so
+  the first staging deploy failed on all ten at once. After any secret migration, assert the
+  *consumer* can read them (deploy something, or `versions access` **as the runtime SA**) — a
+  `secrets list` diff shows parity that isn't there.
+  (12) **A restore drill can be discharged by EQUIVALENCE to a dump already known to restore.** The
+  teardown dump differed from the cutover dump — the one production was actually built from, so
+  proven restorable by production itself — by three lines: two random per-run `pg_dump`
+  `\restrict` tokens and one sequence `setval`. That is stronger and cheaper than restoring into a
+  scratch instance, **and the diff is diagnostic**: the lone sequence advance
+  (`link_module_migrations_id_seq`) was Medusa's boot-time counter, which is how we knew the old
+  service was still starting up. **Say what a dump diff actually proves, though** — an empty diff is
+  FINAL-STATE equivalence, not "no writes happened": an insert-then-delete or an update-then-revert
+  leaves it clean. That is enough for a teardown (the last exit holds the same data the cutover dump
+  did, so nothing was lost) and NOT enough to assert a quiet window. The 2026-07-19 cutover's own
+  row-count proof has the same shape and the same limit — it was accepted because the write path was
+  independently stopped, not because the diff alone showed it.
 - **Claude Code's auto-mode permission classifier can flag a `git push origin main` as unauthorized
   AFTER it already landed** — the push itself succeeds (visible on `origin/main`), but a denial message
   attaches to a *later* tool call, reads like it's blocking that unrelated call, and doesn't roll anything
@@ -1088,7 +1133,15 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   for two full sprints until Sprint 4.5 checked it explicitly with a plain `dig`. Before declaring a
   domain family "fully cut over," enumerate every actual DNS record for that zone matching the domain's
   root, not just the ones the flip script's own selector logic explicitly named.
-  *(2026-07-10, frontend-vercel-to-cloudrun S4.5.)*
+  **Shipped a THIRD time, and the enumeration must span ZONES, not just records within one zone**
+  (2026-07-28, gcp-account-migration S4): the account-migration cutover flipped four names on
+  `miyagisanchez.com` and left three behind — `cname.` (the Cloudflare-for-SaaS fallback origin),
+  `gcp.` (the verification host), and **an entirely separate zone**, `mschz.org`, the short-link/QR
+  redirector carrying real printed-magazine traffic. Deleting the old project on the sprint's own
+  written acceptance criteria would have taken every printed QR code offline. The reliable check is
+  not a smarter selector — it is to sweep **every zone in the account** for any record whose content
+  is the old origin, and independently to ask the old origin's access logs which `Host` headers still
+  arrive. *(2026-07-10, frontend-vercel-to-cloudrun S4.5; re-shipped 2026-07-28.)*
 - **A provider-swap's "is it live" check must not conflate the new provider's readiness signal with the
   live-routing fact the OLD provider's equivalent signal implied.** Vercel's `misconfigured: false` only
   ever went true once DNS genuinely pointed at Vercel. Cloudflare for SaaS's custom-hostname

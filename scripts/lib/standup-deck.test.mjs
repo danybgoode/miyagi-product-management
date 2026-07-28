@@ -82,7 +82,7 @@ test('buildStandupArtifacts returns a SmallDocs presentation URL', () => {
     generatedAt: new Date('2026-07-14T13:00:00Z'),
   });
   assert.equal(artifact.name, 'standup');
-  assert.match(artifact.url, /^https:\/\/pmo-smalldocs-oehqqtyoia-uk\.a\.run\.app\/#md=/);
+  assert.match(artifact.url, /^https:\/\/pmo-smalldocs-121711078446\.us-east4\.run\.app\/#md=/);
   assert.match(artifact.url, /present=0/);
 });
 

@@ -392,9 +392,25 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   `api.` moved off its Cloud Run domain mapping onto the ALB, killing a single-project-claim
   race). Biggest catch: all 7 `cloudflare-*.mjs` tools hardcoded the OLD project id — the flip
   would have silently no-op'd; found by re-deriving inputs + a live dry-run before the window.
-  The old project is intact and IS the rollback (one-command snapshot restore) until Sprint 4's
-  gated decommission (≥2-week soak). Owed to Daniel: money-path checkout, Stripe/MP dashboard
-  delivery check, session check, morning single-fire cron check. See
+  **S4 teardown executed 2026-07-28 after a 9-day soak — and it disproved BOTH halves of S3's own
+  close-out tick.** The old project's `backend-main-deploy`/`frontend-main-deploy` were live again
+  (a stale trigger export replayed on 2026-07-28T02:34Z; a `triggers import` body that merely omits
+  `disabled` silently re-enables — every merge was deploying to *both* projects, surfacing only as
+  duplicate Telegram notifications), and **three DNS records had never been flipped at all**:
+  `cname.` (the Cloudflare-for-SaaS fallback origin), `gcp.`, and an entirely separate zone —
+  `mschz.org`, the printed-QR short-link redirector at 666 req/7d. Deleting the project on the
+  sprint's written acceptance criteria would have taken every printed QR code offline; it was found
+  by grouping the old origin's access logs by `Host`, not by re-reading the checklist. All three
+  flipped cert-first (the 2026-07-10 Origin CA cert lifted verbatim, SHA-256-identical, SNI
+  verified at the new ALB *before* DNS moved), sweep now clean across all 3 zones. Also carried
+  over: `pmo-smalldocs`, `print-pdf`, the staging stack (whose 10 `*_STAGING` secrets turned out to
+  have values but **no IAM bindings** since S1 — nothing had consumed them in 9 days), and the PMO
+  report registry's two global-named buckets (MD5-verified out and back). Old project is now fully
+  dark — 7 services `ingress=internal`, Cloud SQL `STOPPED`, all triggers **deleted** (disabling alone
+  is what failed) — with the final
+  dump durable in the *new* project. **Held for Daniel: the deletion itself + unlinking billing**
+  (an agent should not delete a production project), plus the still-owed money-path checkout,
+  Stripe/MP dashboard delivery check and session check. See
   [09 › gcp-account-migration](09-platform-infra/gcp-account-migration/).
 - **2026-07-17/18 — Six-epic batch SHIPPED across two days (the third Fable 5 multi-epic
   experiment: pre-authorized merges, Fable orchestrates + Sonnet builds + codex/fresh-reviewer

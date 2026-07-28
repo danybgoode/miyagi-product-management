@@ -123,3 +123,58 @@ surfaces cannot silently diverge again.
 - One unrelated browser-console 400 remains: a listing image from `teatrounam.com.mx` is outside
   the image-proxy allowlist. It does not affect catalog data or deploy health and belongs to the
   asset-host hygiene follow-up, not this migration repair.
+
+---
+
+## Sprint 4 close-out (2026-07-28) — what a 9-day soak actually caught
+
+The soak was scheduled as a *waiting* period. It behaved as a *detection* period, and the two things
+it caught were both **the close-out record of Sprint 3 being wrong** — not new breakage.
+
+**S3 ticked "old triggers disabled" and "zero webhook repoints." Both had drifted, and the docs
+could not have told us.** The old project's deploy rail was live again (a stale trigger export
+replayed on 2026-07-28T02:34Z, silently re-enabling it because the JSON body simply omitted
+`disabled`), and three DNS records had never been flipped at all — including `mschz.org`, an
+entirely separate Cloudflare zone carrying the printed-QR short links at 666 requests/7d.
+
+The uncomfortable part: **the epic's own Definition of Done was already ticked green for all of
+this.** S3's DoD line reads "webhooks verified domain-based (zero repoints); enable new triggers,
+disable old" — accurate the day it was written, false nine days later, and nothing in the process
+re-checked it. A tick is a claim about a moment, and a teardown is the one operation that cannot
+afford a stale claim.
+
+**What actually found them, in both cases, was re-deriving live state rather than reading the
+record:**
+
+- the trigger regression fell out of Cloud Audit Logs (`CloudBuild.UpdateBuildTrigger` — principal,
+  timestamp, and user-agent, all exact) after Daniel noticed *duplicated Telegram notifications*.
+  The user-visible symptom was a **duplicate side effect**, not an error. Nothing was red anywhere.
+- `mschz.org` fell out of one query against the old origin's Cloud Run access logs: group by `Host`
+  header, ask who is still knocking. The cutover checklist could never have found it, because a
+  checklist enumerates what its author already knew about.
+
+**The tooling was never the gap.** `cloudflare-cutover-flip.mjs` already documented
+`--domain mschz.org` in its own usage header and already supported `--extra-hosts`. S3 simply did
+not run it for those names. This is the third time this epic family has shipped the same bug shape
+(`www` in the Vercel→Cloud Run cutover, now `cname`/`gcp`/`mschz.org`), which is why the LEARNINGS
+entry was rewritten to demand a sweep across **every zone in the account** rather than a smarter
+record selector.
+
+**One thing that went genuinely well:** ordering the mschz.org move cert-first. The Cloudflare Origin
+CA cert and key from the 2026-07-10 issuance were still on disk and proved byte-identical (SHA-256
+fingerprint) to the one live on the old ALB, so it was lifted verbatim rather than reissued. SNI
+selection was verified at the new ALB *while DNS still pointed at the old one* — which is the only
+ordering where a missing cert is discovered by us and not by a user getting a 525. It needed
+re-checking twice: cert-plane propagation is minutes, and the first check was a false negative.
+
+**And one that was quietly lucky:** the staging stack had 10 `*_STAGING` secrets copied into the new
+project at S1 with **no IAM bindings** — values without access. Nothing consumed them for nine days,
+so the first deploy failed on all ten at once. Had staging been load-bearing, that would have been a
+production-shaped outage discovered at the worst moment. A `secrets list` diff showed parity that
+did not exist.
+
+**Left deliberately undone:** the project deletion itself. Everything else in this sprint is
+reversible in seconds — services are `ingress=internal`, Cloud SQL is `STOPPED`, triggers are
+disabled — which is exactly the state that makes the last step safe to hand to a human. The sprint's
+own QA said an agent should not delete a production project, and nothing found during execution
+argued for overriding that.

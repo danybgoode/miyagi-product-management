@@ -26,7 +26,7 @@ import { createSign } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-export const RESOLVER_BASE_URL = 'https://pmo-smalldocs-oehqqtyoia-uk.a.run.app';
+export const RESOLVER_BASE_URL = 'https://pmo-smalldocs-121711078446.us-east4.run.app';
 export const DEFAULT_BUCKET = 'miyagi-pmo-reports';
 export const DAILY_PREFIX = 'daily/';
 export const PACKETS_PREFIX = 'packets/';

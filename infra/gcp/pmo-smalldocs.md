@@ -7,15 +7,21 @@ Sprint: `Roadmap/09-platform-infra/pmo-operational-reports/sprint-2.md`
 - Service: `pmo-smalldocs`
 - Project: `miyagisanchez-prod`
 - Region: `us-east4`
-- URL: `https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`
-- Canonical Cloud Run URL: `https://pmo-smalldocs-91083034475.us-east4.run.app`
+- URL (alias form): `https://pmo-smalldocs-zsl7ltapsq-uk.a.run.app`
+- Canonical Cloud Run URL: `https://pmo-smalldocs-121711078446.us-east4.run.app`
+  — both verified 200 on 2026-07-28. Code should prefer the **canonical** form: the `zsl7ltapsq`
+  alias infix is per-project and opaque, so it silently rots across a project move (that is exactly
+  how the old `oehqqtyoia` links survived the 2026-07-19 cutover undetected until Sprint 4).
 - Fork: `https://github.com/danybgoode/smalldocs`
-- Deployed fork commit: `494997c4f7668921636f4043631263b11bdc0f79` (PR #3, `feat/report-registry-resolver`)
-- Latest deployed revision: `pmo-smalldocs-00004-kbc` (2026-07-17) — env includes
+- Deployed fork commit: `91776e2d5e1a52b57fb1f6f4e2651a83a9838425` (gcp-account-migration Sprint 4
+  redeploy to `miyagisanchez-prod`)
+- Latest deployed revision: `pmo-smalldocs-00001-q2t` (2026-07-28) — env includes
   `REPORT_REGISTRY_BUCKET=miyagi-pmo-reports`
-- Verified live 2026-07-18 (this session, read-only): `/trust/manifest` reports commit `494997c...`;
-  `/` and `/reports` return `HTTP 200`; `/api/live/roadmap-status` returns `HTTP 404` (expected —
-  reporthub-as-notion S2.1's `/api/live/:key` route is NOT on this revision yet, see below).
+- Verified live 2026-07-28 (gcp-account-migration Sprint 4, orchestrator, read-only): `/`, `/reports`,
+  and `/trust/manifest` all return `HTTP 200`, serving commit `91776e2d...`. The old-project URL
+  (`https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`, project `miyagisanchezback-497722`) is
+  **unreachable** — that service was set `ingress=internal` when the old project was decommissioned on
+  2026-07-28 (deletion itself still pending Daniel's go). Use the URL above.
 
 ## Operating mode
 
@@ -147,17 +153,17 @@ redeploy performed.**
 ## Smoke
 
 ```bash
-curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/
-curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/trust/manifest
-curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/short/example
+curl -sI https://pmo-smalldocs-121711078446.us-east4.run.app/
+curl -s https://pmo-smalldocs-121711078446.us-east4.run.app/trust/manifest
+curl -s https://pmo-smalldocs-121711078446.us-east4.run.app/api/short/example
 # report registry resolver (S1.2) — once the fork PR is merged + deployed:
-curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/report/does-not-exist-xyz   # -> 404 not_found
-curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/r/pmo-weekly-<a-real-YYYY-MM-DD> # -> 200 HTML
+curl -s https://pmo-smalldocs-121711078446.us-east4.run.app/api/report/does-not-exist-xyz   # -> 404 not_found
+curl -sI https://pmo-smalldocs-121711078446.us-east4.run.app/r/pmo-weekly-<a-real-YYYY-MM-DD> # -> 200 HTML
 # live-view registry (S2.1) — once danybgoode/smalldocs#<PR> (feat/live-views) is merged + deployed,
 # AND scripts/publish-live-views.mjs has run at least once against the prod bucket:
-curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/live/does-not-exist-xyz    # -> 404 not_found
-curl -s https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/api/live/roadmap-status        # -> 200 JSON
-curl -sI https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/r/pmo-live-metrics             # -> 200 HTML (chart view)
+curl -s https://pmo-smalldocs-121711078446.us-east4.run.app/api/live/does-not-exist-xyz    # -> 404 not_found
+curl -s https://pmo-smalldocs-121711078446.us-east4.run.app/api/live/roadmap-status        # -> 200 JSON
+curl -sI https://pmo-smalldocs-121711078446.us-east4.run.app/r/pmo-live-metrics             # -> 200 HTML (chart view)
 ```
 
 Expected:

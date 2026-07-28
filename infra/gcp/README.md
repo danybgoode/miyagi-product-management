@@ -12,9 +12,15 @@ Readiness S3). Admin-exposure decision: **KEEP `/app` + harden** (`DISABLE_MEDUS
 ## Billing — resolved
 
 Project **`miyagisanchez-prod`** is created under `lolis8755@gmail.com` and linked to **OPEN**
-billing account **`019B4F-8DBBBA-3EE80C`** (gcp-account-migration cutover, 2026-07-19 — the old
-`miyagisanchezback-497722`/leroytramafat project is the retained rollback until Sprint 4). The
-scripts default to these. Run as the `lolis-profile` config (the `lolis8755@gmail.com` identity).
+billing account **`019B4F-8DBBBA-3EE80C`** (gcp-account-migration cutover, 2026-07-19). The scripts
+default to these. Run as the `lolis-profile` config (the `lolis8755@gmail.com` identity).
+
+The old `miyagisanchezback-497722`/leroytramafat project was kept as the rollback path through
+Sprint 4 and is **DECOMMISSIONED** as of 2026-07-28: all build triggers **deleted** (not merely
+disabled — a disabled trigger can be re-enabled by replaying a stale config export, which is exactly
+how the old deploy rail came back to life on 2026-07-28), all Cloud Run services `ingress=internal`,
+Cloud SQL `STOPPED`. The project itself still exists — **final deletion and billing unlink are
+pending Daniel's go** — but it is no longer a usable rollback and nothing should be deployed to it.
 
 ## Order
 

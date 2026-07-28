@@ -116,8 +116,8 @@ client+server, fully isolated; no cloud resources, prod untouched).
   there is no **off-platform** escrow.
 - **Escrow procedure (quarterly, or after any rotation):**
   ```bash
-  gcloud config configurations activate bonsai-profile
-  PROJECT=miyagisanchezback-497722
+  gcloud config configurations activate lolis-profile
+  PROJECT=miyagisanchez-prod
   OUT=secrets-escrow-$(date +%Y%m%d)
   mkdir -p "$OUT" && chmod 700 "$OUT"
   for s in $(gcloud secrets list --project="$PROJECT" --format='value(name)'); do
