@@ -8,6 +8,11 @@
 // The block at the bottom pins the SIGNATURE ADAPTATION, which is the one thing this port could get
 // wrong invisibly: our cross-agent-cli runners return a string-or-null, not `{ ok, text }`. Reading
 // a falsy return as success would make every capped writer look like a clean draft.
+//
+// ⚠️ WHEN YOU ADD A WRITER, stub it in EVERY test that passes `has: () => true`. Adding codex broke
+// two specs here that stubbed only devin/agy — `has` reported the new writer available, nothing
+// stubbed it, and the real CLI ran (7s and 14s). That is the same trap the retry spec below already
+// records for agy; a third writer proved it recurs, so it is now stated once at the top.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,6 +23,7 @@ import {
   loadLessons,
   draftWithDevin,
   draftWithAgy,
+  draftWithCodex,
   PROSE_MODEL,
 } from './prose-writer.mjs';
 
@@ -179,7 +185,7 @@ test('a draft that never satisfies the guard is STILL RETURNED, flagged, never s
   // it, with ok:false and the findings attached, and let the caller surface them (D3).
   const r = writeProse(
     { prompt: 'p', evidence: {} },
-    { devin: okWriter(DIRTY), agy: okWriter(DIRTY), has: () => true, warn: silent }
+    { devin: okWriter(DIRTY), agy: okWriter(DIRTY), codex: okWriter(DIRTY), has: () => true, warn: silent }
   );
   assert.equal(r.ok, false);
   assert.equal(r.text, DIRTY, 'the draft must be handed back for a human to fix');
@@ -193,7 +199,7 @@ test('the evidence pack reaches the guard — a flag-OFF claim is caught through
   const draft = 'The partner portfolio is live, and every shop owner can see it right now.';
   const r = writeProse(
     { prompt: 'p', evidence: { allowsBeneficiary: true, liveFlags: [], minWords: 1 } },
-    { devin: okWriter(draft), agy: okWriter(draft), has: () => true, warn: silent }
+    { devin: okWriter(draft), agy: okWriter(draft), codex: okWriter(draft), has: () => true, warn: silent }
   );
   assert.equal(r.ok, false);
   assert.ok(r.guard.findings.some((f) => f.code === 'flag-state-claim'), JSON.stringify(r.guard));
@@ -286,4 +292,83 @@ test('draftWithAgy: an oversized prompt fails NON-retryably and never reaches th
   assert.equal(r.ok, false);
   assert.equal(r.retryable, false);
   assert.match(r.error, /argv cap/);
+});
+
+// ── The THIRD writer: codex (2026-07) ────────────────────────────────────────────────────────
+//
+// What these pin is the ROUTER POLICY (codex is a last resort, not a peer) and the failure
+// CLASSIFICATION — an auth lapse and a stale CLI mean codex cannot run here at all, so retrying is
+// pure latency on the last writer in the chain. Same "empty success" trap as the block above: exit
+// 0 with no text is a real codex failure mode and must never reach the guard as a clean draft.
+
+test('planWriters: codex is LAST — the review quota is the scarce one', () => {
+  assert.deepEqual(
+    planWriters({ devinAvailable: true, agyAvailable: true, codexAvailable: true }),
+    ['devin', 'agy', 'codex']
+  );
+  assert.deepEqual(
+    planWriters({ devinAvailable: false, agyAvailable: false, codexAvailable: true }),
+    ['codex'],
+    'codex alone still writes — a third pool is the point'
+  );
+});
+
+test('writeProse: falls through to codex when BOTH devin and agy are capped', () => {
+  // The measured case: the merge-report log shows devin refusing with "high demand for this model",
+  // and agy shares its pool with the review layer.
+  const r = writeProse(
+    { prompt: 'p', evidence: {} },
+    {
+      devin: failWriter('capped'),
+      agy: failWriter('capped'),
+      codex: okWriter(CLEAN),
+      has: () => true,
+      warn: silent,
+    }
+  );
+  assert.equal(r.ok, true);
+  assert.equal(r.writer, 'codex');
+});
+
+test('draftWithCodex: the prompt rides STDIN, never argv', () => {
+  // execCodex puts its `prompt` arg in argv — the exact cap that already bites agy. A prose prompt
+  // carries the persona, the lessons and a full evidence pack, so it must not go there.
+  let seen;
+  const big = 'x'.repeat(300 * 1024);
+  const r = draftWithCodex(big, {
+    run: (directive, stdin) => ((seen = { directive, stdin }), { ok: true, text: 'drafted' }),
+  });
+  assert.equal(r.ok, true);
+  assert.equal(seen.stdin, big, 'the material goes on stdin');
+  assert.ok(seen.directive.length < 500, 'argv stays a short constant directive');
+  assert.ok(!seen.directive.includes('xxx'), 'the material must never reach argv');
+});
+
+test('draftWithCodex: an AUTH lapse is non-retryable — a second try cannot log codex in', () => {
+  const r = draftWithCodex('p', { run: () => ({ ok: false, text: '', authFailed: true }) });
+  assert.equal(r.ok, false);
+  assert.equal(r.retryable, false);
+  assert.match(r.error, /codex login/);
+});
+
+test('draftWithCodex: a STALE CLI is non-retryable and names the doctor script', () => {
+  const r = draftWithCodex('p', { run: () => ({ ok: false, text: '', cliOutdated: true }) });
+  assert.equal(r.ok, false);
+  assert.equal(r.retryable, false);
+  assert.match(r.error, /codex-doctor/);
+});
+
+test('draftWithCodex: a quota cap IS retryable — that is the recoverable case', () => {
+  const r = draftWithCodex('p', { run: () => ({ ok: false, text: '', stderr: 'rate limited' }) });
+  assert.equal(r.ok, false);
+  assert.equal(r.retryable, true);
+});
+
+test('draftWithCodex: exit 0 with EMPTY text is a failure, not an empty success', () => {
+  // The signature-adaptation trap again: `ok: true` with no text would hand the guard "" and call
+  // it a clean draft.
+  const r = draftWithCodex('p', { run: () => ({ ok: true, text: '   ' }) });
+  assert.equal(r.ok, false);
+  assert.equal(r.text, '');
+  assert.equal(r.retryable, true);
 });

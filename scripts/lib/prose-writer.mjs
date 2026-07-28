@@ -50,6 +50,7 @@ import { checkProse, findingsToRevisionNote } from './prose-guard.mjs';
 import {
   runAntigravity,
   runDevin,
+  tryCodex,
   hasCmd,
   loadPromptBody,
   AGY_ARG_LIMIT,
@@ -184,6 +185,69 @@ export function draftWithAgy(prompt, deps = {}) {
       };
 }
 
+// ── The THIRD writer: codex (2026-07) ─────────────────────────────────────────────────────────
+//
+// Added because devin is the flakiest link in the rail, not a hypothetical one: the merge-report log
+// shows `Permission denied: We're currently facing high demand for this model` on 6 of 25 runs.
+// devin → agy already handled that correctly (the log has agy carrying a report devin refused), but
+// two writers means one bad day away from no report at all — and agy shares its quota with the
+// cross-family review layer, which has already gone fully dark mid-epic when codex and agy were
+// capped in the same session.
+//
+// codex is the natural third seat: it is already installed, already wrapped in cross-agent-cli, and
+// carries a THIRD independent quota pool. It sits LAST because it is the primary code REVIEWER —
+// the review rail's quota is the scarce resource, and prose should only reach for it when both
+// dedicated writers have failed.
+//
+// ── Why the prompt goes on STDIN ──────────────────────────────────────────────────────────────
+// `execCodex(prompt, stdin)` puts `prompt` in ARGV, which is the exact cap that already bites agy
+// (`draftWithAgy` refuses oversized prompts non-retryably for this reason). A prose prompt carries
+// the persona, the accumulated lessons and a full evidence pack, so it is precisely the kind of
+// payload that overflows argv. codex is designed to take its context on stdin, so the body goes
+// there and argv carries only a short constant directive — no cap to hit, and nothing to guard.
+
+/** The argv half of the codex call: a fixed, tiny directive. The real prompt rides stdin (see above),
+ * so this string must never grow to include the material — that would reintroduce the argv cap. */
+export const CODEX_DIRECTIVE =
+  'Follow the instructions provided on stdin exactly. Output only the finished text — no preamble, no commentary, no code fences.';
+
+/**
+ * Draft with codex. Thin adapter over `tryCodex`, which is already the structured, never-dies
+ * variant — it separates an AUTH lapse and a STALE CLI from an ordinary failure, and that
+ * distinction is the whole reason to use it here rather than `runCodex`.
+ *
+ * **Auth lapse and stale CLI are NON-retryable.** Both mean codex genuinely cannot run on this
+ * machine, and a second identical attempt cannot log it in or upgrade it — retrying is pure latency
+ * on the last writer in the chain, which is the worst place to spend it. Everything else (a cap, a
+ * transient empty response) gets the one retry the rail already gives. Same reasoning as
+ * `draftWithAgy`'s oversized-prompt path: retry the recoverable, demote the rest.
+ */
+export function draftWithCodex(prompt, deps = {}) {
+  const { run = tryCodex, directive = CODEX_DIRECTIVE } = deps;
+  const r = run(directive, String(prompt));
+
+  // TRIM BEFORE testing for emptiness — a whitespace-only stdout is truthy, so checking `r.text`
+  // raw would return `ok: true` with an empty draft and hand the guard "" to approve.
+  const text = String(r.text ?? '').trim();
+  if (r.ok && text) return { ok: true, text, model: 'codex' };
+
+  // Exit 0 with empty stdout is a real, observed codex failure mode (the same one devin has), so
+  // `ok` alone is not enough — an empty draft must never read as success or the guard checks "".
+  if (r.authFailed) {
+    return { ok: false, text: '', model: 'codex', error: 'codex auth has lapsed — run `codex login`', retryable: false };
+  }
+  if (r.cliOutdated) {
+    return { ok: false, text: '', model: 'codex', error: 'codex CLI is too old for its model — run `node scripts/codex-doctor.mjs`', retryable: false };
+  }
+  return {
+    ok: false,
+    text: '',
+    model: 'codex',
+    error: `codex returned no output (quota cap or a transient empty response)${r.stderr ? `: ${String(r.stderr).trim().split('\n').pop()}` : ''}`,
+    retryable: true,
+  };
+}
+
 /**
  * Pure routing decision — which writers to try, in order.
  *
@@ -191,12 +255,18 @@ export function draftWithAgy(prompt, deps = {}) {
  * below. `preferred` lets a caller force one writer (useful when diagnosing which one produced a
  * bad draft) without editing the rail.
  */
-export function planWriters({ devinAvailable, agyAvailable, preferred }) {
+export function planWriters({ devinAvailable, agyAvailable, codexAvailable, preferred }) {
   // ORDER IS THE POLICY. Devin first — see the router note at the top of this file. Changing this
   // array changes who writes every report in the repo, so it is the one line to read.
+  //
+  // codex sits LAST on purpose: it is the primary code REVIEWER, and the review layer's quota is
+  // the scarce resource here (codex and agy have already gone dark together mid-epic). Prose only
+  // reaches for it once both dedicated writers have failed — which the log says does happen, so a
+  // third independent pool is the difference between a late report and no report.
   const all = [
     { name: 'devin', available: devinAvailable },
     { name: 'agy', available: agyAvailable },
+    { name: 'codex', available: codexAvailable },
   ];
   if (preferred) {
     const chosen = all.find((w) => w.name === preferred);
@@ -217,6 +287,7 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
   const {
     devin = draftWithDevin,
     agy = draftWithAgy,
+    codex = draftWithCodex,
     has = hasCmd,
     guard = checkProse,
     warn = (m) => process.stderr.write(`${m}\n`),
@@ -225,6 +296,7 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
   const writers = planWriters({
     devinAvailable: has('devin'),
     agyAvailable: has('agy'),
+    codexAvailable: has('codex'),
     preferred,
   });
   if (writers.length === 0) {
@@ -239,7 +311,7 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
     };
   }
 
-  const runners = { devin, agy };
+  const runners = { devin, agy, codex };
   let attempts = 0;
   let best = null;
 
