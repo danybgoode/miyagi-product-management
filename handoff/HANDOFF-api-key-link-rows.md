@@ -1,5 +1,9 @@
 # Handoff — investigate: 70 of 72 `api_key` → `sales_channel` link rows are unusable
 
+> **RESOLVED 2026-07-27.** Diagnosis confirmed live, remediation shipped in backend PR #119 (squash
+> `f0ae096`). Keep this file for the reasoning; the prompt below is spent. See
+> **[Resolution](#resolution-2026-07-27)** at the bottom.
+
 _Written 2026-07-27. Paste the block below into a fresh session._
 
 ---
@@ -76,3 +80,52 @@ hours before this count was taken.** If the link rows point at those, the count 
 - Team memory: `prod-duplicate-sales-channels` (the prune, and what it did and did not fix)
 - `apps/backend/src/lib/ml-order-materialize.ts` — the locked find-or-create pattern to copy if key
   creation turns out to have the same defect
+
+---
+
+## Resolution 2026-07-27
+
+**The headline hypothesis in this prompt was wrong, and saying so was the useful outcome.**
+
+Question 1 was framed as *"is something creating publishable keys repeatedly?"*, with the suggested fix
+being the locked find-or-create from `ml-order-materialize.ts`. It is not a race and never was.
+`initial-data-seed.ts` is the only publishable-key creation site in the backend, and its own comment
+records the incident: repeated runs against a populated DB "previously created 70+ duplicate stores /
+publishable keys / sales channels". Commit `e951b5f` closed that with a store-exists guard. **The
+source was already fixed; only the residue remained.** No lock was needed.
+
+Question 2's hypothesis — dangling rows pointing at the 15 channels deleted that day — was directionally
+right but understated. The mechanism, verified in the installed core-flows source rather than inferred:
+`/internal/prune-sales-channels` called `salesChannelService.deleteSalesChannels()`, the raw module
+service, which deletes only the `sales_channel` row. `deleteSalesChannelsWorkflow` additionally runs
+`removeRemoteLinkStep`, and that is what clears `publishable_api_key_sales_channel`. So the prune added
+15 dangling rows to the ~55 already left by earlier cleanups.
+
+Question 3: **latent, storefront unaffected**, as suspected. Live `GET` confirmed 72 keys,
+`publishable_keys_skipped_links: 70`, `publishable_keys_error: null`, and exactly **one** resolving key
+(`apk_01KRVSGHN5KMCJSAMMYHRBD42W` → `sc_01KSK1J0V81P4EPY9G0JAPX353`). A key with no channel link returns
+no products and the catalog returns products, so that key is the storefront's.
+
+### Two findings the count surfaced that this prompt did not anticipate
+
+1. `store_default_sales_channel_id` (`sc_01KRVSGTDJ…`, "Default Sales Channel") **diverges from**
+   `env_MEDUSA_SALES_CHANNEL_ID` (`sc_01KSK1J0V8…`, the storefront). The vestigial Default channel
+   survives every prune only because it is the store default.
+2. The diagnostic **collapsed two states into one**: a key with a dangling link and a key with no link
+   at all both rendered `sales_channels: []`. Live, 71 keys showed `[]` while only 70 links were
+   skipped. Fixed with a per-key `skipped_links`.
+
+### Shipped — backend PR #119 (`f0ae096`)
+
+- **New `POST /internal/prune-api-keys`** — `dry_run` defaults true and is fully read-only. Deletes
+  orphan keys via `deleteApiKeysWorkflow`, whose `removeRemoteLinkStep` is keyed on
+  `publishable_key_id` with no join to `sales_channel`, so dangling rows go with their keys. Refuses on
+  an empty read, any row with no id, no key qualifying to keep, or a configured storefront token
+  matching nothing — while keeping "could not check" distinct from "there is none".
+- **`prune-sales-channels`** now deletes through `deleteSalesChannelsWorkflow`.
+- **`backfill-sales-channel`** reports a per-key `skipped_links`.
+
+Do **not** use `src/scripts/cleanup-default-data.ts` for this. Its `KEEP_KEY_PREFIX =
+'pk_bac9d8ced544'` is a *token* prefix that was never verified to resolve to the one working key; if it
+does not, that script deletes the storefront's credential. The new endpoint keeps by *live link*, which
+is verifiable from the diagnostic output.
