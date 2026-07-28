@@ -105,8 +105,17 @@ deploy notifications naming two different project numbers. Audit log
 A `triggers import` of a JSON body that simply *omits* `disabled` re-enables the trigger. Nothing
 re-enabled them on purpose; a stale exported trigger definition was replayed. `backend-staging-deploy`
 was not in that replay and stayed correctly disabled — which is the tell that this was a partial
-replay, not a deliberate re-enable. Fixed by re-importing all three with `disabled: true` and
-verifying via `triggers list`.
+replay, not a deliberate re-enable.
+
+Fixed in two moves. First: re-imported all three with `disabled: true`, verified via `triggers list`
+(`gcloud beta builds triggers update --disabled` does not exist; export → edit → import is the only
+shape that works). Then, on the round-3 cross-review's blocking finding, **deleted all three
+outright** — because leaving them disabled reproduces the exact non-durable state that caused the
+incident. A disabled trigger is one stale import away from being live again; a deleted one is not.
+Worth naming plainly: the "prefer deletion over disabling" rule was written into `LEARNINGS.md`
+*in this very PR* and then not applied to the live system until a reviewer caught it. That is the
+paraphrase-drift failure mode this repo already has a learning about, committed by the person
+writing the learning.
 
 **2. Three DNS records were never flipped.** Sprint 3 flipped four names on `miyagisanchez.com`
 (apex, wildcard, `www`, `api`). It did not flip:
@@ -130,7 +139,7 @@ was never the gap.
 
 | # | step | evidence |
 |---|---|---|
-| 1 | Re-disabled all 3 old triggers | `triggers list` → all `disabled: True` |
+| 1 | Re-disabled all 3 old triggers, then **DELETED them outright** | `triggers list` → empty. Disabling alone reproduces the very state that caused the incident: a replayed export that omits `disabled` re-enables it. Deletion is the durable control. *(Caught by the round-3 cross-review — the lesson had been written into LEARNINGS in this same PR and then not applied.)* |
 | 2 | Swept **all 3 Cloudflare zones** for any record on an old-project origin | 3 hits found (above) |
 | 3 | Uploaded the existing `mschz-org-origin-cert-20260710` to `miyagisanchez-prod` | local `.cf-origin-cert-mschz/origin.{pem,key}` proven byte-identical (SHA-256 fingerprint match) to the cert live on the old ALB; key/cert pubkey MD5 match; valid to 2041 |
 | 4 | Attached it beside the wildcard cert on `miyagi-web-https-proxy` | `openssl s_client -servername mschz.org` against `136.69.97.223` returns `DNS:mschz.org, DNS:www.mschz.org` — **checked before the DNS flip, so a 525 was impossible** |

@@ -218,7 +218,7 @@ env/CORS, the drill used `gcloud run services update --startup-probe/--liveness-
 
 **Repro commands** (staging):
 ```bash
-REGION=us-east4; STAGING=https://medusa-web-staging-zsl7ltapsq-uk.a.run.app
+REGION=us-east4; STAGING=https://medusa-web-staging-121711078446.us-east4.run.app
 # repin to prior, then restore:
 gcloud run services update-traffic medusa-web-staging --region=$REGION --to-revisions=<prior>=100
 gcloud run services update-traffic medusa-web-staging --region=$REGION --to-latest

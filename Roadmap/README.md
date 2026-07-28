@@ -406,7 +406,8 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
   over: `pmo-smalldocs`, `print-pdf`, the staging stack (whose 10 `*_STAGING` secrets turned out to
   have values but **no IAM bindings** since S1 — nothing had consumed them in 9 days), and the PMO
   report registry's two global-named buckets (MD5-verified out and back). Old project is now fully
-  dark — 7 services `ingress=internal`, Cloud SQL `STOPPED`, all triggers disabled — with the final
+  dark — 7 services `ingress=internal`, Cloud SQL `STOPPED`, all triggers **deleted** (disabling alone
+  is what failed) — with the final
   dump durable in the *new* project. **Held for Daniel: the deletion itself + unlinking billing**
   (an agent should not delete a production project), plus the still-owed money-path checkout,
   Stripe/MP dashboard delivery check and session check. See
