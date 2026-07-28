@@ -71,14 +71,34 @@ test('formatHits: names the offending file and states the replacement', () => {
 
 // ---- the actual guard: every real file under scripts/lib/, read off disk ----
 
+// Walk RECURSIVELY and do not filter by extension. Both narrowings were real holes flagged by the
+// cross-agent review of PR #112: a stale URL in `scripts/lib/nested/thing.mjs`, or in a `.json`/`.md`
+// sitting beside the code, is exactly as dead as one in a top-level `.mjs` — and a guard that reports
+// green over files it never opened is the "exits green having run nothing" failure AGENTS.md bans.
+// Binary files are not a concern here (scripts/lib/ is source), but read as utf8 and skip anything
+// that fails to decode rather than throwing, so one odd file cannot take the whole guard down.
+function collectFiles(dir, relPrefix) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const abs = join(dir, entry.name);
+    const rel = `${relPrefix}/${entry.name}`;
+    if (entry.isDirectory()) {
+      out.push(...collectFiles(abs, rel));
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    try {
+      out.push({ path: rel, content: readFileSync(abs, 'utf8') });
+    } catch {
+      // unreadable/undecodable — skip the file, never the guard
+    }
+  }
+  return out;
+}
+
 test('guard: no file under scripts/lib/ references the decommissioned GCP project', () => {
-  const files = readdirSync(LIB_DIR)
-    .filter((f) => f.endsWith('.mjs'))
-    .map((f) => {
-      const abs = join(LIB_DIR, f);
-      return { path: `scripts/lib/${f}`, content: readFileSync(abs, 'utf8') };
-    });
-  assert.ok(files.length > 0, 'expected to find .mjs files under scripts/lib/ — did the directory move?');
+  const files = collectFiles(LIB_DIR, 'scripts/lib');
+  assert.ok(files.length > 0, 'expected to find files under scripts/lib/ — did the directory move?');
 
   const hits = findOldProjectReferences(files);
   assert.deepEqual(hits, [], hits.length ? `stale old-project reference(s):\n${formatHits(hits)}` : undefined);

@@ -13,8 +13,10 @@ Readiness S3). Admin-exposure decision: **KEEP `/app` + harden** (`DISABLE_MEDUS
 
 Project **`miyagisanchez-prod`** is created under `lolis8755@gmail.com` and linked to **OPEN**
 billing account **`019B4F-8DBBBA-3EE80C`** (gcp-account-migration cutover, 2026-07-19 — the old
-`miyagisanchezback-497722`/leroytramafat project was kept as the rollback path through Sprint 4; it is
-now being deleted, cutover complete). The scripts default to these. Run as the `lolis-profile` config
+`miyagisanchezback-497722`/leroytramafat project was kept as the rollback path through Sprint 4 and is
+now **DECOMMISSIONED** as of 2026-07-28 — services `ingress=internal`, Cloud SQL `STOPPED`, all build
+triggers disabled. It still exists: **final deletion + billing unlink are pending Daniel's go**, and
+until then it remains technically restorable). The scripts default to these. Run as the `lolis-profile` config
 (the `lolis8755@gmail.com` identity).
 
 ## Order

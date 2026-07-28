@@ -19,8 +19,9 @@ Sprint: `Roadmap/09-platform-infra/pmo-operational-reports/sprint-2.md`
   `REPORT_REGISTRY_BUCKET=miyagi-pmo-reports`
 - Verified live 2026-07-28 (gcp-account-migration Sprint 4, orchestrator, read-only): `/`, `/reports`,
   and `/trust/manifest` all return `HTTP 200`, serving commit `91776e2d...`. The old-project URL
-  (`https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`, project `miyagisanchezback-497722`) is DEAD — the
-  old project is being deleted; use the URL above.
+  (`https://pmo-smalldocs-oehqqtyoia-uk.a.run.app`, project `miyagisanchezback-497722`) is
+  **unreachable** — that service was set `ingress=internal` when the old project was decommissioned on
+  2026-07-28 (deletion itself still pending Daniel's go). Use the URL above.
 
 ## Operating mode
 
