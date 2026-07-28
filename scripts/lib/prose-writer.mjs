@@ -6,13 +6,25 @@
 // second spawn path would be a second place for the argv cap, the empty-output contract and the
 // agy version pin to drift (sprint-1 build contract).
 //
-// Scope note (README D1): this is the LOCAL backend. A Claude Routine has no local CLI credentials
-// — `hasCmd` returns false for both writers inside the routine sandbox — so the routines write
-// their prose in-context and call the same pure guard as a separate `--post` step (D2). The guard,
-// the persona and the lessons file are shared by both backends; only this writer is local-only.
+// Scope note (README D1): this is the LOCAL backend, and it is local by NECESSITY, not by choice.
+// Every writer below is an interactive CLI with no headless auth — `hasCmd` returns false for all
+// three inside a Claude Routine or a GitHub Actions runner — so the routines write their prose
+// in-context and call the same pure guard as a separate `--post` step (D2). The guard, the persona
+// and the lessons file are shared; only the writers are local-only.
+//
+// This is why the merge report cannot move to CI. Writing prose in a runner would need a paid
+// hosted API key, and using the cheap/free model CLIs is the point of the rail — see
+// Roadmap/09-platform-infra/prose-rail-headless/README.md, which records the rejected design so
+// nobody re-derives it.
 //
 // ── The router (README D1, and Daniel's call at golden-beans, 2026-07-26) ──────────────────────
-// **Devin is the DEDICATED prose writer; agy on `gpt-oss-120b-medium` is the fallback.**
+// **devin → agy (`gpt-oss-120b-medium`) → codex.** devin is the DEDICATED prose writer; agy is the
+// fallback; codex is the last resort, added 2026-07-28.
+//
+// Why a third seat: devin refused 6 of 25 runs with "high demand for this model". The devin → agy
+// fallback handled that correctly every time — but two pools is one bad day from no report, and agy
+// shares its quota with the review layer. codex is last precisely BECAUSE it is the primary
+// reviewer: prose only draws on that quota once both dedicated writers have failed.
 //
 // This is a division of LABOUR, not a ranking. Codex and agy are the primary code reviewers and the
 // builders lean on them, so their quota is the scarce resource — and this repo has already had the
@@ -20,9 +32,9 @@
 // session (2026-07-24, the reason devin was installed at all). Devin was added as a third review
 // seat and sits mostly idle. Giving devin prose outright keeps the review quota free.
 //
-// The fallback is not decoration: agy carries a genuinely separate quota pool, and this repo has
-// already been bitten by a single-provider rail going quiet mid-session (LEARNINGS — wire the
-// fallback to the CONDITION, not to one of its signatures).
+// The fallbacks are not decoration: agy and codex carry genuinely separate quota pools, and this
+// repo has already been bitten by a single-provider rail going quiet mid-session (LEARNINGS — wire
+// the fallback to the CONDITION, not to one of its signatures).
 //
 // ── PROSE_MODEL: one model, and deliberately not a Gemini one ──────────────────────────────────
 // `gemini-3.5-flash-high` was `prose-draft.mjs`'s default until this sprint. That is the EXACT
@@ -33,11 +45,11 @@
 //   • ONE model. No model-level fallback, because a silent fall-through between two models with
 //     materially different registers is a change of voice that nothing records.
 //   • NOT a Gemini slug. If a future reader is about to "restore the fallback for resilience":
-//     resilience already exists at the WRITER level (devin → agy, two separate quota pools). A
+//     resilience already exists at the WRITER level (devin → agy → codex, three separate pools). A
 //     second model inside the agy path buys nothing and costs the register.
 //
 // ── Guard-and-retry, not guard-and-fail (README D3) ───────────────────────────────────────────
-// Every draft, from either writer, goes through the pure `prose-guard` checks. A rejected draft is
+// Every draft, from any writer, goes through the pure `prose-guard` checks. A rejected draft is
 // not discarded — the findings are handed back as a numbered revision note and the writer tries
 // again. Only after that does a draft reach a human, and it arrives labelled with which writer and
 // which model produced it and whether the guard passed it clean. A flagged report a human can

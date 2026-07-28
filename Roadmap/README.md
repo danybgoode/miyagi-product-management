@@ -178,6 +178,25 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-28 — Prose rail: a third writer, and a hook that was silently dead in every worktree
+  (area 09, LOW, internal tooling only).** The merge report's flakiness had two causes and neither was
+  the one in the brief. First, **devin refuses** — `high demand for this model` on 6 of 25 runs. The
+  devin→agy fallback already handled that correctly (the log shows agy carrying a report devin
+  refused), but two pools is one bad day from no report, so **codex joins as a third, last writer**;
+  last precisely because it is the primary code reviewer and that quota is the scarce one. Second, and
+  the bigger share: the hook had been **silently dead in every linked worktree**, for two independent
+  reasons — `.git` is a *file* in a worktree so the log redirect died with `Not a directory`, and the
+  app repos' `../../scripts` borrow resolves to a non-existent path from a worktree, so the hook hit
+  its own `[ -f ] || exit 0` and vanished. Both were invisible because the hook is backgrounded and
+  `|| true`-ed. Fixed in all three repos ([root #111](https://github.com/danybgoode/miyagi-product-management/pull/111),
+  [frontend #323](https://github.com/danybgoode/miyagisanchezcommerce/pull/323),
+  [backend #122](https://github.com/danybgoode/medusa-bonsai-backend/pull/122)).
+  **Rejected, and recorded so nobody re-derives it:** moving the rail to GitHub Actions. Quota is
+  genuinely no longer a constraint (the repos went public 2026-07-18), but every writer is an
+  interactive CLI with no headless auth, so a runner has nothing to write with — and a paid hosted key
+  is the opposite of this rail's purpose. The pull-dependency gap is therefore accepted by design.
+  See [09 › prose-rail-headless](09-platform-infra/prose-rail-headless/).
+
 - **2026-07-26 — Delivery-rail hardening: five epics on the process itself (area 09, LOW/MED, all
   internal tooling — no commerce surface, no migration, no flag).** A response to an external QA audit
   plus two asks from Daniel, run epic-mode in one session. **Executive prose rail** — the daily standup

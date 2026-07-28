@@ -10,10 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [A third prose writer, and the worktree bug that swallowed reports](../../09-platform-infra/prose-rail-headless/README.md) — 09 Platform-infra · 3/3 stories
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 9/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
@@ -21,7 +20,7 @@
 
 _None._
 
-## ✅ Shipped (132)
+## ✅ Shipped (133)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -108,6 +107,7 @@ _None._
 - [Seller-Acquisition Landing Pages (BUILD-ORDER #6)](../../08-growth-and-promotions/seller-acquisition-landing-pages/README.md) — 08 Growth · 9/9 stories · risk: Low · Wave 3
 - [Sweepstakes](../../08-growth-and-promotions/sweepstakes/README.md) — 08 Growth · 9/9 stories · risk: Low
 - [Tiendas Fundadoras acquisition](../../08-growth-and-promotions/tiendas-fundadoras-acquisition/README.md) — 08 Growth · 6/6 stories · risk: High · #3-fm
+- [A third prose writer, and the worktree bug that swallowed reports](../../09-platform-infra/prose-rail-headless/README.md) — 09 Platform-infra · 3/3 stories
 - [Admin consolidation + tenant management](../../09-platform-infra/admin-consolidation/README.md) — 09 Platform-infra · 9/9 stories
 - [agy drift doctor — self-healing for the Antigravity CLI pin](../../09-platform-infra/agy-drift-doctor/README.md) — 09 Platform-infra · 2/2 stories
 - [Backend Production Readiness — audit + hardening](../../09-platform-infra/backend-production-readiness/README.md) — 09 Platform-infra · 6/6 stories · risk: High

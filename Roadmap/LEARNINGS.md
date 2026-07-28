@@ -1261,6 +1261,29 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Two lessons: scope test fixtures to the JOB/STEP that needs them (job-level env reached the
   deterministic gate and reddened it), and treat "provisioning a fixture" as a change that can turn a
   green gate red — because it converts silence into a result. *(2026-07-27, credentialed-browser-smoke.)*
+- **`.git` IS A FILE IN A LINKED WORKTREE — any `<root>/.git/<name>` path fails with ENOTDIR.** Use
+  `git rev-parse --git-common-dir` (absolutise it; it can answer relatively). Found 2026-07-28: the
+  prose merge-report hook had been dead in every worktree, and *silently*, because it is backgrounded
+  and `|| true`-ed. Two lessons beyond the path. **(a)** The same hook was ALSO resolving the script
+  via `$root/../../scripts` — correct from `apps/<name>`, a non-existent path from
+  `apps/<name>/.worktrees/<wt>` — so it hit its own `[ -f ] || exit 0` and vanished for a *second*
+  reason found only while propagating the fix for the first. Fixing one instance of "resolved off the
+  wrong root" is not auditing for the pattern. **(b)** A backgrounded `|| true` hook cannot tell you
+  it is broken; its path resolution is the one thing that must not be able to fail silently.
+  *(2026-07-28, prose-rail-headless.)*
+- **VERIFY THE STATED CAUSE BEFORE BUILDING THE FIX — a brief that names a cause is a hypothesis.**
+  The brief was "the prose hook is flaky, Actions quota is refilled, move it there." Quota had not
+  been the blocker for ten days (the repos went public); the real blocker was headless auth, which no
+  quota fixes; and the flakiness was mostly a dead hook, not the writers. A whole API backend and
+  workflow were built and then removed. The disconfirming evidence was one `cat` of the hook's own log
+  and one `ls` of `.git` — both cheap, both done only after the wrong thing was built.
+  *(2026-07-28, prose-rail-headless.)*
+- **A UNIT TEST THAT CAN REACH A NETWORK CLI WHEN A POLICY CONSTANT CHANGES IS A TRAP FOR WHOEVER
+  CHANGES IT.** Adding a third prose writer broke two specs that stubbed only the first two while
+  passing `has: () => true` — the router reported the new writer available, nothing stubbed it, and
+  the real CLI ran (7s and 14s). The file had already recorded this exact trap for an earlier writer;
+  it recurred anyway. Stub every writer the router can return, and put the warning where the next
+  person adding one will read it. *(2026-07-28, prose-rail-headless.)*
 - **WHEN GITHUB ACTIONS QUOTA IS EXHAUSTED, the local gate IS the merge signal — and say so in the PR.**
   Protocol (2026-07-18, re-used 2026-07-27): run the full gate locally (`tsc` + build + lint + suite),
   pair it with the green Vercel preview (Vercel-side, unaffected), and state *"CI quota exhausted, local

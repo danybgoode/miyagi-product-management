@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: prose-rail-headless
 ---
 
@@ -113,6 +113,6 @@ is what the unchanged shared guard is for.
 - [x] `draftWithCodex` wired into `planWriters`/`writeProse` as the third, last writer.
 - [x] Specs for the new seam; **every one observed red** via a break-the-implementation mutation.
 - [x] The `.git`-is-a-file bug fixed in this repo's hooks and in `merge-report.mjs`'s state path.
-- [ ] The same hook fix landed in `miyagisanchezcommerce` and `backend` (separate PRs).
+- [x] The same hook fix landed in `miyagisanchezcommerce` (#323) and `backend` (#122).
+- [x] `RETROSPECTIVE.md`; poster + `LEARNINGS.md` updated; memory + `MEMORY.md` index.
 - [ ] A merge observed reporting from a worktree checkout, where it previously died silently.
-- [ ] `RETROSPECTIVE.md`; poster + `LEARNINGS.md` updated; memory + `MEMORY.md` index.
