@@ -15,15 +15,25 @@
 #
 # Backgrounded and always-true: a prose report must NEVER slow down or fail a git operation.
 root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
-script="$root/scripts/merge-report.mjs"
-# App repos have no scripts/ of their own — they borrow the root repo's copy.
-[ -f "$script" ] || script="$root/../../scripts/merge-report.mjs"
-[ -f "$script" ] || exit 0
-# The log goes in the COMMON git dir, not "$root/.git": in a linked worktree `.git` is a FILE, so
-# the old path made every redirect fail with "Not a directory" and the hook died before running the
-# script at all. Silently — the whole thing is backgrounded. This repo runs several worktrees at a
-# time, so that was a large share of the reports that never appeared. (Fixed 2026-07-27.)
+
+# Resolve paths from the MAIN checkout, never from "$root" — in a linked worktree "$root" is the
+# worktree, and BOTH of the things below break there. Fixed 2026-07-28 after finding the hook had
+# been silently dead in every worktree; this repo runs several at a time.
+#
+#   1. `.git` is a FILE in a worktree, so "$root/.git/<log>" fails with "Not a directory".
+#   2. The app repos borrow the root repo's scripts/ via ../../ — correct from apps/<name>, but
+#      from apps/<name>/.worktrees/<wt> that resolves to apps/<name>/scripts, which does not exist.
+#      The hook then hit its own `[ -f ] || exit 0` guard and vanished without a word.
+#
+# `--git-common-dir` points at the MAIN clone's git dir from anywhere, so its parent is the main
+# checkout. It can answer relatively (plain `.git`), hence the absolutise step.
 gitdir="$(git rev-parse --git-common-dir 2>/dev/null)" || exit 0
 case "$gitdir" in /*) ;; *) gitdir="$root/$gitdir" ;; esac
+main_root="$(CDPATH= cd -- "$(dirname -- "$gitdir")" 2>/dev/null && pwd)" || exit 0
+
+script="$main_root/scripts/merge-report.mjs"
+# App repos have no scripts/ of their own — they borrow the root repo's copy.
+[ -f "$script" ] || script="$main_root/../../scripts/merge-report.mjs"
+[ -f "$script" ] || exit 0
 ( cd "$root" && node "$script" >>"$gitdir/merge-report.log" 2>&1 || true ) &
 exit 0
