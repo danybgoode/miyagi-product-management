@@ -158,7 +158,7 @@ test('buildReportLink returns the short registry link when the upload succeeds',
   const result = await buildReportLink({
     name: 'weekly',
     markdown: '# weekly report',
-    fallbackUrl: 'https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/#md=fallback',
+    fallbackUrl: 'https://pmo-smalldocs-121711078446.us-east4.run.app/#md=fallback',
     date: new Date('2026-07-14T05:00:00Z'),
     uploader: async () => ({ ok: true }),
     logError: (msg) => errors.push(msg),
@@ -171,7 +171,7 @@ test('buildReportLink returns the short registry link when the upload succeeds',
 
 test('buildReportLink falls back to the URL-hash link on upload failure and logs to stderr', async () => {
   const errors = [];
-  const fallbackUrl = 'https://pmo-smalldocs-oehqqtyoia-uk.a.run.app/#md=fallback';
+  const fallbackUrl = 'https://pmo-smalldocs-121711078446.us-east4.run.app/#md=fallback';
   const result = await buildReportLink({
     name: 'standup',
     markdown: '# standup',

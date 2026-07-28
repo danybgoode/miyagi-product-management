@@ -7,7 +7,7 @@ import { dirname } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
 const TEMPLATE_DIR = join(ROOT, 'scripts', 'pmo', 'templates');
-export const DEFAULT_SMALLDOCS_URL = 'https://pmo-smalldocs-oehqqtyoia-uk.a.run.app';
+export const DEFAULT_SMALLDOCS_URL = 'https://pmo-smalldocs-121711078446.us-east4.run.app';
 
 const TEMPLATE_FILES = {
   weekly: 'weekly-story-deck.md',

@@ -69,7 +69,7 @@ Cloud SQL `medusa-pg` · Cloud Run `medusa-web` + `miyagi-web` · Artifact Regis
 | 2 | 2.2 Scheduler jobs (6, not 4), monitoring, ALB + api host rule — provisioned, schedulers **paused** | low | ✅ 2026-07-19 `315a15f` |
 | 3 | 3.1 Final DB sync + Cloudflare origin flip (4 records incl. www + api) | high | ✅ 2026-07-19 `8ce5c1a` |
 | 3 | 3.2 Webhooks verified domain-based (zero repoints); enable new triggers, disable old; resume new schedulers, pause old | high | ✅ 2026-07-19 `8ce5c1a` |
-| 4 | 4.1 Decommission the old project — **deferred, separate sprint** (see sprint-4.md incl. items added at S3 close) | low | ⏸️ gated on Daniel's go after ≥2-week soak |
+| 4 | 4.1 Decommission the old project — every reversible step executed + verified; **only the deletion itself is held for Daniel** (see sprint-4.md execution record) | low | 🟩 2026-07-28 |
 
 ## Deploy order
 
@@ -107,5 +107,11 @@ separate and deferred. Stage 6b carve-out recorded here.
 - [x] `infra/gcp/README.md` + `tasks/backend-recovery-runbook.md` updated to the new project —
   46 refs across 32 files swept 2026-07-19; the one remaining old-project mention documents the rollback
 - [x] **Kill-switch:** N/A — carve-out recorded at grooming (Stage 6b): rollback is the intact old project, not a flag
-- [ ] S4 executed after soak → then: feature branch deleted; **frontmatter `status: shipped`**
+- [x] S4 executed 2026-07-28 after a 9-day soak — **every reversible step done and verified**
+  (triggers re-disabled, 3 missed DNS records flipped, final DB export durable in the NEW project,
+  staging/`print-pdf`/`pmo-smalldocs` carried over, PMO buckets moved with MD5 proof, all 7 old
+  Cloud Run services `ingress=internal`, old Cloud SQL `STOPPED`). Sprint 3's "zero repoints, old
+  triggers disabled" premise was **disproved on both halves** — see the sprint-4 execution record.
+- [ ] **Held for Daniel — the one irreversible step:** unlink billing `01BCB8-AA3451-6EC373` and
+  delete `miyagisanchezback-497722`. Then: feature branch deleted; **frontmatter `status: shipped`**
   (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
