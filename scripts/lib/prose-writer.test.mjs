@@ -18,7 +18,11 @@ import {
   loadLessons,
   draftWithDevin,
   draftWithAgy,
+  draftWithAnthropic,
+  buildAnthropicRequest,
+  parseAnthropicResponse,
   PROSE_MODEL,
+  ANTHROPIC_MODEL,
 } from './prose-writer.mjs';
 
 const CLEAN =
@@ -286,4 +290,174 @@ test('draftWithAgy: an oversized prompt fails NON-retryably and never reaches th
   assert.equal(r.ok, false);
   assert.equal(r.retryable, false);
   assert.match(r.error, /argv cap/);
+});
+
+// ── The HEADLESS backend (2026-07) ───────────────────────────────────────────────────────────
+//
+// These pin the two things this backend can get wrong invisibly. First, the RESPONSE SHAPE: with
+// thinking on, `content[0]` is a thinking block whose text is empty, so index-based reads hand the
+// guard an empty string and call it a clean draft. Second, WHAT COUNTS AS A FAILURE: a refusal and
+// an API error both arrive as a parseable JSON body, and reading either as success is the same
+// "empty success" bug the signature-adaptation block above exists to prevent.
+
+test('planWriters: anthropic is LAST — the CLIs win locally, the API carries CI alone', () => {
+  // The whole point of one ordered list: no mode flag, no env sniffing at the call site.
+  assert.deepEqual(
+    planWriters({ devinAvailable: true, agyAvailable: true, anthropicAvailable: true }),
+    ['devin', 'agy', 'anthropic']
+  );
+  assert.deepEqual(
+    planWriters({ devinAvailable: false, agyAvailable: false, anthropicAvailable: true }),
+    ['anthropic'],
+    'in a runner neither CLI exists and the API is the only writer standing'
+  );
+});
+
+test('writeProse: falls through to anthropic when BOTH CLIs are capped', () => {
+  // The measured case, not a hypothetical: the merge-report log shows devin returning "high
+  // demand for this model" repeatedly, and agy shares a pool with the review rail.
+  const r = writeProse(
+    { prompt: 'p', evidence: {} },
+    {
+      devin: failWriter('capped'),
+      agy: failWriter('capped'),
+      anthropic: okWriter(CLEAN),
+      has: () => true,
+      apiKey: 'sk-ant-test',
+      warn: silent,
+    }
+  );
+  assert.equal(r.ok, true);
+  assert.equal(r.writer, 'anthropic');
+});
+
+test('writeProse: a missing API key means UNAVAILABLE, not a failed attempt', () => {
+  // "I could not check" and "I tried and it broke" are different facts. Claiming availability
+  // without a key would spend an attempt plus a retry on a guaranteed 401.
+  assert.deepEqual(
+    planWriters({ devinAvailable: false, agyAvailable: false, anthropicAvailable: false }),
+    [],
+    'no key on a laptop is the normal state, and it must read as absent'
+  );
+  const r = writeProse(
+    { prompt: 'p', evidence: {} },
+    {
+      anthropic: () => assert.fail('must not call the API without a key'),
+      // curl is present, the CLIs are not — the runner case, minus the key.
+      has: (cmd) => cmd === 'curl',
+      apiKey: undefined,
+      warn: silent,
+    }
+  );
+  assert.equal(r.ok, false);
+  assert.equal(r.error, 'no prose writer available');
+});
+
+test('buildAnthropicRequest: generous max_tokens, because thinking shares the budget', () => {
+  // Thinking is ON BY DEFAULT on Opus 5 and max_tokens caps thinking + visible text TOGETHER.
+  // Sizing this to the ~60-word output would spend the whole budget on thinking and return a
+  // truncated draft or none at all.
+  const body = buildAnthropicRequest({ prompt: 'write it' });
+  assert.equal(body.model, ANTHROPIC_MODEL);
+  assert.ok(body.max_tokens >= 4096, 'must leave thinking headroom, not just room for the prose');
+  assert.deepEqual(body.messages, [{ role: 'user', content: 'write it' }]);
+});
+
+test('parseAnthropicResponse: collects text blocks BY TYPE, never by index', () => {
+  // The regression this exists for: with thinking on, content[0] is a thinking block whose text is
+  // empty by default, so `content[0].text` yields '' and the guard checks an empty string.
+  const r = parseAnthropicResponse(
+    JSON.stringify({
+      model: 'claude-opus-5',
+      stop_reason: 'end_turn',
+      content: [
+        { type: 'thinking', thinking: '' },
+        { type: 'text', text: 'The rail now writes ' },
+        { type: 'text', text: 'without a laptop.' },
+      ],
+    })
+  );
+  assert.equal(r.ok, true);
+  assert.equal(r.text, 'The rail now writes without a laptop.');
+  assert.equal(r.model, 'claude-opus-5', 'the model is reported so the banner names what actually wrote it');
+});
+
+test('parseAnthropicResponse: a REFUSAL is a failure, not an empty success', () => {
+  // Refusals return HTTP 200, so anything checking only curl's exit code reads this as a good
+  // response that happens to have no words in it.
+  const r = parseAnthropicResponse(
+    JSON.stringify({ stop_reason: 'refusal', stop_details: { category: 'cyber' }, content: [] })
+  );
+  assert.equal(r.ok, false);
+  assert.equal(r.retryable, false, 'the same prompt will be refused again');
+  assert.match(r.error, /declined/);
+});
+
+test('parseAnthropicResponse: retryable is DERIVED from the error type, never assumed', () => {
+  const overloaded = parseAnthropicResponse(
+    JSON.stringify({ type: 'error', error: { type: 'overloaded_error', message: 'busy' } })
+  );
+  assert.equal(overloaded.ok, false);
+  assert.equal(overloaded.retryable, true, 'transient — worth the one retry the rail already gives');
+
+  const auth = parseAnthropicResponse(
+    JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'bad key' } })
+  );
+  assert.equal(auth.ok, false);
+  assert.equal(auth.retryable, false, 'a bad key is not fixed by asking again — fall through instead');
+});
+
+test('parseAnthropicResponse: an empty or non-JSON body fails, never returns an empty draft', () => {
+  for (const body of ['', '   ', '<html>502 Bad Gateway</html>']) {
+    const r = parseAnthropicResponse(body);
+    assert.equal(r.ok, false, `must not read ${JSON.stringify(body)} as a draft`);
+    assert.equal(r.text, '');
+    assert.equal(r.retryable, true);
+  }
+});
+
+test('parseAnthropicResponse: a structurally-valid response with no prose is a failure', () => {
+  // The budget-accident case: thinking consumed max_tokens and no text block was ever emitted.
+  const r = parseAnthropicResponse(
+    JSON.stringify({ stop_reason: 'max_tokens', content: [{ type: 'thinking', thinking: '' }] })
+  );
+  assert.equal(r.ok, false);
+  assert.match(r.error, /max_tokens/);
+});
+
+test('draftWithAnthropic: the API key never appears in argv', () => {
+  // argv is world-readable via `ps`. The key rides a 0600 config file instead — and note curl does
+  // NOT expand $VAR inside a header value, so an env var is not an option on this path.
+  let argv;
+  const r = draftWithAnthropic('p', {
+    apiKey: 'sk-ant-supersecret',
+    run: (_cmd, args) => {
+      argv = args;
+      return { stdout: JSON.stringify({ content: [{ type: 'text', text: CLEAN }] }) };
+    },
+  });
+  assert.equal(r.ok, true);
+  assert.ok(!argv.some((a) => a.includes('sk-ant-supersecret')), 'the key must not be in argv');
+  assert.deepEqual(argv[0], '--config');
+});
+
+test('draftWithAnthropic: no key is an honest, NON-retryable failure and never spawns curl', () => {
+  const r = draftWithAnthropic('p', {
+    apiKey: '',
+    run: () => assert.fail('must not spawn curl without a key'),
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.retryable, false);
+  assert.match(r.error, /ANTHROPIC_API_KEY/);
+});
+
+test('draftWithAnthropic: a key with a newline is rejected before it can break the config file', () => {
+  // `jq -r` appending a trailing newline to a piped secret has bitten this repo before. A key that
+  // breaks out of the config file's quoting must fail loudly, not send a mangled request.
+  const r = draftWithAnthropic('p', {
+    apiKey: 'sk-ant-abc\n',
+    run: () => assert.fail('must not spawn curl with a malformed key'),
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.retryable, false);
 });

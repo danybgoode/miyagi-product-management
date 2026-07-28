@@ -49,9 +49,24 @@ function resolveRepoRoot() {
 }
 const REPO_ROOT = resolveRepoRoot();
 
-// Lives in .git/, not the work tree: per-CLONE state, never shared, never committed — and therefore
-// naturally isolated per repo, which is what makes one script safe across all three.
-const STATE_PATH = join(REPO_ROOT, '.git', 'merge-reported-commits');
+// Lives in the git dir, not the work tree: per-CLONE state, never shared, never committed — and
+// therefore naturally isolated per repo, which is what makes one script safe across all three.
+//
+// `--git-common-dir`, NOT `<root>/.git` (fixed 2026-07-27). In a LINKED WORKTREE `.git` is a FILE,
+// not a directory, so the old join produced `<worktree>/.git/merge-reported-commits` and every
+// write died with ENOTDIR — silently, because the hook backgrounds this and swallows failures.
+// This repo runs five worktrees at a time, so that was a large share of the reports that never
+// appeared. `--git-common-dir` resolves to the MAIN clone's git dir from inside any worktree,
+// which also keeps the once-per-commit guarantee honest: all worktrees of one clone share the
+// state file, so checking out the same merge in a second worktree cannot re-report it.
+function resolveGitDir() {
+  const r = spawnSync('git', ['rev-parse', '--git-common-dir'], { cwd: REPO_ROOT, encoding: 'utf8' });
+  const out = r.status === 0 ? (r.stdout || '').trim() : '';
+  if (!out) return join(REPO_ROOT, '.git');
+  // `--git-common-dir` may answer relatively (plain `.git` in a normal checkout).
+  return out.startsWith('/') ? out : join(REPO_ROOT, out);
+}
+const STATE_PATH = join(resolveGitDir(), 'merge-reported-commits');
 
 // A merge notification is a chat message under a commit header.
 const MAX_WORDS = 60;

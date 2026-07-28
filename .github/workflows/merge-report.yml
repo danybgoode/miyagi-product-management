@@ -1,0 +1,82 @@
+# Prose merge report — the CPO-voice summary that accompanies every merge to main.
+#
+# ── Why this workflow exists (the gap it closes) ──────────────────────────────────────────────
+# The report was previously LOCAL-ONLY, driven by `.githooks/post-merge`. Two things made that
+# unreliable, and both are structural rather than flaky:
+#
+#   1. A hook only fires on the machine that PULLS. A squash-merge on GitHub that nobody pulled
+#      was never reported at all — the root repo's log has 25 entries to the storefront's 4, and
+#      the storefront is the repo that actually deploys.
+#   2. The writers had no headless path. `writeProse` shells out to devin/agy, neither of which
+#      authenticates without a human, so the report could not move to CI even in principle.
+#
+# (2) is what unblocked this: `draftWithAnthropic` (scripts/lib/prose-writer.mjs) authenticates
+# from an env var, and sits LAST in the router — so locally the already-paid CLI quota still wins
+# and this workflow, where no CLI exists, gets the API. One router, no mode flag.
+#
+# The old assertion that Actions was "out of hosted-minutes quota" no longer holds either: this
+# repo went public 2026-07-18, and public repos do not meter standard-runner minutes.
+#
+# ── Scope ─────────────────────────────────────────────────────────────────────────────────────
+# This covers THIS repo's merges. The app repos (miyagisanchezcommerce, backend) have their own
+# `notify-telegram.yml` on the same trigger and need the sibling of this file added there —
+# they have no scripts/ of their own, so that copy must also check out this repo for the toolchain.
+# That is a separate repo and a separate PR by AGENTS rule 1.
+name: merge-report
+
+on:
+  push:
+    branches: [main]
+  # Manual re-run: the state file lives in the runner's throwaway checkout, so a dispatched run
+  # reports whatever `--limit` allows from HEAD backwards. Useful for a catch-up after an outage.
+  workflow_dispatch:
+
+# One report per commit, in commit order. Never cancel-in-progress: a cancelled run would drop a
+# merge's report entirely, and unlike a full-rebuild sync there is no later run that re-derives it.
+concurrency:
+  group: merge-report
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: Prose merge report
+    runs-on: ubuntu-latest
+    # A missing key must not paint the repo red on every merge — the report is a nicety, not a
+    # gate. It degrades to a skipped job that says why, which is the honest third state.
+    if: github.repository == 'danybgoode/miyagi-product-management'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # merge-report walks backwards from HEAD to find unreported commits and reads each
+          # commit's message and diff shape. A shallow clone would leave it with one commit and
+          # no history to describe. 50 is well past the --limit ceiling below.
+          fetch-depth: 50
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+        # No `cache:` and no install step — the toolchain has zero runtime deps by design
+        # (AGENTS rule 4), so there is nothing to restore.
+
+      - name: Report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -euo pipefail
+          # Rule 5: a job that exits green having run nothing reads as a passing gate. Say so and
+          # stop, rather than letting merge-report fall through to "no prose writer available" and
+          # post a bare commit header that looks like the rail working.
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "::warning title=merge-report skipped::ANTHROPIC_API_KEY is not set on this repo; no prose writer is available in a runner (devin/agy have no headless auth). Set the secret to enable the report."
+            exit 0
+          fi
+          # --mark-only first: a fresh checkout has no state file, so without this the very first
+          # run would report every commit in the 50-deep history at once. Mark HEAD~1 as already
+          # seen, then report forward from there — exactly the one merge that triggered this run.
+          git rev-parse HEAD~1 > "$(git rev-parse --git-common-dir)/merge-reported-commits"
+          node scripts/merge-report.mjs --limit 3

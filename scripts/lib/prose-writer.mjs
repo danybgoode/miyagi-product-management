@@ -43,7 +43,9 @@
 // which model produced it and whether the guard passed it clean. A flagged report a human can
 // correct beats a missing one.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { readFileSync, existsSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkProse, findingsToRevisionNote } from './prose-guard.mjs';
@@ -184,6 +186,186 @@ export function draftWithAgy(prompt, deps = {}) {
       };
 }
 
+// ── The HEADLESS writer (2026-07) ──────────────────────────────────────────────────────────────
+//
+// devin and agy are interactive CLIs with no headless auth — `hasCmd` returns false for both in a
+// GitHub Actions runner and in the Claude Routine sandbox, which is why README D1 gave routines an
+// in-context path instead. That left the merge report stranded on a git hook, and a hook is a worse
+// trigger than it looks: it only fires on the machine that PULLS, so a squash-merge nobody pulls is
+// never reported at all, and in a linked worktree the hook cannot even write its log.
+//
+// This backend closes that gap: the Anthropic API authenticates with an env var, so it works in a
+// runner. It sits LAST in the router, which gives exactly the right behaviour from one ordered list
+// — locally the already-paid CLI quota wins, and in CI (where neither binary exists) this is the
+// only writer standing. It is also a genuine third quota pool for the local rail, which the
+// merge-report log says we need: devin returned "high demand for this model" on 6 of 25 runs.
+//
+// ── Why curl+spawnSync and not fetch ───────────────────────────────────────────────────────────
+// `writeProse` is SYNCHRONOUS by contract, because devin/agy are `spawnSync`. Making it async to
+// accommodate one writer would ripple through both callers and all 22 existing tests for no gain in
+// behaviour. Shelling out keeps ONE runner contract — "spawn something, get text or null" — and
+// curl is present on ubuntu-latest and macOS alike. The seam stays pure where it matters: building
+// the request and parsing the response are pure functions with their own tests; only the spawn is
+// I/O. Zero npm deps either way (AGENTS rule 4), which also rules out the Anthropic SDK.
+
+/** Env-overridable so a diagnosis run can pin a model deliberately and visibly — same rationale as
+ * PROSE_MODEL above. Opus 5 is the default: a report Daniel reads as status is worth the good
+ * model, and these are ~60-word outputs, so the per-run cost is negligible. */
+export const ANTHROPIC_MODEL = process.env.PROSE_ANTHROPIC_MODEL || 'claude-opus-5';
+
+/** Thinking is ON BY DEFAULT on Opus 5, and `max_tokens` caps thinking + visible text TOGETHER.
+ * A 60-word report needs ~100 tokens of prose, so a naive `max_tokens: 256` would be spent on
+ * thinking and return a truncated draft or none at all. This is deliberately generous headroom for
+ * a short output — the cap is a safety rail, not a length control (the word limit lives in the
+ * task file, where the guard can also see it). */
+export const ANTHROPIC_MAX_TOKENS = 8192;
+
+export const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+
+/**
+ * PURE — the request body. Separated so the model, the token ceiling and the effort level are
+ * pinned by a test rather than by reading the spawn below.
+ *
+ * `effort: medium` because register is the whole point of this rail: the epic exists because a
+ * cheap model silently destroyed the voice of every report it wrote (see the PROSE_MODEL note).
+ * `low` is for work where only the answer matters; here the phrasing IS the answer.
+ */
+export function buildAnthropicRequest({ prompt, model = ANTHROPIC_MODEL, maxTokens = ANTHROPIC_MAX_TOKENS }) {
+  return {
+    model,
+    max_tokens: maxTokens,
+    output_config: { effort: 'medium' },
+    messages: [{ role: 'user', content: String(prompt) }],
+  };
+}
+
+/**
+ * PURE — turn raw stdout into the runner contract `{ ok, text, model, error, retryable }`.
+ *
+ * Three things here are load-bearing, and all three are the "three states, never two" rule:
+ *
+ * 1. **Collect text blocks by TYPE, never by index.** `content[0]` is not the answer — with
+ *    thinking on, the first block is a `thinking` block whose text is empty by default. Indexing
+ *    would hand the guard an empty string and call it a clean draft.
+ * 2. **A refusal is a failure, not an empty success.** `stop_reason: "refusal"` returns HTTP 200,
+ *    so anything checking only the exit code reads it as a good response with no words in it.
+ * 3. **Retryable is derived, not assumed.** `overloaded_error` / `api_error` / `rate_limit_error`
+ *    are transient and worth the one retry the rail already gives; `invalid_request_error` and
+ *    `authentication_error` are not, and retrying them just delays the fallback.
+ */
+export function parseAnthropicResponse(raw) {
+  const fail = (error, retryable) => ({ ok: false, text: '', model: ANTHROPIC_MODEL, error, retryable });
+
+  const body = String(raw ?? '').trim();
+  if (!body) return fail('anthropic returned no output (network failure or a killed curl)', true);
+
+  let json;
+  try {
+    json = JSON.parse(body);
+  } catch {
+    // Not JSON at all — a proxy error page, a truncated body, a curl diagnostic. Transient enough
+    // to retry once; a real outage still fails the second attempt and demotes.
+    return fail(`anthropic returned a non-JSON body: ${body.slice(0, 200)}`, true);
+  }
+
+  if (json?.type === 'error') {
+    const kind = json.error?.type || 'unknown_error';
+    const retryable = ['overloaded_error', 'api_error', 'rate_limit_error'].includes(kind);
+    return fail(`anthropic ${kind}: ${json.error?.message || 'no message'}`, retryable);
+  }
+
+  if (json?.stop_reason === 'refusal') {
+    return fail(`anthropic declined the request (${json.stop_details?.category ?? 'no category'})`, false);
+  }
+
+  const text = (Array.isArray(json?.content) ? json.content : [])
+    .filter((b) => b?.type === 'text')
+    .map((b) => String(b.text ?? ''))
+    .join('')
+    .trim();
+
+  if (!text) {
+    // Reached only when the response is structurally fine but carries no prose — e.g. the whole
+    // budget went to thinking and stop_reason is max_tokens. Retryable: it is a budget accident,
+    // not a broken writer.
+    return fail(`anthropic returned no text (stop_reason: ${json?.stop_reason ?? 'unknown'})`, true);
+  }
+
+  return { ok: true, text, model: json?.model || ANTHROPIC_MODEL };
+}
+
+/**
+ * Draft with the Anthropic API over curl. Thin I/O shell — the decisions live in the two pure
+ * functions above.
+ *
+ * The body goes via a TEMP FILE and `--data-binary @file`, not an argv string: prompts here carry
+ * the persona, the lessons file and a full evidence pack, which is comfortably past the argv cap
+ * that already bites agy (see `draftWithAgy`).
+ *
+ * The API key goes in a curl CONFIG FILE (`--config`), inside a 0700 temp dir, because argv is
+ * world-readable via `ps` on a shared machine. Note curl does NOT expand `$VAR` inside a header
+ * value — that is a shell feature, and there is no shell here — so an env var is not an option on
+ * this path; the config file is what actually keeps the key off the command line.
+ */
+export function draftWithAnthropic(prompt, deps = {}) {
+  const {
+    run = spawnSync,
+    apiKey = process.env.ANTHROPIC_API_KEY,
+    model = ANTHROPIC_MODEL,
+    parse = parseAnthropicResponse,
+  } = deps;
+
+  if (!apiKey) {
+    return {
+      ok: false,
+      text: '',
+      model,
+      error: 'ANTHROPIC_API_KEY is not set',
+      retryable: false,
+    };
+  }
+
+  // A key carrying a quote or newline would break out of the config file's quoting. Real keys are
+  // `sk-ant-...` — alphanumerics, dashes, underscores — so this only ever fires on a mangled env
+  // var (a stray newline from `jq -r`, say), and failing loudly beats sending a broken request.
+  if (/["\r\n]/.test(apiKey)) {
+    return { ok: false, text: '', model, error: 'ANTHROPIC_API_KEY contains a quote or newline', retryable: false };
+  }
+
+  const dir = mkdtempSync(join(tmpdir(), 'prose-anthropic-'));
+  const bodyPath = join(dir, 'request.json');
+  const configPath = join(dir, 'curl.conf');
+  try {
+    writeFileSync(bodyPath, JSON.stringify(buildAnthropicRequest({ prompt, model })));
+    writeFileSync(
+      configPath,
+      [
+        'silent',
+        'show-error',
+        'max-time = 300',
+        'request = POST',
+        `url = "${ANTHROPIC_URL}"`,
+        'header = "content-type: application/json"',
+        'header = "anthropic-version: 2023-06-01"',
+        `header = "x-api-key: ${apiKey}"`,
+        `data-binary = "@${bodyPath}"`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 }
+    );
+    const r = run('curl', ['--config', configPath], {
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    if (r.error) return { ok: false, text: '', model, error: `curl failed to spawn: ${r.error.message}`, retryable: true };
+    return parse(r.stdout);
+  } finally {
+    // Always — the config file holds the key in plaintext, so leaving it behind on a thrown
+    // exception would be the leak the config file exists to prevent.
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 /**
  * Pure routing decision — which writers to try, in order.
  *
@@ -191,12 +373,18 @@ export function draftWithAgy(prompt, deps = {}) {
  * below. `preferred` lets a caller force one writer (useful when diagnosing which one produced a
  * bad draft) without editing the rail.
  */
-export function planWriters({ devinAvailable, agyAvailable, preferred }) {
+export function planWriters({ devinAvailable, agyAvailable, anthropicAvailable, preferred }) {
   // ORDER IS THE POLICY. Devin first — see the router note at the top of this file. Changing this
   // array changes who writes every report in the repo, so it is the one line to read.
+  //
+  // Anthropic sits LAST, and that single position covers both environments without a mode flag:
+  // locally devin/agy are installed and win (their quota is already paid for), while in a runner
+  // neither binary exists and the API is the only writer left. It doubles as a third quota pool
+  // for the local rail, which the merge-report log says we need.
   const all = [
     { name: 'devin', available: devinAvailable },
     { name: 'agy', available: agyAvailable },
+    { name: 'anthropic', available: anthropicAvailable },
   ];
   if (preferred) {
     const chosen = all.find((w) => w.name === preferred);
@@ -217,7 +405,9 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
   const {
     devin = draftWithDevin,
     agy = draftWithAgy,
+    anthropic = draftWithAnthropic,
     has = hasCmd,
+    apiKey = process.env.ANTHROPIC_API_KEY,
     guard = checkProse,
     warn = (m) => process.stderr.write(`${m}\n`),
   } = deps;
@@ -225,6 +415,11 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
   const writers = planWriters({
     devinAvailable: has('devin'),
     agyAvailable: has('agy'),
+    // Availability is a KEY plus a transport, not `hasCmd` — there is no `anthropic` binary to
+    // look for. Both halves are required: curl is universally present but a missing key is the
+    // normal state on a laptop, and claiming availability without one turns a clean "not
+    // installed" into a guaranteed failed attempt plus a retry.
+    anthropicAvailable: !!apiKey && has('curl'),
     preferred,
   });
   if (writers.length === 0) {
@@ -239,7 +434,7 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
     };
   }
 
-  const runners = { devin, agy };
+  const runners = { devin, agy, anthropic };
   let attempts = 0;
   let best = null;
 
