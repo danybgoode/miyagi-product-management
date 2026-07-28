@@ -1,8 +1,9 @@
 # Handoff — investigate: 70 of 72 `api_key` → `sales_channel` link rows are unusable
 
-> **RESOLVED 2026-07-27.** Diagnosis confirmed live, remediation shipped in backend PR #119 (squash
-> `f0ae096`). Keep this file for the reasoning; the prompt below is spent. See
-> **[Resolution](#resolution-2026-07-27)** at the bottom.
+> **RESOLVED AND APPLIED 2026-07-27.** Diagnosis confirmed live; remediation shipped in backend PRs
+> **#119** (`f0ae096`) and **#120** (`199dcae`) and **applied in production**: 71 keys revoked + 71
+> deleted, **72 → 1 key, 70 → 0 dangling links**, storefront unchanged. Keep this file for the
+> reasoning; the prompt below is spent. See **[Resolution](#resolution-2026-07-27)** at the bottom.
 
 _Written 2026-07-27. Paste the block below into a fresh session._
 
@@ -128,4 +129,35 @@ no products and the catalog returns products, so that key is the storefront's.
 Do **not** use `src/scripts/cleanup-default-data.ts` for this. Its `KEEP_KEY_PREFIX =
 'pk_bac9d8ced544'` is a *token* prefix that was never verified to resolve to the one working key; if it
 does not, that script deletes the storefront's credential. The new endpoint keeps by *live link*, which
-is verifiable from the diagnostic output.
+is verifiable from the diagnostic output. (The dry run has since shown the kept key's `token_prefix` is
+`pk_bac9d8ced` — so that constant did point at the right key. It was right by luck, not by check.)
+
+### The bug the first attempt found — revoke before delete
+
+**PR #119 shipped an endpoint that could not do its job.** Its apply returned `HTTP 400` for all 71
+keys — `Cannot delete api keys that are not revoked` — and deleted nothing. The module guard held and
+the route surfaced the error, so there was no partial state.
+
+The more serious half: **the dry run had already predicted `delete: 71`**, an outcome the apply could
+not deliver. *A dry run that promises what the apply cannot do is a false green.*
+
+`@medusajs/api-key/.../api-key-module-service.js` → `deleteApiKeys_` rejects
+`revoked_at IS NULL OR revoked_at > now()`. It **compares** — a future-dated `revoked_at` still counts
+as unrevoked, so "has a `revoked_at`" is a permissive fork of the rule. PR #120 added an `isRevoked()`
+that mirrors the predicate, a `requires_revoke` count so the dry run says what must happen first, and a
+`revokeApiKeysWorkflow` pass over the delete set before `deleteApiKeysWorkflow`.
+
+### Applied 2026-07-27 — verified
+
+| | before | after |
+|---|---|---|
+| publishable keys | 72 | **1** |
+| dangling link rows | 70 | **0** |
+| `publishable_keys_error` | null | null |
+
+Storefront smoke against a baseline recorded before the apply: home `200`, **16/16** identical `/l/`
+listings (0 missing), sample PDP `200`. Re-running the endpoint is a no-op (`delete_count: 0`), and
+`prune-sales-channels --dry-run` now reports `would_delete: 0` over the 2 remaining channels.
+
+**Still open (not a defect, worth knowing):** `store_default_sales_channel_id` still points at the
+vestigial "Default Sales Channel", not the storefront channel that `MEDUSA_SALES_CHANNEL_ID` names.
