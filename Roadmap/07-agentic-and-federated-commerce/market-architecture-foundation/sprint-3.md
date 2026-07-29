@@ -76,6 +76,55 @@ partner and self-service activation can be measured without duplicating commerce
 
 **Risk:** medium (cross-system contract)
 
+## Build contract (locked by the architect before the builder started)
+
+Cite `README.md` decisions **D9, D10, D11, D13, D14**. Branch
+`feat/market-architecture-foundation-s3`, cut from the S2 branch (stacked).
+
+**D9 — `/us` is one static page with zero children.** `app/(site)/us/page.tsx` and nothing else. Do
+not add `app/(site)/us/l/`, `us/search`, `us/c` or `us/s` — *and do not add a runtime guard that
+pretends to block them either*. The structural absence of the folder **is** the fail-closed boundary;
+a guard over routes that do not exist is theatre that a later reviewer will mistake for the real
+mechanism. `/us/l/<real-mx-product-id>` is the app's ordinary 404.
+
+**Copy premise — VERIFIED, with a limit.** The brief named by Story 3.1 exists:
+`~/dobby/madmen/clients/miyagi-sanchez/us-operator-gtm-discovery-plan.md` (agency brief, 2026-07-28,
+"approved direction, hypotheses pending interviews"). Use its language:
+
+- The offer: *launch and operate distinctive independent-product shops from one agent-connected
+  commerce system.* The proof is one operator activating three real client shops.
+- The audience: an owner-led US agency/operator serving roughly 3–20 independent-product brands, on
+  Shopify and/or WooCommerce today.
+- The primary behaviour is **apply / request a research conversation**. No catalog, no self-service
+  availability claim, no pricing.
+- Honour that brief's own *"what not to build before interviews"* list verbatim: no
+  Amazon/eBay/Walmart parity claim, no accounting replacement, no Veeqo/ShipStation parity, no open
+  US marketplace, no module branding pages.
+- Everything on the page is a **hypothesis**, not a validated claim. The brief says so; the copy must
+  not read as though the interviews already happened.
+
+Copy is `en-US` — this is a deliberate, named extension of the bilingual allow-list (AGENTS rule #5),
+not a new default. State it in the PR body.
+
+**D10 — market-leak population guard.** Enumerate every public marketplace list/detail entry point
+**mechanically** (glob the route tree + the MCP/UCP tool registry), then assert the market boundary on
+each. A hand-written list of the doors you happened to find is the exact failure this guard exists to
+catch. Assert: no MX catalog response under a US canonical URL, no direct-product-id bypass of channel
+membership, and no cross-market mixed cart.
+
+**Story 3.3 — labels, read-only.** Partner/admin shop summaries expose operating market and
+market-publication channels, with three distinct labels: `owned shop active`, `MX marketplace`,
+`US marketplace unavailable`. The seller agent **reads** the operating market; a write that would
+enable unsupported US commerce fails with an actionable message and mutates nothing. No general
+seller UI offers US marketplace publication.
+
+**D11 — `market_code` is a tag, and unknown means omitted.** In
+`lib/merchant-lifecycle.ts#buildLifecycleTrackPayload`, `market_code` joins the existing
+`tags: { shop_id, product_count? }` dimension block. **When the market is unknown, omit the tag** —
+never default a new event to `mx`. These are write-once, unwithdrawable facts. No raw address, tax,
+payment or seller-private metadata is added. Verify the Golden Beans contract fixture by
+**matching bytes** (`shasum` against the sibling repo's pinned copy) — do not edit that repo.
+
 ## Sprint QA
 
 - **api specs:** `/us` invitation content and no catalog; exhaustive market-leak entry-point guard;

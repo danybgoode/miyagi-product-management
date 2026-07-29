@@ -75,6 +75,53 @@ that** market routing is indexable without confusing language with commerce.
 
 **Risk:** medium
 
+## Build contract (locked by the architect before the builder started)
+
+Cite `README.md` decisions **D7, D7b, D8, D10, D14**. Branch `feat/market-architecture-foundation-s2`,
+cut from the S1 frontend branch (stacked — **D14**).
+
+**Route shape (D7).** Literal `mx/` segments. **No root-level `[market]` dynamic segment** — it would
+shadow-compete with ~20 existing top-level routes. In scope for the prefix and nothing else:
+
+| From | To |
+|---|---|
+| `app/(site)/page.tsx` (Mexico homepage) | `app/(site)/mx/page.tsx`, moved verbatim, `revalidate = 60` preserved |
+| — | `app/(site)/page.tsx` becomes the master-brand selector: static, zero catalog, Mexico + United States |
+| `/l`, `/l/[id]`, `/c/[collection]`, `/s/[slug]` | `app/(shell)/mx/…` thin routes over the **same** shared components |
+
+Out of scope and staying un-prefixed: `/g`, `/v`, `/e`, `/vecindario`, `/comparador`, `/agent`,
+`/acerca`, `/vende/*`, `/sell`, `/shop`, `/account`, `/admin`. That is a deliberate scope call in D7 —
+do not widen it.
+
+**The un-prefixed `/s/[slug]` and `/l/[id]` route files stay in the tree.** They are the target of
+middleware's tenant rewrite. Deleting them breaks every subdomain, custom domain and embed.
+
+**D7b — one prop, no host-sniffing.** Shared components take `marketBasePath`: `''` from tenant
+routes, `marketBasePath('mx')` from marketplace routes. A component must never read `headers()` to
+guess which context it is in.
+
+**D8 — the redirect rule goes LAST in `middleware.ts`.** Add the platform-host 308 (`/l`, `/l/*`,
+`/c/*`, `/s/*` → `/mx/…`) **below** every subdomain/custom-domain/embed branch, so a tenant host never
+reaches it. This is the highest-risk edit in the epic. One hop, no chains. A spec asserts the full
+redirect matrix **and** that a tenant host produces no `/mx` anywhere in its HTML or headers.
+
+**Link sweep — derive the population, don't trust a count.** 62 files reference `/l/` and 46 carry an
+absolute `miyagisanchez.com/…` marketplace URL as of 2026-07-28; that inventory is stale the moment a
+sibling epic lands. Re-derive it with a grep at build time and script the sweep with a shape
+assertion that aborts on the first non-matching site. Internal links, sitemap, OpenGraph, structured
+data, emails, MCP/UCP URLs and **checkout return URLs** all move together.
+
+**D10 — MCP/UCP.** `search_listings` and the marketplace catalog tools take optional `market`
+(default `'mx'`, labelled temporary in the tool description) and return `market_code`. `market: 'us'`
+⇒ `{ unavailable: true, market_code: 'us', marketplace_status: 'invitation', reason }`. The agent
+instructions describe Miyagi as a commerce system **with country markets**, and the search tool
+describes the active Mexico market — it no longer defines the master brand as Mexico-only.
+
+**Locale/SEO (Story 2.4).** `/` is `x-default`; `/mx` self-canonicalizes + `es-MX`; `/us`
+self-canonicalizes + `en-US`. All three are real pages, so the alternates block on those three is
+honest — but **catalog pages emit no `/us` alternate at all**. `/us-eng` must not exist. Sitemap
+contains canonical market URLs and excludes every redirect source.
+
 ## Sprint QA
 
 - **api specs:** root contains no catalog; `/mx` content and market filtering; one-hop redirect

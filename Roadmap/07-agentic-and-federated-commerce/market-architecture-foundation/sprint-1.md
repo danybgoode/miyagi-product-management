@@ -83,6 +83,54 @@ later US commerce cannot accidentally use Mexico rails.
 
 **Risk:** high (money/data setup)
 
+## Build contract (locked by the architect before the builder started)
+
+Cite `README.md` decisions **D0–D6, D12, D14**; do not re-derive them. Live production state was
+re-derived on 2026-07-28 and is in **D0** — read it before writing a backfill.
+
+**Already placed in your worktree, do not rewrite:** `src/lib/markets.ts` (backend) /
+`lib/markets.ts` (frontend). It is byte-identical across both repos by design (**D2**). If you
+believe it is wrong, say so in the PR — do not silently edit one copy.
+
+**Backend PR — `apps/backend`, branch `feat/market-architecture-foundation` (HIGH):**
+
+1. `src/lib/market-medusa.ts` — `resolveRegionIdForMarket(code, env)` and
+   `resolveMarketplaceChannelId(code, env)`. `mx` → `MEDUSA_MXN_REGION_ID` /
+   `MEDUSA_SALES_CHANNEL_ID`; `us` → `null` (there is no US Region or channel — **D0**). Unknown ⇒
+   throw `UnknownMarketError`. Pure over an injected env object so it unit-tests with no process env.
+2. `src/lib/seller-market.ts` — the **one** reader/writer of
+   `seller.metadata.operating_market`. No caller parses that JSON ad hoc. A legacy read with no value
+   resolves to `DEFAULT_MARKET` and says so in a comment naming the pre-launch window (**D2**); a
+   *write* requires an explicit supported market. An unsupported market must not inherit Mexico
+   Stripe/shipping settings — assert that in a spec.
+3. Marketplace read boundary (**D1** — this is NEW enforcement): `/store/listings`,
+   `/store/listings/[id]`, search and category filter product membership by the resolved market
+   channel. Owned-shop / seller-scoped reads do **not** (**D4**).
+4. `seller-product-create.ts` — the call site states its publication intent explicitly instead of
+   blindly attaching `MEDUSA_SALES_CHANNEL_ID`. Preserve the existing draft-then-link-then-publish
+   ordering; it exists because an interrupted create stranded a live orphan listing in production.
+5. `setup-mexico` step 6 and `cleanup-default-data.ts` step 3 gain the registry allow-list (**D6**).
+   Neither has ever run against production for the channel path — do not claim a live effect.
+6. `GET /internal/market-backfill` — a **fully read-only** dry-run report: per-seller current vs
+   proposed `operating_market`, per-product marketplace-channel link state, and an explicit count of
+   published products with **no** MX channel link. Aborts on an unknown-market population rather than
+   guessing. `POST` applies, idempotently. The builder **never runs the POST**.
+
+**Frontend PR — `apps/miyagisanchez`, branch `feat/market-architecture-foundation` (HIGH):**
+
+7. `lib/market-medusa.ts` mirroring (1), and `lib/listings.ts` read helpers take/derive a `market`.
+8. **Degrade closed** (**D14**): if the backend market filter is absent or the market is unknown or
+   `invitation`, return the structured unavailable state — never the unfiltered Mexico catalog.
+9. `lib/cart.ts` cart-create goes through `resolveRegionIdForMarket` with `DEFAULT_MARKET` for
+   unspecified callers (**D5**). MX cart behaviour is byte-unchanged; prove it with the existing
+   checkout contract specs.
+10. A **population guard** spec that enumerates public marketplace list/detail entry points
+    mechanically (glob the route tree, don't hand-list) and asserts each one applies the market filter.
+    Guard the population, not the door you found.
+
+**Mutation proof (Definition of Done):** remove the market Sales Channel filter and the exposure spec
+must go red. A spec never observed red is not known to test anything.
+
 ## Sprint QA
 
 - **Backend unit:** market registry, seller-market parser, Region resolution, protected-channel
