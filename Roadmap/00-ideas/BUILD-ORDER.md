@@ -157,10 +157,11 @@ _None._
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (10)
+## ⬜ Funnel — seeds not yet scaffolded (11)
 
 - [US operator needfinding and value-proposition validation](seeds/us-operator-needfinding.md) — Queued · Spike · Wave 0 Enablers
 - [Miyagi Partners proposition and recruiting portal v3](seeds/miyagi-partners-recruiting-v3.md) — Queued · Feature · Wave 1
+- [Owned-shop operating channel — make a shop sellable without marketplace admission](seeds/owned-shop-operating-channel.md) — Queued · Feature · Wave 1
 - [US operator commerce pilot — three original-product shops](seeds/us-operator-commerce-pilot.md) — Queued · Feature · Wave 1
 - [US owned-shop positioning and proof launch](seeds/us-proof-launch.md) — Queued · Feature · Wave 2
 - [US curated marketplace — original independent sellers](seeds/us-curated-marketplace.md) — Queued · Feature · Wave 3
@@ -182,4 +183,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 
 ---
-_Epics: 138 · seeds in funnel: 10 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 138 · seeds in funnel: 11 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

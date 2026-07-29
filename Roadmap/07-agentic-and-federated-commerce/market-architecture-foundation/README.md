@@ -241,6 +241,30 @@ convention.
 DDL, so there is no `apply_migration` step and no `schema_migrations` realignment. The only
 production mutation is **one idempotent MX backfill**, dry-run-reported first.
 
+### D12b — Owned-shop-only publication is DEFERRED, and the capability is removed rather than half-shipped (added 2026-07-29, review round 1)
+
+A cross-family review of the Sprint 1 backend PR found that `publish_to_market: null` — "create this
+product for the owned shop, do not publish it to any marketplace" — produces a product that **cannot
+be sold**. Confirmed by the builder's own code comment: a product in no Sales Channel 404s on the
+channel-scoped `/store/products` endpoint and fails checkout with "Product not found".
+
+**This is an architect's gap, not a builder's.** D4 settled that owned-shop *reads* need no channel
+membership. It never settled how an owned-shop-only product gets *bought* — which needs a second
+channel per market (an **operating channel** every product in that market joins, making it buyable,
+alongside the marketplace channel that stays publication truth).
+
+**Ruling: remove the capability from this epic.** `publish_to_market` accepts a market code or is
+absent; the unsellable state is unreachable. Nothing regresses — every existing product joins the MX
+marketplace channel exactly as before — and none of the ten stories asks for an owned-shop-only
+purchase path. The alternative, shipping a listing you can render and cannot sell, is the failure
+mode this project keeps recording.
+
+The follow-up is scoped in
+[`00-ideas/seeds/owned-shop-operating-channel.md`](../../00-ideas/seeds/owned-shop-operating-channel.md).
+It is deliberately a separate epic: it needs a new production Sales Channel, a publishable-key
+membership change and a full backfill — a different category of production mutation than the one
+authorized here.
+
 ### D13 — Model routing (stated so the choice is auditable)
 
 | Wave | Work | Model | Why |
