@@ -105,6 +105,22 @@ guess which context it is in.
 reaches it. This is the highest-risk edit in the epic. One hop, no chains. A spec asserts the full
 redirect matrix **and** that a tenant host produces no `/mx` anywhere in its HTML or headers.
 
+**The redirect-chain trap the architect already found — fix these four, then go looking for more.**
+"No redirect chains" is not satisfied by a clean `/l → /mx/l` hop, because four existing redirects
+already *target* the paths you are about to move, and each becomes a silent two-hop chain:
+
+| Site | Today | Must become |
+|---|---|---|
+| `lib/shortlink.ts#shopTarget` | `{origin}/s/{slug}` | `{origin}/mx/s/{slug}` |
+| `lib/shortlink.ts#listingTarget` | `{origin}/l/{productId}` | `{origin}/mx/l/{productId}` |
+| `lib/shortlink.ts#HOME_TARGET` | `{origin}` — which is now the **selector**, not the Mexico marketplace | `{origin}/mx` |
+| `lib/shortlink.ts#PASSTHROUGH_PREFIXES` | passes `s` and `l` through to the identical path | those two prefixes must land on `/mx/…`; `g`, `e`, `v` stay un-prefixed (D7 scope) |
+| `middleware.ts` subdomain-paywall 301 (~line 150) | `https://{ROOT_DOMAIN}/s/{slug}` | `/mx/s/{slug}` |
+
+`mschz.org` is **the highest-real-traffic surface on the platform right now** (666 requests/7d,
+measured during the GCP teardown) and it is a QR/print redirector — a printed code cannot be
+re-issued. Treat it as the load-bearing case, not a footnote.
+
 **Link sweep — derive the population, don't trust a count.** 62 files reference `/l/` and 46 carry an
 absolute `miyagisanchez.com/…` marketplace URL as of 2026-07-28; that inventory is stale the moment a
 sibling epic lands. Re-derive it with a grep at build time and script the sweep with a shape

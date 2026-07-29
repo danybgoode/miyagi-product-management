@@ -227,6 +227,14 @@ unknown, omit the tag** — the producer already omits absent fields, and defaul
 Golden Beans owns no market state; verify the contract fixture by **matching bytes**, not by editing
 the sibling repo.
 
+**Verified by the architect, so the builder does not re-derive it:** the Golden Beans contract
+(`golden-beans/Roadmap/01-growth-engine/event-destination-router/miyagi-lifecycle-contract.md`)
+declares `tags` **free-form** — "null/absent fields are OMITTED rather than sent as `null`, and an
+EMPTY `metadata`/`tags` object is omitted entirely" — and enumerates no closed tag vocabulary.
+Adding `market_code` is therefore a purely additive Miyagi-side change that needs **no Golden Beans
+edit at all**, and the omit-when-unknown rule above is the contract's own shaping rule, not a new
+convention.
+
 ### D12 — No database migration in this epic
 
 `operating_market` lives in the Medusa `seller` model's existing `metadata` json column. There is no
