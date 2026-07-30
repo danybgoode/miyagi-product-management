@@ -169,8 +169,8 @@ a market-resolution question. Literal segments are statically analyzable, keep I
 trivially working, and make "`/us` has no catalog child routes" a **structural** fact — the folder simply
 does not contain them — which is exactly what Story 3.2 asks for.
 
-**In scope for the prefix (and nothing else):** `/` → `/mx`, `/l`, `/l/[id]`, `/c/[collection]`,
-`/s/[slug]`. Deliberately **out of scope**, staying un-prefixed: `/g/[slug]`, `/v/[slug]`,
+**In scope for the prefix (and nothing else):** `/` → `/mx`, `/l`, `/l/[id]`, `/s/[slug]`.
+Deliberately **out of scope**, staying un-prefixed: `/c/[collection]`, `/g/[slug]`, `/v/[slug]`,
 `/e/[slug]`, `/vecindario`, `/comparador`, `/agent`, `/acerca`, `/vende/*`, `/sell`, `/shop`,
 `/account`, `/admin`. This is a scope call, named here so the retrospective records it rather than a
 reviewer discovering it: those surfaces are either non-catalog, seller-side, or single-market editorial,
@@ -178,7 +178,7 @@ and prefixing them triples the diff for no isolation gain.
 
 - `app/(site)/page.tsx` → the master-brand selector (static, zero catalog).
 - `app/(site)/mx/page.tsx` → today's marketplace homepage, moved verbatim, `revalidate = 60` preserved.
-- `app/(shell)/mx/{l,l/[id],c/[collection],s/[slug]}` → thin route files over the **shared** page
+- `app/(shell)/mx/{l,l/[id],s/[slug]}` → thin route files over the **shared** page
   components. The un-prefixed paths remain in the tree because they are the **tenant rewrite target**;
   middleware 308s them on the platform host only.
 
@@ -190,10 +190,22 @@ marketplace route (`/mx/s/[slug]`). They take a **`marketBasePath` prop** — `'
 never read `headers()` to guess which they are; that is how a parallel scope list drifts
 (`LEARNINGS.md`, platform-theme).
 
+### D7c — Scope correction: bare `/c/[collection]` is tenant-only, not a marketplace route (2026-07-29)
+
+The Sprint 2 recovery pass disproved D7's original `/c` premise against the live route. The bare
+`app/(shell)/c/[collection]/page.tsx` requires middleware's trusted `x-miyagi-shop-slug` header and
+self-404s on the platform host; it is the collection route for a subdomain/custom-domain tenant.
+The marketplace collection URL already lives under `/s/[slug]/c/[collection]`, so the `/s` family
+cutover carries it to `/mx/s/[slug]/c/[collection]`.
+
+Therefore bare `/c/[collection]` stays un-prefixed and receives no platform 308. Moving it would
+invent a public marketplace route that does not exist today and risk breaking the tenant channel
+whose header-scoped identity it actually serves.
+
 ### D8 — The middleware redirect rule runs LAST, after every tenant branch returns
 
 `middleware.ts` (459 lines) resolves subdomain → custom domain → embed → platform, and the tenant
-branches **rewrite** to `/s/[slug]`. The new platform-host 308 (`/l`, `/l/*`, `/c/*`, `/s/*` →
+branches **rewrite** to `/s/[slug]`. The new platform-host 308 (`/l`, `/l/*`, `/s/*` →
 `/mx/…`) must be added **below** all of them, so a tenant host never sees it. One hop, no chains; a
 spec asserts the full redirect matrix and that a tenant host produces **no** `/mx` anywhere.
 

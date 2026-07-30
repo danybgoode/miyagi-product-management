@@ -1,6 +1,6 @@
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 2: Country routes, selector, and Mexico continuity
 
-**Status:** ⬜ not started
+**Status:** 🟨 in progress — preserved worktree `feat/market-architecture-foundation-s2`
 
 ## Epic-mode boundary
 
@@ -77,7 +77,7 @@ that** market routing is indexable without confusing language with commerce.
 
 ## Build contract (locked by the architect before the builder started)
 
-Cite `README.md` decisions **D7, D7b, D8, D10, D14**. Branch `feat/market-architecture-foundation-s2`,
+Cite `README.md` decisions **D7, D7b, D7c, D8, D10, D14**. Branch `feat/market-architecture-foundation-s2`,
 cut from the S1 frontend branch (stacked — **D14**).
 
 **Route shape (D7).** Literal `mx/` segments. **No root-level `[market]` dynamic segment** — it would
@@ -87,11 +87,12 @@ shadow-compete with ~20 existing top-level routes. In scope for the prefix and n
 |---|---|
 | `app/(site)/page.tsx` (Mexico homepage) | `app/(site)/mx/page.tsx`, moved verbatim, `revalidate = 60` preserved |
 | — | `app/(site)/page.tsx` becomes the master-brand selector: static, zero catalog, Mexico + United States |
-| `/l`, `/l/[id]`, `/c/[collection]`, `/s/[slug]` | `app/(shell)/mx/…` thin routes over the **same** shared components |
+| `/l`, `/l/[id]`, `/s/[slug]` | `app/(shell)/mx/…` thin routes over the **same** shared components |
 
-Out of scope and staying un-prefixed: `/g`, `/v`, `/e`, `/vecindario`, `/comparador`, `/agent`,
-`/acerca`, `/vende/*`, `/sell`, `/shop`, `/account`, `/admin`. That is a deliberate scope call in D7 —
-do not widen it.
+Out of scope and staying un-prefixed: `/c/[collection]`, `/g`, `/v`, `/e`, `/vecindario`,
+`/comparador`, `/agent`, `/acerca`, `/vende/*`, `/sell`, `/shop`, `/account`, `/admin`. Bare `/c`
+is tenant-only and header-scoped; the marketplace collection URL is
+`/s/[slug]/c/[collection]` and moves with the `/s` family (**D7c**). Do not widen the list.
 
 **The un-prefixed `/s/[slug]` and `/l/[id]` route files stay in the tree.** They are the target of
 middleware's tenant rewrite. Deleting them breaks every subdomain, custom domain and embed.
@@ -101,7 +102,7 @@ routes, `marketBasePath('mx')` from marketplace routes. A component must never r
 guess which context it is in.
 
 **D8 — the redirect rule goes LAST in `middleware.ts`.** Add the platform-host 308 (`/l`, `/l/*`,
-`/c/*`, `/s/*` → `/mx/…`) **below** every subdomain/custom-domain/embed branch, so a tenant host never
+`/s/*` → `/mx/…`) **below** every subdomain/custom-domain/embed branch, so a tenant host never
 reaches it. This is the highest-risk edit in the epic. One hop, no chains. A spec asserts the full
 redirect matrix **and** that a tenant host produces no `/mx` anywhere in its HTML or headers.
 

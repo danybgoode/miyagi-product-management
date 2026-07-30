@@ -1,6 +1,6 @@
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 1: Market contract and Medusa region/channel foundation
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review — backend [#124](https://github.com/danybgoode/medusa-bonsai-backend/pull/124) + frontend [#324](https://github.com/danybgoode/miyagisanchezcommerce/pull/324); cross-agent fixes in progress
 
 ## Epic-mode boundary
 
@@ -46,8 +46,14 @@ publication, **so that** my owned shop can exist before admission to a market.
 
 ### Story 1.3 — Sales Channel is marketplace-publication truth
 
-**As a** shop owner, **I want** an owned product to exist without marketplace publication, **so
-that** operating a shop and joining Miyagi Markets are independent choices.
+**As a** shop owner, **I want** marketplace discovery to use explicit Sales Channel membership
+without changing my owned-shop read boundary, **so that** operating a shop and joining Miyagi
+Markets remain separate concepts while every product this epic creates stays buyable.
+
+> **Scope correction — D12b:** owned-shop-only *reads* are proven here, but creating a buyable
+> owned-shop-only product is deferred to the operating-channel follow-up. A channel-less product
+> renders and then fails Store API lookup/checkout, so this epic refuses that half-capability rather
+> than shipping an unsellable listing.
 
 **Acceptance:**
 
@@ -57,10 +63,12 @@ that** operating a shop and joining Miyagi Markets are independent choices.
   Sales Channel.
 - Owned shop/subdomain/custom-domain/embed reads use seller ownership + product publish state and do
   not require marketplace channel membership.
-- Product create no longer blindly publishes to every/default market channel; call sites state
-  their publication intent.
+- Product create derives publication from the owning seller's validated market, refuses
+  cross-market/unsupported writes, and refuses the retired `publish_to_market: null` shape until an
+  operating Sales Channel exists.
 - A deterministic spec proves: owned-visible + no channel membership ⇒ visible on owned shop,
-  absent from `/mx`.
+  absent from `/mx`; this is a read-boundary fixture, not a claim that the current create seam can
+  produce a sellable channel-less product.
 
 **Risk:** high (catalog exposure)
 
@@ -106,9 +114,11 @@ believe it is wrong, say so in the PR — do not silently edit one copy.
 3. Marketplace read boundary (**D1** — this is NEW enforcement): `/store/listings`,
    `/store/listings/[id]`, search and category filter product membership by the resolved market
    channel. Owned-shop / seller-scoped reads do **not** (**D4**).
-4. `seller-product-create.ts` — the call site states its publication intent explicitly instead of
-   blindly attaching `MEDUSA_SALES_CHANNEL_ID`. Preserve the existing draft-then-link-then-publish
-   ordering; it exists because an interrupted create stranded a live orphan listing in production.
+4. `seller-product-create.ts` — derive publication from the owning seller's validated market instead
+   of blindly attaching `MEDUSA_SALES_CHANNEL_ID`; refuse cross-market/unsupported writes and the
+   retired channel-less `publish_to_market: null` shape (**D12b**). Preserve the existing
+   draft-then-link-then-publish ordering; it exists because an interrupted create stranded a live
+   orphan listing in production.
 5. `setup-mexico` step 6 and `cleanup-default-data.ts` step 3 gain the registry allow-list (**D6**).
    Neither has ever run against production for the channel path — do not claim a live effect.
 6. `GET /internal/market-backfill` — a **fully read-only** dry-run report: per-seller current vs
