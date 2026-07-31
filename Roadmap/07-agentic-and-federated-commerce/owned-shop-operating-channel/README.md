@@ -118,17 +118,26 @@ without anything needing to pick a channel per request.
 **This reverses the scaffold's Sprint 2 plan, which said "linked to the operating channel *in addition to*
 the marketplace channel". Building that would have silently broken every cart in production.**
 
+> **⚠️ MECHANISM CORRECTED 2026-07-31 by the S2 builder — the decision below is UNCHANGED and better
+> supported.** The architect's original D3 claimed `req.errors` is "read nowhere in the entire Medusa
+> dist", making the failure a *silent* misroute onto the store-default channel. **That was wrong**, and
+> wrong because of a bad grep: the reader aliases the request to `req_`, so a search for `req\.errors`
+> misses it. Verified in the installed packages — the real behaviour is a **loud, total 400 outage**.
+> Recorded here rather than quietly edited, because a confidently-wrong mechanism in a locked decision
+> is exactly what the next person would build on.
+
 Traced through Medusa 2.15.3, `POST /store/carts`:
 
 1. `maybeAttachPublishableKeyScopes` resolves the key to its channel ids.
 2. `ensurePublishableKeyAndSalesChannelMatch` — with **>1** channel on the key and no `sales_channel_id`
-   in the body — pushes *"Cannot assign sales channel to cart…"* onto `req.errors` **and returns**.
-   `req.errors` is written in exactly one file and **read nowhere in the entire Medusa dist** (grepped).
-   The error is silently discarded and `sales_channel_id` is left **unset**.
-3. `createCartWorkflow` → `findSalesChannelStep` sees `salesChannelId === undefined` and falls back to
-   **`store.default_sales_channel_id`** — `sc_01KRVSGTDJ50SW7TF83M192ZNQ`, which holds none of the
-   catalog. `validateSalesChannelStep` passes, because a channel *was* found.
-4. Every cart is created against the wrong channel. Nothing errors until the line item or the completion.
+   in the body — pushes *"Cannot assign sales channel to cart…"* onto `req.errors` **and returns**,
+   leaving `sales_channel_id` unset.
+3. **`@medusajs/framework/dist/http/utils/wrap-handler.js` reads it**: `if (req_?.errors?.length)` →
+   `res.status(400)`. `http/router.js` wraps **every** route handler in `wrapHandler` (four call sites),
+   so this is unconditional.
+4. **Every storefront cart creation returns HTTP 400.** Total checkout outage, immediately and loudly.
+   `findSalesChannelStep`'s fall-back to `store.default_sales_channel_id` is real code but
+   **unreachable** here — `wrapHandler` answers first.
 
 The storefront **never sends `sales_channel_id`** — grep over `apps/miyagisanchez` `lib/**` + `app/**`
 returns **zero** call sites. So there is no code path that avoids step 2.
@@ -184,8 +193,24 @@ the finding that most changes the epic's shape.
 operating-channel-only product 404s there and is refused with *"not available in this marketplace"*. No
 amount of backend channel work makes it buyable while that gate stands.
 
-That gate is also the **anti-IDOR admission proof**, and it already carries a hard-won lesson in its own
-comments (the productId-vs-variantId divergence). So it is relaxed **deliberately and narrowly**:
+> **⚠️ OVERCLAIM CORRECTED 2026-07-31 (codex review, PR 130 round 3).** This decision originally called
+> the checkout admission gate "the anti-IDOR admission boundary on the money path". **It is not a
+> boundary — it is an OFFER gate**, and the difference is load-bearing.
+>
+> Verified in the installed packages: `POST /store/carts/:id/line-items` carries **no** sales-channel
+> middleware (`carts/middlewares.js` registers only body/query validation), and `add-to-cart.js` passes
+> `sales_channel_id` solely to `confirmVariantInventoryWorkflow` — an *inventory-availability* check, not
+> a product↔channel *authorization* check. This repo adds no guard of its own on that route either. So a
+> direct API caller can add any variant to a cart irrespective of channel membership.
+>
+> **This is pre-existing and unchanged by this epic** — the storefront's `resolveCheckoutLines` was
+> always the only check, and was always advisory. The epic neither opens nor widens it: before the key
+> move the addable set was "any variant"; after it, still "any variant". But the claim was wrong, and a
+> wrong claim in a locked decision is what the next person builds on. AGENTS rule 3 says a check that
+> exists only in the storefront does not exist; that rule applies to this gate, and the honest reading is
+> that the *authorization* boundary here is **owed, not shipped** — see the Owed list at the end.
+
+So it is relaxed **deliberately and narrowly**:
 
 - A **new backend admission seam** proves the one thing the cart actually consumes: *this product is a
   member of this market's **operating** channel*. Same market scoping, same fail-closed shape, same
@@ -285,6 +310,24 @@ membership, the backfill or the publishable-key move — those are data, and D9 
 
 The scaffold's instinct ("a flag on membership is worse than useless") was right; what it could not know
 is that D7 introduces a security-shaped code path, which is exactly what a flag is for.
+
+## Owed after this epic — the cart-write authorization boundary
+
+**Found by the codex cross-family review, PR 130 round 3, and confirmed against the installed Medusa.**
+
+`POST /store/carts/:id/line-items` enforces **no** product↔sales-channel membership. The checkout
+admission seam (D7) is therefore an **offer** gate — it decides what the storefront presents — and not
+an authorization boundary. Its refusals of hidden/print-placement products and of another market's
+seller are enforced only for callers that route through the storefront.
+
+**Not a regression, and not this epic's to open:** the gap predates every line of this work, and the
+addable set is identical before and after the key move. Nor is it urgent today — there is exactly one
+market and all 26 sellers are `mx`, so the cross-market refusal is structurally unreachable, and
+hidden/print-placement products already sit in the marketplace channel and are already addable.
+
+**But it is real, and it is exactly the shape AGENTS rule 3 exists to name.** It needs its own scoped
+sprint against the cart write path — not a late addition to a sprint already three review rounds deep on
+the money path. Tracked here so it is owed out loud rather than discovered again.
 
 ## Explicit non-goals
 
