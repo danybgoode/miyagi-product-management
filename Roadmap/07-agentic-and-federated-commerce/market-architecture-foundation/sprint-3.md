@@ -1,6 +1,6 @@
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 3: US invitation shell and eligibility boundary
 
-**Status:** ⬜ not started
+**Status:** 🟨 in progress — implementation complete locally; independent review, branch-preview smoke, and merge gates remain
 
 ## Epic-mode boundary
 
