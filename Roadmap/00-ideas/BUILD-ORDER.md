@@ -15,9 +15,9 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (0)
+## 📋 Ready to build (scaffolded, not started) (1)
 
-_None._
+- [Owned-shop operating channel — make a shop sellable without marketplace admission](../../07-agentic-and-federated-commerce/owned-shop-operating-channel/README.md) — 07 Agentic/Federated · 0/9 stories · risk: High · Wave 1
 
 ## ✅ Shipped (135)
 
@@ -157,11 +157,10 @@ _None._
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (11)
+## ⬜ Funnel — seeds not yet scaffolded (10)
 
 - [US operator needfinding and value-proposition validation](seeds/us-operator-needfinding.md) — Queued · Spike · Wave 0 Enablers
 - [Miyagi Partners proposition and recruiting portal v3](seeds/miyagi-partners-recruiting-v3.md) — Queued · Feature · Wave 1
-- [Owned-shop operating channel — make a shop sellable without marketplace admission](seeds/owned-shop-operating-channel.md) — Queued · Feature · Wave 1
 - [US operator commerce pilot — three original-product shops](seeds/us-operator-commerce-pilot.md) — Queued · Feature · Wave 1
 - [US owned-shop positioning and proof launch](seeds/us-proof-launch.md) — Queued · Feature · Wave 2
 - [US curated marketplace — original independent sellers](seeds/us-curated-marketplace.md) — Queued · Feature · Wave 3
@@ -182,4 +181,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 
 ---
-_Epics: 138 · seeds in funnel: 11 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 139 · seeds in funnel: 10 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
