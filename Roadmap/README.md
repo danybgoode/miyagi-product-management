@@ -139,6 +139,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 - 📋 Subscriptions ("cada edición") · self-serve print providers · QR-scan analytics
 
 ### 07 · Agentic & Federated Commerce
+- ✅ **Country markets — `/` selects, `/mx` sells, `/us` invites** — market, locale, checkout region, and marketplace publication are now **four separate concepts** instead of one implicit "Mexico". `/` is the master-brand selector (no catalog), `/mx` is the live Mexico marketplace (every old marketplace URL one-hop 308s there), and `/us` is a **single static private-pilot invitation page with no catalog subtree at all** — `/us/l/<any-product-id>` is an ordinary 404 because the folder does not exist, which is the only fail-closed that cannot be refactored away. A shop **does not need marketplace admission**: owned-shop reads resolve by seller ownership + publish state, so custom domains, subdomains and embeds keep working with zero marketplace membership and never carry a country prefix. Locale is presentation only — `requireMarket('es-MX')` throws and says "that looks like a LOCALE". Agent surfaces (UCP/MCP) take an optional `market`, echo `market_code` on every result, and answer `market=us` with a structured `{unavailable, marketplace_status:'invitation'}` — never an empty success, never another market's rows. Medusa-first throughout: Region stays the checkout country/currency source, Sales Channel membership *is* marketplace-publication truth, no new commerce model and **no migration**. Verified live: the new channel filter hid **nothing** (72 products, exactly the pre-cutover count). *(Partner/admin label, seller-agent fail-closed-write, and lifecycle-event smokes owed to Daniel — all need an authenticated session; none is on the money path.)*
 - ✅ **Pick & change your shop URL** — sellers choose a clean `miyagisanchez.com/s/[slug]` at creation and edit it later (live availability, reserved words); the old slug 301s for 90 days, with a copy button + upsell to a full custom domain. *(Free tier of shop addressing.)*
 - ✅ **The white-label subdomain is a paid SKU** — `shopname.miyagisanchez.com` serves the whole storefront white-label (a real `*.miyagisanchez.com` wildcard cert; apex on Vercel nameservers, sales attributed to the `subdomain` channel), but it's now the platform's **cheaper** paid SKU: **$199 MXN/yr or $25 MXN/mo** (switch between them anytime, no double charge), gated behind the fail-open `subdomain.paywall_enabled` flag (ON). Existing shops (179) are **grandfathered free forever**; a new unpaid shop's subdomain **301-redirects to the free `/s/slug`**. Buy + cadence-switch are reachable over MCP (`get_subdomain_entitlement`, `start_subdomain_subscription`, `switch_subdomain_cadence`). **The free `/s/slug` shop URL stays free.** A merchant enrolled via a promoter can also get the **first year free** (a one-time grant, no checkout at all) when the admin prices that SKU at $0 for promoters — see 08 · Promoter program. *(Prod monthly seed + money-path smoke owed to Daniel.)*
 - ✅ **Ultra-short branded links — full coverage** — `mschz.org/[shop]` and `mschz.org/[product-code]` 301-redirect to the canonical storefront URL (case-insensitive; unknown → branded 404), and every public shareable surface now rides the short domain too: `mschz.org/{g,e,v,s,l}/…` passes through verbatim (path + query) to the same path on the platform, share/QR surfaces emit the short form. Every listing auto-gets a short code. *(Completes the addressing ladder: free slug → subdomain → short link → custom domain. QR camera-scan smoke owed to Daniel.)*
@@ -178,6 +179,42 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-31 — Market architecture foundation SHIPPED (4 PRs across 2 repos; HIGH — routes, catalog
+  exposure, and the money path).** Miyagi stopped pretending every shop belongs to one Mexico
+  marketplace. **S1** (backend [#124](https://github.com/danybgoode/medusa-bonsai-backend/pull/124),
+  frontend [#324](https://github.com/danybgoode/miyagisanchezcommerce/pull/324)) made market, locale,
+  Region and Sales-Channel publication four separate concepts behind one byte-identical registry
+  duplicated in both repos (zero imports, a golden spec each side, so drift reddens the offender's own
+  gate). **S2** ([#327](https://github.com/danybgoode/miyagisanchezcommerce/pull/327)) cut `/` over to a
+  master-brand selector and `/mx` to the marketplace, with the middleware 308 deliberately placed
+  **last, below every tenant branch** — the epic's self-declared highest-risk edit, and the one that
+  verified cleanest (a tenant subdomain returns 200 direct with zero `/mx` anywhere in the body). **S3**
+  ([#328](https://github.com/danybgoode/miyagisanchezcommerce/pull/328)) added the `/us` invitation with
+  **no catalog subtree at all** — the structural absence of the folder *is* the boundary, so no runtime
+  guard pretends to block routes that never existed. Decisions were locked against the **live database**
+  before any builder started, and the one prediction that mattered came back exact: D1 warned the Sales
+  Channel filter was *new enforcement* that could hide a live product, required the no-link count to be
+  reviewed first, and the post-cutover measurement was **72 — the identical number predicted three days
+  earlier**. The filter hid nothing; the authorized MX backfill turned out to be a no-op. Cross-family
+  review (Gemini via `agy`) then found what four Playwright shards, `tsc`, lint and a build all missed:
+  the checkout gate proved a **product** was published to the market while the cart line bought a
+  **variant**, both caller-supplied — pairing an admitted product with an unpublished product's variant
+  walked past a green gate onto the money path. Two further real defects (a `Promise.all` that 500'd
+  `/admin/tenants` over one unreachable seller, contradicting that function's own doc comment; a
+  population guard that scanned `app/` and `lib/` only while quoting "guard the population, not the door
+  you found") plus **one confident false positive** — the ~1-in-4 wrong ratio team memory already
+  records, and the reason each finding was verified against the code rather than batch-applied. Durable
+  levers promoted to LEARNINGS: **an admission proof must be keyed to the object actually consumed** (if
+  the check and the effect name different identifiers, the check is decoration); **guard the guard's own
+  population** (a scan that hand-picks its roots silently covers less over time while still passing — the
+  meta-test is the fix, not the three directories); and **a degradation contract stated only in a doc
+  comment is not a contract**. No migration, no runtime flag (approved pre-launch: rollback is by
+  deploy). Deferred by explicit ruling rather than half-shipped: owned-shop-only publication, which would
+  render a listing that **cannot be sold** — it needs its own Sales Channel, publishable-key change and
+  backfill, scoped at `00-ideas/seeds/owned-shop-operating-channel.md`. *(Partner/admin label,
+  seller-agent fail-closed-write and lifecycle-event smokes owed to Daniel — all need an authenticated
+  session, none on the money path.)* See [07 · Agentic & Federated Commerce › Market architecture
+  foundation](07-agentic-and-federated-commerce/market-architecture-foundation/).
 - **2026-07-28 — Prose rail: a third writer, and a hook that was silently dead in every worktree
   (area 09, LOW, internal tooling only).** The merge report's flakiness had two causes and neither was
   the one in the brief. First, **devin refuses** — `high demand for this model` on 6 of 25 runs. The
