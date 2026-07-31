@@ -2,6 +2,20 @@
 
 **Status:** ⬜ not started
 
+## Build contract (locked by the architect before the builder started)
+
+- **D8** — everything seller-facing in this sprint sits behind `catalog.owned_shop_only_enabled`
+  (enablement, default `false`, registered in **both** repos' `flag-catalog`). Sprint 2 already added the
+  key; do not add a second one.
+- **D2** — `publish_to_market: null` means *operating channel only*. Because the operating channel is a
+  superset, there is **no** state in which a product sits in zero channels. That is what makes Story
+  3.1's exhaustive proof provable rather than aspirational.
+- **D11** — unpublish is `linkProductsToSalesChannelWorkflow({ id, remove: [...] })` on the **marketplace**
+  channel only. Medusa caches nothing here; the storefront's ISR/`unstable_cache` layer does. Invalidate
+  it or state the window.
+- **D7** — the admission seam already exists from Sprint 2; Story 3.1 does not build a second one.
+- Story 3.3's surfaces read the two memberships as **separate facts**; do not derive one from the other.
+
 ## Epic-mode boundary
 
 The capability works by Sprint 2; here it becomes something a merchant can *ask for*. This sprint

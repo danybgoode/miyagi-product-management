@@ -1,6 +1,26 @@
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 1: The channel exists, and nothing depends on it yet
 
-**Status:** ⬜ not started
+**Status:** 🟦 In review
+
+## Build contract (locked by the architect before the builder started)
+
+Cite the epic README's decisions; do not re-derive them.
+
+- **D1** gives you the live graph. There is nothing to discover: 2 channels, 1 publishable key with
+  exactly 1 link row, 26 sellers all `operating_market: mx`, 77 published products all already linked to
+  the marketplace channel. `would_link` for the *marketplace* backfill is empty — the parent epic's apply
+  already ran.
+- **D6** — the operating-channel backfill scans **every product status**, not just `published`, and
+  reports the split. This is the one place this sprint deviates from the market-backfill sibling.
+- **D5** — provisioning includes linking the operating channel to every stock location the marketplace
+  channel is linked to, and the dry-run **reports that graph** before/after. Reuse
+  `ensureSalesChannelLocationLink` from `store/_utils/inventory.ts`; do not write a second one.
+- **D10** — allow-list deploys before the channel exists. Non-negotiable ordering.
+- Story 1.1 is **already done** — it is the locking pass in the epic README. Do not redo it.
+
+Reuse, do not reinvent: `/internal/market-backfill` is the shape (validate → claim → apply, capped-scan
+refusal, per-seller market scoping, `describeScan`, `internalSecretOk` fail-closed). The new route is its
+sibling, not a new pattern.
 
 ## Epic-mode boundary
 
@@ -10,23 +30,19 @@ backfill has to be verifiable *before* anything can break from it being incomple
 
 ## Stories
 
-### Story 1.1 — Re-derive the live channel and publishable-key graph, and lock the plan
+### Story 1.1 — Re-derive the live channel and publishable-key graph, and lock the plan ✅
+
+**Done at the locking pass, 2026-07-31.** The report is the epic README's **D1**; the five E1 questions
+are answered by **D3** (E1.1), **D1** (E1.2, E1.3), **D4** (E1.4) and **D11** (E1.5); the kill-switch is
+settled in **D8**. Three scaffold premises were disproved — **D5**, **D6** and **D7** — and D7 added a
+new story to Sprint 2.
 
 **As the** architect, **I want** the live Sales Channel, publishable-key and product graph re-derived
 before anything is created, **so that** the plan rests on measured facts rather than on this document.
 
-**Acceptance:**
-
-- A written report states, from the **live production database**: every Sales Channel (id, name), every
-  publishable key and its channel link rows, the number of published products, the number of sellers with
-  published products, and how many products are currently in **no** channel.
-- The five open questions in README **E1** are answered in writing, each with the evidence that settled
-  it — especially E1.1 (join both channels vs. cart picks by context), which determines Sprint 2's shape.
-- The kill-switch decision in the epic README is settled and recorded.
-- Any premise in this scaffold that the live data **disproves** is corrected here, out loud, rather than
-  worked around. Reporting a wrong premise is a successful outcome.
-- The publishable-key link-row count is recorded as a **before** number, so Sprint 2's change is a diff
-  against a known baseline.
+**Acceptance:** all met — see README D1 (the measured graph, including the publishable-key link-row
+**before** count of 1), D3/D4/D8/D11 (the E1 answers and the kill-switch), and D5/D6/D7 (the disproved
+premises, corrected out loud rather than worked around).
 
 **Risk:** high (every later decision inherits these numbers)
 
@@ -68,8 +84,13 @@ marketplace channel, **so that** the two are separate, testable concepts and nei
   dry-ran. The builder never creates it.
 - The created channel's id and name are recorded in the sprint doc and set as the env var on both
   services that need it.
+- **D5 — the stock-location link.** Provisioning also links the operating channel to **every stock
+  location the marketplace channel is linked to**, via the existing `ensureSalesChannelLocationLink`
+  (`store/_utils/inventory.ts`). Without it, every managed-inventory purchase fails at order completion
+  the moment Sprint 2 moves the cart onto this channel. The command reports the location↔channel graph
+  before and after.
 
-**Risk:** high (a deletable channel is a dark storefront)
+**Risk:** high (a deletable channel is a dark storefront; an unlinked location is a dead checkout)
 
 ### Story 1.4 — Idempotent operating-channel backfill, dry-run reported first
 
@@ -88,6 +109,10 @@ reviewed, idempotent backfill, **so that** membership is complete before anythin
   and nothing may be applied against them.
 - A product joins the operating channel of **its owning seller's market** only — never a blanket link of
   every product to MX.
+- **D6 — every status, not only `published`.** The scan covers draft products too, and the report gives
+  the published/draft split. A draft left out becomes unbuyable the day it is published, which is a bug
+  that would surface long after this epic closed. Linking a draft is inert: `/store/products` filters
+  `status` independently.
 - Re-running the apply changes nothing and reports zero deltas.
 - The backfill is run by **Daniel**, after reviewing the dry-run. The builder hands over the exact command.
 - Post-apply verification: the number of products in the operating channel equals the expected
