@@ -36,9 +36,13 @@ something it never listed in the country marketplace.
   the D1 baseline. Any run that would leave the key holding two channels **aborts**, and a spec asserts
   that refusal (the 70-of-72 seed-residue incident is the precedent for counting; D3 is the reason for
   the cap).
-- A spec encodes **why**: with two channels and no `sales_channel_id` in the body, Medusa assigns the
-  cart the **store default** channel silently. Cite `ensure-pub-key-sales-channel-match.js` and
-  `find-sales-channel.js` — do not paraphrase the mechanism, name the source.
+- A spec encodes **why**, citing the installed packages so a Medusa upgrade reddens it. **Corrected
+  2026-07-31 — the architect's original wording here was wrong** and would have baked a falsehood into
+  a spec: with two channels and no `sales_channel_id`, `ensure-pub-key-sales-channel-match.js` pushes
+  onto `req.errors`, and `@medusajs/framework/.../wrap-handler.js` (applied to every handler by
+  `http/router.js`) turns that into **HTTP 400 on every cart creation** — a loud, total outage.
+  `find-sales-channel.js`'s store-default fallback is real but **unreachable**, because `wrapHandler`
+  answers first. Name all three sources; do not paraphrase.
 - The operating channel is confirmed linked to every stock location the marketplace channel is linked to
   (**D5**) **before** the key moves. If it is not, the move refuses.
 - A product in the **operating channel only** resolves on the channel-scoped `/store/products/:id` and
@@ -97,6 +101,14 @@ detail endpoint, so an operating-channel-only product is refused before a cart e
 - `lib/cart.ts` calls the admission seam instead of the marketplace detail endpoint **when
   `catalog.owned_shop_only_enabled` is ON**; with the flag OFF the existing marketplace-only admission
   runs unchanged (**D8**). Both paths are specced.
+  - **Mechanism note (found at build time, not planned):** the `isEnabled` call cannot live *in*
+    `lib/cart.ts`. `lib/flags.ts` imports `server-only`, and `e2e/personalization-checkout.spec.ts`
+    imports `../lib/cart` directly — a static import there breaks the whole suite with
+    *"This module cannot be imported from a Client Component module"* → `No tests found`. It is read
+    from `lib/checkout-admission-flag.ts` via a dynamic import instead. D8 is implemented as decided;
+    only the file the call sits in differs. Recorded so S3 does not re-derive it.
+  - An **unreadable** flag falls back to `false` — the *narrower*, present-day behaviour. A flag-store
+    outage must never be the thing that widens an admission path.
 - **The productId → variantId ownership proof below the gate is unchanged**, and a spec asserts it still
   fires. Admission widens by exactly one fact — *buyable on its own shop* — and never to "any product id".
   The comment block in `resolveCheckoutLines` explaining that divergence is preserved and updated, not
