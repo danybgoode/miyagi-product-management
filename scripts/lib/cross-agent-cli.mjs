@@ -84,7 +84,19 @@ export const AGY_PINNED = '1.1.9';
 // exactly what bit mid-epic (the old `'Gemini 3.1 Pro (High)'` display-name format stopped matching when agy
 // switched `agy models` to slugs). `agy-doctor` guards this: it fails loud when a constant isn't in
 // `agy models`, so a future rename is caught before it ships.
-export const AGY_MODEL = process.env.AGY_MODEL || 'gemini-3.1-pro-high';
+// Effort lives in the SLUG SUFFIX, not in `--effort`. Probed 2026-07-31: agy invokes the model as
+// `--model <slug> --effort ""` when the flag is omitted, and passing `--effort high` alongside a
+// `-high` slug changes nothing. So `-high` is the thing to keep; don't "improve" this by adding the flag.
+//
+// Roster note (probed, never assumed — `agy models`): generation and TIER are independent here.
+// 3.6 is the newest generation but ships FLASH-only; `gemini-3.6-pro-high` does not exist and agy
+// rejects it outright. The previous pin `gemini-3.1-pro-high` was the only PRO-tier Gemini. Moving the
+// primary to 3.6-flash-high is therefore a generation upgrade and a tier downgrade at once, not a
+// strict win — kept under review against real diffs rather than settled by the version number.
+export const AGY_MODEL = process.env.AGY_MODEL || 'gemini-3.6-flash-high';
+// Deliberately a DIFFERENT PROVIDER POOL, not merely a different model: the fallback exists so a spent
+// Google quota still leaves a cross-family pass alive. A second `gemini-*` here would share the pool it
+// is supposed to survive.
 export const AGY_FALLBACK_MODEL = process.env.AGY_FALLBACK_MODEL || 'gpt-oss-120b-medium';
 
 // agy takes the prompt+context as a single `-p` argv string (stdin is not the prompt). Guard well under the
