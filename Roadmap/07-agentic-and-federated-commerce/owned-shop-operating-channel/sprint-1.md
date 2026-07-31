@@ -1,7 +1,32 @@
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 1: The channel exists, and nothing depends on it yet
 
-**Status:** ✅ merged (PR 128, squash `5bc83c0`) — deployed and verified inert. Provisioning + backfill
-still owed (production mutations, D10 steps 2–5).
+**Status:** ✅ complete — merged (PR 128 `5bc83c0`, PR 129 `b494446`), deployed, provisioned and
+backfilled in production. D10 steps 1–5 all done and verified.
+
+## Provisioning + backfill — applied 2026-07-31
+
+**A false premise found while running it:** PR 128 handed over
+`npx medusa exec ./src/scripts/provision-mx-operating-channel.ts`. **That command cannot run.**
+Production's Cloud SQL instance `medusa-pg` has `ipv4Enabled: false` and `DATABASE_URL` resolves to the
+private ip `10.7.0.3`; a real attempt with correct credentials died after four 60s retries on
+`Knex: Timeout acquiring a connection`. This is true of **every** `medusa exec` script here — which is
+why `cleanup-default-data.ts`'s own header admits it has never been run against production. PR 129
+moved provisioning to `/internal/operating-channel-provision`, matching how every other production
+mutation in this repo already works (inside the VPC, on the live service).
+
+| Step (D10) | Result |
+|---|---|
+| 2 · channel created | `sc_01KYWNQ0C0PFFM0K0V2EMC24AP` — **"Miyagi Operating MX"** |
+| 3 · stock locations (D5) | marketplace had exactly **1** (`sloc_01KRVSN0FK0923M7A4JKYKSA61`); linked to operating. `after` matches `before` on re-run |
+| — · env var + redeploy | `MEDUSA_MX_OPERATING_CHANNEL_ID` set → revision `medusa-web-00030-f29`. **Closed the unprotected window**: the channel now appears in `prune-sales-channels`' keep set (3 channels, `would_delete: 0`) |
+| 4 · backfill dry-run | 98 products = **77 published + 21 draft**; `would_link: 98`; scans complete; 0 unclassifiable sellers; 0 ownership failures |
+| 5 · backfill applied | **98 linked**, 0 skipped_other_market, 0 skipped_unowned, 0 unusable link rows |
+| — · idempotency | re-run: `already_in_operating_channel: 98`, **`would_link: 0`** |
+| — · no regression | marketplace unchanged (77 published, 77 linked, 0 missing); `/mx/l` 200 |
+
+**D6 vindicated concretely.** The scaffold's published-only scan would have linked **77** and left the
+**21 drafts** out — each one unbuyable the day its seller published it, surfacing long after this epic
+closed. The locking pass is what caught that, and the number is now measured, not argued.
 
 ## Deployed-inert verification (2026-07-31, live production, read-only)
 
