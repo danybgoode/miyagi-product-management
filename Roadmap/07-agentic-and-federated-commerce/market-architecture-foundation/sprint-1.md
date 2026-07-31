@@ -1,6 +1,32 @@
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 1: Market contract and Medusa region/channel foundation
 
-**Status:** 🟦 In review — backend [#124](https://github.com/danybgoode/medusa-bonsai-backend/pull/124) + frontend [#324](https://github.com/danybgoode/miyagisanchezcommerce/pull/324); cross-agent fixes in progress
+**Status:** ✅ shipped — backend [#124](https://github.com/danybgoode/medusa-bonsai-backend/pull/124) merged 2026-07-30, frontend [#324](https://github.com/danybgoode/miyagisanchezcommerce/pull/324) merged. Live in production (backend image `99ac78b`).
+
+## D1 gate — CLOSED, verified against production 2026-07-31
+
+D1 made this non-negotiable: the marketplace Sales Channel filter is **new enforcement**, so
+switching it on could **hide** a product that was visible before, and the no-link count had to be
+reviewed before the filter shipped. Recording the answer here, because a gate whose result is not
+written down is a gate nobody can audit later.
+
+| Check | D0 prediction (2026-07-28) | Live measurement (2026-07-31) | Verdict |
+|---|---|---|---|
+| Catalog size after the listings route's print-placement/support filters | 72 | **72** (`GET /api/ucp/catalog` → `total`) | **exact match — the filter hid nothing** |
+| Market echo on the public catalog | `market_code` on every result | `market_code: "mx"` | contract holds |
+| Live marketplace channel | `sc_01KSK1J0V81P4EPY9G0JAPX353` | same, in `medusa-web` env | unchanged |
+
+The cutover was therefore a **no-op on catalog visibility**, exactly as D0 predicted, and the MX
+backfill was at or near a no-op. No product was hidden by the boundary going live.
+
+Fail-closed behaviour, verified live on the same endpoint:
+
+| Request | Response |
+|---|---|
+| `?market=us` | `{"unavailable":true,"market_code":"us","marketplace_status":"invitation","reason":"marketplace_not_open"}` |
+| `?market=es-MX` (a LOCALE, D3) | `{"unavailable":true,"market_code":null,"marketplace_status":null,"reason":"unknown_market"}` |
+| `?market=zz` (unknown) | `{"unavailable":true,...,"reason":"unknown_market"}` |
+
+Never an empty success, never another market's rows.
 
 ## Epic-mode boundary
 

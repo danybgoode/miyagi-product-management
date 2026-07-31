@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: market-architecture-foundation
 ---
 
@@ -377,20 +377,30 @@ Paste this into one long-running build task:
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] Existing Mexico marketplace and checkout behavior pass under `/mx`
-- [ ] US catalog/publication fails closed
-- [ ] Seller operating market, Region, Sales Channel, and locale are separate tested concepts
-- [ ] Owned-shop visibility is tested independently from marketplace publication
-- [ ] Custom-domain/subdomain/embed routing remains stable
-- [ ] Canonical, hreflang/x-default, sitemap, and redirect checks pass
-- [ ] Shared/prod setup/backfill is dry-run reviewed and only Daniel applies it
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** no route flag by approved pre-launch decision; US publication is structurally
+- [x] All sprints merged to `main` + smoke-tested (gaps stated) — S1 backend #124 / frontend #324,
+      S2 #327, S3 #328. Auth-gated smokes owed to Daniel, named in `sprint-3.md`.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs) — S1 carries the D1 measurement, S2 the
+      six-step production walk, S3 the results table with the three owed steps marked.
+- [x] Existing Mexico marketplace and checkout behavior pass under `/mx` — `/mx` and `/mx/l` render;
+      catalog is **72**, identical to the pre-cutover count, so the new filter hid nothing.
+- [x] US catalog/publication fails closed — `/us/l` 404s structurally (D9); `?market=us` returns
+      `{unavailable:true, marketplace_status:'invitation'}`, verified live.
+- [x] Seller operating market, Region, Sales Channel, and locale are separate tested concepts —
+      golden registry spec both repos; `requireMarket('es-MX')` rejects a locale, verified live.
+- [x] Owned-shop visibility is tested independently from marketplace publication — D4 spec:
+      owned-visible + no channel membership ⇒ present on the owned shop, absent from `/mx`.
+- [x] Custom-domain/subdomain/embed routing remains stable — `panfleto.miyagisanchez.com` returns
+      `200` **direct**, with zero `/mx` links in the body (D8's core claim).
+- [x] Canonical, hreflang/x-default, sitemap, and redirect checks pass — self-referential canonicals
+      on `/`, `/mx`, `/us`; `es-MX`→`/mx`, `en-US`→`/us`, `x-default`→`/`; old URLs **one-hop** 308.
+- [x] Shared/prod setup/backfill is dry-run reviewed and only Daniel applies it — the D1 report was
+      read before the filter shipped and the backfill proved a **no-op**; no production write was made.
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append) — three
+      entries; the population-guard one **sharpens** the existing rule rather than repeating it.
+- [x] **Kill-switch:** no route flag by approved pre-launch decision; US publication is structurally
       fail-closed
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** and
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** and
       `node scripts/build-order.mjs` run

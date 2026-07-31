@@ -1,6 +1,43 @@
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 3: US invitation shell and eligibility boundary
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — [#328](https://github.com/danybgoode/miyagisanchezcommerce/pull/328) merged 2026-07-31 (`0439c69`)
+
+## Review round — cross-family, 2026-07-31
+
+The PR reached the merge gate with **zero reviews**, which D13 forbids for a HIGH PR. An independent
+pass by **gemini-3.1-pro-high via `agy`** (a different family from the Claude/Codex builders) returned
+four findings; each was verified against the code before anything was changed, and one did not survive.
+
+| # | Finding | Verdict |
+|---|---|---|
+| 1 | Checkout admission proves `productId`; the cart line buys `variantId`; both caller-supplied | **REAL — blocking** |
+| 2 | `getShop` rejection inside `Promise.all` 500s `/admin/tenants` and `/partner` | **REAL** |
+| 3 | D10 population guard scanned `app/` + `lib/` only | **REAL** |
+| 4 | `AdminTenantsClient` `useEffect` missing cleanup | **FALSE POSITIVE** — the cleanup is three lines below the cited line |
+
+**Finding 1 is the one that mattered.** `isCheckoutListingAdmitted` proves a *product* is published to
+the requested market, but the cart line buys a *variant*, and `/api/checkout/start` hands
+`await req.json()` straight through. An admitted marketplace `productId` paired with a `variantId`
+from an unpublished product reached `variant_id:` at cart creation with the gate still green — a
+direct-product-id bypass of exactly what Story 3.2 requires. Four Playwright shards, `tsc`, lint and a
+build all passed over it, because it is a logic gap rather than a broken assertion.
+
+That is the fourth confidently-stated review claim in recent memory to be wrong (#4), against three
+that were right — the ~1-in-4 ratio team memory already records, and the reason findings are verified
+individually rather than batch-applied.
+
+## Sprint 3 — smoke results (production, 2026-07-31)
+
+| # | Step | Result |
+|---|---|---|
+| 1 | `GET /us` | ✅ `200`, private-pilot invitation; no marketplace grid |
+| 2 | `GET /us/l` and `/us/l/<mx-product-id>` | ✅ `404` — the folder does not exist (D9 structural fail-closed) |
+| 3 | Partner/admin view of an MX fixture shop | ⏳ **owed to Daniel** — needs an authenticated session |
+| 4 | Seller-agent write enabling US commerce | ⏳ **owed to Daniel** — needs an authenticated session |
+| 5 | Disposable shop-created event carries `market_code` | ⏳ **owed to Daniel** — needs an authenticated session |
+
+Steps 3–5 are read/label and fail-closed-write checks behind auth; none is on the money path, and the
+deterministic specs for all three are green in CI.
 
 ## Epic-mode boundary
 

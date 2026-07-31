@@ -2062,6 +2062,34 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   pricing-money-path-remediation S1 — backend PR #89.)*
 
 ## Architecture
+- **An admission proof must be keyed to the object that is actually CONSUMED — if the check and the
+  effect name different identifiers, the check is decoration.** The market checkout gate proved that a
+  `productId` was published to the requested market; the cart line it then created bought a
+  `variantId`, and both came from the caller (`/api/checkout/start` passes `await req.json()` straight
+  through). Pairing an admitted product with a variant belonging to an *unpublished* product walked
+  past a gate that was green in every test — the guard was real, it was just guarding a different noun
+  than the one that reached the money path. The fix is trivial once seen (assert the variant is in the
+  product's own variant list, fail closed on an empty list); **finding it requires asking, of every
+  guard, "is the thing I proved the same thing I am about to use?"** Cross-family review caught this;
+  four Playwright shards, `tsc`, lint and a build did not, because it is a logic gap and not a broken
+  assertion. *(2026-07-31, market-architecture-foundation)*
+- **Guard the guard's own population — a population guard that hand-picks its scan roots reproduces the
+  exact bug it exists to prevent.** Sharpens [[guard-the-population-not-the-door-you-found]] one turn
+  further. The market-boundary guard opened by quoting "guard the population, not the door you found"
+  and then scanned `app/` and `lib/` only, leaving `components/`, `services/` and `db/` unscanned —
+  while other tests *in the same file* already scanned `components/`. A catalog read added to a
+  component would never have been classified and the spec would have stayed green. **The durable fix is
+  not adding the three directories; it is the meta-test that reddens when any new source directory goes
+  unscanned.** Without it a guard silently covers less over time while still passing, which is strictly
+  worse than no guard, because it reads as a passing gate. *(2026-07-31, market-architecture-foundation)*
+- **A degradation contract stated only in a doc comment is not a contract.** `listTenants`' comment
+  promised it "degrades to `[]` on a read failure so the admin page never throws" — but the `getShop`
+  it called is a bare `fetch`, which *rejects* on a network fault rather than returning `null`, and one
+  rejection inside `Promise.all` 500'd the whole `/admin/tenants` and `/partner` pages over a single
+  unreachable seller. The correct unavailable state was already built and simply never routed to.
+  **When a comment claims a degradation, find the line that implements it; the claim and the `try` are
+  different artifacts.** Same family as "a fixture's docblock is not the fixture".
+  *(2026-07-31, market-architecture-foundation)*
 - **A READ IS NOT A CLAIM. Any "check a column, then write based on it" pair is a lost update waiting to
   happen — and `.select()`-back is what makes it VISIBLE.** Codex found this exact class in **three**
   places across one epic's three PRs (merchant-partner-lifecycle, 2026-07-25): two concurrent admin

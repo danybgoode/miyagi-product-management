@@ -5,22 +5,21 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-30 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-07-31 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (2)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Market architecture foundation — owned shops, country marketplaces, and locale](../../07-agentic-and-federated-commerce/market-architecture-foundation/README.md) — 07 Agentic/Federated · 0/12 stories · risk: High · Wave 0 Enablers
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
 ## 📋 Ready to build (scaffolded, not started) (0)
 
 _None._
 
-## ✅ Shipped (134)
+## ✅ Shipped (135)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -77,6 +76,7 @@ _None._
 - [Custom-domain paywall + campaign coupon](../../07-agentic-and-federated-commerce/custom-domain-paywall/README.md) — 07 Agentic/Federated · 9/9 stories · risk: High
 - [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2/2 stories
 - [Embeddable Widget](../../07-agentic-and-federated-commerce/embeddable-widget/README.md) — 07 Agentic/Federated · 7/7 stories
+- [Market architecture foundation — owned shops, country marketplaces, and locale](../../07-agentic-and-federated-commerce/market-architecture-foundation/README.md) — 07 Agentic/Federated · 12/12 stories · risk: High · Wave 0 Enablers
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 10/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 3/3 stories · risk: High · Wave 1
 - [Multi-tenant subdomains (`yourshop.miyagisanchez.com`)](../../07-agentic-and-federated-commerce/subdomains/README.md) — 07 Agentic/Federated · 3/3 stories

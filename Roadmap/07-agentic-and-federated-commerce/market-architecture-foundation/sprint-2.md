@@ -1,6 +1,6 @@
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 2: Country routes, selector, and Mexico continuity
 
-**Status:** 🟨 in progress — preserved worktree `feat/market-architecture-foundation-s2`
+**Status:** ✅ shipped — [#327](https://github.com/danybgoode/miyagisanchezcommerce/pull/327) merged; live in production and smoke-verified 2026-07-31
 
 ## Epic-mode boundary
 
@@ -169,3 +169,17 @@ Env: branch preview, then production after merge.
    → Structured invitation/unavailable response; zero MX listings.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+### Walked against production 2026-07-31 — all six steps pass
+
+| # | Checked | Result |
+|---|---|---|
+| 1 | `GET /` | `200`, master-brand selector; `x-default` canonical is the bare root |
+| 2 | `GET /mx` | `200`, marketplace homepage; `/mx/l` renders the catalog |
+| 3 | `GET /l`, `GET /s/panfleto` | **one-hop** `308` → `/mx/l`, `/mx/s/panfleto`, both `200`. No chain |
+| 4 | `https://panfleto.miyagisanchez.com/` | `200` **direct — no redirect**, and **zero `/mx` links in the body**. The tenant host never sees the platform 308 (D8) |
+| 5 | canonical/hreflang on `/`, `/mx`, `/us` | `canonical` self-referential on each; `es-MX`→`/mx`, `en-US`→`/us`, `x-default`→`/`. No `/us-eng` |
+| 6 | `GET /api/ucp/catalog?market=us` | `{"unavailable":true,"market_code":"us","marketplace_status":"invitation","reason":"marketplace_not_open"}` — zero MX rows |
+
+Step 4 is the one that mattered most: D8 called the middleware ordering "the single highest-risk edit
+in the epic", and its whole claim is that a tenant host never sees the platform redirect. It doesn't.
