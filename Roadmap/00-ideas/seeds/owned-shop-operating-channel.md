@@ -1,14 +1,14 @@
 ---
 title: "Owned-shop operating channel — make a shop sellable without marketplace admission"
 slug: owned-shop-operating-channel
-status: queued
+status: scaffolded
 area: "07"
 type: feature
 priority: wave-1
 risk: high
-epic: null
+epic: "07-agentic-and-federated-commerce/owned-shop-operating-channel"
 build_order: null
-updated: 2026-07-29
+updated: 2026-07-31
 ---
 
 # Seed — Owned-shop operating channel
