@@ -1,6 +1,21 @@
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 1: The channel exists, and nothing depends on it yet
 
-**Status:** 🟦 In review
+**Status:** ✅ merged (PR 128, squash `5bc83c0`) — deployed and verified inert. Provisioning + backfill
+still owed (production mutations, D10 steps 2–5).
+
+## Deployed-inert verification (2026-07-31, live production, read-only)
+
+Cloud Build `3f3261c2` SUCCESS → revision `medusa-web-00028-dbs`. Confirmed against live prod:
+
+| Check | Result |
+|---|---|
+| `GET /internal/operating-channel-backfill?market=mx` | **503**, `unavailable: true`, `apply_allowed: false` — names `MEDUSA_MX_OPERATING_CHANNEL_ID` as unset. No confident empty report. |
+| … its second blocker | `link_plan could not be computed` — the round-3 guard firing **live**, confirming it was a real path, not a hypothetical. |
+| `POST /internal/prune-sales-channels {dry_run:true}` | **503**, blocked on the same unset var. This is the deliberate availability change during the provisioning window: a prune that ran short-listed would delete the channel. Fail-closed, as designed. |
+| `GET /internal/market-backfill?market=mx` (parent epic) | **200**, unchanged — 77 published, 77 linked, 0 missing. **No regression.** |
+
+The channel does not exist yet; nothing reads it; the marketplace path is untouched. That is exactly
+what Sprint 1 promised.
 
 ## Build contract (locked by the architect before the builder started)
 
