@@ -97,10 +97,26 @@ spec that cannot fail for the right reason is not evidence.
 
 ## Gaps / follow-ups
 
-- **OWED — the flag flip.** `catalog.owned_shop_only_enabled` has no row in `platform_flags`; it runs on
-  the code default `false`. The capability is **dark**. Writing that row was blocked by the permission
-  classifier — Daniel flips it in `/admin/flags`. This is the true go-live and it is what makes the
-  smokes below possible at all.
+- **OWED — the flag go-live, and it needs a step nobody scoped.** `catalog.owned_shop_only_enabled` is
+  registered in both repos' `flag-catalog`, so `isEnabled()` reads it correctly — and it is **invisible
+  and un-flippable** in `/admin/flags`. Investigated after Daniel could not find it:
+  - production runs `GOLDEN_BEANS_FLAG_CUTOVER = *=golden`, so the **Golden Beans control plane is
+    authoritative for every flag**;
+  - `/admin/flags` renders **only** the Golden snapshot ("*intentionally no platform_flags fallback
+    here*"), so a flag Golden has never heard of cannot appear;
+  - the UI can only **toggle**, never create, and no sync script in either repo pushes definitions;
+  - Miyagi's `GOLDEN_BEANS_FLAG_ADMIN_KEY` is **read-only for administration** — `GET` 200, `POST` 401
+    *"Invalid flag administration credential"* on the same bearer.
+
+  **Daniel creates the definition in Golden Beans** (key `catalog.owned_shop_only_enabled`, polarity
+  `enablement`, criticality `high`, environment `production`, current `snapshotVersion 46`); it then
+  appears in `/admin/flags` and is toggleable like every other flag. This is the true go-live and it is
+  what makes the money smokes below possible at all.
+
+  **The transferable lesson — this is the Flagsmith trap recurring in the Golden Beans era.**
+  `LEARNINGS.md` already records "a flag defined in code is INVISIBLE in the dashboard until someone
+  creates it via the API". The mechanism changed; the shape did not. **Creating the Golden definition
+  belongs in the epic's task list**, or the kill-switch you planned is a lever with no dial.
 - **OWED — money-path smokes (Daniel).** S2: buy an operating-channel-only product end to end, plus one
   ordinary marketplace purchase as regression. S3: publish → unpublish → buy again. Automated specs
   cannot cover live payment rails.

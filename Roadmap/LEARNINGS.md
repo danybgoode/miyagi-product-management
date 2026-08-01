@@ -476,6 +476,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   happened first, so record a trace of the effects and assert it is empty on a refusal. *(2026-07-31,
   owned-shop-operating-channel — three of the four were found by codex cross-review, one by the
   orchestrator.)*
+- **A flag defined in code is INVISIBLE and UN-FLIPPABLE until the CONTROL PLANE defines it — and that is
+  now Golden Beans, not Flagsmith.** Same trap, new mechanism, and it caught a whole epic: the flag was
+  registered in both repos' `flag-catalog`, `isEnabled()` read it correctly, every gate worked — and it
+  simply did not appear in `/admin/flags`, so there was no way to turn the feature on. Production runs
+  `GOLDEN_BEANS_FLAG_CUTOVER = *=golden`, and three things follow: (a) `/admin/flags` renders **only** the
+  Golden snapshot, by explicit design ("*intentionally no platform_flags fallback here… this operational
+  surface must show the Golden source of truth rather than create a second writer*"), so an undefined flag
+  cannot be listed; (b) the UI can only **toggle**, never create, and no sync script in either Miyagi repo
+  pushes definitions; (c) Miyagi's `GOLDEN_BEANS_FLAG_ADMIN_KEY` is **read-only for administration** —
+  `GET /api/v1/flags/admin` returns 200 while `POST` with the same bearer returns 401 *"Invalid flag
+  administration credential"*. **So "create the Golden definition" is an EPIC TASK, not an afterthought**;
+  skip it and the kill-switch you planned is a lever with no dial, discovered at go-live. *(2026-07-31,
+  owned-shop-operating-channel — the 2026-06-11 Flagsmith version of this line is directly above in
+  spirit; the mechanism changed, the shape did not.)*
 - **A `medusa exec` script CANNOT reach this production database, and never could.** `medusa-pg` has
   `ipv4Enabled: false` with a private ip (`10.7.0.3`); a real attempt with correct prod credentials died
   after four 60s retries on `Knex: Timeout acquiring a connection` from outside the VPC. This invalidates
