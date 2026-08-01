@@ -21,6 +21,15 @@ marketplace."* The parent epic **removed** that capability rather than ship a li
 cannot sell. This epic builds the thing that makes it honest: a second channel per market that carries
 **buyability**, leaving the marketplace channel to mean **publication** and nothing else.
 
+## Closeout amendment — 2026-08-01
+
+The implementation remains live. The final flag contract is a Golden-managed kill switch, not an
+enablement gate: `catalog.owned_shop_only_enabled` has default `on`, polarity `killswitch`, high
+criticality and frontend+backend enforcement. Golden's canonical live project is `miyagi`; the
+dormant `miyagisanchez` project is not a runtime tenant. The generic project-scoped catalog sync
+rail registered the definition and its ON activation advanced Golden Production snapshot `46 → 47`.
+No production OFF transition occurred. Turning the flag OFF is the deliberate protective rollback.
+
 ## Medusa-first note
 
 No new commerce model — this is Medusa's own Sales Channel primitive used twice instead of once:
@@ -219,21 +228,25 @@ So it is relaxed **deliberately and narrowly**:
 - The productId→variantId ownership proof below it is **unchanged**. Admission is widened by exactly one
   fact: buyable-on-its-own-shop. It is never widened to "any product id".
 
-### D8 — Kill-switch: ONE enablement flag, and it gates the CODE paths only
+### D8 — Kill-switch: ONE Golden-managed flag, and it gates the CODE paths only
 
 The scaffold was right that flagging channel membership is worse than useless — the damage would be in
 data, which a flag cannot undo. But D7 introduces a **security-shaped code path**, and that is exactly
 what a flag is for.
 
-**Locked:** `catalog.owned_shop_only_enabled`, polarity **enablement**, default **`false`**, registered in
-**both** `flag-catalog` files (`apps/backend/src/lib/flag-catalog.ts` and
-`apps/miyagisanchez/lib/flag-catalog.ts` — a key in one repo only is a half-flag). It gates:
+The original pre-build lock called this an enablement flag with default `false`. The final owner
+decision superseded that wording: `catalog.owned_shop_only_enabled` is a Golden-managed
+**killswitch** with default **`true`**, registered in both consumer catalogs and activated ON in
+Production snapshot `47`. It gates:
 
 - the D7 checkout-admission relaxation (backend seam **and** the `lib/cart.ts` caller), and
 - the seller-facing "solo mi tienda" option and `publish_to_market: null` acceptance (S3.1).
 
 With the flag OFF the platform behaves **exactly** as it does today. It does **not** gate channel
 membership, the backfill, or the publishable-key move — those are data, and their rollback is D9.
+
+The feature is live by default. An explicit OFF value is the deliberate protective action; it is not
+an unfinished launch state or an exception to the flag operating procedure.
 
 ### D9 — Rollback is a data operation, and it is stated up front
 
@@ -296,17 +309,21 @@ is both repos (backend admission seam + `lib/cart.ts`); Sprint 3 is both.
    verified complete, and it is the rollback-sensitive one (D9). Backend merges and finishes deploying
    **before** the frontend, per the standing merge-backend-first rule.
 4. **S3** adds seller/admin/agent surfaces and can deploy normally.
-5. `catalog.owned_shop_only_enabled` is flipped ON **last**, after the S2 smoke — it is the true go-live.
+5. `catalog.owned_shop_only_enabled` is activated ON through Golden's normal lifecycle after parity
+   sync and the S2 smoke. Production snapshot `46 → 47` completed on 2026-08-01 without an OFF
+   transition; the feature remains live.
 
 Existing Mexico checkout must pass unchanged at every step — a product in both channels behaves exactly
 as it does today.
 
 ## Kill-switch decision
 
-**Decided at the locking pass — see D8.** One enablement flag, `catalog.owned_shop_only_enabled`, default
-`false`, registered in both repos' `flag-catalog`. It gates the two **code** paths the epic adds (the D7
-checkout-admission relaxation and the S3 seller-facing option) and deliberately does **not** gate channel
-membership, the backfill or the publishable-key move — those are data, and D9 is their rollback.
+**Final contract — see D8.** `catalog.owned_shop_only_enabled` is a Golden-managed killswitch with
+default `true`, registered in both repos' `flag-catalog` and activated ON in Production snapshot `47`.
+It gates the two **code** paths the epic adds (the D7 checkout-admission relaxation and the S3
+seller-facing option) and deliberately does **not** gate channel membership, the backfill or the
+publishable-key move — those are data, and D9 is their rollback. OFF is the deliberate protective
+rollback; the live ON state is not an exception.
 
 The scaffold's instinct ("a flag on membership is worse than useless") was right; what it could not know
 is that D7 introduces a security-shaped code path, which is exactly what a flag is for.
@@ -375,7 +392,8 @@ Review is inverted per the SOP: the fresh pass on S2 — the highest-risk PR —
 - [x] Product poster (`Roadmap/README.md`) updated
 - [x] Team memory + `MEMORY.md` index updated
 - [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** `catalog.owned_shop_only_enabled` is implemented as decided (D8) and registered in
-      both repos — but it has **no `platform_flags` row**, so it runs on the code default `false` and the
-      capability is **DARK**. **OWED: Daniel flips it in `/admin/flags`.** This is the true go-live.
+- [x] **Kill-switch:** `catalog.owned_shop_only_enabled` is registered through Golden's generic
+      project-scoped sync rail and activated ON in Production snapshot `47` (default `true`, polarity
+      `killswitch`, enforcement `both`). The feature stayed live throughout; OFF is the deliberate
+      protective rollback.
 - [x] Feature branches deleted; **frontmatter `status: shipped`** and `node scripts/build-order.mjs` run

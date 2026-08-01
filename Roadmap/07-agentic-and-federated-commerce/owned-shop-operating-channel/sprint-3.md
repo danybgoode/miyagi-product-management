@@ -1,14 +1,16 @@
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 3: The seller can actually choose
 
-**Status:** ✅ complete (code) — backend PR 131 (`64730e3`) + frontend PR 331 (`93e510e`), merged and
-deployed. **Dark until the flag flips:** `catalog.owned_shop_only_enabled` has no `platform_flags` row,
-so it runs on the code default `false`. That flip is owed to Daniel and is the true go-live.
+**Status:** ✅ complete and live — backend PR 131 (`64730e3`) + frontend PR 331 (`93e510e`), merged and
+deployed. The final `catalog.owned_shop_only_enabled` contract is a Golden-managed ON killswitch
+(default `true`, enforcement `both`). It was registered through the generic project-scoped sync rail
+and activated ON in Golden Production snapshot `47`; no production OFF transition occurred.
 
 ## Build contract (locked by the architect before the builder started)
 
-- **D8** — everything seller-facing in this sprint sits behind `catalog.owned_shop_only_enabled`
-  (enablement, default `false`, registered in **both** repos' `flag-catalog`). Sprint 2 already added the
-  key; do not add a second one.
+- **D8** — everything seller-facing in this sprint sits behind `catalog.owned_shop_only_enabled`.
+  The original pre-build enablement/default-OFF wording was superseded at closeout: the live
+  contract is a Golden-managed killswitch with default `true`, registered in **both** repos'
+  `flag-catalog`. Do not add a second definition or a project-specific Golden whitelist.
 - **D2** — `publish_to_market: null` means *operating channel only*. Because the operating channel is a
   superset, there is **no** state in which a product sits in zero channels. That is what makes Story
   3.1's exhaustive proof provable rather than aspirational.

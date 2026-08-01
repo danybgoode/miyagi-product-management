@@ -97,26 +97,17 @@ spec that cannot fail for the right reason is not evidence.
 
 ## Gaps / follow-ups
 
-- **OWED — the flag go-live, and it needs a step nobody scoped.** `catalog.owned_shop_only_enabled` is
-  registered in both repos' `flag-catalog`, so `isEnabled()` reads it correctly — and it is **invisible
-  and un-flippable** in `/admin/flags`. Investigated after Daniel could not find it:
-  - production runs `GOLDEN_BEANS_FLAG_CUTOVER = *=golden`, so the **Golden Beans control plane is
-    authoritative for every flag**;
-  - `/admin/flags` renders **only** the Golden snapshot ("*intentionally no platform_flags fallback
-    here*"), so a flag Golden has never heard of cannot appear;
-  - the UI can only **toggle**, never create, and no sync script in either repo pushes definitions;
-  - Miyagi's `GOLDEN_BEANS_FLAG_ADMIN_KEY` is **read-only for administration** — `GET` 200, `POST` 401
-    *"Invalid flag administration credential"* on the same bearer.
+- **Resolved — Golden registration and activation.** The original diagnosis was correct that a
+  definition absent from Golden's snapshot cannot appear in the manager, but it incorrectly treated
+  the one-time importer as the intended steady state. The generic project-scoped sync rail now owns
+  registration: live project `miyagi` synchronized its frontend catalog as `1 created / 39 unchanged`
+  and its backend fragment as `0 created`; idempotent reruns created `0` definitions. The owned-shop
+  definition is version `1`, default `true`, polarity `killswitch`, enforcement `both`, and its ON
+  activation advanced Production snapshot `46 → 47`. No production OFF transition occurred.
 
-  **Daniel creates the definition in Golden Beans** (key `catalog.owned_shop_only_enabled`, polarity
-  `enablement`, criticality `high`, environment `production`, current `snapshotVersion 46`); it then
-  appears in `/admin/flags` and is toggleable like every other flag. This is the true go-live and it is
-  what makes the money smokes below possible at all.
-
-  **The transferable lesson — this is the Flagsmith trap recurring in the Golden Beans era.**
-  `LEARNINGS.md` already records "a flag defined in code is INVISIBLE in the dashboard until someone
-  creates it via the API". The mechanism changed; the shape did not. **Creating the Golden definition
-  belongs in the epic's task list**, or the kill-switch you planned is a lever with no dial.
+  The durable lesson is not to leave a local default-only flag unmanaged. Typed local defaults remain
+  required resilience, while Golden is the operational writer. Every future project uses the generic
+  sync rail; no Golden-side Miyagi whitelist or manual importer is needed.
 - **OWED — money-path smokes (Daniel).** S2: buy an operating-channel-only product end to end, plus one
   ordinary marketplace purchase as regression. S3: publish → unpublish → buy again. Automated specs
   cannot cover live payment rails.
