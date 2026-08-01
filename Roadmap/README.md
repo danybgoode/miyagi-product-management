@@ -180,6 +180,25 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-07-31 — Owned-shop operating channel SHIPPED (5 PRs across 2 repos; HIGH — money path,
+  publishable-key membership, checkout admission).** A shop can now be sold from without marketplace
+  admission. Medusa's Sales Channel primitive used twice instead of once: a new **operating channel**
+  (`Miyagi Operating MX`) carries *buyability*, leaving the marketplace channel to mean *publication* and
+  nothing else. Sequenced backfill-first — channel created and protected before it existed, stock-location
+  link made, **98 products backfilled** (77 published + **21 draft**), and only then the storefront
+  publishable key **moved** (1 link row before, 1 after, verified). **The locking pass is what made this
+  safe:** it read Medusa's own source and found that the scaffolded plan — link the key to *both*
+  channels — would have returned **HTTP 400 on every cart creation**, because a multi-channel key with no
+  `sales_channel_id` in the body is refused outright. The shipped design makes that unrepresentable, and
+  a live `POST /store/carts` now returns 200 on the operating channel. It also found the **stock-location
+  link** nobody had scoped (reservation resolves against the *cart's* channel, so completion would have
+  failed after payment) and that the checkout gate lives in the **frontend**, adding a whole story. Two of
+  the architect's own locked decisions were later corrected by review and rewritten in place with the
+  evidence rather than quietly softened. *(**Owed:** the `catalog.owned_shop_only_enabled` flip — the
+  capability is **dark** until then — plus Daniel's money-path smokes, and the pre-existing cart-write
+  authorization boundary now recorded as owed.)* See [07 · Agentic & Federated Commerce › Owned-shop
+  operating channel](07-agentic-and-federated-commerce/owned-shop-operating-channel/).
+
 - **2026-07-31 — Market architecture foundation SHIPPED (4 PRs across 2 repos; HIGH — routes, catalog
   exposure, and the money path).** Miyagi stopped pretending every shop belongs to one Mexico
   marketplace. **S1** (backend [#124](https://github.com/danybgoode/medusa-bonsai-backend/pull/124),

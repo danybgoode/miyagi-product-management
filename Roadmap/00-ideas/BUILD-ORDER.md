@@ -5,22 +5,21 @@
 
 # Build order — generated status board
 
-> **Generated 2026-07-31 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-01 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (3)
+## 🏗️ Building now (2)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Owned-shop operating channel — make a shop sellable without marketplace admission](../../07-agentic-and-federated-commerce/owned-shop-operating-channel/README.md) — 07 Agentic/Federated · 4/10 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
 ## 📋 Ready to build (scaffolded, not started) (0)
 
 _None._
 
-## ✅ Shipped (135)
+## ✅ Shipped (136)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -85,6 +84,7 @@ _None._
 - [Own channel: custom-domain polish (custom-domain-polish)](../../07-agentic-and-federated-commerce/custom-domain-polish/README.md) — 07 Agentic/Federated · 7/7 stories · risk: Low
 - [Own channel: full shop experience (own-shop-experience)](../../07-agentic-and-federated-commerce/own-shop-experience/README.md) — 07 Agentic/Federated · 8/8 stories · risk: Low · Wave 3
 - [Own-shop premium presentation — "stepping into StickerJunkie"](../../07-agentic-and-federated-commerce/own-shop-premium-presentation/README.md) — 07 Agentic/Federated · 11/11 stories
+- [Owned-shop operating channel — make a shop sellable without marketplace admission](../../07-agentic-and-federated-commerce/owned-shop-operating-channel/README.md) — 07 Agentic/Federated · 10/10 stories · risk: High · Wave 1
 - [Pretty URL: customizable shop slug (custom-slugs)](../../07-agentic-and-federated-commerce/custom-slugs/README.md) — 07 Agentic/Federated · 5/5 stories
 - [Short links (`mschz.org/shop` and `mschz.org/product`)](../../07-agentic-and-federated-commerce/short-links/README.md) — 07 Agentic/Federated · 4/4 stories
 - [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 6/6 stories

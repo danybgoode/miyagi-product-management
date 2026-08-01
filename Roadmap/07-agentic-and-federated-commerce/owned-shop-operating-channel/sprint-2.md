@@ -1,6 +1,9 @@
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 2: Membership becomes load-bearing
 
-**Status:** ⬜ not started
+**Status:** ✅ complete — backend PR 130 (`f38c703`) + frontend PR 330 (`a02795d`), merged and deployed.
+The publishable key was **moved** in production: 1 link row before, 1 after, `verified: true`.
+`POST /store/carts` with no `sales_channel_id` returns **200** and the cart lands on the operating
+channel — the exact call the scaffold's two-channel plan would have 400'd. Marketplace unchanged (77).
 
 ## Build contract (locked by the architect before the builder started)
 

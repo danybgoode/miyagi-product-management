@@ -457,6 +457,67 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   false claim — never let a docblock stand in for a test. The "a confident comment is not evidence" rule
   ([[guard-the-population-not-the-door-you-found]]), applied to test fixtures. *(2026-07-24,
   merchant-activation-scorecard, PR 307 fresh-reviewer.)*
+- **THE REPORT MUST MATCH WHAT ACTUALLY HAPPENED — and "validate before apply" is the same rule seen from
+  the other end.** The 2xx-partial-run line below (webhook cluster, item 5) named one expression of this;
+  `owned-shop-operating-channel` hit **four in a single epic**, none of which that wording would have
+  caught by shape:
+  (a) a backfill returned **200** with `stock_locations.applied: false` buried in the payload — the
+  operator sees green while the half that makes the channel usable at checkout silently did not run;
+  (b) the publishable-key move returned **200 `applied: true`** alongside `verified: false` from its own
+  post-write re-read; (c) the checkout-admission route turned an ownership-read **outage** into a **404
+  refusal**, so a link-table hiccup reported every owned-shop product as "does not exist" while the
+  sibling read correctly answered 503; (d) publication validation ran **after** the title/price writes, so
+  `{title, publish_to_market:null}` with the flag off **persisted the title** and then returned 423.
+  The generalisation: **every precondition that can refuse a run is evaluated before the first write, and
+  any outcome short of complete success is reported in the STATUS, never only in the body.** Validation is
+  pure, which is exactly why it costs nothing to put first — and non-transactional handlers (most of them)
+  have no other way to be honest. Corollary for the spec: **assert the ORDERING, not the status code.**
+  "It returned 423" was true of the broken version too; what distinguishes them is whether a write
+  happened first, so record a trace of the effects and assert it is empty on a refusal. *(2026-07-31,
+  owned-shop-operating-channel — three of the four were found by codex cross-review, one by the
+  orchestrator.)*
+- **A `medusa exec` script CANNOT reach this production database, and never could.** `medusa-pg` has
+  `ipv4Enabled: false` with a private ip (`10.7.0.3`); a real attempt with correct prod credentials died
+  after four 60s retries on `Knex: Timeout acquiring a connection` from outside the VPC. This invalidates
+  a whole class of runbook commands — **every** `medusa exec` script in the backend repo. The tell was
+  already in the tree: `cleanup-default-data.ts`'s own header admits it "has never been run against
+  production", which was **evidence**, not a footnote. Every production mutation in that repo is an
+  internal HTTP route for this reason (it runs inside the VPC with the real Redis, locking provider and
+  module config). **An unrunnable runbook command is a defect** — hand over a command you have proven can
+  execute, or say plainly that it needs VPC access and name the path that works. *(2026-07-31,
+  owned-shop-operating-channel S1.3.)*
+- **A literal NUL byte in any changed file CRASHES the cross-agent review layer, silently.** `spawnSync`
+  refuses an argv string containing one (`ERR_INVALID_ARG_VALUE`), and `cross-review.mjs` passes the diff
+  through argv — so the required review **died** instead of reviewing, and a tailed runner very nearly
+  made that read as a clean pass on a HIGH-tier money-path PR. Two compounding traps: git stops diffing a
+  file once it sniffs a NUL in the **first 8 KB**, so the spec that tripped the sniffer got noticed while
+  the source file's NULs sat past the window and were missed — fixing the file the tool flagged is not
+  fixing the defect. NUL is a fine composite-key delimiter; write it as the **escape sequence**, never a
+  literal byte. Guarded now by `no-literal-nul-bytes.unit.spec.ts` (which also asserts its own walk still
+  visits >200 files, because a guard over an accidentally-empty set passes vacuously forever).
+  *(2026-07-31, owned-shop-operating-channel S2.)*
+- **Review axes are not interchangeable, and on this codebase the ranking is now measured.** Across one
+  HIGH-risk epic: the two Gemini tiers (`gemini-3.6-flash-high`, `gemini-3.1-pro-high`) produced **zero**
+  real findings in four passes — and returned *byte-identical* single-nit results on the same diff, so the
+  newer generation changed nothing observable. The fresh-agent axis (`claude-opus-4-6-thinking` via agy,
+  a different AGENT rather than a different family) found 3 should-fix. **Codex (`gpt-5.6-terra`) found a
+  BLOCKING defect on every backend PR it saw — 3 blocking + 2 should-fix in 5 passes — including one
+  inside the orchestrator's own round-1 fixes.** Keep codex first for a Claude-built diff (the router
+  already says so) and treat "codex found nothing" as the meaningful signal; a clean Gemini pass is not
+  evidence. **And re-run on the FIXED tip every time** — round 2 found a blocker in round 1's fixes, and
+  round 3 found one in round 2's. *(2026-07-31, owned-shop-operating-channel.)*
+- **A confidently-wrong MECHANISM inside a locked decision is worse than an open question, because
+  builders implement it faithfully.** Two of the architect's own locked decisions were wrong here and both
+  were caught by review, not by the author: a grep for `req\.errors` missed `req_?.errors` (the reader
+  aliases the request), so a "silent misroute" was really a **loud 400 on every cart**; and the checkout
+  admission seam was called "the anti-IDOR boundary on the money path" when `POST
+  /store/carts/:id/line-items` enforces no channel membership at all, making it an **offer gate**. In both
+  cases the *decision* survived and only the reasoning under it was wrong — which is precisely why it is
+  dangerous, since the decision looking right is what stops anyone re-checking. Correct such a thing **in
+  place, with a visible banner and the evidence**, never by quietly softening the wording: one builder had
+  already been asked to write a spec encoding the false mechanism, and correctly refused. *(2026-07-31,
+  owned-shop-operating-channel D3 + D7.)*
+
 ## Tooling gotchas
 - **Signed-webhook consumers + write-once milestones (2026-07-22, `merchant-lifecycle-projection`,
   PR #298 — six cross-agent rounds + a fresh reviewer found NINE real defects in one story; the

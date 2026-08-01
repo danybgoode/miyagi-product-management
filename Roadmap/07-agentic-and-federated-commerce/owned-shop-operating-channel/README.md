@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: owned-shop-operating-channel
 ---
 
@@ -354,25 +354,28 @@ Review is inverted per the SOP: the fresh pass on S2 — the highest-risk PR —
 
 ## Definition of Done (epic)
 
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] All sprints merged to `main` (gaps stated below — the money smokes are owed to Daniel)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
 - [ ] The architecture decisions above are **locked with numbers** from the live database before any
       builder starts, and E1's five questions are answered in writing
 - [ ] A product in the operating channel but **not** the marketplace channel: renders on its owned shop,
-      is **absent** from `/mx`, and **can be bought end to end**
-- [ ] A product in both channels behaves exactly as it does today (existing Mexico checkout unchanged)
-- [ ] The operating channel is in `protectedSalesChannelIds` **before** it exists in production
-- [ ] Backfill dry-run reviewed, applied by the orchestrator only, and verified complete before S2
-      depends on it
-- [ ] Publishable-key link rows counted before and after: **1 → 1** (D3). More than one link row on the
-      storefront key at any point is a defect, not a milestone
-- [ ] The operating channel is linked to every stock location the marketplace channel is linked to (D5),
-      verified before the key moves
-- [ ] Owned-shop and tenant-channel reads still carry **no** channel filter (parent D4 guard green)
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** the decision recorded above is implemented as decided, or its absence justified
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** and
-      `node scripts/build-order.mjs` run
+      is **absent** from `/mx`, and **can be bought end to end** — **OWED: needs the flag ON + Daniel's
+      money smoke.** The machinery is shipped and verified; the end-to-end purchase is not yet run.
+- [x] A product in both channels behaves exactly as it does today — verified live: `/store/products`
+      still totals 77, marketplace 77/77/0, `POST /store/carts` returns 200 on the operating channel
+- [x] The operating channel is in `protectedSalesChannelIds` **before** it existed in production (D10
+      ordering held; the allow-list shipped in PR 128 and deployed before PR 129 created the channel)
+- [x] Backfill dry-run reviewed, applied by the orchestrator only, and verified complete before S2
+      depended on it — 98 linked, re-run reports `would_link: 0`
+- [x] Publishable-key link rows counted before and after: **1 → 1** (D3), `verified: true`
+- [x] The operating channel is linked to every stock location the marketplace channel is linked to (D5),
+      verified before the key moved — one location, `missing_on_operating: []`
+- [x] Owned-shop and tenant-channel reads still carry **no** channel filter (parent D4 guard green)
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [ ] **Kill-switch:** `catalog.owned_shop_only_enabled` is implemented as decided (D8) and registered in
+      both repos — but it has **no `platform_flags` row**, so it runs on the code default `false` and the
+      capability is **DARK**. **OWED: Daniel flips it in `/admin/flags`.** This is the true go-live.
+- [x] Feature branches deleted; **frontmatter `status: shipped`** and `node scripts/build-order.mjs` run

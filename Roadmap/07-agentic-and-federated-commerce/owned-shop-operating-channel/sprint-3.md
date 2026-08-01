@@ -1,6 +1,8 @@
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 3: The seller can actually choose
 
-**Status:** ⬜ not started
+**Status:** ✅ complete (code) — backend PR 131 (`64730e3`) + frontend PR 331 (`93e510e`), merged and
+deployed. **Dark until the flag flips:** `catalog.owned_shop_only_enabled` has no `platform_flags` row,
+so it runs on the code default `false`. That flip is owed to Daniel and is the true go-live.
 
 ## Build contract (locked by the architect before the builder started)
 
