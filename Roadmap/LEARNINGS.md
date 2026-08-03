@@ -2720,6 +2720,23 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   Sanchez" in `clerk apps list`. Source the keys from `.env.local`, not the apps list. Dev test users
   `playwright-buyer@ / playwright-seller@miyagisanchez.com` exist in honest-eel-39; `MS_TEST_*` +
   `CLERK_*` repo secrets set on `miyagisanchezcommerce`.
+- **The admin fixture: `agentsm@miyagisanchez.com` (provisioned 2026-07-12).** `--flow=admin` needs a dev
+  test user that is *actually* an admin — neither `MS_TEST_BUYER_EMAIL` nor `MS_TEST_SELLER_EMAIL` is one
+  by default. `apps/miyagisanchez/lib/admin/identity.ts` is the SSOT: a Clerk user is admin if
+  `publicMetadata.role === 'admin'` **or** its email is in the `MIYAGI_ADMIN_EMAILS` env comma-list.
+  `agentsm@miyagisanchez.com` exists in the correct dev instance (`honest-eel-39` — the **"Despacho
+  Bonsai"** Clerk app, NOT the "Miyagi Sanchez"-named one) with `publicMetadata.role: "admin"`; verified
+  live against `/admin/promoter` locally. Set `MS_TEST_ADMIN_EMAIL=agentsm@miyagisanchez.com` when running
+  `--flow=admin`, or `live-smoke.mjs` silently falls back to `MS_TEST_SELLER_EMAIL`.
+- **Provisioning a fixture without the dashboard.** The `clerk` CLI can enumerate/create dev-instance test
+  users directly: `clerk apps list` for the `application_id`/`instance_id` pair (cross-check against the
+  app's real `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` per the instance-match gotcha above — don't trust the
+  display name), then `clerk api /users --app <app_id> --instance <instance_id> -d
+  '{"email_address":["..."],"public_metadata":{"role":"admin"},"skip_password_requirement":true}'` — no
+  password needed, since the ticket strategy never uses one. Needs `--yes` to actually mutate (defaults to
+  a confirmation prompt); `--dry-run` previews the request. *(Relocated here 2026-08-03 from the
+  `dobby-foundation` `live-smoke` skill, which was genericized for portability — these are this project's
+  operational facts, not portable documentation.)*
 - **Also learned:** `auth_password.enabled:true` ≠ UI password login works — the prod instance is
   email-code/OAuth-first (`auth_email.sign_in_strategies:["email_code"]`), which is why ticket
   sign-in (not password) is the right automation path.
