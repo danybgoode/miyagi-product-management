@@ -1,17 +1,43 @@
 ---
 title: "US operator needfinding and value-proposition validation"
 slug: us-operator-needfinding
-status: queued
+status: shipped
 area: "08"
 type: spike
 priority: wave-0
 risk: low
+appetite: M
+underwritten_by: null
 epic: null
 build_order: "#US-1"
-updated: 2026-07-28
+updated: 2026-08-03
 ---
 
 # Seed — US operator needfinding and value-proposition validation
+
+## Outcome — 2026-08-03
+
+The desk-research baseline is complete and is sufficient to start the ordered US bets while
+progressive interviews continue. It resolves the required segment, job, trigger, first behavior,
+pilot structure, module proof, retained-system baseline, agent boundaries, customer language, and
+disqualification rules. No app epic was scaffolded for this spike.
+
+Decision and field artifacts:
+
+- `../../../../madmen/clients/miyagi-sanchez/us-operator-needfinding-spike-outcome-2026-08-03.md`
+- `../../../../madmen/clients/miyagi-sanchez/us-operator-interview-guide.md`
+- `../../../../madmen/clients/miyagi-sanchez/us-merchant-interview-guide.md`
+- `../../../../madmen/clients/miyagi-sanchez/us-pilot-recruitment-page-brief.md`
+- `../../../../madmen/clients/miyagi-sanchez/us-pilot-outreach-sequences.md`
+
+The first recruit is an owner-led operator managing 3–10 active shops for brands that make,
+design, or meaningfully curate what they sell. The first behavior is submission of three shop URLs
+for a no-cutover exit-readiness review. The pilot is one operator, three consenting shops, 90 days,
+parallel operation, and a completed real-order lifecycle before any merchant-controlled cutover.
+
+Interviews remain required as a continuous evidence system. They can reverse provisional decisions
+using the explicit triggers in the outcome brief; they do not gate recruiting, grooming, or
+generalizable US-readiness work.
 
 ## Approved direction
 

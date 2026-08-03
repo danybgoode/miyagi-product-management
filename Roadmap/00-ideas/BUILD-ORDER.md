@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-08-01 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-03 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -158,9 +158,8 @@ _None._
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (10)
+## ⬜ Funnel — seeds not yet scaffolded (9)
 
-- [US operator needfinding and value-proposition validation](seeds/us-operator-needfinding.md) — Queued · Spike · Wave 0 Enablers
 - [Miyagi Partners proposition and recruiting portal v3](seeds/miyagi-partners-recruiting-v3.md) — Queued · Feature · Wave 1
 - [US operator commerce pilot — three original-product shops](seeds/us-operator-commerce-pilot.md) — Queued · Feature · Wave 1
 - [US owned-shop positioning and proof launch](seeds/us-proof-launch.md) — Queued · Feature · Wave 2
@@ -182,4 +181,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 
 ---
-_Epics: 139 · seeds in funnel: 10 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 139 · seeds in funnel: 9 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
