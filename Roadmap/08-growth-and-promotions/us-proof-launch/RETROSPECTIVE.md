@@ -1,6 +1,6 @@
 # US owned-shop positioning and proof launch — Retrospective
 
-_Closed: 2026-08-03_ · **Scaffold placeholder only: the epic is not closed; replace this date at close.**
+_Closed: 0000-00-00_ · **Scaffold sentinel: the epic is not closed; replace this at close.**
 
 ## What shipped
 
