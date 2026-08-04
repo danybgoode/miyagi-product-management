@@ -14,7 +14,8 @@ Before a builder starts, cite the epic's `D1…Dn`, Sprint 1 funds/tax/dispatch 
 contracts here. Name the direct-charge Checkout Session/PaymentIntent account context through webhook/refund/
 balance transaction, the one-total tax seam and product inputs, selected Medusa fulfillment-provider methods,
 provider webhook verification/idempotency, quote/purchase boundary, ledger event types/idempotency/currency
-grouping, Golden flag/recovery carve-through, literal live-order cap/SKU/shop and owner-only production steps.
+grouping, the shipped deleted-inclusive seller/order authorization resolver, Golden flag/recovery carve-through,
+literal live-order cap/SKU/shop and owner-only production steps.
 
 ## Stories
 

@@ -64,6 +64,7 @@ commerce, grant, migration-batch, order or ledger system.
 | Operator identity and auth | `miyagi-partners-mcp`, `#US-2`, `partner_grants`, `ms_partner_` and audit | One identity, explicit manager/viewer grants, seller revoke and per-object authorization |
 | Shopify intake | platform-migrations `start_shopify_migration`, staged supply batch and parity report | Review before import; no second connector framework |
 | Native intake | shipped seller product builder | Create the required native catalog and selected third-shop path |
+| Catalog ownership | backend `src/api/store/_utils/seller-catalog-query.ts` + team memory `catalog-relations-and-overlays.md` | Reuse the typed sparse-relation resolver; historical order auth stays deleted-inclusive and unresolved/mixed ownership fails closed |
 | Payment | backend `payment-stripe-connect` provider and checkout/webhook/refund seams | Add a locked US direct-charge contract; do not reuse destination charges by changing currency |
 | Shipping pattern | existing Envía provider/client, quote, label and tracking tests | Implement one selected US provider through Medusa's fulfillment-provider seam |
 | Economics | shipped profit ledger and seller profit view | Add actual processor/label costs and a granted-operator USD proof projection |
@@ -94,6 +95,8 @@ At minimum, the locking pass must prove or correct:
   the one Medusa fulfillment-provider interface it implements;
 - current Shopify migration-batch and native-catalog contracts, including every other writer of market,
   channel, inventory, price and publish state;
+- the shared seller-catalog resolver and its sparse/null-slot, deleted-inclusive historical-authorization and
+  unresolved/mixed-ownership contracts; cite it rather than restating its predicates;
 - current profit-ledger event vocabulary, idempotency keys, currency grouping and connected-account fee source;
 - every irreversible or person-contacting side effect, the Golden flag catalog/default in each repo/environment,
   and the exact OFF-state carve-through needed for refunds, fulfillment and tracking on an already-paid order;

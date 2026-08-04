@@ -13,8 +13,10 @@ automated incumbent sync, implicit publication or cross-market exposure.
 Before a builder starts, cite the epic's `D1…Dn` and the merged Sprint 2 contracts here. Name the literal
 three shops and intake map, current `start_shopify_migration`/supply-batch/parity/import seams, every writer of
 price/inventory/channel/publication, native builder contract, required catalog fields/tax inputs, retained
-inventory authority/safety buffers, partner-portfolio projection and storage boundary for the public-safe
-reconciliation record. Replace smoke placeholders with literal cohort URLs and disposable records.
+inventory authority/safety buffers, the shipped `seller-catalog-query.ts` sparse/deleted relation contract,
+partner-portfolio projection and storage boundary for the public-safe reconciliation record. Cite the shared
+resolver; do not paraphrase its ownership predicates. Replace smoke placeholders with literal cohort URLs and
+disposable records.
 
 ## Stories
 
@@ -30,7 +32,7 @@ without overwriting live merchant work.
 - The parity report covers ownership/identity, title, description, media, variants, SKU, USD price, inventory,
   weight/dimensions and the Sprint 1 original-product complexity. Unsupported fields stay visible gaps.
 - Retry is idempotent; denied/revoked shops cannot stage, review or import. Concurrent confirm cannot import
-  twice.
+  twice. Sparse/null seller-product slots do not erase valid attribution, and unresolved/mixed ownership fails.
 - Imported products are assigned only to the US operating channel and remain unpublished until explicit
   operator confirmation.
 
@@ -74,8 +76,8 @@ logic, role/auth matrix, privacy allowlist and Daniel three-shop browser smoke.
 
 ## Sprint QA
 
-- **Backend specs:** migration batch target auth/idempotency/concurrency, product market/channel ownership,
-  readiness projection and unavailable states.
+- **Backend specs:** migration batch target auth/idempotency/concurrency, sparse/deleted seller-product
+  ownership, product market/channel ownership, readiness projection and unavailable states.
 - **Frontend specs:** staged review/confirm, native required fields, publish preview/confirm, three-shop cockpit,
   role behavior and USD/MXN copy continuity.
 - **Mutation proof:** new specs observed red once; explicit negations for import-before-review, publish-before-
