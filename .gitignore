@@ -45,6 +45,11 @@ yarn-error.log*
 # See .codex/config.example.toml for the shape.
 .codex/config.toml
 
+# Claude project-scoped Supabase MCP config. This checkout points at the same shared project as
+# production and permits the orchestrator-only migration rail, so keep it local even though the
+# current file contains no token. A clone must opt in and authenticate deliberately.
+.mcp.json
+
 # Local env files
 **/.env
 **/.env.local
