@@ -43,7 +43,7 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
    - **Live confirmation can be async + divided** (it's *confirmation*, not the gate): the agent owns API-level smoke (`curl`/Playwright) where it has access; **Daniel owns the browser / real-seller-session smoke** (he's notified when Cloud Run finishes and holds the live sessions/tokens). Exercise real behaviour — a disposable/test shop for anything that mutates data; clean up after (revoke test tokens).
    - **Backend (Cloud Run) has no per-branch preview** — it can only be confirmed *post-merge* against prod. The agent does the API-level prod smoke + a route-deployed probe; Daniel picks up the seller/browser parts. State this split in the PR.
 6. **Push as you go.** Each push updates the preview; the reviewer (and Daniel) can test per story without touching production.
-7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). **Flip the PR draft → ready-for-review the moment the deterministic gate is green and the self-QA note is posted** (updated 2026-07-15): a draft means *still building*, ready means *review me* — this is also what the roadmap board's Lifecycle overlay reads (draft PR → In progress, ready PR → In review), so leaving finished work in draft hides it in the "In review" column. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. Run the **mandatory cross-agent review** (`node scripts/cross-review.mjs <PR#>`), plus the fresh-reviewer subagent if the tier or your judgment calls for it — either way a fresh agent, never the builder (see *Review & merge* below). When the deterministic gate is green, every review finding is resolved, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
+7. **PR → review → merge to `main`.** Open a PR early (draft is fine) via `gh`; keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). **Flip the PR draft → ready-for-review the moment the deterministic gate is green and the self-QA note is posted** (updated 2026-07-15): a draft means *still building*, ready means *review me* — this is also what the roadmap board's Lifecycle overlay reads (draft PR → In progress, ready PR → In review), so leaving finished work in draft hides it in the "In review" column. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. Run the **two mandatory cross-family reviews** — route them with `node scripts/review-route.mjs --builder <who-wrote-it> --tier <low|high> <PR#>`, never by hand-picking `--agent` — plus the fresh-reviewer subagent **on HIGH tier only** (do not spawn it on LOW; the two external passes plus the gate are the whole layer there). Either way a fresh agent, never the builder (see *Review & merge* below). When the deterministic gate is green, every review finding is resolved, and the merge is authorized for the PR's risk tier, merge to `main`. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
 8. **Continue / close.** Roll into the next story. At **sprint close**, emit the sprint-wrap terminal summary (`SESSION-KICKOFFS.md` §7) — a thin pointer to the sprint doc + what's owed/next, never a re-summary. At **epic close**, do the epic Definition of Done (below) — including updating the product poster. **Close-out prose (retro, poster entry, sprint-wrap) may be first-drafted by `node scripts/prose-draft.mjs`** (cheap different-family model, house-voice prompt, file-derived inputs only) — the coordinating agent **must edit the draft for factual accuracy before committing** (drafts invent plausible gaps; the banner says so). PR bodies stay with the builder — they're cheapest written by the agent holding the context.
 
 ## Epic-mode builds — the default for a scaffolded epic (2026-07-24)
@@ -130,14 +130,27 @@ sprints that are mechanical over a locked contract to the faster one. Review is 
 `pr-reviewer` pass on the highest-risk PR runs on the stronger model. State the routing in the epic README so
 the choice is auditable.
 
-**The review stack does not shrink because the epic is being built at once.** Cross-agent review on every PR,
-fresh `pr-reviewer` on every HIGH PR, findings routed back to the original builder (context intact, fixes
-cheap) while the next sprint's builder starts. **The builder never merges their own PR** — and when the
-orchestrator finishes a builder's last mile itself (session limits will do this to you), a fresh independent
-agent must review those self-authored commits before merge.
+**The review stack does not shrink because the epic is being built at once — but it is right-sized by
+tier, and it is no longer three passes.** TWO cross-family passes on every PR (routed by
+`review-route.mjs`), the fresh `pr-reviewer` on every HIGH PR and **not spawned at all on LOW**. Findings
+route back to the original builder (context intact, fixes cheap) while the next sprint's builder starts.
+**The builder never merges their own PR** — and when the orchestrator finishes a builder's last mile
+itself (session limits will do this to you), a fresh independent agent must review those self-authored
+commits before merge. **When a reviewer family is capped, stop and ask Daniel for a refund** before
+spending orchestrator subagents on the missing pass — see *Review & merge*.
 
-**Pre-authorized merges are a real gear, and they have a shape.** Daniel may pre-authorize merging HIGH PRs,
-applying migrations and flipping the epic's flag for a *named* epic. That authorization covers the plan as
+**Epic-mode kickoffs are GENERATED, not hand-composed.** `node skills/groom/emit-epic-kickoff.mjs --epic
+<slug>` (the `groom` skill, `ways-of-work` plugin) reads the epic README + every sprint file and prints
+the whole-epic orchestrator prompt. Hand-composing it is how the architecture-lock pass gets summarised
+away and the review policy reverts to whatever the composing agent remembered — which is exactly what
+happened while no epic-mode generator existed.
+
+**Pre-authorized merges are a real gear, and they have a shape.** In a named epic-mode run, **merges are
+pre-authorized on green** — deterministic gate green, review findings resolved, risk tier declared — so
+the run doesn't pay a round-trip at every sprint boundary. Daniel may pre-authorize merging HIGH PRs,
+applying migrations and flipping the epic's flag for a *named* epic. **Done means shipped**, not merged:
+a merged PR that hasn't deployed, a migration written but not applied, or a flag that exists in code but
+not in Flagsmith is not done. That authorization covers the plan as
 discussed — it is **not** a new category of production mutation (TLS/IAM/secrets, money/entitlement writes, a
 new external dependency or prod secret): name those in one focused question. And pre-authorization never
 skips the gate — it removes the round-trip at each step, not the review layers.
@@ -242,12 +255,14 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
     integration tests are out of the gate (they need Postgres). The `Type-check + build + unit` check is wired
     into the backend repo's branch protection as a **required status check** on `main`, so a red run blocks
     merge (configured 2026-06-14).
-- **Cross-agent review (MANDATORY on every PR):** `node scripts/cross-review.mjs <PR#>
-  --agent codex|antigravity` pipes the PR diff into a **different model family's** CLI (Codex or Antigravity)
-  for one pass and posts the findings as a clearly-labeled PR comment. It exists to surface another
-  family's blind spots, and it has earned the promotion from advisory to required — it caught real bugs in
-  3 of 4 PRs in the 2026-07-17 batch alone (see `LEARNINGS.md`). **Run it on every PR, and resolve every
-  finding before merge** — fix it, or answer it on the PR with the reason it isn't a bug. An unanswered
+- **Cross-family review (MANDATORY on every PR — TWO passes):** `node scripts/cross-review.mjs <PR#>
+  --agent codex|antigravity|vibe|claude` pipes the PR diff into a **different model family's** CLI for
+  one pass and posts the findings as a clearly-labeled PR comment. **Two families review every PR**, and
+  you pick them with `review-route.mjs`, not by hand — see *Routing the reviewers* below. It exists to
+  surface another family's blind spots, and it has earned the promotion from advisory to required — it
+  caught real bugs in 3 of 4 PRs in the 2026-07-17 batch alone (see `LEARNINGS.md`). **Run both on every
+  PR, and resolve every finding before merge** — fix it, or answer it on the PR with the reason it isn't
+  a bug. An unanswered
   finding blocks the merge; the *run* still never **authorizes** one (CI + the risk-tier rule below stay
   the sole sources of merge authority). It is **single-pass** (no debate loop) and runs from
   `scripts/cross-review.prompt.md` — which carries the same *substance* the fresh `pr-reviewer` works from
@@ -274,30 +289,44 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
   |---|---|---|---|---|
   | **`codex`** (`--agent codex`, default) | GPT (OpenAI) | codex weekly | stdin | First choice — the established workhorse; auto-falls-back to agy on a dead token/stale CLI |
   | **`agy`** (`--agent antigravity`) | Gemini → GPT-OSS | **two** pools: Google `gemini-*`, then `gpt-oss-120b-medium` (a genuinely separate pool, so it survives either being spent) | argv (256 KB cap) | Codex capped, or you want Google's read; `runAntigravity` walks the pool pair itself |
-  | **`devin`** (`--agent devin`) | Devin default | devin (a **third** independent pool) | `--prompt-file` (no size cap) | Both codex AND agy capped — the resort that keeps *some* cross-family pass alive. **Weaker signal on the sample it was tried on** (mostly false positives, no genuine catch), so treat its findings with extra skepticism and don't rely on it as the primary. |
-  | **`cursor-agent`** | multi-family (Grok, GPT-5.x, Opus, Fable) | — | — | **Not wired.** On the current *free* Cursor plan named models are paywalled and free Auto is usage-capped. Worth adding only on **Cursor Pro**, which unlocks Grok/GPT-5.x as distinct families — then it's the richest gateway of the four. |
+  | **`vibe`** (`--agent vibe`) | Mistral | mistral (a **third** independent pool) | argv `--prompt` (256 KB cap) | Codex or agy capped; a genuinely different family from all three others. Runs `--agent plan` (read-only — programmatic mode otherwise defaults to `auto-approve`, i.e. a reviewer that could edit the tree). **Contract not yet probed against a live binary** — see `runVibe`'s header; probe once with `--dry-run` and record the result. |
+  | **`claude`** (`--agent claude`) | Anthropic (Sonnet) | the Claude subscription | stdin (`claude -p`) | **Last in the rotation, deliberately** — Claude capacity is usually the thing *building*. It rotates in the moment one of the three above is capped. Runs tool-less (`--tools ""` + `--strict-mcp-config`) so it can only read the piped diff. |
+  | **`devin`** (`--agent devin`) | Devin default | devin | `--prompt-file` (no size cap) | **Retired from the review rotation (2026-08-03).** The wrapper still works and the flag still accepts it, but `review-route.mjs` no longer routes to it: its findings were mostly false positives on the sample it was tried on, and it carries prose duty (`prose-draft.mjs`, `merge-report.mjs`) — spending it on a weak review signal puts the register at risk. `vibe` took its slot as the third independent pool. |
+  | **`cursor-agent`** | multi-family (Grok, GPT-5.x, Opus, Fable) | — | — | **Not wired.** On the current *free* Cursor plan named models are paywalled and free Auto is usage-capped. Worth adding only on **Cursor Pro**, which unlocks Grok/GPT-5.x as distinct families. |
+
+  **`claude` on this table is what lets a NON-Claude orchestrator get a Claude review.** When Codex or agy
+  drives a build, "get a Claude read" used to mean spawning a `pr-reviewer` subagent — something only a
+  Claude host can do. Exposing Claude Code as a plain CLI reviewer makes the layer symmetric: any
+  orchestrator, from any family, routes to any other family through one script. It is a *different thing*
+  from the subagent below: same family, but no repo context and no tools.
 
   The **fresh `pr-reviewer` subagent (same Claude family, different *agent*)** is a separate axis, not on
   this table — it caught the real bugs these external tools missed all epic (the emission-gate flag, the
   consent-boundary holes). Keep both axes: a different *family* (this table) AND a different *agent* (the
   subagent). Health/pins: `node scripts/{codex,agy}-doctor.mjs` (pre-authorized, LOW) — but an **agy pin
   bump coupled with a model swap** (a retired pinned model) escalates to Daniel, and **verify a confident
-  external finding before acting on it** — devin's two most concrete claims this session were both wrong.
-- **Fresh reviewer (judgment) — MANDATORY on HIGH tier, optional on LOW:** a **fresh reviewer agent**
-  re-derives intent from the diff alone and checks correctness, architecture, and the five rules from
-  `AGENTS.md`. The path is a **repo-local reviewer subagent** — `.claude/agents/pr-reviewer.md`, invoked as
-  *"use the pr-reviewer subagent on PR #N"* (paste the builder's report; it falls back to the PR body). It
-  verifies the report's claims against the real diff, `origin/main`, sibling-repo PR state, and these process
-  docs — read-only, single-pass; it composes with parallel agents and needs no external service. It must be a
+  external finding before acting on it** — devin's two most concrete claims in the session that retired it
+  were both wrong.
+- **Fresh reviewer (judgment) — MANDATORY on HIGH tier, NOT SPAWNED on LOW (changed 2026-08-03):** a
+  **fresh reviewer agent** re-derives intent from the diff alone and checks correctness, architecture, and
+  the five rules from `AGENTS.md`. The path is a **repo-local reviewer subagent** —
+  `.claude/agents/pr-reviewer.md`, invoked as *"use the pr-reviewer subagent on PR #N"* (paste the
+  builder's report; it falls back to the PR body). It verifies the report's claims against the real diff,
+  `origin/main`, sibling-repo PR state, and these process docs — read-only, single-pass. It must be a
   different agent than the one that built the PR.
   - **HIGH tier → always run it.** It repeatedly caught real money-path issues the cross-agent pass missed
     (catalog-management S6's IDOR, arranged-only-delivery S2, and the redirect-following SSRF bypass in the
-    2026-07-17 batch). On HIGH, the two layers have never been redundant.
-  - **LOW tier → optional**, once cross-review findings are addressed. Run it anyway when judgment says to:
-    a diff wider than its story, a shared-surface or `lib/` seam other epics import, a security-shaped
-    change, a sweep whose "everything else is fine" claim nobody has re-derived, or anything the cross-agent
-    pass flagged and you argued down. Skipping it is a **judgment call to state in the PR body**, not a
-    default to exercise silently.
+    2026-07-17 batch). On HIGH, the layers have never been redundant.
+  - **LOW tier → do NOT spawn it.** This replaces the old "optional, use judgment" rule, which in practice
+    meant almost every build ran **three** passes: the cross-agent CLI passes *and* the orchestrator
+    spawning its own reviewer subagents in parallel, every time. Two of those three were paying for the
+    same read. On LOW the two mandatory cross-family passes plus the deterministic gate are the whole
+    layer — and that is only safe because the gate got materially stronger (lint in both repos, coverage
+    measured, the owed ledger generated, a security lens).
+  - **When a family is quota-capped, STOP AND ASK DANIEL FOR A REFUND** before substituting subagents for
+    the missing external pass. External quota is refundable in minutes; subagent tokens come out of the
+    build budget. `review-route.mjs` prints the exact ask and states the window (`--fallback-after`,
+    default 30 min); after it, proceed and **record the downgrade in the PR body**.
   Either way, keep review a **single pass on a green CI gate** — not an iterative refine loop (that loop is
   the dominant token cost in multi-agent dev; let the deterministic gate, `tsc` + `build` + Playwright, carry
   the repetitive checking and have the reviewer read once). **Do not use the `/code-review ultra` cloud
@@ -305,23 +334,35 @@ CI always, cross-agent review always, and the fresh-reviewer pass **on HIGH tier
 
 ### Routing the reviewers — `node scripts/review-route.mjs --builder <who> --tier <low|high> <PR#>`
 
-Once **three families can build** (Claude, Codex, agy), "run cross-review" stopped being unambiguous:
-the default `--agent codex` on a Codex-built diff is **Codex reviewing Codex** — a same-family pass
-wearing a cross-family label, and a silent downgrade nothing in the old flow would catch. The router
-makes the policy executable and auditable; it prints its reasoning and the exact command to run.
+Once **several families can build** (Claude, Codex, agy, vibe), "run cross-review" stopped being
+unambiguous: the default `--agent codex` on a Codex-built diff is **Codex reviewing Codex** — a
+same-family pass wearing a cross-family label, and a silent downgrade nothing in the old flow would
+catch. The router makes the policy executable and auditable; it prints its reasoning and the exact
+commands to run.
 
-| Builder | Cross-family reviewer | Fresh `pr-reviewer` |
+**TWO cross-family passes per PR** (updated 2026-08-03), from the two highest-preference families that
+did *not* build the diff. Two and not one: a single external pass has no corroboration, and the families
+disagree often enough that the second read is where an argued-down finding gets a second vote.
+
+| Builder | Cross-family reviewers | Fresh `pr-reviewer` |
 |---|---|---|
-| Codex | **agy** | HIGH only |
-| agy | **codex** | HIGH only |
-| Claude | **codex** (then agy) | HIGH only |
+| Claude | **codex + agy** | HIGH only |
+| Codex | **agy + vibe** | HIGH only |
+| agy | **codex + vibe** | HIGH only |
+| vibe | **codex + agy** | HIGH only |
 
-Three rules, and rule 3 is the one that saves tokens:
+Four rules, and rules 3 and 4 are the ones that save tokens:
 1. **A family never reviews its own diff.**
-2. **The cross-family reviewer rotates to the highest-preference family that did not build.** Order is
-   codex → agy → devin; devin is last because its findings were mostly false positives on the sample
-   tried and it now carries prose duty.
-3. **The fresh `pr-reviewer` is MANDATORY on HIGH, and skipped on LOW.**
+2. **The two reviewers are the top of the preference order that did not build.** Order is
+   codex → agy → vibe → claude. `claude` is last deliberately — not because it reviews badly, but
+   because Claude capacity is usually the thing *building*; it rotates in the moment one of the three
+   ahead of it caps. `devin` is off the order entirely (see the roster table).
+3. **The fresh `pr-reviewer` is MANDATORY on HIGH, and NOT SPAWNED on LOW.** The orchestrator does not
+   run its own reviewer subagents alongside the external passes on a LOW PR — that was the third,
+   duplicated pass.
+4. **A capped family is a REFUND ASK, not a licence to substitute.** When fewer than two externals are
+   available the router says so and prints the ask; spending subagents on it is the *fallback after the
+   window*, not the first move, and the downgrade goes in the PR body.
 
 Rule 3 rests on the distinction this section opens with, and the two axes are **not interchangeable**:
 *family* independence (different blind spots) and *context* independence (an agent that did not hold
@@ -332,9 +373,14 @@ zero Claude review tokens. That is only safe because the deterministic gate got 
 (lint now runs in both repos, coverage is measured, the owed ledger is generated, a security lens
 exists) — this section's own instruction is to let the gate carry the repetitive checking.
 
-**A missing layer must be loud.** If no other family is installed the router reports the cross-family
-layer as **DARK** rather than silently substituting; say so in the PR body, because a missing layer
-that reads like a clean one is worse than no layer at all.
+**A missing layer must be loud.** If fewer than two other families are available the router reports the
+cross-family layer as **SHORT** (or **DARK**, if none are) rather than silently substituting; say so in
+the PR body, because a missing layer that reads like a clean one is worse than no layer at all.
+
+Note what "the fresh reviewer is Claude's axis" now costs *elsewhere*: `claude` is also a cross-family
+CLI reviewer on the roster above. Those are different things and the router treats them as such — the
+CLI pass is tool-less and repo-blind, the subagent reads the repo and these docs. Rule 1 still applies
+to the CLI pass: a Claude-built diff never gets `--agent claude`.
 
 **Every PR declares a risk tier** (in the PR body); that tier decides who may merge:
 - **Low-risk → an agent other than the builder may merge** once CI is green and the **cross-agent review is

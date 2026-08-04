@@ -47,6 +47,9 @@ import {
   checkAgyVersion,
   loadPromptBody,
   runAntigravity,
+  runVibe,
+  runClaudeCode,
+  AGENT_BIN,
   runDevin,
   runWithCodexFallback,
   resolveCurrentPr,
@@ -185,6 +188,13 @@ function runReview(agent, prompt, diff) {
     // Devin takes the whole thing in a prompt FILE (no argv cap), so it reuses agy's embedded-diff framing.
     return { findings: runDevin(agyArgv(prompt, diff)), fellBack: false };
   }
+  if (agent === 'vibe') {
+    return { findings: runVibe(agyArgv(prompt, diff)), fellBack: false };
+  }
+  if (agent === 'claude') {
+    // stdin, like codex — same prompt body, so the pass is comparable.
+    return { findings: runClaudeCode(prompt, diff), fellBack: false };
+  }
   die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 }
 
@@ -301,6 +311,10 @@ function main() {
   } else if (agent === 'antigravity') {
     ensureCmd('agy', 'agy not found — install the Antigravity CLI and authenticate it, then retry.');
     checkAgyVersion();
+  } else if (agent === 'vibe') {
+    ensureCmd(AGENT_BIN.vibe, 'vibe not found — install the Mistral Vibe CLI (`uv tool install mistral-vibe`) and authenticate it, then retry.');
+  } else if (agent === 'claude') {
+    ensureCmd(AGENT_BIN.claude, 'claude not found — install Claude Code (https://claude.com/claude-code) and run `claude auth login`, then retry.');
   }
 
   const prompt = loadPromptBody(promptPathFor(lens));
