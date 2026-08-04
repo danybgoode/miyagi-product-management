@@ -15,10 +15,11 @@
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (2)
+## 📋 Ready to build (scaffolded, not started) (3)
 
 - [US operator commerce pilot — three original-product shops](../../07-agentic-and-federated-commerce/us-operator-commerce-pilot/README.md) — 07 Agentic/Federated · 0/13 stories · risk: High · Wave 1
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 0/8 stories · risk: High · Wave 1
+- [US owned-shop positioning and proof launch](../../08-growth-and-promotions/us-proof-launch/README.md) — 08 Growth · 0/4 stories · risk: Low · Wave 2
 
 ## ✅ Shipped (136)
 
@@ -159,9 +160,8 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (6)
 
-- [US owned-shop positioning and proof launch](seeds/us-proof-launch.md) — Queued · Feature · Wave 2
 - [US curated marketplace — original independent sellers](seeds/us-curated-marketplace.md) — Queued · Feature · Wave 3
 - [Affinity marketplace infrastructure — partner-operated markets](seeds/affinity-marketplace-infrastructure.md) — Raw · Epic
 - [AI-adoption guardrails — close the step-1/2 gaps the ladder names (browser smoke · security review · proactive monitor · OTel)](seeds/ai-adoption-maturity-benchmark.md) — Ready · Chore
@@ -180,4 +180,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 
 ---
-_Epics: 141 · seeds in funnel: 7 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 142 · seeds in funnel: 6 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
