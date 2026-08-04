@@ -1,64 +1,60 @@
 #!/bin/sh
-# Local-first pre-commit gate — BLOCKING. Auto-enabled via package.json's "prepare" script
-# (git config core.hooksPath .githooks), so this runs for every clone with no manual step.
+# Local-first pre-commit gate — BLOCKING, and budgeted at UNDER 2 SECONDS. Auto-enabled via
+# package.json's "prepare" script (git config core.hooksPath .githooks), so it runs for every clone
+# with no manual step.
 #
-# Mirrors the fast, pure-node CI guards (all sub-second locally): build-order, doc-format,
-# scripts/ + infra/ node:test suites. These used to be 5 separate GH Actions workflows firing
-# on every push to main; consolidated into .github/workflows/guards.yml (PR-only, one job) —
-# moved local-first because they were this repo's most-frequently-triggered workflows and each
-# GH job bills a minimum 1 minute even for a 15-second check. guards.yml stays as the
-# PR-triggered fallback safety net (see its own header).
+# ── The budget, and why it is the rule ───────────────────────────────────────────────────────────
+# Three stages, and COST decides which stage a check belongs to — not how important the check is:
 #
-# Path-gated: each check only runs if this commit touches its own inputs, so an unrelated
-# commit pays zero cost. Bypass with `git commit --no-verify` if you genuinely need to — same
-# escape hatch CI never really had anyway (this GitHub plan has no real branch-protection API).
+#   pre-commit   < 2s       Only the STAGED files. Runs many times an hour.
+#   pre-push     < 30s      Whole-repo checks that are cheap. Runs a few times a day.
+#   CI (PR/main) unbounded  Everything: full-corpus walks, integration tests, cross-file drift.
+#
+# This file used to run the full 39-file `scripts/` test suite plus TWO full-corpus walks
+# (`build-order --check` and `doc-format --check`, each parsing ~860 docs under Roadmap/). Measured
+# 2026-08-03, a single commit touching Roadmap/ and scripts/ took **119.7 seconds**, of which:
+#
+#   • the 37 PURE test files, combined ............................ ~0.6s
+#   • ~8 full-corpus walks (2 in this hook, 6 more inside 2 test files)  ~119s
+#
+# So >99% of the wall clock was the same corpus walk repeated eight times, and none of it was
+# checking anything about the specific files being committed.
+#
+# ── The economics error worth naming ─────────────────────────────────────────────────────────────
+# These checks were moved local to save GitHub Actions minutes (see
+# Roadmap/09-platform-infra/github-actions-local-first/). That reasoning had a hole: a GitHub minute
+# is ASYNCHRONOUS and PARALLEL — it costs money nobody waits for. A local minute is SERIAL and
+# BLOCKING — it costs a human, standing still, on every single commit. Trading 2 minutes of human
+# wait to save 1 billed minute is a bad trade in every direction, and it gets worse as the corpus
+# grows. Keep local checks fast; let CI be slow. That is the whole heuristic.
+#
+# Bypass with `git commit --no-verify` if you genuinely need to.
 
-changed=$(git diff --cached --name-only)
+changed=$(git diff --cached --name-only --diff-filter=ACMR)
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "pre-commit: node not found — skipping local guards (GH Actions PR check still applies)." >&2
+  echo "pre-commit: node not found — skipping local guards (CI still applies)." >&2
   exit 0
 fi
 
 fail=0
 
-if echo "$changed" | grep -qE '^(Roadmap/|scripts/build-order\.mjs|scripts/roadmap-to-notion\.mjs)'; then
-  if ! node scripts/build-order.mjs --check >/dev/null 2>&1; then
-    # Self-heal (build-order-ci-self-heal epic): the board is DERIVED — a stale copy is a
-    # forgotten regen, not a judgment call. Regenerate and stage it into this same commit,
-    # path-scoped to the one file the generator owns. Fail only if the regen itself errors.
-    if node scripts/build-order.mjs && git add Roadmap/00-ideas/BUILD-ORDER.md; then
-      echo "pre-commit: build-order — BUILD-ORDER.md was stale; regenerated and staged into this commit." >&2
-    else
-      echo "pre-commit: build-order self-heal failed — run 'node scripts/build-order.mjs' manually and inspect." >&2
-      fail=1
-    fi
-  fi
-fi
-
-if echo "$changed" | grep -qE '^(Roadmap/|scripts/doc-format\.mjs)'; then
-  if ! node scripts/doc-format.mjs --check; then
-    echo "pre-commit: doc-format failed — see findings above. Fix or 'node scripts/doc-format.mjs --fix' where safe." >&2
-    fail=1
-  fi
-fi
-
-if echo "$changed" | grep -qE '^scripts/'; then
-  if ! node --test 'scripts/lib/*.test.mjs' 'scripts/*.test.mjs'; then
-    echo "pre-commit: scripts/ node:test failed — see output above." >&2
-    fail=1
-  fi
-fi
-
-if echo "$changed" | grep -qE '^infra/'; then
-  if ! node --test 'infra/gcp/test/*.test.js' 'infra/gcp/test/*.test.mjs'; then
-    echo "pre-commit: infra/ node:test failed — see output above." >&2
+# ── Staged Roadmap docs: canonical shape, per-file ───────────────────────────────────────────────
+# `--files` checks ONLY what you staged (~24ms for a few docs) instead of `--check`'s ~860-doc walk.
+# The full walk still runs in CI, where it does the job this cannot: catching drift in docs nobody
+# touched, e.g. when a newly-added rule makes an old file non-conforming.
+staged_docs=$(echo "$changed" | grep -E '^Roadmap/.*\.md$' || true)
+if [ -n "$staged_docs" ]; then
+  # shellcheck disable=SC2086 # deliberate word-splitting: one argv entry per path
+  if ! node scripts/doc-format.mjs --check --files $staged_docs; then
+    echo "pre-commit: doc-format found findings in the docs you staged (above)." >&2
+    echo "            Fix by hand, or 'node scripts/doc-format.mjs --fix' for the mechanical rules." >&2
     fail=1
   fi
 fi
 
 if [ "$fail" -ne 0 ]; then
-  echo "pre-commit: one or more checks failed. Fix and re-stage, or 'git commit --no-verify' to bypass." >&2
+  echo "pre-commit: failed. Fix and re-stage, or 'git commit --no-verify' to bypass." >&2
   exit 1
 fi
 

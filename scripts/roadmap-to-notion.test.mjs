@@ -1,15 +1,24 @@
-// Notion board hygiene — Sprint 1: pure node:test for the projection/overlay logic.
+// roadmap-to-notion.test.mjs — the PURE tier: projection/overlay logic, no filesystem walk.
 //
-// roadmap-to-notion.mjs is the docs→Notion projection; it has no Playwright gate (it's a script, not app
-// code), so this node:test IS the deterministic gate for the two pieces of judgment S1 adds:
-//   • S1.1 floorSprintStatus — an archived epic's sprints must read Archived (not Planned), and a Shipped
+// roadmap-to-notion.mjs is the docs→Notion projection; it has no Playwright gate (it's a script, not
+// app code), so this node:test IS the deterministic gate for its judgment calls:
+//   • floorSprintStatus — an archived epic's sprints must read Archived (not Planned), and a Shipped
 //     epic's stale Planned sprints read Shipped, while real in-flight signals pass through.
-//   • S1.3 lifecycleForPr — the live overlay label sent for a PR's state (the single source the
+//   • lifecycleForPr — the live overlay label sent for a PR's state (the single source the
 //     notion-pr-sync.yml workflow's `--lifecycle` mode and this test share, so bash + JS can't drift).
-// S1.1 also gets a real `--extract` integration assertion: spawn the script against the live docs and
-// confirm neon-egress-and-db-isolation (status: archived) projects every sprint row as Archived.
+//   • the status-enum hard-fail + story-count floor (grooming-audit 2026-07-06 follow-up).
 //
-// Run: `node --test 'scripts/**/*.test.mjs'`   (the bare-directory form was dropped in Node 24).
+// ── Why this file was split (2026-08-03) ────────────────────────────────────────────────────────
+// It used to also hold three assertions that spawn a real `--extract`, which parses every doc under
+// Roadmap/ (~860 files). Those three dominated the local gate — they now live in the sibling
+// `roadmap-to-notion.itest.mjs`, which runs in CI and on demand.
+//
+// The split is by COST PER TEST, not per file. Tiering a whole file by its slowest test would have
+// exiled these 14 pure, millisecond-fast assertions to CI along with the 3 slow ones — losing fast
+// local feedback on exactly the logic most likely to break. Cheap tests belong in the fast loop even
+// when they live next to expensive ones.
+//
+// Run: node --test 'scripts/*.test.mjs'
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,6 +30,11 @@ import {
   frontmatterStatusBucket, seedStatusLabel, floorSprintDone,
 } from './roadmap-to-notion.mjs';
 
+// The `--lifecycle` test below spawns the real CLI, but it stays in the FAST tier deliberately:
+// `--lifecycle` only reads two env vars and prints a label — it never touches Roadmap/. Four node
+// boots cost ~250ms, which is the price of pinning the exact contract `notion-pr-sync.yml` calls,
+// so bash and JS cannot drift. Spawning a subprocess is not what makes a test slow here; walking
+// 860 docs is.
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'roadmap-to-notion.mjs');
 
 // --- S1.1: floorSprintStatus ---------------------------------------------------------------------
@@ -61,20 +75,6 @@ test('deriveEpicStatus: non-archived epics keep the prose/retro derivation', () 
   assert.equal(deriveEpicStatus([], true, undefined), 'Shipped'); // retroShipped wins
 });
 
-// --- S1.1: live --extract integration (neon-egress is the canonical archived-epic test case) -----
-test('--extract: archived epic neon-egress-and-db-isolation projects all its sprints as Archived', () => {
-  const out = execFileSync('node', [SCRIPT, '--extract'], { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
-  const rows = JSON.parse(out);
-  const sprints = rows.filter((r) => r.grain === 'Sprint' && r.slug.startsWith('neon-egress-and-db-isolation--'));
-  assert.ok(sprints.length > 0, 'expected neon-egress to have projected sprint rows');
-  for (const s of sprints) assert.equal(s.status, 'Archived', `${s.slug} should be Archived`);
-  // The epic row itself must NOT drift: status (Archived) === status_derived (Archived).
-  const epic = rows.find((r) => r.grain === 'Epic' && r.slug === 'neon-egress-and-db-isolation');
-  assert.ok(epic, 'expected the neon-egress epic row');
-  assert.equal(epic.status, 'Archived');
-  assert.equal(epic.status_derived, 'Archived', 'archived epic must not false-flag drift');
-});
-
 // --- S1.2: build_order normalization + projection ------------------------------------------------
 test('normalizeBuildOrder: numeric → Number, blank/absent → null, legacy non-numeric → passthrough', () => {
   assert.equal(normalizeBuildOrder('1'), 1);
@@ -83,18 +83,6 @@ test('normalizeBuildOrder: numeric → Number, blank/absent → null, legacy non
   assert.equal(normalizeBuildOrder(null), null);
   assert.equal(normalizeBuildOrder(undefined), null);
   assert.equal(normalizeBuildOrder('#3c'), '#3c'); // legacy seed build_order survives for seed rows
-});
-
-test('--extract: active epics carry the numeric build_order from README frontmatter, sprints inherit it', () => {
-  const out = execFileSync('node', [SCRIPT, '--extract'], { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
-  const rows = JSON.parse(out);
-  const adminEpic = rows.find((r) => r.grain === 'Epic' && r.slug === 'admin-consolidation');
-  const hygieneEpic = rows.find((r) => r.grain === 'Epic' && r.slug === 'notion-board-hygiene');
-  assert.equal(adminEpic?.build_order, 1);
-  assert.equal(hygieneEpic?.build_order, 2);
-  const adminSprints = rows.filter((r) => r.grain === 'Sprint' && r.slug.startsWith('admin-consolidation--'));
-  assert.ok(adminSprints.length > 0);
-  for (const s of adminSprints) assert.equal(s.build_order, 1, `${s.slug} should inherit its epic's build_order`);
 });
 
 // --- S1.3: lifecycleForPr ------------------------------------------------------------------------
@@ -174,31 +162,4 @@ test('floorSprintDone: a Shipped sprint counts ALL its stories done; other statu
   assert.equal(floorSprintDone('In progress', 4, 2), 2);
   assert.equal(floorSprintDone('Planned', 4, 0), 0);
   assert.equal(floorSprintDone('Archived', 4, 1), 1);  // archived stories were dropped, not done
-});
-
-test('--extract: fully-shipped epics report FULL story completion (the audit §6 undercount)', () => {
-  const out = execFileSync('node', [SCRIPT, '--extract'], { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
-  const rows = JSON.parse(out);
-  // Both undercount patterns: mercadolibre-sync's sprints declare "✅ MERGED" on their own Status line
-  // (was 0/15); promoter-funnel-v2's use a mid-line blockquote form the Status regex never matches, so
-  // the floor comes from the frontmatter-`shipped` epic (was 7/19).
-  for (const slug of ['mercadolibre-sync', 'promoter-funnel-v2']) {
-    const epic = rows.find((r) => r.grain === 'Epic' && r.slug === slug);
-    assert.ok(epic, `expected epic row for ${slug}`);
-    assert.match(epic.sprint_progress, /^(\d+)\/\1 stories$/, `${slug} should read N/N, got "${epic.sprint_progress}"`);
-    for (const s of rows.filter((r) => r.grain === 'Sprint' && r.slug.startsWith(`${slug}--`))) {
-      assert.ok(s.sprint_progress === '—' || /^(\d+)\/\1 stories$/.test(s.sprint_progress),
-        `${s.slug} should read N/N or —, got "${s.sprint_progress}"`);
-    }
-  }
-  // An in-flight epic must NOT be inflated/miscategorized by the same fix that corrects the two
-  // undercounts above (status silently floored to Shipped). Picked DYNAMICALLY from whichever epic
-  // is currently in-progress in the real live Roadmap — not a hardcoded slug. The original fixture
-  // here was `ml-orders-native`, which genuinely shipped 2026-07-08; the hardcoded assertion then
-  // silently asserted a false invariant against reality until CI caught the drift (deploy-pipeline-
-  // tuning epic, 2026-07-12). Any epic currently mid-build works as the negative-control example, so
-  // this self-heals as epics ship over time instead of needing a slug swap each time one does.
-  const inflight = rows.find((r) => r.grain === 'Epic' && r.status === 'In progress');
-  assert.ok(inflight, 'expected at least one in-progress epic in the live Roadmap to use as the negative-control example');
-  assert.equal(inflight.status, 'In progress');
 });

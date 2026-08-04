@@ -1,0 +1,83 @@
+#!/bin/sh
+# Local-first pre-push gate — BLOCKING, budgeted at UNDER 30 SECONDS. Auto-enabled via
+# package.json's "prepare" script (git config core.hooksPath .githooks).
+#
+# ── Why this hook exists at all ──────────────────────────────────────────────────────────────────
+# `guards.yml` is PR-triggered, and this repo commits **direct to main** for low-risk doc/tooling
+# work. That path never opens a PR, so before this hook existed the only gate on it was pre-commit —
+# which is why pre-commit had accreted the entire test suite and two full-corpus walks, and why a
+# commit took ~2 minutes.
+#
+# Splitting it fixes both halves: commits stay instant (staged files only), and the whole-repo
+# checks move here, where they run a few times a day instead of many times an hour. `guards.yml`
+# also gained a `push: [main]` trigger so direct-to-main still gets the full asynchronous CI run —
+# this hook is the fast local answer, not the last line of defence.
+#
+# ── What belongs here ────────────────────────────────────────────────────────────────────────────
+# Cheap whole-repo checks. NOT the corpus-walking integration tests (`*.itest.mjs`) — those spawn a
+# full ~860-doc extraction each and belong in CI. Run them on demand with:
+#     node --test 'scripts/*.itest.mjs'
+#
+# Path-gated throughout: a push that didn't touch scripts/ pays nothing for the script tests.
+#
+# Bypass with `git push --no-verify` if you genuinely need to.
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-push: node not found — skipping local guards (CI still applies)." >&2
+  exit 0
+fi
+
+# What is actually being pushed: the range from the remote's current tip to local HEAD. Falls back
+# to "changed vs origin/main" when the remote ref is unknown (a brand-new branch), and to a no-op
+# when even that fails — a hook that cannot determine scope must not silently check nothing AND
+# must not block the push, so it degrades to running the cheap suite rather than guessing.
+remote_head=$(git rev-parse --verify --quiet '@{upstream}' 2>/dev/null)
+if [ -n "$remote_head" ]; then
+  changed=$(git diff --name-only "$remote_head"...HEAD 2>/dev/null)
+else
+  changed=$(git diff --name-only origin/main...HEAD 2>/dev/null)
+fi
+[ -z "$changed" ] && changed=$(git diff --name-only HEAD~1...HEAD 2>/dev/null)
+
+fail=0
+
+# ── scripts/ — the PURE node:test suite (~0.6s for 37 files, run in parallel) ────────────────────
+# Deliberately globs *.test.mjs only. The two integration files are named *.itest.mjs precisely so
+# this line can exclude them by pattern rather than by an exclusion list that would rot.
+if echo "$changed" | grep -qE '^scripts/'; then
+  echo "pre-push: scripts/ unit tests..." >&2
+  if ! node --test 'scripts/lib/*.test.mjs' 'scripts/*.test.mjs'; then
+    echo "pre-push: scripts/ node:test failed — see output above." >&2
+    fail=1
+  fi
+fi
+
+# ── infra/ — deploy invariants ───────────────────────────────────────────────────────────────────
+if echo "$changed" | grep -qE '^infra/'; then
+  echo "pre-push: infra/ deploy-invariant tests..." >&2
+  if ! node --test 'infra/gcp/test/*.test.js' 'infra/gcp/test/*.test.mjs'; then
+    echo "pre-push: infra/ node:test failed — see output above." >&2
+    fail=1
+  fi
+fi
+
+# ── Roadmap/ — the derived board must not be stale ───────────────────────────────────────────────
+# One corpus walk, and the most expensive thing in this hook — hence path-gated to Roadmap-touching
+# pushes only. It cannot self-heal here the way pre-commit and CI can (the commit is already made),
+# so it reports and blocks with the exact fix rather than rewriting history.
+if echo "$changed" | grep -qE '^(Roadmap/|scripts/(build-order|roadmap-to-notion)\.mjs)'; then
+  echo "pre-push: build-order freshness..." >&2
+  if ! node scripts/build-order.mjs --check >/dev/null 2>&1; then
+    echo "pre-push: BUILD-ORDER.md is STALE — it is DERIVED, never hand-edited." >&2
+    echo "          Run:  node scripts/build-order.mjs" >&2
+    echo "          Then: git add Roadmap/00-ideas/BUILD-ORDER.md && git commit --amend --no-edit" >&2
+    fail=1
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "pre-push: failed. Fix and re-push, or 'git push --no-verify' to bypass." >&2
+  exit 1
+fi
+
+exit 0

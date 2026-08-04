@@ -26,9 +26,21 @@ const ROOT = resolve(__dirname, '..');
 const EXTRACTOR = join(__dirname, 'roadmap-to-notion.mjs');
 const BUILD_ORDER = join(ROOT, 'Roadmap', '00-ideas', 'BUILD-ORDER.md');
 
+// Memoized: `--extract` walks every doc under Roadmap/ (~860 files) in a fresh node process, and both
+// tests below assert against the same immutable projection. Running it twice produced two identical
+// results at double the cost — and this walk is expensive enough that the two integration files in
+// scripts/ accounted for most of the local gate's runtime (measured 2026-08-03: all 37 pure test files
+// combined finish in ~646ms; a single --extract took far longer than that on its own).
+//
+// Safe because --extract is a pure read-only projection and nothing here mutates the docs. Both tests
+// still assert against real, freshly-extracted live data — just one extraction instead of two.
+let _rows = null;
 function extractLiveRows() {
-  const json = execFileSync('node', [EXTRACTOR, '--extract'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  return JSON.parse(json);
+  if (_rows === null) {
+    const json = execFileSync('node', [EXTRACTOR, '--extract'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    _rows = JSON.parse(json);
+  }
+  return _rows;
 }
 
 test('summarizeRoadmapRows epic-bucket counts match an independent recount from the SAME live extraction', () => {

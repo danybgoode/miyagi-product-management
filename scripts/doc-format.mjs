@@ -658,6 +658,70 @@ function runFix() {
   }
 }
 
+/**
+ * Check ONE doc by path. Returns `null` when the path isn't a doc type this checker covers, or an
+ * array of offenses (possibly empty) when it is.
+ *
+ * Extracted so the single-file path has exactly one implementation. `--hook` (the editor hook) and
+ * `--files` (the git pre-commit hook) are the same question asked by two callers, and a second copy
+ * of this dispatch would drift — the epic-README segment-count rule below is subtle enough that a
+ * near-duplicate would eventually disagree with this one about what counts as an epic doc.
+ */
+export function checkOneDoc(relPath) {
+  if (!/^Roadmap\/.*\.md$/.test(relPath)) return null; // not a Roadmap doc — nothing to check
+  const abs = join(REPO, relPath);
+  if (!existsSync(abs)) return null;
+
+  const content = readFileSync(abs, 'utf8');
+  const segs = relPath.split('/');
+  const base = segs.pop();
+  // An epic README is exactly Roadmap/<macro-section>/<epic>/README.md (4 segments). The top-level
+  // poster (Roadmap/README.md, 2) and macro-section index READMEs (Roadmap/<section>/README.md, 3)
+  // share the README.md basename but are NOT epic docs — checkEpicReadme's frontmatter/Area/DoD
+  // rules don't apply to them. segs still holds the dir path after the pop() above.
+  if (base === 'README.md') {
+    if (segs.length !== 3) return null; // ['Roadmap', section, epic] ⇒ epic README; else skip
+    return checkEpicReadme(content, { slug: segs.at(-1) });
+  }
+  if (/^sprint-\d+\.md$/.test(base)) return checkSprintDoc(content);
+  if (base === 'RETROSPECTIVE.md') return checkRetrospective(content);
+  return null; // not an epic doc type this checker covers (e.g. a seed, the poster)
+}
+
+/**
+ * `--check --files <path>...` — validate ONLY the named docs.
+ *
+ * This is the pre-commit path, and it exists for one reason: `--check` (the full-tree walk) reads all
+ * ~860 docs under Roadmap/ to tell you about the two you just staged. That walk is ~99.8% waste at
+ * commit time and it was the single slowest thing in the local gate alongside build-order's own walk.
+ *
+ * The full walk still has a job — it catches drift in docs *nobody touched* (a rule added today makes
+ * yesterday's file non-conforming). That's a CI question, not a per-commit one, so `--check` stays
+ * exactly as it is and runs on the PR.
+ */
+function runCheckFiles(paths) {
+  const findings = [];
+  let checked = 0;
+  for (const p of paths) {
+    const relPath = p.startsWith(REPO) ? relative(REPO, p) : p;
+    const offenses = checkOneDoc(relPath);
+    if (offenses === null) continue; // not a covered doc type
+    checked++;
+    if (offenses.length) findings.push({ path: relPath, offenses });
+  }
+
+  if (findings.length) {
+    console.error(`doc-format: ${findings.length} of ${checked} checked doc(s) have format findings:\n`);
+    for (const f of findings) {
+      console.error(f.path);
+      console.error(formatOffense(f));
+    }
+    console.error("Fix by hand, or 'node scripts/doc-format.mjs --fix' for the mechanical rules.");
+    process.exit(1);
+  }
+  console.log(`doc-format: ${checked} staged doc(s) clean.`);
+}
+
 function runHook() {
   let input = '';
   process.stdin.on('data', (chunk) => { input += chunk; });
@@ -671,25 +735,8 @@ function runHook() {
     }
     if (!filePath) process.exit(0);
     const relPath = relative(REPO, filePath);
-    if (!/^Roadmap\/.*\.md$/.test(relPath)) process.exit(0); // not a Roadmap doc — nothing to check
-    if (!existsSync(filePath)) process.exit(0);
-
-    const content = readFileSync(filePath, 'utf8');
-    const segs = relPath.split('/');
-    const base = segs.pop();
-    let offenses = [];
-    // An epic README is exactly Roadmap/<macro-section>/<epic>/README.md (4 segments). The top-level
-    // poster (Roadmap/README.md, 2) and macro-section index READMEs (Roadmap/<section>/README.md, 3)
-    // share the README.md basename but are NOT epic docs — checkEpicReadme's frontmatter/Area/DoD
-    // rules don't apply to them (line 683's comment already names "the poster" as out of scope; the
-    // basename test alone let it through). segs still holds the dir path after the pop() above.
-    if (base === 'README.md') {
-      if (segs.length !== 3) process.exit(0); // ['Roadmap', section, epic] ⇒ epic README; else skip
-      offenses = checkEpicReadme(content, { slug: segs.at(-1) });
-    }
-    else if (/^sprint-\d+\.md$/.test(base)) offenses = checkSprintDoc(content);
-    else if (base === 'RETROSPECTIVE.md') offenses = checkRetrospective(content);
-    else process.exit(0); // not an epic doc type this checker covers (e.g. a seed, the poster)
+    const offenses = checkOneDoc(relPath);
+    if (offenses === null) process.exit(0);
 
     if (offenses.length) {
       console.error(`doc-format: ${relPath} has ${offenses.length} format finding(s):`);
@@ -704,6 +751,16 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   if (process.argv.includes('--hook')) {
     runHook();
+  } else if (process.argv.includes('--files')) {
+    // `--files a.md b.md` — everything after the flag that isn't itself a flag. Checked BEFORE
+    // `--check` so `--check --files …` reads naturally and still takes the cheap path.
+    const i = process.argv.indexOf('--files');
+    const paths = process.argv.slice(i + 1).filter((a) => !a.startsWith('-'));
+    if (!paths.length) {
+      console.log('doc-format: --files given no paths — nothing to check.');
+      process.exit(0);
+    }
+    runCheckFiles(paths);
   } else if (process.argv.includes('--check')) {
     runCheck();
   } else if (process.argv.includes('--fix')) {
