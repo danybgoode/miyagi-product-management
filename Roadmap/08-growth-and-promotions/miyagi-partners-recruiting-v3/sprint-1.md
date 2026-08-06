@@ -1,17 +1,25 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 1: Apply
 
-**Status:** ⬜ not started
+**Status:** 🟡 in progress · architecture locked, implementation underway
 
 ## Outcome
 
 A qualified US operator can understand the founding proof, choose the correct program track and submit
 exactly three real shops for founder review. The existing Promotor application continues unchanged.
 
-## Build contract — architect must lock before delegation
+## Build contract — locked 2026-08-06
 
-Before a builder starts, cite the epic's live-verified `D1…Dn` decisions here. The contract must name the
-deployed application-table shape and row population, operator-details version, duplicate/idempotency rule,
-flag seam, analytics allowlist and exact Promotor regression set. A builder may not invent these choices.
+Build exactly epic decisions **D1–D4 and D9–D13**. The live application table has zero rows and only the
+legacy columns listed in D1 evidence; Sprint 1 owns the additive migration for `program_track`, operator
+details v1, operator activation fields, application status check, pending-or-approved operator duplicate index, partner
+track/Clerk uniqueness, the disabled local flag row and the service-role-only function declarations consumed
+in Sprint 2. Existing rows default/backfill to `promoter`.
+
+The public contract is D2's exact version-1 object, D3's public-URL/awareness rules and D4's one-active-row
+idempotency. The only flag seam is D9 and the only analytics vocabulary is D10. Admin review follows D11;
+request-conversation is a mail link, not a state. The builder must run D13's whole Promotor regression
+population, add new intake/admin/privacy/population specs, record one deliberate red mutation per new spec
+group, and must not implement activation, grant writes or a second identity system in this sprint.
 
 ## Stories
 

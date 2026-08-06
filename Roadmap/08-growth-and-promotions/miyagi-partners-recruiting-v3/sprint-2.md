@@ -1,6 +1,6 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 2: Activate
 
-**Status:** ⬜ not started
+**Status:** 🟡 architecture locked · waits on Sprint 1
 
 ## Outcome
 
@@ -8,12 +8,23 @@ An approved founding operator activates the existing Miyagi partner identity thr
 enters `/partner`, and sees the exact boundary between program approval and merchant-granted shop access.
 Existing Promotores retain their current working paths.
 
-## Build contract — architect must lock before delegation
+## Build contract — locked 2026-08-06
 
-Before a builder starts, cite the epic's live-verified `D1…Dn` decisions here. The contract must name the
-partner-track backfill/default, the one approval transition and Clerk-binding seam, activation secret/replay
-contract, flag resolver, no-grant population assertion and Promotor continuity suite. Sprint 2 stacks on the
-merged Sprint 1 contract and may not reframe it.
+Stack on Sprint 1 and build exactly epic decisions **D5–D9 and D12–D13**. Consume D1's deployed/backfilled
+`program_track` and unique Clerk invariant without a second identity table. Existing Promotor approval stays
+on its current PRM path; operator approval uses D5's atomic RPC, D6 isolates every Promotor economic/code
+lookup, and both PRM binding and activation call D7's single database writer. Activation is D8's seven-day,
+SHA-256-hashed, GET-read/POST-write, verified-email-bound transactional replay contract at
+`/partner/activate/<token>`. Implement D8's awaited delivery-state recording and audited rotate-and-resend;
+email is not part of approval's transaction and no plaintext token is persisted. Use the named additive
+outcome helper; only a non-null provider acceptance ID records `provider_accepted` and the truthful timestamp
+is `provider_accepted_at`, never `delivered_at`. Preserve every existing void email caller.
+
+Use only D9's flag resolver. D12's workspace remains grant-derived and must prove the live fixture has zero
+grants before and after operator approval/activation. Run D13's complete continuity population plus new
+approval/activation/auth/workspace specs, recording a deliberate red mutation for each new group. Do not
+create relationships, consent, grants, operator economics, a second dashboard or a second Clerk-binding
+writer.
 
 ## Stories
 
@@ -25,6 +36,8 @@ created, **so that** I enter the correct offer without changing authorization se
 **Acceptance:** approving a founding operator creates or links the existing partner identity with the locked
 operator track; existing identities resolve to Promotor without manual repair; concurrent retries mint no
 duplicate identity or activation; approval creates no merchant relationship, consent record or shop grant;
+an unconfirmed provider result leaves a visible recoverable invitation state rather than an unrecoverable
+approved row;
 Promotor codes, commissions and transfers remain isolated to their existing contract. Track is never accepted
 by an authorization resolver as evidence of access.
 
@@ -37,12 +50,16 @@ spec, existing-row/backfill spec, and a re-derived population guard proving no t
 Partners without using a Promotor close workflow that misrepresents my role.
 
 **Acceptance:** the approval message uses the locked neutral route; signed-out applicants return through
-Clerk safely; the existing binding rule remains the single writer; invalid, rejected, expired, replayed or
-mismatched activation attempts fail closed; a successful activation enters `/partner`; neither binding nor
-activation creates shop access.
+Clerk safely; the existing binding rule remains the single writer; only a Clerk account with a verified email
+matching the application can bind. Invalid, rejected, expired, replayed, wrong-email or otherwise mismatched
+attempts fail closed without consuming the token. Missing configuration, failure or an ambiguous provider
+result is visibly `unconfirmed`; an audited resend rotates the token before another awaited outcome-bearing
+send, and stale links fail. The UI says provider accepted, not delivered. A successful activation enters `/partner`;
+neither binding nor activation creates shop access.
 
-**Risk:** high — Clerk/auth boundary. **QA:** activation API/auth matrix, replay/expiry/mismatch denial,
-writer-population guard and authenticated browser smoke owed to Daniel.
+**Risk:** high — Clerk/auth boundary. **QA:** activation API/auth matrix, verified/unverified/wrong-email,
+replay/expiry/mismatch denial, email missing-config/null-ID/exception/acceptance outcomes, ambiguous-send/
+resend rotation, writer-population guard and authenticated browser smoke owed to Daniel.
 
 ### Story 2.3 — Track-aware `/partner` orientation
 
@@ -70,8 +87,10 @@ Promotor regression matrix plus a production Promotor walkthrough owed to Daniel
 
 ## Sprint QA
 
-- **API specs:** approval/identity idempotency, old-row compatibility, activation expiry/replay/mismatch,
-  flag-off parity, track-not-authorization population guard, and existing Promotor grant/commission regressions.
+- **API specs:** approval/identity idempotency, old-row compatibility, activation verified-email/expiry/
+  replay/mismatch, invitation provider acceptance/missing-config/null-ID/exception/ambiguous-send/resend
+  rotation, flag-off parity,
+  track-not-authorization population guard, and existing Promotor grant/commission regressions.
 - **Browser specs:** neutral activation redirect, track-aware empty workspace, operator zero-grant state,
   Promotor route/copy parity and granted-shop rendering.
 - **Browser smoke owed:** yes, to Daniel — approve and activate one disposable founding operator in a real
@@ -86,12 +105,15 @@ Env: preview before merge · production after deploy · https://miyagisanchez.co
 
 1. **Admin/auth step — owed to Daniel:** sign in at https://miyagisanchez.com/admin/promoter and approve the
    disposable Founding Commerce Operator application from Sprint 1.
-   → The application becomes approved once and produces one neutral activation invitation; no shop grant or
-   merchant record is created.
+   → The application becomes approved once, provider acceptance is visible (or the result is recoverably
+   unconfirmed), and no shop grant or merchant record is created. No UI claims mailbox delivery. If resend is
+   exercised, the prior link becomes invalid.
 2. Open the neutral activation link signed out.
    → You are asked to sign in, then returned to the partner activation flow rather than `/promotor/cerrar`.
-3. Complete activation with the intended Clerk account and reopen the same link.
-   → The first attempt succeeds and lands at https://miyagisanchez.com/partner; the replay fails safely.
+3. Try a signed-in Clerk account without the application email, then complete activation with an account
+   whose verified email matches and reopen the same link.
+   → The wrong account fails without consuming the token; the matching account succeeds and lands at
+   https://miyagisanchez.com/partner; replay fails safely.
 4. On https://miyagisanchez.com/partner inspect the heading, program label and shop list.
    → It says Miyagi Partners / Founding Commerce Operator, explains the founder-review next step and shows
    zero shops until a separate merchant/admin grant exists.
