@@ -16,7 +16,9 @@ on its current PRM path; operator approval uses D5's atomic RPC, D6 isolates eve
 lookup, and both PRM binding and activation call D7's single database writer. Activation is D8's seven-day,
 SHA-256-hashed, GET-read/POST-write, verified-email-bound transactional replay contract at
 `/partner/activate/<token>`. Implement D8's awaited delivery-state recording and audited rotate-and-resend;
-email is not part of approval's transaction and no plaintext token is persisted.
+email is not part of approval's transaction and no plaintext token is persisted. Use the named additive
+outcome helper; only a non-null provider acceptance ID records `provider_accepted` and the truthful timestamp
+is `provider_accepted_at`, never `delivered_at`. Preserve every existing void email caller.
 
 Use only D9's flag resolver. D12's workspace remains grant-derived and must prove the live fixture has zero
 grants before and after operator approval/activation. Run D13's complete continuity population plus new
@@ -34,7 +36,8 @@ created, **so that** I enter the correct offer without changing authorization se
 **Acceptance:** approving a founding operator creates or links the existing partner identity with the locked
 operator track; existing identities resolve to Promotor without manual repair; concurrent retries mint no
 duplicate identity or activation; approval creates no merchant relationship, consent record or shop grant;
-an email failure leaves a visible recoverable delivery state rather than an unrecoverable approved row;
+an unconfirmed provider result leaves a visible recoverable invitation state rather than an unrecoverable
+approved row;
 Promotor codes, commissions and transfers remain isolated to their existing contract. Track is never accepted
 by an authorization resolver as evidence of access.
 
@@ -49,13 +52,14 @@ Partners without using a Promotor close workflow that misrepresents my role.
 **Acceptance:** the approval message uses the locked neutral route; signed-out applicants return through
 Clerk safely; the existing binding rule remains the single writer; only a Clerk account with a verified email
 matching the application can bind. Invalid, rejected, expired, replayed, wrong-email or otherwise mismatched
-attempts fail closed without consuming the token. Failed/ambiguous delivery is visible and an audited resend
-rotates the token before another awaited send; stale links fail. A successful activation enters `/partner`;
+attempts fail closed without consuming the token. Missing configuration, failure or an ambiguous provider
+result is visibly `unconfirmed`; an audited resend rotates the token before another awaited outcome-bearing
+send, and stale links fail. The UI says provider accepted, not delivered. A successful activation enters `/partner`;
 neither binding nor activation creates shop access.
 
 **Risk:** high — Clerk/auth boundary. **QA:** activation API/auth matrix, verified/unverified/wrong-email,
-replay/expiry/mismatch denial, delivery failure/ambiguous-send/resend rotation, writer-population guard and
-authenticated browser smoke owed to Daniel.
+replay/expiry/mismatch denial, email missing-config/null-ID/exception/acceptance outcomes, ambiguous-send/
+resend rotation, writer-population guard and authenticated browser smoke owed to Daniel.
 
 ### Story 2.3 — Track-aware `/partner` orientation
 
@@ -84,7 +88,8 @@ Promotor regression matrix plus a production Promotor walkthrough owed to Daniel
 ## Sprint QA
 
 - **API specs:** approval/identity idempotency, old-row compatibility, activation verified-email/expiry/
-  replay/mismatch, invitation delivery failure/ambiguous-send/resend rotation, flag-off parity,
+  replay/mismatch, invitation provider acceptance/missing-config/null-ID/exception/ambiguous-send/resend
+  rotation, flag-off parity,
   track-not-authorization population guard, and existing Promotor grant/commission regressions.
 - **Browser specs:** neutral activation redirect, track-aware empty workspace, operator zero-grant state,
   Promotor route/copy parity and granted-shop rendering.
@@ -100,8 +105,9 @@ Env: preview before merge · production after deploy · https://miyagisanchez.co
 
 1. **Admin/auth step — owed to Daniel:** sign in at https://miyagisanchez.com/admin/promoter and approve the
    disposable Founding Commerce Operator application from Sprint 1.
-   → The application becomes approved once, delivery is visibly sent (or recoverably failed), and no shop
-   grant or merchant record is created. If resend is exercised, the prior link becomes invalid.
+   → The application becomes approved once, provider acceptance is visible (or the result is recoverably
+   unconfirmed), and no shop grant or merchant record is created. No UI claims mailbox delivery. If resend is
+   exercised, the prior link becomes invalid.
 2. Open the neutral activation link signed out.
    → You are asked to sign in, then returned to the partner activation flow rather than `/promotor/cerrar`.
 3. Try a signed-in Clerk account without the application email, then complete activation with an account

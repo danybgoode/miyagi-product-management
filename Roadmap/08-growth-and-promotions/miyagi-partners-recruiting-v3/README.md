@@ -130,8 +130,13 @@ implementation is allowed.
 
 **D8 — recoverable invitation and principal-bound activation.** Approval creates a 32-byte random base64url
 secret for `/partner/activate/<token>`; only its lowercase SHA-256 hash and a seven-day expiry are stored.
-The route awaits the applicant email and records `sent|failed`, attempt time/count and `delivered_at` without
-ever persisting plaintext. A failed or ambiguous send leaves the approved identity recoverable: an audited
+Sprint 2 adds `sendFoundingOperatorActivationInvitationWithOutcome`, an additive helper that returns either
+`{ ok: true, providerMessageId }` from a non-null Resend acceptance ID or `{ ok: false, kind: 'unconfirmed' }`;
+existing `Promise<void>` email callers remain unchanged. The route awaits that helper and records
+`provider_accepted|unconfirmed`, attempt time/count and `provider_accepted_at` without ever claiming mailbox
+delivery or persisting plaintext. Only the explicit success result may set `provider_accepted`. A missing
+configuration, null ID, exception or ambiguous network result is `unconfirmed` and leaves the approved
+identity recoverable: an audited
 admin rotate-and-resend action transactionally replaces the unused hash/expiry and marks delivery `pending`
 before sending, so any older link becomes invalid; its result is recorded only when the hash still matches.
 A crash between rotate, send and result recording therefore leaves a visible retry state, never a lost
@@ -166,8 +171,9 @@ form or API result.
 **D11 — one review queue.** `/admin/promoter` renders track-safe structured details. Candidate links use a
 new tab with `noopener noreferrer`; “request conversation” is an applicant mail link and leaves the row
 pending—it is not a third authorization state and never contacts a nominated merchant. Approve/reject remain
-Clerk-admin-only POSTs, race-safe and automatically audited. The operator row shows invitation delivery
-state and exposes D8's audited rotate-and-resend only for an approved, unused operator identity. Operator
+Clerk-admin-only POSTs, race-safe and automatically audited. The operator row shows invitation provider
+acceptance state—never a mailbox-delivery claim—and exposes D8's audited rotate-and-resend only for an
+approved, unused operator identity. Operator
 notifications name the track and link to the queue without copying secrets or candidate/free-text fields;
 Promotor notifications remain as today.
 
