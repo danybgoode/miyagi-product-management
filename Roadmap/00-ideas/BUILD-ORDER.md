@@ -169,7 +169,7 @@
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (1)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -178,6 +178,7 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
+| Miyagi Partners proposition and recruiting portal v3 | In progress | Scaffolded |
 
 ---
-_Epics: 142 · seeds in funnel: 6 · status drift: 1. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 142 · seeds in funnel: 6 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
