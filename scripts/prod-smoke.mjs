@@ -175,12 +175,24 @@ export const CHECKS = [
  */
 export function framesAllowedFromAnywhere(csp) {
   if (!csp) return false;
-  const directive = String(csp)
-    .split(';')
-    .map((d) => d.trim())
-    .find((d) => /^frame-ancestors\b/i.test(d));
-  if (!directive) return false;
-  return directive.split(/\s+/).slice(1).includes('*');
+
+  // A header can carry MULTIPLE comma-separated policies (that is how several CSP headers arrive
+  // merged), and a browser enforces every one of them — framing is permitted only if they ALL
+  // permit it. Reading just the first directive accepted
+  // `frame-ancestors *; default-src 'self', frame-ancestors 'none'`, which no browser will frame.
+  const directives = String(csp)
+    .split(',')
+    .map((policy) =>
+      policy
+        .split(';')
+        .map((d) => d.trim())
+        .find((d) => /^frame-ancestors\b/i.test(d)),
+    )
+    .filter(Boolean);
+
+  // No directive anywhere = framing is not PROVEN. This check exists to prove it, not to assume it.
+  if (directives.length === 0) return false;
+  return directives.every((d) => d.split(/\s+/).slice(1).includes('*'));
 }
 
 /**

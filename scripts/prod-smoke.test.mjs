@@ -376,6 +376,16 @@ test('framesAllowedFromAnywhere: a wildcard SUBDOMAIN does not count as anywhere
   assert.equal(framesAllowedFromAnywhere('frame-ancestors *.example.com'), false);
 });
 
+test('framesAllowedFromAnywhere: EVERY comma-separated policy must permit framing', () => {
+  // codex round 5. A header can carry several policies merged with commas and a browser enforces
+  // all of them, so a permissive first policy does not make the page framable.
+  assert.equal(framesAllowedFromAnywhere("frame-ancestors *; default-src 'self', frame-ancestors 'none'"), false);
+  assert.equal(framesAllowedFromAnywhere("frame-ancestors 'none', frame-ancestors *"), false);
+  // ...and the all-permissive multi-policy case is still allowed through.
+  assert.equal(framesAllowedFromAnywhere("frame-ancestors *, default-src 'self'"), true);
+  assert.equal(framesAllowedFromAnywhere('frame-ancestors *, frame-ancestors *'), true);
+});
+
 test('framesAllowedFromAnywhere: a missing header or missing directive is false, never assumed', () => {
   assert.equal(framesAllowedFromAnywhere(undefined), false);
   assert.equal(framesAllowedFromAnywhere(''), false);
