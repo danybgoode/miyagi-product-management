@@ -19,6 +19,7 @@ import {
   formatReport,
   normalizeLocation,
   parseCatalogItems,
+  parseMediaType,
   resolvePath,
   runChecks,
   summarize,
@@ -152,7 +153,7 @@ test('evaluateCheck: embed.js served as HTML fails despite a 200', () => {
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
   assert.equal(r.status, 'fail');
-  assert.match(r.detail, /content-type is "text\/html; charset=utf-8", expected it to contain/);
+  assert.match(r.detail, /media type is "text\/html", expected one of/);
 });
 
 test('evaluateCheck: embed.js served as javascript passes, and the match is case-insensitive', () => {
@@ -190,9 +191,16 @@ test('runChecks: a base with a trailing slash does not build doubled path segmen
 });
 
 test('evaluateCheck: a missing required header fails and names the header', () => {
-  const r = evaluateCheck(check('embed-js'), { status: 200, body: '', headers: {} });
+  // ucp-catalog still uses headerIncludes; embed-js moved to the parsed media-type allow-list.
+  const r = evaluateCheck(check('ucp-catalog'), { status: 200, body: '{}', headers: {} });
   assert.equal(r.status, 'fail');
   assert.match(r.detail, /missing the content-type header/);
+});
+
+test('evaluateCheck: embed.js with no content-type at all fails on the media type', () => {
+  const r = evaluateCheck(check('embed-js'), { status: 200, body: '', headers: {} });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /media type could not be checked/);
 });
 
 test('evaluateCheck: the embed iframe needs frame-ancestors, not merely a 200', () => {
@@ -282,13 +290,68 @@ test('evaluateCheck: an error object QUOTING the manifest name does not pass', (
   assert.match(r.detail, /JSON field "name" is undefined, expected "miyagisanchez-ucp"/);
 });
 
-test('evaluateCheck: the real manifest, keyed on its name field, passes', () => {
+test('evaluateCheck: the real manifest, with its discovery contract intact, passes', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
-    body: JSON.stringify({ name: 'miyagisanchez-ucp', version: '1.0' }),
+    body: JSON.stringify({
+      name: 'miyagisanchez-ucp',
+      capabilities: ['catalog_search', 'listing_detail'],
+      endpoints: { catalog: { url: 'x' } },
+    }),
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: a name-only manifest FAILS — the discovery contract is the point', () => {
+  // codex: `{"name":"miyagisanchez-ucp"}` passed while carrying nothing an agent can actually use.
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({ name: 'miyagisanchez-ucp' }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /"capabilities" is not an array/);
+  assert.match(r.detail, /"endpoints" is missing or empty/);
+});
+
+test('evaluateCheck: a manifest missing the core capability FAILS', () => {
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({ name: 'miyagisanchez-ucp', capabilities: ['escrow'], endpoints: { x: 1 } }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /does not include "catalog_search"/);
+});
+
+test('evaluateCheck: an EMPTY endpoints object counts as missing, not present', () => {
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({ name: 'miyagisanchez-ucp', capabilities: ['catalog_search'], endpoints: {} }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /"endpoints" is missing or empty/);
+});
+
+// ---- parseMediaType + the allow-list (codex, round 11) ----
+
+test('parseMediaType: strips parameters and lowercases', () => {
+  assert.equal(parseMediaType('TEXT/JavaScript; charset=utf-8'), 'text/javascript');
+  assert.equal(parseMediaType('application/json'), 'application/json');
+  assert.equal(parseMediaType(undefined), null);
+});
+
+test('evaluateCheck: text/notjavascript is rejected by the allow-list', () => {
+  // Substring matching accepted it. The parsed type does not.
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    body: 'customElements.define("miyagi-buy-button", X)',
+    headers: { 'content-type': 'text/notjavascript' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /media type is "text\/notjavascript"/);
 });
 
 test('evaluateCheck: embed.js served as text/ecmascript is accepted', () => {
@@ -397,6 +460,9 @@ test('wantsBody: true only when an expectation actually reads the body', () => {
   // bodyJsonMatches reads the body too — omitting it here would let a manifest whose body stalled
   // report PASS, since nothing would have flagged the structural assertion as unevaluated.
   assert.equal(wantsBody({ status: 200, bodyJsonMatches: { name: 'x' } }), true);
+  assert.equal(wantsBody({ status: 200, bodyJsonIncludes: { capabilities: ['x'] } }), true);
+  assert.equal(wantsBody({ status: 200, bodyJsonRequires: ['endpoints'] }), true);
+  assert.equal(wantsBody({ status: 200, bodyJsonRequires: [] }), false);
 });
 
 // ---- firstShopSlug ----
@@ -429,7 +495,7 @@ test('resolvePath: the embed check derives its path AND its identity marker from
   const prior = [{ id: 'ucp-catalog', status: 'pass', body: JSON.stringify({ items: [{ shop: { slug: 'prueba' } }] }) }];
   assert.deepEqual(resolvePath(check('embed-iframe'), prior), {
     path: '/embed/s/prueba',
-    expect: { bodyIncludes: ['prueba'] },
+    expect: { bodyIncludes: ['prueba', 'prod_'] },
   });
 });
 
@@ -582,7 +648,7 @@ test('evaluateCheck: the real embed page — right shop, framable — passes', (
   const derived = { ...check('embed-iframe'), expect: { ...check('embed-iframe').expect, bodyIncludes: ['prueba'] } };
   const r = evaluateCheck(derived, {
     status: 200,
-    body: '<html>…/embed/s/prueba…</html>',
+    body: '<html>…/embed/s/prueba… <a href="/mx/l/prod_01ABC">x</a></html>',
     headers: { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': 'frame-ancestors *' },
   });
   assert.equal(r.status, 'pass');

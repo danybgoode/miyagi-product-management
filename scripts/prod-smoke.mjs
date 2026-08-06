@@ -43,6 +43,16 @@ import { resolve } from 'node:path';
 
 export const DEFAULT_BASE = 'https://miyagisanchez.com';
 
+// The JavaScript media types, as an explicit allow-list. Substring matching accepted
+// `text/notjavascript`; this compares the parsed type, so only real ones pass.
+export const JS_MEDIA_TYPES = [
+  'text/javascript',
+  'application/javascript',
+  'application/x-javascript',
+  'text/ecmascript',
+  'application/ecmascript',
+];
+
 // The checks, in the order the daily routine reports them. `expect` is declarative so the pure
 // evaluator below can be unit-tested without a network: `status` is required; `location` asserts a
 // redirect target; `bodyIncludes`/`bodyExcludes` assert page identity.
@@ -65,7 +75,7 @@ export const CHECKS = [
     // fragile one.
     expect: {
       status: 200,
-      headerIncludes: { 'content-type': ['javascript', 'ecmascript'] },
+      mediaTypeIn: JS_MEDIA_TYPES,
       bodyIncludes: ['customElements', 'miyagi-buy-button'],
     },
     why: 'The embed loader every seller-site iframe pulls. Dead loader = every embedded shop dark.',
@@ -92,6 +102,11 @@ export const CHECKS = [
       headerIncludes: { 'content-type': 'json' },
       bodyIsJson: true,
       bodyJsonMatches: { name: 'miyagisanchez-ucp' },
+      // The name alone would pass a manifest stripped of everything an agent actually needs. These
+      // ARE the discovery contract this check claims to protect: the capability an agent looks for
+      // and the endpoint map it navigates by.
+      bodyJsonIncludes: { capabilities: ['catalog_search'] },
+      bodyJsonRequires: ['endpoints'],
     },
     why: 'The UCP discovery document — how an agent learns the catalog exists.',
   },
@@ -120,7 +135,10 @@ export const CHECKS = [
       }
       // The slug is also the page-identity marker: it proves THE REQUESTED shop rendered, not a
       // generic 200 page that happens to carry a permissive CSP.
-      return { path: `/embed/s/${slug}`, expect: { bodyIncludes: [slug] } };
+      // `prod_` proves the embed actually RENDERED the shop's listings; the slug alone would pass
+      // any generic page that merely echoed it back. The slug came from a catalog item belonging to
+      // this shop, so the shop is known to have at least one product to render.
+      return { path: `/embed/s/${slug}`, expect: { bodyIncludes: [slug, 'prod_'] } };
     },
     // Framing is the half of this check that makes the iframe actually embeddable — the orphan
     // sweep named its absence alongside the 308 as what a seller would experience.
@@ -308,10 +326,24 @@ export function normalizeLocation(location, base = DEFAULT_BASE) {
   }
 }
 
+/**
+ * Pure: the media type from a Content-Type header — lowercased, parameters stripped.
+ * `text/javascript; charset=utf-8` -> `text/javascript`.
+ */
+export function parseMediaType(contentType) {
+  if (!contentType) return null;
+  return String(contentType).split(';')[0].trim().toLowerCase();
+}
+
 /** Pure: does this expectation need the response body at all? */
 export function wantsBody(want) {
   return Boolean(
-    want.bodyIsJson || want.bodyIncludes?.length || want.bodyExcludes?.length || want.bodyJsonMatches,
+    want.bodyIsJson ||
+      want.bodyIncludes?.length ||
+      want.bodyExcludes?.length ||
+      want.bodyJsonMatches ||
+      want.bodyJsonIncludes ||
+      want.bodyJsonRequires?.length,
   );
 }
 
@@ -356,7 +388,7 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
   }
   // Structural field assertions on a JSON document. A substring match cannot tell the manifest from
   // an error object that merely quotes the manifest's name.
-  if (want.bodyJsonMatches && bodyWasRead) {
+  if ((want.bodyJsonMatches || want.bodyJsonIncludes || want.bodyJsonRequires) && bodyWasRead) {
     let doc;
     try {
       doc = JSON.parse(body ?? '');
@@ -364,13 +396,42 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
       doc = undefined; // bodyIsJson already reported the parse failure; don't say it twice.
     }
     if (doc !== undefined) {
-      for (const [field, expected] of Object.entries(want.bodyJsonMatches)) {
+      for (const [field, expected] of Object.entries(want.bodyJsonMatches ?? {})) {
         if (doc?.[field] !== expected) {
           problems.push(
             `JSON field "${field}" is ${JSON.stringify(doc?.[field])}, expected ${JSON.stringify(expected)}`,
           );
         }
       }
+      for (const field of want.bodyJsonRequires ?? []) {
+        const value = doc?.[field];
+        const empty =
+          value === undefined ||
+          value === null ||
+          (Array.isArray(value) && value.length === 0) ||
+          (typeof value === 'object' && Object.keys(value).length === 0);
+        if (empty) problems.push(`JSON field "${field}" is missing or empty`);
+      }
+      for (const [field, required] of Object.entries(want.bodyJsonIncludes ?? {})) {
+        const value = doc?.[field];
+        if (!Array.isArray(value)) {
+          problems.push(`JSON field "${field}" is not an array`);
+          continue;
+        }
+        for (const entry of required) {
+          if (!value.includes(entry)) {
+            problems.push(`JSON field "${field}" does not include ${JSON.stringify(entry)}`);
+          }
+        }
+      }
+    }
+  }
+  if (want.mediaTypeIn) {
+    const actual = parseMediaType(headers?.['content-type']);
+    if (!actual) {
+      problems.push('no content-type header, so the media type could not be checked');
+    } else if (!want.mediaTypeIn.includes(actual)) {
+      problems.push(`media type is ${JSON.stringify(actual)}, expected one of ${JSON.stringify(want.mediaTypeIn)}`);
     }
   }
   if (want.framesFromAnywhere && !framesAllowedFromAnywhere(headers?.['content-security-policy'])) {
