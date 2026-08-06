@@ -1,6 +1,26 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 2: Activate
 
-**Status:** 🟡 architecture locked · waits on Sprint 1
+**Status:** 🟡 in progress
+
+## Build evidence — 2026-08-06
+
+- Code is complete in stacked [storefront PR #343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343);
+  rollout gates remain pending.
+- Sprint 2 is one stacked delta over Sprint 1: atomic approve/invite, provider-truthful outcome recording,
+  audited rotate-before-resend, verified-email activation, the single database binding writer and a
+  track-aware zero-grant workspace.
+- Final head `46c16f1` passes TypeScript, changed-file lint, production build, 25 focused recruiting/
+  activation specs and the complete 227-test D13 continuity population. Token, provider outcome, Clerk
+  email, serialization, RPC, route/workspace, query-normalization and unavailable-state groups were each
+  observed red before restoration.
+- The executable provider seam proves non-empty ID, null ID and thrown/ambiguous outcomes; composite RPC
+  rows cannot serialize activation hashes or internal MYP identifiers.
+- Both required external-family reviews ran on the final head and every finding is fixed or answered on the
+  PR. Their repeated language finding is the locked, founding-operator-only English US journey; Promotor
+  branches remain Spanish. The mandatory fresh reviewer remains blocked by the revoked subagent refresh
+  token.
+- No migration, flag sync, activation, grant or merchant mutation was performed from the builder rail. The
+  authenticated Clerk activation/zero-grant smoke and live Promotor continuity walkthrough remain owed.
 
 ## Outcome
 

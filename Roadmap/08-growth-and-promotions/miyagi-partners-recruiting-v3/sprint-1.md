@@ -1,6 +1,23 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 1: Apply
 
-**Status:** 🟡 in progress · architecture locked, implementation underway
+**Status:** 🟡 in progress
+
+## Build evidence — 2026-08-06
+
+- Code is complete in [storefront PR #342](https://github.com/danybgoode/miyagisanchezcommerce/pull/342);
+  rollout gates remain pending.
+- The dark-flag proposition, exact three-shop intake, additive migration/RPC contract, privacy-closed
+  analytics and one-queue admin review are implemented on `feat/miyagi-partners-recruiting-v3`.
+- TypeScript, production build, changed-file lint, the 24 recruiting/flag specs and the 13 exact
+  Promotor identity/economic callsite guards are green locally. The complete D13 continuity population
+  also passed as part of the stacked Sprint 2 run (227/227).
+- New validation/spec groups were observed red through deliberate mutations before restoration. Desktop,
+  mobile and the final full-page local live-smoke render were inspected; the harness reported HTTP 200 and
+  zero console errors.
+- Two external-family reviews ran and their findings were fixed or answered on the PR. The mandatory fresh
+  reviewer is still unavailable because the Codex subagent refresh token is revoked.
+- `partners.recruiting_v3_enabled` remains OFF/absent in production. The migration, Golden definition sync,
+  authenticated admin smoke and existing-Promotor walkthrough remain gates—not inferred successes.
 
 ## Outcome
 
