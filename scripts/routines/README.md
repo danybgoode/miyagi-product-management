@@ -268,13 +268,29 @@ route change is a reviewable diff and the epic that moves a route updates the sm
 Because a 200 proves only that *something* answered, every check guarding a rendered page also
 asserts a structural body marker — status alone could not tell the selector and the marketplace apart.
 
+> ### ✅ STOOD UP 2026-08-06 — `trig_01DKy1LgZvjXidpGKUKAVDX9`, daily `17 13 * * *` UTC
+>
+> Created via the remote-trigger API (`RemoteTrigger` / `POST /v1/code/triggers`), **not** the web UI,
+> and confirmed with a live manual run against production. Steps 1–3 below are kept as the record of
+> how it was stood up; they are done.
+>
+> **🚨 The ORIGINAL watchdog was NOT replaced, because it could not be found.** It does not appear in
+> `GET /v1/code/triggers` for this account (which lists only `ops-nightly`, `smoke-triage` and
+> `roadmap-hygiene`), and no workflow in any of the three repos performs these checks. The trigger id
+> recorded in team memory, `trig_012cfxtRa9Gdwr8qUSvnFuhB`, returns **404**. So it is running from
+> somewhere this session cannot see or reach.
+>
+> **Until someone finds and disables it, a red night pages TWICE** — once from the old prompt
+> asserting `/l` → 200 (a false alarm; that route legitimately 308s), once from this one. Disabling
+> the old routine is owed, and it is the only remaining step.
+
 1. **Install the Claude GitHub App** on `miyagi-product-management` if not already done for Routine C /
    `ops-nightly` / `pmo-report`.
-2. **Replace the old routine's prompt** with `prod-smoke.prompt.md` (keep the existing trigger — this
-   is the same watchdog, re-homed, not a seventh scheduled run). Delete the old routine only if you
-   create a fresh one instead; do not leave both live, or a red night pages twice.
-3. **Trigger:** Schedule, **daily** — keep whatever hour the existing watchdog runs at. It has no
-   dependency on CI or the other routines; it probes live production directly.
+2. **Create the routine** from `prod-smoke.prompt.md`. (Originally written as "replace the old
+   routine's prompt, keep its trigger" — that turned out to be impossible; see the box above.)
+3. **Trigger:** Schedule, **daily 13:17 UTC** (~07:17 Mexico City) — a first-thing-in-the-morning
+   check. It has no dependency on CI or the other routines; it probes live production directly, so
+   its hour is not coupled to anything.
 4. **Env:**
    - **Network access → Custom**, with **`miyagisanchez.com`** allow-listed (the checks) and
      **`api.telegram.org`** (the alert). Without the first, every check reports **unavailable** —
@@ -303,11 +319,14 @@ have their **own separate per-routine/per-account hourly caps**, not the schedul
 | ops-nightly — standup + nightly fixers | Schedule, nightly | Yes, 1/day (still one routine, now 4 steps) |
 | weekly-recap — weekly exec recap | Schedule, weekly | Yes, but ~0.14/day |
 | pmo-report — weekly PMO deck delivery | Schedule, weekly | Yes, but ~0.14/day |
-| prod-smoke — daily production watchdog | Schedule, daily | Yes, 1/day — **already counted**, it is the pre-existing watchdog re-homed |
+| prod-smoke — daily production watchdog | Schedule, daily | Yes, 1/day |
 
 - **Scheduled load = B (1/day) + ops-nightly (1/day) + prod-smoke (1/day) + C (~0.14/day) + weekly-recap (~0.14/day) + pmo-report (~0.14/day) ≈ 3.4/day**
-  — still under the 5/day cap. `prod-smoke` adds **no new** load: the old uncommitted watchdog was
-  already consuming that daily slot, it just wasn't in this table.
+  — under the 5/day cap.
+- ⚠️ **That figure assumes the old watchdog is gone, and it is not** (see the box above — it could not
+  be located to disable). While both run, the real load is ≈ **4.4/day**: still under the cap, but the
+  headroom is one routine, not two. This is a second reason to find and kill the old one, beyond the
+  duplicate paging.
 - **A is effectively uncapped for our volume** (GitHub events, hourly caps only); it does **not** eat
   the scheduled budget. On a busy day it's bounded by the preview hourly cap, not the daily 5.
 - **No upgrade pressure:** everything here runs on **Pro**. Higher daily run counts are the only
