@@ -1,6 +1,6 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 1: Apply
 
-**Status:** 🟡 architecture locked · implementation next
+**Status:** 🟡 in progress · architecture locked, implementation underway
 
 ## Outcome
 
