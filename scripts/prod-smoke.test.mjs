@@ -295,10 +295,66 @@ test('resolvePath: items with BLANK slugs are a FAILURE, not an unavailability',
   assert.match(r.failed, /blank shop\.slug/);
 });
 
-test('resolvePath: an unparseable catalog body is unavailable, not a failure', () => {
-  const prior = [{ id: 'ucp-catalog', status: 'pass', body: 'not json' }];
+test('resolvePath: a parseable catalog with NO items array is a schema FAILURE', () => {
+  // codex round 4: unparseable JSON can no longer reach here (the catalog check fails on it), so
+  // this branch means valid JSON of the wrong shape — observed, therefore a failure.
+  const prior = [{ id: 'ucp-catalog', status: 'pass', body: JSON.stringify({ total: 0 }) }];
   const r = resolvePath(check('embed-iframe'), prior);
-  assert.match(r.unavailable, /not parseable JSON/);
+  assert.equal(r.unavailable, undefined);
+  assert.match(r.failed, /no items array/);
+});
+
+// ---- bodyIsJson (codex round 4) ----
+
+test('evaluateCheck: a 200 announcing JSON that serves garbage FAILS', () => {
+  // Previously the catalog "passed" on status+content-type and the embed check went unavailable —
+  // a broken catalog reported as an inability to look at one.
+  const r = evaluateCheck(check('ucp-catalog'), {
+    status: 200,
+    body: 'not-json',
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /not parseable JSON/);
+});
+
+test('evaluateCheck: real catalog JSON passes', () => {
+  const r = evaluateCheck(check('ucp-catalog'), {
+    status: 200,
+    body: JSON.stringify({ items: [], total: 0 }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'pass');
+});
+
+// ---- protocol-relative redirects (codex round 4) ----
+
+test('normalizeLocation: a PROTOCOL-RELATIVE target resolves to the same path', () => {
+  // `//miyagisanchez.com/mx/l` is a legal URI reference that every browser resolves to the required
+  // target. Comparing it as a literal string failed a correct redirect.
+  assert.equal(normalizeLocation('//miyagisanchez.com/mx/l'), '/mx/l');
+});
+
+test('normalizeLocation: a protocol-relative CROSS-origin target is still foreign', () => {
+  assert.equal(normalizeLocation('//evil.example/mx/l'), '//evil.example/mx/l');
+});
+
+test('normalizeLocation: a missing Location stays missing, never a resolved "/null" path', () => {
+  // `new URL(null, base)` resolves happily to /null — the empty guard is what stops a missing
+  // header becoming a plausible-looking one.
+  assert.equal(normalizeLocation(null), null);
+  assert.equal(normalizeLocation(undefined), undefined);
+  assert.equal(normalizeLocation(''), '');
+});
+
+test('evaluateCheck: /l redirecting protocol-relative to /mx/l passes', () => {
+  const r = evaluateCheck(check('browse-redirect'), {
+    status: 308,
+    location: '//miyagisanchez.com/mx/l',
+    body: '',
+    headers: {},
+  });
+  assert.equal(r.status, 'pass');
 });
 
 // ---- framesAllowedFromAnywhere (codex re-review, PR #118) ----

@@ -59,7 +59,11 @@ export const CHECKS = [
     id: 'ucp-catalog',
     name: 'UCP catalog',
     path: '/api/ucp/catalog?limit=1',
-    expect: { status: 200, headerIncludes: { 'content-type': 'json' } },
+    // `bodyIsJson` because a 200 that ANNOUNCES application/json and then serves something
+    // unparseable is an observed broken response, and the catalog check is where that belongs. Left
+    // to the dependent embed check it surfaced as "unavailable" — a broken catalog reported as an
+    // inability to look at one.
+    expect: { status: 200, headerIncludes: { 'content-type': 'json' }, bodyIsJson: true },
     why: 'The agent-readable catalog endpoint. Also the source of the embed check\'s shop slug.',
   },
   {
@@ -71,6 +75,7 @@ export const CHECKS = [
     expect: {
       status: 200,
       headerIncludes: { 'content-type': 'json' },
+      bodyIsJson: true,
       bodyIncludes: ['miyagisanchez-ucp'],
     },
     why: 'The UCP discovery document — how an agent learns the catalog exists.',
@@ -85,7 +90,9 @@ export const CHECKS = [
     dependsOn: 'ucp-catalog',
     pathFrom: (catalogBody) => {
       const items = parseCatalogItems(catalogBody);
-      if (items === null) return { unavailable: 'catalog body was not parseable JSON' };
+      // Unparseable JSON can no longer reach here — the catalog check now fails on it, so this
+      // branch means parseable JSON with no `items` array at all: an observed schema defect.
+      if (items === null) return { failed: 'catalog response has no items array — schema defect' };
       if (items.length === 0) return { unavailable: 'catalog returned no items to embed' };
 
       const slug = firstShopSlug(catalogBody);
@@ -252,11 +259,14 @@ export function resolvePath(check, priorResults) {
  * script somewhere other than prod.
  */
 export function normalizeLocation(location, base = DEFAULT_BASE) {
-  // No null/empty guard: the absolute-form test below already returns those unchanged, and a line
-  // that no mutation can make fail is a line that decays unnoticed.
-  if (!/^https?:\/\//i.test(location)) return location;
+  // The empty guard IS load-bearing: `new URL(null, base)` resolves happily to a "/null" path, so
+  // without it a MISSING Location header would silently become a plausible-looking one.
+  if (!location) return location;
   try {
-    const url = new URL(location);
+    // Resolved as a URI REFERENCE against the checked URL, which handles all three legal forms
+    // uniformly: absolute, root-relative, and protocol-relative (`//host/path` — legal, resolved by
+    // every browser to the same target, and previously compared as a literal string and failed).
+    const url = new URL(location, base);
     if (url.origin !== new URL(base).origin) return location;
     return `${url.pathname}${url.search}`;
   } catch {
@@ -290,6 +300,13 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     const got = normalizeLocation(location, base);
     if (got !== want.location) {
       problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
+    }
+  }
+  if (want.bodyIsJson) {
+    try {
+      JSON.parse(body ?? '');
+    } catch {
+      problems.push('body is not parseable JSON, despite the response announcing JSON');
     }
   }
   if (want.framesFromAnywhere && !framesAllowedFromAnywhere(headers?.['content-security-policy'])) {

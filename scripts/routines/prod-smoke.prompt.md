@@ -99,9 +99,16 @@ a production outage.
 Post a one-message Telegram alert if **both** `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set:
 
 ```bash
-curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+curl -s -w '\n%{http_code}' "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
   -d chat_id="$TELEGRAM_CHAT_ID" --data-urlencode text="<your message>"
 ```
+
+**Verify the send actually landed — do not assume it did.** `curl -s` exits `0` on an HTTP 401 or
+400, so a revoked token or a wrong chat id would swallow the alarm and leave the run looking clean:
+a production failure, detected, and then silently not reported. Check **both** that the status line
+is `200` and that the response body contains `"ok":true`. If either is missing, treat it as a
+**delivery failure**: write the full report to the run log, and say plainly in the log that the
+alert did not reach Daniel and why. A watchdog whose alarm fails quietly is worse than no watchdog.
 
 The message must carry, in this order: **the verdict word** the script used (`FAILED` or
 `UNAVAILABLE`), the pass tally, **each** failing check with observed-vs-expected, your regression-vs-
@@ -114,7 +121,8 @@ Two rules on the message, both learned the hard way:
 - **Never alert on green**, and never alert twice for one run.
 
 If either variable is unset, or `api.telegram.org` is not allow-listed, write the full report to the
-run log instead and skip the send silently — never block on it.
+run log instead and skip the send silently — never block on it. That is different from a send that
+was *attempted and rejected*, which is always worth stating.
 
 ## What you never do
 
