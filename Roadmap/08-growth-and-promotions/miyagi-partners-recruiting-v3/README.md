@@ -102,10 +102,10 @@ orders, a story or access. Candidate URLs must be public `http(s)` URLs with cre
 private/local literal hosts rejected, then canonicalized before storage. The intake performs no fetch and
 writes no relationship, consent or grant.
 
-**D4 — deterministic retry rule.** A partial unique index on normalized email permits at most one pending
-`founding_operator` application. A uniqueness conflict returns the same honest “received for review” result,
-does not create a second row and does not send a second admin notification. Rejected applicants may reapply;
-an approved application cannot be recreated as an ambiguous pending review without a new admin decision.
+**D4 — deterministic retry rule.** A partial unique index on normalized email permits at most one pending or
+approved `founding_operator` application. A uniqueness conflict returns the same honest, status-neutral
+“received for review” result, does not create a second row and does not send a second admin notification.
+Rejected applicants may reapply; an approved application cannot be recreated as an ambiguous pending review.
 Promotor duplicate behavior is unchanged.
 
 **D5 — atomic operator approval.** Existing Promotor approval remains on its current conditional

@@ -11,11 +11,11 @@ exactly three real shops for founder review. The existing Promotor application c
 
 Build exactly epic decisions **D1–D4 and D9–D13**. The live application table has zero rows and only the
 legacy columns listed in D1 evidence; Sprint 1 owns the additive migration for `program_track`, operator
-details v1, operator activation fields, application status check, pending-operator duplicate index, partner
+details v1, operator activation fields, application status check, pending-or-approved operator duplicate index, partner
 track/Clerk uniqueness, the disabled local flag row and the service-role-only function declarations consumed
 in Sprint 2. Existing rows default/backfill to `promoter`.
 
-The public contract is D2's exact version-1 object, D3's public-URL/awareness rules and D4's one-pending-row
+The public contract is D2's exact version-1 object, D3's public-URL/awareness rules and D4's one-active-row
 idempotency. The only flag seam is D9 and the only analytics vocabulary is D10. Admin review follows D11;
 request-conversation is a mail link, not a state. The builder must run D13's whole Promotor regression
 population, add new intake/admin/privacy/population specs, record one deliberate red mutation per new spec
