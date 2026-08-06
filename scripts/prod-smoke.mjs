@@ -50,7 +50,14 @@ export const DEFAULT_BASE = 'https://miyagisanchez.com';
 // is exactly what substring matching on "json" let through.
 export function isJsonMediaType(mediaType) {
   if (!mediaType) return false;
-  return mediaType === 'application/json' || mediaType === 'text/json' || mediaType.endsWith('+json');
+  // The shape is validated before the suffix is trusted: `garbage+json` has no type/subtype at all
+  // and is not a media type, so accepting it on the strength of its ending would be the same
+  // substring mistake one level down.
+  if (!/^[a-z0-9][a-z0-9!#$&^_.-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/.test(mediaType)) return false;
+  if (mediaType === 'application/json' || mediaType === 'text/json') return true;
+  // Safe on the whole string once the shape holds: a valid media type has its `/` before the
+  // subtype, so nothing but the subtype can carry the suffix.
+  return mediaType.endsWith('+json');
 }
 
 export const JS_MEDIA_TYPES = [
@@ -160,7 +167,7 @@ export const CHECKS = [
     // effect name different things is decoration.
     expect: {
       status: 200,
-      headerIncludes: { 'content-type': 'text/html' },
+      mediaTypeIn: ['text/html'],
       framesFromAnywhere: true,
     },
     why: 'A seller embedding their storefront on their own site. 308 here = broken iframe.',

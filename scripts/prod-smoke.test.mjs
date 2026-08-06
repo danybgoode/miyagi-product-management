@@ -226,6 +226,10 @@ test('isJsonMediaType: the boundary cases, in both directions', () => {
   assert.equal(isJsonMediaType('application/jsonp'), false);
   assert.equal(isJsonMediaType('text/notjson'), false);
   assert.equal(isJsonMediaType(null), false);
+  // A suffix alone is not a media type — the type/subtype shape is checked first.
+  assert.equal(isJsonMediaType('garbage+json'), false);
+  assert.equal(isJsonMediaType('/json'), false);
+  assert.equal(isJsonMediaType('application/'), false);
 });
 
 // ---- describeShapeProblem (codex, final round) ----
@@ -254,6 +258,16 @@ test('evaluateCheck: embed.js with no content-type at all fails on the media typ
   const r = evaluateCheck(check('embed-js'), { status: 200, body: '', headers: {} });
   assert.equal(r.status, 'fail');
   assert.match(r.detail, /media type could not be checked/);
+});
+
+test('evaluateCheck: text/htmlx is not HTML — the embed iframe rejects it', () => {
+  const r = evaluateCheck(check('embed-iframe'), {
+    status: 200,
+    body: 'prueba prod_01ABC',
+    headers: { 'content-type': 'text/htmlx', 'content-security-policy': 'frame-ancestors *' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /media type is "text\/htmlx"/);
 });
 
 test('evaluateCheck: the embed iframe needs frame-ancestors, not merely a 200', () => {
@@ -878,6 +892,20 @@ test('CHECKS: every check declares an expected status and a why', () => {
     assert.ok(c.why, `${c.id} needs a why — the reason a check exists is what stops it being deleted as noise`);
     assert.equal(typeof c.expect?.status, 'number', `${c.id} needs an expected status`);
     assert.ok(c.path || c.pathFrom, `${c.id} needs either a path or a pathFrom`);
+  }
+});
+
+test('CHECKS: no check media-types via substring — the population guard', () => {
+  // This gap recurred THREE times in review: content-type was converted to a parsed media-type
+  // comparison on embed-js, then the catalog and manifest, then the embed iframe — each time
+  // leaving siblings behind on the substring mechanism, where `text/htmlx` and `application/jsonp`
+  // pass. Guard the population mechanically instead of finding one more door each round.
+  for (const c of CHECKS) {
+    const keys = Object.keys(c.expect.headerIncludes ?? {}).map((k) => k.toLowerCase());
+    assert.ok(
+      !keys.includes('content-type'),
+      `${c.id} matches content-type by SUBSTRING — use mediaTypeIn or mediaTypeIsJson instead`,
+    );
   }
 });
 
