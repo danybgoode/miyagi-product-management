@@ -32,7 +32,7 @@ const check = (id) => CHECKS.find((c) => c.id === id);
 test('evaluateCheck: a matching status passes', () => {
   const r = evaluateCheck(check('embed-js'), {
     status: 200,
-    body: '/*! loader */',
+    body: 'customElements.define("miyagi-buy-button", X)',
     headers: { 'content-type': 'text/javascript; charset=utf-8' },
   });
   assert.equal(r.status, 'pass');
@@ -158,7 +158,7 @@ test('evaluateCheck: embed.js served as HTML fails despite a 200', () => {
 test('evaluateCheck: embed.js served as javascript passes, and the match is case-insensitive', () => {
   const r = evaluateCheck(check('embed-js'), {
     status: 200,
-    body: '/*! loader */',
+    body: 'customElements.define("miyagi-buy-button", X)',
     headers: { 'content-type': 'TEXT/JavaScript; charset=utf-8' },
   });
   assert.equal(r.status, 'pass');
@@ -171,7 +171,7 @@ test('evaluateCheck: an expectation spelled Content-Type still matches the store
   const mixedCase = { ...check('embed-js'), expect: { status: 200, headerIncludes: { 'Content-Type': 'javascript' } } };
   const r = evaluateCheck(mixedCase, {
     status: 200,
-    body: '/*!*/',
+    body: 'customElements.define("miyagi-buy-button", X)',
     headers: { 'content-type': 'text/javascript' },
   });
   assert.equal(r.status, 'pass');
@@ -295,7 +295,8 @@ test('evaluateCheck: embed.js served as text/ecmascript is accepted', () => {
   // A guard that rejects correct output is the worse failure — ecmascript media types are valid and
   // functional, and a server-side MIME preference must not redden a working loader.
   for (const ct of ['text/javascript', 'application/javascript', 'text/ecmascript', 'application/ecmascript']) {
-    const r = evaluateCheck(check('embed-js'), { status: 200, body: '/*!*/', headers: { 'content-type': ct } });
+    const body = 'customElements.define("miyagi-buy-button", X)';
+    const r = evaluateCheck(check('embed-js'), { status: 200, body, headers: { 'content-type': ct } });
     assert.equal(r.status, 'pass', `${ct} should be accepted`);
   }
 });
@@ -345,15 +346,45 @@ test('evaluateCheck: a 200 whose body stalled is UNAVAILABLE, not a pass', () =>
 });
 
 test('evaluateCheck: a stalled body on a check with NO body expectations still passes', () => {
-  // embed.js asserts only status + content-type, so an unread body costs it nothing. Failing here
-  // would redden a check that was fully satisfied.
+  // A synthetic check, deliberately: every real check now reads its body, and reddening a check
+  // that was in fact fully satisfied would be the other failure mode.
+  const headerOnly = { id: 'synthetic', name: 'synthetic', expect: { status: 200 } };
+  const r = evaluateCheck(headerOnly, { status: 200, headers: {}, body: null, bodyError: 'terminated' });
+  assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: an EMPTY embed.js body fails despite a 200 and the right media type', () => {
+  // codex, BLOCKING: with no body expectation, a truncated or empty loader passed as healthy while
+  // embedded shops received nothing usable.
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    body: '',
+    headers: { 'content-type': 'text/javascript' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /missing the marker/);
+});
+
+test('evaluateCheck: some OTHER valid script served at /embed.js does not pass', () => {
+  // `customElements` alone would accept any script that happens to use the API. The element name is
+  // what makes it OUR loader, and it survives minification because the DOM registers it by string.
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    body: 'customElements.define("some-other-widget", X)',
+    headers: { 'content-type': 'text/javascript' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /miyagi-buy-button/);
+});
+
+test('evaluateCheck: a STALLED embed.js body is unavailable, not a pass', () => {
   const r = evaluateCheck(check('embed-js'), {
     status: 200,
     headers: { 'content-type': 'text/javascript' },
     body: null,
     bodyError: 'terminated',
   });
-  assert.equal(r.status, 'pass');
+  assert.equal(r.status, 'unavailable');
 });
 
 test('wantsBody: true only when an expectation actually reads the body', () => {
@@ -700,7 +731,7 @@ test('runChecks: a dependency failure degrades only the dependent check, not the
   // Degrade per check: one dead endpoint must never hide the state of the others.
   const fetchImpl = stubFetch({
     '/api/ucp/catalog': { status: 500, headers: {}, body: '' },
-    '/embed.js': { status: 200, headers: { 'content-type': 'text/javascript' }, body: '/*!*/' },
+    '/embed.js': { status: 200, headers: { 'content-type': 'text/javascript' }, body: 'customElements.define("miyagi-buy-button", X)' },
   });
   return runChecks(DEFAULT_BASE, { fetchImpl }).then((results) => {
     assert.equal(results.find((r) => r.id === 'ucp-catalog').status, 'fail');

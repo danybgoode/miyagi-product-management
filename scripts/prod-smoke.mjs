@@ -57,7 +57,17 @@ export const CHECKS = [
     // An ARRAY of acceptable substrings, because the JS media types are a set, not one string:
     // `text/ecmascript` and `application/ecmascript` are valid and functional, and demanding the
     // literal "javascript" would redden a working loader over a server-side MIME preference.
-    expect: { status: 200, headerIncludes: { 'content-type': ['javascript', 'ecmascript'] } },
+    //
+    // The body markers are the loader's actual API SURFACE — the custom elements a seller's page
+    // depends on. Without them a 200 with an empty or truncated body passed as healthy while
+    // embedded shops received no usable loader. Custom-element names survive minification because
+    // the DOM registers them by string, which is what makes them a durable marker rather than a
+    // fragile one.
+    expect: {
+      status: 200,
+      headerIncludes: { 'content-type': ['javascript', 'ecmascript'] },
+      bodyIncludes: ['customElements', 'miyagi-buy-button'],
+    },
     why: 'The embed loader every seller-site iframe pulls. Dead loader = every embedded shop dark.',
   },
   {
