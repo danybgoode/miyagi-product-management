@@ -141,7 +141,9 @@ admin rotate-and-resend action transactionally replaces the unused hash/expiry a
 before sending, so any older link becomes invalid; its result is recorded only when the hash still matches.
 A crash between rotate, send and result recording therefore leaves a visible retry state, never a lost
 unrecoverable identity. Multiple emails may exist after an ambiguous provider result, but exactly one newest
-token can activate.
+token can activate. The invitation and neutral activation copy are English because they continue the
+explicit United States founding-operator journey; this is a track-scoped exception to the es-MX default,
+not a language change for shared Promotor notifications or surfaces.
 
 GET only validates/displays and signed-out users return through Clerk's encoded `redirect_url`; a signed-in
 POST performs the mutation. The bearer token alone is insufficient: the Clerk account must expose at least
@@ -180,8 +182,10 @@ Promotor notifications remain as today.
 **D12 — workspace admission and zero-grant truth.** A founding operator may enter `/partner` only when the
 recruiting flag is ON; Promotor admission remains governed by the existing partner flag. The page labels the
 track, loads shops exclusively from active `partner_grants`, and shows an explicit zero-shop state for a new
-operator with no Administer shortcut. Existing granted/revoked behavior is unchanged. The live pre-build and
-post-approval population guard must both prove zero grants were manufactured.
+operator with no Administer shortcut. Only that founding-operator orientation uses the US journey's English
+copy; the existing Promotor heading, code, empty state and close path stay Spanish. Existing granted/revoked
+behavior is unchanged. The live pre-build and post-approval population guard must both prove zero grants
+were manufactured.
 
 **D13 — required regression population.** Every sprint runs `promoter-applications.spec.ts`,
 `promoter-program.spec.ts`, `promoter-commission.spec.ts`, `promoter-earnings.spec.ts`,
