@@ -45,6 +45,14 @@ export const DEFAULT_BASE = 'https://miyagisanchez.com';
 
 // The JavaScript media types, as an explicit allow-list. Substring matching accepted
 // `text/notjavascript`; this compares the parsed type, so only real ones pass.
+// JSON media types. `application/*+json` is legal and common, so it is matched by suffix rather
+// than enumerated — but `application/jsonp` and `text/notjson` are NOT JSON and must not pass, which
+// is exactly what substring matching on "json" let through.
+export function isJsonMediaType(mediaType) {
+  if (!mediaType) return false;
+  return mediaType === 'application/json' || mediaType === 'text/json' || mediaType.endsWith('+json');
+}
+
 export const JS_MEDIA_TYPES = [
   'text/javascript',
   'application/javascript',
@@ -88,7 +96,7 @@ export const CHECKS = [
     // unparseable is an observed broken response, and the catalog check is where that belongs. Left
     // to the dependent embed check it surfaced as "unavailable" — a broken catalog reported as an
     // inability to look at one.
-    expect: { status: 200, headerIncludes: { 'content-type': 'json' }, bodyIsJson: true },
+    expect: { status: 200, mediaTypeIsJson: true, bodyIsJson: true },
     why: 'The agent-readable catalog endpoint. Also the source of the embed check\'s shop slug.',
   },
   {
@@ -99,14 +107,16 @@ export const CHECKS = [
     // identifier while being the opposite of a healthy manifest. Assert the field's VALUE.
     expect: {
       status: 200,
-      headerIncludes: { 'content-type': 'json' },
+      mediaTypeIsJson: true,
       bodyIsJson: true,
       bodyJsonMatches: { name: 'miyagisanchez-ucp' },
       // The name alone would pass a manifest stripped of everything an agent actually needs. These
       // ARE the discovery contract this check claims to protect: the capability an agent looks for
       // and the endpoint map it navigates by.
       bodyJsonIncludes: { capabilities: ['catalog_search'] },
-      bodyJsonRequires: ['endpoints'],
+      // The declared TYPE matters: `endpoints: "garbage"` is non-empty but carries no endpoint map,
+      // and a bare presence check would have passed it.
+      bodyJsonRequires: { endpoints: 'object' },
     },
     why: 'The UCP discovery document — how an agent learns the catalog exists.',
   },
@@ -327,6 +337,26 @@ export function normalizeLocation(location, base = DEFAULT_BASE) {
 }
 
 /**
+ * Pure: why `value` fails to be a non-empty `kind`, or null when it is fine.
+ * A bare presence check is not enough — a field can be present, non-empty AND the wrong shape.
+ */
+export function describeShapeProblem(value, kind) {
+  if (value === undefined || value === null) return 'is missing';
+  if (kind === 'object') {
+    if (typeof value !== 'object' || Array.isArray(value)) {
+      return `is ${Array.isArray(value) ? 'an array' : typeof value}, expected an object`;
+    }
+    return Object.keys(value).length === 0 ? 'is an empty object' : null;
+  }
+  if (kind === 'array') {
+    if (!Array.isArray(value)) return `is ${typeof value}, expected an array`;
+    return value.length === 0 ? 'is an empty array' : null;
+  }
+  if (typeof value !== kind) return `is ${typeof value}, expected ${kind}`;
+  return String(value).length === 0 ? 'is empty' : null;
+}
+
+/**
  * Pure: the media type from a Content-Type header — lowercased, parameters stripped.
  * `text/javascript; charset=utf-8` -> `text/javascript`.
  */
@@ -343,7 +373,7 @@ export function wantsBody(want) {
       want.bodyExcludes?.length ||
       want.bodyJsonMatches ||
       want.bodyJsonIncludes ||
-      want.bodyJsonRequires?.length,
+      want.bodyJsonRequires,
   );
 }
 
@@ -403,14 +433,10 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
           );
         }
       }
-      for (const field of want.bodyJsonRequires ?? []) {
+      for (const [field, kind] of Object.entries(want.bodyJsonRequires ?? {})) {
         const value = doc?.[field];
-        const empty =
-          value === undefined ||
-          value === null ||
-          (Array.isArray(value) && value.length === 0) ||
-          (typeof value === 'object' && Object.keys(value).length === 0);
-        if (empty) problems.push(`JSON field "${field}" is missing or empty`);
+        const problem = describeShapeProblem(value, kind);
+        if (problem) problems.push(`JSON field "${field}" ${problem}`);
       }
       for (const [field, required] of Object.entries(want.bodyJsonIncludes ?? {})) {
         const value = doc?.[field];
@@ -425,6 +451,14 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
         }
       }
     }
+  }
+  if (want.mediaTypeIsJson && !isJsonMediaType(parseMediaType(headers?.['content-type']))) {
+    const actual = parseMediaType(headers?.['content-type']);
+    problems.push(
+      actual
+        ? `media type is ${JSON.stringify(actual)}, which is not a JSON media type`
+        : 'no content-type header, so the media type could not be checked',
+    );
   }
   if (want.mediaTypeIn) {
     const actual = parseMediaType(headers?.['content-type']);

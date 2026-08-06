@@ -20,6 +20,8 @@ import {
   normalizeLocation,
   parseCatalogItems,
   parseMediaType,
+  describeShapeProblem,
+  isJsonMediaType,
   resolvePath,
   runChecks,
   summarize,
@@ -190,11 +192,62 @@ test('runChecks: a base with a trailing slash does not build doubled path segmen
   });
 });
 
-test('evaluateCheck: a missing required header fails and names the header', () => {
-  // ucp-catalog still uses headerIncludes; embed-js moved to the parsed media-type allow-list.
+test('evaluateCheck: a missing content-type on a JSON endpoint fails', () => {
   const r = evaluateCheck(check('ucp-catalog'), { status: 200, body: '{}', headers: {} });
   assert.equal(r.status, 'fail');
-  assert.match(r.detail, /missing the content-type header/);
+  assert.match(r.detail, /media type could not be checked/);
+});
+
+test('evaluateCheck: application/jsonp and text/notjson are NOT JSON', () => {
+  // codex: substring matching on "json" passed both. The parsed type does not.
+  for (const ct of ['application/jsonp', 'text/notjson']) {
+    const r = evaluateCheck(check('ucp-catalog'), { status: 200, body: '{}', headers: { 'content-type': ct } });
+    assert.equal(r.status, 'fail', `${ct} must not pass`);
+    assert.match(r.detail, /not a JSON media type/);
+  }
+});
+
+test('evaluateCheck: application/json and a +json suffix type both pass', () => {
+  // `application/*+json` is legal and common — rejecting it would redden correct output.
+  for (const ct of ['application/json', 'application/ld+json', 'text/json']) {
+    const r = evaluateCheck(check('ucp-catalog'), {
+      status: 200,
+      body: '{"items":[]}',
+      headers: { 'content-type': `${ct}; charset=utf-8` },
+    });
+    assert.equal(r.status, 'pass', `${ct} should pass`);
+  }
+});
+
+test('isJsonMediaType: the boundary cases, in both directions', () => {
+  assert.equal(isJsonMediaType('application/json'), true);
+  assert.equal(isJsonMediaType('application/ld+json'), true);
+  assert.equal(isJsonMediaType('text/json'), true);
+  assert.equal(isJsonMediaType('application/jsonp'), false);
+  assert.equal(isJsonMediaType('text/notjson'), false);
+  assert.equal(isJsonMediaType(null), false);
+});
+
+// ---- describeShapeProblem (codex, final round) ----
+
+test('describeShapeProblem: a non-empty STRING does not satisfy an object requirement', () => {
+  // `endpoints: "garbage"` is present and non-empty, and a bare presence check passed it.
+  assert.match(describeShapeProblem('garbage', 'object'), /is string, expected an object/);
+  assert.match(describeShapeProblem([1], 'object'), /is an array, expected an object/);
+});
+
+test('describeShapeProblem: missing, empty, and valid are three different answers', () => {
+  assert.match(describeShapeProblem(undefined, 'object'), /is missing/);
+  assert.match(describeShapeProblem({}, 'object'), /is an empty object/);
+  assert.equal(describeShapeProblem({ catalog: {} }, 'object'), null);
+});
+
+test('describeShapeProblem: array and string kinds behave the same way', () => {
+  assert.match(describeShapeProblem('x', 'array'), /expected an array/);
+  assert.match(describeShapeProblem([], 'array'), /is an empty array/);
+  assert.equal(describeShapeProblem(['a'], 'array'), null);
+  assert.match(describeShapeProblem('', 'string'), /is empty/);
+  assert.equal(describeShapeProblem('a', 'string'), null);
 });
 
 test('evaluateCheck: embed.js with no content-type at all fails on the media type', () => {
@@ -312,7 +365,7 @@ test('evaluateCheck: a name-only manifest FAILS — the discovery contract is th
   });
   assert.equal(r.status, 'fail');
   assert.match(r.detail, /"capabilities" is not an array/);
-  assert.match(r.detail, /"endpoints" is missing or empty/);
+  assert.match(r.detail, /"endpoints" is missing/);
 });
 
 test('evaluateCheck: a manifest missing the core capability FAILS', () => {
@@ -325,6 +378,16 @@ test('evaluateCheck: a manifest missing the core capability FAILS', () => {
   assert.match(r.detail, /does not include "catalog_search"/);
 });
 
+test('evaluateCheck: a STRING endpoints field fails the object requirement', () => {
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({ name: 'miyagisanchez-ucp', capabilities: ['catalog_search'], endpoints: 'garbage' }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /"endpoints" is string, expected an object/);
+});
+
 test('evaluateCheck: an EMPTY endpoints object counts as missing, not present', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
@@ -332,7 +395,7 @@ test('evaluateCheck: an EMPTY endpoints object counts as missing, not present', 
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'fail');
-  assert.match(r.detail, /"endpoints" is missing or empty/);
+  assert.match(r.detail, /"endpoints" is an empty object/);
 });
 
 // ---- parseMediaType + the allow-list (codex, round 11) ----
@@ -461,8 +524,7 @@ test('wantsBody: true only when an expectation actually reads the body', () => {
   // report PASS, since nothing would have flagged the structural assertion as unevaluated.
   assert.equal(wantsBody({ status: 200, bodyJsonMatches: { name: 'x' } }), true);
   assert.equal(wantsBody({ status: 200, bodyJsonIncludes: { capabilities: ['x'] } }), true);
-  assert.equal(wantsBody({ status: 200, bodyJsonRequires: ['endpoints'] }), true);
-  assert.equal(wantsBody({ status: 200, bodyJsonRequires: [] }), false);
+  assert.equal(wantsBody({ status: 200, bodyJsonRequires: { endpoints: 'object' } }), true);
 });
 
 // ---- firstShopSlug ----
