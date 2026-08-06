@@ -247,6 +247,45 @@ then advances the PMO window log.
 5. **Output:** one Telegram message per week with headline PMO numbers plus a SmallDocs story-deck link.
    **Never** a PR, **never** a merge, **never** a required check.
 
+## Routine prod-smoke — Daily production watchdog  *(seventh routine — a REWRITE of the oldest one)*
+**Prompt:** [`prod-smoke.prompt.md`](prod-smoke.prompt.md) · **Repo:** root `miyagi-product-management`
+(runs `scripts/prod-smoke.mjs` against live prod; posts to Telegram; may open a `claude/` draft PR).
+
+**This one replaces an existing routine rather than adding a new load.** The original *"Miyagi prod
+smoke (daily)"* (trigger id `trig_012cfxtRa9Gdwr8qUSvnFuhB`) predates all six routines above and was
+never committed — its six curl checks lived only in the cloud prompt, with no git source. So no epic
+could update them, and two failures followed on 2026-08-05:
+
+- **`market-architecture-foundation`** (shipped 07-31) moved `/l` behind a one-hop 308 to `/mx/l`.
+  The watchdog went red against a route that had been correct for five days. The epic updated
+  `lib/markets.ts` in both repos and the e2e specs — and had no file here to edit.
+- The same cutover turned `/` from the marketplace into the market **selector**. That check kept
+  returning 200 and stayed green **while testing a different page**; `/mx` lost coverage entirely
+  with no signal at all. A green check that changed meaning is worse than a red one.
+
+The checks now live in [`scripts/prod-smoke.mjs`](../prod-smoke.mjs) with `node:test` coverage, so a
+route change is a reviewable diff and the epic that moves a route updates the smoke in the same PR.
+Because a 200 proves only that *something* answered, every check guarding a rendered page also
+asserts a structural body marker — status alone could not tell the selector and the marketplace apart.
+
+1. **Install the Claude GitHub App** on `miyagi-product-management` if not already done for Routine C /
+   `ops-nightly` / `pmo-report`.
+2. **Replace the old routine's prompt** with `prod-smoke.prompt.md` (keep the existing trigger — this
+   is the same watchdog, re-homed, not a seventh scheduled run). Delete the old routine only if you
+   create a fresh one instead; do not leave both live, or a red night pages twice.
+3. **Trigger:** Schedule, **daily** — keep whatever hour the existing watchdog runs at. It has no
+   dependency on CI or the other routines; it probes live production directly.
+4. **Env:**
+   - **Network access → Custom**, with **`miyagisanchez.com`** allow-listed (the checks) and
+     **`api.telegram.org`** (the alert). Without the first, every check reports **unavailable** —
+     which the script reports as `UNAVAILABLE`, never as a production outage.
+   - **`TELEGRAM_BOT_TOKEN`** + **`TELEGRAM_CHAT_ID`** — load-bearing on a red run; silent on green.
+   - Push left at the `claude/` default (it only ever opens a draft PR against the smoke itself).
+5. **Output:** **nothing on green.** On red, one Telegram alert naming each failing check with
+   observed-vs-expected, plus — only when the change is *provably* deliberate — a `claude/` **draft**
+   PR re-pointing the check. **Never** a merge, **never** a required check, and **never** a check
+   weakened to turn a red run green.
+
 ---
 
 ## Daily-cap budget (Pro)
@@ -264,9 +303,11 @@ have their **own separate per-routine/per-account hourly caps**, not the schedul
 | ops-nightly — standup + nightly fixers | Schedule, nightly | Yes, 1/day (still one routine, now 4 steps) |
 | weekly-recap — weekly exec recap | Schedule, weekly | Yes, but ~0.14/day |
 | pmo-report — weekly PMO deck delivery | Schedule, weekly | Yes, but ~0.14/day |
+| prod-smoke — daily production watchdog | Schedule, daily | Yes, 1/day — **already counted**, it is the pre-existing watchdog re-homed |
 
-- **Scheduled load = B (1/day) + ops-nightly (1/day) + C (~0.14/day) + weekly-recap (~0.14/day) + pmo-report (~0.14/day) ≈ 2.4/day**
-  — still well under the 5/day cap.
+- **Scheduled load = B (1/day) + ops-nightly (1/day) + prod-smoke (1/day) + C (~0.14/day) + weekly-recap (~0.14/day) + pmo-report (~0.14/day) ≈ 3.4/day**
+  — still under the 5/day cap. `prod-smoke` adds **no new** load: the old uncommitted watchdog was
+  already consuming that daily slot, it just wasn't in this table.
 - **A is effectively uncapped for our volume** (GitHub events, hourly caps only); it does **not** eat
   the scheduled budget. On a busy day it's bounded by the preview hourly cap, not the daily 5.
 - **No upgrade pressure:** everything here runs on **Pro**. Higher daily run counts are the only
