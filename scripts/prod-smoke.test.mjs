@@ -16,6 +16,7 @@ import {
   evaluateCheck,
   firstShopSlug,
   formatReport,
+  normalizeLocation,
   resolvePath,
   summarize,
 } from './prod-smoke.mjs';
@@ -25,7 +26,11 @@ const check = (id) => CHECKS.find((c) => c.id === id);
 // ---- evaluateCheck: status ----
 
 test('evaluateCheck: a matching status passes', () => {
-  const r = evaluateCheck(check('embed-js'), { status: 200, body: '' });
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    body: '/*! loader */',
+    headers: { 'content-type': 'text/javascript; charset=utf-8' },
+  });
   assert.equal(r.status, 'pass');
 });
 
@@ -59,6 +64,95 @@ test('evaluateCheck: /l serving 200 directly fails — the redirect is the contr
   // is a different architecture than the one that shipped, and it should be loud.
   const r = evaluateCheck(check('browse-redirect'), { status: 200, location: null, body: '' });
   assert.equal(r.status, 'fail');
+});
+
+// ---- evaluateCheck: absolute vs relative redirect targets (codex review, PR #118) ----
+
+test('normalizeLocation: a same-origin absolute target reduces to its path', () => {
+  assert.equal(normalizeLocation('https://miyagisanchez.com/mx/l'), '/mx/l');
+});
+
+test('normalizeLocation: a relative target is already normal, and passes through untouched', () => {
+  assert.equal(normalizeLocation('/mx/l'), '/mx/l');
+});
+
+test('normalizeLocation: a CROSS-origin target is NOT normalized — that is a real difference', () => {
+  // Sending buyers to another origin must never compare equal to a local path.
+  assert.equal(normalizeLocation('https://evil.example/mx/l'), 'https://evil.example/mx/l');
+});
+
+test('normalizeLocation: a malformed Location is returned as-is rather than throwing', () => {
+  assert.equal(normalizeLocation('http://[not a url'), 'http://[not a url');
+});
+
+test('evaluateCheck: /l redirecting to the ABSOLUTE same-origin target still passes', () => {
+  // HTTP permits either form and a CDN can switch between them without any behaviour change.
+  // Reddening here would reject correct output — the guard failure AGENTS.md calls the worse one.
+  const r = evaluateCheck(check('browse-redirect'), {
+    status: 308,
+    location: 'https://miyagisanchez.com/mx/l',
+    body: '',
+    headers: {},
+  });
+  assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: a cross-origin redirect fails even though the path matches', () => {
+  const r = evaluateCheck(check('browse-redirect'), {
+    status: 308,
+    location: 'https://evil.example/mx/l',
+    body: '',
+    headers: {},
+  });
+  assert.equal(r.status, 'fail');
+});
+
+// ---- evaluateCheck: headers (codex review, PR #118) ----
+
+test('evaluateCheck: embed.js served as HTML fails despite a 200', () => {
+  // An HTML error page where a script belongs parses to nothing and takes every embedded shop dark.
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    body: '<!doctype html><title>500</title>',
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /content-type is "text\/html; charset=utf-8", expected it to contain "javascript"/);
+});
+
+test('evaluateCheck: embed.js served as javascript passes, and the match is case-insensitive', () => {
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    body: '/*! loader */',
+    headers: { 'content-type': 'TEXT/JavaScript; charset=utf-8' },
+  });
+  assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: a missing required header fails and names the header', () => {
+  const r = evaluateCheck(check('embed-js'), { status: 200, body: '', headers: {} });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /missing the content-type header/);
+});
+
+test('evaluateCheck: the embed iframe needs frame-ancestors, not merely a 200', () => {
+  // A page that renders for us and refuses to frame for the seller is not a working embed.
+  const r = evaluateCheck(check('embed-iframe'), {
+    status: 200,
+    body: '<html></html>',
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /content-security-policy/);
+});
+
+test('evaluateCheck: the embed iframe with frame-ancestors passes', () => {
+  const r = evaluateCheck(check('embed-iframe'), {
+    status: 200,
+    body: '<html></html>',
+    headers: { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': 'frame-ancestors *' },
+  });
+  assert.equal(r.status, 'pass');
 });
 
 // ---- evaluateCheck: page identity (the silent-erosion class) ----
@@ -201,6 +295,21 @@ test('formatReport: an all-unavailable run reads UNAVAILABLE, never FAILED', () 
   const out = formatReport(results, summarize(results), DEFAULT_BASE);
   assert.match(out, /UNAVAILABLE —/);
   assert.doesNotMatch(out, /FAILED/);
+});
+
+test('formatReport: a MIXED pass/unavailable run never claims nothing was observed working', () => {
+  // codex review, PR #118: with 7 passes and 1 unavailable the report said "Nothing was observed
+  // working either" directly beneath "7/8 passed" — a literal falsehood, and the routine copies
+  // this line into the alert. The report must match what actually happened.
+  const results = [
+    ...Array.from({ length: 7 }, (_, i) => ({ id: `p${i}`, name: `check ${i}`, status: 'pass', detail: 'HTTP 200' })),
+    { id: 'u', name: 'UCP catalog', status: 'unavailable', detail: 'could not reach it: timeout' },
+  ];
+  const out = formatReport(results, summarize(results), DEFAULT_BASE);
+  assert.match(out, /UNAVAILABLE —/);
+  assert.doesNotMatch(out, /nothing was observed working either/i);
+  assert.match(out, /What was checked looked healthy/);
+  assert.match(out, /1 check\(s\) could not be observed at all/);
 });
 
 test('formatReport: a run with real failures still reads FAILED even alongside unavailables', () => {

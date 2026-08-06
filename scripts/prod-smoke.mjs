@@ -49,21 +49,30 @@ export const CHECKS = [
     id: 'embed-js',
     name: 'embed.js',
     path: '/embed.js',
-    expect: { status: 200 },
+    // A 200 alone would pass an HTML error page served where a script belongs — the browser would
+    // fail to parse it and every embedded shop would go dark while this check stayed green. Same
+    // reasoning as the selector/marketplace markers below: a status proves something answered.
+    expect: { status: 200, headerIncludes: { 'content-type': 'javascript' } },
     why: 'The embed loader every seller-site iframe pulls. Dead loader = every embedded shop dark.',
   },
   {
     id: 'ucp-catalog',
     name: 'UCP catalog',
     path: '/api/ucp/catalog?limit=1',
-    expect: { status: 200 },
+    expect: { status: 200, headerIncludes: { 'content-type': 'json' } },
     why: 'The agent-readable catalog endpoint. Also the source of the embed check\'s shop slug.',
   },
   {
     id: 'ucp-manifest',
     name: 'UCP manifest',
     path: '/api/ucp/manifest',
-    expect: { status: 200 },
+    // `miyagisanchez-ucp` is the manifest's own identifier, not prose — it survives copy edits to
+    // the description field, which is why the marker is the name and not the human text beside it.
+    expect: {
+      status: 200,
+      headerIncludes: { 'content-type': 'json' },
+      bodyIncludes: ['miyagisanchez-ucp'],
+    },
     why: 'The UCP discovery document — how an agent learns the catalog exists.',
   },
   {
@@ -79,7 +88,13 @@ export const CHECKS = [
       if (!slug) return { unavailable: 'catalog returned no item with a shop slug to embed' };
       return { path: `/embed/s/${slug}` };
     },
-    expect: { status: 200 },
+    // `frame-ancestors` is the half of this check that makes the iframe actually embeddable — the
+    // orphan sweep named its absence alongside the 308 as what a seller would experience. A 200
+    // without it is a page that renders for us and refuses to frame for them.
+    expect: {
+      status: 200,
+      headerIncludes: { 'content-type': 'text/html', 'content-security-policy': 'frame-ancestors' },
+    },
     why: 'A seller embedding their storefront on their own site. 308 here = broken iframe.',
   },
   {
@@ -160,6 +175,29 @@ export function resolvePath(check, priorResults) {
 }
 
 /**
+ * Pure: reduce a Location header to the path+query the check asserts against.
+ *
+ * HTTP permits either form, and a framework or CDN can switch between them without changing
+ * behaviour at all — `Location: https://miyagisanchez.com/mx/l` is the same one-hop redirect as
+ * `Location: /mx/l`. Comparing the raw string would redden on correct output, which is the guard
+ * failure mode AGENTS.md singles out as worse than missing a fault. A CROSS-ORIGIN absolute target
+ * is deliberately left un-normalized: sending buyers to another origin is a real difference, and it
+ * must not quietly compare equal to a local path.
+ */
+export function normalizeLocation(location) {
+  // No null/empty guard: the absolute-form test below already returns those unchanged, and a line
+  // that no mutation can make fail is a line that decays unnoticed.
+  if (!/^https?:\/\//i.test(location)) return location;
+  try {
+    const url = new URL(location);
+    if (url.origin !== new URL(DEFAULT_BASE).origin) return location;
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return location;
+  }
+}
+
+/**
  * Pure: compare one observation against one check's expectations.
  *
  * `observation` is either `{ status, location, body }` or `{ error }` — a transport-level error
@@ -174,15 +212,26 @@ export function evaluateCheck(check, observation) {
     return { ...base, status: 'unavailable', detail: `could not reach it: ${observation.error}` };
   }
 
-  const { status, location, body } = observation;
+  const { status, location, body, headers } = observation;
   const want = check.expect;
   const problems = [];
 
   if (status !== want.status) {
     problems.push(`expected HTTP ${want.status}, got ${status}`);
   }
-  if (want.location !== undefined && location !== want.location) {
-    problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
+  if (want.location !== undefined) {
+    const got = normalizeLocation(location);
+    if (got !== want.location) {
+      problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
+    }
+  }
+  for (const [name, needle] of Object.entries(want.headerIncludes ?? {})) {
+    const value = headers?.[name];
+    if (value === undefined || value === null) {
+      problems.push(`missing the ${name} header (expected it to contain ${JSON.stringify(needle)})`);
+    } else if (!String(value).toLowerCase().includes(needle.toLowerCase())) {
+      problems.push(`${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`);
+    }
   }
   for (const needle of want.bodyIncludes ?? []) {
     if (!(body ?? '').includes(needle)) {
@@ -230,9 +279,18 @@ export function formatReport(results, summary, base) {
   // the exact collapse this script exists to avoid.
   const tally = `${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.unavailable} unavailable`;
   let verdict;
-  if (summary.exitCode === 0) verdict = `PASSED ${summary.passed}/${summary.total} checks`;
-  else if (summary.failed > 0) verdict = `FAILED — ${tally}`;
-  else verdict = `UNAVAILABLE — ${tally}. Nothing was observed broken; nothing was observed working either.`;
+  if (summary.exitCode === 0) {
+    verdict = `PASSED ${summary.passed}/${summary.total} checks`;
+  } else if (summary.failed > 0) {
+    verdict = `FAILED — ${tally}`;
+  } else if (summary.passed === 0) {
+    verdict = `UNAVAILABLE — ${tally}. Nothing was observed broken; nothing was observed working either.`;
+  } else {
+    // The mixed case needs its own sentence. Saying "nothing was observed working" after reporting
+    // seven passes is simply false, and the routine copies this line into Daniel's alert — so the
+    // wrong words here become the wrong words on his phone at 4am.
+    verdict = `UNAVAILABLE — ${tally}. What was checked looked healthy; ${summary.unavailable} check(s) could not be observed at all.`;
+  }
   lines.push(verdict);
 
   if (summary.unavailable > 0) {
@@ -250,9 +308,14 @@ async function observe(url, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetchImpl(url, { redirect: 'manual', signal: controller.signal });
+    // Header names are case-insensitive on the wire; lowercase them once here so the check table
+    // can spell them one way and the pure evaluator never has to care.
+    const headers = {};
+    for (const [name, value] of res.headers) headers[name.toLowerCase()] = value;
     return {
       status: res.status,
       location: res.headers.get('location'),
+      headers,
       body: await res.text(),
     };
   } catch (err) {
