@@ -43,8 +43,6 @@ import { resolve } from 'node:path';
 
 export const DEFAULT_BASE = 'https://miyagisanchez.com';
 
-// The JavaScript media types, as an explicit allow-list. Substring matching accepted
-// `text/notjavascript`; this compares the parsed type, so only real ones pass.
 // JSON media types. `application/*+json` is legal and common, so it is matched by suffix rather
 // than enumerated — but `application/jsonp` and `text/notjson` are NOT JSON and must not pass, which
 // is exactly what substring matching on "json" let through.
@@ -60,6 +58,8 @@ export function isJsonMediaType(mediaType) {
   return mediaType.endsWith('+json');
 }
 
+// The JavaScript media types, as an explicit allow-list. Substring matching accepted
+// `text/notjavascript`; this compares the parsed type, so only real ones pass.
 export const JS_MEDIA_TYPES = [
   'text/javascript',
   'application/javascript',
@@ -124,6 +124,10 @@ export const CHECKS = [
       // The declared TYPE matters: `endpoints: "garbage"` is non-empty but carries no endpoint map,
       // and a bare presence check would have passed it.
       bodyJsonRequires: { endpoints: 'object' },
+      // A non-empty endpoints object is not the same as a USABLE one: `{garbage:true}` satisfied
+      // "non-empty" while carrying no way to reach the catalog. The catalog endpoint and its URL
+      // ARE what an agent navigates by, so they are what the check asserts.
+      bodyJsonPaths: { 'endpoints.catalog.url': 'string' },
     },
     why: 'The UCP discovery document — how an agent learns the catalog exists.',
   },
@@ -343,6 +347,11 @@ export function normalizeLocation(location, base = DEFAULT_BASE) {
   }
 }
 
+/** Pure: read a dotted path out of a parsed document, undefined if any segment is absent. */
+export function readJsonPath(doc, path) {
+  return path.split('.').reduce((node, key) => (node == null ? undefined : node[key]), doc);
+}
+
 /**
  * Pure: why `value` fails to be a non-empty `kind`, or null when it is fine.
  * A bare presence check is not enough — a field can be present, non-empty AND the wrong shape.
@@ -380,7 +389,8 @@ export function wantsBody(want) {
       want.bodyExcludes?.length ||
       want.bodyJsonMatches ||
       want.bodyJsonIncludes ||
-      want.bodyJsonRequires,
+      want.bodyJsonRequires ||
+      want.bodyJsonPaths,
   );
 }
 
@@ -425,7 +435,10 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
   }
   // Structural field assertions on a JSON document. A substring match cannot tell the manifest from
   // an error object that merely quotes the manifest's name.
-  if ((want.bodyJsonMatches || want.bodyJsonIncludes || want.bodyJsonRequires) && bodyWasRead) {
+  if (
+    (want.bodyJsonMatches || want.bodyJsonIncludes || want.bodyJsonRequires || want.bodyJsonPaths) &&
+    bodyWasRead
+  ) {
     let doc;
     try {
       doc = JSON.parse(body ?? '');
@@ -444,6 +457,10 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
         const value = doc?.[field];
         const problem = describeShapeProblem(value, kind);
         if (problem) problems.push(`JSON field "${field}" ${problem}`);
+      }
+      for (const [path, kind] of Object.entries(want.bodyJsonPaths ?? {})) {
+        const problem = describeShapeProblem(readJsonPath(doc, path), kind);
+        if (problem) problems.push(`JSON path "${path}" ${problem}`);
       }
       for (const [field, required] of Object.entries(want.bodyJsonIncludes ?? {})) {
         const value = doc?.[field];

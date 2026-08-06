@@ -22,6 +22,7 @@ import {
   parseMediaType,
   describeShapeProblem,
   isJsonMediaType,
+  readJsonPath,
   resolvePath,
   runChecks,
   summarize,
@@ -363,7 +364,7 @@ test('evaluateCheck: the real manifest, with its discovery contract intact, pass
     body: JSON.stringify({
       name: 'miyagisanchez-ucp',
       capabilities: ['catalog_search', 'listing_detail'],
-      endpoints: { catalog: { url: 'x' } },
+      endpoints: { catalog: { url: 'https://miyagisanchez.com/api/ucp/catalog' } },
     }),
     headers: { 'content-type': 'application/json' },
   });
@@ -410,6 +411,45 @@ test('evaluateCheck: an EMPTY endpoints object counts as missing, not present', 
   });
   assert.equal(r.status, 'fail');
   assert.match(r.detail, /"endpoints" is an empty object/);
+});
+
+// ---- bodyJsonPaths (codex, final round) ----
+
+test('evaluateCheck: an endpoints map with no CATALOG endpoint fails', () => {
+  // `{garbage:true}` satisfied "non-empty object" while carrying no way to reach the catalog.
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({
+      name: 'miyagisanchez-ucp',
+      capabilities: ['catalog_search'],
+      endpoints: { garbage: true },
+    }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /JSON path "endpoints\.catalog\.url" is missing/);
+});
+
+test('evaluateCheck: a catalog endpoint present but with no usable url fails', () => {
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({
+      name: 'miyagisanchez-ucp',
+      capabilities: ['catalog_search'],
+      endpoints: { catalog: { method: 'GET' } },
+    }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /"endpoints\.catalog\.url" is missing/);
+});
+
+test('readJsonPath: walks a dotted path and stops safely at any absent segment', () => {
+  const doc = { endpoints: { catalog: { url: 'https://x' } } };
+  assert.equal(readJsonPath(doc, 'endpoints.catalog.url'), 'https://x');
+  assert.equal(readJsonPath(doc, 'endpoints.missing.url'), undefined);
+  assert.equal(readJsonPath(doc, 'nope.deep.deeper'), undefined);
+  assert.equal(readJsonPath(null, 'a.b'), undefined);
 });
 
 // ---- parseMediaType + the allow-list (codex, round 11) ----
@@ -539,6 +579,7 @@ test('wantsBody: true only when an expectation actually reads the body', () => {
   assert.equal(wantsBody({ status: 200, bodyJsonMatches: { name: 'x' } }), true);
   assert.equal(wantsBody({ status: 200, bodyJsonIncludes: { capabilities: ['x'] } }), true);
   assert.equal(wantsBody({ status: 200, bodyJsonRequires: { endpoints: 'object' } }), true);
+  assert.equal(wantsBody({ status: 200, bodyJsonPaths: { 'a.b': 'string' } }), true);
 });
 
 // ---- firstShopSlug ----
