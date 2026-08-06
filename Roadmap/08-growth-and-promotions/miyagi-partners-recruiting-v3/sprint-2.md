@@ -1,6 +1,6 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 2: Activate
 
-**Status:** ⬜ not started
+**Status:** 🟡 architecture locked · waits on Sprint 1
 
 ## Outcome
 
@@ -8,12 +8,19 @@ An approved founding operator activates the existing Miyagi partner identity thr
 enters `/partner`, and sees the exact boundary between program approval and merchant-granted shop access.
 Existing Promotores retain their current working paths.
 
-## Build contract — architect must lock before delegation
+## Build contract — locked 2026-08-06
 
-Before a builder starts, cite the epic's live-verified `D1…Dn` decisions here. The contract must name the
-partner-track backfill/default, the one approval transition and Clerk-binding seam, activation secret/replay
-contract, flag resolver, no-grant population assertion and Promotor continuity suite. Sprint 2 stacks on the
-merged Sprint 1 contract and may not reframe it.
+Stack on Sprint 1 and build exactly epic decisions **D5–D9 and D12–D13**. Consume D1's deployed/backfilled
+`program_track` and unique Clerk invariant without a second identity table. Existing Promotor approval stays
+on its current PRM path; operator approval uses D5's atomic RPC, D6 isolates every Promotor economic/code
+lookup, and both PRM binding and activation call D7's single database writer. Activation is D8's seven-day,
+SHA-256-hashed, GET-read/POST-write, transactional replay contract at `/partner/activate/<token>`.
+
+Use only D9's flag resolver. D12's workspace remains grant-derived and must prove the live fixture has zero
+grants before and after operator approval/activation. Run D13's complete continuity population plus new
+approval/activation/auth/workspace specs, recording a deliberate red mutation for each new group. Do not
+create relationships, consent, grants, operator economics, a second dashboard or a second Clerk-binding
+writer.
 
 ## Stories
 
