@@ -111,9 +111,10 @@ Promotor duplicate behavior is unchanged.
 **D5 — atomic operator approval.** Existing Promotor approval remains on its current conditional
 `pending → approved → PRM identity` path. Founding-operator approval uses one service-role-only transactional
 RPC: lock the pending application, create exactly one `founding_operator` identity with an internal `MYP-`
-identifier, link it, store one activation-token hash/expiry and mark approved. Concurrent calls yield one
-identity and invitation; failure rolls back the whole transition. Approval never writes grants, merchant
-records or consent. The admin `withAdmin` wrapper remains the audit writer.
+identifier, link it, store one activation-token hash/expiry, set invitation delivery to `pending` and mark
+approved. Concurrent calls yield one identity and one active token; database failure rolls back the whole
+transition. Email is explicitly outside that transaction and is never described as atomic. Approval never
+writes grants, merchant records or consent. The admin `withAdmin` wrapper remains the audit writer.
 
 **D6 — Promotor economics are track-isolated.** PRM code lookup/binding, manual Promotor lists,
 attribution, commission, transfer, earnings and close helpers explicitly resolve only `program_track =
@@ -127,12 +128,23 @@ elsewhere, and relies on D1's unique Clerk index. `bindPromoterClerkId` continue
 then calls that writer. Neutral activation calls the same writer inside its transaction; no second binding
 implementation is allowed.
 
-**D8 — neutral, transactional activation.** Approval sends `/partner/activate/<token>` with a 32-byte
-random base64url secret; only its SHA-256 hash and a seven-day expiry are stored. GET only validates/displays
-and signed-out users return through Clerk's encoded `redirect_url`; a signed-in POST performs the mutation.
-The activation RPC locks the application, rejects wrong-track/rejected/expired/used/mismatched tokens, calls
-D7's writer, then records one use in the same transaction. Replays fail closed and no failed bind consumes a
-token. Success redirects to `/partner` and creates zero grants.
+**D8 — recoverable invitation and principal-bound activation.** Approval creates a 32-byte random base64url
+secret for `/partner/activate/<token>`; only its lowercase SHA-256 hash and a seven-day expiry are stored.
+The route awaits the applicant email and records `sent|failed`, attempt time/count and `delivered_at` without
+ever persisting plaintext. A failed or ambiguous send leaves the approved identity recoverable: an audited
+admin rotate-and-resend action transactionally replaces the unused hash/expiry and marks delivery `pending`
+before sending, so any older link becomes invalid; its result is recorded only when the hash still matches.
+A crash between rotate, send and result recording therefore leaves a visible retry state, never a lost
+unrecoverable identity. Multiple emails may exist after an ambiguous provider result, but exactly one newest
+token can activate.
+
+GET only validates/displays and signed-out users return through Clerk's encoded `redirect_url`; a signed-in
+POST performs the mutation. The bearer token alone is insufficient: the Clerk account must expose at least
+one **verified email** whose normalized value exactly matches the application email. The activation RPC
+receives those verified emails, rechecks the match while holding the application lock, rejects
+wrong-track/rejected/expired/used/token/principal mismatches, calls D7's writer, then records one use in the
+same transaction. Replays fail closed and no failed principal/bind check consumes a token. Success redirects
+to `/partner` and creates zero grants.
 
 **D9 — one feature resolver, two authorities with distinct jobs.** `recruitingV3Enabled()` is the only
 runtime seam and delegates to typed `isEnabled('partners.recruiting_v3_enabled')`. It gates the `/us` v3
@@ -154,8 +166,10 @@ form or API result.
 **D11 — one review queue.** `/admin/promoter` renders track-safe structured details. Candidate links use a
 new tab with `noopener noreferrer`; “request conversation” is an applicant mail link and leaves the row
 pending—it is not a third authorization state and never contacts a nominated merchant. Approve/reject remain
-Clerk-admin-only POSTs, race-safe and automatically audited. Operator notifications name the track and link
-to the queue without copying secrets or candidate/free-text fields; Promotor notifications remain as today.
+Clerk-admin-only POSTs, race-safe and automatically audited. The operator row shows invitation delivery
+state and exposes D8's audited rotate-and-resend only for an approved, unused operator identity. Operator
+notifications name the track and link to the queue without copying secrets or candidate/free-text fields;
+Promotor notifications remain as today.
 
 **D12 — workspace admission and zero-grant truth.** A founding operator may enter `/partner` only when the
 recruiting flag is ON; Promotor admission remains governed by the existing partner flag. The page labels the

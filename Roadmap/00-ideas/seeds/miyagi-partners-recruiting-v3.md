@@ -126,7 +126,7 @@ Do not lead with “agentic,” “federated,” “sovereignty,” “all-in-on
 | Partner workspace | `/partner` and stewardship portfolio | Add track-aware orientation and next action; do not build a second dashboard |
 | Merchant relationship operations | relationship CRM, consent evidence, lifecycle history, next actions and scorecard | Reuse later when a candidate shop enters the pilot; do not write merchant consent from the operator application |
 | Admin operations | `/admin/promoter`, activation scorecard and existing notifications | Add track filters/summary in the existing review queue |
-| Feature controls | in-house `platform_flags` rail | One enablement flag covers the new public, application, approval and activation behavior |
+| Feature controls | typed Miyagi catalog + Golden Beans production authority; `platform_flags` fallback/shadow | One enablement flag covers the new public, application, approval and activation behavior |
 | Analytics | existing privacy-safe seller-acquisition/GTM event patterns | Add PII-free funnel events; URLs, contact data and application text never enter analytics |
 
 ## Data and permission contract
@@ -324,8 +324,8 @@ Recommend an enablement flag story inside Sprint 1:
    environment. Flip only for the founding recruitment cohort.
 3. **Seam:** one server-side recruiting-version resolver gates the `/us` v3 page, operator-track
    application acceptance, track-aware approval, neutral activation and workspace orientation.
-4. **Mechanism:** existing in-house `platform_flags` server rail. No middleware or Edge mechanism
-   is required.
+4. **Mechanism:** typed Miyagi resolver with Golden Beans as production authority; a disabled
+   `platform_flags` row is fallback/shadow only. No middleware or Edge mechanism is required.
 
 OFF preserves today's `/us` invitation and all Promotor behavior. Additive schema remains inert.
 
