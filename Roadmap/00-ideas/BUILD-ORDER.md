@@ -162,7 +162,7 @@
 
 ## ⬜ Funnel — seeds not yet scaffolded (6)
 
-- [US curated marketplace — original independent sellers](seeds/us-curated-marketplace.md) — Queued · Feature · Wave 3
+- [US curated marketplace — original independent sellers](seeds/us-curated-marketplace.md) — Ready · Feature · Wave 3
 - [Affinity marketplace infrastructure — partner-operated markets](seeds/affinity-marketplace-infrastructure.md) — Raw · Epic
 - [AI-adoption guardrails — close the step-1/2 gaps the ladder names (browser smoke · security review · proactive monitor · OTel)](seeds/ai-adoption-maturity-benchmark.md) — Ready · Chore
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
