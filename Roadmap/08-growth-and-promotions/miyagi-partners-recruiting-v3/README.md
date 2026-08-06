@@ -55,7 +55,7 @@ records additively; it may not copy commerce state or manufacture consent from a
 | Workspace | `/partner` plus stewardship portfolio | Add track-aware orientation and next action; no second dashboard |
 | Merchant operations | relationship CRM, consent evidence, lifecycle history and activation scorecard | Consume only after a merchant separately enters the pilot; never write consent from the application |
 | Admin operations | `/admin/promoter` and existing notifications | Extend one review queue with track and qualification summary |
-| Feature control | typed Miyagi catalog + Golden Beans production authority | One server-side enablement seam covers public, application, approval, activation and workspace behavior |
+| Feature control | Golden Beans production authority + typed Miyagi catalog + `platform_flags` fallback/shadow | One server-side enablement seam covers public, application, approval, activation and workspace behavior |
 | Measurement | privacy-safe seller-acquisition/GTM events | Emit coarse funnel state only; never URLs, contact fields or free text |
 
 ## Epic-mode architecture lock — completed 2026-08-06
@@ -141,9 +141,10 @@ admin rotate-and-resend action transactionally replaces the unused hash/expiry a
 before sending, so any older link becomes invalid; its result is recorded only when the hash still matches.
 A crash between rotate, send and result recording therefore leaves a visible retry state, never a lost
 unrecoverable identity. Multiple emails may exist after an ambiguous provider result, but exactly one newest
-token can activate. The invitation and neutral activation copy are English because they continue the
-explicit United States founding-operator journey; this is a track-scoped exception to the es-MX default,
-not a language change for shared Promotor notifications or surfaces.
+token can activate. The invitation, neutral activation and founding-operator workspace copy use the
+allow-listed `partnersRecruiting` dictionary namespace with matching English and Spanish keys. The United
+States journey defaults to English and exposes an explicit Spanish option; shared Promotor notifications
+and surfaces retain their existing Spanish copy and behavior.
 
 GET only validates/displays and signed-out users return through Clerk's encoded `redirect_url`; a signed-in
 POST performs the mutation. The bearer token alone is insufficient: the Clerk account must expose at least
@@ -182,8 +183,9 @@ Promotor notifications remain as today.
 **D12 — workspace admission and zero-grant truth.** A founding operator may enter `/partner` only when the
 recruiting flag is ON; Promotor admission remains governed by the existing partner flag. The page labels the
 track, loads shops exclusively from active `partner_grants`, and shows an explicit zero-shop state for a new
-operator with no Administer shortcut. Only that founding-operator orientation uses the US journey's English
-copy; the existing Promotor heading, code, empty state and close path stay Spanish. Existing granted/revoked
+operator with no Administer shortcut. That founding-operator orientation uses the bilingual
+`partnersRecruiting` namespace, defaults to English for the United States journey and exposes a Spanish
+option; the existing Promotor heading, code, empty state and close path stay Spanish. Existing granted/revoked
 behavior is unchanged. The live pre-build and post-approval population guard must both prove zero grants
 were manufactured.
 
@@ -211,9 +213,10 @@ unchanged Spanish Promotor path. Every new spec is deliberately observed red bef
 
 ## Kill-switch
 
-`partners.recruiting_v3_enabled` is an enablement flag in the typed Miyagi catalog and Golden Beans,
-default **false** and registered disabled in every environment; `platform_flags` retains a disabled
-fallback/shadow row. One server-side recruiting-version resolver gates the `/us` v3 page,
+`partners.recruiting_v3_enabled` is an enablement flag whose production authority is Golden Beans, with a
+matching typed Miyagi catalog contract and a disabled `platform_flags` fallback/shadow row. It defaults
+**false** and is registered disabled in every environment. One server-side recruiting-version resolver
+gates the `/us` v3 page,
 operator-track application acceptance, track-aware approval, neutral activation and workspace orientation.
 OFF preserves the current `/us` invitation and all Promotor behavior; additive schema remains inert.
 

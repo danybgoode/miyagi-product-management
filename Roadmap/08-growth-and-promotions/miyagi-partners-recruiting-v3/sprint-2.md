@@ -15,10 +15,11 @@
   observed red before restoration.
 - The executable provider seam proves non-empty ID, null ID and thrown/ambiguous outcomes; composite RPC
   rows cannot serialize activation hashes or internal MYP identifiers.
-- Both required external-family reviews ran on the final head and every finding is fixed or answered on the
-  PR. Their repeated language finding is the locked, founding-operator-only English US journey; Promotor
-  branches remain Spanish. The mandatory fresh reviewer remains blocked by the revoked subagent refresh
-  token.
+- Both required external-family reviews ran on head `46c16f1`; their repeated language finding was fixed in
+  `86af18f` by moving the founding-operator activation, workspace and email lifecycle into a matching
+  English/Spanish `partnersRecruiting` dictionary namespace. The US journey defaults to English and exposes
+  Spanish; Promotor branches retain their existing Spanish behavior. Exact-head review is being rerun. The
+  mandatory fresh reviewer remains blocked by the revoked subagent refresh token.
 - No migration, flag sync, activation, grant or merchant mutation was performed from the builder rail. The
   authenticated Clerk activation/zero-grant smoke and live Promotor continuity walkthrough remain owed.
 

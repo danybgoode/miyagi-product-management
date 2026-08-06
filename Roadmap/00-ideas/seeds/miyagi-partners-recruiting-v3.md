@@ -209,8 +209,9 @@ share. Avoid implying this pilot price is a permanent plan.
 
 ### Language
 
-The US page and founding-operator lifecycle are English-first. The Promotor track links into the
-existing es-MX funnel. Do not translate or rewrite the live Promotor offer as incidental scope.
+The US page and founding-operator lifecycle are English-first. Authenticated lifecycle copy uses an
+allow-listed English/Spanish dictionary namespace and exposes a Spanish option. The Promotor track links
+into the existing es-MX funnel. Do not translate or rewrite the live Promotor offer as incidental scope.
 
 ## Stories and slices
 
