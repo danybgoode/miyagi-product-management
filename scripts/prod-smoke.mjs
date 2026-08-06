@@ -288,6 +288,11 @@ export function normalizeLocation(location, base = DEFAULT_BASE) {
   }
 }
 
+/** Pure: does this expectation need the response body at all? */
+export function wantsBody(want) {
+  return Boolean(want.bodyIsJson || want.bodyIncludes?.length || want.bodyExcludes?.length);
+}
+
 /**
  * Pure: compare one observation against one check's expectations.
  *
@@ -316,7 +321,11 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
       problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
     }
   }
-  if (want.bodyIsJson) {
+  // Body-dependent assertions are evaluated ONLY when the body was actually read. An unread body
+  // is not a wrong body: judging `null` as "not parseable JSON" would convert a stalled read into a
+  // confident claim about content nobody saw. The bodyError branch at the end reports it honestly.
+  const bodyWasRead = !observation.bodyError;
+  if (want.bodyIsJson && bodyWasRead) {
     try {
       JSON.parse(body ?? '');
     } catch {
@@ -342,20 +351,34 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
       problems.push(`${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`);
     }
   }
-  for (const needle of want.bodyIncludes ?? []) {
+  for (const needle of bodyWasRead ? want.bodyIncludes ?? [] : []) {
     if (!(body ?? '').includes(needle)) {
       problems.push(`body is missing the marker ${JSON.stringify(needle)}`);
     }
   }
-  for (const needle of want.bodyExcludes ?? []) {
+  for (const needle of bodyWasRead ? want.bodyExcludes ?? [] : []) {
     if ((body ?? '').includes(needle)) {
       problems.push(`body unexpectedly contains ${JSON.stringify(needle)}`);
     }
   }
 
+  // A concrete observed failure OUTRANKS an incomplete read: if the status or headers already prove
+  // the check false, say so, even though the body never arrived.
   if (problems.length > 0) {
     return { ...result, status: 'fail', detail: problems.join('; ') };
   }
+
+  // Nothing was observed false, but a body-dependent expectation could not be evaluated at all —
+  // that is the third state, not a pass. Claiming pass here would be the "I could not check, so it
+  // must be fine" collapse this whole script exists to prevent.
+  if (observation.bodyError && wantsBody(want)) {
+    return {
+      ...result,
+      status: 'unavailable',
+      detail: `HTTP ${status}, but the body could not be read (${observation.bodyError}) — its identity assertions were not evaluated`,
+    };
+  }
+
   return { ...result, status: 'pass', detail: `HTTP ${status}`, body };
 }
 
@@ -421,12 +444,16 @@ async function observe(url, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
     // can spell them one way and the pure evaluator never has to care.
     const headers = {};
     for (const [name, value] of res.headers) headers[name.toLowerCase()] = value;
-    return {
-      status: res.status,
-      location: res.headers.get('location'),
-      headers,
-      body: await res.text(),
-    };
+    const observed = { status: res.status, location: res.headers.get('location'), headers };
+
+    // The body is read SEPARATELY so a stalled body cannot discard a status we already have. A 500
+    // whose body then times out is an observed failure — reporting it as "could not reach it" would
+    // route a concrete production fault down the unavailability path and lose the 500 entirely.
+    try {
+      return { ...observed, body: await res.text() };
+    } catch (bodyErr) {
+      return { ...observed, body: null, bodyError: String(bodyErr?.message ?? bodyErr) };
+    }
   } catch (err) {
     return { error: err?.name === 'AbortError' ? `timed out after ${timeoutMs}ms` : String(err?.message ?? err) };
   } finally {

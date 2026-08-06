@@ -22,7 +22,8 @@ import {
   resolvePath,
   runChecks,
   summarize,
-} from './prod-smoke.mjs';
+  wantsBody,
+} from "./prod-smoke.mjs";
 
 const check = (id) => CHECKS.find((c) => c.id === id);
 
@@ -258,6 +259,55 @@ test('evaluateCheck: a transport error is UNAVAILABLE, never a failure', () => {
   const r = evaluateCheck(check('embed-js'), { error: 'getaddrinfo ENOTFOUND' });
   assert.equal(r.status, 'unavailable');
   assert.match(r.detail, /could not reach it/);
+});
+
+// ---- a stalled body must not erase an observed status (codex final round) ----
+
+test('evaluateCheck: an observed 500 stays a FAILURE even when the body could not be read', () => {
+  // Previously observe() discarded the status when res.text() threw, so a concrete production
+  // fault was routed down the unavailability path and the 500 was lost entirely.
+  const r = evaluateCheck(check('ucp-catalog'), {
+    status: 500,
+    headers: { 'content-type': 'application/json' },
+    body: null,
+    bodyError: 'terminated',
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /expected HTTP 200, got 500/);
+});
+
+test('evaluateCheck: a 200 whose body stalled is UNAVAILABLE, not a pass', () => {
+  // Nothing was observed false — but the identity assertions were never evaluated, and "I could not
+  // check, so it must be fine" is the exact collapse this script exists to prevent.
+  const r = evaluateCheck(check('ucp-catalog'), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+    body: null,
+    bodyError: 'terminated',
+  });
+  assert.equal(r.status, 'unavailable');
+  assert.match(r.detail, /body could not be read/);
+});
+
+test('evaluateCheck: a stalled body on a check with NO body expectations still passes', () => {
+  // embed.js asserts only status + content-type, so an unread body costs it nothing. Failing here
+  // would redden a check that was fully satisfied.
+  const r = evaluateCheck(check('embed-js'), {
+    status: 200,
+    headers: { 'content-type': 'text/javascript' },
+    body: null,
+    bodyError: 'terminated',
+  });
+  assert.equal(r.status, 'pass');
+});
+
+test('wantsBody: true only when an expectation actually reads the body', () => {
+  assert.equal(wantsBody({ status: 200 }), false);
+  assert.equal(wantsBody({ status: 200, headerIncludes: { 'content-type': 'x' } }), false);
+  assert.equal(wantsBody({ status: 200, bodyIsJson: true }), true);
+  assert.equal(wantsBody({ status: 200, bodyIncludes: ['x'] }), true);
+  assert.equal(wantsBody({ status: 200, bodyExcludes: ['x'] }), true);
+  assert.equal(wantsBody({ status: 200, bodyIncludes: [] }), false);
 });
 
 // ---- firstShopSlug ----
