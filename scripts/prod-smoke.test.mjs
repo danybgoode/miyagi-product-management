@@ -152,7 +152,7 @@ test('evaluateCheck: embed.js served as HTML fails despite a 200', () => {
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
   assert.equal(r.status, 'fail');
-  assert.match(r.detail, /content-type is "text\/html; charset=utf-8", expected it to contain "javascript"/);
+  assert.match(r.detail, /content-type is "text\/html; charset=utf-8", expected it to contain/);
 });
 
 test('evaluateCheck: embed.js served as javascript passes, and the match is case-insensitive', () => {
@@ -240,9 +240,64 @@ test('evaluateCheck: /mx serving the selector fails on the excluded marker', () 
 });
 
 test('evaluateCheck: the real marketplace body passes', () => {
-  const marketplaceHtml = '<a href="/mx/l">Ver todo</a><a href="/mx/l?sort=reciente">Nuevo</a>';
+  const marketplaceHtml = '<section data-testid="home-hero">…</section><a href="/mx/l">Ver todo</a>';
   const r = evaluateCheck(check('mx-marketplace'), { status: 200, body: marketplaceHtml });
   assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: a nav-only error shell does NOT pass the marketplace check', () => {
+  // codex, BLOCKING: `href="/mx/l"` is navigation and appears on every page, so an error shell
+  // carrying just a nav bar silently passed — green-lighting the exact wrong-page regression this
+  // watchdog exists to catch. The marker is now page-specific.
+  const shell = '<nav><a href="/mx/l">Explorar</a></nav><main>Error</main>';
+  const r = evaluateCheck(check('mx-marketplace'), { status: 200, body: shell });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /home-hero/);
+});
+
+test('evaluateCheck: a nav-only error shell does NOT pass the browse check', () => {
+  const shell = '<nav><a href="/mx/l">Explorar</a></nav><main>Error</main>';
+  const r = evaluateCheck(check('mx-browse'), { status: 200, body: shell });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /prod_/);
+});
+
+test('evaluateCheck: a browse page with a real product grid passes', () => {
+  const browse = '<nav><a href="/mx/l">Explorar</a></nav><a href="/mx/l/prod_01ABC">Item</a>';
+  const r = evaluateCheck(check('mx-browse'), { status: 200, body: browse });
+  assert.equal(r.status, 'pass');
+});
+
+// ---- structural JSON + media-type sets (codex, final round) ----
+
+test('evaluateCheck: an error object QUOTING the manifest name does not pass', () => {
+  // `{"error":"miyagisanchez-ucp unavailable"}` contains the identifier while being the opposite of
+  // a healthy manifest. Substring matching could not tell them apart.
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({ error: 'miyagisanchez-ucp unavailable' }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /JSON field "name" is undefined, expected "miyagisanchez-ucp"/);
+});
+
+test('evaluateCheck: the real manifest, keyed on its name field, passes', () => {
+  const r = evaluateCheck(check('ucp-manifest'), {
+    status: 200,
+    body: JSON.stringify({ name: 'miyagisanchez-ucp', version: '1.0' }),
+    headers: { 'content-type': 'application/json' },
+  });
+  assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: embed.js served as text/ecmascript is accepted', () => {
+  // A guard that rejects correct output is the worse failure — ecmascript media types are valid and
+  // functional, and a server-side MIME preference must not redden a working loader.
+  for (const ct of ['text/javascript', 'application/javascript', 'text/ecmascript', 'application/ecmascript']) {
+    const r = evaluateCheck(check('embed-js'), { status: 200, body: '/*!*/', headers: { 'content-type': ct } });
+    assert.equal(r.status, 'pass', `${ct} should be accepted`);
+  }
 });
 
 test('evaluateCheck: several broken expectations are reported together, not just the first', () => {
@@ -308,6 +363,9 @@ test('wantsBody: true only when an expectation actually reads the body', () => {
   assert.equal(wantsBody({ status: 200, bodyIncludes: ['x'] }), true);
   assert.equal(wantsBody({ status: 200, bodyExcludes: ['x'] }), true);
   assert.equal(wantsBody({ status: 200, bodyIncludes: [] }), false);
+  // bodyJsonMatches reads the body too — omitting it here would let a manifest whose body stalled
+  // report PASS, since nothing would have flagged the structural assertion as unevaluated.
+  assert.equal(wantsBody({ status: 200, bodyJsonMatches: { name: 'x' } }), true);
 });
 
 // ---- firstShopSlug ----

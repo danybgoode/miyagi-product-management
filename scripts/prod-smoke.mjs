@@ -54,7 +54,10 @@ export const CHECKS = [
     // A 200 alone would pass an HTML error page served where a script belongs — the browser would
     // fail to parse it and every embedded shop would go dark while this check stayed green. Same
     // reasoning as the selector/marketplace markers below: a status proves something answered.
-    expect: { status: 200, headerIncludes: { 'content-type': 'javascript' } },
+    // An ARRAY of acceptable substrings, because the JS media types are a set, not one string:
+    // `text/ecmascript` and `application/ecmascript` are valid and functional, and demanding the
+    // literal "javascript" would redden a working loader over a server-side MIME preference.
+    expect: { status: 200, headerIncludes: { 'content-type': ['javascript', 'ecmascript'] } },
     why: 'The embed loader every seller-site iframe pulls. Dead loader = every embedded shop dark.',
   },
   {
@@ -72,13 +75,13 @@ export const CHECKS = [
     id: 'ucp-manifest',
     name: 'UCP manifest',
     path: '/api/ucp/manifest',
-    // `miyagisanchez-ucp` is the manifest's own identifier, not prose — it survives copy edits to
-    // the description field, which is why the marker is the name and not the human text beside it.
+    // STRUCTURAL, not substring: `{"error":"miyagisanchez-ucp unavailable"}` contains the
+    // identifier while being the opposite of a healthy manifest. Assert the field's VALUE.
     expect: {
       status: 200,
       headerIncludes: { 'content-type': 'json' },
       bodyIsJson: true,
-      bodyIncludes: ['miyagisanchez-ucp'],
+      bodyJsonMatches: { name: 'miyagisanchez-ucp' },
     },
     why: 'The UCP discovery document — how an agent learns the catalog exists.',
   },
@@ -138,10 +141,18 @@ export const CHECKS = [
     id: 'mx-marketplace',
     name: 'MX marketplace (/mx)',
     path: '/mx',
-    // The negative marker is what pins this apart from the selector, since both pages link to
-    // /mx/l. If a market switcher ever legitimately lands on /mx, THIS is the line to change — and
-    // that should be a deliberate review moment, not a silent green.
-    expect: { status: 200, bodyIncludes: ['href="/mx/l"'], bodyExcludes: ['href="/us"'] },
+    // `home-hero` is PAGE-SPECIFIC; `href="/mx/l"` was not. Navigation appears on every page, so a
+    // wrong-page error shell carrying only a nav bar passed this check — silently green-lighting
+    // the exact regression class this watchdog exists to catch. The testid is structural, stable
+    // (the Playwright specs depend on it) and independent of both the catalog and the flags.
+    //
+    // The negative marker still pins it apart from the selector. If a market switcher ever
+    // legitimately lands on /mx, THAT is a deliberate review moment, not a silent green.
+    expect: {
+      status: 200,
+      bodyIncludes: ['data-testid="home-hero"'],
+      bodyExcludes: ['href="/us"'],
+    },
     why: 'The live Mexico marketplace. Lost all smoke coverage at the 07-31 cutover — this restores it.',
   },
   {
@@ -158,11 +169,10 @@ export const CHECKS = [
     id: 'mx-browse',
     name: 'MX browse (/mx/l)',
     path: '/mx/l',
-    // The unterminated marker is DELIBERATE, not a typo (it was read as one in review). Omitting the
-    // closing quote matches `/mx/l`, `/mx/l?sort=…` and `/mx/l/prod_…` alike, so the check survives
-    // the page's own self-link being removed while still proving browse-scoped links rendered.
-    // `href="/mx/l"` exactly does appear live today — this is the looser assertion on purpose.
-    expect: { status: 200, bodyIncludes: ['href="/mx/l'] },
+    // A PRODUCT link, not a nav link. `href="/mx/l` appears in the nav of every page, so the old
+    // marker would have passed an error shell that merely carried navigation. A browse page whose
+    // grid is empty is itself worth alerting on — that is the page's entire purpose.
+    expect: { status: 200, bodyIncludes: ['href="/mx/l/prod_'] },
     why: 'The browse page itself — what /l used to serve, and what buyers actually land on.',
   },
 ];
@@ -290,7 +300,9 @@ export function normalizeLocation(location, base = DEFAULT_BASE) {
 
 /** Pure: does this expectation need the response body at all? */
 export function wantsBody(want) {
-  return Boolean(want.bodyIsJson || want.bodyIncludes?.length || want.bodyExcludes?.length);
+  return Boolean(
+    want.bodyIsJson || want.bodyIncludes?.length || want.bodyExcludes?.length || want.bodyJsonMatches,
+  );
 }
 
 /**
@@ -332,6 +344,25 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
       problems.push('body is not parseable JSON, despite the response announcing JSON');
     }
   }
+  // Structural field assertions on a JSON document. A substring match cannot tell the manifest from
+  // an error object that merely quotes the manifest's name.
+  if (want.bodyJsonMatches && bodyWasRead) {
+    let doc;
+    try {
+      doc = JSON.parse(body ?? '');
+    } catch {
+      doc = undefined; // bodyIsJson already reported the parse failure; don't say it twice.
+    }
+    if (doc !== undefined) {
+      for (const [field, expected] of Object.entries(want.bodyJsonMatches)) {
+        if (doc?.[field] !== expected) {
+          problems.push(
+            `JSON field "${field}" is ${JSON.stringify(doc?.[field])}, expected ${JSON.stringify(expected)}`,
+          );
+        }
+      }
+    }
+  }
   if (want.framesFromAnywhere && !framesAllowedFromAnywhere(headers?.['content-security-policy'])) {
     const csp = headers?.['content-security-policy'];
     problems.push(
@@ -345,9 +376,12 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     // `Content-Type` would look up a key that is never there and report a missing header on a
     // response that carried it.
     const value = headers?.[name.toLowerCase()];
+    // A needle may be a single substring or a SET of acceptable ones (the JavaScript media types
+    // are a set) — any one matching satisfies the expectation.
+    const accepted = Array.isArray(needle) ? needle : [needle];
     if (value === undefined || value === null) {
       problems.push(`missing the ${name} header (expected it to contain ${JSON.stringify(needle)})`);
-    } else if (!String(value).toLowerCase().includes(needle.toLowerCase())) {
+    } else if (!accepted.some((n) => String(value).toLowerCase().includes(String(n).toLowerCase()))) {
       problems.push(`${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`);
     }
   }
