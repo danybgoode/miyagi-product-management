@@ -15,9 +15,12 @@ import {
   DEFAULT_BASE,
   evaluateCheck,
   firstShopSlug,
+  framesAllowedFromAnywhere,
   formatReport,
   normalizeLocation,
+  parseCatalogItems,
   resolvePath,
+  runChecks,
   summarize,
 } from './prod-smoke.mjs';
 
@@ -258,9 +261,12 @@ test('resolvePath: an independent check just uses its own path', () => {
   assert.deepEqual(resolvePath(check('embed-js'), []), { path: '/embed.js' });
 });
 
-test('resolvePath: the embed check derives its path from the catalog body', () => {
+test('resolvePath: the embed check derives its path AND its identity marker from the catalog', () => {
   const prior = [{ id: 'ucp-catalog', status: 'pass', body: JSON.stringify({ items: [{ shop: { slug: 'prueba' } }] }) }];
-  assert.deepEqual(resolvePath(check('embed-iframe'), prior), { path: '/embed/s/prueba' });
+  assert.deepEqual(resolvePath(check('embed-iframe'), prior), {
+    path: '/embed/s/prueba',
+    expect: { bodyIncludes: ['prueba'] },
+  });
 });
 
 test('resolvePath: a dependent check is UNAVAILABLE when its dependency did not pass', () => {
@@ -271,10 +277,93 @@ test('resolvePath: a dependent check is UNAVAILABLE when its dependency did not 
   assert.match(r.unavailable, /dependency "ucp-catalog" was fail/);
 });
 
-test('resolvePath: a passing catalog with no usable slug is UNAVAILABLE, not a pass', () => {
+test('resolvePath: an EMPTY catalog is unavailable — nothing to pick a shop from', () => {
   const prior = [{ id: 'ucp-catalog', status: 'pass', body: JSON.stringify({ items: [] }) }];
   const r = resolvePath(check('embed-iframe'), prior);
-  assert.match(r.unavailable, /no item with a shop slug/);
+  assert.match(r.unavailable, /no items to embed/);
+});
+
+test('resolvePath: items with BLANK slugs are a FAILURE, not an unavailability', () => {
+  // codex re-review, PR #118. This is the orphan-attribution defect signature — the watchdog this
+  // replaces went RED on it, and that is how the defect was originally caught. Classifying it as
+  // "could not observe" would be a detection regression dressed up as caution.
+  const prior = [
+    { id: 'ucp-catalog', status: 'pass', body: JSON.stringify({ items: [{ shop: { slug: '' } }, { shop: {} }] }) },
+  ];
+  const r = resolvePath(check('embed-iframe'), prior);
+  assert.equal(r.unavailable, undefined);
+  assert.match(r.failed, /blank shop\.slug/);
+});
+
+test('resolvePath: an unparseable catalog body is unavailable, not a failure', () => {
+  const prior = [{ id: 'ucp-catalog', status: 'pass', body: 'not json' }];
+  const r = resolvePath(check('embed-iframe'), prior);
+  assert.match(r.unavailable, /not parseable JSON/);
+});
+
+// ---- framesAllowedFromAnywhere (codex re-review, PR #118) ----
+
+test('framesAllowedFromAnywhere: a bare * permits third-party framing', () => {
+  assert.equal(framesAllowedFromAnywhere('frame-ancestors *'), true);
+  assert.equal(framesAllowedFromAnywhere("frame-ancestors 'self' *"), true);
+  assert.equal(framesAllowedFromAnywhere('default-src none; frame-ancestors *; script-src x'), true);
+});
+
+test("framesAllowedFromAnywhere: 'none' and 'self' do NOT, despite containing the directive name", () => {
+  // The substring trap this function exists to close: both of these contain "frame-ancestors".
+  assert.equal(framesAllowedFromAnywhere("frame-ancestors 'none'"), false);
+  assert.equal(framesAllowedFromAnywhere("frame-ancestors 'self'"), false);
+});
+
+test('framesAllowedFromAnywhere: a wildcard SUBDOMAIN does not count as anywhere', () => {
+  // `frame-ancestors *.example.com` even contains the literal text "frame-ancestors *".
+  assert.equal(framesAllowedFromAnywhere('frame-ancestors *.example.com'), false);
+});
+
+test('framesAllowedFromAnywhere: a missing header or missing directive is false, never assumed', () => {
+  assert.equal(framesAllowedFromAnywhere(undefined), false);
+  assert.equal(framesAllowedFromAnywhere(''), false);
+  assert.equal(framesAllowedFromAnywhere('default-src *'), false);
+});
+
+test('evaluateCheck: the embed iframe fails on a restrictive frame-ancestors despite a 200', () => {
+  const r = evaluateCheck(check('embed-iframe'), {
+    status: 200,
+    body: 'prueba',
+    headers: { 'content-type': 'text/html', 'content-security-policy': "frame-ancestors 'none'" },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /does not permit third-party framing/);
+});
+
+test('evaluateCheck: a generic 200 page with a permissive CSP still fails the identity marker', () => {
+  // The derived marker is what stops any old error page passing this check.
+  const derived = { ...check('embed-iframe'), expect: { ...check('embed-iframe').expect, bodyIncludes: ['prueba'] } };
+  const r = evaluateCheck(derived, {
+    status: 200,
+    body: '<!doctype html><title>Error</title>',
+    headers: { 'content-type': 'text/html', 'content-security-policy': 'frame-ancestors *' },
+  });
+  assert.equal(r.status, 'fail');
+  assert.match(r.detail, /missing the marker "prueba"/);
+});
+
+test('evaluateCheck: the real embed page — right shop, framable — passes', () => {
+  const derived = { ...check('embed-iframe'), expect: { ...check('embed-iframe').expect, bodyIncludes: ['prueba'] } };
+  const r = evaluateCheck(derived, {
+    status: 200,
+    body: '<html>…/embed/s/prueba…</html>',
+    headers: { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': 'frame-ancestors *' },
+  });
+  assert.equal(r.status, 'pass');
+});
+
+// ---- parseCatalogItems ----
+
+test('parseCatalogItems: distinguishes an empty array from an unparseable body', () => {
+  assert.deepEqual(parseCatalogItems(JSON.stringify({ items: [] })), []);
+  assert.equal(parseCatalogItems('not json'), null);
+  assert.equal(parseCatalogItems(JSON.stringify({ total: 0 })), null);
 });
 
 // ---- summarize: the three-valued exit code ----
@@ -350,6 +439,76 @@ test('formatReport: a run with real failures still reads FAILED even alongside u
   ];
   const out = formatReport(results, summarize(results), DEFAULT_BASE);
   assert.match(out, /FAILED —/);
+});
+
+// ---- runChecks: the WIRING, not just the decisions ----
+//
+// Every test above exercises a pure function directly. That leaves the wiring untested, and a
+// correct pure function reached by wrong plumbing still ships the bug (LEARNINGS: pure fn correct +
+// behaviour wrong ⇒ suspect the wiring). These drive the real runChecks with an injected fetch.
+
+/** A fetch stub: routes by URL substring, returns { status, headers, body }. */
+function stubFetch(routes) {
+  return async (url) => {
+    const key = Object.keys(routes).find((k) => url.includes(k));
+    const r = routes[key] ?? { status: 404, headers: {}, body: '' };
+    return {
+      status: r.status,
+      headers: {
+        get: (n) => r.headers?.[n.toLowerCase()] ?? null,
+        [Symbol.iterator]: function* () {
+          for (const [k, v] of Object.entries(r.headers ?? {})) yield [k, v];
+        },
+      },
+      text: async () => r.body ?? '',
+    };
+  };
+}
+
+const OK_JSON = (body) => ({ status: 200, headers: { 'content-type': 'application/json' }, body });
+
+test('runChecks: a blank-slug catalog makes the embed check FAIL, not go unavailable', () => {
+  // The wiring for resolvePath's `failed` branch. Mutating that branch away reddened NOTHING before
+  // this test existed — the propagation was pure guesswork.
+  const fetchImpl = stubFetch({
+    '/api/ucp/catalog': OK_JSON(JSON.stringify({ items: [{ shop: { slug: '' } }] })),
+  });
+  return runChecks(DEFAULT_BASE, { fetchImpl }).then((results) => {
+    const embed = results.find((r) => r.id === 'embed-iframe');
+    assert.equal(embed.status, 'fail');
+    assert.match(embed.detail, /blank shop\.slug/);
+  });
+});
+
+test('runChecks: the derived identity marker actually reaches the comparison', () => {
+  // Proves the `resolved.expect` merge in runChecks is wired, not merely computed in resolvePath.
+  const fetchImpl = stubFetch({
+    '/api/ucp/catalog': OK_JSON(JSON.stringify({ items: [{ shop: { slug: 'tienda-x' } }] })),
+    '/embed/s/tienda-x': {
+      status: 200,
+      headers: { 'content-type': 'text/html', 'content-security-policy': 'frame-ancestors *' },
+      body: '<html>a totally different shop</html>',
+    },
+  });
+  return runChecks(DEFAULT_BASE, { fetchImpl }).then((results) => {
+    const embed = results.find((r) => r.id === 'embed-iframe');
+    assert.equal(embed.status, 'fail');
+    assert.match(embed.detail, /missing the marker "tienda-x"/);
+  });
+});
+
+test('runChecks: a dependency failure degrades only the dependent check, not the whole run', () => {
+  // Degrade per check: one dead endpoint must never hide the state of the others.
+  const fetchImpl = stubFetch({
+    '/api/ucp/catalog': { status: 500, headers: {}, body: '' },
+    '/embed.js': { status: 200, headers: { 'content-type': 'text/javascript' }, body: '/*!*/' },
+  });
+  return runChecks(DEFAULT_BASE, { fetchImpl }).then((results) => {
+    assert.equal(results.find((r) => r.id === 'ucp-catalog').status, 'fail');
+    assert.equal(results.find((r) => r.id === 'embed-iframe').status, 'unavailable');
+    assert.equal(results.find((r) => r.id === 'embed-js').status, 'pass');
+    assert.equal(results.length, CHECKS.length, 'every check must report, even after an early failure');
+  });
 });
 
 // ---- the table itself ----

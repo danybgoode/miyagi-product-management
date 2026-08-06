@@ -84,16 +84,34 @@ export const CHECKS = [
     // caught (catalog-orphan-listing-sweep). A hardcoded slug would not have caught it.
     dependsOn: 'ucp-catalog',
     pathFrom: (catalogBody) => {
+      const items = parseCatalogItems(catalogBody);
+      if (items === null) return { unavailable: 'catalog body was not parseable JSON' };
+      if (items.length === 0) return { unavailable: 'catalog returned no items to embed' };
+
       const slug = firstShopSlug(catalogBody);
-      if (!slug) return { unavailable: 'catalog returned no item with a shop slug to embed' };
-      return { path: `/embed/s/${slug}` };
+      // A blank slug is an OBSERVED DEFECT, not an inability to observe. We looked and saw the
+      // catalog emitting shopless items — the exact orphan-attribution signature that made
+      // `/embed/s/` + '' resolve to a slugless path and 308. Reporting it as "unavailable" would
+      // be a detection REGRESSION against the watchdog this replaces, which went red on it.
+      if (!slug) {
+        return { failed: 'every catalog item has a blank shop.slug — the orphan-attribution defect signature' };
+      }
+      // The slug is also the page-identity marker: it proves THE REQUESTED shop rendered, not a
+      // generic 200 page that happens to carry a permissive CSP.
+      return { path: `/embed/s/${slug}`, expect: { bodyIncludes: [slug] } };
     },
-    // `frame-ancestors` is the half of this check that makes the iframe actually embeddable — the
-    // orphan sweep named its absence alongside the 308 as what a seller would experience. A 200
-    // without it is a page that renders for us and refuses to frame for them.
+    // Framing is the half of this check that makes the iframe actually embeddable — the orphan
+    // sweep named its absence alongside the 308 as what a seller would experience.
+    //
+    // `framesFromAnywhere` parses the directive rather than substring-matching it, because
+    // `frame-ancestors 'none'` and `frame-ancestors *.example.com` both CONTAIN the text
+    // "frame-ancestors" (and the latter even contains "frame-ancestors *") while forbidding
+    // exactly the third-party framing this check exists to prove. A check whose text and whose
+    // effect name different things is decoration.
     expect: {
       status: 200,
-      headerIncludes: { 'content-type': 'text/html', 'content-security-policy': 'frame-ancestors' },
+      headerIncludes: { 'content-type': 'text/html' },
+      framesFromAnywhere: true,
     },
     why: 'A seller embedding their storefront on their own site. 308 here = broken iframe.',
   },
@@ -141,6 +159,39 @@ export const CHECKS = [
 ];
 
 /**
+ * Pure: does this Content-Security-Policy permit an arbitrary third-party site to frame the page?
+ *
+ * Parsed, not substring-matched, and the distinction is the whole point: `frame-ancestors 'none'`
+ * contains the text "frame-ancestors", and `frame-ancestors *.miyagi.example` even contains
+ * "frame-ancestors *", yet both forbid the third-party framing a seller's embed depends on. Only a
+ * bare `*` in the source list actually permits it.
+ */
+export function framesAllowedFromAnywhere(csp) {
+  if (!csp) return false;
+  const directive = String(csp)
+    .split(';')
+    .map((d) => d.trim())
+    .find((d) => /^frame-ancestors\b/i.test(d));
+  if (!directive) return false;
+  return directive.split(/\s+/).slice(1).includes('*');
+}
+
+/**
+ * Pure: the `items` array from a UCP catalog body, or null when the body is not parseable as one.
+ * Separate from firstShopSlug so callers can tell "no items at all" (we cannot pick a shop to
+ * check) apart from "items exist but none has a shop" (we observed the defect).
+ */
+export function parseCatalogItems(body) {
+  let parsed;
+  try {
+    parsed = typeof body === 'string' ? JSON.parse(body) : body;
+  } catch {
+    return null;
+  }
+  return Array.isArray(parsed?.items) ? parsed.items : null;
+}
+
+/**
  * Pure: pull the first non-empty `shop.slug` out of a UCP catalog response body.
  * Returns null for anything unparseable or empty — the caller decides whether that is a failure
  * or an unavailability, because those are different facts.
@@ -163,9 +214,16 @@ export function firstShopSlug(body) {
 
 /**
  * Pure: work out the path a check should hit, given the results of the checks before it.
- * Returns `{ path }` or `{ unavailable: reason }`. A dependent check whose dependency did not pass
- * is UNAVAILABLE, never failed — reporting "the iframe is broken" when we never learned which
- * iframe to look at would be a confident falsehood.
+ *
+ * Returns one of three shapes, and which one matters:
+ *   `{ path, expect? }`      — go and look; `expect` merges over the check's static expectations
+ *   `{ unavailable: reason }` — we could not determine what to look at
+ *   `{ failed: reason }`      — we determined it, and what we saw is already wrong
+ *
+ * A dependent check whose DEPENDENCY did not pass is unavailable, never failed: reporting "the
+ * iframe is broken" when we never learned which iframe to look at would be a confident falsehood.
+ * But a dependency that passed while emitting something invalid is a real, observed failure — see
+ * the blank-slug branch in the embed check above.
  */
 export function resolvePath(check, priorResults) {
   if (!check.dependsOn) return { path: check.path };
@@ -233,6 +291,14 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     if (got !== want.location) {
       problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
     }
+  }
+  if (want.framesFromAnywhere && !framesAllowedFromAnywhere(headers?.['content-security-policy'])) {
+    const csp = headers?.['content-security-policy'];
+    problems.push(
+      csp
+        ? `content-security-policy is ${JSON.stringify(csp)}, which does not permit third-party framing`
+        : 'no content-security-policy header, so third-party framing is not proven',
+    );
   }
   for (const [name, needle] of Object.entries(want.headerIncludes ?? {})) {
     const value = headers?.[name];
@@ -346,8 +412,16 @@ export async function runChecks(base, deps = {}) {
       results.push({ id: check.id, name: check.name, status: 'unavailable', detail: resolved.unavailable });
       continue;
     }
+    if (resolved.failed) {
+      results.push({ id: check.id, name: check.name, status: 'fail', detail: resolved.failed });
+      continue;
+    }
     const observation = await observe(`${base}${resolved.path}`, deps);
-    results.push(evaluateCheck(check, observation, base));
+    // Derived expectations (the embed check's per-shop identity marker) merge over the static ones.
+    const effective = resolved.expect
+      ? { ...check, expect: { ...check.expect, ...resolved.expect } }
+      : check;
+    results.push(evaluateCheck(effective, observation, base));
   }
   return results;
 }
