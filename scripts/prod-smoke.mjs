@@ -473,7 +473,10 @@ async function main() {
   } else {
     console.log(formatReport(results, summary, base));
   }
-  process.exit(summary.exitCode);
+  // `process.exitCode` rather than `process.exit()`: the latter tears the process down immediately
+  // and can TRUNCATE stdout when it is a pipe rather than a TTY. The report is the routine's whole
+  // diagnostic input — a half-written one would have it triaging a failure it cannot fully read.
+  process.exitCode = summary.exitCode;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

@@ -111,8 +111,13 @@ is `200` and that the response body contains `"ok":true`. If either is missing, 
 alert did not reach Daniel and why. A watchdog whose alarm fails quietly is worse than no watchdog.
 
 The message must carry, in this order: **the verdict word** the script used (`FAILED` or
-`UNAVAILABLE`), the pass tally, **each** failing check with observed-vs-expected, your regression-vs-
-deliberate call with its evidence, and the draft-PR link if you opened one.
+`UNAVAILABLE`), the pass tally, **every non-pass result** — each failing check with
+observed-vs-expected *and* each unavailable check with its reason — your regression-vs-deliberate
+call with its evidence, and the draft-PR link if you opened one.
+
+A mixed run is the case to get right: exit `1` sends you to step 2, but a run can fail one check and
+be unable to observe another. Report **both**. Dropping the unavailable one because the exit code
+pointed at failures would hide a check nobody looked at behind a check that failed.
 
 Two rules on the message, both learned the hard way:
 - **The alert must match what actually happened.** If you could not complete the diagnosis, say so in
