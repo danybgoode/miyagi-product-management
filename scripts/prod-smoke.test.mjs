@@ -85,6 +85,37 @@ test('normalizeLocation: a malformed Location is returned as-is rather than thro
   assert.equal(normalizeLocation('http://[not a url'), 'http://[not a url');
 });
 
+test('normalizeLocation: same-origin is judged against the BASE BEING CHECKED, not prod', () => {
+  // agy review, PR #118: hardcoding DEFAULT_BASE made --base=<staging> treat every absolute
+  // redirect as cross-origin and fail a correct run — a false red on the one flag whose entire
+  // purpose is pointing this script somewhere other than production.
+  const staging = 'https://staging.miyagisanchez.com';
+  assert.equal(normalizeLocation(`${staging}/mx/l`, staging), '/mx/l');
+  // ...and prod is now the foreign origin when staging is the target.
+  assert.equal(normalizeLocation('https://miyagisanchez.com/mx/l', staging), 'https://miyagisanchez.com/mx/l');
+});
+
+test('evaluateCheck: an absolute redirect passes against a non-prod base', () => {
+  const staging = 'https://staging.miyagisanchez.com';
+  const r = evaluateCheck(
+    check('browse-redirect'),
+    { status: 308, location: `${staging}/mx/l`, body: '', headers: {} },
+    staging,
+  );
+  assert.equal(r.status, 'pass');
+});
+
+test('evaluateCheck: base defaults to prod when the caller omits it', () => {
+  // Every other spec in this file relies on that default, so it is worth asserting directly.
+  const r = evaluateCheck(check('browse-redirect'), {
+    status: 308,
+    location: 'https://miyagisanchez.com/mx/l',
+    body: '',
+    headers: {},
+  });
+  assert.equal(r.status, 'pass');
+});
+
 test('evaluateCheck: /l redirecting to the ABSOLUTE same-origin target still passes', () => {
   // HTTP permits either form and a CDN can switch between them without any behaviour change.
   // Reddening here would reject correct output — the guard failure AGENTS.md calls the worse one.

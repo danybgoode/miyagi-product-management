@@ -131,6 +131,10 @@ export const CHECKS = [
     id: 'mx-browse',
     name: 'MX browse (/mx/l)',
     path: '/mx/l',
+    // The unterminated marker is DELIBERATE, not a typo (it was read as one in review). Omitting the
+    // closing quote matches `/mx/l`, `/mx/l?sort=…` and `/mx/l/prod_…` alike, so the check survives
+    // the page's own self-link being removed while still proving browse-scoped links rendered.
+    // `href="/mx/l"` exactly does appear live today — this is the looser assertion on purpose.
     expect: { status: 200, bodyIncludes: ['href="/mx/l'] },
     why: 'The browse page itself — what /l used to serve, and what buyers actually land on.',
   },
@@ -183,14 +187,19 @@ export function resolvePath(check, priorResults) {
  * failure mode AGENTS.md singles out as worse than missing a fault. A CROSS-ORIGIN absolute target
  * is deliberately left un-normalized: sending buyers to another origin is a real difference, and it
  * must not quietly compare equal to a local path.
+ *
+ * "Same origin" means same origin as the BASE BEING CHECKED, not as production. Hardcoding
+ * DEFAULT_BASE here made `--base=https://staging.miyagisanchez.com` report every absolute redirect
+ * as cross-origin and fail a correct run — a false red on the one flag that exists to point this
+ * script somewhere other than prod.
  */
-export function normalizeLocation(location) {
+export function normalizeLocation(location, base = DEFAULT_BASE) {
   // No null/empty guard: the absolute-form test below already returns those unchanged, and a line
   // that no mutation can make fail is a line that decays unnoticed.
   if (!/^https?:\/\//i.test(location)) return location;
   try {
     const url = new URL(location);
-    if (url.origin !== new URL(DEFAULT_BASE).origin) return location;
+    if (url.origin !== new URL(base).origin) return location;
     return `${url.pathname}${url.search}`;
   } catch {
     return location;
@@ -205,11 +214,11 @@ export function normalizeLocation(location) {
  * assertion to be false; we failed to observe it at all. Collapsing the two would report an
  * outage in our own sandbox as an outage in production.
  */
-export function evaluateCheck(check, observation) {
-  const base = { id: check.id, name: check.name };
+export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
+  const result = { id: check.id, name: check.name };
 
   if (observation?.error) {
-    return { ...base, status: 'unavailable', detail: `could not reach it: ${observation.error}` };
+    return { ...result, status: 'unavailable', detail: `could not reach it: ${observation.error}` };
   }
 
   const { status, location, body, headers } = observation;
@@ -220,7 +229,7 @@ export function evaluateCheck(check, observation) {
     problems.push(`expected HTTP ${want.status}, got ${status}`);
   }
   if (want.location !== undefined) {
-    const got = normalizeLocation(location);
+    const got = normalizeLocation(location, base);
     if (got !== want.location) {
       problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
     }
@@ -245,9 +254,9 @@ export function evaluateCheck(check, observation) {
   }
 
   if (problems.length > 0) {
-    return { ...base, status: 'fail', detail: problems.join('; ') };
+    return { ...result, status: 'fail', detail: problems.join('; ') };
   }
-  return { ...base, status: 'pass', detail: `HTTP ${status}`, body };
+  return { ...result, status: 'pass', detail: `HTTP ${status}`, body };
 }
 
 /** Pure: roll per-check results into the run verdict + exit code. */
@@ -338,7 +347,7 @@ export async function runChecks(base, deps = {}) {
       continue;
     }
     const observation = await observe(`${base}${resolved.path}`, deps);
-    results.push(evaluateCheck(check, observation));
+    results.push(evaluateCheck(check, observation, base));
   }
   return results;
 }
