@@ -38,6 +38,8 @@
 // A run that could not check something must never exit 0. "I could not look" is not "it is fine".
 
 import { parseArgs } from 'node:util';
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
 export const DEFAULT_BASE = 'https://miyagisanchez.com';
 
@@ -330,7 +332,10 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     );
   }
   for (const [name, needle] of Object.entries(want.headerIncludes ?? {})) {
-    const value = headers?.[name];
+    // Lowercased on BOTH sides: `observe` stores header names lowercased, so a check spelling one
+    // `Content-Type` would look up a key that is never there and report a missing header on a
+    // response that carried it.
+    const value = headers?.[name.toLowerCase()];
     if (value === undefined || value === null) {
       problems.push(`missing the ${name} header (expected it to contain ${JSON.stringify(needle)})`);
     } else if (!String(value).toLowerCase().includes(needle.toLowerCase())) {
@@ -434,6 +439,9 @@ async function observe(url, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
  * and the run carries on, so a single dead endpoint never hides the state of the other seven.
  */
 export async function runChecks(base, deps = {}) {
+  // Normalized here too, not only in main(): a programmatic caller passing a trailing slash would
+  // otherwise build `https://host//embed.js`, and a doubled path segment is its own bug hunt.
+  const origin = String(base).replace(/\/$/, '');
   const results = [];
   for (const check of CHECKS) {
     const resolved = resolvePath(check, results);
@@ -445,12 +453,12 @@ export async function runChecks(base, deps = {}) {
       results.push({ id: check.id, name: check.name, status: 'fail', detail: resolved.failed });
       continue;
     }
-    const observation = await observe(`${base}${resolved.path}`, deps);
+    const observation = await observe(`${origin}${resolved.path}`, deps);
     // Derived expectations (the embed check's per-shop identity marker) merge over the static ones.
     const effective = resolved.expect
       ? { ...check, expect: { ...check.expect, ...resolved.expect } }
       : check;
-    results.push(evaluateCheck(effective, observation, base));
+    results.push(evaluateCheck(effective, observation, origin));
   }
   return results;
 }
@@ -479,6 +487,9 @@ async function main() {
   process.exitCode = summary.exitCode;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Same main-detection shape as session-note.mjs / owed-ledger.mjs — string-comparing a `file://`
+// URL against argv[1] assumes they are spelled identically, which is not guaranteed.
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) {
   await main();
 }

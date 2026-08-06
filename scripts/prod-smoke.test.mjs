@@ -163,6 +163,31 @@ test('evaluateCheck: embed.js served as javascript passes, and the match is case
   assert.equal(r.status, 'pass');
 });
 
+test('evaluateCheck: an expectation spelled Content-Type still matches the stored lowercase key', () => {
+  // agy review, PR #118. `observe` lowercases response header names, so a check spelling one in
+  // title case would look up a key that is never there and report a header the response DID carry
+  // as missing — a false failure invented by the lookup, not the response.
+  const mixedCase = { ...check('embed-js'), expect: { status: 200, headerIncludes: { 'Content-Type': 'javascript' } } };
+  const r = evaluateCheck(mixedCase, {
+    status: 200,
+    body: '/*!*/',
+    headers: { 'content-type': 'text/javascript' },
+  });
+  assert.equal(r.status, 'pass');
+});
+
+test('runChecks: a base with a trailing slash does not build doubled path segments', () => {
+  const seen = [];
+  const fetchImpl = async (url) => {
+    seen.push(url);
+    return { status: 599, headers: { get: () => null, [Symbol.iterator]: function* () {} }, text: async () => '' };
+  };
+  return runChecks(`${DEFAULT_BASE}/`, { fetchImpl }).then(() => {
+    assert.ok(seen.length > 0, 'no requests were made');
+    for (const url of seen) assert.doesNotMatch(url, /[^:]\/\//, `doubled slash in ${url}`);
+  });
+});
+
 test('evaluateCheck: a missing required header fails and names the header', () => {
   const r = evaluateCheck(check('embed-js'), { status: 200, body: '', headers: {} });
   assert.equal(r.status, 'fail');
