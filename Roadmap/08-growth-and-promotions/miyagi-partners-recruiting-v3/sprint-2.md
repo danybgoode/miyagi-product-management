@@ -4,13 +4,13 @@
 
 ## Build evidence — 2026-08-08
 
-- Code is complete at `5461bc2` in stacked
-  [storefront PR #343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343); rollout gates remain
-  pending.
+- Code is complete at `23d5e68` in stacked
+  [storefront PR #343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343); exact-head type/build,
+  changed-file lint, Vercel deployment and all four preview API shards are green. Rollout gates remain pending.
 - Sprint 2 is one stacked delta over Sprint 1: atomic approve/invite, provider-truthful outcome recording,
   audited rotate-before-resend, verified-email activation, the single database binding writer and a
   track-aware zero-grant workspace.
-- Exact head `5461bc2` passes TypeScript, changed-file lint across 43 files, production build, flag-inventory
+- Exact head `23d5e68` passes TypeScript, changed-file lint across 43 files, production build, flag-inventory
   regeneration/check, 87 focused recruiting/auth/portfolio specs and the complete 234-test D13 continuity
   population. Token, provider outcome, Clerk email, serialization, RPC, route/workspace,
   query-normalization, unavailable-state and rollback/rate-order groups were each observed red before
@@ -20,14 +20,18 @@
 - Earlier external-family findings were fixed, including moving the founding-operator activation, workspace
   and email lifecycle into a matching English/Spanish `partnersRecruiting` dictionary namespace. The US
   journey defaults to English and exposes Spanish; Promotor branches retain their existing Spanish behavior.
-  A fresh independent reviewer approved exact head `5461bc2` with no P0/P1/P2 findings and independently
-  reran all 234 D13 tests plus build/type/lint/inventory gates. A new exact-head cross-family pass still
-  requires explicit authorization because it sends the private PR diff to an external reviewer.
+  A fresh independent reviewer approved exact head `23d5e68` with no P0/P1/P2 findings. Across the final
+  review sequence the reviewer reran all 234 D13 tests plus build/type/lint/inventory gates, then independently
+  reran the final 26 affected auth/feedback tests and TypeScript after the test-only preview correction. A new
+  exact-head cross-family pass still requires explicit authorization because it sends the private PR diff to
+  an external reviewer.
 - Final security review made operator rollback precede shared MCP rate outcomes without opening an auth-DB
   abuse path: normal flag-ON and public MCP lifecycle calls add no identity lookup; OFF-path partner lookup
   has its own bounded budget; exhausted arbitrary partner shapes fail generically; unavailable storage is
-  distinct from absence; and only the proven pre-migration `42703 program_track` gap retries the legacy row
-  shape as Promotor.
+  distinct from absence; only the proven pre-migration `42703 program_track` gap retries the legacy row shape
+  as Promotor; and an unconfigured preview must return the exact detail-free unavailable envelope rather than
+  masquerade as a missing credential. The two strengthened generic-denial assertions were deliberately seen
+  red before the final 26/26 green run.
 - No migration, flag sync, activation, grant or merchant mutation was performed from the builder rail. The
   live migration/RLS verification, Golden definition sync, authenticated Clerk activation/zero-grant smoke,
   live Promotor continuity walkthrough and HIGH-risk merge authorization remain owed.
