@@ -244,7 +244,8 @@ separate backlog concern rather than being changed inside an identity/auth rollo
 
 `partners.recruiting_v3_enabled` is an enablement flag whose production authority is Golden Beans, with a
 matching typed Miyagi catalog contract and a disabled `platform_flags` fallback/shadow row. It defaults
-**false** and is registered disabled in every environment. One server-side recruiting-version resolver
+**false**; rollout must register it disabled in every Golden environment before any cohort activation. One
+server-side recruiting-version resolver
 gates the `/us` v3 page,
 operator-track application acceptance, track-aware approval, neutral activation and workspace orientation.
 OFF preserves the current `/us` invitation and all Promotor behavior; additive schema remains inert.
