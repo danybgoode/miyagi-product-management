@@ -1,6 +1,6 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 2: Activate
 
-**Status:** 🟡 in progress
+**Status:** 🟦 in review
 
 ## Build evidence — 2026-08-08
 
