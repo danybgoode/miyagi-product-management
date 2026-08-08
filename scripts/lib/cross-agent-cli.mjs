@@ -593,10 +593,12 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 //                  so an untrusted directory would otherwise stall or refuse. `--trust` grants trust for
 //                  this invocation only (it does not write ~/.vibe/trusted_folders.toml).
 //
-// A live Golden Beans probe on 2026-08-07 found that `--trust` alone made the reviewer blind: every file
-// read was denied, each denial consumed a turn, and the run could stop without inspecting surrounding
-// code. The invocation below preserves the no-write contract while granting only the two reads a reviewer
-// needs. Its argv contract is pinned in vibe-invocation.test.mjs.
+// Golden Beans' 2026-08-07 probe added auto-approved `read_file`/`grep` so the reviewer could inspect
+// surrounding code. We deliberately do not copy that part: Vibe 2.23.3 checks auto-approval before its
+// sensitive-file and outside-workdir prompts, and both tools can read arbitrary absolute paths. A malicious
+// PR diff could therefore exfiltrate an ignored .env or another host secret into the external review and its
+// posted comment. cross-review already embeds the bounded unified diff, so this invocation disables every
+// model-driven host tool instead. Its argv contract is pinned in vibe-invocation.test.mjs.
 //
 // `vibe-acp` is the WRONG entry point for this use case and is deliberately not wired: it starts a
 // JSON-RPC server that speaks the Agent Client Protocol over stdio for IDE extensions (Zed et al.). It
@@ -608,11 +610,6 @@ export const VIBE_ARG_LIMIT = 256 * 1024;
 // the first live review in this repo still hit that ceiling after productive reads, so 24 is the next
 // bounded floor. The agent can stop before it, and VIBE_MAX_TURNS remains an explicit operator override.
 export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '24';
-// Programmatic `--enabled-tools` disables every tool not listed, which is what makes `--auto-approve` safe:
-// no bash, edit, write_file, task, web, or other mutation/expansion surface is available.
-// Golden Beans verified the negative claim by asking Vibe to write a file under this exact allow-list:
-// Vibe returned TOOL_UNAVAILABLE and no file was created.
-export const VIBE_READ_ONLY_TOOLS = ['read_file', 'grep'];
 // Optional: pin a model with `VIBE_MODEL`. Left unset by default so vibe uses the account's configured
 // default — unlike agy, an unset model here is not known to blank the output.
 export const VIBE_MODEL = process.env.VIBE_MODEL || null;
@@ -633,9 +630,9 @@ export const CLAUDE_REVIEW_MODEL = process.env.CLAUDE_REVIEW_MODEL || 'sonnet';
 
 // One `vibe --prompt "<prompt+context>" --agent plan --output text` invocation. Like agy, vibe takes the
 // whole thing as an argv string, so the same size cap applies (and for the same reason: a clear message
-// beats an opaque E2BIG). `--agent plan` is NOT optional. `--auto-approve` is safe only because
-// `--enabled-tools` restricts Vibe to VIBE_READ_ONLY_TOOLS; without auto-approval those reads are denied,
-// and without the allow-list auto-approval would violate the advisory no-write contract.
+// beats an opaque E2BIG). `--agent plan` is NOT optional. `--disabled-tools '*'` is equally non-optional:
+// plan mode describes intended behavior, while the tool filter enforces that an injected diff cannot read
+// host files, shell out or mutate anything. All review context is already embedded in `fullArgv`.
 //
 // Empty stdout is treated as a FAILURE, not as "no findings". Every CLI on this roster can exit 0 having
 // produced nothing when it is quota-capped or misconfigured, and a review that silently becomes empty is
@@ -660,8 +657,8 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
     '--max-turns',
     String(VIBE_MAX_TURNS),
     '--trust',
-    '--auto-approve',
-    ...VIBE_READ_ONLY_TOOLS.flatMap((tool) => ['--enabled-tools', tool]),
+    '--disabled-tools',
+    '*',
   ];
   if (VIBE_MODEL) args.push('--model', VIBE_MODEL);
 

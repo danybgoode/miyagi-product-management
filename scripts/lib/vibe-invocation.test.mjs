@@ -3,7 +3,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { runVibe, VIBE_READ_ONLY_TOOLS, VIBE_MAX_TURNS } from './cross-agent-cli.mjs';
+import { runVibe, VIBE_MAX_TURNS } from './cross-agent-cli.mjs';
 
 function argvFor(prompt = 'review this') {
   let captured = null;
@@ -15,16 +15,11 @@ function argvFor(prompt = 'review this') {
   return captured;
 }
 
-test('Vibe reads are auto-approved through an exact read-only tool allow-list', () => {
+test('Vibe receives the bounded diff with every model-driven host tool disabled', () => {
   const args = argvFor();
-  assert.ok(args.includes('--auto-approve'), 'otherwise every file read is denied');
-
-  const enabled = args
-    .map((arg, index) => (arg === '--enabled-tools' ? args[index + 1] : null))
-    .filter(Boolean);
-  assert.deepEqual(enabled.sort(), [...VIBE_READ_ONLY_TOOLS].sort());
-  assert.deepEqual([...VIBE_READ_ONLY_TOOLS].sort(), ['grep', 'read_file']);
-  for (const writeTool of ['bash', 'edit', 'write_file', 'task']) assert.ok(!enabled.includes(writeTool));
+  assert.ok(!args.includes('--auto-approve'), 'auto-approval bypasses Vibe sensitivity/workdir checks');
+  assert.ok(!args.includes('--enabled-tools'), 'no model-driven read or write tool is needed for an embedded diff');
+  assert.equal(args[args.indexOf('--disabled-tools') + 1], '*');
 });
 
 test('plan mode and a workable turn budget remain mandatory', () => {
