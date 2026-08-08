@@ -593,18 +593,10 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 //                  so an untrusted directory would otherwise stall or refuse. `--trust` grants trust for
 //                  this invocation only (it does not write ~/.vibe/trusted_folders.toml).
 //
-// ⚠ CONTRACT NOT YET PROBED AGAINST A LIVE BINARY. Everything above comes from Mistral's published CLI
-// docs, not from a run on this machine — and this repo's own rule is that a roster is PROBED, never
-// assumed (a CLI that self-reports a capability it does not have has burned us before; see the agy
-// version pin above, where a silent `--print` contract change shipped empty reviews for weeks). Before
-// relying on vibe in a real review, run the probe once and record the result here:
-//
-//   node scripts/cross-review.mjs <PR#> --agent vibe --dry-run
-//
-// A green probe prints real findings. An EMPTY result is a FAILURE, not a pass — see runVibe below, which
-// treats empty stdout as an error exactly like the agy path does, for the same reason (a quota-capped or
-// misconfigured CLI can exit 0 with nothing).
-// vibe-probe: NOT YET VERIFIED — replace this line with `vibe-probe: verified <date> against <version>`.
+// A live Golden Beans probe on 2026-08-07 found that `--trust` alone made the reviewer blind: every file
+// read was denied, each denial consumed a turn, and the run could stop without inspecting surrounding
+// code. The invocation below preserves the no-write contract while granting only the two reads a reviewer
+// needs. Its argv contract is pinned in vibe-invocation.test.mjs.
 //
 // `vibe-acp` is the WRONG entry point for this use case and is deliberately not wired: it starts a
 // JSON-RPC server that speaks the Agent Client Protocol over stdio for IDE extensions (Zed et al.). It
@@ -612,7 +604,14 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 // client to get a single review out of it. `vibe --prompt` is the scripting/CI path, and it is the one
 // Mistral documents for exactly this.
 export const VIBE_ARG_LIMIT = 256 * 1024;
-export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '4';
+// Four turns was a truncation generator once denied reads consumed the budget. Reads are productive now,
+// and the agent normally stops before this ceiling; VIBE_MAX_TURNS remains an explicit operator override.
+export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '12';
+// Programmatic `--enabled-tools` disables every tool not listed, which is what makes `--auto-approve` safe:
+// no bash, edit, write_file, task, web, or other mutation/expansion surface is available.
+// Golden Beans verified the negative claim by asking Vibe to write a file under this exact allow-list:
+// Vibe returned TOOL_UNAVAILABLE and no file was created.
+export const VIBE_READ_ONLY_TOOLS = ['read_file', 'grep'];
 // Optional: pin a model with `VIBE_MODEL`. Left unset by default so vibe uses the account's configured
 // default — unlike agy, an unset model here is not known to blank the output.
 export const VIBE_MODEL = process.env.VIBE_MODEL || null;
@@ -633,8 +632,9 @@ export const CLAUDE_REVIEW_MODEL = process.env.CLAUDE_REVIEW_MODEL || 'sonnet';
 
 // One `vibe --prompt "<prompt+context>" --agent plan --output text` invocation. Like agy, vibe takes the
 // whole thing as an argv string, so the same size cap applies (and for the same reason: a clear message
-// beats an opaque E2BIG). `--agent plan` is NOT optional — see the header block: programmatic mode
-// otherwise defaults to `auto-approve`, and an advisory reviewer must not be able to write.
+// beats an opaque E2BIG). `--agent plan` is NOT optional. `--auto-approve` is safe only because
+// `--enabled-tools` restricts Vibe to VIBE_READ_ONLY_TOOLS; without auto-approval those reads are denied,
+// and without the allow-list auto-approval would violate the advisory no-write contract.
 //
 // Empty stdout is treated as a FAILURE, not as "no findings". Every CLI on this roster can exit 0 having
 // produced nothing when it is quota-capped or misconfigured, and a review that silently becomes empty is
@@ -649,7 +649,19 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
     );
   }
 
-  const args = ['--prompt', fullArgv, '--agent', 'plan', '--output', 'text', '--max-turns', String(VIBE_MAX_TURNS), '--trust'];
+  const args = [
+    '--prompt',
+    fullArgv,
+    '--agent',
+    'plan',
+    '--output',
+    'text',
+    '--max-turns',
+    String(VIBE_MAX_TURNS),
+    '--trust',
+    '--auto-approve',
+    ...VIBE_READ_ONLY_TOOLS.flatMap((tool) => ['--enabled-tools', tool]),
+  ];
   if (VIBE_MODEL) args.push('--model', VIBE_MODEL);
 
   const r = spawn('vibe', args, { input: '', encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -659,7 +671,13 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
       `vibe not found or failed to spawn (${r.error.message}) — install the Mistral Vibe CLI ` +
         `(\`uv tool install mistral-vibe\`) and authenticate it, or use --agent codex/antigravity.`
     );
-  if (r.status !== 0) return fail(opts.soft, `vibe --prompt failed: ${lastLine(r.stderr)}`);
+  if (r.status !== 0) {
+    const detail = lastLine(r.stderr) || lastLine(r.stdout);
+    const hint = /turn limit/i.test(`${r.stderr || ''}${r.stdout || ''}`)
+      ? ` — the agent ran out of turns, not quota. Raise VIBE_MAX_TURNS (currently ${VIBE_MAX_TURNS}) and re-run.`
+      : '';
+    return fail(opts.soft, `vibe --prompt failed: ${detail}${hint}`);
+  }
 
   const out = (r.stdout || '').trim();
   if (!out)
