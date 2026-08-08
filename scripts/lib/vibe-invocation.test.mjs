@@ -30,7 +30,7 @@ test('Vibe reads are auto-approved through an exact read-only tool allow-list', 
 test('plan mode and a workable turn budget remain mandatory', () => {
   const args = argvFor();
   assert.equal(args[args.indexOf('--agent') + 1], 'plan');
-  assert.ok(Number(VIBE_MAX_TURNS) >= 8, `expected a workable budget, got ${VIBE_MAX_TURNS}`);
+  assert.ok(Number(VIBE_MAX_TURNS) >= 24, `expected the live-probed budget, got ${VIBE_MAX_TURNS}`);
   assert.equal(args[args.indexOf('--max-turns') + 1], String(VIBE_MAX_TURNS));
 });
 

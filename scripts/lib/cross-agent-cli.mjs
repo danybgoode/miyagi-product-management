@@ -604,9 +604,10 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 // client to get a single review out of it. `vibe --prompt` is the scripting/CI path, and it is the one
 // Mistral documents for exactly this.
 export const VIBE_ARG_LIMIT = 256 * 1024;
-// Four turns was a truncation generator once denied reads consumed the budget. Reads are productive now,
-// and the agent normally stops before this ceiling; VIBE_MAX_TURNS remains an explicit operator override.
-export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '12';
+// Four turns was a truncation generator once denied reads consumed the budget. Golden Beans moved to 12;
+// the first live review in this repo still hit that ceiling after productive reads, so 24 is the next
+// bounded floor. The agent can stop before it, and VIBE_MAX_TURNS remains an explicit operator override.
+export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '24';
 // Programmatic `--enabled-tools` disables every tool not listed, which is what makes `--auto-approve` safe:
 // no bash, edit, write_file, task, web, or other mutation/expansion surface is available.
 // Golden Beans verified the negative claim by asking Vibe to write a file under this exact allow-list:
