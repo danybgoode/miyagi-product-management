@@ -84,6 +84,18 @@ export function bumpPinnedSource(source, newVersion, date) {
     .replace(markerRe, `// agy-doctor: last verified ${date} against ${newVersion}.`);
 }
 
+// agy 1.1.11 changed `agy models` from one slug per line to tabular
+// "slug<TAB>display name" rows. Compare the first field only; comparing the whole
+// display row produces a false model-drift result even while both live probes pass.
+export function parseAgyModelSlugs(output) {
+  return String(output ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !/^fetching available models/i.test(line))
+    .map((line) => line.split(/\s+/, 1)[0])
+    .filter(Boolean);
+}
+
 // ── I/O helpers (thin, injectable-free — the decision core above is what tests exercise) ─────────────
 function agy(args, input) {
   return spawnSync('agy', args, { encoding: 'utf8', input: input ?? '', maxBuffer: 16 * 1024 * 1024 });
@@ -101,7 +113,9 @@ function observe() {
   const help = (helpR.stdout || '') + (helpR.stderr || '');
   const helpOk = /^\s*-p\b/m.test(help) && /--model\b/.test(help);
   const modelsR = agy(['models']);
-  const models = ((modelsR.stdout || '') + (modelsR.stderr || '')).split('\n').map((l) => l.trim()).filter(Boolean);
+  const modelsOutput = (modelsR.stdout || '') + (modelsR.stderr || '');
+  const models = modelsOutput.split('\n').map((l) => l.trim()).filter(Boolean);
+  const modelSlugs = parseAgyModelSlugs(modelsOutput);
   const probe = (model) => {
     const r = agy(['-p', 'Reply with exactly: OK', '--model', model]);
     if (r.status !== 0) return 'error';
@@ -115,8 +129,8 @@ function observe() {
     installed,
     pinned: AGY_PINNED,
     helpOk,
-    primaryListed: models.includes(AGY_MODEL),
-    fallbackListed: models.includes(AGY_FALLBACK_MODEL),
+    primaryListed: modelSlugs.includes(AGY_MODEL),
+    fallbackListed: modelSlugs.includes(AGY_FALLBACK_MODEL),
     models,
     probes,
   };
