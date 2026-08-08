@@ -22,9 +22,17 @@
 - Earlier external-family reviews ran and their findings were fixed or answered. A new exact-head
   cross-family pass is still required; it needs explicit authorization because the reviewer receives the
   private PR diff.
-- `partners.recruiting_v3_enabled` remains OFF/absent in production. The migration, Golden definition sync,
-  authenticated admin smoke, existing-Promotor walkthrough and HIGH-risk merge authorization remain
-  gates—not inferred successes.
+- The orchestrator applied `20260806120000_miyagi_partners_recruiting_v3.sql` through the authorized
+  Supabase rail and realigned the remote migration ledger to the local timestamp. Existing counts remained
+  0 applications, 2 partners (1 Clerk-bound) and 0 grants; both existing partner rows backfilled to
+  `program_track = 'promoter'`. The local flag row now exists OFF. Golden definition sync, authenticated
+  admin smoke, existing-Promotor walkthrough and HIGH-risk merge authorization remain gates—not inferred
+  successes.
+- Live security verification proved all three reused tables have RLS enabled with no client policies,
+  anonymous/authenticated CRUD denied and service-role CRUD preserved. The five new functions are
+  `SECURITY DEFINER`, pin `search_path = public, pg_temp`, deny `PUBLIC`/`anon`/`authenticated` execute and
+  permit service-role execute. Anonymous PostgREST GET/HEAD/POST returned 401 while service-role GET returned
+  200 for every table.
 
 ## Outcome
 

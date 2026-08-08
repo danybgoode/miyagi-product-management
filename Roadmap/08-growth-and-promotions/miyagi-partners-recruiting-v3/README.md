@@ -205,6 +205,28 @@ for a promoter-track predicate and all partner authorization callsites for grant
 covers flag OFF/ON `/us`, public intake, both admin row types, neutral activation, operator zero-grant and the
 unchanged Spanish Promotor path. Every new spec is deliberately observed red before final green.
 
+## Live migration evidence — 2026-08-08
+
+The orchestrator applied the exact reviewed migration
+`20260806120000_miyagi_partners_recruiting_v3.sql` through the authorized Supabase MCP rail, then realigned
+the automatically assigned remote migration version to the local timestamp. Post-apply verification found:
+
+- the population stayed at 0 applications, 2 partners (1 Clerk-bound) and 0 grants; both historical partner
+  rows resolve to `program_track = 'promoter'` and no founding-operator identity exists;
+- `partners.recruiting_v3_enabled` exists in the local flag table with enablement polarity and `enabled =
+  false`;
+- every expected column, default, six check constraints and three unique indexes are present;
+- the five new functions are `SECURITY DEFINER`, pin `search_path = public, pg_temp`, deny execute to
+  `PUBLIC`, `anon` and `authenticated`, and allow `service_role`;
+- RLS is enabled on all three reused tables with zero client policies; anonymous/authenticated CRUD is denied
+  and service-role CRUD is preserved. Live PostgREST GET/HEAD/POST calls returned 401 anonymously and GET
+  returned 200 with service-role authority for each table.
+
+The database advisor now reports only the intentional `rls_enabled_no_policy` informational result for these
+three server-only tables. It separately reports 60 pre-existing public tables with RLS disabled and four
+pre-existing mutable-function search paths. That wider security debt predates this epic and is recorded as a
+separate backlog concern rather than being changed inside an identity/auth rollout.
+
 ## Scope — stories
 
 | Sprint | Story | Risk |
@@ -256,9 +278,9 @@ operator-versus-Promotor authorization matrix and walkthrough are green.
 
 ## Definition of Done (epic)
 
-- [ ] Epic-mode architect locked and documented `D1…Dn` against live code and live DB before delegation.
+- [x] Epic-mode architect locked and documented `D1…Dn` against live code and live DB before delegation.
 - [ ] Both sprint PRs merged in order to `main`, deployed and smoke-tested; gaps stated.
-- [ ] Every new spec was observed red at least once through a deliberate implementation mutation.
+- [x] Every new spec was observed red at least once through a deliberate implementation mutation.
 - [ ] `/us` accepts a valid three-shop operator application without collecting secrets or implying consent.
 - [ ] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
 - [ ] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.

@@ -33,8 +33,11 @@
   masquerade as a missing credential. The two strengthened generic-denial assertions were deliberately seen
   red before the final 26/26 green run.
 - No migration, flag sync, activation, grant or merchant mutation was performed from the builder rail. The
-  live migration/RLS verification, Golden definition sync, authenticated Clerk activation/zero-grant smoke,
-  live Promotor continuity walkthrough and HIGH-risk merge authorization remain owed.
+  orchestrator subsequently applied and verified the additive migration through the authorized Supabase
+  rail: the ledger matches `20260806120000`, the live population is unchanged, both historical identities
+  are Promotor, all three tables fail closed to client roles and service-role access remains available. Golden
+  definition sync, authenticated Clerk activation/zero-grant smoke, live Promotor continuity walkthrough and
+  HIGH-risk merge authorization remain owed.
 
 ## Outcome
 
