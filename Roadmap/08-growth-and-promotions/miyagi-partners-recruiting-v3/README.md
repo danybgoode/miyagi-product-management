@@ -86,7 +86,9 @@ both application and partner records, checked to `promoter|founding_operator`. E
 `promoter`; no manual repair or second identity table exists. The migration also adds the missing application
 status check (`pending|approved|rejected`) and a partial unique index on non-null `clerk_user_id`, which makes
 the existing one-Clerk-identity rule a database invariant. The observed live population makes both additions
-safe.
+safe. Because the three reused tables were found to expose anonymous table privileges without RLS, the same
+migration enables RLS, revokes `PUBLIC`/`anon`/`authenticated` access and grants the required operations only
+to `service_role`; rollout must verify both anonymous denial and service-role continuity live.
 
 **D2 — versioned qualification, not a new form platform.** Founding-operator applications use
 `operator_details_version = 1` plus a JSON object containing exactly: `company_name`, `operator_role`,
@@ -118,9 +120,10 @@ writes grants, merchant records or consent. The admin `withAdmin` wrapper remain
 
 **D6 — Promotor economics are track-isolated.** PRM code lookup/binding, manual Promotor lists,
 attribution, commission, transfer, earnings and close helpers explicitly resolve only `program_track =
-'promoter'`. Track-aware identity lookup may return either track for `/partner`, but `program_track` is never
-read by `partner-auth` or any grant resolver. Internal MYP identifiers are not displayed or accepted on a
-Promotor route.
+'promoter'`. Track-aware identity lookup may return either track for `/partner`. Shared partner-auth and
+portfolio credential seams may read `program_track` only to apply the recruiting kill-switch before rate,
+grant or portfolio work; track never authorizes a shop or changes grant scope. Internal MYP identifiers are
+not displayed or accepted on a Promotor route.
 
 **D7 — one Clerk-binding writer.** The existing binding update moves behind a service-role-only database
 function that enforces idempotent same-user binding, rejects an identity or Clerk user already bound
@@ -156,9 +159,11 @@ to `/partner` and creates zero grants.
 
 **D9 — one feature resolver, two authorities with distinct jobs.** `recruitingV3Enabled()` is the only
 runtime seam and delegates to typed `isEnabled('partners.recruiting_v3_enabled')`. It gates the `/us` v3
-render, only the founding-operator branch of public intake and approval, neutral activation, and only the
-founding-operator workspace orientation. OFF returns the current `/us`, makes operator write/activation
-routes unavailable and leaves every Promotor route unchanged. Sprint 1 registers the typed Golden definition
+render, only the founding-operator branch of public intake and approval, neutral activation, only the
+founding-operator workspace orientation, and every direct or credential-based operator operation. OFF is
+checked before rate limits and before grant, relationship, portfolio or draft reads; storage-unavailable is
+not treated as identity-absent. OFF returns the current `/us`, makes operator write/activation routes
+unavailable and leaves every Promotor route unchanged. Sprint 1 registers the typed Golden definition
 with default variant OFF through `flags:sync` and seeds the local fallback/shadow row disabled; Golden is the
 production toggle surface. `partners.mcp_enabled` continues to govern partner credentials and current
 Promotor workspace access; it is not repurposed as the recruiting switch.
@@ -183,7 +188,9 @@ Promotor notifications remain as today.
 **D12 — workspace admission and zero-grant truth.** A founding operator may enter `/partner` only when the
 recruiting flag is ON; Promotor admission remains governed by the existing partner flag. The page labels the
 track, loads shops exclusively from active `partner_grants`, and shows an explicit zero-shop state for a new
-operator with no Administer shortcut. That founding-operator orientation uses the bilingual
+operator with no Administer shortcut. Direct relationship, portfolio and proposal APIs plus both shared MCP
+partner-token entry paths enforce the same rollback before rate/data work. That founding-operator
+orientation uses the bilingual
 `partnersRecruiting` namespace, defaults to English for the United States journey and exposes a Spanish
 option; the existing Promotor heading, code, empty state and close path stay Spanish. Existing granted/revoked
 behavior is unchanged. The live pre-build and post-approval population guard must both prove zero grants

@@ -2,22 +2,29 @@
 
 **Status:** 🟡 in progress
 
-## Build evidence — 2026-08-06
+## Build evidence — 2026-08-08
 
-- Code is complete in [storefront PR #342](https://github.com/danybgoode/miyagisanchezcommerce/pull/342);
-  rollout gates remain pending.
+- Code is complete at `6fd5d76` in
+  [storefront PR #342](https://github.com/danybgoode/miyagisanchezcommerce/pull/342); the exact-head CI type/
+  build, changed-file lint, four preview API shards and Vercel deployment are green. Rollout gates remain.
 - The dark-flag proposition, exact three-shop intake, additive migration/RPC contract, privacy-closed
   analytics and one-queue admin review are implemented on `feat/miyagi-partners-recruiting-v3`.
-- TypeScript, production build, changed-file lint, the 24 recruiting/flag specs and the 13 exact
-  Promotor identity/economic callsite guards are green locally. The complete D13 continuity population
-  also passed as part of the stacked Sprint 2 run (227/227).
+- Security review additionally closed anonymous table access with RLS plus explicit privilege revocation,
+  made duplicate intake status-neutral, put operator rollback before rate/data work on direct surfaces and
+  made partner identity storage failure distinct from confirmed absence. The latter regression was observed
+  red (`null` returned on unavailable storage) before the fail-closed fix.
+- TypeScript, production build, changed-file lint and 105 affected local specs are green. A fresh independent
+  reviewer reran 110 focused tests at exact head and returned **clean / approve**. The complete D13 continuity
+  population also passed on the final stacked Sprint 2 branch (234/234).
 - New validation/spec groups were observed red through deliberate mutations before restoration. Desktop,
   mobile and the final full-page local live-smoke render were inspected; the harness reported HTTP 200 and
   zero console errors.
-- Two external-family reviews ran and their findings were fixed or answered on the PR. The mandatory fresh
-  reviewer is still unavailable because the Codex subagent refresh token is revoked.
+- Earlier external-family reviews ran and their findings were fixed or answered. A new exact-head
+  cross-family pass is still required; it needs explicit authorization because the reviewer receives the
+  private PR diff.
 - `partners.recruiting_v3_enabled` remains OFF/absent in production. The migration, Golden definition sync,
-  authenticated admin smoke and existing-Promotor walkthrough remain gates—not inferred successes.
+  authenticated admin smoke, existing-Promotor walkthrough and HIGH-risk merge authorization remain
+  gates—not inferred successes.
 
 ## Outcome
 

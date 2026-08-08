@@ -2,26 +2,35 @@
 
 **Status:** 🟡 in progress
 
-## Build evidence — 2026-08-06
+## Build evidence — 2026-08-08
 
-- Code is complete in stacked [storefront PR #343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343);
-  rollout gates remain pending.
+- Code is complete at `5461bc2` in stacked
+  [storefront PR #343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343); rollout gates remain
+  pending.
 - Sprint 2 is one stacked delta over Sprint 1: atomic approve/invite, provider-truthful outcome recording,
   audited rotate-before-resend, verified-email activation, the single database binding writer and a
   track-aware zero-grant workspace.
-- Final head `46c16f1` passes TypeScript, changed-file lint, production build, 25 focused recruiting/
-  activation specs and the complete 227-test D13 continuity population. Token, provider outcome, Clerk
-  email, serialization, RPC, route/workspace, query-normalization and unavailable-state groups were each
-  observed red before restoration.
+- Exact head `5461bc2` passes TypeScript, changed-file lint across 43 files, production build, flag-inventory
+  regeneration/check, 87 focused recruiting/auth/portfolio specs and the complete 234-test D13 continuity
+  population. Token, provider outcome, Clerk email, serialization, RPC, route/workspace,
+  query-normalization, unavailable-state and rollback/rate-order groups were each observed red before
+  restoration.
 - The executable provider seam proves non-empty ID, null ID and thrown/ambiguous outcomes; composite RPC
   rows cannot serialize activation hashes or internal MYP identifiers.
-- Both required external-family reviews ran on head `46c16f1`; their repeated language finding was fixed in
-  `86af18f` by moving the founding-operator activation, workspace and email lifecycle into a matching
-  English/Spanish `partnersRecruiting` dictionary namespace. The US journey defaults to English and exposes
-  Spanish; Promotor branches retain their existing Spanish behavior. Exact-head review is being rerun. The
-  mandatory fresh reviewer remains blocked by the revoked subagent refresh token.
+- Earlier external-family findings were fixed, including moving the founding-operator activation, workspace
+  and email lifecycle into a matching English/Spanish `partnersRecruiting` dictionary namespace. The US
+  journey defaults to English and exposes Spanish; Promotor branches retain their existing Spanish behavior.
+  A fresh independent reviewer approved exact head `5461bc2` with no P0/P1/P2 findings and independently
+  reran all 234 D13 tests plus build/type/lint/inventory gates. A new exact-head cross-family pass still
+  requires explicit authorization because it sends the private PR diff to an external reviewer.
+- Final security review made operator rollback precede shared MCP rate outcomes without opening an auth-DB
+  abuse path: normal flag-ON and public MCP lifecycle calls add no identity lookup; OFF-path partner lookup
+  has its own bounded budget; exhausted arbitrary partner shapes fail generically; unavailable storage is
+  distinct from absence; and only the proven pre-migration `42703 program_track` gap retries the legacy row
+  shape as Promotor.
 - No migration, flag sync, activation, grant or merchant mutation was performed from the builder rail. The
-  authenticated Clerk activation/zero-grant smoke and live Promotor continuity walkthrough remain owed.
+  live migration/RLS verification, Golden definition sync, authenticated Clerk activation/zero-grant smoke,
+  live Promotor continuity walkthrough and HIGH-risk merge authorization remain owed.
 
 ## Outcome
 
