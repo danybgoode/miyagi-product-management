@@ -1,6 +1,6 @@
 # Miyagi Partners proposition and recruiting portal v3 — Retrospective
 
-_Closed: 2026-08-09_ Product build retrospective; epic status remains in progress pending Golden flag registration and owner smoke.
+_Closed: 2026-08-09_ Product build retrospective; epic status remains in progress pending owner smoke and deployed read-key binding proof.
 
 ## What shipped
 
