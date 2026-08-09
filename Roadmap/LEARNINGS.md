@@ -237,7 +237,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   — `tsc` caught it, the fork's own "looks done" narration would not have. After any subagent/fork batch —
   especially one large enough to plausibly share a rate-limit, or any showing `status: failed` — re-derive
   actual file state directly (grep the real repo) and run the language's type-checker/build before treating
-  the batch as complete. *(2026-07-10, seller-portal-rails-foundation S2.)*
+  the batch as complete. **The same rule applies to external model CLIs even when they exit zero:** Vibe
+  returned a literal `read_file{…}` request as its only stdout after host tools were disabled. Non-empty is
+  necessary but not sufficient; a review runner must reject tool-call-only output as unfinished rather than
+  post it as a pass. *(2026-07-10, seller-portal-rails-foundation S2; sharpened 2026-08-08,
+  miyagi-partners-recruiting-v3 closeout.)*
 - **A CI-lint's hard gate should cover exactly what a sweep actually swept, not the whole tree the
   underlying scan visits.** A settings-tree directory audit found ~50 more seller-portal files than a
   sprint doc named, all with the exact debt the new lint was built to catch — asserting `toEqual([])`
@@ -1445,7 +1449,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   pack reported an unreadable flag state as an empty flag list, which would have told the writer nothing
   was live when the truth was unknown: a confident falsehood produced by the very module built to prevent
   them. Any gathered signal needs three states — known-present, known-absent, unavailable — and the third
-  must say so out loud. *(2026-07-26, exec-prose-rail S2.)*
+  must say so out loud. **For asynchronously mirrored joins, prove coverage before rendering an empty or
+  partial collection:** a known grant whose shop mirror row is missing means the read is unavailable, not
+  “zero shops.” *(2026-07-26, exec-prose-rail S2; sharpened 2026-08-08,
+  miyagi-partners-recruiting-v3 S2.)*
 - **A hand-counted number is stale on arrival — generate it or don't cite it.** An external audit counted
   80 owed-verification markers across 75 files on 2026-07-24; two days later it was 76/71, and the
   spec-file count had moved 323→353 in the same window. Neither count was wrong when written. The drift IS
@@ -1718,7 +1725,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   got `429` instead of a deterministic `404` — same underlying bug as the secret-before-auth case (a
   non-auth gate answering before the flag decides the route "exists" at all), just with a different second
   gate. A cross-review (codex) caught it pre-merge. *(2026-07-02, seller-agent-connect-mcp-url S2 —
-  `app/api/ucp/mcp/c/[slug]/route.ts`.)* **Counter-corollary — on a PAGE (not an API route), flag →
+  `app/api/ucp/mcp/c/[slug]/route.ts`.)* **If dark traffic still needs abuse control, put a dedicated bounded
+  preflight after the flag decision and preserve the route's established response envelope.** Returning an
+  early route-level 401 was secure but broke MCP clients that require the normal `result.isError` tool
+  envelope; the dedicated bucket bounded the OFF path without changing transport semantics. *(2026-08-08,
+  miyagi-partners-recruiting-v3 S2.)* **Counter-corollary — on a PAGE (not an API route), flag →
   `notFound()` before ANY dynamic API bakes the flag's BUILD-TIME value into a static prerender.** A
   flag-gated page whose first await is `isEnabled()` (with `currentUser()`/`headers()` only after) is
   static-eligible, so Next prerenders the `notFound()` — and the launch flag-flip then serves the baked

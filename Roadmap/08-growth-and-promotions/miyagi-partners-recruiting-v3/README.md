@@ -280,13 +280,26 @@ operator-versus-Promotor authorization matrix and walkthrough are green.
 ## Definition of Done (epic)
 
 - [x] Epic-mode architect locked and documented `D1…Dn` against live code and live DB before delegation.
-- [ ] Both sprint PRs merged in order to `main`, deployed and smoke-tested; gaps stated.
+- [x] Both sprint PRs merged in order to `main`, deployed and smoke-tested; gaps stated.
 - [x] Every new spec was observed red at least once through a deliberate implementation mutation.
-- [ ] `/us` accepts a valid three-shop operator application without collecting secrets or implying consent.
-- [ ] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
-- [ ] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.
-- [ ] Existing Promotor application, approval, code, economics, close, grant and workspace behavior remains.
+- [x] `/us` accepts a valid three-shop operator application without collecting secrets or implying consent.
+- [x] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
+- [x] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.
+- [x] Existing Promotor application, approval, code, economics, close, grant and workspace behavior remains.
 - [ ] `partners.recruiting_v3_enabled` exists disabled in every environment, then is enabled only after Daniel's smoke.
-- [ ] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
-- [ ] `RETROSPECTIVE.md`, product poster and any genuinely durable learning are updated at close.
+- [x] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
+- [x] `RETROSPECTIVE.md`, product poster and any genuinely durable learning are updated for closeout.
 - [ ] Feature branches deleted and `node scripts/build-order.mjs` regenerated after status flips to `shipped`.
+
+## Closeout state — 2026-08-08
+
+The product code is merged and deployed dark: Sprint 1 is storefront merge `3aba592`; Sprint 2 is
+`1709226`. The additive migration is live, the local fallback flag is OFF, the exact production Cloud Build
+succeeded, `/us` preserves the research invitation, neutral activation is unavailable, and a never-issued
+partner credential preserves the generic MCP tool-result envelope.
+
+The epic remains `in-progress` because the enablement definition is absent from Golden Beans' production
+flag catalog. The available Golden connector credential is task-management-only and cannot create flag
+definitions. Register `partners.recruiting_v3_enabled` disabled through the catalog-sync rail, then Daniel
+runs the authenticated admin/application/activation/zero-grant and existing-Promotor walkthrough before any
+cohort enablement. No flag was enabled during this build.
