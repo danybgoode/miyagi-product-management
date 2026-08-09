@@ -1,6 +1,41 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 2: Activate
 
-**Status:** 🟡 architecture locked · waits on Sprint 1
+**Status:** ✅ shipped
+
+## Build evidence — 2026-08-08
+
+- [Storefront PR #343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343) merged to `main` as
+  `1709226` after exact-head type/build, changed-file lint, Vercel deployment, browser smoke and all four
+  preview API shards passed.
+- Sprint 2 is one stacked delta over Sprint 1: atomic approve/invite, provider-truthful outcome recording,
+  audited rotate-before-resend, verified-email activation, the single database binding writer and a
+  track-aware zero-grant workspace.
+- Final head `2713f61` passes TypeScript, changed-file lint across 24 files, production build, flag-inventory
+  regeneration/check and a 181-test affected continuity suite. Token, provider outcome, Clerk email,
+  serialization, RPC, route/workspace,
+  query-normalization, unavailable-state and rollback/rate-order groups were each observed red before
+  restoration.
+- The executable provider seam proves non-empty ID, null ID and thrown/ambiguous outcomes; composite RPC
+  rows cannot serialize activation hashes or internal MYP identifiers.
+- Earlier external-family findings were fixed, including moving the founding-operator activation, workspace
+  and email lifecycle into a matching English/Spanish `partnersRecruiting` dictionary namespace. The US
+  journey defaults to English and exposes Spanish; Promotor branches retain their existing Spanish behavior.
+  A fresh independent reviewer approved exact head `2713f61` with no P0/P1/P2 findings after rerunning 77
+  focused tests plus TypeScript, changed-file lint and diff validation. Exact-head Antigravity was clean;
+  Vibe's findings were resolved against the transactional and request-scoped invariants on the PR.
+- Final security review made operator rollback precede shared MCP rate outcomes without opening an auth-DB
+  abuse path: normal flag-ON and public MCP lifecycle calls add no identity lookup; OFF-path partner lookup
+  has its own bounded budget; exhausted arbitrary partner shapes fail generically; unavailable storage is
+  distinct from absence; only the proven pre-migration `42703 program_track` gap retries the legacy row shape
+  as Promotor; and an unconfigured preview must return the exact detail-free unavailable envelope rather than
+  masquerade as a missing credential. The two strengthened generic-denial assertions were deliberately seen
+  red before the final 26/26 green run.
+- No migration, flag sync, activation, grant or merchant mutation was performed from the builder rail. The
+  orchestrator subsequently applied and verified the additive migration through the authorized Supabase
+  rail: the ledger matches `20260806120000`, the live population is unchanged, both historical identities
+  are Promotor, all three tables fail closed to client roles and service-role access remains available. Golden
+  definition sync, authenticated Clerk activation/zero-grant smoke and the live Promotor continuity
+  walkthrough remain owed.
 
 ## Outcome
 
@@ -130,3 +165,15 @@ Env: preview before merge · production after deploy · https://miyagisanchez.co
    operation remains available exactly as the architect's flag contract states.
 
 If any step fails, note the step number, URL, account/track/grant/flag state and what you saw.
+
+### Production smoke record — 2026-08-08
+
+- Exact merge `1709226` completed Cloud Build `d4955220-f76a-4b92-9915-5c1ca6f41fe1` successfully in
+  `us-east4` and deployed to Cloud Run `miyagi-web`.
+- A well-shaped neutral activation URL returned the expected 404 and rendered the normal Spanish not-found
+  page while recruiting remained OFF.
+- A never-issued `ms_partner_…` credential returned HTTP 200 with the established generic `Unauthorized`
+  MCP tool-result envelope, not a 500, scope leak or route-level substitute.
+- Signed production activation, founding-operator zero-grant workspace, admin resend and existing-Promotor
+  continuity remain owed to Daniel; the scripted live-smoke rail cannot authenticate against production
+  Clerk keys.

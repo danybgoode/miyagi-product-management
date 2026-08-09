@@ -55,7 +55,7 @@ records additively; it may not copy commerce state or manufacture consent from a
 | Workspace | `/partner` plus stewardship portfolio | Add track-aware orientation and next action; no second dashboard |
 | Merchant operations | relationship CRM, consent evidence, lifecycle history and activation scorecard | Consume only after a merchant separately enters the pilot; never write consent from the application |
 | Admin operations | `/admin/promoter` and existing notifications | Extend one review queue with track and qualification summary |
-| Feature control | typed Miyagi catalog + Golden Beans production authority | One server-side enablement seam covers public, application, approval, activation and workspace behavior |
+| Feature control | Golden Beans production authority + typed Miyagi catalog + `platform_flags` fallback/shadow | One server-side enablement seam covers public, application, approval, activation and workspace behavior |
 | Measurement | privacy-safe seller-acquisition/GTM events | Emit coarse funnel state only; never URLs, contact fields or free text |
 
 ## Epic-mode architecture lock — completed 2026-08-06
@@ -86,7 +86,9 @@ both application and partner records, checked to `promoter|founding_operator`. E
 `promoter`; no manual repair or second identity table exists. The migration also adds the missing application
 status check (`pending|approved|rejected`) and a partial unique index on non-null `clerk_user_id`, which makes
 the existing one-Clerk-identity rule a database invariant. The observed live population makes both additions
-safe.
+safe. Because the three reused tables were found to expose anonymous table privileges without RLS, the same
+migration enables RLS, revokes `PUBLIC`/`anon`/`authenticated` access and grants the required operations only
+to `service_role`; rollout must verify both anonymous denial and service-role continuity live.
 
 **D2 — versioned qualification, not a new form platform.** Founding-operator applications use
 `operator_details_version = 1` plus a JSON object containing exactly: `company_name`, `operator_role`,
@@ -118,9 +120,10 @@ writes grants, merchant records or consent. The admin `withAdmin` wrapper remain
 
 **D6 — Promotor economics are track-isolated.** PRM code lookup/binding, manual Promotor lists,
 attribution, commission, transfer, earnings and close helpers explicitly resolve only `program_track =
-'promoter'`. Track-aware identity lookup may return either track for `/partner`, but `program_track` is never
-read by `partner-auth` or any grant resolver. Internal MYP identifiers are not displayed or accepted on a
-Promotor route.
+'promoter'`. Track-aware identity lookup may return either track for `/partner`. Shared partner-auth and
+portfolio credential seams may read `program_track` only to apply the recruiting kill-switch before rate,
+grant or portfolio work; track never authorizes a shop or changes grant scope. Internal MYP identifiers are
+not displayed or accepted on a Promotor route.
 
 **D7 — one Clerk-binding writer.** The existing binding update moves behind a service-role-only database
 function that enforces idempotent same-user binding, rejects an identity or Clerk user already bound
@@ -141,7 +144,10 @@ admin rotate-and-resend action transactionally replaces the unused hash/expiry a
 before sending, so any older link becomes invalid; its result is recorded only when the hash still matches.
 A crash between rotate, send and result recording therefore leaves a visible retry state, never a lost
 unrecoverable identity. Multiple emails may exist after an ambiguous provider result, but exactly one newest
-token can activate.
+token can activate. The invitation, neutral activation and founding-operator workspace copy use the
+allow-listed `partnersRecruiting` dictionary namespace with matching English and Spanish keys. The United
+States journey defaults to English and exposes an explicit Spanish option; shared Promotor notifications
+and surfaces retain their existing Spanish copy and behavior.
 
 GET only validates/displays and signed-out users return through Clerk's encoded `redirect_url`; a signed-in
 POST performs the mutation. The bearer token alone is insufficient: the Clerk account must expose at least
@@ -153,9 +159,11 @@ to `/partner` and creates zero grants.
 
 **D9 — one feature resolver, two authorities with distinct jobs.** `recruitingV3Enabled()` is the only
 runtime seam and delegates to typed `isEnabled('partners.recruiting_v3_enabled')`. It gates the `/us` v3
-render, only the founding-operator branch of public intake and approval, neutral activation, and only the
-founding-operator workspace orientation. OFF returns the current `/us`, makes operator write/activation
-routes unavailable and leaves every Promotor route unchanged. Sprint 1 registers the typed Golden definition
+render, only the founding-operator branch of public intake and approval, neutral activation, only the
+founding-operator workspace orientation, and every direct or credential-based operator operation. OFF is
+checked before rate limits and before grant, relationship, portfolio or draft reads; storage-unavailable is
+not treated as identity-absent. OFF returns the current `/us`, makes operator write/activation routes
+unavailable and leaves every Promotor route unchanged. Sprint 1 registers the typed Golden definition
 with default variant OFF through `flags:sync` and seeds the local fallback/shadow row disabled; Golden is the
 production toggle surface. `partners.mcp_enabled` continues to govern partner credentials and current
 Promotor workspace access; it is not repurposed as the recruiting switch.
@@ -180,8 +188,13 @@ Promotor notifications remain as today.
 **D12 — workspace admission and zero-grant truth.** A founding operator may enter `/partner` only when the
 recruiting flag is ON; Promotor admission remains governed by the existing partner flag. The page labels the
 track, loads shops exclusively from active `partner_grants`, and shows an explicit zero-shop state for a new
-operator with no Administer shortcut. Existing granted/revoked behavior is unchanged. The live pre-build and
-post-approval population guard must both prove zero grants were manufactured.
+operator with no Administer shortcut. Direct relationship, portfolio and proposal APIs plus both shared MCP
+partner-token entry paths enforce the same rollback before rate/data work. That founding-operator
+orientation uses the bilingual
+`partnersRecruiting` namespace, defaults to English for the United States journey and exposes a Spanish
+option; the existing Promotor heading, code, empty state and close path stay Spanish. Existing granted/revoked
+behavior is unchanged. The live pre-build and post-approval population guard must both prove zero grants
+were manufactured.
 
 **D13 — required regression population.** Every sprint runs `promoter-applications.spec.ts`,
 `promoter-program.spec.ts`, `promoter-commission.spec.ts`, `promoter-earnings.spec.ts`,
@@ -191,6 +204,28 @@ specs and the new recruiting specs. New population guards inspect all Promotor c
 for a promoter-track predicate and all partner authorization callsites for grant-only authority. Browser QA
 covers flag OFF/ON `/us`, public intake, both admin row types, neutral activation, operator zero-grant and the
 unchanged Spanish Promotor path. Every new spec is deliberately observed red before final green.
+
+## Live migration evidence — 2026-08-08
+
+The orchestrator applied the exact reviewed migration
+`20260806120000_miyagi_partners_recruiting_v3.sql` through the authorized Supabase MCP rail, then realigned
+the automatically assigned remote migration version to the local timestamp. Post-apply verification found:
+
+- the population stayed at 0 applications, 2 partners (1 Clerk-bound) and 0 grants; both historical partner
+  rows resolve to `program_track = 'promoter'` and no founding-operator identity exists;
+- `partners.recruiting_v3_enabled` exists in the local flag table with enablement polarity and `enabled =
+  false`;
+- every expected column, default, six check constraints and three unique indexes are present;
+- the five new functions are `SECURITY DEFINER`, pin `search_path = public, pg_temp`, deny execute to
+  `PUBLIC`, `anon` and `authenticated`, and allow `service_role`;
+- RLS is enabled on all three reused tables with zero client policies; anonymous/authenticated CRUD is denied
+  and service-role CRUD is preserved. Live PostgREST GET/HEAD/POST calls returned 401 anonymously and GET
+  returned 200 with service-role authority for each table.
+
+The database advisor now reports only the intentional `rls_enabled_no_policy` informational result for these
+three server-only tables. It separately reports 60 pre-existing public tables with RLS disabled and four
+pre-existing mutable-function search paths. That wider security debt predates this epic and is recorded as a
+separate backlog concern rather than being changed inside an identity/auth rollout.
 
 ## Scope — stories
 
@@ -207,9 +242,11 @@ unchanged Spanish Promotor path. Every new spec is deliberately observed red bef
 
 ## Kill-switch
 
-`partners.recruiting_v3_enabled` is an enablement flag in the typed Miyagi catalog and Golden Beans,
-default **false** and registered disabled in every environment; `platform_flags` retains a disabled
-fallback/shadow row. One server-side recruiting-version resolver gates the `/us` v3 page,
+`partners.recruiting_v3_enabled` is an enablement flag whose production authority is Golden Beans, with a
+matching typed Miyagi catalog contract and a disabled `platform_flags` fallback/shadow row. It defaults
+**false**; rollout must register it disabled in every Golden environment before any cohort activation. One
+server-side recruiting-version resolver
+gates the `/us` v3 page,
 operator-track application acceptance, track-aware approval, neutral activation and workspace orientation.
 OFF preserves the current `/us` invitation and all Promotor behavior; additive schema remains inert.
 
@@ -242,14 +279,70 @@ operator-versus-Promotor authorization matrix and walkthrough are green.
 
 ## Definition of Done (epic)
 
-- [ ] Epic-mode architect locked and documented `D1…Dn` against live code and live DB before delegation.
-- [ ] Both sprint PRs merged in order to `main`, deployed and smoke-tested; gaps stated.
-- [ ] Every new spec was observed red at least once through a deliberate implementation mutation.
-- [ ] `/us` accepts a valid three-shop operator application without collecting secrets or implying consent.
-- [ ] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
-- [ ] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.
-- [ ] Existing Promotor application, approval, code, economics, close, grant and workspace behavior remains.
+- [x] Epic-mode architect locked and documented `D1…Dn` against live code and live DB before delegation.
+- [x] Both sprint PRs merged in order to `main`, deployed and smoke-tested; gaps stated.
+- [x] Every new spec was observed red at least once through a deliberate implementation mutation.
+- [x] `/us` accepts a valid three-shop operator application without collecting secrets or implying consent.
+- [x] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
+- [x] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.
+- [x] Existing Promotor application, approval, code, economics, close, grant and workspace behavior remains.
 - [ ] `partners.recruiting_v3_enabled` exists disabled in every environment, then is enabled only after Daniel's smoke.
-- [ ] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
-- [ ] `RETROSPECTIVE.md`, product poster and any genuinely durable learning are updated at close.
+- [x] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
+- [x] `RETROSPECTIVE.md`, product poster and any genuinely durable learning are updated for closeout.
 - [ ] Feature branches deleted and `node scripts/build-order.mjs` regenerated after status flips to `shipped`.
+
+## Owner runbook — register the Golden definition disabled
+
+This is definition registration only; it must not activate the flag or change a serving snapshot.
+
+1. Sign in to Golden Beans and open `/app/flags/miyagi`. `miyagi` is the live runtime project;
+   `miyagisanchez` is a dormant duplicate, and `/app/agent-keys/*` creates task-connector credentials rather
+   than flag-catalog credentials.
+2. Under **Mint a catalog sync key**, set publisher source to `frontend`, use a specific operator label such
+   as `miyagi-frontend-recruiting-v3`, and mint the 30-day key. Copy it once and keep it out of shell history,
+   chat and repository files.
+3. From a clean checkout of storefront `main` at or after `1709226`, install the locked dependencies and set
+   the non-secret endpoint:
+
+   ```bash
+   npm ci
+   export GROWTH_ENGINE_URL=https://golden-beans-gamma.vercel.app
+   ```
+
+4. Read the credential without putting it in command history, publish the existing typed catalog twice, and
+   remove it from the shell environment:
+
+   ```bash
+   printf 'Paste the catalog sync key: ' >&2
+   IFS= read -r -s GOLDEN_BEANS_FLAG_SYNC_KEY
+   printf '\n' >&2
+   export GOLDEN_BEANS_FLAG_SYNC_KEY
+   npm run flags:sync
+   npm run flags:sync
+   unset GOLDEN_BEANS_FLAG_SYNC_KEY
+   ```
+
+   With the production catalog still at the audited 40-definition frontend baseline, the first run should
+   report `41 definitions (1 created, 40 unchanged)` and the second must report
+   `41 definitions (0 created, 41 unchanged)`. A `409` means an existing immutable definition differs; stop
+   and inspect it rather than creating or activating another version.
+5. Refresh `/app/flags/miyagi` and inspect `partners.recruiting_v3_enabled` version 1: boolean, default
+   variant `off`, variants `off=false` and `on=true`, no rules, and metadata `source=miyagi`,
+   `polarity=enablement`, `criticality=high`, `enforcement=frontend`. Every environment must say
+   **not active**; do not click **Activate** as part of registration.
+6. Revoke the temporary catalog sync key after the idempotent run and UI verification. Record no plaintext
+   credential. Step 1 is then complete; the separately authorized production smoke owns any controlled
+   activation and rollback.
+
+## Closeout state — 2026-08-09
+
+The product code is merged and deployed dark: Sprint 1 is storefront merge `3aba592`; Sprint 2 is
+`1709226`. The additive migration is live, the local fallback flag is OFF, the exact production Cloud Build
+succeeded, `/us` preserves the research invitation, neutral activation is unavailable, and a never-issued
+partner credential preserves the generic MCP tool-result envelope.
+
+The epic remains `in-progress` because the enablement definition has not yet been synchronized into Golden
+Beans' production flag catalog. The available Golden connector credential is task-management-only and cannot
+create flag definitions. The owner runbook above registers `partners.recruiting_v3_enabled` without
+activation; Daniel then owns the controlled production smoke, rollback and final status decision. No flag was
+enabled during this build.

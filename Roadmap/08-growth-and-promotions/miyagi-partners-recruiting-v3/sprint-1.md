@@ -1,6 +1,36 @@
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 1: Apply
 
-**Status:** 🟡 in progress · architecture locked, implementation underway
+**Status:** ✅ shipped
+
+## Build evidence — 2026-08-08
+
+- [Storefront PR #342](https://github.com/danybgoode/miyagisanchezcommerce/pull/342) merged to `main` as
+  `3aba592` after its exact-head type/build, changed-file lint, four preview API shards, Vercel preview,
+  two cross-family reviews and fresh HIGH-risk review passed.
+- The dark-flag proposition, exact three-shop intake, additive migration/RPC contract, privacy-closed
+  analytics and one-queue admin review are implemented on `feat/miyagi-partners-recruiting-v3`.
+- Security review additionally closed anonymous table access with RLS plus explicit privilege revocation,
+  made duplicate intake status-neutral, put operator rollback before rate/data work on direct surfaces and
+  made partner identity storage failure distinct from confirmed absence. The latter regression was observed
+  red (`null` returned on unavailable storage) before the fail-closed fix.
+- TypeScript, production build, changed-file lint and 105 affected local specs are green. A fresh independent
+  reviewer reran 110 focused tests at exact head and returned **clean / approve**. The complete D13 continuity
+  population also passed on the final stacked Sprint 2 branch (234/234).
+- New validation/spec groups were observed red through deliberate mutations before restoration. Desktop,
+  mobile and the final full-page local live-smoke render were inspected; the harness reported HTTP 200 and
+  zero console errors.
+- Exact-head Antigravity and Vibe reviews were posted with every finding fixed or answered; the independent
+  HIGH-risk reviewer approved the final head with no P0/P1/P2 findings.
+- The orchestrator applied `20260806120000_miyagi_partners_recruiting_v3.sql` through the authorized
+  Supabase rail and realigned the remote migration ledger to the local timestamp. Existing counts remained
+  0 applications, 2 partners (1 Clerk-bound) and 0 grants; both existing partner rows backfilled to
+  `program_track = 'promoter'`. The local flag row exists OFF. Golden definition sync, authenticated admin
+  smoke and the existing-Promotor walkthrough remain explicit rollout gaps—not inferred successes.
+- Live security verification proved all three reused tables have RLS enabled with no client policies,
+  anonymous/authenticated CRUD denied and service-role CRUD preserved. The five new functions are
+  `SECURITY DEFINER`, pin `search_path = public, pg_temp`, deny `PUBLIC`/`anon`/`authenticated` execute and
+  permit service-role execute. Anonymous PostgREST GET/HEAD/POST returned 401 while service-role GET returned
+  200 for every table.
 
 ## Outcome
 
@@ -112,3 +142,11 @@ Env: preview before merge · production after deploy · https://miyagisanchez.co
    → Miyagi sent no automatic message; nomination is visibly not merchant consent.
 
 If any step fails, note the step number, URL, account/flag state and what you saw.
+
+### Production smoke record — 2026-08-08
+
+- Exact merge `3aba592` deployed successfully through Cloud Build `us-east4` to Cloud Run `miyagi-web`.
+- With recruiting OFF, a real Chromium production smoke of `https://miyagisanchez.com/us` returned 200,
+  captured the existing private-pilot research invitation and reported zero browser console errors.
+- Flag-ON application, admin/auth and analytics walkthrough steps remain owed to Daniel after the Golden
+  definition exists; no live application or nominated merchant was created during dark verification.
