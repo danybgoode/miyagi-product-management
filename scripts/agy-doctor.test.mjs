@@ -79,6 +79,10 @@ test('agy 1.1.11 tabular model output is parsed by slug, not compared as a whole
   );
 });
 
+test('a tabular row may carry an alphabetic-only slug because the tab proves its structure', () => {
+  assert.deepEqual(parseAgyModelSlugs('mistral\tMistral Base\n'), ['mistral']);
+});
+
 test('legacy bare model ids remain valid while status prose is never treated as a slug', () => {
   assert.deepEqual(
     parseAgyModelSlugs('gemini-3.6-flash-high\ngpt-oss-120b-medium\n'),

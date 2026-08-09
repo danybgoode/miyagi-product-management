@@ -95,8 +95,17 @@ export function parseAgyModelSlugs(output) {
     // 1.1.11 rows are tab-separated. Legacy output is one complete slug per
     // line. Never take the first whitespace word from prose: a status line
     // such as "gemini-… is unavailable" must not prove that model is listed.
-    .map((line) => line.includes('\t') ? line.slice(0, line.indexOf('\t')).trim() : line)
-    .filter((candidate) => /^(?=.*[0-9._:/-])[a-z0-9][a-z0-9._:/-]*$/.test(candidate));
+    .flatMap((line) => {
+      const tab = line.indexOf('\t');
+      const candidate = tab === -1 ? line : line.slice(0, tab).trim();
+      // A tab is the 1.1.11 row boundary, so its first field may be a simple
+      // alphabetic slug. A legacy bare line has no structural marker: require
+      // model-ID punctuation/digits so arbitrary prose cannot prove a listing.
+      const valid = tab === -1
+        ? /^(?=.*[0-9._:/-])[a-z0-9][a-z0-9._:/-]*$/.test(candidate)
+        : /^[a-z0-9][a-z0-9._:/-]*$/.test(candidate);
+      return valid ? [candidate] : [];
+    });
 }
 
 // ── I/O helpers (thin, injectable-free — the decision core above is what tests exercise) ─────────────
