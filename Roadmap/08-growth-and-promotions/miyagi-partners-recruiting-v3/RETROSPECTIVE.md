@@ -56,6 +56,6 @@ These sharpen existing `Roadmap/LEARNINGS.md` entries rather than creating paral
   path. Only after those pass may a disposable cohort be enabled.
 - **Still out of scope:** merchant consent, shop creation/grants, US catalog, checkout, tax, shipping,
   operator economics and the `#US-3` commerce proof.
-- Root tooling PR [#123](https://github.com/danybgoode/miyagi-product-management/pull/123) is green and
-  reviewed but awaits a non-builder merge. This documentation PR must also be merged by Daniel because the
-  coordinating agent authored its final closeout commits.
+- Root tooling PR [#123](https://github.com/danybgoode/miyagi-product-management/pull/123) merged as
+  `7f45179` after its green checks and cross-family reviews. Daniel explicitly authorized this documentation
+  PR's post-gate merge; neither root merge changes product runtime or enables the recruiting flag.

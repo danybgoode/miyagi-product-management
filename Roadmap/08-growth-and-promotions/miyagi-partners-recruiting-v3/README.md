@@ -291,15 +291,56 @@ operator-versus-Promotor authorization matrix and walkthrough are green.
 - [x] `RETROSPECTIVE.md`, product poster and any genuinely durable learning are updated for closeout.
 - [ ] Feature branches deleted and `node scripts/build-order.mjs` regenerated after status flips to `shipped`.
 
-## Closeout state — 2026-08-08
+## Owner runbook — register the Golden definition disabled
+
+This is definition registration only; it must not activate the flag or change a serving snapshot.
+
+1. Sign in to Golden Beans and open `/app/flags/miyagi`. `miyagi` is the live runtime project;
+   `miyagisanchez` is a dormant duplicate, and `/app/agent-keys/*` creates task-connector credentials rather
+   than flag-catalog credentials.
+2. Under **Mint a catalog sync key**, set publisher source to `frontend`, use a specific operator label such
+   as `miyagi-frontend-recruiting-v3`, and mint the 30-day key. Copy it once and keep it out of shell history,
+   chat and repository files.
+3. From a clean checkout of storefront `main` at or after `1709226`, install the locked dependencies and set
+   the non-secret endpoint:
+
+   ```bash
+   npm ci
+   export GROWTH_ENGINE_URL=https://golden-beans-gamma.vercel.app
+   ```
+
+4. Read the credential without putting it in command history, publish the existing typed catalog twice, and
+   remove it from the shell environment:
+
+   ```bash
+   read -r -s 'GOLDEN_BEANS_FLAG_SYNC_KEY?Paste the catalog sync key: '
+   export GOLDEN_BEANS_FLAG_SYNC_KEY
+   npm run flags:sync
+   npm run flags:sync
+   unset GOLDEN_BEANS_FLAG_SYNC_KEY
+   ```
+
+   With the production catalog still at the audited 40-definition frontend baseline, the first run should
+   report `41 definitions (1 created, 40 unchanged)` and the second must report
+   `41 definitions (0 created, 41 unchanged)`. A `409` means an existing immutable definition differs; stop
+   and inspect it rather than creating or activating another version.
+5. Refresh `/app/flags/miyagi` and inspect `partners.recruiting_v3_enabled` version 1: boolean, default
+   variant `off`, variants `off=false` and `on=true`, no rules, and metadata `source=miyagi`,
+   `polarity=enablement`, `criticality=high`, `enforcement=frontend`. Every environment must say
+   **not active**; do not click **Activate** as part of registration.
+6. Revoke the temporary catalog sync key after the idempotent run and UI verification. Record no plaintext
+   credential. Step 1 is then complete; the separately authorized production smoke owns any controlled
+   activation and rollback.
+
+## Closeout state — 2026-08-09
 
 The product code is merged and deployed dark: Sprint 1 is storefront merge `3aba592`; Sprint 2 is
 `1709226`. The additive migration is live, the local fallback flag is OFF, the exact production Cloud Build
 succeeded, `/us` preserves the research invitation, neutral activation is unavailable, and a never-issued
 partner credential preserves the generic MCP tool-result envelope.
 
-The epic remains `in-progress` because the enablement definition is absent from Golden Beans' production
-flag catalog. The available Golden connector credential is task-management-only and cannot create flag
-definitions. Register `partners.recruiting_v3_enabled` disabled through the catalog-sync rail, then Daniel
-runs the authenticated admin/application/activation/zero-grant and existing-Promotor walkthrough before any
-cohort enablement. No flag was enabled during this build.
+The epic remains `in-progress` because the enablement definition has not yet been synchronized into Golden
+Beans' production flag catalog. The available Golden connector credential is task-management-only and cannot
+create flag definitions. The owner runbook above registers `partners.recruiting_v3_enabled` without
+activation; Daniel then owns the controlled production smoke, rollback and final status decision. No flag was
+enabled during this build.
