@@ -79,6 +79,17 @@ test('agy 1.1.11 tabular model output is parsed by slug, not compared as a whole
   );
 });
 
+test('legacy bare model ids remain valid while status prose is never treated as a slug', () => {
+  assert.deepEqual(
+    parseAgyModelSlugs('gemini-3.6-flash-high\ngpt-oss-120b-medium\n'),
+    ['gemini-3.6-flash-high', 'gpt-oss-120b-medium']
+  );
+  assert.deepEqual(
+    parseAgyModelSlugs('gemini-3.6-flash-high is unavailable\nSomething went wrong\n'),
+    []
+  );
+});
+
 // ── bumpPinnedSource: anchored rewrite of the real lib shape ──────────────────────────────────────
 const LIB_SHAPE = `// prose above
 // agy-doctor: last verified 2026-07-03 against 1.0.16.

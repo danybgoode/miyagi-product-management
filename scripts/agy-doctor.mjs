@@ -92,8 +92,11 @@ export function parseAgyModelSlugs(output) {
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line && !/^fetching available models/i.test(line))
-    .map((line) => line.split(/\s+/, 1)[0])
-    .filter(Boolean);
+    // 1.1.11 rows are tab-separated. Legacy output is one complete slug per
+    // line. Never take the first whitespace word from prose: a status line
+    // such as "gemini-… is unavailable" must not prove that model is listed.
+    .map((line) => line.includes('\t') ? line.slice(0, line.indexOf('\t')).trim() : line)
+    .filter((candidate) => /^(?=.*[0-9._:/-])[a-z0-9][a-z0-9._:/-]*$/.test(candidate));
 }
 
 // ── I/O helpers (thin, injectable-free — the decision core above is what tests exercise) ─────────────
