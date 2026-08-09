@@ -51,6 +51,17 @@ test('a fallback run is attributed to agy, not to codex', () => {
   assert.match(resolveReviewModel('codex', true, { env: {} }), /agy|pair/);
 });
 
+test('a Vibe run is never attributed to the Codex model', () => {
+  assert.equal(
+    resolveReviewModel('vibe', false, { env: { CODEX_MODEL: 'gpt-5.6-sol', VIBE_ACTIVE_MODEL: 'devstral-medium' } }),
+    'devstral-medium'
+  );
+  assert.equal(
+    resolveReviewModel('vibe', false, { env: { CODEX_MODEL: 'gpt-5.6-sol' } }),
+    'vibe configured default'
+  );
+});
+
 // ---- the comment ----
 
 test('a security-lens comment is labelled as one and states its limits inline', () => {

@@ -473,8 +473,8 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // warning into that same "FAILED" line, and this suite is `scripts/lib/*.test.mjs` — running only
 // `node --test scripts/*.test.mjs` reports a clean 159/0 and hides the real failure. Run both
 // globs, exactly as .githooks/pre-commit does.
-test('AGY_PINNED bumped to the verified 1.1.10 (guards the deliberate bump)', () => {
-  assert.equal(AGY_PINNED, '1.1.10');
+test('AGY_PINNED bumped to the verified 1.1.11 (guards the deliberate bump)', () => {
+  assert.equal(AGY_PINNED, '1.1.11');
   assert.equal(typeof AGY_MODEL, 'string');
   assert.ok(AGY_MODEL.length > 0, 'AGY_MODEL must default to a non-empty model name');
   assert.ok(AGY_FALLBACK_MODEL.length > 0, 'AGY_FALLBACK_MODEL must default to a non-empty model name');
