@@ -599,6 +599,7 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 // PR diff could therefore exfiltrate an ignored .env or another host secret into the external review and its
 // posted comment. cross-review already embeds the bounded unified diff, so this invocation disables every
 // model-driven host tool instead. Its argv contract is pinned in vibe-invocation.test.mjs.
+// vibe-probe: verified 2026-08-08 against 2.23.3.
 //
 // `vibe-acp` is the WRONG entry point for this use case and is deliberately not wired: it starts a
 // JSON-RPC server that speaks the Agent Client Protocol over stdio for IDE extensions (Zed et al.). It
@@ -685,6 +686,15 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
         `\`vibe --prompt "say OK" --output text --trust\`; if that is empty too, re-authenticate. ` +
         `(An empty result is a failure, never "no findings" — see runVibe's header.)`
     );
+  // With tools disabled, Vibe can still emit a literal tool request as its
+  // final text. That is an unfinished attempt, not review findings; accepting
+  // and posting it would turn a failed pass into a confident green-looking one.
+  if (/^(?:read_file|grep|list_directory|shell|run_command|edit_file|write_file|apply_patch)\s*\{[\s\S]*\}$/.test(out)) {
+    return fail(
+      opts.soft,
+      'vibe requested a disabled tool and no review was produced — re-run the bounded diff; never count this output as a pass.'
+    );
+  }
   return out;
 }
 

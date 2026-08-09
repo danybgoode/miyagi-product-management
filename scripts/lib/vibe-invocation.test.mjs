@@ -49,3 +49,24 @@ test('turn-limit failure names our budget rather than misreporting quota', () =>
   assert.match(warned, /turns, not quota/i);
   assert.match(warned, /VIBE_MAX_TURNS/);
 });
+
+test('a disabled-tool request is not accepted as a completed review', () => {
+  const spawn = () => ({
+    status: 0,
+    stdout: 'read_file{"path":"/tmp/private-file"}',
+    stderr: '',
+  });
+  const original = process.stderr.write.bind(process.stderr);
+  let warned = '';
+  process.stderr.write = (chunk) => {
+    warned += chunk;
+    return true;
+  };
+  try {
+    assert.equal(runVibe('review this', { soft: true }, { spawn }), null);
+  } finally {
+    process.stderr.write = original;
+  }
+  assert.match(warned, /requested a disabled tool/i);
+  assert.match(warned, /no review was produced/i);
+});

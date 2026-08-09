@@ -27,6 +27,10 @@ the wrong result.
 The PR's diff is provided as context (piped on stdin or appended below). Re-derive the intent from the
 diff alone — do not assume the author's framing is correct.
 
+You have no host tools in this advisory pass. Do not request files, grep, shell, edits, or any other tool;
+the bounded diff below is the complete review context. If it is insufficient, state that as a limitation
+in the findings instead of emitting a tool call.
+
 ## Do this in a SINGLE pass
 One read, then write your findings. Do **not** iterate toward consensus or run a back-and-forth loop —
 that loop is this codebase's single largest token cost and is deliberately out of scope. The deterministic
