@@ -59,10 +59,10 @@ export const AGENT_BIN = { codex: 'codex', antigravity: 'agy', devin: 'devin', v
 // Harmless here since AGY_MODEL/AGY_FALLBACK_MODEL below are always valid, listed model names (checked via
 // `agy models`), but it means a future typo in either constant would silently review with the WRONG model
 // instead of failing loud — watch for that if either constant is ever edited.
-// agy-doctor: last verified 2026-08-06 against 1.1.10.
+// agy-doctor: last verified 2026-08-08 against 1.1.11.
 //   ^ machine-managed marker — `node scripts/agy-doctor.mjs --fix` rewrites it (with the constant
 //   below) after a green live contract probe. Don't hand-edit the marker's shape.
-export const AGY_PINNED = '1.1.10';
+export const AGY_PINNED = '1.1.11';
 
 // agy's `--print` mode prints NOTHING unless `--model` names a model — and, crucially, it ALSO prints
 // nothing (exit 0, empty stdout — the error lands only in agy's log, see --log-file) when the model is
@@ -593,18 +593,13 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 //                  so an untrusted directory would otherwise stall or refuse. `--trust` grants trust for
 //                  this invocation only (it does not write ~/.vibe/trusted_folders.toml).
 //
-// ⚠ CONTRACT NOT YET PROBED AGAINST A LIVE BINARY. Everything above comes from Mistral's published CLI
-// docs, not from a run on this machine — and this repo's own rule is that a roster is PROBED, never
-// assumed (a CLI that self-reports a capability it does not have has burned us before; see the agy
-// version pin above, where a silent `--print` contract change shipped empty reviews for weeks). Before
-// relying on vibe in a real review, run the probe once and record the result here:
-//
-//   node scripts/cross-review.mjs <PR#> --agent vibe --dry-run
-//
-// A green probe prints real findings. An EMPTY result is a FAILURE, not a pass — see runVibe below, which
-// treats empty stdout as an error exactly like the agy path does, for the same reason (a quota-capped or
-// misconfigured CLI can exit 0 with nothing).
-// vibe-probe: NOT YET VERIFIED — replace this line with `vibe-probe: verified <date> against <version>`.
+// Golden Beans' 2026-08-07 probe added auto-approved `read_file`/`grep` so the reviewer could inspect
+// surrounding code. We deliberately do not copy that part: Vibe 2.23.3 checks auto-approval before its
+// sensitive-file and outside-workdir prompts, and both tools can read arbitrary absolute paths. A malicious
+// PR diff could therefore exfiltrate an ignored .env or another host secret into the external review and its
+// posted comment. cross-review already embeds the bounded unified diff, so this invocation disables every
+// model-driven host tool instead. Its argv contract is pinned in vibe-invocation.test.mjs.
+// vibe-probe: verified 2026-08-08 against 2.23.3.
 //
 // `vibe-acp` is the WRONG entry point for this use case and is deliberately not wired: it starts a
 // JSON-RPC server that speaks the Agent Client Protocol over stdio for IDE extensions (Zed et al.). It
@@ -612,7 +607,10 @@ export function runDevin(prompt, opts = {}, deps = {}) {
 // client to get a single review out of it. `vibe --prompt` is the scripting/CI path, and it is the one
 // Mistral documents for exactly this.
 export const VIBE_ARG_LIMIT = 256 * 1024;
-export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '4';
+// Four turns was a truncation generator once denied reads consumed the budget. Golden Beans moved to 12;
+// the first live review in this repo still hit that ceiling after productive reads, so 24 is the next
+// bounded floor. The agent can stop before it, and VIBE_MAX_TURNS remains an explicit operator override.
+export const VIBE_MAX_TURNS = process.env.VIBE_MAX_TURNS || '24';
 // Optional: pin a model with `VIBE_MODEL`. Left unset by default so vibe uses the account's configured
 // default — unlike agy, an unset model here is not known to blank the output.
 export const VIBE_MODEL = process.env.VIBE_MODEL || null;
@@ -633,8 +631,9 @@ export const CLAUDE_REVIEW_MODEL = process.env.CLAUDE_REVIEW_MODEL || 'sonnet';
 
 // One `vibe --prompt "<prompt+context>" --agent plan --output text` invocation. Like agy, vibe takes the
 // whole thing as an argv string, so the same size cap applies (and for the same reason: a clear message
-// beats an opaque E2BIG). `--agent plan` is NOT optional — see the header block: programmatic mode
-// otherwise defaults to `auto-approve`, and an advisory reviewer must not be able to write.
+// beats an opaque E2BIG). `--agent plan` is NOT optional. `--disabled-tools '*'` is equally non-optional:
+// plan mode describes intended behavior, while the tool filter enforces that an injected diff cannot read
+// host files, shell out or mutate anything. All review context is already embedded in `fullArgv`.
 //
 // Empty stdout is treated as a FAILURE, not as "no findings". Every CLI on this roster can exit 0 having
 // produced nothing when it is quota-capped or misconfigured, and a review that silently becomes empty is
@@ -649,7 +648,19 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
     );
   }
 
-  const args = ['--prompt', fullArgv, '--agent', 'plan', '--output', 'text', '--max-turns', String(VIBE_MAX_TURNS), '--trust'];
+  const args = [
+    '--prompt',
+    fullArgv,
+    '--agent',
+    'plan',
+    '--output',
+    'text',
+    '--max-turns',
+    String(VIBE_MAX_TURNS),
+    '--trust',
+    '--disabled-tools',
+    '*',
+  ];
   if (VIBE_MODEL) args.push('--model', VIBE_MODEL);
 
   const r = spawn('vibe', args, { input: '', encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -659,7 +670,13 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
       `vibe not found or failed to spawn (${r.error.message}) — install the Mistral Vibe CLI ` +
         `(\`uv tool install mistral-vibe\`) and authenticate it, or use --agent codex/antigravity.`
     );
-  if (r.status !== 0) return fail(opts.soft, `vibe --prompt failed: ${lastLine(r.stderr)}`);
+  if (r.status !== 0) {
+    const detail = lastLine(r.stderr) || lastLine(r.stdout);
+    const hint = /turn limit/i.test(`${r.stderr || ''}${r.stdout || ''}`)
+      ? ` — the agent ran out of turns, not quota. Raise VIBE_MAX_TURNS (currently ${VIBE_MAX_TURNS}) and re-run.`
+      : '';
+    return fail(opts.soft, `vibe --prompt failed: ${detail}${hint}`);
+  }
 
   const out = (r.stdout || '').trim();
   if (!out)
@@ -669,6 +686,15 @@ export function runVibe(fullArgv, opts = {}, deps = {}) {
         `\`vibe --prompt "say OK" --output text --trust\`; if that is empty too, re-authenticate. ` +
         `(An empty result is a failure, never "no findings" — see runVibe's header.)`
     );
+  // With tools disabled, Vibe can still emit a literal tool request as its
+  // final text. That is an unfinished attempt, not review findings; accepting
+  // and posting it would turn a failed pass into a confident green-looking one.
+  if (/^(?:read_file|grep|list_directory|shell|run_command|edit_file|write_file|apply_patch)\s*\{[\s\S]*\}$/.test(out)) {
+    return fail(
+      opts.soft,
+      'vibe requested a disabled tool and no review was produced — re-run the bounded diff; never count this output as a pass.'
+    );
+  }
   return out;
 }
 

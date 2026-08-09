@@ -198,13 +198,14 @@ function runReview(agent, prompt, diff) {
   die(`unknown --agent '${agent}'; use ${Object.keys(AGENTS).join('|')}`);
 }
 
-// Reads the model that codex would actually use: CODEX_MODEL if set, else the `model = "..."` line in
-// ~/.codex/config.toml. Returns null when it cannot be determined — the caller prints "unrecorded"
-// rather than a plausible-looking guess, because a wrong attribution is worse than a missing one.
+// Records the selected reviewer's model without leaking one CLI's configuration into another's label.
+// Codex reads its local config; Vibe exposes an active-model env override but otherwise owns its default.
+// Returns null when Codex cannot be determined — a missing attribution is safer than a false one.
 export function resolveReviewModel(agent, fellBack, deps = {}) {
   const { env = process.env, readCfg = defaultReadCodexConfig } = deps;
   if (fellBack || agent === 'antigravity') return env.AGY_MODEL || 'agy default pair';
   if (agent === 'devin') return 'devin default';
+  if (agent === 'vibe') return env.VIBE_MODEL || env.VIBE_ACTIVE_MODEL || 'vibe configured default';
   if (env.CODEX_MODEL) return env.CODEX_MODEL;
   const cfg = readCfg();
   const m = cfg && /^\s*model\s*=\s*"([^"]+)"/m.exec(cfg);

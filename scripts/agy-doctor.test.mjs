@@ -11,7 +11,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decideDoctorAction, bumpPinnedSource } from './agy-doctor.mjs';
+import { decideDoctorAction, bumpPinnedSource, parseAgyModelSlugs } from './agy-doctor.mjs';
 
 const base = {
   installed: '1.0.16',
@@ -70,6 +70,28 @@ test('model-drift: a missing pinned model is reported, outranked only by a broke
   // …and a version bump must NOT be blessed while a model is missing:
   const d = decideDoctorAction({ ...base, installed: '1.0.19', primaryListed: false });
   assert.notEqual(d.action, 'bump');
+});
+
+test('agy 1.1.11 tabular model output is parsed by slug, not compared as a whole display row', () => {
+  assert.deepEqual(
+    parseAgyModelSlugs('Fetching available models...\ngemini-3.6-flash-high\tGemini 3.6 Flash (High)\ngpt-oss-120b-medium\tGPT-OSS 120B (Medium)\n'),
+    ['gemini-3.6-flash-high', 'gpt-oss-120b-medium']
+  );
+});
+
+test('a tabular row may carry an alphabetic-only slug because the tab proves its structure', () => {
+  assert.deepEqual(parseAgyModelSlugs('mistral\tMistral Base\n'), ['mistral']);
+});
+
+test('legacy bare model ids remain valid while status prose is never treated as a slug', () => {
+  assert.deepEqual(
+    parseAgyModelSlugs('gemini-3.6-flash-high\ngpt-oss-120b-medium\n'),
+    ['gemini-3.6-flash-high', 'gpt-oss-120b-medium']
+  );
+  assert.deepEqual(
+    parseAgyModelSlugs('gemini-3.6-flash-high is unavailable\nSomething went wrong\n'),
+    []
+  );
 });
 
 // ── bumpPinnedSource: anchored rewrite of the real lib shape ──────────────────────────────────────
