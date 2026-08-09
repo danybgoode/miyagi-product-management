@@ -47,9 +47,10 @@ These sharpen existing `Roadmap/LEARNINGS.md` entries rather than creating paral
 
 ## Gaps / follow-ups
 
-- **Golden catalog definition:** `partners.recruiting_v3_enabled` is absent from the production flag catalog.
-  The available project connector key can move tasks only. A catalog-sync key/rail must register the
-  definition disabled before this epic can flip to `shipped`.
+- **Golden catalog definition resolved:** the owner-visible project is `miyagisanchez`, not the stale
+  `miyagi` project named in Golden's old live-proof note. A dedicated catalog-sync credential created
+  `partners.recruiting_v3_enabled` version 1 and the immediate targeted rerun returned unchanged. The draft
+  is default-OFF and inactive; the owner must revoke the temporary credential after inspection.
 - **Owed to Daniel:** with the definition still OFF, run one disposable founding-operator application,
   admin review/approve or recoverable resend, wrong-email denial, verified-email activation, replay denial
   and zero-grant workspace walkthrough; then repeat the existing Promotor application/code/close/workspace

@@ -286,53 +286,36 @@ operator-versus-Promotor authorization matrix and walkthrough are green.
 - [x] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
 - [x] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.
 - [x] Existing Promotor application, approval, code, economics, close, grant and workspace behavior remains.
-- [ ] `partners.recruiting_v3_enabled` exists disabled in every environment, then is enabled only after Daniel's smoke.
+- [x] `partners.recruiting_v3_enabled` version 1 exists as an inactive, default-OFF Golden definition.
+- [ ] Daniel completes the controlled production smoke before any rollout enablement decision.
 - [x] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
 - [x] `RETROSPECTIVE.md`, product poster and any genuinely durable learning are updated for closeout.
 - [ ] Feature branches deleted and `node scripts/build-order.mjs` regenerated after status flips to `shipped`.
 
-## Owner runbook — register the Golden definition disabled
+## Golden registration record — 2026-08-09
 
-This is definition registration only; it must not activate the flag or change a serving snapshot.
+The current owner surface exposes `/app/flags/miyagisanchez`; no owner-visible `miyagi` project exists. The
+older Golden live-proof note calling `miyagi` live and `miyagisanchez` dormant is therefore treated as stale,
+not as authority for a new credential.
 
-1. Sign in to Golden Beans and open `/app/flags/miyagi`. `miyagi` is the live runtime project;
-   `miyagisanchez` is a dormant duplicate, and `/app/agent-keys/*` creates task-connector credentials rather
-   than flag-catalog credentials.
-2. Under **Mint a catalog sync key**, set publisher source to `frontend`, use a specific operator label such
-   as `miyagi-frontend-recruiting-v3`, and mint the 30-day key. Copy it once and keep it out of shell history,
-   chat and repository files.
-3. From a clean checkout of storefront `main` at or after `1709226`, install the locked dependencies and set
-   the non-secret endpoint:
+The owner minted a dedicated 30-day `frontend` catalog-sync credential on `miyagisanchez`. From a clean
+storefront checkout at `1709226`, the whole 41-definition publisher correctly stopped on HTTP `409`: an
+existing immutable definition elsewhere in that catalog differs, so no union mutation or retry was allowed.
+The orchestrator then narrowed the same reviewed typed publisher to only
+`partners.recruiting_v3_enabled`. Golden returned:
 
-   ```bash
-   npm ci
-   export GROWTH_ENGINE_URL=https://golden-beans-gamma.vercel.app
-   ```
+```text
+[flags:sync] partners.recruiting_v3_enabled v1 created
+[flags:sync] partners.recruiting_v3_enabled v1 unchanged
+```
 
-4. Read the credential without putting it in command history, publish the existing typed catalog twice, and
-   remove it from the shell environment:
-
-   ```bash
-   printf 'Paste the catalog sync key: ' >&2
-   IFS= read -r -s GOLDEN_BEANS_FLAG_SYNC_KEY
-   printf '\n' >&2
-   export GOLDEN_BEANS_FLAG_SYNC_KEY
-   npm run flags:sync
-   npm run flags:sync
-   unset GOLDEN_BEANS_FLAG_SYNC_KEY
-   ```
-
-   With the production catalog still at the audited 40-definition frontend baseline, the first run should
-   report `41 definitions (1 created, 40 unchanged)` and the second must report
-   `41 definitions (0 created, 41 unchanged)`. A `409` means an existing immutable definition differs; stop
-   and inspect it rather than creating or activating another version.
-5. Refresh `/app/flags/miyagi` and inspect `partners.recruiting_v3_enabled` version 1: boolean, default
-   variant `off`, variants `off=false` and `on=true`, no rules, and metadata `source=miyagi`,
-   `polarity=enablement`, `criticality=high`, `enforcement=frontend`. Every environment must say
-   **not active**; do not click **Activate** as part of registration.
-6. Revoke the temporary catalog sync key after the idempotent run and UI verification. Record no plaintext
-   credential. Step 1 is then complete; the separately authorized production smoke owns any controlled
-   activation and rollback.
+The sync route can only create or no-op immutable drafts; it cannot activate a version or change a serving
+snapshot. Version 1 therefore remains inactive with boolean variants `off=false` and `on=true`, default
+variant `off`, no rules, and metadata `source=miyagi`, `polarity=enablement`, `criticality=high`,
+`enforcement=frontend`. Here `source=miyagi` names the publishing service; it is definition metadata, not the
+Golden project slug. The temporary credential must be revoked in the owner UI after inspection. Daniel's
+production smoke is the remaining proof that the storefront's deployed read credential resolves this same
+project; no rollout claim is made before that smoke.
 
 ## Closeout state — 2026-08-09
 
@@ -341,8 +324,7 @@ The product code is merged and deployed dark: Sprint 1 is storefront merge `3aba
 succeeded, `/us` preserves the research invitation, neutral activation is unavailable, and a never-issued
 partner credential preserves the generic MCP tool-result envelope.
 
-The epic remains `in-progress` because the enablement definition has not yet been synchronized into Golden
-Beans' production flag catalog. The available Golden connector credential is task-management-only and cannot
-create flag definitions. The owner runbook above registers `partners.recruiting_v3_enabled` without
-activation; Daniel then owns the controlled production smoke, rollback and final status decision. No flag was
-enabled during this build.
+The enablement definition is now registered dark in the current owner catalog, `miyagisanchez`, with an
+idempotent second result. The epic remains `in-progress` because Daniel still owns the controlled production
+smoke, confirmation that the deployed read credential resolves that same catalog, rollback and the final
+status decision. No flag was enabled during this registration.
