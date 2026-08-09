@@ -313,7 +313,9 @@ This is definition registration only; it must not activate the flag or change a 
    remove it from the shell environment:
 
    ```bash
-   read -r -s 'GOLDEN_BEANS_FLAG_SYNC_KEY?Paste the catalog sync key: '
+   printf 'Paste the catalog sync key: ' >&2
+   IFS= read -r -s GOLDEN_BEANS_FLAG_SYNC_KEY
+   printf '\n' >&2
    export GOLDEN_BEANS_FLAG_SYNC_KEY
    npm run flags:sync
    npm run flags:sync
