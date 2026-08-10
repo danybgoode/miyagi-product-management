@@ -1,6 +1,7 @@
 # Miyagi Partners proposition and recruiting portal v3 — Retrospective
 
-_Closed: 2026-08-09_ Product build retrospective; epic status remains in progress pending owner smoke and deployed read-key binding proof.
+_Closed: 2026-08-10_ Product build retrospective updated with live-read proof; epic status remains in
+progress only for the authenticated operator and Promotor production walkthrough.
 
 ## What shipped
 
@@ -12,11 +13,19 @@ PR [#343](https://github.com/danybgoode/miyagisanchezcommerce/pull/343) (`170922
 operator approval, truthful provider-outcome recording, audited token rotation, verified-email activation,
 the single Clerk-binding writer and a bilingual, grant-derived `/partner` workspace.
 
+Storefront PR [#350](https://github.com/danybgoode/miyagisanchezcommerce/pull/350) (`5d4df0c`)
+then repaired the runtime binding without disturbing the established flag catalog: only
+`partners.recruiting_v3_enabled` uses the owner-visible `miyagisanchez` credential, while every other flag
+continues through the primary provider and the project-relative scoped snapshot stays out of the shared
+durable mirror.
+
 The migration was applied and verified live without changing the population: zero applications, two
 historical Promotor identities and zero grants. Both merge commits deployed successfully through Cloud Build
-to Cloud Run. Production stayed dark: `/us` rendered the prior research invitation, neutral activation
-returned 404, and a never-issued partner credential returned the established generic `Unauthorized` MCP
-tool result. No operator, shop grant, merchant consent or flag enablement was created during smoke testing.
+to Cloud Run. The first production smoke deliberately stayed dark and proved the prior invitation, neutral
+activation 404 and generic `Unauthorized` MCP denial still held. After the scoped binding deployed and Golden
+version 2 became the production default-ON definition at snapshot 4, a real Chromium smoke rendered the full
+`/us` application at HTTP 200 with zero console errors. No operator, shop grant or merchant consent was
+created during smoke testing.
 
 ## What went well
 
@@ -47,14 +56,13 @@ These sharpen existing `Roadmap/LEARNINGS.md` entries rather than creating paral
 
 ## Gaps / follow-ups
 
-- **Golden catalog definition resolved:** the owner-visible project is `miyagisanchez`, not the stale
-  `miyagi` project named in Golden's old live-proof note. A dedicated catalog-sync credential created
-  `partners.recruiting_v3_enabled` version 1 and the immediate targeted rerun returned unchanged. The draft
-  is default-OFF and inactive; the owner must revoke the temporary credential after inspection.
-- **Owed to Daniel:** with the definition still OFF, run one disposable founding-operator application,
+- **Golden runtime binding resolved:** production snapshot 4 now serves `partners.recruiting_v3_enabled`
+  version 2, default-ON, from the owner-visible `miyagisanchez` project. Version 1 remains the default-OFF
+  rollback, and the legacy primary provider still serves its existing 43 active decisions unchanged.
+- **Owed to Daniel:** with public recruiting now ON, run one disposable founding-operator application,
   admin review/approve or recoverable resend, wrong-email denial, verified-email activation, replay denial
   and zero-grant workspace walkthrough; then repeat the existing Promotor application/code/close/workspace
-  path. Only after those pass may a disposable cohort be enabled.
+  path. Only after those pass may the epic move from `in-progress` to `shipped`.
 - **Still out of scope:** merchant consent, shop creation/grants, US catalog, checkout, tax, shipping,
   operator economics and the `#US-3` commerce proof.
 - Root tooling PR [#123](https://github.com/danybgoode/miyagi-product-management/pull/123) merged as
