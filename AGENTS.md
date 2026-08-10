@@ -24,7 +24,11 @@ there is a different repo, a different branch, and a different PR.
 ## Start here
 
 - **`Roadmap/WAYS-OF-WORKING.md`** — the cadence, gitflow, Definition of Done, the review stack, the
-  prose rail, and the epic-mode SOP. This is the process contract; follow it.
+  prose rail, and the epic-mode SOP. This is the process contract; follow it. **Read its
+  *Operating posture* section first** — the platform is pre-launch with one user, so we build the
+  **final product** (no pilots, cohorts, proof phases or readiness gates unless asked), **add no new
+  feature flags unless the product owner asks**, and review is the deterministic gate plus **one**
+  cross-family pass on money-path PRs only. Builders merge their own PRs.
 - **`Roadmap/LEARNINGS.md`** — distilled wisdom from every past epic. Read it. It is how a retro
   reaches you instead of dying in its folder.
 - **`Roadmap/README.md`** — the product poster: every feature by domain, current status.

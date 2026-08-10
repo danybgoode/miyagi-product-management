@@ -1,7 +1,7 @@
 ---
 title: "US operator commerce pilot — three original-product shops"
 slug: us-operator-commerce-pilot
-status: scaffolded
+status: archived
 area: "07"
 type: feature
 priority: wave-1
@@ -14,6 +14,10 @@ updated: 2026-08-03
 ---
 
 # Pitch — US operator commerce pilot: three original-product shops
+
+> **⚠️ ARCHIVED 2026-08-10.** Its epic is archived; `/us` is built once as a finished marketplace by
+> `Roadmap/07-agentic-and-federated-commerce/us-marketplace/`. The USD direct-charge, tax and US
+> carrier research here is cited by the replacement epic; the three-shop cohort framing is dropped.
 
 ## The ask
 

@@ -1,7 +1,7 @@
 ---
 title: "US curated marketplace — original independent sellers"
 slug: us-curated-marketplace
-status: ready
+status: archived
 area: "01"
 type: feature
 priority: wave-3
@@ -14,6 +14,16 @@ updated: 2026-08-04
 ---
 
 # Pitch — US curated marketplace: original independent sellers
+
+> **⚠️ ARCHIVED 2026-08-10 — superseded by the `us-marketplace` epic
+> (`Roadmap/07-agentic-and-federated-commerce/us-marketplace/`).**
+>
+> This pitch shaped `/us` as a *curated* marketplace: a human dual-admission gate (shop, then listing),
+> an appeal and revalidation workflow, and a go-live threshold of 15 approved shops and 150 approved
+> listings. The product owner's decision on 2026-08-10 is that `/us` mirrors `/mx` — **any merchant may
+> open a shop**, exactly as in Mexico, with no admission review and no readiness gate. The replacement
+> epic keeps this document's genuinely durable parts (the reuse map, the market/channel separation, the
+> INFORM Consumers Act and marketplace-facilitator research) and drops the admission system entirely.
 
 ## The ask
 

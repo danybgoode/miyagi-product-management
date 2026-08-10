@@ -1,7 +1,7 @@
 ---
 title: "US owned-shop positioning and proof launch"
 slug: us-proof-launch
-status: scaffolded
+status: archived
 area: "08"
 type: feature
 priority: wave-2
@@ -14,6 +14,9 @@ updated: 2026-08-03
 ---
 
 # Pitch — US owned-shop positioning and proof launch
+
+> **⚠️ ARCHIVED 2026-08-10.** Its epic is archived. There is no pilot to publish a proof of; `/us`
+> ships as the finished marketplace. See `Roadmap/07-agentic-and-federated-commerce/us-marketplace/`.
 
 ## The ask
 

@@ -1,11 +1,19 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: archived   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: us-proof-launch
 ---
 
 # Epic: US owned-shop positioning and proof launch
 
 > **Area:** 08 · Growth & Promotions · **Risk:** low · **Class:** Feature · **Archetype:** Grower · **Appetite:** S · **Scope seed:** [`00-ideas/seeds/us-proof-launch.md`](../../00-ideas/seeds/us-proof-launch.md)
+
+> **⚠️ ARCHIVED 2026-08-10 — superseded by [`07-agentic-and-federated-commerce/us-marketplace`](../../07-agentic-and-federated-commerce/us-marketplace/README.md).**
+>
+> This epic was a rung on the `#US-2` → `#US-5` validation ladder: prove something, publish the proof,
+> then earn the right to build the real thing. The product owner ended that sequence — the platform is
+> pre-launch with a single user, so there is nothing to validate against and no audience for a proof.
+> `/us` is now built once, as the finished marketplace. Nothing here is scheduled. Kept as history:
+> its reuse map and its provider/legal research remain accurate and are cited by the replacement epic.
 
 ## Why
 

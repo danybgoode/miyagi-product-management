@@ -1,13 +1,19 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: archived   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: us-operator-commerce-pilot
 ---
 
 # Epic: US operator commerce pilot — three original-product shops
 
-> **Area:** 07 · Agentic & Federated Commerce · **Risk:** high · **Class:** Feature ·
-> **Archetype:** Grower · **Appetite:** M · **Scope seed:**
-> [`00-ideas/seeds/us-operator-commerce-pilot.md`](../../00-ideas/seeds/us-operator-commerce-pilot.md)
+> **Area:** 07 · Agentic & Federated Commerce · **Risk:** high · **Class:** Feature · **Archetype:** Grower · **Appetite:** M · **Scope seed:** [`00-ideas/seeds/us-operator-commerce-pilot.md`](../../00-ideas/seeds/us-operator-commerce-pilot.md)
+
+> **⚠️ ARCHIVED 2026-08-10 — superseded by [`07-agentic-and-federated-commerce/us-marketplace`](../../07-agentic-and-federated-commerce/us-marketplace/README.md).**
+>
+> This epic was a rung on the `#US-2` → `#US-5` validation ladder: prove something, publish the proof,
+> then earn the right to build the real thing. The product owner ended that sequence — the platform is
+> pre-launch with a single user, so there is nothing to validate against and no audience for a proof.
+> `/us` is now built once, as the finished marketplace. Nothing here is scheduled. Kept as history:
+> its reuse map and its provider/legal research remain accurate and are cited by the replacement epic.
 
 ## Why
 
@@ -208,7 +214,7 @@ Paste this into **one long-running build task**; do not emit or use separate per
 > update the poster/team memory/LEARNINGS only with verified durable facts, flip this README's status to
 > `shipped`, regenerate `BUILD-ORDER.md` and delete the stacked branches.
 
-## Definition of Done
+## Definition of Done (epic)
 
 - [ ] Epic-mode architect documented live-verified `D1…Dn` and per-sprint build contracts before delegation.
 - [ ] Sprint 1 literal cohort/funds-tax/dispatch contract accepted by Daniel; failed premises stop the epic.
