@@ -10,13 +10,21 @@ uses for Mexico. This is last because it is the only piece with an external depe
 provider choice and a funding decision. `/us` is a complete marketplace without it; this makes shipping
 as good as Mexico's.
 
-## Build contract
+## Build contract — **BLOCKED at external evidence gate**
 
-Filled by the architect. It must record real US origin ZIPs and parcel dimensions, the sandbox evidence
-that decided the provider, the account and funding model, and the exact Medusa fulfillment-provider
-interface being implemented. **Pick one provider in this sprint and delete the other from build scope**
-— the archived `#US-3` research named EasyPost primary and Shippo fallback, but that evidence is a
-starting point, not a decision.
+Implement D18 only after Daniel supplies the missing provider inputs. Neither EasyPost nor Shippo is
+supported by `projects.dev` or present in either app; no account, origin ZIP, parcel or funding model is
+available. Envía cannot be copied as proof: its Medusa adapter has no calculated price, real cancel,
+return, preview or idempotent confirm, and the current spend route buys before durable audit state.
+
+Before a builder starts, replace this paragraph with: the one selected provider (delete the other from
+scope), account custody/funding, real origin + representative destination/parcel, recorded sandbox quote,
+preview/purchase/idempotency/reconcile/void/refund/tracking/cost evidence, webhook verification, and the
+exact Medusa adapter. The implementation is an injected provider client under a generic carrier contract;
+quote is read-only; preview never spends; confirm claims a durable unique operation and audit entry before
+provider I/O; ambiguous results reconcile by reference; UI and agent tools call the same command; outage or
+unfunded state returns structured fallback to S4. Permit a small carrier-operation migration if native
+Medusa primitives cannot prove durable uniqueness.
 
 ## Stories
 

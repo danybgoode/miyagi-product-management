@@ -12,9 +12,17 @@ than pretending to work.
 
 ## Build contract
 
-Filled by the architect. It must state exactly which files carry the `invitation` → `active` flip (both
-repos' `markets.ts` plus both golden specs, one commit) and confirm the live US resources from Sprint 1
-resolve in every environment before the flip lands.
+Implement D1, D8 and D12–D13. The status flip is exactly frontend `lib/markets.ts` +
+`e2e/markets-registry.spec.ts` and backend `src/lib/markets.ts` +
+`src/lib/__tests__/markets.unit.spec.ts`, coordinated so neither deploy observes a mixed registry. Before
+merge, authenticated diagnostics must prove the S1 Region, both channels, operating-only key, stock
+location and fulfillment graph resolve in staging and production; otherwise the flip stops.
+
+Keep the existing shared catalog/page implementations and add literal `/us` adapters matching the MX
+population; do not rewrite working adapters into a dynamic tree. Extract a shared market home and retire
+only `/us`'s recruiting ownership, preserving `/partner`. Carry named unavailable state to UI/agents,
+require a positive USD product price, add `/us/l` to sitemap, and fix UCP/MCP locale/manifest vocabulary.
+Until S4 is live, the permanent commerce-readiness result suppresses `buy_now` with an honest reason.
 
 ## Stories
 
@@ -36,11 +44,11 @@ returns a named unavailable state, never an MX fallback and never a silent empty
 **As a** buyer in either country, **I want** `/us/l`, `/us/l/<id>` and `/us/s/<slug>` to work exactly as
 their Mexico equivalents do **so that** there is one marketplace, not two codebases.
 
-**Acceptance:** The `(shell)/mx` route tree is parameterized by market segment; one tree serves both.
-Every existing Mexico URL resolves unchanged — same paths, same rendering, same metadata — proven by
-regression specs. A Mexico product id under `/us/l/<mx-id>` is a 404 or a named unavailable, never the
-Mexico product. Shop sub-routes (`/acerca`, `/faq`, `/politicas`, `/c`) come along. No second design
-system, no US-only components, no duplicated route tree.
+**Acceptance:** Literal MX and US adapters call the same shared listing, product and shop
+implementations with explicit market context. Every existing Mexico URL resolves unchanged — same paths,
+rendering and metadata — proven by regression specs. A Mexico product id under `/us/l/<mx-id>` is a 404
+or named unavailable, never the Mexico product. Shop sub-routes (`/acerca`, `/faq`, `/politicas`, `/c`)
+come along. No second design system and no duplicated page implementation.
 
 **Risk:** low
 
