@@ -21,9 +21,9 @@ IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/backend:${TAG}
 STORE_CORS="${STORE_CORS:-https://miyagisanchez.com,https://www.miyagisanchez.com}"
 # ADMIN_CORS lists the origins Medusa accepts admin-dashboard requests from. Live medusa-web
 # includes api.miyagisanchez.com (the admin SPA's own serving origin, /app). This default
-# previously OMITTED it — and because the deploy uses --set-env-vars (replace, not merge), a
-# re-run would reset live ADMIN_CORS to the default and DROP that origin, diverging from the
-# known-good live config. S3 corrected the default to match live. (Same-origin requests don't
+# previously OMITTED it. Deploys now use merge-style --update-env-vars, but keeping the
+# checked-in default correct still matters when this script updates ADMIN_CORS explicitly.
+# S3 corrected the default to match live. (Same-origin requests don't
 # strictly need CORS, but Medusa still validates the Origin header against adminCors — so the
 # live list, not CORS theory, is the source of truth.) The two storefront origins are likely
 # vestigial (storefront uses STORE_CORS); kept for now, flagged to Daniel for a tightening
@@ -51,19 +51,22 @@ echo "▶ Deploying ${SERVICE_WEB}…"
 #   liveness: 3 × 30s of failed /health (~90s) recycles a hung-but-listening instance;
 #             generous on purpose so transient blips don't kill healthy instances.
 #
-# Env/secret parity (Backend Production Readiness S4, Story 4.2 — reconcile to live
-# medusa-web, see tasks/backend-recovery-runbook.md §5). Because CI is image-only it
-# never re-applies the full config, so this script had silently drifted from live and a
-# full re-run would ERROR. Reconciled 2026-06-12 against the live describe:
+# Env/secret safety (Backend Production Readiness S4 + US marketplace D5). CI is
+# image-only, while operations add environment-owned values between script edits. A
+# 2026-08-10 audit found live values absent from this file (including the MX operating
+# channel and growth integrations), so replace-all flags would delete known-good
+# configuration whenever this script was re-run. Use merge-style flags: the names below
+# are the minimum this script owns, while unrelated live values survive.
+# The 2026-06-12 reconcile established these required bindings:
 #   • ENVIA_SANDBOX is a PLAIN env var live ('false') — it was wrongly bound as a
 #     secret here (and no ENVIA_SANDBOX secret shell exists → a full run failed
-#     "secret not found"). Moved to --set-env-vars.
-#   • Added the secrets live binds that the script omitted (would have been DROPPED
-#     by --set-secrets' replace semantics): MP_CLIENT_ID, MP_CLIENT_SECRET.
+#     "secret not found"). Moved to the plain `--update-env-vars` set.
+#   • Added MP_CLIENT_ID and MP_CLIENT_SECRET to the script-owned secret minimum.
 #     (FLAGSMITH_ENVIRONMENT_KEY was bound here until the in-house feature-flags epic,
 #     Sprint 3, retired the Flagsmith dependency — flags now read from the owned
 #     Supabase platform_flags table via SUPABASE_URL/SERVICE_ROLE_KEY.)
-# Net: prod env + secrets ≡ live. The drift guard (infra/gcp/test/) locks this in.
+# Net: the script updates its required subset without claiming that a checked-in list is
+# deployed truth. The guard (infra/gcp/test/) locks merge semantics + the owned minimum.
 #   • SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY added 2026-06-22 (marketplace-static-shell
 #     S3): the GCP-hosted GET /store/home/personalization read endpoint reads the frontend's
 #     Supabase (favorites/offers) READ-ONLY. Provision the two secret shells + grant the
@@ -91,8 +94,8 @@ gcloud run deploy "$SERVICE_WEB" \
   --startup-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=10,failureThreshold=24" \
   --liveness-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=30,failureThreshold=3" \
   --allow-unauthenticated \
-  --set-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@MEDUSA_BACKEND_URL=${BACKEND_URL}@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID:-sc_01KSK1J0V81P4EPY9G0JAPX353}@ENVIA_SANDBOX=${ENVIA_SANDBOX:-false}@ML_APP_ID=${ML_APP_ID:-5089915168138245}@ML_REDIRECT_URI=${ML_REDIRECT_URI:-https://miyagisanchez.com/api/sell/ml/callback}" \
-  --set-secrets="DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET:latest,ENVIA_API_KEY=ENVIA_API_KEY:latest,MP_CLIENT_ID=MP_CLIENT_ID:latest,MP_CLIENT_SECRET=MP_CLIENT_SECRET:latest,SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ML_APP_SECRET=ML_APP_SECRET:latest,ML_TOKEN_ENCRYPTION_KEY=ML_TOKEN_ENCRYPTION_KEY:latest"
+  --update-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@MEDUSA_BACKEND_URL=${BACKEND_URL}@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID:-sc_01KSK1J0V81P4EPY9G0JAPX353}@ENVIA_SANDBOX=${ENVIA_SANDBOX:-false}@ML_APP_ID=${ML_APP_ID:-5089915168138245}@ML_REDIRECT_URI=${ML_REDIRECT_URI:-https://miyagisanchez.com/api/sell/ml/callback}" \
+  --update-secrets="DATABASE_URL=DATABASE_URL:latest,REDIS_URL=REDIS_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET:latest,ENVIA_API_KEY=ENVIA_API_KEY:latest,MP_CLIENT_ID=MP_CLIENT_ID:latest,MP_CLIENT_SECRET=MP_CLIENT_SECRET:latest,SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ML_APP_SECRET=ML_APP_SECRET:latest,ML_TOKEN_ENCRYPTION_KEY=ML_TOKEN_ENCRYPTION_KEY:latest"
 
 echo "▶ Service URL:"
 gcloud run services describe "$SERVICE_WEB" --region="$REGION" --format='value(status.url)'

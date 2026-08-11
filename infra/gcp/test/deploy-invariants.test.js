@@ -10,10 +10,10 @@
 //   • a liveness probe on /health exists                                     [S3]
 //   • the probe flags stay byte-identical between prod + staging scripts     [S3]
 //   • deploy.sh ADMIN_CORS default still carries the admin's own origin      [S3]
-//   • each script's --set-env-vars / --set-secrets name set === the live     [S4]
-//     Cloud Run config it deploys (captured 2026-06-12 from `gcloud run
-//     services describe`). This is what stops the §5 drift from recurring —
-//     a full `deploy.sh` re-run had silently diverged from live and would error.
+//   • deploys use merge-style --update-env-vars / --update-secrets, never     [S4]
+//     replace-all flags. The required checked-in subset stays present while
+//     environment-owned live values survive a re-run. This is what stops the
+//     §5 drift from recurring without pretending a static file is deployed truth.
 //
 // Pure fs read, zero deps. Run: `node --test infra/gcp/test/`
 // Mirrors the apps/backend/infra/gcp/cicd-telegram-notifier/test/ node:test pattern.
@@ -36,23 +36,23 @@ function flagValue(src, flag) {
   return m[1]
 }
 
-// Container env NAMEs from --set-env-vars. gcloud's "^@^" prefix sets "@" as the
+// Container env NAMEs from --update-env-vars. gcloud's "^@^" prefix sets "@" as the
 // delimiter; tokens are NAME=VALUE → take NAME.
 function envNames(src) {
-  let v = flagValue(src, 'set-env-vars')
+  let v = flagValue(src, 'update-env-vars')
   const delim = v.match(/^\^(.)\^/)
-  assert.ok(delim, 'expected a ^<delim>^ prefix on --set-env-vars')
+  assert.ok(delim, 'expected a ^<delim>^ prefix on --update-env-vars')
   v = v.slice(delim[0].length)
   return new Set(v.split(delim[1]).filter(Boolean).map((t) => t.split('=')[0]))
 }
 
-// Container env NAMEs from --set-secrets (comma-delimited CONTAINER=SECRET:ver).
+// Container env NAMEs from --update-secrets (comma-delimited CONTAINER=SECRET:ver).
 // We assert on the CONTAINER name (left side) — that is what the running service
 // sees and what `describe` reports, so it compares cleanly to the live config
 // even where staging maps a *_STAGING secret onto the same container name.
 function secretNames(src) {
   return new Set(
-    flagValue(src, 'set-secrets')
+    flagValue(src, 'update-secrets')
       .split(',')
       .filter(Boolean)
       .map((t) => t.split('=')[0]),
@@ -64,17 +64,17 @@ function secretNames(src) {
 // so the parity tests below also assert the backing-secret naming convention.
 function secretMap(src) {
   const m = {}
-  for (const t of flagValue(src, 'set-secrets').split(',').filter(Boolean)) {
+  for (const t of flagValue(src, 'update-secrets').split(',').filter(Boolean)) {
     const [container, rhs] = [t.split('=')[0], t.slice(t.indexOf('=') + 1)]
     m[container] = rhs.replace(/:[^:]*$/, '') // drop ":latest" / ":2"
   }
   return m
 }
 
-// Raw NAME=VALUE map from --set-env-vars (for asserting plain-env *values*, e.g.
+// Raw NAME=VALUE map from --update-env-vars (for asserting plain-env *values*, e.g.
 // ENVIA_SANDBOX must be the literal `false` default, not flipped to a secret/true).
 function envMap(src) {
-  let v = flagValue(src, 'set-env-vars')
+  let v = flagValue(src, 'update-env-vars')
   const delim = v.match(/^\^(.)\^/)
   v = v.slice(delim[0].length)
   const m = {}
@@ -84,9 +84,15 @@ function envMap(src) {
   return m
 }
 
-const eq = (a, b) => assert.deepEqual([...a].sort(), [...b].sort())
+function includesAll(actual, required, label) {
+  for (const name of required) {
+    assert.ok(actual.has(name), `${label} must update required name ${name}`)
+  }
+}
 
-// --- live manifests (source of truth: `gcloud run services describe`, 2026-06-12) ---
+// --- script-owned minimums -------------------------------------------------
+// These are not claimed to equal the live service. Operations legitimately add
+// environment-owned names between code changes, and merge-style deploys preserve them.
 
 const PROD = {
   env: [
@@ -181,12 +187,29 @@ test('deploy.sh ADMIN_CORS default includes the admin origin api.miyagisanchez.c
   )
 })
 
-// --- S4 env/secret parity vs live (the §5 anti-drift guard) -----------------
+// --- S4 merge semantics + required minimum (the §5 anti-drift guard) -------
 
-test('deploy.sh env names === live medusa-web', () => eq(envNames(prodSrc), new Set(PROD.env)))
-test('deploy.sh secret names === live medusa-web', () => eq(secretNames(prodSrc), new Set(PROD.secrets)))
-test('deploy-staging.sh env names === live medusa-web-staging', () => eq(envNames(stagingSrc), new Set(STAGING.env)))
-test('deploy-staging.sh secret names === live medusa-web-staging', () => eq(secretNames(stagingSrc), new Set(STAGING.secrets)))
+for (const [name, src] of [['deploy.sh', prodSrc], ['deploy-staging.sh', stagingSrc]]) {
+  test(`${name}: env and secret updates preserve environment-owned live config`, () => {
+    assert.match(src, /--update-env-vars=/, `${name} must merge plain env values`)
+    assert.match(src, /--update-secrets=/, `${name} must merge secret bindings`)
+    assert.doesNotMatch(src, /--set-env-vars=/, `${name} must not replace all plain env values`)
+    assert.doesNotMatch(src, /--set-secrets=/, `${name} must not replace all secret bindings`)
+  })
+}
+
+test('deploy.sh updates every script-owned production env minimum', () => {
+  includesAll(envNames(prodSrc), PROD.env, 'deploy.sh env')
+})
+test('deploy.sh updates every script-owned production secret minimum', () => {
+  includesAll(secretNames(prodSrc), PROD.secrets, 'deploy.sh secrets')
+})
+test('deploy-staging.sh updates every script-owned staging env minimum', () => {
+  includesAll(envNames(stagingSrc), STAGING.env, 'deploy-staging.sh env')
+})
+test('deploy-staging.sh updates every script-owned staging secret minimum', () => {
+  includesAll(secretNames(stagingSrc), STAGING.secrets, 'deploy-staging.sh secrets')
+})
 
 // The crux of the §5 reconcile, asserted explicitly for legibility:
 test('ENVIA_SANDBOX classification matches each environment', () => {
