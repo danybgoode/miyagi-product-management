@@ -62,6 +62,8 @@ echo "▶ Deploying $SERVICE_WEB (min=0, Redis-OFF, VPC connector for Cloud SQL 
 # (a broken revision is denied traffic; a hung instance is recycled).
 # MEDUSA_BACKEND_URL is intentionally unset → the admin bundle defaults to
 # same-origin ("/"), avoiding a chicken-and-egg with the not-yet-known URL.
+# Merge the script-owned minimum. Staging also receives environment-owned market
+# resource ids; replace-all flags would silently erase them on a later rehearsal.
 gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
@@ -76,8 +78,8 @@ gcloud run deploy "$SERVICE_WEB" \
   --startup-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=10,failureThreshold=24" \
   --liveness-probe="httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=5,periodSeconds=30,failureThreshold=3" \
   --allow-unauthenticated \
-  --set-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID}" \
-  --set-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,JWT_SECRET=JWT_SECRET_STAGING:latest,COOKIE_SECRET=COOKIE_SECRET_STAGING:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY_STAGING:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET_STAGING:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN_STAGING:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY_STAGING:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET_STAGING:latest,ENVIA_API_KEY=ENVIA_API_KEY_STAGING:latest,ENVIA_SANDBOX=ENVIA_SANDBOX_STAGING:latest"
+  --update-env-vars="^@^NODE_ENV=production@MEDUSA_WORKER_MODE=shared@STORE_CORS=${STORE_CORS}@ADMIN_CORS=${ADMIN_CORS}@AUTH_CORS=${AUTH_CORS}@NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}@MEDUSA_SALES_CHANNEL_ID=${MEDUSA_SALES_CHANNEL_ID}" \
+  --update-secrets="DATABASE_URL=DATABASE_URL_STAGING:latest,JWT_SECRET=JWT_SECRET_STAGING:latest,COOKIE_SECRET=COOKIE_SECRET_STAGING:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY_STAGING:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET_STAGING:latest,MP_ACCESS_TOKEN=MP_ACCESS_TOKEN_STAGING:latest,CLERK_SECRET_KEY=CLERK_SECRET_KEY_STAGING:latest,MEDUSA_INTERNAL_SECRET=MEDUSA_INTERNAL_SECRET_STAGING:latest,ENVIA_API_KEY=ENVIA_API_KEY_STAGING:latest,ENVIA_SANDBOX=ENVIA_SANDBOX_STAGING:latest"
 
 URL="$(gcloud run services describe "$SERVICE_WEB" --region="$REGION" --format='value(status.url)')"
 echo "▶ Staging URL: $URL"
