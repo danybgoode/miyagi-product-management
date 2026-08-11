@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: us-marketplace
 build_order: 1
 ---
@@ -58,31 +58,159 @@ This epic adds no parallel commerce system and, as scoped, **no database migrati
 | Operators | `partner_grants`, `partner-auth`, `/partner`, shipped `#US-2` | Multi-shop operators already work. Grants remain the sole shop authorization; program track stays descriptive |
 | Agents | UCP catalog/checkout, MCP tools, the manifest | `market=us` flows through the same contracts, echoing `market_code` on every result |
 
-## Epic-mode architecture lock — required before any builder starts
+## Epic-mode architecture lock — 2026-08-10
 
-One architect reads live code and queries live state before delegation, then replaces this section with
-numbered decisions `D1…Dn` and writes a cited **Build contract** into each sprint file. Builders import
-those decisions; they never re-derive them. This is the one piece of ceremony that has repeatedly paid
-for itself and it stays.
+This is the builders' contract. It was locked against backend `origin/main` `af92156`, frontend
+`origin/main` `5d4df0c`, the deployed Cloud Run service configuration, authenticated production Medusa
+diagnostics, the production Store API and the project's Stripe test/live accounts. Staging's private
+database graph is **unavailable** from the workstation; S1 therefore deploys its read-only survey first
+and may not apply staging or production writes until that environment reports its own graph.
 
-At minimum the lock must prove or correct:
+**D1 — Market vocabulary moves as one unit.** `markets.ts` is byte-identical across the two app repos.
+The `invitation` → `active` change is exactly frontend `lib/markets.ts` +
+`e2e/markets-registry.spec.ts` and backend `src/lib/markets.ts` +
+`src/lib/__tests__/markets.unit.spec.ts`, in the coordinated S3 release. S1 does not relax the invitation
+guard and no market status is inferred from locale, currency or resource presence.
 
-- Current frontend/backend heads, and the exact deployed `markets.ts` / `market-medusa.ts` /
-  `seller-market.ts` contracts — including whether `MEDUSA_US_REGION_ID` (already referenced in the
-  codebase) is set anywhere, and to what.
-- Live Medusa Region, Sales Channel, publishable-key, stock-location, inventory, fulfillment-set and
-  service-zone populations in every environment. Row counts decide what is safe.
-- Whether one publishable key per market is sufficient across every Store API caller, and the single
-  resolver that selects it without a caller-supplied override.
-- Live Stripe platform account country and configuration, the supported US connected-account path,
-  direct-charge/refund/fee-lookup semantics, and webhook account context.
-- The real size of the copy problem: which of the 264 Spanish-hardcoding files are on the buyer path,
-  which are seller portal, which are admin-only and out of scope, and what the es-MX completeness guard
-  actually enforces today.
-- Every other writer of market, channel, inventory, price and publish state.
+**D2 — US has two channels, not the one described by the scaffold.** The operating channel is the
+buyability superset; the marketplace channel is its publication subset. Product publication already
+enforces this topology in `backend/src/api/store/_utils/product-publication.ts`. The US resource pack is
+USD store support, one US Region/country/tax region, both channels, one stock location linked to both,
+one publishable key, the manual provider/location link, one fulfillment set and a `us` service zone.
 
-If a live source is unavailable, the lock records **unavailable** and stops the affected sprint. Migration
-files, config names and scope prose are not deployed truth.
+**D3 — One publishable key per market, linked once.** Each key links only to its market's operating
+channel. A key linked to multiple channels makes Store cart creation ambiguous and returns 400. The
+server-owned resolver selects the key from authoritative market context; no request may supply or choose
+a key. The frontend's 99 production Store-API callers are a population to migrate and guard, not evidence
+that a singleton already exists.
+
+**D4 — The backend's structured Medusa resolver is canonical.** Resource resolution is `resolved |
+no_resource | unconfigured`, never `''` and never an MX fallback. Add
+`MEDUSA_US_REGION_ID`, `MEDUSA_US_MARKETPLACE_CHANNEL_ID`,
+`MEDUSA_US_OPERATING_CHANNEL_ID`, `MEDUSA_US_PUBLISHABLE_KEY` and
+`MEDUSA_US_STOCK_LOCATION_ID`; preserve the existing MX variable names. The frontend implements the same
+named-state contract while retaining literal browser-visible env reads required by Next build inlining.
+
+**D5 — Survey and blockers precede creation.** Production provisioning is an authenticated internal
+`GET` dry-run and explicit `POST` apply inside the Cloud SQL VPC; a laptop `medusa exec` cannot reach the
+private `10.7.0.3` database. Destructive channel/key cleanup must protect configured resources as a
+population even while US is invitation-only, before any US row is created. Apply is idempotent,
+ownership-proving and verifies all forward and reverse links. Region/channel/key creation does not buy a
+new cloud tier; any operation that actually would incur a new paid resource still stops for Daniel.
+
+**D6 — Inventory location is market-scoped and fails closed.** The current oldest-location fallback in
+`backend/src/api/store/_utils/inventory.ts` would put US stock in Mexico. Every inventory writer resolves
+the seller's operating market first and requires that market's configured stock location. No global or
+oldest-location fallback is valid for US.
+
+**D7 — Shop market is immutable and explicit.** `seller-market.ts` remains the only reader/writer of
+`metadata.operating_market`. Fresh seller creation may pass `us`; omitted input retains the documented
+MX `legacy_default`; invalid stored values fail closed; generic metadata PATCH cannot change it. A request
+for a conflicting market on an existing shop is rejected rather than silently re-marketizing it.
+
+**D8 — Normal US product creation moves to S3.** While US is invitation-only,
+`product-publication.ts` correctly refuses a normal US marketplace product before price writes. S1 proves
+the seller-market and USD currency policy in pure/route specs but does not claim a live merchant can
+publish. S3, after D1's coordinated activation and live resource verification, proves that a positive USD
+price row is required and created; missing/zero USD prices are an explicit refusal.
+
+**D9 — Presentation is one market-derived context.** A pure resolver maps `mx → es-MX/es/MXN` and
+`us → en-US/en/USD` (plus timezone), rejects unknown markets and is the only locale decision. Components
+receive presentation context; locale never selects channel, payment, fulfillment or membership. The
+current `normalizeLocale('en-US') → es` behavior is a defect.
+
+**D10 — Copy scope is a generated population, not “264 files.”** At the locked frontend head there are
+371 TSX files: direct route populations are buyer 67 (68 including the old `/us` page), seller 113 and
+admin 42; static-import closures are buyer 119, seller 146 and admin 69, with explicit overlaps. The
+dictionaries have nine top-level namespaces and currently differ by two English FAQ leaves. Add recursive
+object-key, array-length and non-empty bilingual guards plus generated buyer/seller manifests. UI chrome
+is localized; seller-authored content remains as authored. `app/(shell)/admin/**` is deliberately out of
+scope except shared components used by an in-scope surface.
+
+**D11 — Correct SSR language requires market root layouts.** The global root currently fixes
+`<html lang="es">`, Clerk `esMX` and `/mx`; calling `headers()` there would make the static site dynamic
+and client mutation would fail SSR acceptance. S2 therefore introduces URL-neutral route groups/root
+layouts for the MX and US market trees, each rendering the correct BCP-47 `lang`, Clerk localization and
+fallback server-side. Preserve static generation and bounded revalidation.
+
+**D12 — Keep shared pages and literal route adapters.** The MX catalog routes are already thin adapters
+to shared implementations. S3 adds equivalent literal US adapters for list, PDP, shop, about, FAQ,
+policies and collection rather than forcing a high-churn `[market]` rewrite. The shared page receives
+market/presentation context and preserves named unavailable state; only a cross-market PDP miss becomes
+404. `/us` reuses the MX home components, while `/partner` and its recruiting system remain intact.
+
+**D13 — Browse capability is honest before money lands.** S3 and S4 remain separate deploys. A permanent
+commerce-readiness result derived from real market resources/payment readiness suppresses web/UCP/MCP
+`buy_now` for US until direct checkout is available and returns a named reason. This is not a feature flag.
+Every agent result echoes `market_code`; manifest, formatting and shipping vocabulary derive from D9.
+
+**D14 — US Connect onboarding uses Accounts v2; MX is preserved.** The live platform is Mexico/MXN with
+charges and payouts enabled; its four existing connected accounts are all MX. A test-mode proof on this
+same platform created a US `merchant` account with USD/en-US defaults, Stripe-collected fees/losses, full
+Dashboard and a hosted onboarding link, then closed it. New US accounts use that Accounts v2/controller
+shape through authenticated backend routes; existing MX v1 Express accounts are not migrated. Readiness
+checks country, merchant configuration, capabilities and blocking requirements, not only
+`charges_enabled`.
+
+**D15 — Direct-charge context is durable end to end.** One pure strategy plan selects MX destination
+charge in platform context or US direct charge in the connected-account context from seller market, then
+cross-checks Region and currency. All web, UCP and MCP checkout enters the Medusa `start-checkout` rail.
+Persist the strategy, connected account, session/intent/charge IDs and currency in PaymentSession data;
+create, retrieve, capture, cancel, expire, refund, reconcile and webhook validation all rebuild request
+context from it. US omits `transfer_data` and application fees; direct refunds omit `reverse_transfer`.
+Connected-account webhooks must match `event.account`. No partial failure returns a green warning body.
+
+**D16 — Money and delivery inputs are server-authoritative.** Validate seller readiness, strategy,
+currency and fulfillment before the first authoritative checkout write. Cart, quote, PaymentSession,
+Stripe and ledger currencies must match. S4 adds a distinct US `manual_carrier` option with an address,
+online payment, seller-funded $0 shipping and honest no-rate/no-label copy; arranged delivery stays
+manual-pay. Manual-carrier fulfillment requires carrier and tracking. Processor fees and refunds are
+idempotent ledger events, and every profit aggregation key includes currency—USD and MXN are displayed
+separately and never summed.
+
+**D17 — Seller locale comes from Medusa, not the browser mirror.** Extend the canonical seller projection
+with market, locale and currency. Seller shell, nav, onboarding, formatting and seller emails consume D9.
+The `/us` signup handoff carries a server-controlled intended market into the first seller create; the
+current frontend omission and “first Supabase shop” Connect lookup are removed. `/mx` remains only the
+legacy fallback, never the US post-auth destination.
+
+**D18 — S6 is stopped at its external evidence gate.** Neither EasyPost nor Shippo exists in the code or
+the `projects.dev` provider catalog, and no carrier sandbox account, US origin ZIP, representative parcel
+or funding model is available. Envía is not a proven template: it has no calculated pricing, idempotent
+confirm, void or refund. S6 may start only after Daniel names the provider/account and supplies the origin
+and parcel evidence. The selected implementation must use an injected client, read-only quote,
+preview-without-spend, durable idempotent confirm/audit before provider I/O, reconciliation, void/refund,
+tracking webhook and structured fallback to S4. A small carrier-operation model/migration is allowed if
+native Medusa primitives cannot prove durable uniqueness; metadata read-then-write is not sufficient.
+
+**D19 — Visual direction extends Miyagi; it does not Americanize the design system.** Purpose: let a US
+buyer discover and trust independent shops, then let a US seller operate the same marketplace in English.
+Aesthetic: the existing warm, editorial, craft-forward Miyagi surface—no flag motif, patriotic palette,
+generic SaaS dashboard or gradient-heavy “AI” treatment. Keep the current design tokens, restrained accent
+palette, typography, card language, radii and spacing; `/mx` must be pixel-stable. Reuse the MX hierarchy
+(market story → categories/search → featured/listing cards → shop story) and seller information density,
+changing only market-derived copy/content/formatting. Preserve current breakpoints, readable measure,
+keyboard/focus behavior and thumb-reachable mobile actions. The distinctive element is one bilingual
+marketplace identity whose local shops/content provide the character, not country-specific chrome. S2,
+S3 and S5 each capture desktop and mobile screenshots of representative MX/US pages and compare MX to its
+pre-change baseline before merge.
+
+### Locked live populations
+
+- Production Medusa: one Mexico/MXN Region; three Sales Channels (default, MX marketplace, MX operating);
+  one live publishable key with one channel link; 27 sellers all explicitly `mx`; 77 published products,
+  all in the MX marketplace channel; no US commerce resource.
+- Production fulfillment: one default shipping profile; MX fulfillment set; one MX stock location linked
+  to both MX channels/manual provider; one extra unlinked stock location; legacy Europe fulfillment rows
+  remain and are not ownership evidence for US.
+- Production service env: `MEDUSA_SALES_CHANNEL_ID` and `MEDUSA_MX_OPERATING_CHANNEL_ID`; no
+  `MEDUSA_US_*`. Frontend has MX Region/key/channel values and no US values. Cloud Build preserves service
+  config, so new public resource IDs are a separate post-provision deployment step.
+- Stripe: live and local test keys identify platform `acct_1Qsqf7L2vn3I7zOL` (MX/MXN). Live has four MX
+  connected accounts and no US account. Direct-charge/refund/fee behavior still requires S4 test-mode
+  evidence before production; the first live charge remains Daniel's action.
+- Staging Medusa graph: **unavailable** until the new authenticated in-VPC survey is deployed. It must be
+  recorded before staging apply; an unavailable response is never treated as an empty environment.
 
 ## Scope — stories
 

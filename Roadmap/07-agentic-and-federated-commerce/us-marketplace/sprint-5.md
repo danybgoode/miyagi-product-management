@@ -11,9 +11,18 @@ surface, and it is mechanical over a locked contract.
 
 ## Build contract
 
-Filled by the architect. It must list the seller-portal files in scope from the live tree, confirm the
-dictionary and locale resolver from Sprint 2 are the mechanism (no second approach), and name which
-admin-only surfaces stay es-MX and are deliberately out of scope.
+Implement D9–D10 and D17 using S2's dictionary/presentation mechanism. The generated seller population
+is 113 direct route TSX files / 146-file static-import closure. It includes seller shell/nav, all
+`lib/seller-nav.ts` destinations, onboarding/setup/success chrome, `lib/email.ts`, browser-visible API
+errors and shared formatters. `app/(shell)/admin/**` (42 direct / 69 closure) remains es-MX except shared
+components that an in-scope seller surface imports. Authored listings, shop copy, FAQ and policy content
+remain as authored.
+
+Extend canonical Medusa seller projection with market/locale/currency and use it—not Supabase, browser
+locale or Clerk—to drive seller presentation. Carry a server-controlled intended `us` from the `/us`
+signup handoff into the first explicit `operating_market` write; reject conflict on an existing shop.
+Move Connect selection away from “first Supabase shop” to the authenticated seller and the S4 Accounts v2
+path. Preserve `/mx` signup/onboarding byte-for-byte.
 
 ## Stories
 

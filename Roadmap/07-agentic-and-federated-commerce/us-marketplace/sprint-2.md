@@ -12,9 +12,18 @@ building it in Spanish and rewriting it.
 
 ## Build contract
 
-Filled by the architect. It must name, from the live tree, which of the 264 Spanish-hardcoding files are
-on the buyer path (in scope here), which are seller portal (Sprint 5) and which are admin-only (out of
-scope entirely), and state what the existing es-MX copy guard enforces today.
+Implement D9–D11 against frontend `origin/main` `5d4df0c`. Use a generated population manifest: buyer
+direct routes 67 (68 including the old `/us` page), static-import closure 119; seller direct routes 113 /
+closure 146 move to S5; admin direct routes 42 / closure 69 are out of scope except explicitly shared
+files. The current dictionaries have nine namespaces and the existing “bilingual allow-list” guards only
+admin override eligibility—it is not a global completeness or hardcoded-copy guard. Add recursive
+object/array shape + non-empty guards and fix the two missing English FAQ leaves.
+
+Add one market-presentation resolver (`mx → es-MX/es/MXN`, `us → en-US/en/USD`) and prove commerce never
+reads locale. Preserve static rendering by introducing market-owned root-layout groups that render the
+correct server-side `<html lang>`, Clerk localization and fallback; do not call `headers()` in the global
+root and do not mutate `lang` on the client. Extract buyer chrome mechanically with byte-identical MX
+render snapshots. Authored merchant content is not translated.
 
 ## Stories
 

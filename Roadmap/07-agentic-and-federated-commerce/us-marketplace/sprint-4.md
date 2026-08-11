@@ -15,9 +15,19 @@ the epic's only real-money action.
 
 ## Build contract
 
-Filled by the architect against the **live Stripe platform account** — country, configuration, the
-supported US connected-account path, direct-charge/refund/fee-lookup semantics and webhook account
-context. If any of that is unavailable, this sprint stops rather than guesses.
+Implement D13–D16. The project platform is MX/MXN with charges/payouts enabled; live has four MX
+connected accounts and no US account. A same-platform test-mode proof created and closed a US Accounts v2
+`merchant` with USD/en-US defaults, Stripe fee/loss responsibility, full Dashboard and hosted onboarding.
+New US accounts use this backend-owned shape; existing MX v1 Express accounts remain untouched.
+
+Create one pure market strategy and persist its discriminant/account/session/intent/charge/currency in
+PaymentSession data. Every Stripe lifecycle call and both webhooks reconstruct and verify the connected
+context; direct refunds do not use destination-charge reversal. Move readiness/currency/fulfillment
+validation before authoritative checkout writes, converge web/UCP/MCP on `start-checkout`, and replace
+client-trusted shipping money with server-owned delivery data. Add `manual_carrier` as addressed,
+Stripe-payable, seller-funded $0 delivery with required carrier/tracking; `coord` stays manual-pay. Record
+real processor fees/refunds and group profit by currency. Direct-charge/refund/fee behavior must be proven
+in test mode before merge; the first live charge remains Daniel's explicit action.
 
 ## Stories
 
