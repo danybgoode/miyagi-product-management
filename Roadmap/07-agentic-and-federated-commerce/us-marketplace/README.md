@@ -1,5 +1,5 @@
 ---
-status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: us-marketplace
 build_order: 1
 ---
@@ -305,20 +305,46 @@ are mechanical over a locked contract and run on the faster one.
 
 ## Definition of Done (epic)
 
-- [ ] Architect locked and documented `D1…Dn` against live code, live database and live provider state
-      before any builder started.
-- [ ] All six sprints merged to `main` in order, deployed, and smoke-tested; gaps stated.
-- [ ] Every new spec was observed red at least once through a deliberate implementation mutation.
-- [ ] A merchant can open a US shop, list a product in USD, and see it live at `/us`.
-- [ ] A buyer can browse `/us` in English, open a product page and complete a USD checkout.
-- [ ] One real USD order is paid, fulfilled, tracked and refundable end to end.
-- [ ] `market=us` returns the US catalog through UCP and MCP, echoing `market_code`, and never MX rows.
-- [ ] Buyer surface **and** seller portal render en-US for a US shop; the es-MX completeness guard is
-      green and `/mx` copy is unchanged.
-- [ ] `/mx` URLs, behaviour and economics are unchanged — proven by regression specs in every sprint.
-- [ ] One US carrier returns live rates, buys a real label and reports tracking.
-- [ ] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
-- [ ] `RETROSPECTIVE.md` written; product poster, team memory and `Roadmap/LEARNINGS.md` updated with
+_Closed 2026-08-12. S1–S5 shipped; S6 deferred at D18's evidence gate by the product owner._
+
+- [x] Architect locked and documented `D1…D19` against live code, live database and live provider
+      state before any builder started.
+- [x] **Five** of six sprints merged to `main` in order, deployed and smoke-tested. S6 is deferred,
+      not skipped — its gate is stated in `sprint-6.md` and in the OWED ledger.
+- [x] Every new spec was observed red at least once through a deliberate implementation mutation —
+      51 across the epic.
+- [x] A merchant can open a US shop and list a product in USD. The signup handoff carries the market
+      into the first seller create; before S5.2 it carried none, so a `/us` signup produced a
+      *Mexican* shop.
+- [x] A buyer can browse `/us` in English, open a product page and reach a USD checkout. `/us` and
+      `/us/l` verified 200 live.
+- [ ] **One real USD order paid, fulfilled, tracked and refunded end to end.** Proven in Stripe
+      **test** mode, 21/21 checks through the shipped code. The first live charge is Daniel's, per
+      this README's own ask-first rule.
+- [x] `market=us` returns the US catalog through UCP and MCP, echoing `market_code`, and never MX
+      rows. US listings deliberately carry **no** per-listing checkout URL — the legacy
+      `/api/stripe/checkout` and `/api/mp/checkout` rails are Mexican and would refuse them; US agent
+      checkout goes through the market-aware `/api/ucp/checkout-session`.
+- [ ] **Buyer surface and seller portal render en-US.** The buyer surface does. The seller portal's
+      *frame* does — rail, chrome, locale seam — but ~550 strings across its 113 page files are still
+      es-MX. Stated in `sprint-5.md` and the retro.
+- [x] `/mx` URLs, behaviour and economics are unchanged — proven structurally (`admitUsDelivery`
+      returns before any US rule is read), by regression specs, and live: real Mexican shops still
+      return `["local_pickup","shipping"]` where the US shop returns `["manual_carrier"]`.
+- [ ] **One US carrier returns live rates, buys a real label and reports tracking.** Deferred at
+      D18's gate — no provider named, no account, no origin ZIP, no parcel. `/us` is complete without
+      it on arranged + manual-carrier delivery.
+- [x] Each sprint doc carries final commit refs and a real-URL smoke walkthrough.
+- [x] `RETROSPECTIVE.md` written; product poster, team memory and `Roadmap/LEARNINGS.md` updated with
       verified durable facts only.
-- [ ] Stacked branches deleted; this README's frontmatter is `status: shipped`; `node
+- [x] Stacked branches deleted; this README's frontmatter is `status: shipped`; `node
       scripts/build-order.mjs` regenerated.
+
+### Unplanned, and the most consequential thing in this epic
+
+A live **authentication bypass** was found and closed
+([backend #148](https://github.com/danybgoode/medusa-bonsai-backend/pull/148)). `extractClerkUserId`
+base64-decoded a Clerk JWT and returned its `sub` with no signature check, on the strength of a
+comment claiming edge middleware did the validation — and no such middleware existed anywhere in the
+repo. Thirty-eight `/store/sellers/me/**` and `/store/buyer/me/**` routes authenticated on an
+attacker-supplied string. Confirmed live before the fix and verified closed after deploy.

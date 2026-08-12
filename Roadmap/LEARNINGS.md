@@ -1370,6 +1370,47 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **Assert the ORDERING, not just the verdict — a guard that returns the right status from the wrong
+  place is still broken.** `admitUsDelivery` refuses a bad US checkout with a 422, and a spec asserting
+  "returns 422" passed. Moving the call **below** the cart writes kept that spec green: the refusal was
+  still a 422, and a partially-written cart now existed behind it. What matters about a
+  "validate before the first authoritative write" rule is the *position*, so the spec reads the route
+  source and asserts the admission's index precedes `checkoutTotalCents`, `addShippingMethods` and
+  `checkout.sessions.create` — plus that its failure branch actually `return`s rather than falling
+  through. Both mutations were observed red; neither was caught by asserting the status code. This
+  sharpens the existing *assert the ORDERING, not the status code* rule with the mechanism: compare
+  source indices, and pin the returning negative branch separately. (us-marketplace S4.2, 2026-08-12.)
+- **A spec that MODELS a framework's semantics proves nothing if the model is wrong in the same
+  direction as the code.** A cross-family reviewer filed a blocking finding claiming Medusa's middleware
+  matchers needed wildcards and that nested routes would bypass verification — which, if true, would
+  have 401'd every seller out of their portal. The coverage spec had a `matcherCovers` helper that
+  *modelled* Express prefix matching and agreed with the code, so it could not settle the question. The
+  claim turned out to be wrong (Medusa passes `methods` undefaulted, so the config takes router.js's
+  `app.use(matcher, handler)` branch, which prefix-mounts) — but the only way to know was to boot a real
+  Express app with the real matchers and watch which paths hit the middleware. The spec now does exactly
+  that. **When a spec's correctness depends on a framework behaviour, execute the framework.**
+  (us-marketplace, 2026-08-12, backend #148.)
+- **A guard that bans a code shape will fire on the comment that EXPLAINS the shape — strip comments,
+  or reword.** Three times in one epic: the design-token guard read `PR #359` in a commit-reference
+  comment as the hex colour `#359`; a "never infer market from locale" guard reddened on the very
+  docblock citing `normalizeLocale('en-US')` as the defect it closes; and an issuer guard reddened on
+  `lib/clerk-issuer.ts`, the one file whose whole job is documenting that bug. Each is the
+  *a guard that rejects correct output is worse than one that misses a rare fault* rule biting from a
+  new angle. The fix is a two-line `code()` helper that strips block and line comments before matching —
+  and when the guard is someone else's, reword rather than loosen it. (us-marketplace, 2026-08-12.)
+- **Reducing a value to a boolean before the function that judges it is where the bug goes.** A US
+  checkout's address check was computed at the *call site* as `address_1 || city`, so a cart carrying
+  only `{ city: 'Austin' }` was admitted as deliverable and the seller would have found out after the
+  money moved. The fix was not a longer boolean expression at the call site — it was passing the address
+  **whole** into the rule, where completeness is decided once and tested. Generally: **a predicate
+  computed by the caller is a predicate nobody tests.** (us-marketplace S4.2, 2026-08-12, backend #149.)
+- **Correct arithmetic presented ambiguously is still a wrong answer.** Splitting profit aggregation by
+  currency was necessary and not sufficient: `$` is the symbol for *both* markets — `es-MX` renders MXN
+  as `$1,250` and `en-US` renders USD as `$12.50` — so two correctly-separated rows still read
+  identically and a seller could not tell which market each came from. Caught by cross-family review,
+  not by the maths. When you split data by a dimension, **check that the dimension is visible in the
+  output**, and only when it disambiguates (a single-currency seller must not gain a column of identical
+  labels). (us-marketplace S4.3, 2026-08-12, frontend #360.)
 - **A BARE `except`/`catch` AROUND A PROBE TURNS AN OUTAGE INTO A CONFIDENT WRONG ANSWER.** Sampling the
   live catalog for a usable test fixture, a loop with `except: pass` reported **"0 of 14 listings
   qualify"** — a clean, plausible, completely false result. The endpoint was returning **403** to the
@@ -2148,6 +2189,46 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   pricing-money-path-remediation S1 — backend PR #89.)*
 
 ## Architecture
+- **A comment asserting a control is not a control — and the control it claims may never have been
+  built.** `apps/backend/src/api/store/_utils/clerk-auth.ts` carried, for months, *"we decode the Clerk
+  JWT ourselves — which is safe because Clerk's public key validation happens at the edge
+  (middleware)"*. There was no middleware. `src/api/middlewares.ts` did not exist anywhere in the repo,
+  so `extractClerkUserId` base64-decoded a bearer token's payload and returned its `sub` with **no
+  signature check at all**. Thirty-eight `/store/sellers/me/**` and `/store/buyer/me/**` routes
+  authenticated on an attacker-supplied string: products, orders, coupons, payouts, profit, Stripe
+  onboarding. Confirmed live before the fix with a nonexistent user id — a forged `alg:none` token
+  returned `404 No seller profile found` (the route went looking for that user's shop) where an
+  anonymous request returned `401`. This is the sharpest instance yet of *a confident comment is not
+  evidence*, and it extends it: the existing rule is about a docblock **restating** a rule that lives
+  elsewhere and drifting permissive. This one **invented** a control that was never built anywhere, and
+  because it read as a deliberate architectural decision, every subsequent author trusted it and added
+  another route to the population. When a comment claims a control exists somewhere else, **go and look
+  at the somewhere else** — `ls src/api/middlewares.ts` would have taken five seconds at any point in
+  those months. (us-marketplace, 2026-08-12, backend #148.)
+- **Fixing one copy is how a class of bug survives its own fix — grep for the second copy before you
+  close the first.** The same issuer bug lived twice: `api/store/_utils/clerk-verify.ts` and
+  `modules/auth-clerk/service.ts` each had their own `getFrontendApiFromKey` and each built
+  `https://clerk.${frontendApi}`, which is wrong for **both** publishable-key shapes (the live key
+  already decodes to `clerk.miyagisanchez.com`, so it asked for `https://clerk.clerk.miyagisanchez.com`).
+  Both therefore always threw on the issuer check, and both caught it and retried with **no issuer check
+  at all** — so no token this platform ever accepted was issuer-bound, in either code path. The fix was
+  not two fixes: it was collapsing both onto one `lib/clerk-issuer.ts`, plus a repo-wide guard asserting
+  that exactly ONE file may define `getFrontendApiFromKey` and that nothing anywhere calls `jwtVerify` a
+  second time with no options. A third copy is now caught at birth. The generalisation: **when you find
+  a bug in a helper, search the tree for a same-named sibling before you fix it** — duplicated helpers
+  duplicate their bugs, and the second copy is invisible precisely because it works the same wrong way.
+  (us-marketplace, 2026-08-12.)
+- **Two representations of one fact, and only one of them being read, fails silently and permanently.**
+  MX sellers persist the Stripe **v1** shape (`connected` + `charges_enabled`); US sellers persist
+  **Accounts v2** (`api_generation`, `merchant_configuration`, `card_payments_status`) and have *neither*
+  v1 key. `publicShopPaymentAvailability` checked only v1, so a fully onboarded US shop with
+  `card_payments: active` read as "no payment method" → `resolveCommerceReadiness` answered
+  `seller_payment_unavailable` → the storefront, UCP and MCP all suppressed `buy_now`. Browsable and
+  unbuyable, forever, **with no error anywhere**: the backend was ready to charge and the frontend never
+  offered the button. There is no test that fails for this unless someone writes a fixture in the *new*
+  shape — the old fixtures all keep passing. **When a second generation of an external object arrives,
+  the question is not "does the new code read it" but "does every EXISTING consumer".** (us-marketplace
+  S4, 2026-08-12, frontend #359.)
 - **An admission proof must be keyed to the object that is actually CONSUMED — if the check and the
   effect name different identifiers, the check is decoration.** The market checkout gate proved that a
   `productId` was published to the requested market; the cart line it then created bought a

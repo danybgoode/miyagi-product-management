@@ -1,6 +1,17 @@
 # US marketplace — Sprint 5: The seller side, in English
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — 2026-08-12 · **portal body copy still owed**
+
+**Landed:** frontend PR [#361](https://github.com/danybgoode/miyagisanchezcommerce/pull/361) (`a33ac41`).
+
+S5.2 is complete: the signup handoff carries the intended market into the first seller create (it carried
+none, so a merchant signing up from `/us` got a **Mexican** shop), the US market home has a seller entry
+at all, and a market conflict is reported as a 409/422 rather than flattened into a 500.
+
+S5.1 landed its **structural** half — the seller rail is market-localized as a transform over the one nav
+tree, and `MySeller` now carries `market`/`locale`/`currency` read from Medusa rather than inferred from a
+locale. **Per-page body copy across the portal's 113 files (~550 strings) is NOT translated**; a US
+merchant will still meet Spanish inside individual sections. See the retro's Gaps section.
 
 ## Outcome
 
