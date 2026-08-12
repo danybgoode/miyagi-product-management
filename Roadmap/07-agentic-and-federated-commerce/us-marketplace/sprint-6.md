@@ -1,6 +1,18 @@
 # US marketplace — Sprint 6: A US carrier
 
-**Status:** ⬜ not started
+**Status:** ⏸️ **not started — deferred at D18's evidence gate** (Daniel's decision, 2026-08-12)
+
+D18 stops this sprint until a provider is named and its evidence supplied. At close: neither EasyPost nor
+Shippo exists in the code or the `projects.dev` catalog, there is no carrier sandbox account, no US origin
+ZIP and no representative parcel. Envía is not a template — it has no calculated pricing, idempotent
+confirm, void or refund.
+
+Asked and answered: **defer**. `/us` is complete without it, exactly as the epic README says — S4.2 ships
+`manual_carrier`, where the seller ships with their own carrier and enters their own tracking, and the
+copy promises no rate and no label because none exists.
+
+**To start this sprint**, Daniel supplies: the provider and account, a US origin ZIP, and a representative
+parcel. Recorded in the OWED ledger.
 
 ## Outcome
 

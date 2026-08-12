@@ -1,6 +1,18 @@
 # US marketplace — Sprint 1: US commerce rails
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — 2026-08-11
+
+**Landed:** backend PRs [#141](https://github.com/danybgoode/medusa-bonsai-backend/pull/141) (`92f407b`,
+provision the US commerce rails), [#142](https://github.com/danybgoode/medusa-bonsai-backend/pull/142)
+(`08f68b3`), [#143](https://github.com/danybgoode/medusa-bonsai-backend/pull/143) (`9e3b313`) and
+[#144](https://github.com/danybgoode/medusa-bonsai-backend/pull/144) (`05a7503`) — three follow-ups to
+identify and select the canonical Store, which the first pass got wrong.
+
+**Live:** `MEDUSA_US_REGION_ID=reg_01KZRSK2R79C9TMQG5VXESHAE3`,
+`MEDUSA_US_MARKETPLACE_CHANNEL_ID=sc_01KZRSK2VTZRVZTCJH3BS7XQX9`,
+`MEDUSA_US_OPERATING_CHANNEL_ID=sc_01KZRSK2VVHZCFPJ1ZCW4FEE6C`,
+`MEDUSA_US_STOCK_LOCATION_ID=sloc_01KZRSK2XQWC6FDT3ZJ3NXZ533`,
+`MEDUSA_US_PUBLISHABLE_KEY=pk_401a3e23…` — all five verified set on the `medusa-web` Cloud Run service.
 
 ## Outcome
 

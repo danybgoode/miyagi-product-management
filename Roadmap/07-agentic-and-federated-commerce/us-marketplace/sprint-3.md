@@ -1,6 +1,14 @@
 # US marketplace — Sprint 3: `/us` becomes a marketplace
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — 2026-08-12
+
+**Landed:** backend PR [#145](https://github.com/danybgoode/medusa-bonsai-backend/pull/145) (`d5194c5`,
+activate the US catalog) + frontend PRs
+[#352](https://github.com/danybgoode/miyagisanchezcommerce/pull/352) (`a291331`, open the US catalog) and
+[#358](https://github.com/danybgoode/miyagisanchezcommerce/pull/358) (`1a2eca6`, a mobile filter button
+that was still hardcoded es-MX).
+
+**Live:** `/us` and `/us/l` both 200.
 
 ## Outcome
 

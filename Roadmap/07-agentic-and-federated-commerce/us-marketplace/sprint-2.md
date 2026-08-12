@@ -1,6 +1,10 @@
 # US marketplace — Sprint 2: The shell speaks two languages
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — 2026-08-11
+
+**Landed:** frontend PR [#351](https://github.com/danybgoode/miyagisanchezcommerce/pull/351) (`4fa9ccc`) —
+bilingual buyer presentation foundations. The dictionary carries 1,560 leaves in each locale, es and en
+at parity.
 
 ## Outcome
 

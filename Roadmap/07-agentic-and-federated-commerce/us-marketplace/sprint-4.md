@@ -1,6 +1,26 @@
 # US marketplace — Sprint 4: USD checkout
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — 2026-08-12 · **one real-money step still owed to Daniel**
+
+**Landed:** backend [#146](https://github.com/danybgoode/medusa-bonsai-backend/pull/146) (`4eb3a07`, USD
+direct charges) and [#149](https://github.com/danybgoode/medusa-bonsai-backend/pull/149) (`4b6500e`,
+manual-carrier delivery) + frontend [#359](https://github.com/danybgoode/miyagisanchezcommerce/pull/359)
+(`d2e8aaa`, US checkout and the Accounts v2 shape) and
+[#360](https://github.com/danybgoode/miyagisanchezcommerce/pull/360) (`6995d6e`, currency-correct profit
+and receipts).
+
+**Proven in Stripe TEST mode, 21/21 checks**, driven through the shipped code rather than hand-written
+params — `planStripeMarketStrategy` → `checkout.sessions.create` → a real charge → `stripeRefundParams` →
+a real refund. Direct charge on the connected account (`acct_1U3RtJLloZe3XdZ1`); the platform account
+**404s** on that charge; fee 103 of 2500 borne by the connected account with `application: null`; refund
+succeeded without `reverse_transfer`; and a negative control confirmed Stripe REJECTS `reverse_transfer`
+on a direct charge, so the rule is load-bearing rather than decorative.
+
+**Verified live after deploy:** the US fixture shop returns `["manual_carrier"]` from
+`/store/sellers/:slug/checkout-options`, while real Mexican shops (`ylai-studio`, `panfleto`) still return
+`["local_pickup","shipping"]` — MX unchanged, US never offered a carrier rate that does not exist.
+
+**Owed:** step 6 below (the first real USD charge) is Daniel's, per the epic's ask-first rule.
 
 ## Outcome
 
