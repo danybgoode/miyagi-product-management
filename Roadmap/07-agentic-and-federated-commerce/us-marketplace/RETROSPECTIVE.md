@@ -115,10 +115,32 @@ a US origin ZIP and a representative parcel.
 was the safety net, and the evidence for the replacement is strong but indirect (the instance's own
 OIDC discovery document, the `pk_live` decode, no satellite config). `logIssuerMismatch` exists
 precisely so that if this is ever wrong, the logs say so in one line instead of an hour of guessing.
-Daniel's authed `/sell` + `/sell/pagos` load is the direct confirmation and is owed.
+Daniel's authed `/sell` + `/shop/manage/settings/pagos` load is the direct confirmation and is owed.
 
 **Deliberately deferred, unchanged from the plan:** calculated sales tax and any
 marketplace-facilitator obligation. The seller is merchant of record and tax-liable.
+
+## Found after close, by the smoke this epic was waiting on
+
+**Stripe Connect onboarding returned the seller to a 404** (backend
+[#150](https://github.com/danybgoode/medusa-bonsai-backend/pull/150), `9ba5e69`). Both `refresh_url`
+and `return_url` pointed at `${SITE_URL}/sell/pagos`, which is not a route — payment settings are
+`/shop/manage/settings/pagos`, and `/sell/*` is the listing wizard. A seller who finished Connect
+onboarding landed on a 404 at the exact moment they had finished setting up how they get paid, and
+`refresh_url` sent an already-retrying seller to the same place.
+
+Nothing failed. The account was created, the link was valid, Stripe did exactly as asked — only the
+destination was wrong. It survived S4.1's build, both cross-family passes and the fresh-reviewer pass
+because **every one of them was reading the backend repo, and the fact that makes the URL wrong lives
+in the storefront repo.** A cross-repo string is invisible to a single-repo reviewer.
+
+The guard has to span both repos, which is awkward because `apps/miyagisanchez` is gitignored here and
+absent from CI entirely. So it reports THREE states: resolve the path against the real `app/` tree when
+the sibling is present, and print **UNAVAILABLE** out loud when it is not — a silent skip would be a
+green gate that checked nothing.
+
+**This is the strongest argument in the epic for the smoke split.** No automated layer inside this
+repo could have caught it; Daniel's authed browser load caught it in one click.
 
 ## Numbers
 
@@ -127,3 +149,5 @@ marketplace-facilitator obligation. The seller is merchant of record and tax-lia
 - **1** live authentication bypass found and closed, affecting **38** routes.
 - **4** defects found by cross-family review that the deterministic gate could not catch; **2**
   blocking claims disproved with evidence.
+- **1** defect found by the product owner's authed browser smoke that no automated layer in this repo
+  could see, because the fact that made it wrong lived in the other repository.
