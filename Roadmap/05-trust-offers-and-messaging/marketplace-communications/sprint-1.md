@@ -21,12 +21,19 @@ missing from the catalog. A sender may be registered as `deliberately_unwired` w
 correct state can never be rejected.
 **Risk:** LOW
 
-### Story 1.3 — Delete the two unwired senders
-**As a** buyer, **I want** the platform not to carry half-built messages, **so that** nobody wires
-them up later and sends me mail nobody designed.
-**Acceptance:** `sendCounterDeclined` and `sendOfferWithdrawn` are removed; nothing referenced them;
-the offer flow's behaviour is unchanged.
+### Story 1.3 — Resolve the two unwired senders ✅ `feat/marketplace-communications`
+**As a** seller, **I want** to be told when a buyer walks away, **so that** I stop holding a dead
+offer open — and **as a** platform, **I want** no half-built templates left lying around.
+**Acceptance:** withdrawing an offer now emails the seller (`sendOfferWithdrawn`, wired into the
+`withdraw` branch of `app/api/offers/[id]/buyer-respond/route.ts`); `sendCounterDeclined` is deleted
+because no product action can trigger it; the catalog carries the new `offer.withdrawn` entry and the
+population guard is green.
 **Risk:** LOW
+
+> **Premise corrected during the build.** The epic's D3 originally said to delete *both* senders as
+> duplicates. They are not the same case: withdrawal is a real, reachable buyer action that notified
+> nobody, so deleting its template would have removed a notification the seller needs. See the
+> corrected D3 in the epic README.
 
 ### Story 1.4 — `send()` reports three states
 **As a** platform owner, **I want** to distinguish "not configured" from "rejected" from "sent",

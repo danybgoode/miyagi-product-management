@@ -56,12 +56,24 @@ population, not the door you found"* rule, applied to the thing most likely to g
 allows the negation: a sender may be explicitly registered as `deliberately_unwired`, so the check
 can never reject a correct state and train someone to bypass it.
 
-**D3 — The two dead senders are deleted, not wired.** `sendCounterDeclined` and
-`sendOfferWithdrawn` have no call site anywhere outside `lib/email.ts`. Both duplicate a
-communication that *does* fire — the counter-declined case is already covered by
-`sendCounterAccepted`'s sibling path and withdrawal by the offer-expiry mail — so wiring them would
-add two new messages to a buyer's inbox that nobody asked for. They are removed, and their removal
-is the first thing the D2 guard would have caught.
+**D3 — CORRECTED at build time. The two dead senders are not the same case, and only one is
+deleted.** The decision as first written claimed both `sendCounterDeclined` and
+`sendOfferWithdrawn` duplicated a communication that already fires, and should therefore both be
+removed. Reading `app/api/offers/[id]/buyer-respond/route.ts` disproved it:
+
+- **`sendOfferWithdrawn` is a real gap, and is now wired.** `withdraw` is a first-class buyer action
+  (`action: 'accept-counter' | 'withdraw'`). Today it marks the offer withdrawn and emits an
+  in-conversation event — and tells the seller nothing. A seller not watching the thread keeps a
+  dead offer open indefinitely. The template was written for exactly this moment and had simply
+  never been connected.
+- **`sendCounterDeclined` has no trigger and is deleted.** The product has no "decline counter"
+  action at all; a buyer who does not want the counteroffer withdraws. Sending *"El comprador
+  rechazó tu contraoferta"* for a withdrawal would describe an action nobody took, so wiring it to
+  the nearest available trigger would have been worse than deleting it.
+
+The original decision would have silently removed a notification the seller needs. Recorded here
+rather than quietly worked around, per the `AGENTS.md` rule that a false premise is a reason to stop
+and say so.
 
 **D4 — `send()` must report three states, and today it reports one.** It returns `null`
 indistinguishably when `RESEND_API_KEY` is unset, when Resend throws, and when a scheduled send is
