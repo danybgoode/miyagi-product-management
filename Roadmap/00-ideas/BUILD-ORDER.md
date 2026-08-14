@@ -18,7 +18,7 @@
 
 ## 📋 Ready to build (scaffolded, not started) (3)
 
-- [Marketplace communications — one map, and an email rail proven end to end](../../05-trust-offers-and-messaging/marketplace-communications/README.md) — 05 Trust/Offers/Messaging · 0/9 stories
+- [Marketplace communications — one map, and an email rail proven end to end](../../05-trust-offers-and-messaging/marketplace-communications/README.md) — 05 Trust/Offers/Messaging · 1/9 stories
 - [Golden Frijoles integration — finish the rebrand, turn the platform all the way on](../../09-platform-infra/golden-frijoles-integration/README.md) — 09 Platform-infra · 0/10 stories
 - [Tenant lifecycle — give /admin real control over shops](../../09-platform-infra/tenant-lifecycle-admin/README.md) — 09 Platform-infra · 0/9 stories
 
