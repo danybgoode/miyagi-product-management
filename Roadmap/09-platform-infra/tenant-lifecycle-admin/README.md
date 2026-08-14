@@ -104,10 +104,16 @@ first and reconciles later. The mirror is refreshed *from* Medusa after the writ
 `admin-consolidation`'s D4 (the directory is a strict read-model over canonical Medusa ids) while
 adding the write path underneath it.
 
-**D9 — The internal route fails closed when its secret is unset.** `MEDUSA_INTERNAL_SECRET` absent
-must 503, never authorize. This is verbatim the anti-pattern `LEARNINGS.md` records from the
-market-arch epic, where a destructive route failed *open* on an unset secret; the new status routes
-are written against that rule and a spec proves the unset case refuses.
+**D9 — CORRECTED at build time: this was already done, platform-wide.** The decision asked for a new
+fail-closed check on the status route. `src/lib/internal-auth.ts` already **is** that check —
+`internalSecretOk` denies when `MEDUSA_INTERNAL_SECRET` is absent, empty or whitespace, and it exists
+precisely because fifteen hand-rolled copies of the guard were live at once and three of them failed
+*open*. Writing a sixteenth would have been the exact mistake that file was created to end. The status
+route imports it, and re-deriving the polarity at the call site is forbidden.
+
+What the route does add is a **503 when no market sales channel is configured**. Without a channel
+there is no way to make a shop dark, so flipping the status alone would report a pause that did not
+happen — the lying-admin failure this epic exists to prevent.
 
 ## Scope — stories
 
@@ -128,7 +134,15 @@ are written against that rule and a spec proves the unset case refuses.
 Backend first and entirely — the migration, the status column and all three enforcement seams — then
 the admin UI. The frontend degrades gracefully in the gap: an admin action against a backend that does
 not yet expose the route gets a 404 and says so, rather than reporting a success it did not achieve.
-The migration is applied by the orchestrator via Supabase MCP **before** the merge that reads it.
+
+**Correction (build time): this migration is NOT applied by the orchestrator.** The scaffolded plan
+said "applied via Supabase MCP before the merge", which is the rule for the *Supabase* project and
+wrong for Medusa. Medusa migrations run inside the container at startup —
+`docker-entrypoint.sh` runs `npx medusa db:migrate` before `medusa start`, on every non-worker
+instance. Merging is therefore what applies it, and the sequence is safe because the change is
+purely additive: `status` is NOT NULL with a `'active'` default, so during the rolling deploy the old
+revision keeps serving rows it does not read the column of, and the new revision never sees a row
+without one. There is no window to sequence around, and nothing to apply by hand.
 
 ## Definition of Done (epic)
 - [ ] All sprints merged to `main` + smoke-tested (gaps stated)
