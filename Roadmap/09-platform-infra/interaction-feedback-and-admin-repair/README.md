@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: interaction-feedback-and-admin-repair
 ---
 
@@ -85,12 +85,13 @@ rots silently and then presents as a product regression.
 
 | # | Sprint | PR | Status |
 |---|---|---|---|
-| 1 | [Press + pending foundation](sprint-1.md) | [#374](https://github.com/danybgoode/miyagisanchezcommerce/pull/374) | 🟦 In review |
-| 2 | [Async button loading](sprint-1.md#s2) | [#375](https://github.com/danybgoode/miyagisanchezcommerce/pull/375) | 🟦 In review |
-| 3 | [/admin/contenido nav repair](sprint-2.md) | [#376](https://github.com/danybgoode/miyagisanchezcommerce/pull/376) | 🟦 In review |
-| 4 | [Contact, emoji round 2, checklist](sprint-3.md) | [#377](https://github.com/danybgoode/miyagisanchezcommerce/pull/377) | 🟦 In review |
-| 5 | [Admin list pagination](sprint-2.md#s5) | [#378](https://github.com/danybgoode/miyagisanchezcommerce/pull/378) | 🟦 In review |
-| 6 | [Browser-smoke fixture discovery](sprint-4.md) | [#370](https://github.com/danybgoode/miyagisanchezcommerce/pull/370) | 🟦 In review |
+| 1 | [Press + pending foundation](sprint-1.md) | [#374](https://github.com/danybgoode/miyagisanchezcommerce/pull/374) | ✅ Shipped |
+| 2 | [Async button loading](sprint-1.md#s2) | [#375](https://github.com/danybgoode/miyagisanchezcommerce/pull/375) | ✅ Shipped |
+| 3 | [/admin/contenido nav repair](sprint-2.md) | [#376](https://github.com/danybgoode/miyagisanchezcommerce/pull/376) | ✅ Shipped |
+| 4 | [Contact, emoji round 2, checklist](sprint-3.md) | [#377](https://github.com/danybgoode/miyagisanchezcommerce/pull/377) | ✅ Shipped |
+| 5 | [Admin list pagination](sprint-2.md#s5) | [#378](https://github.com/danybgoode/miyagisanchezcommerce/pull/378) | ✅ Shipped |
+| 6 | [Browser-smoke fixture discovery](sprint-4.md) | [#370](https://github.com/danybgoode/miyagisanchezcommerce/pull/370) | ✅ Shipped |
+| 7 | [Contenido nav collapsed to one open group](sprint-2.md) | [#379](https://github.com/danybgoode/miyagisanchezcommerce/pull/379) | ✅ Shipped |
 
 ## Acceptance — what Daniel can check
 
@@ -105,11 +106,13 @@ rots silently and then presents as a product regression.
 
 ## Definition of Done (epic)
 
-- [ ] All six PRs merged and the Cloud Build for each confirmed SUCCESS (`gcloud builds list --region=us-east4`).
+- [x] All seven PRs merged (#370, #374–#379) and every Cloud Build confirmed SUCCESS.
+- [x] Press + pending CSS verified live on production (`--press-scale`, `.card-tile:active`,
+      `.route-progress`, `.pending-dot` all present in the served bundle).
 - [ ] Daniel walks the acceptance list above — **on a phone as well as a desktop**, since the press
       layer is the half that only matters where hover does not exist.
-- [ ] `Roadmap/README.md` poster updated.
-- [ ] `RETROSPECTIVE.md` written and its durable learnings promoted to `Roadmap/LEARNINGS.md`.
+- [x] `Roadmap/README.md` poster updated (root #138).
+- [x] `RETROSPECTIVE.md` written; 3 learnings promoted to `Roadmap/LEARNINGS.md`; 3 memory files written.
 - [ ] The zero-photo browser-smoke fixture decided (create a no-photo listing, or retire the spec) —
       it currently reports FIXTURE UNAVAILABLE and skips, deliberately loudly.
 - [ ] Clerk's own sign-up email templates carry `hola@miyagisanchez.com` — those live in the Clerk
