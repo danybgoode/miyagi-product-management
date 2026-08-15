@@ -1,10 +1,10 @@
 # Golden Frijoles integration — Sprint 1: one SDK, one name
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — storefront #366, backend #153
 
 ## Stories
 
-### Story 1.1 — Cut `sdk-v0.4.0` from golden-beans
+### Story 1.1 — Cut `sdk-v0.4.0` from golden-beans ✅ `sdk-v0.4.0`
 **As a** platform owner, **I want** the renamed SDK published as a real release, **so that** the apps
 have something to depend on instead of a version that exists only on my laptop.
 **Acceptance:** `gh release view sdk-v0.4.0 -R danybgoode/golden-beans` shows a
@@ -12,7 +12,7 @@ have something to depend on instead of a version that exists only on my laptop.
 `@golden-frijoles/sdk`, version `0.4.0`.
 **Risk:** LOW
 
-### Story 1.2 — Migrate the storefront to `@golden-frijoles/sdk`
+### Story 1.2 — Migrate the storefront to `@golden-frijoles/sdk` ✅ (#366)
 **As a** builder, **I want** the storefront importing the renamed package, **so that** the flag
 provider, the mirror, the definition catalog and the scenario provider all speak one brand.
 **Acceptance:** no `@golden-beans/sdk` import remains in `apps/miyagisanchez`; `npx tsc --noEmit`,
@@ -20,7 +20,7 @@ provider, the mirror, the definition catalog and the scenario provider all speak
 against the branch preview.
 **Risk:** LOW
 
-### Story 1.3 — Migrate the backend to `@golden-frijoles/sdk`
+### Story 1.3 — Migrate the backend to `@golden-frijoles/sdk` ✅ (#153)
 **As a** builder, **I want** Medusa importing the renamed package, **so that** both repos resolve the
 same flag snapshot through the same client.
 **Acceptance:** no `@golden-beans/sdk` import remains in `apps/backend`, including the four Jest
@@ -28,7 +28,7 @@ same flag snapshot through the same client.
 `/store/checkout-admission/:id` still reports `owned_shop_only_enabled=true` against production.
 **Risk:** LOW
 
-### Story 1.4 — Pin the seven wire-protocol strings (D3)
+### Story 1.4 — Pin the seven wire-protocol strings (D3) ✅ (#366)
 **As a** future agent, **I want** a spec that fails if anyone renames the scenario handshake, **so
 that** a well-meaning find-and-replace cannot silently break signature verification.
 **Acceptance:** a spec asserts the exact literals `x-golden-beans-ownership-request`,

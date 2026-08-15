@@ -1,17 +1,17 @@
 # Marketplace communications — Sprint 3: see every email, first-hand
 
-**Status:** ⬜ not started
+**Status:** 🟨 code shipped `1ed0b44` (#367) — inbox verification owed to Daniel
 
 ## Stories
 
-### Story 3.1 — A fixture render for every template
+### Story 3.1 — A fixture render for every template ✅ `1ed0b44`
 **As a** platform owner, **I want** each message rendered with realistic sample data, **so that** a
 sample email looks like the real thing instead of `{{undefined}}`.
 **Acceptance:** every registered email template has a fixture that renders without throwing; a
 template added without a fixture fails the suite.
 **Risk:** LOW
 
-### Story 3.2 — Allow-listed sample send
+### Story 3.2 — Allow-listed sample send ✅ `1ed0b44`
 **As a** platform owner, **I want** to send myself any message on demand, **so that** I can see
 exactly what a merchant or a buyer receives.
 **Acceptance:** each row in `/admin/comunicaciones` offers "Enviarme esta"; the recipient is chosen
@@ -19,12 +19,18 @@ from a fixed list of three addresses held as a compile-time constant; a caller-s
 refused, not adopted; the subject carries a `[PRUEBA]` prefix and the body names the template key.
 **Risk:** MEDIUM
 
-### Story 3.3 — Deliver all of them, and record the evidence
+### Story 3.3 — Deliver all of them, and see them ⬜ OWED TO DANIEL
 **As a** platform owner, **I want** proof that every template actually arrives, **so that** email is
 a foundation I can trust rather than one that compiles.
-**Acceptance:** every registered email template has been delivered to a real inbox with its Resend id
-recorded in the sprint doc; any template Resend rejects is fixed and re-sent, not excused.
+**Acceptance:** every registered communication has been sent from `/admin/comunicaciones` and seen in
+a real inbox; any template Resend rejects is fixed and re-sent, not excused.
 **Risk:** LOW
+
+> **Scope corrected at build time.** The story originally asked for a Resend id recorded per
+> template. The route cannot supply one: the 62 senders are fire-and-forget by contract and return no
+> transport result, so it reports `dispatched`, not `delivered`. Rather than fabricate evidence, the
+> proof is the inbox — which makes this a human step by construction. All 61 fixtures exist and every
+> row has a one-click send; what remains is looking.
 
 ## Sprint QA
 - **api spec(s):** 3.1 → `e2e/communications-fixtures.spec.ts`; 3.2 →

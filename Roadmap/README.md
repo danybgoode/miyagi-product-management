@@ -191,6 +191,22 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-08-14 — Marketplace sanity run: Golden Frijoles, the communications map, and a paywall that
+  was quietly locking merchants out (6 PRs across 3 repos).** Four asks, and the two most valuable
+  findings were things nobody asked about. **The subdomain paywall had been ON since 2026-08-01 with
+  five of thirty shops ungranted** — including a merchant claimed five days earlier — so they were
+  gated out of subdomains they already had; backfilled 30/30 and verified live. And
+  **`sendOfferWithdrawn` had never been wired**: withdrawing an offer told the seller *nothing on any
+  channel*, so a seller not watching the thread held a dead offer open indefinitely. Both now fixed.
+  The flag sweep turned out to be **unnecessary** — Golden production already served 41 flags with 40
+  ON, only Envía off, and **zero targeting rules**, which is the real proof that "on" means 100% of
+  tenants. `/admin/comunicaciones` now maps all 61 communications (who triggers, who receives, which
+  channel) and can send you any of them as a marked `[PRUEBA]` sample, recipient constrained to a
+  compile-time allow-list. Both repos moved to `@golden-frijoles/sdk` 0.4.0 — **without** renaming the
+  seven scenario wire strings, which are signed material and would have failed verification silently.
+  Medusa gained a real `seller.status` primitive with a channel-link ledger, so unpausing restores
+  exactly what pausing removed rather than publishing an owned-shop catalog to the marketplace.
+
 - **2026-07-31 — Owned-shop operating channel SHIPPED (5 PRs across 2 repos; HIGH — money path,
   publishable-key membership, checkout admission).** A shop can now be sold from without marketplace
   admission. Medusa's Sales Channel primitive used twice instead of once: a new **operating channel**

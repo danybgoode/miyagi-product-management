@@ -1,6 +1,17 @@
 # Golden Frijoles integration — Sprint 2: everything on except Envía
 
-**Status:** ⬜ not started
+**Status:** ✅ no change required — production was already at target (verified live 2026-08-14)
+
+> **The premise was disproved before a line was written.** The sprint assumed a flag sweep was
+> needed. Reading Golden's live production snapshot (`snapshotVersion 47`, unchanged since
+> 2026-08-01) showed **41 Miyagi flags, 40 ON, only `shipping.envia_enabled` OFF — exactly the target
+> state** — and **zero targeting rules on any flag**, which is D6's assertion that "on" means on for
+> 100% of tenants, confirmed against live data rather than intent. There was nothing to flip.
+>
+> One residual, and it is not a flip: **`partners.recruiting_v3_enabled` is ABSENT from Golden
+> entirely**, not off. It falls through to the compile default `false`. Enabling it means *creating*
+> the definition first, and its own epic still gates it behind an operator-versus-Promotor
+> authorization smoke that has never run. Left alone deliberately (D9).
 
 ## Stories
 

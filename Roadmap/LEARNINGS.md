@@ -537,6 +537,36 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   owned-shop-operating-channel D3 + D7.)*
 
 ## Tooling gotchas
+- **A pure core is only as true as its INPUTS — test the input-shaping, not just the maths
+  (2026-08-14, `tenant-lifecycle-admin` #152, found by codex round 1).** The pause/unpause channel
+  ledger was correct and had 33 green specs, including one asserting it never relinks an
+  owned-shop-only product into the marketplace. The *route* feeding it then synthesised `every
+  product × every market channel` as "the seller's current links" — fabricating memberships that
+  product never had, so unpause would have CREATED them and published a private catalog. Every test
+  stayed green because every test exercised the half that was right. **The fix was structural, not a
+  new assertion: move the input-shaping INTO the pure function** (`planSellerStatusChange` now
+  decides what to unlink, what to relink and what the ledger becomes), leaving the shell to read rows
+  and execute. If your I/O shell still makes a decision, that decision is untested by construction.
+- **A missing lockfile update is INVISIBLE in a workspace monorepo (2026-08-14, SDK migration).** The
+  root declares `workspaces: ['apps/**']`, so `npm install` run from inside an app resolves the ROOT
+  lockfile — while CI clones the app repo alone and `npm ci` reads the APP lockfile. A local install
+  can succeed against a file CI never reads, and the failure surfaces only as a red `npm ci` on every
+  job at once. After changing an app's `package.json`, regenerate with
+  `npm install --package-lock-only --workspaces=false`.
+- **Before a brand rename, enumerate which occurrences are PROTOCOL and pin them (2026-08-14,
+  `golden-frijoles-integration` D3).** Golden Beans → Golden Frijoles renamed the package, the
+  provider metadata and the prose — but NOT the seven strings both ends HMAC
+  (`x-golden-beans-ownership-proof`, `golden-beans-target-request-v1`, …). A repo-wide
+  find-and-replace would not have errored; it would have produced signatures that silently fail to
+  verify, on the path whose whole job is proving ownership. The migration touched only module
+  specifiers, and a spec now pins each literal *and* asserts the file contains no "golden-frijoles" —
+  so the guard catches a well-meaning sweep even if the sweeper also updated the constants.
+- **"Absent" and "off" are different facts about a flag, and the difference is a task
+  (2026-08-14).** `partners.recruiting_v3_enabled` reads `false` everywhere — because it has NO
+  definition in Golden at all, not because it was turned off. Enabling it is a *create*, not a
+  *flip*. Any flag inventory that renders both states as "OFF" is hiding work. Corollary for
+  "everything is on": the assertion that proves it is **`rules: []`**, not `value === true` — a flag
+  can read true for the evaluating context while a targeting rule scopes it to a subset.
 - **Signed-webhook consumers + write-once milestones (2026-07-22, `merchant-lifecycle-projection`,
   PR #298 — six cross-agent rounds + a fresh reviewer found NINE real defects in one story; the
   levers below are the ones that generalise):**
