@@ -537,6 +537,20 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   owned-shop-operating-channel D3 + D7.)*
 
 ## Tooling gotchas
+- **Medusa's `updateSellers` MERGES `metadata` — `delete` on the local object clears nothing
+  (2026-08-14, `tenant-lifecycle-admin` #157, found by a live run).** Read-modify-write with
+  `delete metadata.key` then `updateSellers({ id, metadata })` leaves the stored key intact, because
+  the deleted key is simply absent from the patch. **Write an explicit `null` instead** — it clears
+  under either semantic — and make the reader treat null as empty. The bug is invisible in tests that
+  assert on the object you built rather than on what came back, and it was a real hazard here: a
+  ledger that never cleared would re-link, on some later restore, pairs that had legitimately been
+  unlinked in between. `src/api/internal/sellers/[id]/grant/route.ts` uses the identical pattern for
+  its REVOKE and very likely shares the bug.
+- **Cloud Run's `spec.template…image` is NOT what is serving — check `status.traffic[].revisionName`
+  (2026-08-14).** After a merge the service spec updates immediately while the new revision is still
+  starting, so an image-tag comparison reports "deployed" minutes before any request reaches the new
+  code. A verification run against the old revision then reproduces the ORIGINAL bug and looks like
+  the fix failed. Poll the serving revision name and its `status.conditions[0].status == True`.
 - **A pure planner is only as useful as the CALL that consumes it — exercise the real call shape
   (2026-08-14, `tenant-lifecycle-admin` #156, found by a live run).** `link.dismiss` was invoked with
   invented Medusa module keys (`productService` instead of `Modules.PRODUCT`), so every single unlink
