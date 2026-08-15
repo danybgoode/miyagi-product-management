@@ -1,5 +1,5 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: tenant-lifecycle-admin
 ---
 
@@ -54,6 +54,9 @@ is already modelled. Existing rows backfill to `'active'` by the column default,
 additive and safe on a populated table.
 
 **D2 — Pause is enforced in three places, and three is the complete population.** Not 61 routes.
+*(Built as scoped. A fourth enforcement point was added during S2's review — `start-checkout`,
+the money step — because the admission seam is an OFFER gate the storefront consults and cannot
+bind a caller who skips it. See the S2 note below.)*
 Enumerated mechanically from `src/api/store/**`, every path that can surface or transact a paused
 seller reduces to: **(a) catalog visibility** — unlink the seller's products from every market sales
 channel, which removes them from `/store/listings`, `/store/listings/:id`, `/store/sellers/:slug/*`,

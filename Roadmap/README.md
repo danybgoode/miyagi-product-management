@@ -191,6 +191,20 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-08-14 — Tenant lifecycle: pausing a shop now makes it genuinely dark (3 PRs, 2 repos).**
+  `/admin/tenants` stops being a read-only list. A real `status` lives on the Medusa seller, pausing
+  unlinks its products from every market channel, checkout refuses a non-active owner per-object, the
+  money step refuses independently, and the seller portal explains itself with a 423 instead of a
+  broken screen. The admin shows each merchant's Clerk registration email, filters and sorts by our
+  own heuristics, and can edit, pause, reactivate or remove a shop — every mutation validated before
+  a single write, with a required reason that lands in the audit log. **Unpausing restores exactly
+  what pausing removed**, from a recorded ledger, because relinking "everything this seller owns"
+  would publish an owned-shop-only catalog to the marketplace. The live run found what six review
+  rounds and 1198 green tests had not: the unlink was calling invented module keys and had never
+  worked, and the status flipped anyway. Both fixed — and the deliberate redundancy between the
+  unlink and the checkout check is the only reason a paused shop still could not be sold from while
+  that bug was live.
+
 - **2026-08-14 — Marketplace sanity run: Golden Frijoles, the communications map, and a paywall that
   was quietly locking merchants out (6 PRs across 3 repos).** Four asks, and the two most valuable
   findings were things nobody asked about. **The subdomain paywall had been ON since 2026-08-01 with
