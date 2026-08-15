@@ -62,13 +62,38 @@ retry against a shop that may already be deleted. This lesson landed four separa
 one layer further in each round: server transport, browser transport, gateway status, payload
 validation.
 
-## Gaps / follow-ups
+## The live round trip — what it took, and what it proved
 
-- **The pause round trip must be re-verified live** after #156 deploys: pause → confirm the catalog
-  is dark → unpause → confirm exactly the recorded links came back. The first attempt found the
-  broken unlink; the fix is unproven until that run is green.
+Three attempts. The first two found real defects; the third is the one that counts.
+
+| Step | Result |
+|---|---|
+| Pause | `unlinked: 2, complete: true` |
+| Dark? | product detail **404** · checkout admission **404** · **absent** from browse |
+| Unpause | `restored: 2, complete: true` |
+| Back? | product detail **200** · `admitted: true` |
+
+**The epic's central promise holds in production:** pausing a shop genuinely hides it, and unpausing
+restores exactly what pausing removed.
+
+A third defect surfaced only because that run was checked rather than declared green:
+`paused_link_count` stayed at 2 after a COMPLETE restore. `updateSellers` **merges** the metadata
+blob rather than replacing it, so `delete metadata[key]` is a no-op — the deleted key is simply
+absent from the patch and the stored value survives. Fixed in #157 by writing an explicit `null`.
+Not cosmetic: a stale ledger would re-link, on some later unpause, pairs that were legitimately
+unlinked in between — publishing products nobody asked to publish, which is the failure the ledger
+exists to prevent arriving through the back door.
+
+**Three live runs, three defects, none of which any review round or unit test found.** That ratio is
+the argument for exercising a feature against production before calling it done.
+
+## Gaps / follow-ups
 - **Authenticated smokes owed to Daniel:** the portal 423 as a real merchant, and a money-path
   checkout refusal against a paused shop.
+- **`internal/sellers/[id]/grant` probably shares the metadata-merge bug.** It uses the identical
+  `delete metadata.envia_grant` + `updateSellers` pattern, so a REVOKE there likely does not clear
+  either. Not fixed as a drive-by — it belongs to the shipping epic and deserves its own
+  verification — but it is the same defect and worth checking before anyone relies on that revoke.
 - **The cart-write authorization boundary is still open**, unwidened and inherited:
   `POST /store/carts/:id/line-items` enforces no channel membership and no seller status. Checkout
   and start-checkout both refuse, so the money consequence is closed — but the gap the owned-shop
