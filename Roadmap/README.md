@@ -179,7 +179,7 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 - ✅ **Marketplace positioning metadata** — the browser/Google title, meta description, OpenGraph/Twitter tags, and generated social card now say what Miyagi is in plain es-MX: a marketplace to buy, sell, and open your own shop in Mexico, keeping the **segundamano** recognition in the description/keywords/card instead of leading with "infraestructura."
 - ✅ **Sweepstakes** — a tenant runs a compliant giveaway: a SEGOB-aware campaign gate, a public entry page (`/g/[slug]`) + QR, email-code-verified entries, optional purchase-bonus tickets, an automated backend draw, and winner/consolation notifications. A global kill-switch lets Miyagi suspend all sweepstakes.
 - ✅ **Seasonal theme engine** — rotating platform-level brand collaborations: a visitor toggle between the Core look and the active seasonal collaboration (accent/logo/tagline/background/spot-art), persisted and applied before first paint, with contrast guardrails and strict exclusion of seller storefronts, dashboards, checkout, and embeds.
-- ✅ **Admin content & announcements** — runtime-editable marketing copy at `/admin/contenido`, restored after a prod migration gap and since redesigned as a real page-first CMS: a page/section nav (each item showing its own real destination — a public page, a seller-portal page, or "transactional email, not a page" — no two siblings look alike), a flat field editor scoped to one page at a time with before/after previews and a sticky page-context header, batched multi-field save (one «Guardar cambios» instead of one button per field), search/filter/sort/pagination, and CSV/XLSX/JSON bulk export/import with diff preview. Covers the homepage, `/vende` family, `/acerca` (full agent-facing fan-out — `/agent`, the UCP manifest, `/llms.txt`, the MCP `about_miyagi` resource), sweepstakes, and events (public/seller-portal/email copy each routed accurately) — no deploy needed for a copy edit. Plus one **announcement primitive**: scheduled, audience-scoped platform comms as a dismissable seller strip atop `/shop/manage` and an understated dismissable card on the buyer homepage, one active campaign per audience, `/` staying a static CDN asset throughout. Both behind `content.overrides_enabled` (kill-switch, default ON).
+- ✅ **Admin content & announcements** — runtime-editable marketing copy at `/admin/contenido`, restored after a prod migration gap and since redesigned as a real page-first CMS: a page/section nav (each item showing its own real destination — a public page, a seller-portal page, or "transactional email, not a page" — no two siblings look alike), a flat field editor scoped to one page at a time with before/after previews and a sticky page-context header, batched multi-field save (one «Guardar cambios» instead of one button per field), search/filter/sort/pagination, and CSV/XLSX/JSON bulk export/import with diff preview. **The nav covers the WHOLE dictionary since 2026-08-15** — `buyerShell`, `buyerCopy` and `sellerCopy` were all missing, and `sellerCopy` now fans out into the 34 seller-portal pages its strings actually render on (derived from the source-file map, not a table), with each namespace collapsed to one open group. Covers the homepage, `/vende` family, `/acerca` (full agent-facing fan-out — `/agent`, the UCP manifest, `/llms.txt`, the MCP `about_miyagi` resource), sweepstakes, and events (public/seller-portal/email copy each routed accurately) — no deploy needed for a copy edit. Plus one **announcement primitive**: scheduled, audience-scoped platform comms as a dismissable seller strip atop `/shop/manage` and an understated dismissable card on the buyer homepage, one active campaign per audience, `/` staying a static CDN asset throughout. Both behind `content.overrides_enabled` (kill-switch, default ON).
 
 ### 10 · Events & Ticketing
 - ✅ **Paid event admission** — sell admission as a `service`/`digital` listing through the real checkout, with event date/venue/aforo (capacity), and buyers can re-download their ticket/confirmation
@@ -190,6 +190,27 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-08-15 — Every click now says something (7 PRs).** The site was not slow; it was
+  *silent*. `.btn` had a press state and nothing else did — so on a phone, where hover does not
+  exist, tapping a product tile produced no feedback at all between the tap and the next page
+  painting. Two signals now, deliberately separate: **press** (pure CSS `:active`, zero JS, one rule
+  set covering all 18 `.card-tile` call sites without touching one of them) and **pending**
+  (`data-pending` from Next 16's `useLinkStatus`, scoped to the clicked `<Link>` — the one thing a
+  global spinner structurally cannot say), plus a 2px route bar that creeps to 90% and stops, because
+  it does not know how long a navigation will take and a bar that completes early is a lie.
+  **`/admin/contenido` stopped accusing itself**: it rendered ~2600 nav entries almost all captioned
+  "sección no reconocida", because three namespaces (2587 of 3372 keys) were missing from the route
+  map — whose own comment claimed full coverage — and because `sellerCopy`'s 1809 content-hash keys
+  each became their own section. Now 34 real seller-portal pages derived from the source-file map,
+  110 entries total, 12 collapsed groups. **The platform also had no contact address on it anywhere**
+  — `hola@miyagisanchez.com` existed only as an email Reply-To, so the only way to reach a person was
+  to answer a message we had already sent. Plus: the emoji guard could not see 🆕/⏳ inside its own
+  *enforced* files (the file list was right, the detector was blind); the market selector's flag
+  emoji became ISO chips; four of five onboarding-checklist steps were inert text; and the two long
+  admin lists paginate. **Owed: Daniel's phone walk-through; a public no-photo listing (or retire
+  that browser-smoke spec); the contact address in Clerk's own email templates.** See
+  [09 · Platform & Infra › interaction-feedback-and-admin-repair](09-platform-infra/interaction-feedback-and-admin-repair/).
 
 - **2026-08-14 — Tenant lifecycle: pausing a shop now makes it genuinely dark (3 PRs, 2 repos).**
   `/admin/tenants` stops being a read-only list. A real `status` lives on the Medusa seller, pausing
