@@ -1432,6 +1432,54 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A GUARD'S FILE LIST CAN BE RIGHT WHILE ITS DETECTOR IS BLIND — and every previous lesson here is
+  about the list.** Two instances, unrelated guards, one session.
+  `app/(shell)/shop/manage/analytics/AnalyticsClient.tsx` had been in the emoji guard's
+  `enforcedSweptPaths` since the sweep shipped and carried 🆕 and ⏳ the whole time, **green**: neither
+  glyph was in the pattern's Unicode ranges (U+1F195 is Enclosed Alphanumeric Supplement, U+23F3 is
+  Misc Technical). Widening the *population* — the reflex this file has trained twice — would have
+  found nothing; widening the *pattern* found 4 offenders inside already-enforced files immediately.
+  Same shape in prose: `lib/copy-overrides-routes.ts` asserted "every `locales/es.json` top-level
+  namespace is covered" while `buyerShell`/`buyerCopy`/`sellerCopy` — **2587 of 3372 keys** — had no
+  entry, so `/admin/contenido` rendered ~2600 nav items captioned "sección no reconocida". **The tell:
+  the guard is green on a file you can see the violation in with your own eyes.** If you catch
+  yourself thinking "but that file *is* in the enforced set", stop looking at the set. Fix both ways:
+  (a) test the DETECTOR against a fixture of each category you claim to ban — a Unicode range added
+  without a fixture is a range nobody has checked; (b) derive the population from the live artifact,
+  never from a list *and* never from a comment. The new live-dictionary coverage spec then found
+  `partnersRecruiting.landing`/`.application` mis-captioned since that namespace shipped. Keep
+  allowing the negation: the widened emoji pattern deliberately does NOT swallow all of U+2300–23FF,
+  because ⌘ ⌥ ⌫ ⏎ are real text in a keyboard hint. *(2026-08-15,
+  interaction-feedback-and-admin-repair.)*
+- **A UI-STATE SPEC MUST BASELINE ON THE STATE IT IS NOT TESTING.** The press-feedback browser spec
+  compared the pressed transform against the **resting** one — but `.card-tile:hover` lifts the tile,
+  so moving the pointer onto it already changed the transform. It passed on hover alone and **stayed
+  green through a mutation that deleted the entire `.card-tile:active` rule**: it was measuring hover
+  and reporting it as press. Any state layered on another (`:active` over `:hover`, `:focus` over
+  `:hover`, selected over hovered) must be compared against the state immediately beneath it, never
+  against rest — comparing to rest only asks "did anything change?", which every intermediate step
+  answers yes to. Second trap in the same fix: the corrected baseline was captured **mid-transition**,
+  so the restore assertion compared against a value the element was only passing through — settle
+  first, or poll until two reads agree. Third: `mouse.down()` + `mouse.up()` on a link is a click, so
+  the element you are measuring navigates away; move the pointer off before releasing. Same family as
+  the ordering rule at the top of this file — both are specs that pass while the property is absent,
+  and **only the mutation run catches them; reading catches neither**. *(2026-08-15.)*
+- **A TEST FIXTURE PINNED TO A PRODUCTION ID IN AN ACTIONS SECRET ROTS SILENTLY, THEN PRESENTS AS A
+  PRODUCT REGRESSION.** The nightly browser smoke went red on three PDP-gallery specs; the cause was
+  the product owner deleting two throwaway shops through `/admin/tenants` six hours earlier, using a
+  feature that had shipped the day before — read from `admin_audit_log`, not guessed. An id in a
+  secret is a claim about prod data that nobody re-checks, invisible from the codebase and unreadable
+  by most people. **Discover the fixture from a live authoritative API instead** (here
+  `/api/ucp/catalog` by photo count: a listing not in the catalog has no PDP to test), and demote the
+  secret to an optional pin. Two traps in doing it: discovery must be **deterministic** (first-match-
+  in-response-order reshuffles as the data does, so a flake is unreproducible — sort by a stable key)
+  and **cheap** (the first multi-photo match was a ten-image PDP whose `load` event blew the 30s
+  timeout under 4 parallel workers while passing at `--workers=1`; fewest-images-that-qualifies took
+  the file 31s → 8s). Keep three states — *found* / *no listing of this shape exists* / *the API could
+  not be read* — because the last two both collapse into a quiet skip otherwise. Consequence stated
+  loudly rather than hidden: the zero-photo spec **cannot run at all** (every live listing has ≥1
+  photo) and now says so in its skip reason. **Also: the failing run's `trace.zip` contains the
+  fixture id**, so a dead fixture is identifiable without ever reading the secret. *(2026-08-15.)*
 - **A spec written against a permissive fake proves the payload you MEANT to build, never that the API
   accepts it — and it will hold the broken shape in place.** `resolveSellerProductIds(..., {
   includeDeleted: true })` built `context: { products: QueryContext({}) } + withDeleted: true` to make
