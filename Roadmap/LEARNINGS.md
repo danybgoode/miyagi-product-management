@@ -537,6 +537,24 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   owned-shop-operating-channel D3 + D7.)*
 
 ## Tooling gotchas
+- **A pure planner is only as useful as the CALL that consumes it — exercise the real call shape
+  (2026-08-14, `tenant-lifecycle-admin` #156, found by a live run).** `link.dismiss` was invoked with
+  invented Medusa module keys (`productService` instead of `Modules.PRODUCT`), so every single unlink
+  threw and pausing a shop did nothing to its catalog. Six cross-family review rounds, 1198 green
+  unit tests and a fully correct pure planner did not see it, because the specs asserted *what* to
+  unlink rather than that the call signature existed. **When a pure decision drives an external API,
+  at least one test must pin the real call shape — otherwise the first production request is the
+  test.** Corollary, same incident: **a status must never claim work that failed.** The seller flipped
+  to `paused` while every unlink errored, producing exactly the shop-reads-paused-but-still-sells
+  failure the epic was written to prevent; the route's own header promised the ordering guarantee and
+  the code did not implement it.
+- **An ambiguous outcome is not a failure — "we do not know" is its own state (2026-08-14).** A
+  timeout, a lost browser response, a gateway 5xx and an unreadable 2xx all mean the mutation MAY
+  have applied. Reporting any of them as "failed" invites a retry against a resource that already
+  changed — which for a delete is unrecoverable. This landed four separate times in one PR, one layer
+  further in each round (server transport → browser transport → gateway status → payload validation),
+  so treat it as a class: enumerate every path where a request can end without a readable answer, and
+  give them all the third state plus a "verify, do not retry" instruction.
 - **A pure core is only as true as its INPUTS — test the input-shaping, not just the maths
   (2026-08-14, `tenant-lifecycle-admin` #152, found by codex round 1).** The pause/unpause channel
   ledger was correct and had 33 green specs, including one asserting it never relinks an

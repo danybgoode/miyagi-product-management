@@ -1,10 +1,10 @@
 # Tenant lifecycle — Sprint 3: the admin surface
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `9193100` (#368)
 
 ## Stories
 
-### Story 3.1 — The registration email, read from Clerk
+### Story 3.1 — The registration email, read from Clerk ✅ `9193100`
 **As a** platform owner, **I want** to see the email each merchant signed up with, **so that** I can
 reach a shop's actual owner without leaving the admin.
 **Acceptance:** every claimed shop in `/admin/tenants` shows its Clerk registration email; an
@@ -12,7 +12,7 @@ unclaimed shop shows *unclaimed*; a Clerk outage shows *no disponible* — never
 reads as "this merchant has no email". The email is never written into `marketplace_shops`.
 **Risk:** LOW
 
-### Story 3.2 — Filter and sort by the platform's own heuristics
+### Story 3.2 — Filter and sort by the platform's own heuristics ✅ `9193100`
 **As a** platform owner, **I want** to slice the directory the way I actually think about shops,
 **so that** I can find the ones that need attention.
 **Acceptance:** the directory filters by status, market, claimed/unclaimed, custom-domain state and
@@ -20,7 +20,7 @@ entitlement, and sorts by listing count, created-at and last activity, in both d
 filtering run over every shop, not just the visible page.
 **Risk:** LOW
 
-### Story 3.3 — Edit, pause, unpause, delete
+### Story 3.3 — Edit, pause, unpause, delete ✅ `9193100`
 **As a** platform owner, **I want** to act on a shop from the directory, **so that** managing tenants
 does not require a database client.
 **Acceptance:** I can edit a shop's name, description, location and slug; pause and unpause it;
