@@ -1432,6 +1432,51 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A spec written against a permissive fake proves the payload you MEANT to build, never that the API
+  accepts it — and it will hold the broken shape in place.** `resolveSellerProductIds(..., {
+  includeDeleted: true })` built `context: { products: QueryContext({}) } + withDeleted: true` to make
+  Medusa include soft-deleted rows in a nested relation. `toRemoteQuery` duly emits
+  `seller.products.__args.context = {}`, and the Product module has no `context` argument, so **every
+  call threw** `Trying to query by not existing property Product.context`. All 12 call sites were the
+  seller-order surfaces: the list swallowed it in a bare `catch` and reported "no orders" to every
+  seller platform-wide; the nine detail routes and ticket-redeem had no catch and 500'd. **Two specs
+  kept it alive.** One asserted the exact bad payload against a `jest.fn()` that accepts any object; the
+  other, a population guard, pinned `includeDeleted` onto those 12 files *as a feature*. The fix runs
+  the query through the **installed `toRemoteQuery`** inside the spec — so an invented argument fails in
+  the test, not in production — and inverts the population guard to "this option must be absent from the
+  whole api tree". **When a call shape is the risk, exercise the real translator, or grep a sibling that
+  demonstrably works.** Third instance after `link.dismiss` with invented module keys (#156) and the
+  fabricated cartesian product; see *a pure planner needs the real call shape*. (2026-08-15, backend #159.)
+- **Degrade-to-empty must SAY which degrade point it took.** The same function had four places it
+  returned `[]` and the first was a bare `catch {}`, so "this seller has no orders" and "I could not find
+  out" rendered identically on the one screen a merchant uses to see they made a sale. A `trace`
+  collector (opt-in, surfaced by `internal/sellers/orders?trace=1`) named the cause **on the first
+  request** after deploy, having survived two wrong hypotheses and a day of inference. Where a fix cannot
+  be proven offline, ship the instrumentation first and read it — that is faster than guessing, and it
+  leaves the next outage diagnosable. Corollary: when you remove a capability you cannot implement
+  (deleted-inclusive reads), **measure the residual gap** — `unresolved_product_slots` counts the
+  soft-deleted links that are now missing, so "how many are we losing" is a number that can be watched
+  rather than an assumption. (2026-08-15.)
+- **Never `fetch()` your own authenticated route for work you are already authorised to do.** The moment
+  the caller moves server-side, the request carries no session cookie and the route 401s — forever, and
+  silently if the call is fire-and-forget. `lib/cart.ts` reached `/api/orders/finalize-manual` over HTTP;
+  PR #244 moved `startCheckout` behind `/api/checkout/start`, and **every manual-order confirmation email
+  to both buyer and seller stopped for 32 days** behind a `.catch(() => {})`. Card orders were unaffected
+  (the Stripe webhook sends inline, no hop), so "emails work" was true for the path anyone tested. Call
+  the function; leave the route as a thin wrapper. And a value that *addresses* a notification must be
+  derived from `auth()` and **overwrite** the request body, never default from it. (2026-08-15, storefront #369.)
+- **One unknown column makes PostgREST reject the ENTIRE select — and a discarded `error` renders that as
+  "you have nothing".** Three pages asked for `marketplace_shops.market_code`, which has never existed
+  (the operating market is a fact of the Medusa seller; `market-visibility.ts` says a mirror "must never
+  decide its market"). For four days `/messages` was an empty inbox, `/messages/[id]` was a **404** — the
+  reported "Preguntar returns a 404", where the API 201s and creates the conversation before the page it
+  navigates to dies — and `/account/favorites` was empty, all at HTTP 200 with nothing logged. Grep found
+  one of the three; a mechanical scan (`scripts/audit-select-columns.mjs`, diffing every `.select()`
+  against PostgREST's **OpenAPI** document, since it cannot read `information_schema`) found all three
+  plus two more on legacy tables. **Guard the population, not the door you found** — and note its first
+  version reported 16 false positives by reading embedded relations as columns, which is how a guard gets
+  deleted. A failed read is not an empty result, and it must never answer with `notFound()`. (2026-08-15.)
+
 - **Assert the ORDERING, not just the verdict — a guard that returns the right status from the wrong
   place is still broken.** `admitUsDelivery` refuses a bad US checkout with a 422, and a spec asserting
   "returns 422" passed. Moving the call **below** the cart writes kept that spec green: the refusal was
