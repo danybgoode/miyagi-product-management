@@ -1,6 +1,16 @@
 # Golden Frijoles integration — Sprint 3: paywalls on, nobody cut off
 
-**Status:** ⬜ not started
+**Status:** 🟨 subdomain applied `2dbd58c` (#364) — custom_domain + ml_sync deliberately NOT applied; partners flag owed
+
+> **What actually happened.** The paywalls were found ALREADY ON in production and had been since
+> 2026-08-01 — so this was not a flip to prepare for, it was a live exposure to fix. Five of thirty
+> shops carried no `subdomain_grant`, including `ylai-studio`, a claimed merchant created five days
+> earlier: they were gated out of subdomains they already had. Backfilled, 30/30, verified live.
+>
+> `custom_domain` (27 shops owed) and `ml_sync` (28) were **deliberately not applied**. Those are
+> opt-in SKUs that **1** and **0** shops respectively use, so a blanket grant would not be
+> grandfathering — it would hand a paid SKU to shops that never had it. Left for the product owner;
+> one command either way.
 
 ## Stories
 

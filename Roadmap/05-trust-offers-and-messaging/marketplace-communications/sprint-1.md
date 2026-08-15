@@ -1,10 +1,10 @@
 # Marketplace communications — Sprint 1: the catalog
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `385cb3f` (#365)
 
 ## Stories
 
-### Story 1.1 — The communications catalog
+### Story 1.1 — The communications catalog ✅ `385cb3f`
 **As a** platform owner, **I want** every message the platform can send declared in one typed place,
 **so that** the map of who tells whom what is a fact in the code rather than an afternoon of reading.
 **Acceptance:** `lib/notifications/catalog.ts` declares, for every communication: a stable key, the
@@ -13,7 +13,7 @@ its event group, and the sender it calls. Adding a communication without a catal
 build.
 **Risk:** LOW
 
-### Story 1.2 — Population guard
+### Story 1.2 — Population guard ✅ `385cb3f`
 **As a** future agent, **I want** the catalog checked against the real senders, **so that** it cannot
 quietly fall behind the code it describes.
 **Acceptance:** a spec derives the exported sender names from `lib/email.ts` and fails when one is
@@ -21,7 +21,7 @@ missing from the catalog. A sender may be registered as `deliberately_unwired` w
 correct state can never be rejected.
 **Risk:** LOW
 
-### Story 1.3 — Resolve the two unwired senders ✅ `feat/marketplace-communications`
+### Story 1.3 — Resolve the two unwired senders ✅ `385cb3f`
 **As a** seller, **I want** to be told when a buyer walks away, **so that** I stop holding a dead
 offer open — and **as a** platform, **I want** no half-built templates left lying around.
 **Acceptance:** withdrawing an offer now emails the seller (`sendOfferWithdrawn`, wired into the
@@ -35,7 +35,7 @@ population guard is green.
 > nobody, so deleting its template would have removed a notification the seller needs. See the
 > corrected D3 in the epic README.
 
-### Story 1.4 — `send()` reports three states
+### Story 1.4 — `send()` reports three states ✅ `1ed0b44`
 **As a** platform owner, **I want** to distinguish "not configured" from "rejected" from "sent",
 **so that** a silent non-delivery cannot look like a delivery.
 **Acceptance:** `send()` returns `{ ok: true, id }` or `{ ok: false, reason }` where reason is

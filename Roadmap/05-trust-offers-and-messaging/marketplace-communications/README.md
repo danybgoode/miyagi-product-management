@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: marketplace-communications
 ---
 
@@ -75,13 +75,16 @@ The original decision would have silently removed a notification the seller need
 rather than quietly worked around, per the `AGENTS.md` rule that a false premise is a reason to stop
 and say so.
 
-**D4 — `send()` must report three states, and today it reports one.** It returns `null`
-indistinguishably when `RESEND_API_KEY` is unset, when Resend throws, and when a scheduled send is
-inside Resend's 16-minute window. On a rail the product owner wants bulletproof, "I could not check"
-and "it did not send" and "there was nothing to send" are different facts, and collapsing them is
-exactly the confident falsehood `LEARNINGS.md` keeps recording. `send()` returns a discriminated
-result — `{ ok: true, id }` / `{ ok: false, reason: 'unconfigured' | 'rejected' | 'too_soon' }` — and
-the dispatch seam keeps its fire-and-forget contract by ignoring the value, unchanged.
+**D4 — `send()` must report three states — shipped as a SIBLING, not a replacement.** It returned
+`null` indistinguishably when `RESEND_API_KEY` is unset, when Resend throws, and when a scheduled
+send is inside Resend's 16-minute window. On a rail the product owner wants bulletproof, "I could not
+check", "it did not send" and "there was nothing to send" are different facts.
+
+Built slightly differently from the decision as written: `sendWithResult` carries the discriminated
+answer and `send` remains a thin adapter over it. The decision implied changing `send`'s own return
+type, which would have churned 62 call sites that legitimately ignore the value — a large diff across
+every money-path notification, to no behavioural end. The honest result is available where it is
+needed (the sample sender) and the fire-and-forget contract is untouched everywhere else.
 
 **D5 — The sample sender is allow-listed to three addresses, in code, and cannot be widened by a
 request.** The product owner asked to see each communication first-hand. `/admin/comunicaciones`
@@ -97,11 +100,17 @@ finds one of these in an inbox six months from now must not mistake it for a rea
 notification, and a real buyer must never receive one at all — which D5 already guarantees
 structurally.
 
-**D7 — Coverage is measured by sending, not by rendering.** A template that compiles is not a
-template that arrives: Resend rejects on `from` domain misconfiguration, on spam heuristics, and on
-malformed HTML that renders fine locally. S3 sends **every** registered email template to a real
-inbox and records the Resend id, so the epic's claim is "62 of 62 delivered" with evidence, not "62
-of 62 compiled".
+**D7 — Coverage is measured by sending, not by rendering — and the last mile is Daniel's.** A
+template that compiles is not a template that arrives: Resend rejects on `from` domain
+misconfiguration, on spam heuristics, and on HTML that renders fine locally and badly in a mail
+client. So the sample path calls the REAL sender through the REAL transport.
+
+**Corrected at build time:** the decision said S3 would record a Resend id per template as evidence of
+"62 of 62 delivered". It cannot, and claiming it would be the exact overclaim this epic exists to
+remove — the 62 senders are fire-and-forget by contract and return no transport result, so the route
+honestly reports `dispatched`, not `delivered`. **The inbox is the only proof of delivery, and it is
+owed to Daniel.** Every template now has a fixture and a one-click send; confirming what arrives is a
+human step by construction, and the sprint doc names it as such rather than pretending otherwise.
 
 **D8 — Push and Telegram are mapped, not overhauled.** The product owner named email as the
 priority and the foundation. Both other channels appear in the matrix with their triggers and their

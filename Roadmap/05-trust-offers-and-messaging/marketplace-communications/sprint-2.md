@@ -1,10 +1,10 @@
 # Marketplace communications — Sprint 2: the matrix as a surface
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `1ed0b44` (#367)
 
 ## Stories
 
-### Story 2.1 — `/admin/comunicaciones`
+### Story 2.1 — `/admin/comunicaciones` ✅ `1ed0b44`
 **As a** platform owner, **I want** to read the communications map in the admin, **so that** I can
 answer "what does this action send, to whom, on which channel" without opening an editor.
 **Acceptance:** the page lists every communication with its trigger, from-actor, to-actor, channels
@@ -12,7 +12,7 @@ and event group; the totals are computed from the catalog, never typed; the page
 and registered in the admin nav.
 **Risk:** LOW
 
-### Story 2.2 — Filter by actor, channel and trigger
+### Story 2.2 — Filter by actor, channel and trigger ✅ `1ed0b44`
 **As a** platform owner, **I want** to narrow the map, **so that** I can see just what a buyer
 receives, or just what goes out over Telegram.
 **Acceptance:** filtering by from-actor, to-actor and channel narrows the list and updates the count;

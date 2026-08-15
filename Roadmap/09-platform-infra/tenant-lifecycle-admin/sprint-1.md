@@ -1,10 +1,10 @@
 # Tenant lifecycle — Sprint 1: the status primitive
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `bc77852` (#152)
 
 ## Stories
 
-### Story 1.1 — `status` on the Medusa seller
+### Story 1.1 — `status` on the Medusa seller ✅ `bc77852`
 **As a** platform, **I want** a shop's lifecycle state to live on the commerce primitive every read
 already resolves through, **so that** "paused" is one fact instead of a flag some consumers honour.
 **Acceptance:** the `seller` model carries `status: 'active' | 'paused' | 'deleted'` defaulting to
@@ -12,7 +12,7 @@ already resolves through, **so that** "paused" is one fact instead of a flag som
 value is refused at the seam rather than coerced.
 **Risk:** LOW
 
-### Story 1.2 — Internal status-transition route
+### Story 1.2 — Internal status-transition route ✅ `bc77852`
 **As an** admin surface, **I want** one authenticated route that changes a shop's status, **so that**
 the mutation happens in Medusa and the mirror follows.
 **Acceptance:** `POST /internal/sellers/:id/status` accepts a target status and a reason, is gated by
@@ -20,7 +20,7 @@ the mutation happens in Medusa and the mirror follows.
 whole transition before it writes anything, so a rejected transition leaves no partial state.
 **Risk:** HIGH
 
-### Story 1.3 — The pause/unpause channel-link ledger
+### Story 1.3 — The pause/unpause channel-link ledger ✅ `bc77852`
 **As a** platform owner, **I want** unpausing to restore exactly what pausing removed, **so that**
 resuming an owned-shop-only merchant does not publish its private catalog to the marketplace.
 **Acceptance:** pausing records every `(product_id, sales_channel_id)` pair it unlinks into
