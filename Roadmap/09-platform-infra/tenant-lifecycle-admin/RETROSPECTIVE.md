@@ -84,8 +84,18 @@ Not cosmetic: a stale ledger would re-link, on some later unpause, pairs that we
 unlinked in between — publishing products nobody asked to publish, which is the failure the ledger
 exists to prevent arriving through the back door.
 
-**Three live runs, three defects, none of which any review round or unit test found.** That ratio is
-the argument for exercising a feature against production before calling it done.
+**Verified clean on `medusa-web-00055-6j2` after #157**, which is the run that closes the epic:
+
+```
+PAUSE    unlinked: 2  complete: true   → product 404 · admission 404
+UNPAUSE  restored: 2  complete: true   → product 200 · admitted: true
+LEDGER   paused_link_count: 0
+```
+
+**Four live runs, three defects, none of which any review round or unit test found.** That ratio is
+the argument for exercising a feature against production before calling it done — and for checking
+the result rather than declaring it, since the third defect was only visible in a field of a response
+that otherwise read as a complete success.
 
 ## Gaps / follow-ups
 - **Authenticated smokes owed to Daniel:** the portal 423 as a real merchant, and a money-path
@@ -102,3 +112,8 @@ the argument for exercising a feature against production before calling it done.
   slug, the domain, the channel links) and was deliberately not invented here.
 - **Slug and custom-domain edits are deliberately absent** from the admin surface; both need their
   own flow rather than a text field in a directory row.
+- **`/admin/tenants` fans one status read and one Clerk email read per shop.** Measured: ~250 ms per
+  status call, bounded at concurrency 8 (statuses) and 6 (emails, with a 5-minute in-process cache).
+  At 30 shops that is a few seconds on a cold load, which is fine. **At a few hundred tenants it is
+  not** — the read model would need a batch endpoint or a cached projection. Recorded now, while the
+  number is small enough that nobody has felt it.
