@@ -118,5 +118,8 @@ Owed to Daniel:
   at least one, so it reports FIXTURE UNAVAILABLE and skips, deliberately loudly.
 - `hola@miyagisanchez.com` in Clerk's own sign-up/verification templates — those live in the Clerk
   dashboard, not this repo.
-- `dimo` and `cash_pickup` are written by the payments settings save and are **not** on
-  `CheckoutSettings`. Flagged, not fixed: widening that type touches every consumer.
+- ~~`dimo` and `cash_pickup` are written by the payments settings save and are **not** on
+  `CheckoutSettings`.~~ **Closed 2026-08-16 (#380)** — and the fix found that the inline cast written
+  while flagging it had *itself* guessed the shape wrong: `phone` is `string | null`, not `string`.
+  Production holds explicit nulls in several of the 7 shops carrying these blocks. A cast written
+  from the save code alone reproduces the same error; querying the live rows is what caught it.
