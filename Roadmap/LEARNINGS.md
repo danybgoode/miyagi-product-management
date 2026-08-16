@@ -1432,6 +1432,33 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **DERIVE A TYPE FROM THE DATA, NOT FROM THE CODE THAT WRITES IT — and a missing type produces N
+  independent guesses, not one.** `dimo`/`cash_pickup` were written by the payments settings save and
+  read back by three modules while being absent from `CheckoutSettings` entirely, so every call site
+  carried its own cast. Clearing lint debt I replaced an `any` with what looked like careful
+  narrowing — `phone?: string` — derived by reading the save code. It was **wrong**: the save writes
+  `phone: … || null` and production confirmed it, several of the 7 shops carrying these blocks holding
+  an explicit `{"phone": null}`. The seller-portal input would have been seeded with `null` instead of
+  `''`. One `select metadata->'settings'->'checkout' from marketplace_shops` answered in seconds what
+  reading the writer got wrong, and reading the FULL live block then proved the finished type had no
+  remaining untyped field — something reading code cannot establish at all. Two corollaries: **(a)**
+  when you fix the type, check each cast individually rather than deleting them all — two here were
+  kept deliberately, because they parse arbitrary user-supplied config files, which is defensiveness
+  about untrusted input rather than a workaround for a missing type; **(b)** `?? {}` as a fallback
+  silently widens the value straight back to `{}` and loses every field, which is exactly what forced
+  the original cast into existence — read the optional chain directly. *(2026-08-16, #380.)*
+- **A TIMEOUT WITH A KNOWN, FIXED CAUSE DOES NOT WANT A BIGGER BUDGET.** Three specs timed out in one
+  nightly run; two got `test.slow()` and the third deliberately got nothing, because its cause had
+  been found and fixed the same week (fixture discovery was picking a ten-image PDP; taking the
+  cheapest qualifying listing took the file 31s → 8s). Raising the budget there would have hidden the
+  next regression in it. **The diagnostic that justifies a budget change is the FAILURE SIGNATURE, not
+  the story:** all three failures that night were `Test timeout of 30000ms exceeded` with zero
+  assertion failures, and that — not a latency anecdote — is the argument. Corollary on inherited
+  drafts: the nightly's draft asserted the API "spikes into the 15-35s range"; it could not be
+  reproduced (2.3s cold, 0.22s warm over six samples), so the claim was corrected out of the PR body
+  and the comments rather than shipped. It also dismissed a sibling spec as "flaky, no action needed"
+  five days before its neighbours went genuinely red for the same reason — **"flaky" is a diagnosis,
+  and an undiagnosed one is a prediction of a future red.** *(2026-08-16, #349.)*
 - **A GUARD'S FILE LIST CAN BE RIGHT WHILE ITS DETECTOR IS BLIND — and every previous lesson here is
   about the list.** Two instances, unrelated guards, one session.
   `app/(shell)/shop/manage/analytics/AnalyticsClient.tsx` had been in the emoji guard's
