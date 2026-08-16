@@ -113,6 +113,11 @@ rots silently and then presents as a product regression.
       layer is the half that only matters where hover does not exist.
 - [x] `Roadmap/README.md` poster updated (root #138).
 - [x] `RETROSPECTIVE.md` written; 3 learnings promoted to `Roadmap/LEARNINGS.md`; 3 memory files written.
+- [x] Browser-smoke timeout budgets settled (#349): `cross-channel-trust` and `agent-prompt` get
+      `test.slow()`; `pdp-gallery` deliberately gets none, because its timeout had a *known, fixed*
+      cause (#370's cheapest-listing picker, 31s → 8s) and a bigger budget there would only hide the
+      next regression.
+- [x] `dimo` + `cash_pickup` typed on `CheckoutSettings` (#380).
 - [ ] The zero-photo browser-smoke fixture decided (create a no-photo listing, or retire the spec) —
       it currently reports FIXTURE UNAVAILABLE and skips, deliberately loudly.
 - [ ] Clerk's own sign-up email templates carry `hola@miyagisanchez.com` — those live in the Clerk
