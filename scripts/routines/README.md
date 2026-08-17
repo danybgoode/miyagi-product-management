@@ -25,7 +25,7 @@ This repo commits the *prompts + this runbook*. **The account stand-up itself is
 Daniel** — installing the GitHub App, creating the routines from these prompts, and setting B's
 secrets/allow-list. Nothing here provisions infra or changes any account.
 
-## The two rules that hold for all three
+## The three rules that hold for all of them
 
 1. **Advisory only — never a required check.** Every routine's output is a PR comment or a `claude/`
    PR for a human to review. None gates a merge, deploy, or money path. A plain PR **comment carries no
@@ -33,9 +33,36 @@ secrets/allow-list. Nothing here provisions infra or changes any account.
    keep it that way (Routine A must stay comment-only; never wire any status reporting). The
    deterministic layers (CI, `browser-smoke.yml`, `notion-sync.yml`, the Cloud Build / Vercel deploy
    notifiers) remain the sole sources of truth.
+
+   > ⚠️ **ONE EXCEPTION, added 2026-08-17 by Daniel: Routine B may merge its own PR** — and only
+   > when `scripts/smoke-triage-scope.mjs` returns ALLOW, meaning the diff is test scaffolding only
+   > and weakens nothing. See B's own section. Rule 1 is otherwise unchanged, and the "never a
+   > required check" half is unchanged for *every* routine including B: the browser smoke remains the
+   > sole detector and nothing a routine emits gates anything.
+
 2. **Leave push at the `claude/` default.** A routine may only push `claude/`-prefixed branches unless
    unrestricted push is explicitly enabled — don't enable it. A only comments (no push); B/C open
-   `claude/` PRs.
+   `claude/` PRs. (Merging a `claude/` PR needs no wider push scope — B stays inside this default.)
+
+3. **🚨 A prompt file in this directory is NOT what runs. Re-sync the trigger, or you changed
+   nothing.** The cloud routine stores its own copy of the prompt in Daniel's account; editing the
+   committed file here does not touch it. Both known routines had silently diverged:
+
+   | Routine | Drift found | State |
+   |---|---|---|
+   | `smoke-triage` (`trig_01M3YFwsbGB5rVUwFRSm235m`) | Stored prompt was a short ad-hoc text that had **never** matched `smoke-triage.prompt.md` — no diagnosis rubric, no advisory banner, no failure ping, and branch `claude/smoke-fix-<date>` instead of `claude/smoke-triage-<date>` | re-synced 2026-08-17 |
+   | `ops-nightly` (`trig_01AP6pCm95ghuSs4D1jMTcaC`) | Stored prompt still called `skills/<name>/SKILL.md` paths that no longer exist (skills moved to the `ways-of-work` plugin) and still described step 4 as a simple skill call, not the 3-phase CPO prose write with its mechanical guard | re-synced 2026-08-17 |
+
+   The ops-nightly divergence was caught by the routine itself — it followed the repo file instead of
+   its stored prompt and reported the mismatch. That worked because the run had the repo in front of
+   it. **Do not rely on that.** A drifted prompt is invisible from the codebase, which is the same
+   failure shape as a fixture pinned to an Actions secret.
+
+   **To sync:** use the `RemoteTrigger` tool (`action: "update"`, the trigger id, and the prompt body
+   as the message content) — the same rail these routines were created on. `action: "list"` shows
+   every trigger with its stored prompt; `action: "get"` shows one. There is no CLI for this, so
+   there is no `--check` script to add: verifying drift means reading the stored prompt back and
+   comparing it to the file. Do that whenever you edit one of these files.
 
 ---
 
@@ -89,9 +116,45 @@ smoke fix) — done, so B is unblocked.
 4. **Env:** the `MS_TEST_*` secrets (`MS_TEST_BUYER_*`, `MS_TEST_SELLER_*`, `MS_TEST_PDP_LISTING_ID`,
    `MS_TEST_PERSONALIZED_LISTING_ID`) so authed smokes light up; **Allowed-domains:**
    `miyagisanchez.com` + the Clerk auth domains + the backend Cloud Run URL.
-5. **Output:** on a **red** smoke, a `claude/` **draft** PR naming the failing spec + assertion with a
-   proposed spec realign or prod fix; on a **green** smoke, no PR. **Augments, never replaces** the
-   deterministic smoke (which stays the detector); does not auto-merge.
+5. **Output:** on a **green** smoke, nothing. On a **red** smoke, a fix on `claude/smoke-triage-<date>`
+   that either **merges and is verified on `main` after deploy**, or stays a **draft** PR plus a
+   Telegram ping. **Augments, never replaces** the deterministic smoke, which stays the sole detector.
+
+### B's teeth — the 2026-08-17 change
+
+For its first two months B stopped at a draft PR. Nobody merged them, so the nightly stayed red for
+three nights (08-15/16/17) and the 08-16 and 08-17 drafts **independently re-diagnosed the same
+defect from scratch**. A fixer that cannot land its fix re-does its work every night. Daniel's call:
+give it merge authority, bounded.
+
+Two independent gates decide, and **both** live in
+[`scripts/smoke-triage-scope.mjs`](../smoke-triage-scope.mjs) (root repo, `node:test`-covered) rather
+than in the prompt — because a merge-to-production predicate must not be a model reading its own diff
+at 10:00 UTC with nobody watching:
+
+- **Surface** — every changed path is test scaffolding (`e2e/`, `playwright.config.ts`,
+  `browser-smoke.yml`, `scripts/browser-smoke-*`). An allow-list, not a deny-list. **Any** change to
+  `app/`, `lib/`, `components/`, `supabase/` — anything reaching production — stays a draft.
+- **No weakening** — the diff must not make the smoke pass by testing less: no added
+  `test.skip`/`fixme`/`only`/serial mode, no deleted spec file, no removed assertion. "Never weaken
+  the test" has been in B's prompt since it was written, and a prompt rule is a request; deleting a
+  red spec is the cheapest way for any agent to turn a nightly green and it looks like a fix in every
+  summary it would write about itself. `test.slow()` is deliberately **allowed** — raising a timeout
+  budget is a legitimate shipped fix (#349), and a guard that rejects correct output is worse than one
+  that misses a rare fault.
+
+Exit codes are three-valued: `0` allow, `1` block, `2` **undecidable** (part of the diff could not be
+read — treated as block, and the ping must say the word). A blocked diff is never discarded or
+trimmed to fit; it becomes exactly the draft PR B used to produce, which is a safe degradation to
+yesterday's behaviour.
+
+After merging, B **re-runs the smoke on `main` once the deploy lands** — a branch run tests
+production's old code, and three green branch runs once missed a live PWA-nav regression. If `main`
+goes red, B opens a **draft revert PR** and pings with `REVERT`; it never merges the revert itself and
+never attempts a second fix in the same run.
+
+**Still true:** B never merges application code, never marks ready outside a `claude/` branch, never
+becomes a required check, and never weakens a spec.
 
 ## Routine ops-nightly — Daily standup + the nightly fixers  *(fourth routine, stand up any time after B)*
 **Prompt:** [`ops-nightly.prompt.md`](ops-nightly.prompt.md) · **Repo:** root `miyagi-product-management`
