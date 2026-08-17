@@ -360,9 +360,12 @@ export function checkRetrospective(content) {
     // long as the italic markup actually closes somewhere (immediately after the date, or at the end
     // of the line). Require: starts with the italic-open + "Closed:" + a real date, and a closing "_"
     // appears somewhere after that.
+    // The canonical groom scaffold intentionally has no close date yet. Accept its literal sentinel:
+    // treating an unbuilt epic as closed would make roadmap-to-notion derive a false Shipped state.
+    const isScaffoldPlaceholder = trimmed === '_Closed: <date>_';
     const startsWithDate = /^_Closed:\s*\d{4}-\d{2}-\d{2}/.test(trimmed);
     const hasClosingItalic = trimmed.slice(1).includes('_');
-    if (!startsWithDate || !hasClosingItalic) {
+    if (!isScaffoldPlaceholder && (!startsWithDate || !hasClosingItalic)) {
       if (/^\*\*Closed/.test(trimmed)) {
         offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
       } else {
