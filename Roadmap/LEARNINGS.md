@@ -493,7 +493,13 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   administration credential"*. **So "create the Golden definition" is an EPIC TASK, not an afterthought**;
   skip it and the kill-switch you planned is a lever with no dial, discovered at go-live. *(2026-07-31,
   owned-shop-operating-channel — the 2026-06-11 Flagsmith version of this line is directly above in
-  spirit; the mechanism changed, the shape did not.)*
+  spirit; the mechanism changed, the shape did not.)* **Corollary — Golden snapshot versions are
+  PROJECT-relative, so a scoped read credential needs its own durable mirror lane.** Routing one flag to a
+  second catalog correctly avoided corrupting the primary mirror, but disabling persistence entirely made
+  every cold instance resolve the compile default before its background fetch: one live `/us/operators`
+  request 404ed, then the next 36 succeeded. Key last-known-good storage by provider scope + environment;
+  never compare snapshot numbers across catalogs, and never leave a scoped authority without an outage
+  fallback. *(2026-08-17, miyagi-partners-recruiting-v3 cold-start repair.)*
 - **A `medusa exec` script CANNOT reach this production database, and never could.** `medusa-pg` has
   `ipv4Enabled: false` with a private ip (`10.7.0.3`); a real attempt with correct prod credentials died
   after four 60s retries on `Knex: Timeout acquiring a connection` from outside the VPC. This invalidates

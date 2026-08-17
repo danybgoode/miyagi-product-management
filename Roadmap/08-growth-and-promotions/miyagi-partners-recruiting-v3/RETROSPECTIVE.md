@@ -64,7 +64,17 @@ These sharpen existing `Roadmap/LEARNINGS.md` entries rather than creating paral
   and zero-grant workspace walkthrough; then repeat the existing Promotor application/code/close/workspace
   path. Only after those pass may the epic move from `in-progress` to `shipped`.
 - **Still out of scope:** merchant consent, shop creation/grants, US catalog, checkout, tax, shipping,
-  operator economics and the `#US-3` commerce proof.
+  operator economics and the US commerce proof. The US catalog and checkout later shipped independently;
+  operator approval still confers no marketplace admission.
 - Root tooling PR [#123](https://github.com/danybgoode/miyagi-product-management/pull/123) merged as
   `7f45179` after its green checks and cross-family reviews. Daniel explicitly authorized this documentation
   PR's post-gate merge; neither root merge changes product runtime or enables the recruiting flag.
+
+## Post-close corrections — 2026-08-17
+
+- `/us` became the open US marketplace on 2026-08-11, so recruiting moved to `/us/operators`. The older
+  `/us` smoke statements above are historical records, not the current route contract.
+- The scoped catalog snapshot was correctly excluded from the primary durable mirror but had no scoped
+  outage fallback. A live cold start therefore returned one false 404 before the background fetch made the
+  next 36 requests succeed. The follow-up adds an independently monotonic durable lane per provider scope;
+  project-relative snapshot versions are never compared across catalogs.
