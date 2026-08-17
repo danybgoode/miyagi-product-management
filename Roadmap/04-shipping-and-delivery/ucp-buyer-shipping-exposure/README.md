@@ -1,5 +1,5 @@
 ---
-status: scaffolded
+status: in-progress
 slug: ucp-buyer-shipping-exposure
 ---
 
@@ -54,6 +54,63 @@ starts; do not silently widen the epic.
   `ucp.checkout_shipping_enabled` flag is added.
 - **D10 — scope boundary:** MX single physical listings only. US `manual_carrier`, bundles/multi-seller,
   rental, service, digital and arranged-only redesigns remain out.
+
+## Architecture lock — 2026-08-17
+
+Re-verified against both app repositories at their current `origin/main`, the production UCP catalog
+and a production checkout-session response before implementation began.
+
+- The production session for an arranged physical listing still returns only the existing
+  `delivery.arranged` hint; no physical `fulfillment`, carrier rate or selectable destination is
+  present. The seed's premise remains true.
+- Medusa `checkout-options` already returns the complete seller-authoritative delivery catalog,
+  including structured pickup spots and the shipping/address requirements. No backend widening is
+  needed for discovery.
+- Medusa `/store/envia/rates` already returns the ordered Envía/Correos result with the provider rate
+  id and charge fields required by `startCheckout()`. No tariff, provider or sorting logic belongs in
+  UCP.
+- `lib/cart.ts startCheckout()` already passes a selected address, quote, pickup spot and appointment
+  into Medusa's cart-backed `start-checkout` route. The ordinary agent path alone still bypasses that
+  rail for unconfigured listings.
+- The shipped configured-product branch already proves MCP can call `startCheckout()` safely. This
+  epic extends that composition only when a physical fulfillment selection is present; legacy calls
+  without one remain unchanged.
+
+### Sprint 1 build contract (locked by the architect before the builder started)
+
+1. Add one pure `lib/ucp` fulfillment seam that maps the backend catalog and rate response into the
+   official UCP `methods → destinations → groups → options → totals` shape.
+2. A shipping option's public id is derived from listing + normalized destination + current backend
+   rate id. That binds a returned choice to the exact listing/address without making the agent's
+   amount authoritative.
+3. The route calls only the existing checkout-options and Envía quote endpoints. It preserves returned
+   option order and explicitly distinguishes destination-required, options-present, known-empty and
+   unavailable states.
+4. Pickup destinations are derived only from the current structured spots; ordinary coordinated,
+   digital, service and rental behavior is not reinterpreted.
+5. `get_checkout_options` forwards the destination and summarizes the fulfillment state while keeping
+   the checkout-session JSON as the structured source of truth.
+
+### Sprint 2 build contract (locked by the architect before the builder started)
+
+1. `create_checkout` accepts only returned method/destination/option ids plus the destination or pickup
+   appointment needed to re-resolve them. It accepts no carrier, service, amount or currency field.
+2. Immediately before any cart/payment write, fetch the current delivery catalog and, for shipping,
+   the current rate response. Match the public id against a freshly derived id; absence or source
+   unavailability fails closed.
+3. Convert the fresh backend match into `CheckoutShippingQuote`, or the current pickup match into the
+   internal spot id. No public UCP amount is copied into `startCheckout()`.
+4. Delivery-aware ordinary listings use the same Medusa `startCheckout()` rail as configured products;
+   calls without a delivery selection keep the existing flat gateway behavior.
+5. Keep Stripe Checkout Sessions/Medusa payment ownership unchanged: no direct Stripe API addition,
+   no `payment_method_types`, no new key, webhook or provider behavior.
+
+### Routing
+
+One coordinating builder owns both stacked frontend sprints because Sprint 2 consumes Sprint 1's
+exact ids and pure seam. No backend builder or migration role is needed. Each money-path PR receives
+the one current cross-family review required by `WAYS-OF-WORKING.md`; the builder resolves findings and
+merges the green PR.
 
 ## What already exists (reuse, don't rebuild)
 
