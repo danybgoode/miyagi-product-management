@@ -1432,6 +1432,49 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A CHECK CONSTRAINT IS THE CONTRACT; THE VALIDATOR IS A MIRROR OF IT.** Making the US operator
+  application five fields looked like a form change. It was not: the migration that created the program
+  had encoded the whole dossier in Postgres — `operator_details_version = 1`, exactly three
+  `candidate_shops`, `active_shop_count BETWEEN 3 AND 10000`, `checkpoint_90_day = true`, and an exact
+  key set — and `validateOperatorInput` merely restated it in TypeScript. Shipping the new form without
+  a migration would have passed `tsc`, passed every unit spec, and had **Postgres reject every real
+  submission** in production. Generalization: when a validator's own comment says it mirrors a database
+  constraint, read the constraint *before* changing the validator, and change them in the same PR with
+  the migration deploying first. This is the inverse failure to
+  "a paraphrased contract drifts permissive" — here the code drifted *behind*, not looser.
+  *(2026-08-17, #386.)*
+- **A NEGATIVE TEST CAN PASS FOR A REASON THAT IS NOT THE ONE YOU ARE TESTING.** The spec proving the
+  intake refuses the retired v1 dossier fed a full v1 payload and asserted `invalid_payload`. Deleting
+  the version check entirely left it **green** — because a v1 dossier also trips the unknown-detail-keys
+  check, which returns the same reason. The fixture differed from the control in two ways, so the
+  assertion could not attribute the failure to either. Fixed by submitting **otherwise-valid v2 details
+  tagged with the wrong version**, which isolates the gate. Rule: a negative test's fixture must differ
+  from a passing one in **exactly the dimension under test** — and the only way to find out that it does
+  not is to mutate the thing it claims to guard. *(2026-08-17, #386.)*
+- **A WORD BAN MUST ENUMERATE THE CONJUGATION, NOT THE STEM — AND SCAN MORE THAN THE DICTIONARY.**
+  Retiring `monta` (as "set up a shop") from the Spanish copy: the dictionary sweep looked complete, but
+  three live strings sat in `lib/agent-prompt.ts`, `lib/email.ts` and the promoter close workspace — the
+  first of them rendering inside the promoter page's *own* AI prompt block, in the hero of the page being
+  rewritten. The guard then had two bugs of its own, both found by mutation: **(a)** `\b` treats `ñ` as a
+  non-word character, so `\bmonta\b` matches inside `montaña` — use Unicode letter boundaries
+  (`(?<!\p{L})…(?!\p{L})`); **(b)** the first form list omitted the gerund, so reinstating
+  `montando tiendas` left the scan green. Then the fixed guard reddened on *correct* copy —
+  `monto`/`montos` are the money noun all over the payout wording — so the ban was narrowed to drop them
+  and the real phrasing was added to an allow-list test, per "a guard that rejects correct output is
+  worse than one that misses a fault". *(2026-08-17, #386.)*
+- **A FIELD NAME THAT LIES IS WORSE THAN A RENAME.** The seller-landing comparison table carried
+  `{ miyagi, mercadoLibre, shopify }`. The US operator page needed the same component against Shopify and
+  Amazon, and the cheap move — put Amazon copy in the `mercadoLibre` field, change the column header —
+  would have passed every test while leaving the next reader a field name that means the opposite of its
+  contents. Rows became positional `cells[]` parallel to `columns`, and the component now serves any
+  market. When a component is reused across a boundary its field names did not anticipate, generalize the
+  shape; do not overload the old names. *(2026-08-17, #386.)*
+- **EVERY COMMAND IN A WORKTREE CARRIES ITS OWN ABSOLUTE `cd`.** Two verification commands ran against the
+  main checkout instead of the worktree because the shell's working directory had drifted between calls —
+  producing a plausible-looking `tsc` and `eslint` result for the wrong tree. Caught only by a `git status`
+  showing changes where there should have been none. Relatedly: `git checkout --` during a mutation run
+  reverts *uncommitted real fixes* along with the mutation, so **commit before mutation-testing.**
+  *(2026-08-17, #386.)*
 - **DERIVE A TYPE FROM THE DATA, NOT FROM THE CODE THAT WRITES IT — and a missing type produces N
   independent guesses, not one.** `dimo`/`cash_pickup` were written by the payments settings save and
   read back by three modules while being absent from `CheckoutSettings` entirely, so every call site
