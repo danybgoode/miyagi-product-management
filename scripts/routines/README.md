@@ -44,7 +44,7 @@ secrets/allow-list. Nothing here provisions infra or changes any account.
    unrestricted push is explicitly enabled — don't enable it. A only comments (no push); B/C open
    `claude/` PRs. (Merging a `claude/` PR needs no wider push scope — B stays inside this default.)
 
-3. **🚨 A prompt file in this directory is NOT what runs. Re-sync the trigger, or you changed
+3. **🚨 A prompt file in this directory is NOT what the cloud stores. Keep the two reconciled, or you changed
    nothing.** The cloud routine stores its own copy of the prompt in Daniel's account; editing the
    committed file here does not touch it. Both known routines had silently diverged:
 
@@ -58,11 +58,42 @@ secrets/allow-list. Nothing here provisions infra or changes any account.
    it. **Do not rely on that.** A drifted prompt is invisible from the codebase, which is the same
    failure shape as a fixture pinned to an Actions secret.
 
-   **To sync:** use the `RemoteTrigger` tool (`action: "update"`, the trigger id, and the prompt body
-   as the message content) — the same rail these routines were created on. `action: "list"` shows
-   every trigger with its stored prompt; `action: "get"` shows one. There is no CLI for this, so
-   there is no `--check` script to add: verifying drift means reading the stored prompt back and
-   comparing it to the file. Do that whenever you edit one of these files.
+   ### The fix: the stored prompt is a BOOTSTRAP, not a copy
+
+   Copying 9KB of prose into the cloud on every edit is a sync ritual, and a sync ritual is a thing
+   people forget — which is how both routines drifted in the first place. So as of 2026-08-17 the
+   stored prompt for `smoke-triage` and `ops-nightly` no longer *contains* the instructions. It is a
+   short bootstrap that says: **read `scripts/routines/<name>.prompt.md` from the repo and follow
+   everything after the first `---`.** The repo file is the only copy, so it cannot disagree with
+   itself.
+
+   Three things make that safe, and none of them is optional:
+
+   - **A bootstrap that cannot read its file must STOP**, not improvise from memory. Both say so
+     explicitly, and both fall back to a Telegram `FAILED` line rather than a guessed run. An
+     improvised triage that merges something is far worse than a night with no triage.
+   - **The few rules that must survive a bad checkout are restated in the bootstrap itself** — never
+     weaken a spec, never merge app code, never `vercel-prune --apply`, write the standup prose in
+     session. Belt and braces on the ones where being wrong is expensive.
+   - **`smoke-triage` now lists the root repo as a second source**, because its prompt and its merge
+     gate (`scripts/smoke-triage-scope.mjs`) both live here while its work happens in the frontend
+     repo.
+
+   **What still needs doing by hand:** creating a routine, changing its schedule/env/sources, or
+   editing a bootstrap. Use the `RemoteTrigger` tool — `action: "list"` shows every trigger with its
+   stored prompt, `"get"` shows one, `"update"` writes. There is no CLI, so there is no `--check`
+   script to add; a script that could not actually read the triggers would be one that exits green
+   having checked nothing.
+
+   **Not yet converted:** `roadmap-hygiene` and `prod-smoke` still carry full stored prompts.
+   `roadmap-hygiene`'s has the same drift (it predates the committed `roadmap-hygiene.prompt.md`).
+   Convert them the same way when either is next touched.
+
+   > ⚠️ **Schedule drift, recorded not fixed:** this file says smoke-triage runs "~10:00 UTC"; the
+   > live trigger is `0 11 * * *`. 11:00 is the correct one and the doc is wrong — scheduled
+   > `browser-smoke.yml` runs have been observed *starting* as late as 10:14, so a 10:00 triage would
+   > regularly find the detector still in progress and correctly no-op. Left at 11:00 deliberately;
+   > ops-nightly at 11:55 is the constraint on moving it later.
 
 ---
 
