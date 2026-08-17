@@ -41,9 +41,54 @@ for (const name of PROMPTS) {
   });
 }
 
-test('every prompt carries the advisory-only discipline', () => {
+// Every prompt must DECLARE its authority in one of exactly two ways. Until 2026-08-17 there was
+// only one — "advisory only" — and that was the whole policy. Daniel then granted Routine B bounded
+// merge authority, which this guard correctly caught as a missing banner rather than letting the
+// policy change slip in unannounced.
+//
+// The fix is not to exempt B. It is to make the exception itself the thing under guard: B must say
+// what bounds it, the bound must be the script and not prose, and NO SECOND routine may quietly join
+// it. `AUTHORITY_BOUNDED` is a closed set asserted below — adding a name to it is a visible diff in a
+// file whose tests run on every commit, which is exactly the review the change deserves.
+const ADVISORY_BANNER = 'advisory only';
+const BOUNDED_BANNER = 'merge authority is bounded by `scripts/smoke-triage-scope.mjs`';
+const AUTHORITY_BOUNDED = new Set(['smoke-triage']);
+
+test('exactly one routine holds merge authority, and it is smoke-triage', () => {
+  // The population, not the door: derived from the prompts themselves, so a prompt that grew the
+  // banner without being added to the set fails here rather than passing unnoticed.
+  const declaring = PROMPTS.filter((name) =>
+    loadPromptBody(join(ROUTINES, `${name}.prompt.md`)).toLowerCase().includes(BOUNDED_BANNER));
+  assert.deepEqual(declaring, [...AUTHORITY_BOUNDED],
+    'the set of routines claiming merge authority changed — this is a governance change, not a typo');
+});
+
+test('every prompt declares its authority, and only the bounded one omits advisory-only', () => {
   for (const name of PROMPTS) {
     const body = loadPromptBody(join(ROUTINES, `${name}.prompt.md`)).toLowerCase();
-    assert.ok(body.includes('advisory only'), `${name} is missing the advisory-only banner`);
+    if (AUTHORITY_BOUNDED.has(name)) {
+      assert.ok(body.includes(BOUNDED_BANNER), `${name} holds merge authority but does not name its bound`);
+    } else {
+      assert.ok(body.includes(ADVISORY_BANNER), `${name} is missing the advisory-only banner`);
+    }
+  }
+});
+
+test('the routine that merges also carries the rules that make merging safe', () => {
+  // A merge authority stated without its constraints is a merge authority without constraints. Each
+  // of these is load-bearing: the never-weaken rule (the cheapest way to fake a green nightly), the
+  // app-code boundary (Daniel's actual limit), and the verify-on-main step (a branch run tests
+  // production's OLD code — three green branch runs once missed a live regression).
+  // Whitespace-normalized: these phrases are prose and wrap across lines at the 100-col margin, so
+  // matching the raw text would fail on a reflow that changed nothing.
+  const body = loadPromptBody(join(ROUTINES, 'smoke-triage.prompt.md')).toLowerCase().replace(/\s+/g, ' ');
+  for (const [needle, why] of [
+    ['never make a red run green by testing less', 'the never-weaken rule'],
+    ['never merge a change to application code', 'the app-code boundary'],
+    ['undecidable', 'the third state — a partly-unread diff must not resolve to allow or block'],
+    ['on `main` after the deploy', 'the verify-on-main step'],
+    ['revert', 'the revert path when main goes red'],
+  ]) {
+    assert.ok(body.includes(needle), `smoke-triage.prompt.md no longer states ${why} ("${needle}")`);
   }
 });
