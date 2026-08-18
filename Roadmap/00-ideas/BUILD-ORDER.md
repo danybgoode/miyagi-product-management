@@ -10,10 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Living Shop — social storefront + expressive customization](../../07-agentic-and-federated-commerce/living-shop-social-storefront/README.md) — 07 Agentic/Federated · 34/34 stories · risk: Low
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
@@ -21,7 +20,7 @@
 
 _None._
 
-## ✅ Shipped (144)
+## ✅ Shipped (145)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -81,6 +80,7 @@ _None._
 - [Custom-domain paywall + campaign coupon](../../07-agentic-and-federated-commerce/custom-domain-paywall/README.md) — 07 Agentic/Federated · 9/9 stories · risk: High
 - [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2/2 stories
 - [Embeddable Widget](../../07-agentic-and-federated-commerce/embeddable-widget/README.md) — 07 Agentic/Federated · 7/7 stories
+- [Living Shop — social storefront + expressive customization](../../07-agentic-and-federated-commerce/living-shop-social-storefront/README.md) — 07 Agentic/Federated · 34/34 stories · risk: Low
 - [Market architecture foundation — owned shops, country marketplaces, and locale](../../07-agentic-and-federated-commerce/market-architecture-foundation/README.md) — 07 Agentic/Federated · 12/12 stories · risk: High · Wave 0 Enablers
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 10/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 3/3 stories · risk: High · Wave 1
@@ -176,7 +176,7 @@ _None._
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (3)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -184,9 +184,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Living Shop — social storefront + expressive customization | In progress | Shipped |
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 | Miyagi Partners proposition and recruiting portal v3 | In progress | Shipped |
 
 ---
-_Epics: 151 · seeds in funnel: 5 · status drift: 3. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 151 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

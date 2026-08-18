@@ -1,7 +1,7 @@
 ---
 title: "Living Shop — social storefront + expressive customization"
 slug: living-shop-social-storefront
-status: scaffolded
+status: shipped
 area: "07"
 type: feature
 priority: null
