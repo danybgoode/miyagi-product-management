@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: living-shop-social-storefront
 ---
 
@@ -171,13 +171,28 @@ S1 → S2 → S3 → S4 → S5 → S6 → S7.
 
 ## Definition of Done (epic)
 
-- [ ] All seven sprints merged to `main` and smoke-tested; any environment/account gap stated by name.
-- [ ] Each sprint file has its fool-proof preview/production smoke walkthrough with one action + expected result per step.
-- [ ] Marketplace `/s/`, free subdomain and custom-domain own-shop surfaces have parity; embed intentionally unchanged.
-- [ ] Legacy theme presets round-trip/migrate without visual reset.
-- [ ] Wall never duplicates mutable commerce truth and cannot write across shop ownership boundaries.
-- [ ] Custom mode exposes no arbitrary CSS/HTML/JS/webfont escape hatch.
-- [ ] New browser/API specs were observed red at least once and deterministic gate is green.
-- [ ] `RETROSPECTIVE.md` written; durable learnings promoted.
-- [ ] Product poster and team memory updated.
-- [ ] This README frontmatter moved `scaffolded → in-progress → shipped` as work progresses; generated build-order refreshed, never hand-edited.
+- [x] All seven sprints merged to `main` and smoke-tested; any environment/account gap stated by name.
+      Storefront PR [#391](https://github.com/danybgoode/miyagisanchezcommerce/pull/391) → `02804ba`.
+- [x] Each sprint file has its fool-proof production smoke walkthrough with one action + expected
+      result per step; every authed step is marked **OWED (Daniel)** by name.
+- [x] Marketplace `/s/`, free subdomain and custom-domain own-shop surfaces have parity; the embed is
+      intentionally unchanged, and that exclusion is asserted by a spec rather than left to memory.
+- [x] Legacy theme presets round-trip without visual reset — at READ time, with no backfill (D5).
+- [x] Wall never duplicates mutable commerce truth and cannot write across shop ownership boundaries.
+- [x] Custom mode exposes no arbitrary CSS/HTML/JS/webfont escape hatch — asserted over the schema.
+- [x] New browser/API specs were observed red at least once; the deterministic gate is green.
+      Two specs SURVIVED their mutation and were rewritten (see `RETROSPECTIVE.md`).
+- [x] `RETROSPECTIVE.md` written; four durable learnings promoted to `LEARNINGS.md`.
+- [x] Product poster and team memory updated.
+- [x] This README frontmatter moved `scaffolded → in-progress → shipped`; generated build-order
+      refreshed, never hand-edited.
+
+### Still owed to Daniel — not gates, but not done either
+
+- The **authed seller walkthrough** (local Clerk is `pk_test_`, production is `pk_live_`).
+- The **authed cross-shop reference refusal** with two real shops.
+- 🚨 **One real event.** `marketplace_events` holds ZERO rows platform-wide, so the Events section
+  never renders for any shop and its 404 is correct rather than a bug.
+- The **three-way visual dogfood** across shops that have catalogs. Deliberately not done unattended:
+  the platform's own demo shops have no products, and publishing Wall content onto a real merchant's
+  live storefront is not the builder's call. `prueba` carries a seeded Wall + Retro Social instead.
