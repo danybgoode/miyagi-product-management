@@ -1,6 +1,6 @@
 # Seller-portal depth pass — Sprint 2: Reversible and honest
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — frontend commit `03edbcb` (included in PR #388)
 
 ## Stories
 

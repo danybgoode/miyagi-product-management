@@ -2347,6 +2347,11 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   `resolveOrderForSeller`-shaped helper into a new route. *(2026-07-07, custom-print-products S4 —
   `proof`/`tags`/`confirm-payment` routes, caught across two Codex cross-review rounds.)*
 
+- **A bulk preview is not an authorization token.** Read and scope every requested object before showing
+  its identity, return one generic missing/foreign refusal, and send the reviewed current-state map back
+  into a live apply re-check so stale rows skip without mutating. The preview route imports only the pure
+  planner; the write route re-runs ownership and the planner. *(2026-08-17, seller-portal-depth-pass S3.)*
+
 - **Medusa v2's pricing `amount` field stores MAJOR currency units, not minor-unit cents — but this
   app's entire custom write/read path assumes integer cents.** This app writes `amount: price_cents`
   (e.g. `5000` for "$50.00") and divides by 100 on every read, which is self-consistent only while

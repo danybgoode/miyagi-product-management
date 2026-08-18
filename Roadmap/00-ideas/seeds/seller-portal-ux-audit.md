@@ -83,7 +83,7 @@ This is **not** a rebuild. Per finding:
 | **P0·B** | **Setup guide on dashboard** | F3 | Feature / Grower | 03 | LOW | **Shipped** |
 | **P1·C** | **IA restructure remainder** | F5, F6, F7 | Feature / Sweeper | 03 | LOW–MED | **Shipped in `catalog-management`** |
 | **P1·D** | **Onboarding three-doors** | F4, F12 | Feature / Builder | 03 | LOW | **Shipped** |
-| **P2·E** | **Depth pass** | F8–F11 | Feature | 03 | HIGH | **Scaffolded: [`seller-portal-depth-pass`](../../03-selling-and-shops/seller-portal-depth-pass/README.md)** |
+| **P2·E** | **Depth pass** | F8–F11 | Feature | 03 | HIGH | **Shipped: [`seller-portal-depth-pass`](../../03-selling-and-shops/seller-portal-depth-pass/README.md)** |
 | — | **Emoji dialect** | F1 (icons) | Chore / Sweeper | 09 | LOW | **Shipped in `emoji-to-iconoir-sweep`** |
 
 **Sequence (Daniel-approved):** P0·A (next-up) → P0·B → P1·C (rides `catalog-management`) ∥ P1·D → P2·E.

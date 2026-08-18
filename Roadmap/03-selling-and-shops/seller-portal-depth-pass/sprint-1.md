@@ -1,6 +1,6 @@
 # Seller-portal depth pass — Sprint 1: Visible and thumb-safe
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — frontend commit `3504ae3` (included in PR #388)
 
 ## Stories
 

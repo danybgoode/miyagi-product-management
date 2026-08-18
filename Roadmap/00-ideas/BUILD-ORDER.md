@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-08-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-18 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -16,11 +16,11 @@
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Seller-portal depth pass](../../03-selling-and-shops/seller-portal-depth-pass/README.md) — 03 Selling & Shops · 0/6 stories · risk: High · Wave 1
+_None._
 
-## ✅ Shipped (141)
+## ✅ Shipped (142)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -57,6 +57,7 @@
 - [Seller Agent Operations](../../03-selling-and-shops/seller-agent-operations/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller Coupon Codes](../../03-selling-and-shops/promotions/README.md) — 03 Selling & Shops · 4/4 stories
 - [Seller-catalog null-slot sweep — 23 unsafe reads across 21 runtime files](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 3/3 stories · risk: High · tbd
+- [Seller-portal depth pass](../../03-selling-and-shops/seller-portal-depth-pass/README.md) — 03 Selling & Shops · 6/6 stories · risk: High · Wave 1
 - [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 4/4 stories · risk: Low · Wave 1
 - [Shop Settings refactor](../../03-selling-and-shops/shop-settings-refactor/README.md) — 03 Selling & Shops · 21/21 stories · risk: Low
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 5/5 stories

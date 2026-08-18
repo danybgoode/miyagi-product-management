@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: seller-portal-depth-pass
 ---
 
@@ -13,6 +13,10 @@ information architecture, and guided onboarding. The final depth pass makes the 
 in ordinary use: route changes acknowledge the wait, a mistaken listing delete has a real escape, a bulk
 order change is reviewed before it runs, guidance stays factual and Spanish, and mobile controls can be
 hit without opening the wrong order or listing.
+
+**Shipped 2026-08-17.** Backend PR [#161](https://github.com/danybgoode/medusa-bonsai-backend/pull/161)
+merged first at `41468b1`; frontend PR [#388](https://github.com/danybgoode/miyagisanchezcommerce/pull/388)
+merged at `31ea042`.
 
 ## Platform-first note
 No new commerce model. Medusa remains the order/product system of record. Listing deletion continues
@@ -33,20 +37,57 @@ or parallel fulfillment logic.
   management moved listing row actions out of the audit's stale `ManageDashboard` location).
 - Seller surfaces' existing es-MX-only contract; no locale dictionary expansion.
 
-## Architecture constraints to verify and lock before builders start
-These are grooming decisions, not substitutes for the epic-mode architecture-lock pass. The orchestrator
-must re-derive them against the then-current `origin/main` and record locked `D1…Dn` decisions here before
-dispatching any story.
+## Architecture lock (2026-08-17)
+Verified against frontend `origin/main` `f5081c3` and backend `origin/main` `a741920`. No new table,
+migration, flag, entitlement, or provider is introduced, so production row counts cannot change any
+decision in this build; the live-data migration gate is therefore not applicable rather than assumed
+empty.
 
-- Preview is never authority: it performs no workflow/write and mints no confirm token; apply re-reads and
-  re-evaluates every order so a state change becomes an explicit skip.
-- Preview and apply consume one transition-plan/evaluation function; `applyOrderStatusTransition()` and its
-  existing fulfillment semantics do not change.
-- Undo is delayed commit: a shared seller-shell pending-delete owner survives in-app navigation, and
-  `Deshacer` cancels before the existing soft-delete. Do not add deleted-object authorization or restore
-  channel side effects inside this epic.
-- The loading guard derives its population from the route tree. No hand-maintained route count.
-- Fix the named current controls/copy; do not turn this into a portal-wide redesign or token sweep.
+- **D1 — Loading ownership:** `app/(shell)/shop/manage` currently has no `loading.tsx` anywhere. Add one
+  inherited manage fallback built from a shared `SellerPageSkeleton`, then shape-specific overrides for
+  orders, order detail, catalog, and settings. A source guard walks the real route tree and proves every
+  manage `page.tsx` reaches an ancestor boundary; it never stores a hand-counted route total.
+- **D2 — Loading design:** keep the existing seller shell, tokens, type, radii, and `.skeleton` animation.
+  The skeleton describes page geometry only—title, controls, cards/rows/form fields—with no fake progress,
+  invented data, second shell, or global spinner.
+- **D3 — Mobile action ownership:** `OrdersInbox`, `CatalogTable`, and `SellWizard` remain the owners of
+  the named controls. Checkbox glyphs stay visually small inside 44×44 labels. Catalog desktop actions
+  remain inline; mobile gets one labelled `Más` trigger and an operational bottom sheet containing the
+  same pause, channel/publication, and delete actions. No action or entitlement rule is forked.
+- **D4 — Delete undo:** a client provider mounted inside `SellerShellChrome` owns exactly one pending
+  delete for 10 seconds, so it survives nested seller navigation. Scheduling hides affected rows and
+  shows the shared `Toast` with `Deshacer`; undo clears the timer before any request, reload/unmount clears
+  it, expiry calls the unchanged single DELETE or catalog-batch apply endpoint once, and failure releases
+  the pending ids so rows return. Medusa restore remains out of scope.
+- **D5 — Honest copy:** remove only the four unsupported performance figures and the named bilingual
+  leaks. Replace them with concrete photo, description, REPUVE, and order-age guidance derived from the
+  seller's actual oldest waiting order. Preserve real product facts and brand names.
+- **D6 — One order planner:** backend `order-status-transition.ts` owns a pure plan containing current
+  status, proposed status, eligibility, and refusal reason. It composes the already-shipped manual-payment
+  and US manual-carrier guards. Both preview and apply call that planner; workflow/update code stays only
+  in `applyOrderStatusTransition()` after an eligible plan.
+- **D7 — Preview is not authority:** `POST /store/sellers/me/orders/bulk-status/preview` authenticates,
+  resolves the seller product set once, re-reads each order, and returns identity plus its plan only after
+  per-object ownership succeeds. Missing and foreign ids share one non-disclosing refusal. Preview never
+  runs a workflow or update and mints no token.
+- **D8 — Staleness contract:** the frontend sends the previewed `current_status` map with the existing
+  PATCH. PATCH re-reads ownership and live order state, calls the same planner, and reports a changed row
+  as skipped; the baseline is evidence of what the seller reviewed, never authorization. Callers that omit
+  the optional baseline retain the existing PATCH contract.
+
+### Sprint 1 build contract (locked before implementation)
+Implement D1–D3 only. Reuse the current token system and SellerNav sheet language. The visual signature is
+operational rather than decorative: at mobile width, one quiet `Más` control opens a complete action ledger
+for the row. Do not redesign the table, nav, typography, or palette.
+
+### Sprint 2 build contract (locked before implementation)
+Implement D4–D5. The seller-shell provider is the sole timer/request owner; CatalogTable and
+BulkDiffPreview only schedule and render pending state. Never call a restore endpoint and never write before
+the timer expires.
+
+### Sprint 3 build contract (locked before implementation)
+Implement D6–D8. Backend deploy order remains first. The frontend must not expose the apply control until a
+successful backend preview exists, and it must retain skipped rows in selection for correction/retry.
 
 ## Scope — stories
 | Sprint | Story | Risk |
@@ -73,13 +114,13 @@ red once. No runtime flag was requested or scoped: safety is structural (read-on
 apply, delayed delete before unchanged soft-delete) and rollback is `git revert`.
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] Runtime gate decision preserved: **no new flag**; preview stays read-only and delete stays delayed-
+- [x] All sprints merged to `main` + smoke-tested (gaps stated)
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) updated
+- [x] Team memory updated through this retrospective and the promoted `Roadmap/LEARNINGS.md` rule (no tracked `MEMORY.md` exists in this root repo)
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
+- [x] Runtime gate decision preserved: **no new flag**; preview stays read-only and delete stays delayed-
       commit as scoped
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)

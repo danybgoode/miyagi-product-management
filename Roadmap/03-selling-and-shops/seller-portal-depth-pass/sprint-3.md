@@ -1,6 +1,6 @@
 # Seller-portal depth pass — Sprint 3: Order preview contract
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — backend `d7b142b` (PR #161), frontend `5b11a60` (PR #388); backend merged first
 
 ## Stories
 

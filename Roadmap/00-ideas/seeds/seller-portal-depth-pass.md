@@ -1,7 +1,7 @@
 ---
 title: "Seller-portal depth pass — visible, reversible, honest, thumb-safe"
 slug: seller-portal-depth-pass
-status: scaffolded
+status: shipped
 area: "03"
 type: feature
 priority: wave-1
@@ -13,7 +13,7 @@ updated: 2026-08-17
 
 # Scope — Seller-portal depth pass (P2·E of the seller-portal UX audit · F8–F11)
 
-> **Status: ✅ SIGNED OFF (Daniel, 2026-08-17) — SCAFFOLDED.** Gate passed. The build contract is
+> **Status: ✅ SHIPPED (2026-08-17).** Backend PR #161 merged first; frontend PR #388 followed. The build contract is
 > [`seller-portal-depth-pass`](../../03-selling-and-shops/seller-portal-depth-pass/README.md). This is
 > the final unshipped workstream from the [`seller-portal-ux-audit`](./seller-portal-ux-audit.md)
 > umbrella. P0·A (rails), P0·B (setup guide), P1·C (IA remainder, folded into catalog management),
