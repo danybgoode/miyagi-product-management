@@ -97,6 +97,37 @@ merchant's storefront for anyone who followed it. The overlay checks that the
 Clerk session owns *this* shop, and because the api project runs anonymously, that
 boundary is proven end to end rather than argued.
 
+## Verified live (2026-08-19, `miyagi-web-00110-kdj`)
+
+Production, after `02804ba` deployed:
+
+- **The Wall renders** on `/mx/s/prueba` — pinned entry first, `wall-feed`/`wall-card` in the served
+  HTML, the section nav present with `/tienda` as a real destination.
+- **The schedule boundary holds on real data.** Three entries were seeded; the public read returns
+  **two**. The one scheduled for 2027 is absent from both the API and the HTML — with no cron
+  involved, decided at read time.
+- **Pinning changes prominence, not chronology.** The pinned entry (21:45) leads the *newer*
+  unpinned one (22:45). That is the property the spec asserts, now proven against production rows.
+- **Every API boundary answers correctly**: the public read 200s, an unknown slug 404s, a missing
+  slug 404s, and all four seller routes 401 anonymously.
+- **D5's no-visual-reset guarantee, proven on a real shop.** `champions-not` serves
+  `data-shop-theme="custom"` **and** `data-shop-preset="pizarra"`, with `surface="bordered"` /
+  `background="tinted"` — its legacy preset preserved *and* mapped to the recipe closest to it.
+
+**A pre-existing divergence this verification uncovered.** `theme_preset` is set on three shops in
+`marketplace_shops`, but the public page reads settings from the **Medusa seller** — and only
+`champions-not` has it there. `panfleto` (papel) and `autos-demo-miyagi-sanchez` (terracota) have
+been rendering *without* their chosen preset since before this epic. Reported, not fixed: syncing
+them would change two live storefronts' appearance without anyone asking. The epic README's D5 has
+been corrected, because "three live shops" was true of the table and false of the storefront.
+
+**And a mistake of mine that this caught.** The dogfood seed set `theme_mode: retro` on `prueba` by
+writing straight to Supabase — which the public page never reads. The theme resolver was demonstrably
+running (all five `data-shop-*` attributes emitted, Default recipe values correct); the seed simply
+never reached the surface. The real seller path writes both stores (`PATCH /api/sell/shop` syncs the
+merged settings into Medusa seller metadata), so this is a gap in my seeding, not in the product. The
+half-applied value has been removed rather than left as state nothing reads.
+
 ## Gaps / follow-ups
 
 **Owed to Daniel — an authed seller walkthrough.** Local Clerk is `pk_test_` and
@@ -115,9 +146,10 @@ one. Creating one real event is what turns S3.4 and S2.4 from "built" into
 "seen working".
 
 **The dogfood is partial.** Default and the legacy-preset compatibility case are
-observable on live shops today. Retro Social and a representative Custom recipe
-need a merchant session to select, so the three-way visual comparison S7.6 asks for
-is owed with the walkthrough above.
+observable on live shops today (see *Verified live*). Retro Social and a
+representative Custom recipe need a merchant session to select — a direct database
+write does NOT reach the public page, as the seeding attempt proved — so the
+three-way visual comparison S7.6 asks for is owed with the walkthrough above.
 
 **Not built, deliberately:** buyer comments, reactions, follows, buyer-authored
 posts, arbitrary pages, merchant CSS/HTML/JS, webfont URLs, a canvas editor, and
