@@ -1,6 +1,6 @@
 # Living Shop — Sprint 6: Agent and configuration parity
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `00facf5` (PR #391)
 
 **Risk:** LOW-MED — authenticated seller-agent writes + public read schema; no money tools.
 
@@ -36,13 +36,19 @@
 
 ## Smoke walkthrough
 
-1. Ask the seller agent for current shop theme and sections.
-   → It returns normalized Default/Retro/Custom config and approved section keys only.
-2. Ask it to switch to Retro Social and move Events before Collections.
-   → Patch succeeds; audit entry exists; public shop reflects it.
-3. Ask it to create a Product Wall entry for one of this seller's products and publish it.
-   → Entry appears publicly with current canonical product data.
-4. Ask it to use another seller's product id.
-   → Tool refuses with a clear ownership reason.
-5. Fetch the public agent shop representation.
-   → Recent published Wall entries + section destinations are present; drafts/future schedule are absent.
+Steps 1–4 need a shop agent token (`ms_agent_…`) from *Agentes e integraciones* — **OWED (Daniel)**.
+
+1. Ask the seller agent for the current shop configuration (`get_store_configuration`).
+   → The response includes a `presentation` block with the normalized theme mode, recipe and section order.
+2. Ask it to switch to Retro Social and move Eventos before Colecciones (`patch_store_configuration`).
+   → Applied; the public shop reflects it; an audit entry appears in the shop's agent log.
+3. Ask it to create and publish a Producto Wall entry for one of your products (`create_wall_entry`).
+   → It appears publicly with current canonical product data, and the write is audited.
+4. Ask it to use ANOTHER seller's product id.
+   → Refused with a clear ownership reason. No row is created.
+5. Anonymous, runs anywhere — fetch the public representation:
+   `curl -s -X POST https://miyagisanchez.com/api/ucp/mcp -H 'content-type: application/json' \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_shop","arguments":{"shop_slug":"<slug>","market":"mx"}}}'`
+   → The JSON payload carries `wall` (published entries only, bounded) and `sections` (the shop's real destinations). Drafts and future-scheduled entries are absent.
+6. Fetch `https://miyagisanchez.com/api/ucp/manifest`.
+   → It names the Wall tools and states that the presentation block has no CSS/HTML/JS/font-URL field.

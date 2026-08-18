@@ -1,6 +1,6 @@
 # Living Shop — Sprint 4: Theme engine v2
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `c578cba` (PR #391)
 
 **Risk:** MED — cross-storefront visual system + compatibility migration/resolver; no arbitrary style execution.
 
@@ -41,13 +41,16 @@
 
 ## Smoke walkthrough
 
-1. Open a shop currently using Papel before choosing a new mode.
-   → Its appearance remains materially equivalent; no reset to Default.
-2. Choose Retro Social.
-   → Homepage, PDP and collection page all adopt the nostalgic framed/profile language while actions remain modern and readable.
-3. Choose Custom and set compact density, square corners, bordered surfaces, a secondary accent and feed-sidebar layout.
-   → Preview/public shop reflect only those approved controls; no arbitrary code field exists.
-4. Enter an invalid color/schema value through the API.
-   → Validation refuses it or resolves safely; no style/script injection reaches markup.
-5. Test at 375px.
-   → Retro and Custom collapse cleanly; no horizontal overflow or sub-44-ish touch targets introduced by theme chrome.
+1. Open `https://miyagisanchez.com/mx/s/panfleto` (a shop carrying the legacy `papel` preset).
+   → Its appearance is materially unchanged. View source: the wrapper still carries `data-shop-preset="papel"` — nothing was migrated and nothing reset.
+2. In the studio's **Tema** tab, choose **Retro Social** and save. **OWED (Daniel)**
+   → Homepage, catalog and a collection page all adopt the framed, bordered, profile-forward language while the actions stay modern and readable.
+3. Choose **A tu manera**, set compact density, square corners, bordered cards and a secondary accent. **OWED (Daniel)**
+   → The public shop reflects exactly those controls. There is no field anywhere that accepts CSS, HTML, JavaScript or a font URL.
+4. Send an invalid colour through the API:
+   `curl -X PATCH .../api/sell/shop -d '{"settings":{"theme_recipe":{"accent":"red"}}}'` **OWED (Daniel — needs a session)**
+   → **422** naming the field. No style or script reaches the markup.
+5. Load a themed shop at 375px.
+   → Retro and Custom both collapse to one column; the sidebar layout is desktop-only by design. No horizontal overflow.
+6. Turn on "reduce motion" at the OS level and reload.
+   → Transitions and animations inside the merchant theme are suppressed.

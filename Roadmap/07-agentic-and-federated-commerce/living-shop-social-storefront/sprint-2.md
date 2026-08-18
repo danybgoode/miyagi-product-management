@@ -1,6 +1,6 @@
 # Living Shop — Sprint 2: Living homepage
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `58fb637` (PR #391)
 
 **Risk:** LOW-MED — public rendering/cache behavior across owned-shop homepage; no money-path changes.
 
@@ -41,15 +41,18 @@
 
 ## Smoke walkthrough
 
-1. Visit a shop with one pinned Post plus Product, Collection and Event entries.
-   → Pinned item is first; remaining items are chronological and each card type is visually distinct but part of one Wall.
-2. Click the Product card.
-   → Existing PDP opens on the same channel host.
-3. Click the Collection card.
-   → Existing collection page opens with only that shop's collection.
-4. Click the Event card action.
-   → Existing RSVP/ticket path opens; no duplicate event details are stale.
+1. Open a shop that has published Wall entries: `https://miyagisanchez.com/mx/s/<slug>`.
+   → The pinned entry leads under **Novedades**; the rest are newest-first; each card type is distinct but part of one Wall.
+2. Click a **Producto** card.
+   → The existing PDP opens on the same host, at `/mx/s/<slug>/l/<id>`.
+3. Click a **Colección** card.
+   → The existing collection page opens, showing only that shop's collection.
+4. Open the same shop on its subdomain (`https://<slug>.miyagisanchez.com`).
+   → Same Wall, and every link stays on the subdomain — no `/mx/s/` prefix leaks.
 5. Resize to 375px.
-   → One-column Wall, no clipped CTA/horizontal scroll, identity/nav remain usable.
-6. Visit a shop with zero Wall entries.
-   → Designed shop empty state still provides clear access to Shop/Collections rather than an empty feed shell.
+   → One column, no horizontal scroll, no clipped CTA.
+6. Open a shop with no Wall entries.
+   → Today's storefront, unchanged. The Wall section is absent rather than an empty shell.
+7. Anonymous read, runs anywhere:
+   `curl -s 'https://miyagisanchez.com/api/shop/wall?slug=<slug>' | head -c 400`
+   → JSON with at most 12 entries, each carrying an `effective_at` in the past. An unknown slug returns **404**; an unreachable backend returns **503**, never an empty 200.

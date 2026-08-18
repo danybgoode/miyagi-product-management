@@ -1,6 +1,6 @@
 # Living Shop — Sprint 3: Controlled shop information architecture
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `abec4c9` (PR #391)
 
 **Risk:** LOW-MED — new shop routes/nav composition; verify custom-domain pass-through before touching middleware.
 
@@ -41,15 +41,15 @@
 
 ## Smoke walkthrough
 
-1. In seller settings, enable Collections, Events, About and Policies; hide FAQ; order optional sections Events → Collections → About → Policies.
-   → Saved config returns normalized approved keys only.
-2. Open the public shop.
-   → Nav shows Wall, Shop, Events, Collections, About, Policies in the configured order; FAQ absent.
-3. Open the same shop on subdomain/custom domain.
-   → Same nav/order; links remain on the owned host.
-4. Open Shop.
-   → Full current catalog renders independently of Wall chronology.
-5. Open Events.
-   → Only this seller's public events render.
-6. Remove all FAQ content and try its direct route.
-   → Existing authored-content gate remains correct; no dead nav item appears.
+1. In the studio's **Secciones** tab, hide *Preguntas* and move *Eventos* above *Colecciones*, then save. **OWED (Daniel)**
+   → Toast confirms; the saved config comes back normalized with Muro and Tienda locked in front.
+2. Open `https://miyagisanchez.com/mx/s/<slug>`.
+   → The nav shows only sections that are both enabled AND have content. Preguntas is absent.
+3. Open `https://miyagisanchez.com/mx/s/<slug>/tienda`.
+   → The complete catalog, with the collection chips as a filter. The Wall is not the only route to products.
+4. Open `https://miyagisanchez.com/mx/s/<slug>/eventos`.
+   → 🚨 **Expect a 404 today.** `marketplace_events` holds ZERO rows platform-wide, so no shop has an Events section and the route correctly refuses. Create an event in *Eventos* first to see the index.
+5. Open the same paths on the subdomain, without the `/mx/s/<slug>` prefix — `https://<slug>.miyagisanchez.com/tienda`.
+   → Identical nav and order; links stay on the owned host. **No middleware change was needed for this** (epic D6).
+6. Open a section the shop does not have, e.g. `/colecciones` on a shop with none.
+   → **404**, not an empty page — an empty destination must never enter a sitemap.

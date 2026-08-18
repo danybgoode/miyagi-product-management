@@ -1,6 +1,6 @@
 # Living Shop — Sprint 7: Cross-channel finish + dogfood
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `39fec08` (PR #391)
 
 **Risk:** MED — broad public-surface hardening, SEO/cache/performance; no payment logic changes.
 
@@ -47,15 +47,17 @@
 
 ## Smoke walkthrough
 
-1. Open the Default dogfood shop on marketplace, subdomain and custom domain.
-   → Same Wall/sections/content; links remain host-correct; no platform-brand leakage on white-label hosts beyond intentionally secure handoff.
-2. Repeat key routes for Retro Social.
-   → Theme persists across homepage, Shop, collection, Events, content page and PDP; no accessibility regression.
-3. Repeat for representative Custom recipe at 375px and desktop.
-   → Distinct appearance, coherent UX, no overflow/clipped actions.
-4. Publish a media-heavy Wall entry and load the homepage cold.
-   → Initial Wall is bounded, media lazy/optimized, interaction remains responsive; load-more fetches the next page only.
-5. Unpublish the product referenced by a Wall entry.
-   → Public Wall no longer presents stale buyable data or a broken foreign card.
-6. Inspect sitemap/canonical on custom domain.
-   → Only enabled/public shop destinations are listed and canonical remains the merchant domain.
+1. Open the dogfood shop on all three channels — `https://miyagisanchez.com/mx/s/<slug>`, `https://<slug>.miyagisanchez.com`, and its custom domain where one exists.
+   → Same Wall, same sections, same theme. Links stay host-correct on each.
+2. Repeat for a Retro Social shop, walking homepage → Tienda → a collection → a content page.
+   → The theme persists across all of them; no accessibility regression.
+3. Repeat for a Custom shop at 375px and at desktop width.
+   → Distinct appearance, coherent UX, no overflow or clipped actions.
+4. Publish a media-heavy entry and load the homepage cold.
+   → The initial Wall is bounded at 12, media is lazy, and "Ver más publicaciones" fetches only the next page.
+5. Unpublish a product referenced by a Wall entry, then reload the shop.
+   → The card is GONE. No stale price, no broken chrome.
+6. Fetch the tenant sitemap: `curl -s https://<slug>.miyagisanchez.com/sitemap.xml`.
+   → Only enabled, non-empty destinations are listed; canonical stays on the merchant's domain; no per-entry Wall URLs.
+7. Zoom to 200% and tab through the Wall.
+   → Focus indicators stay visible in every theme; no action is lost.

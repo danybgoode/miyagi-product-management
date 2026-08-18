@@ -1438,6 +1438,41 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A SPEC THAT PASSES ITS MUTATION IS NOT A SPEC — AND A SUBSTRING MATCH IS THE USUAL WAY IT HAPPENS.**
+  Two of the Living Shop epic's own new specs survived their deliberate break. One asserted a directory
+  constant **against itself** (`files.every(f => f.startsWith(SHOP_STUDIO_DIR))`) and stayed green when
+  the constant was repointed at a different directory — it proved the constant was consistent with
+  itself, never that it reached the studio. The other used `expect(source).toContain('navEntries')`,
+  which a mutation satisfied by **renaming the import to `navEntriesUnused`**. Both were rewritten to
+  assert the real population: the actual filenames the guard must cover, and the absence of a
+  hand-written path list. **The red-mutation check is what found both**; without it they would have
+  passed forever while proving nothing. When a spec checks that code *uses* something, assert the call
+  shape (`/navEntries\(\s*sectionConfig/`) and the absence of the thing it replaced — not a substring
+  that any identifier containing those letters satisfies. *(2026-08-18, living-shop, PR #391.)*
+- **MAKING A GUARD PASS IS NOT THE SAME AS SATISFYING IT.** `market-route-population` greps route
+  wrappers for a literal `market: 'mx'`. Faced with a red, the first fix put that literal in a
+  **comment** so the grep would match. That is gaming the guard — and the underlying defect was real:
+  the new section routes passed a URL prefix and no market decision, so `/mx/s/<us-shop>/tienda` would
+  have rendered a US merchant's catalog under the Mexico prefix. The honest fix changed the function
+  signature to an options object so `market: 'mx'` is real code at every call site. **When a guard goes
+  red, fix what it is pointing at; if the cheapest fix is to satisfy the detector rather than the
+  rule, that is the signal you have not understood the finding yet.** *(2026-08-18, living-shop.)*
+- **`getShop()` RETURNS THE MEDUSA SELLER — ITS `id` IS NOT `marketplace_shops.id`.** A new Supabase
+  table foreign-keyed to `marketplace_shops(id)` was being fed the Medusa seller id from
+  `getShop(slug)`. The code read correctly, type-checked, and would have matched **zero rows with no
+  error** — the same class of defect as calling a Medusa module with an invented key. The two systems
+  share exactly one safe join key: the **slug**, which `ensureSupabaseShopMirror` keeps identical on
+  every sync. Any new non-commerce table that scopes to a shop must resolve its id from
+  `marketplace_shops` by slug, and say so at the call site. *(2026-08-18, living-shop.)*
+- **A SCAN THAT HAND-PICKS ITS ROOTS IS ALREADY OUT OF DATE — AND WIDENING IT FINDS REAL BUGS.**
+  `derive-buyer-locale-population`'s `DIRECT_BUYER_DIRS` never included the owned-host ROOT routes
+  (`/acerca`, `/faq`, `/politicas`, `/c`), which serve a merchant's own pages on every subdomain and
+  custom domain. Adding them surfaced a live **bilingual leak**: `/acerca`'s closing line rendered
+  "¿Dudas? Escríbenos a" in Spanish on the English page, under a comment asserting that was deliberate
+  because the line "is not part of" the model the `?lang=en` toggle switches. The page has an English
+  toggle; it was simply never checked. **When you add a surface to a guarded population, also ask what
+  else was never in it** — the answer is usually "the routes that arrived after the list was written".
+  *(2026-08-18, living-shop.)*
 - **AN AUTH ERROR AT THE TOOL BOUNDARY IS NOT EVIDENCE ABOUT THE CREDENTIAL.** `supabase db query`
   returned `Access token not provided`, so it was reported to Daniel as "the CLI is not authenticated"
   — on a project that deploys to Supabase daily. It was authenticated the whole time: **every**

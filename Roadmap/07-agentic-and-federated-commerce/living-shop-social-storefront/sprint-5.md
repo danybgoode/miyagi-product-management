@@ -1,6 +1,6 @@
 # Living Shop — Sprint 5: Seller studio
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `ea108ac` (PR #391)
 
 **Risk:** MED — substantial seller UX/editor state; respect shop-settings anti-monolith guard.
 
@@ -41,15 +41,19 @@
 
 ## Smoke walkthrough
 
-1. Open the seller studio.
-   → Five coherent areas—Wall, Sections, Theme, Brand, Preview—are available; existing brand data is already populated.
-2. Draft a new Product Wall entry, pin it and preview without publishing.
-   → Preview shows it; public shop does not.
-3. Reorder optional sections and switch from Default to Retro Social.
-   → Preview updates immediately without saving.
-4. Switch preview to mobile.
-   → 375px rendering is usable and reflects the same pending configuration.
-5. Save/publish changes.
-   → Public shop now matches preview; toast/feedback is explicit.
-6. Reopen existing Diseño/settings routes.
-   → No duplicate conflicting controls or monolith regression; links route to the new canonical studio where appropriate.
+Every step here needs a real seller session — **the whole walkthrough is OWED (Daniel)**.
+
+1. Open `https://miyagisanchez.com/shop/manage/tienda`.
+   → Five areas — Muro, Secciones, Tema, Marca, Vista previa — and existing brand data already populated under **Marca**.
+2. In **Marca**, change the tagline and save.
+   → It saves through the same controls as *Diseño y marca*; reopening that settings page shows the same value, because there is one write path, not two.
+3. In **Secciones**, move a section with the up/down buttons using only the keyboard.
+   → Focus stays on the button, the order changes, and a screen reader announces the new position.
+4. In **Tema**, switch to Retro Social, then open **Vista previa**.
+   → The preview shows Retro *before* saving. Open the public shop in another tab — it still shows the saved theme.
+5. Switch the preview to **Celular**.
+   → 375px rendering of the same pending configuration.
+6. Save, then reload the public shop.
+   → It now matches what the preview showed.
+7. **The leak check, and it runs anonymously:** copy the preview iframe's URL (it carries `?preview=1&theme_mode=…`) and open it in a private window.
+   → The SAVED shop renders, not the draft. Covered automatically by `e2e/shop-preview-overlay.spec.ts`.

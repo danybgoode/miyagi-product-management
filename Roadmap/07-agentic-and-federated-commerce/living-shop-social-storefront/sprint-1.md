@@ -1,6 +1,6 @@
 # Living Shop — Sprint 1: Wall foundation
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — `44233c2 + 0212519` (PR #391)
 
 **Risk:** MED — additive shared-live Supabase migration + seller-authenticated writes. No commerce/money mutation.
 
@@ -39,15 +39,23 @@
 
 ## Smoke walkthrough
 
-1. Open the seller Wall management surface.
-   → Empty state explains Post, Product, Collection and Event; a clear “Create entry” action is present.
-2. Create a text Post as a draft.
-   → It appears in the seller list as Draft and does not appear publicly.
-3. Publish the draft.
-   → It becomes Published and is returned by the public Wall read.
-4. Create a Product entry selecting one of this shop's active products.
-   → The saved Wall row references the product; rendered/read data uses the current product title/price from commerce.
-5. Try to submit a product/reference from another shop through the API.
-   → Request is refused; no row is created.
-6. Schedule an entry with an explicit timezone offset.
-   → Stored instant matches the intended absolute time; it is hidden before that instant and public after it.
+Production URLs. Steps marked **OWED (Daniel)** need a real seller session — this
+machine's Clerk key is `pk_test_` and production is `pk_live_`.
+
+1. Open `https://miyagisanchez.com/shop/manage/tienda` signed in as a seller. **OWED (Daniel)**
+   → The studio opens on **Muro**, with five tabs and a "Ver mi tienda" link out.
+2. On an empty Wall, read the empty state.
+   → It names all four kinds — nota, producto, colección, evento — and offers "Crear publicación".
+3. Create a text **Nota** and press "Guardar borrador". **OWED (Daniel)**
+   → It appears in the list as **Borrador**, and `https://miyagisanchez.com/mx/s/<tu-slug>` still shows no Wall.
+4. Press "Publicar ahora" on that draft. **OWED (Daniel)**
+   → Status becomes **Publicada**, and the shop homepage now shows it under **Novedades**.
+5. Create a **Producto** entry and pick one of your own products. **OWED (Daniel)**
+   → The card shows the product's CURRENT title and price, read live from the catalog — nothing was copied.
+6. Set a schedule with the date picker and press "Programar". **OWED (Daniel)**
+   → The list shows the instant in your own timezone with the zone named; the entry is absent from the public shop until that instant passes.
+7. Anonymous check, runs anywhere:
+   `curl -s -o /dev/null -w '%{http_code}\n' https://miyagisanchez.com/api/sell/wall`
+   → **401**. Same for POST, PATCH and DELETE — covered automatically by `e2e/wall-api-auth.spec.ts`.
+8. Foreign-reference refusal: as seller A, POST `/api/sell/wall` with a `reference_id` belonging to seller B. **OWED (Daniel)**
+   → **403** with "no es de tu tienda", and no row is created.
