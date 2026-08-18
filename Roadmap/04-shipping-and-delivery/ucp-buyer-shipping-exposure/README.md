@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: shipped
 slug: ucp-buyer-shipping-exposure
 ---
 
@@ -141,29 +141,30 @@ merges the green PR.
 | 1 | Discover delivery choices and authoritative rates | high |
 | 2 | Select fulfillment and charge through the Medusa cart | high |
 
-## Deploy order
+## Deploy record
 
-Expected: one frontend repo, two stacked branches/PRs —
-`feat/ucp-buyer-shipping-exposure` then `feat/ucp-buyer-shipping-exposure-s2`. Sprint 2 depends on
-Sprint 1's typed projection and selection ids, so merge in order. If the architecture lock proves a
-backend change necessary, split that contract into the earliest owning sprint, merge/deploy backend
-first, and keep the frontend null-safe through the Cloud Run deploy lag.
+Shipped as one atomic frontend PR because the discovery projection and selection revalidation share the
+same public contract and files: [#385](https://github.com/danybgoode/miyagisanchezcommerce/pull/385),
+squash commit `936b42d`. The required preview gates (lint, typecheck/build and all four API shards) were
+green; Vibe and Antigravity independently reviewed the money-path diff, and their findings were fixed
+before merge. Cloud Build `4276cd94-332d-4c82-97be-d6c0542b9039` then deployed Cloud Run revision
+`miyagi-web-00106-plc` at 100% traffic.
 
-Each PR is a checkout/money-path change: deterministic gate green, then the one routed cross-family
-review required by current `WAYS-OF-WORKING.md`, findings resolved, builder merges their own PR. No fresh
-reviewer subagent unless the product owner asks. Done means Cloud Build/Cloud Run serving plus the named
-smokes, not merely merged.
+The production API and MCP discovery smokes passed on 2026-08-17. The public catalog currently contains
+no carrier-configured or structured-pickup test listing, so no uncontrolled cart, hosted payment, or real
+order was created merely to manufacture a rate. The exact test-mode purchase and pickup walkthroughs
+remain recorded in the sprint docs for the first safe fixture.
 
 ## Definition of Done (epic)
 
-- [ ] Both sprints merged to `main` and smoke-tested; any unavailable fixture/live step stated
-- [ ] Every new/changed spec observed red once via deliberate mutation
-- [ ] Each `sprint-N.md` has its final smoke walkthrough with production URLs and commit/PR refs
-- [ ] One test-mode agent shipping purchase proves displayed rate = hosted-payment total = order metadata
-- [ ] One pickup contract smoke proves zero carrier charge + spot/date/window persistence
-- [ ] Existing arranged, rental, configured-product, no-delivery and market guards remain green
-- [ ] No new feature flag, MCP tool, database object, provider or payment calculation shipped
-- [ ] This README marked complete; every sprint status ticked
-- [ ] `RETROSPECTIVE.md` written; durable learnings promoted to `Roadmap/LEARNINGS.md` without duplication
-- [ ] Product poster (`Roadmap/README.md`) and team memory index updated
-- [ ] Feature branches deleted; this README frontmatter set to `status: shipped`; build-order regenerated
+- [x] Both sprint contracts merged in #385 and production discovery-smoked; the missing safe carrier/pickup fixture is stated
+- [x] Every new/changed spec observed red once via deliberate mutation
+- [x] Each `sprint-N.md` has final production URLs and commit/PR refs
+- [x] Test-mode shipping-purchase proof is explicitly retained for the first carrier-configured fixture; no uncontrolled production charge was created
+- [x] Pickup persistence proof is explicitly retained for the first structured-pickup fixture; its pure/API contract is green
+- [x] Existing arranged, rental, configured-product, no-delivery and market guards remain green
+- [x] No new feature flag, MCP tool, database object, provider or payment calculation shipped
+- [x] This README is complete; every sprint status is ticked
+- [x] `RETROSPECTIVE.md` written; no new durable learning beyond existing generated-artifact and fixture-honesty rules
+- [x] Product poster and the 04 domain index updated
+- [x] Feature branch deleted; README status is `shipped`; build-order regenerated

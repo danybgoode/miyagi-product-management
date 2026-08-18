@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-08-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-18 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -16,11 +16,11 @@
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [UCP buyer-side shipping/delivery-method exposure](../../04-shipping-and-delivery/ucp-buyer-shipping-exposure/README.md) — 04 Shipping · 0/4 stories · risk: High
+_None._
 
-## ✅ Shipped (141)
+## ✅ Shipped (142)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -62,6 +62,7 @@
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 5/5 stories
 - [Envía — platform Flagsmith kill-switch](../../04-shipping-and-delivery/envia-killswitch/README.md) — 04 Shipping · 4/4 stories
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 10/10 stories · risk: High · tbd
+- [UCP buyer-side shipping/delivery-method exposure](../../04-shipping-and-delivery/ucp-buyer-shipping-exposure/README.md) — 04 Shipping · 4/4 stories · risk: High
 - [Buyer notifications — money path (Compras dispatch + Medusa-order gating)](../../05-trust-offers-and-messaging/buyer-notifications-money-path/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Buyer Telegram channel + Buyer preference center](../../05-trust-offers-and-messaging/buyer-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2
 - [Granular Multi-Channel Notifications (Email + Telegram)](../../05-trust-offers-and-messaging/granular-notifications/README.md) — 05 Trust/Offers/Messaging · 7/7 stories · risk: High · Wave 2

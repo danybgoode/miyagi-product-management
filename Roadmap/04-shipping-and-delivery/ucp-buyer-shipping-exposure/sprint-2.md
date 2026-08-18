@@ -1,6 +1,6 @@
 # UCP buyer-side shipping/delivery-method exposure — Sprint 2: Select fulfillment and charge through the Medusa cart
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — frontend [#385](https://github.com/danybgoode/miyagisanchezcommerce/pull/385), production commit `936b42d`
 
 ## Stories
 
@@ -91,3 +91,15 @@ Env: production · https://miyagisanchez.com
    → Checkout adds zero carrier charge and the resulting order carries the chosen spot and appointment.
 
 If any step fails, note the step number + response/order detail — that's the bug report.
+
+### Completion record — 2026-08-17
+
+- The selection resolver's invalid, stale/cross-address, unavailable, valid shipping and valid pickup
+  paths are covered by the green pure/API contract. Deliberately removing destination binding made the
+  stale-destination selection spec fail before restoration.
+- #385 passed lint, typecheck/build and all four preview API shards after both independent money-path
+  reviews were resolved; the deployed revision is `miyagi-web-00106-plc`.
+- Steps 1–6 requiring a carrier or structured-pickup fixture, plus the hosted test-mode payment and
+  authenticated seller-order check, are **fixture-unavailable**. The live public catalog has no such
+  listing. They remain owed to Daniel exactly as written; no cart/payment/order was created against an
+  ordinary production seller merely to close the checklist.

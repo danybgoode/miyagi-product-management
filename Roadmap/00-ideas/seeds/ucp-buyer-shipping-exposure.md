@@ -1,7 +1,7 @@
 ---
 title: "UCP buyer-side shipping/delivery-method exposure"
 slug: ucp-buyer-shipping-exposure
-status: scaffolded
+status: shipped
 area: "04"
 type: feature
 priority: null

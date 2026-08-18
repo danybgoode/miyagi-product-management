@@ -1,6 +1,6 @@
 # UCP buyer-side shipping/delivery-method exposure — Sprint 1: Discover delivery choices and authoritative rates
 
-**Status:** ⬜ not started
+**Status:** ✅ shipped — frontend [#385](https://github.com/danybgoode/miyagisanchezcommerce/pull/385), production commit `936b42d`
 
 ## Stories
 
@@ -85,3 +85,17 @@ Env: production · https://miyagisanchez.com
    → The existing `delivery.arranged: true` note remains and no physical UCP fulfillment is fabricated.
 
 If any step fails, note the step number + response status/body — that's the bug report.
+
+### Completion record — 2026-08-17
+
+- `npx tsc --noEmit`, changed-file ESLint, `npm run build`, targeted fulfillment/API tests and the
+  complete preview API-shard gate were green. The deliberately broken projection and stale-destination
+  matcher each made the new specs red before restoration.
+- Cloud Build `4276cd94-332d-4c82-97be-d6c0542b9039` deployed `miyagi-web-00106-plc` at 100% traffic.
+- A read-only production `checkout-session` request with a complete MX address returned no fabricated
+  `fulfillment` for a public physical listing with no delivery configuration. A read-only production
+  `get_checkout_options` MCP request for an arranged listing preserved the existing coordinated flow and
+  did not fabricate a physical method.
+- Steps 1–4's positive carrier-rate comparison is **fixture-unavailable**, not passed-by-skip: every
+  public product is currently arranged or has no delivery mode, and no safe carrier fixture is published.
+  No cart, payment or order was created to compensate.
