@@ -3,25 +3,25 @@
 > **GENERATED — do not hand-edit.** `node scripts/owed-ledger.mjs`.
 > Re-derived from the spec tree on every run, never from a maintained list.
 
-_Generated: 2026-07-28_
+_Generated: 2026-08-18_
 
-**82 check(s) owed across 76 spec file(s).**
+**86 check(s) owed across 79 spec file(s).**
 
 | Category | Count | What it means |
 |---|---|---|
-| money-path | 16 | Touches checkout, payment or order state — run these first |
-| auth-path | 14 | Needs a real signed-in session a script cannot mint against production |
+| money-path | 18 | Touches checkout, payment or order state — run these first |
+| auth-path | 15 | Needs a real signed-in session a script cannot mint against production |
 | admin-only | 4 | Behind an admin surface |
-| other | 48 | Everything the rules could not confidently place — **not a bin, a to-triage list** |
+| other | 49 | Everything the rules could not confidently place — **not a bin, a to-triage list** |
 
-## money-path (16)
+## money-path (18)
 
 - `apps/miyagisanchez/e2e/about-acerca.browser.spec.ts:4` — Anonymous browser smoke for the `/acerca` about page (no auth, no money — NOT owed to Daniel).
 - `apps/miyagisanchez/e2e/catalog-bulk-apply-suggested-price.spec.ts:17` — PDP + the ML-linked listing both update) is owed to Daniel per the
 - `apps/miyagisanchez/e2e/checkout-cp-first.browser.spec.ts:15` — whose seller offers Envía shipping). The live confirmation is owed to Daniel.
 - `apps/miyagisanchez/e2e/event-hero.spec.ts:10` — the purchase + QR after payment are a money/auth path owed to Daniel.
 - `apps/miyagisanchez/e2e/manual-payment-report.spec.ts:10` — show the reported state) is the browser smoke owed to Daniel (real sessions +
-- `apps/miyagisanchez/e2e/mcp-configured-checkout.spec.ts:9` — artwork URL and a real payment, is owed to Daniel per sprint-4.md).
+- `apps/miyagisanchez/e2e/mcp-configured-checkout.spec.ts:13` — artwork URL and a real payment, is owed to Daniel per sprint-4.md).
 - `apps/miyagisanchez/e2e/mcp-order-read.spec.ts:11` — — that's owed to Daniel, same fixture gap `agent-connector.spec.ts` notes.
 - `apps/miyagisanchez/e2e/onboarding-cobros-wizard.spec.ts:11` — real MP OAuth round-trip itself is owed to Daniel (money/auth).
 - `apps/miyagisanchez/e2e/orders-bulk-status.spec.ts:7` — that live check is owed to Daniel. This asserts the proxy is Clerk-gated
@@ -32,8 +32,10 @@ _Generated: 2026-07-28_
 - `apps/miyagisanchez/e2e/subdomain-checkout.spec.ts:40` — NOT covered (owed to Daniel): a real yearly Stripe charge → white-label serves,
 - `apps/miyagisanchez/e2e/subdomain-monthly.spec.ts:41` — NOT covered (owed to Daniel): a real $25/mo Stripe charge → white-label serves, a
 - `apps/miyagisanchez/e2e/subdomain-pricing.spec.ts:25` — NOT covered here (owed to Daniel — sprint-1.md smoke walkthrough): the live 301
+- `apps/miyagisanchez/e2e/us-checkout-admission.spec.ts:11` — OWED TO DANIEL — the first REAL USD charge. Everything here and in the backend's
+- `apps/miyagisanchez/e2e/us-stripe-v2-availability.spec.ts:21` — OWED TO DANIEL — a live Stripe Connect onboarding round-trip on a US shop. The
 
-## auth-path (14)
+## auth-path (15)
 
 - `apps/miyagisanchez/e2e/admin-audit.spec.ts:13` — inserts a row with my Clerk id/email" check is owed to Daniel (admin session).
 - `apps/miyagisanchez/e2e/admin-featured.spec.ts:9` — session (it mutates Medusa product metadata) and is owed to Daniel.
@@ -49,6 +51,7 @@ _Generated: 2026-07-28_
 - `apps/miyagisanchez/e2e/promoter-private-preview.spec.ts:23` — NOT covered here (owed to Daniel — sprint-1.md smoke): the authed promoter
 - `apps/miyagisanchez/e2e/shop-settings-sections.browser.spec.ts:16` — + dev Clerk keys + MS_TEST_SELLER_EMAIL. The live save round-trips are owed to Daniel.
 - `apps/miyagisanchez/e2e/tenant-intake-api.spec.ts:9` — (a real Clerk session) is owed to Daniel per the Sprint 1 smoke
+- `apps/miyagisanchez/e2e/us-seller-locale.spec.ts:15` — OWED TO DANIEL — an authed `/sell` load. This is the one direct confirmation that
 
 ## admin-only (4)
 
@@ -57,7 +60,7 @@ _Generated: 2026-07-28_
 - `apps/miyagisanchez/e2e/admin-seleccion.browser.spec.ts:10` — The full pin → drag → homepage-reflects flow is owed to Daniel on prod.
 - `apps/miyagisanchez/e2e/promoter-commission.spec.ts:22` — NOT covered (owed to Daniel — sprint-3.md smoke): the dashboard + admin settlement
 
-## other (48)
+## other (49)
 
 - `apps/miyagisanchez/e2e/agent-connector.spec.ts:19` — NOT covered (owed to Daniel — sprint-2.md smoke walkthrough steps 2–4): the live
 - `apps/miyagisanchez/e2e/agent-prompt.browser.spec.ts:14` — owed to Daniel.
@@ -107,4 +110,5 @@ _Generated: 2026-07-28_
 - `apps/miyagisanchez/e2e/shop-settings-returns.browser.spec.ts:49` — The save CTA is present (the round-trip itself is owed to Daniel).
 - `apps/miyagisanchez/e2e/tabbar.browser.spec.ts:14` — the PWA-only Favoritos dedup, and the device glass look stay owed to Daniel.
 - `apps/miyagisanchez/e2e/ucp-rental-quote.spec.ts:117` — No rental listing exists in prod yet (owed to Daniel, same gap S1/S2 already
+- `apps/miyagisanchez/e2e/us-seller-locale.spec.ts:23` — OWED TO DANIEL — the seller portal's body copy. The rail, shell chrome, locale seam
 
