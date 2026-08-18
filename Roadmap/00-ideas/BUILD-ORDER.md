@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-08-15 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -20,7 +20,7 @@
 
 _None._
 
-## ✅ Shipped (141)
+## ✅ Shipped (142)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -101,6 +101,7 @@ _None._
 - [Merchant activation scorecard](../../08-growth-and-promotions/merchant-activation-scorecard/README.md) — 08 Growth · 6/6 stories · risk: Low · #4-fm
 - [Merchant lifecycle projection — the Miyagi half of Golden Beans' event router](../../08-growth-and-promotions/merchant-lifecycle-projection/README.md) — 08 Growth · 0 sprints
 - [Merchant Partner lifecycle](../../08-growth-and-promotions/merchant-partner-lifecycle/README.md) — 08 Growth · 18/18 stories · risk: High · #5-fm
+- [Operator program — one offering, two markets, new voice ✅ shipped 2026-08-17](../../08-growth-and-promotions/operator-program-copy/README.md) — 08 Growth · 0 sprints
 - [Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet](../../08-growth-and-promotions/promoter-funnel-fixes/README.md) — 08 Growth · 3/3 stories
 - [Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅](../../08-growth-and-promotions/promoter-funnel-v2/README.md) — 08 Growth · 19/19 stories
 - [Promoter Program — in-person seller acquisition force (commission-paid)](../../08-growth-and-promotions/promoter-program/README.md) — 08 Growth · 12/12 stories
@@ -184,4 +185,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Miyagi Partners proposition and recruiting portal v3 | In progress | Shipped |
 
 ---
-_Epics: 147 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 148 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
