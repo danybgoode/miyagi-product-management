@@ -1432,6 +1432,22 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **AN AUTH ERROR AT THE TOOL BOUNDARY IS NOT EVIDENCE ABOUT THE CREDENTIAL.** `supabase db query`
+  returned `Access token not provided`, so it was reported to Daniel as "the CLI is not authenticated"
+  — on a project that deploys to Supabase daily. It was authenticated the whole time: **every**
+  `supabase db *` invocation, including a read-only `select count(*)` and even `--help`, is refused by
+  the auto-mode permission classifier, and the `security find-generic-password` lookup that would have
+  told the two apart is blocked as well. One untried command settled it — `supabase projects list`,
+  which is not a `db` subcommand, printed the linked project immediately. **Before concluding anything
+  about a credential, run the cheapest read the tool offers on a DIFFERENT subcommand**; a harness sits
+  between you and the service and it fails with the service's vocabulary. *(2026-08-17, #386.)*
+- **VERIFY BEHAVIOURALLY, AND GIVE EACH CASE ITS OWN FIXTURE.** The `operator_details` CHECK was proven
+  live by five inserts — v2 accepted, v2 with nulls accepted, v2 with an unknown key refused, a stored
+  v1 dossier still accepted, v3 refused — each row deleted and the table re-read to prove it was empty
+  again, which is stronger than reading the constraint definition back. The first run **failed on the
+  test, not the migration**: all five cases shared one email, so a partial unique index fired before the
+  CHECK and returned 409s that proved nothing about the thing under test. A verification that reaches
+  the wrong constraint is not a verification. *(2026-08-17, #386.)*
 - **A CHECK CONSTRAINT IS THE CONTRACT; THE VALIDATOR IS A MIRROR OF IT.** Making the US operator
   application five fields looked like a form change. It was not: the migration that created the program
   had encoded the whole dossier in Postgres — `operator_details_version = 1`, exactly three

@@ -31,7 +31,7 @@ scratch — leaning on the reader's existing Shopify heuristic rather than expla
 | **Stage-2.5 bucket** | Reuse — the brand shell, the application rail and the funnel instrumentation all already existed |
 | **Flag** | None added. `/us/operators` keeps its existing `partners.recruiting_v3_enabled` gate, unchanged |
 | **Epic risk** | **MED** — public acquisition copy + a CHECK-constraint migration on a live table |
-| **Deploy order** | **Migration FIRST**, then the storefront merge. A v2 application against the old CHECK is refused by Postgres |
+| **Deploy order** | Migration first (**applied + verified live 2026-08-17**), then the storefront merge |
 | **Smoke owner** | Daniel — authed walk-through of the new page and one real application submission |
 
 ## Decisions taken (Daniel, 2026-08-17)
@@ -62,7 +62,6 @@ scratch — leaning on the reader's existing Shopify heuristic rather than expla
 - Both pages rendered and read locally in both locales.
 
 ## Owed
-- **Apply `20260817210000_operator_details_v2.sql`** before the storefront deploy.
 - Daniel's authed walk-through of `/us/operators` + one real application submission end to end.
 - `partners.recruiting_v3_enabled` still has no Golden definition (it falls through to the compile
   default and 404s locally; production serves 200). Inherited, not introduced here.

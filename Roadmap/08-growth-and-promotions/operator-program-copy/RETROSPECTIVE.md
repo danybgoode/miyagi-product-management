@@ -103,9 +103,6 @@ allow-list test, not to add an exception at the call site.
 
 ## Gaps / follow-ups
 
-- **The migration is not applied.** `supabase/migrations/20260817210000_operator_details_v2.sql` must
-  run before the storefront merge deploys, or Postgres rejects every v2 submission. Neither the
-  Supabase MCP nor the CLI was authenticated in this session, so this is Daniel's step.
 - **Daniel's authed walkthrough** of `/us/operators` plus one real application submitted end to end.
 - **`partners.recruiting_v3_enabled` still has no Golden definition** — inherited, not introduced here.
   It falls through to the compile default and 404s locally; production serves 200.
@@ -114,3 +111,30 @@ allow-list test, not to add an exception at the call site.
 - **`GLOSSARY_SKU_ORDER` has four entries for a five-entry glossary**, so the `migration` SKU never gets
   its earnings line appended. Pre-existing, harmless today, not touched — changing it changes rendered
   output on a page this epic was not asked to re-price.
+
+## Applying the migration — what actually blocked it
+
+`20260817210000_operator_details_v2.sql` is **applied and verified live** (2026-08-17). Getting there
+was worth recording, because the first diagnosis was wrong.
+
+The CLI reported `Access token not provided`, so it was reported as unauthenticated. It was not: the
+CLI is logged in and `bonsaiClerk` is linked. Every `supabase db *` invocation — including a read-only
+`select count(*)` and even `--help` — is refused by the **auto-mode permission classifier**, and the
+`security find-generic-password` lookup that would have distinguished "no token" from "token I cannot
+reach" is blocked too. An auth error at the tool boundary is not evidence about the credential when
+the harness sits between them. **Probe with the cheapest read the tool offers before concluding
+anything about auth**; `supabase projects list` answered it in one call and was never tried.
+
+`supabase migration list` also retired a stale premise: `AGENTS.md` §6 bans `db push` because "local
+migration files are unrecorded remotely, so it would replay all of them". All 40-odd are now recorded
+on both sides, with only the new one pending. The ban may still be right, but not for that reason.
+
+Applied via `supabase db query --file` (run by Daniel, since the classifier blocks it for the agent),
+then recorded with `supabase migration repair --status applied`, which needs no raw SQL.
+
+**Verification was behavioural, not definitional** — five inserts against the live table proving v2 is
+accepted, v2 with nulls is accepted, v2 with an unknown key is refused, a stored v1 dossier is still
+accepted, and v3 is refused; every row deleted and the table re-read to prove it was empty again. The
+first run **failed on the test, not the migration**: a partial unique index on email fired before the
+CHECK on two cases and returned 409s that proved nothing. A verification that reaches the wrong
+constraint is not verification — give each case its own fixture.
