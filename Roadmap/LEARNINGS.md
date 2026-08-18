@@ -1438,6 +1438,16 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **SHOP SETTINGS LIVE IN TWO STORES, AND THE PUBLIC PAGE READS THE MEDUSA ONE.**
+  `marketplace_shops.metadata.settings` (Supabase) is what the seller portal writes and what a SQL
+  query shows you; the public shop page reads `getShop()` — the **Medusa seller** — whose metadata
+  the settings PATCH route *also* syncs. They can and do diverge: `theme_preset` was set on three
+  shops in Supabase and present in Medusa for only **one**, so two merchants had been rendering
+  without their chosen preset since before anyone noticed. Consequences: (a) counting a live
+  population in Supabase answers "who chose this", not "what renders" — say which you mean; (b) a
+  direct SQL write to `marketplace_shops` **does not change the storefront**, so seeding a demo that
+  way silently does nothing; (c) any new presentation field must ride the existing PATCH route, which
+  writes both. *(2026-08-19, living-shop, found during live verification of PR #391.)*
 - **A SPEC THAT PASSES ITS MUTATION IS NOT A SPEC — AND A SUBSTRING MATCH IS THE USUAL WAY IT HAPPENS.**
   Two of the Living Shop epic's own new specs survived their deliberate break. One asserted a directory
   constant **against itself** (`files.every(f => f.startsWith(SHOP_STUDIO_DIR))`) and stayed green when

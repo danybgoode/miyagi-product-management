@@ -98,9 +98,18 @@ deep-merges (`route.ts:303`), so writing one block preserves every sibling. One 
 `lib/shop-presentation/`, owns the schema, the normalizer and the resolver; the route validates through
 it and never hand-rolls a second copy of the rules.
 
-**D5 · Legacy presets are mapped at READ time. There is NO backfill.** Live counts: `papel` 1
+**D5 · Legacy presets are mapped at READ time. There is NO backfill.** Supabase counts: `papel` 1
 (`panfleto`), `pizarra` 1 (`champions-not`), `terracota` 1 (`autos-demo-miyagi-sanchez`), `lienzo` 0,
-none 27. A data migration over three rows buys nothing and risks the one thing S4.2 forbids — a silent
+none 27.
+
+> ⚠️ **CORRECTED AT LIVE VERIFICATION (2026-08-19).** Those are the counts in
+> `marketplace_shops` — who *chose* a preset. The public shop page reads its settings from the
+> **Medusa seller**, and only **one** of the three (`champions-not`) has `theme_preset` there.
+> `panfleto` and `autos-demo-miyagi-sanchez` have been rendering *without* their chosen preset since
+> before this epic — a pre-existing divergence between the two stores, not something this epic
+> caused or changed. It makes D5 more right, not less: a backfill would have been even emptier. The
+> premise as written ("three live shops") was true of the table and false of the storefront, which is
+> exactly the distinction `LEARNINGS.md` keeps recording. A data migration over three rows buys nothing and risks the one thing S4.2 forbids — a silent
 visual reset. Instead: `theme_preset` stays persisted and untouched, the `[data-shop-preset]` CSS blocks
 in `globals.css` stay exactly as they are, and the resolver treats a shop with a legacy preset and no
 `theme_mode` as *Custom, pinned to that preset's compatibility recipe*. Choosing a new mode in the UI is
