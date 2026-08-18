@@ -1,7 +1,14 @@
 ---
-status: scaffolded
+title: "Marketplace communications — one map, and an email rail proven end to end"
 slug: marketplace-communications
-area: 05-trust-offers-and-messaging
+status: shipped
+area: "05"
+type: feature
+priority: null
+risk: null
+epic: "05-trust-offers-and-messaging/marketplace-communications"
+build_order: null
+updated: 2026-08-18
 ---
 
 # Marketplace communications — one map, and an email rail proven end to end
