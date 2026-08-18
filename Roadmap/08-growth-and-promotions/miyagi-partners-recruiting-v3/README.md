@@ -10,9 +10,9 @@ slug: miyagi-partners-recruiting-v3
 ## Why
 
 Miyagi already has a Promotor funnel, multi-shop partner credentials and grants, a partner workspace,
-merchant stewardship, consent-aware operations and an activation scorecard. A qualified US commerce
-operator still reaches a research page ending in email and cannot submit the three real client shops the
-pilot requires. This epic makes **Miyagi Partners** the honest professional umbrella: a founding US operator
+merchant stewardship, consent-aware operations and an activation scorecard. At scope approval, a qualified
+US commerce operator reached a research page ending in email and could not submit the three real client
+shops the proof required. This epic made **Miyagi Partners** the honest professional umbrella: a founding US operator
 can understand the no-cutover proof, apply with three shops, activate one existing partner identity and enter
 the shipped workspace without pretending to be a commission-based street Promotor.
 
@@ -21,8 +21,9 @@ shop access, US marketplace admission or a claim that the US commerce pilot has 
 
 ## Decisions locked at scope approval
 
-1. `/us` is the public US operator-recruitment surface; v1 does not add a second public `/partners` route
-   beside the authenticated `/partner` workspace.
+1. **Superseded 2026-08-11:** `/us` became the open US marketplace. Public operator recruiting moved to
+   `/us/operators`; v1 still does not add a public `/partners` route beside the authenticated `/partner`
+   workspace. The recruiting flag must never close or replace the market root.
 2. The two visible tracks are **Founding Commerce Operator — United States** and the existing
    **Promotor — Mexico**. Promotor retains its current Spanish funnel and proven economics.
 3. The existing approved-Promotor-backed partner identity is extended with a descriptive program track.
@@ -33,8 +34,8 @@ shop access, US marketplace admission or a claim that the US commerce pilot has 
    real-order permission and story permission remain separate later decisions.
 6. The founding proof charges no Miyagi platform or migration fee during its 90-day working window, but
    this is not advertised as permanent pricing and no operator revenue share is promised.
-7. All new behavior ships dark behind `partners.recruiting_v3_enabled`; OFF preserves today's `/us` and
-   every Promotor behavior.
+7. All new behavior ships dark behind `partners.recruiting_v3_enabled`; OFF 404s `/us/operators`, refuses
+   operator-only mutations and preserves the open `/us` marketplace plus every Promotor behavior.
 
 ## Platform-first note
 
@@ -47,7 +48,7 @@ records additively; it may not copy commerce state or manufacture consent from a
 
 | Capability | Existing seam | Reuse |
 |---|---|---|
-| US invitation | `/us` | Turn the mailto-only hypothesis into the approved proposition and application while retaining the invitation boundary |
+| US recruiting | `/us/operators` | Keep the operator proposition/application separate from the open `/us` marketplace; OFF is a recruiting-route 404 |
 | Growth-page language | `/vende` section/form patterns, metadata and design tokens | Reuse accessible patterns without forcing the English US page into the es-MX persona registry |
 | Application/review | `marketplace_promoter_applications`, server validation, rate limit, honeypot, notifications and admin approve/reject | Add a track and versioned operator details; no second application table or form platform |
 | Partner identity | approved `marketplace_promoters` record bound to Clerk | Add descriptive track with existing rows resolving to Promotor |
@@ -158,12 +159,12 @@ same transaction. Replays fail closed and no failed principal/bind check consume
 to `/partner` and creates zero grants.
 
 **D9 — one feature resolver, two authorities with distinct jobs.** `recruitingV3Enabled()` is the only
-runtime seam and delegates to typed `isEnabled('partners.recruiting_v3_enabled')`. It gates the `/us` v3
+runtime seam and delegates to typed `isEnabled('partners.recruiting_v3_enabled')`. It gates `/us/operators`
 render, only the founding-operator branch of public intake and approval, neutral activation, only the
 founding-operator workspace orientation, and every direct or credential-based operator operation. OFF is
 checked before rate limits and before grant, relationship, portfolio or draft reads; storage-unavailable is
-not treated as identity-absent. OFF returns the current `/us`, makes operator write/activation routes
-unavailable and leaves every Promotor route unchanged. Sprint 1 registers the typed Golden definition
+not treated as identity-absent. OFF 404s `/us/operators`, makes operator write/activation routes unavailable,
+leaves `/us` open and leaves every Promotor route unchanged. Sprint 1 registers the typed Golden definition
 with default variant OFF through `flags:sync` and seeds the local fallback/shadow row disabled; Golden is the
 production toggle surface. `partners.mcp_enabled` continues to govern partner credentials and current
 Promotor workspace access; it is not repurposed as the recruiting switch.
@@ -202,7 +203,7 @@ were manufactured.
 `partner-auth.spec.ts`, `partner-grants.spec.ts`, `portfolio-partner-mcp.spec.ts`, the flag catalog/admin
 specs and the new recruiting specs. New population guards inspect all Promotor code/economic/bind callsites
 for a promoter-track predicate and all partner authorization callsites for grant-only authority. Browser QA
-covers flag OFF/ON `/us`, public intake, both admin row types, neutral activation, operator zero-grant and the
+covers the always-open `/us` marketplace plus flag OFF/ON `/us/operators`, public intake, both admin row types, neutral activation, operator zero-grant and the
 unchanged Spanish Promotor path. Every new spec is deliberately observed red before final green.
 
 ## Live migration evidence — 2026-08-08
@@ -246,15 +247,18 @@ separate backlog concern rather than being changed inside an identity/auth rollo
 matching typed Miyagi catalog contract and a disabled `platform_flags` fallback/shadow row. It defaults
 **false**; rollout must register it disabled in every Golden environment before any cohort activation. One
 server-side recruiting-version resolver
-gates the `/us` v3 page,
+gates `/us/operators`,
 operator-track application acceptance, track-aware approval, neutral activation and workspace orientation.
-OFF preserves the current `/us` invitation and all Promotor behavior; additive schema remains inert.
+OFF 404s only the recruiting route and preserves the open `/us` marketplace plus all Promotor behavior;
+additive schema remains inert.
 
 ## Explicit exclusions
 
-- US payments, tax, shipping, checkout, imports or catalog parity (`#US-3`);
+- US payments, tax, shipping, checkout, imports or catalog parity (later shipped independently in the
+  `us-marketplace` epic; none is owned by this recruiting epic);
 - automatic shop creation, merchant contact, relationship/consent records or grants;
-- marketplace admission or a public US catalog;
+- marketplace admission caused by operator approval; the separately shipped public US catalog has its own
+  commerce/admission contracts;
 - operator commissions, revenue share, certification, tiers, badges, income claims or permanent pricing;
 - public partner directory, team seats, agency CRM or lead marketplace;
 - outbound automation, paid acquisition or marketplace-operator white-labeling;
@@ -282,13 +286,13 @@ operator-versus-Promotor authorization matrix and walkthrough are green.
 - [x] Epic-mode architect locked and documented `D1…Dn` against live code and live DB before delegation.
 - [x] Both sprint PRs merged in order to `main`, deployed and smoke-tested; gaps stated.
 - [x] Every new spec was observed red at least once through a deliberate implementation mutation.
-- [x] `/us` accepts a valid three-shop operator application without collecting secrets or implying consent.
+- [x] `/us/operators` accepts a valid three-shop operator application without collecting secrets or implying consent.
 - [x] Admin can review/decide both tracks without leaking operator copy or economics into Promotor.
 - [x] Approved operator activates through a neutral path and reaches `/partner` with zero implicit shop grants.
 - [x] Existing Promotor application, approval, code, economics, close, grant and workspace behavior remains.
 - [x] Golden version 2 is active and default-ON in all three `miyagisanchez` environments; default-OFF
   version 1 remains the immediate rollback.
-- [x] The deployed scoped read binding resolves production snapshot 4 / flag version 2, and `/us` renders
+- [x] The deployed scoped read binding resolves production snapshot 4 / flag version 2, and `/us/operators` renders
   the live application with HTTP 200 and zero browser console errors.
 - [ ] Daniel completes the authenticated application → admin decision → activation → replay/zero-grant
   workspace walkthrough and the existing Promotor continuity walkthrough.
@@ -324,7 +328,8 @@ wholesale would have silently removed those established controls, because the ow
 snapshot then contained only two active decisions and snapshot versions are project-relative. Storefront PR
 [#350](https://github.com/danybgoode/miyagisanchezcommerce/pull/350) (`5d4df0c`) therefore introduced one
 server-only scoped read credential for the exact recruiting key while leaving every other flag on the
-established catalog; the scoped snapshot never enters the shared durable mirror.
+established catalog. Its project-relative snapshot never enters the primary catalog's durable lane; after
+the 2026-08-17 cold-start repair it persists to an independently monotonic scoped lane instead.
 
 Activating version 1 in all three environments correctly kept the feature OFF: activation makes an immutable
 definition authoritative but does not override its configured default variant. Version 2 changed only
@@ -332,7 +337,7 @@ definition authoritative but does not override its configured default variant. V
 snapshot 4. Version 1 remains available as rollback. Cloud Build `da67c055-6a93-4254-959c-eef644420bd2`
 deployed Cloud Run revision `miyagi-web-00069-kbd` at 100% traffic. The live authority log resolved
 `snapshotVersion=4`, `flagVersion=2`, `source=golden`, `matchesLocal=false`; a real Chromium smoke rendered
-the complete `/us` application at HTTP 200 with no console errors.
+the complete recruiting application (now `/us/operators`) at HTTP 200 with no console errors.
 
 ## Closeout state — 2026-08-10
 
@@ -345,3 +350,13 @@ The epic remains `in-progress` only for Daniel's authenticated destructive-path 
 application and admin decision, wrong-email denial, verified activation, replay denial, zero-grant workspace,
 then the existing Promotor continuity path. No nominated merchant was contacted and no shop grant or merchant
 consent was created by the public read-only smoke.
+
+## Post-close corrections — 2026-08-17
+
+- The `us-marketplace` epic superseded scope decision 1: `/us` is now the marketplace and recruiting is
+  `/us/operators`. Current acceptance and smoke paths use that route; the 2026-08-10 `/us` records above are
+  retained only as history from before the move.
+- A live cold instance returned one false 404 before 36 successful requests. The scoped Golden credential
+  intentionally could not share the primary catalog's project-relative monotonic mirror, but it had no
+  durable lane of its own. The repair gives each provider scope an independent durable snapshot lane, so a
+  cold request resolves the last-known-good recruiting snapshot without contaminating the legacy catalog.
