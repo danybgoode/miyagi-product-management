@@ -135,6 +135,19 @@ None.
   assert.deepEqual(checkRetrospective(content), []);
 });
 
+test('checkRetrospective: the canonical unclosed scaffold placeholder has zero offenses', () => {
+  const content = `# Example — Retrospective
+
+_Closed: <date>_
+
+## What shipped
+## What went well
+## What we learned
+## Gaps / follow-ups
+`;
+  assert.deepEqual(checkRetrospective(content), []);
+});
+
 test('checkRetrospective: a "_Closed: YYYY-MM-DD_" line with trailing content after the italic close is clean (real-world norm, not drift)', () => {
   const content = `# X — Retrospective
 
