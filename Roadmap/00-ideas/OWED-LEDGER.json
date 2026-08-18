@@ -1,11 +1,11 @@
 {
-  "total": 82,
-  "files": 76,
+  "total": 86,
+  "files": 79,
   "byCategory": {
-    "money-path": 16,
-    "auth-path": 14,
+    "money-path": 18,
+    "auth-path": 15,
     "admin-only": 4,
-    "other": 48
+    "other": 49
   },
-  "generatedAt": "2026-07-28"
+  "generatedAt": "2026-08-18"
 }
