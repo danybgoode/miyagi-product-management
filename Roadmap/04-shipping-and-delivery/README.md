@@ -9,6 +9,13 @@ Built around Mexican shipping realities: postal-code-first addresses, local carr
 - ✅ **Mexico-tuned address capture** — CP-first, alcaldía/colonia, street + number
 - ✅ **"Entrega acordada"** (arranged delivery) option
 - ✅ **Pickup** option
+- ✅ **Agent-selected shipping & pickup** — UCP `checkout-session` and MCP
+  `get_checkout_options` now expose seller-authoritative physical fulfillment choices; `create_checkout`
+  accepts only returned opaque ids, re-resolves the current backend quote/spot immediately before the
+  Medusa cart write, and never trusts agent-supplied carrier/service/amount/currency. Existing arranged,
+  rental, digital and legacy checkout behavior remains intact; no new flag or payment rail. See
+  [UCP buyer shipping exposure](ucp-buyer-shipping-exposure/). *(A real carrier/pickup fixture is not
+  currently published, so the live test-mode checkout/order walkthrough remains owed to Daniel.)*
 - ✅ **Delivery-aware rules** — arranged-only listings steer checkout to manual payment (server-enforced,
   not just UI copy); sellers need a manual payment method to publish arranged-only listings. Service and
   rental listings enforce this unconditionally, live; a plain product opting into `delivery_mode=arranged`
