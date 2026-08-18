@@ -63,7 +63,10 @@ scratch — leaning on the reader's existing Shopify heuristic rather than expla
 
 ## Owed
 - Daniel's authed walk-through of `/us/operators` + one real application submission end to end.
-- `partners.recruiting_v3_enabled` still has no Golden definition (it falls through to the compile
-  default and 404s locally; production serves 200). Inherited, not introduced here.
+- `/us/operators` 404s on a local dev server: `partners.recruiting_v3_enabled` resolves from Golden,
+  which a local run cannot reach, so it falls through to the compile default of `off`. **Production is
+  fine** — the flag has a Golden definition serving version 2 default-ON and #384 gave the scoped
+  catalog its own durable snapshot lane, so cold starts no longer 404 falsely. Nothing owed; recorded
+  because "the page 404s" locally reads like a regression and is not one.
 - `/partner` reads the raw dictionary rather than the override layer — the same gap this epic closed
   on `/us/operators`. Flagged, deliberately not widened into scope.

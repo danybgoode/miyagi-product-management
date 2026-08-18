@@ -104,8 +104,12 @@ allow-list test, not to add an exception at the call site.
 ## Gaps / follow-ups
 
 - **Daniel's authed walkthrough** of `/us/operators` plus one real application submitted end to end.
-- **`partners.recruiting_v3_enabled` still has no Golden definition** — inherited, not introduced here.
-  It falls through to the compile default and 404s locally; production serves 200.
+- **`/us/operators` 404s on a local dev server** because `partners.recruiting_v3_enabled` resolves from
+  Golden and a local run cannot reach it, falling through to the compile default `off`. Production has a
+  Golden definition serving default-ON, and #384 gave the scoped catalog its own snapshot lane. Not a
+  gap — recorded so the local 404 is not re-diagnosed as a regression. (An earlier draft of these docs
+  claimed the flag had **no** Golden definition, carried over from a 2026-08-14 note that #384 and #145
+  had already superseded — a memory is only true as of when it was written.)
 - **`/partner` still reads the raw dictionary**, the same override gap closed on `/us/operators`.
   Flagged deliberately rather than widened into this epic's scope.
 - **`GLOSSARY_SKU_ORDER` has four entries for a five-entry glossary**, so the `migration` SKU never gets
