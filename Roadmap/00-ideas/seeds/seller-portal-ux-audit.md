@@ -8,7 +8,7 @@ priority: wave-1
 risk: low
 epic: null
 build_order: null
-updated: 2026-07-09
+updated: 2026-08-17
 ---
 
 # Scope — Seller-portal UX audit (apply the July-2026 refresh)
@@ -20,19 +20,14 @@ updated: 2026-07-09
 > (P0·B; README + sprint-1 + retro; commit `ad6102e`; kickoff emitted). `epic: null` stays — this is a
 > multi-epic umbrella; each scaffolded epic README is the SSOT for its part.
 >
-> **Board-drift fix (2026-07-09):** frontmatter flipped `queued → scaffolded` so this umbrella leaves the
-> generated funnel — its dispersal is complete (P0·A, P0·B, and P1·D `onboarding-three-doors` are scaffolded
-> epics on the board; P1·C folded into `catalog-management` S5/S6). The one un-groomed remainder, **P2·E
-> depth pass**, gets its **own seed** when it reaches the queue (per decision 2 below) — it is not blocked
-> by this flip.
+> **P2·E handoff (2026-08-17):** four workstreams are shipped. The final depth pass now has its own
+> signed-off scope at [`seller-portal-depth-pass.md`](./seller-portal-depth-pass.md) and scaffolded build
+> contract at [`seller-portal-depth-pass`](../../03-selling-and-shops/seller-portal-depth-pass/README.md),
+> preserving this umbrella as the program record rather than assigning it a single `epic:`.
 >
-> **Remaining groom sequence (one fresh session each — Daniel, 2026-07-09):** **P1·D onboarding three-doors**
-> (next; fresh deep-groom) → **P1·C IA remainder** (folds into `catalog-management`; groom *after* its S3
-> merges to avoid nav collision — that epic is HIGH, S3 PRs open, S4 hard-gated on `profit-analyzer` US-4) →
-> **P2·E depth pass** (last; reuses catalog-management S3 staging + soft-delete precedent). F1 emoji dialect
-> already scoped in the scaffolded `emoji-to-iconoir-sweep` (no fresh groom). **Build path:** P0·A → P0·B
-> (needs A's primitives) → D/C/E follow their grooms. **Risk-tiers to confirm at each groom:** P1·D
-> cobros-wizard OAuth (LOW vs HIGH money-path); P2·E order-bulk staged-apply (MED vs HIGH fulfillment gating).
+> **Delivered sequence:** P0·A → P0·B → P1·C (inside `catalog-management`) ∥ P1·D all shipped. P2·E is the
+> last workstream and now owns its current-code decisions in the dedicated seed linked above. F1's emoji
+> dialect shipped separately through `emoji-to-iconoir-sweep` as planned.
 >
 > Groomed 2026-07-08 off `references/MiyagiAdminUXAudit/` (built via Claude design). Class: **umbrella /
 > wave** — one audit, five workstreams, sliced like the shipped `remaining-audit-polish.md` (#3c) precedent.
@@ -84,12 +79,12 @@ This is **not** a rebuild. Per finding:
 
 | # | Workstream | Findings | Class / Archetype | Area | Risk | Disposition |
 |---|---|---|---|---|---|---|
-| **P0·A** | **Rails foundation** — shared primitives + token-lint | F1, F2 | Chore / Sweeper | 09 | LOW | **Scaffold now** |
-| **P0·B** | **Setup guide on dashboard** | F3 | Feature / Grower | 03 | LOW | Deep-groom next |
-| **P1·C** | **IA restructure remainder** | F5, F6, F7 | Feature / Sweeper | 03 | LOW–MED | **Fold into `catalog-management`** (fast-follow) |
-| **P1·D** | **Onboarding three-doors** | F4, F12 | Feature / Builder | 03 | MED (confirm) | Deep-groom |
-| **P2·E** | **Depth pass** | F8–F11 | Feature | 03 | MED (confirm) | Deep-groom last |
-| — | **Emoji dialect** | F1 (icons) | Chore / Sweeper | 09 | LOW | **Fold into `emoji-to-iconoir-sweep`** |
+| **P0·A** | **Rails foundation** — shared primitives + token-lint | F1, F2 | Chore / Sweeper | 09 | LOW | **Shipped** |
+| **P0·B** | **Setup guide on dashboard** | F3 | Feature / Grower | 03 | LOW | **Shipped** |
+| **P1·C** | **IA restructure remainder** | F5, F6, F7 | Feature / Sweeper | 03 | LOW–MED | **Shipped in `catalog-management`** |
+| **P1·D** | **Onboarding three-doors** | F4, F12 | Feature / Builder | 03 | LOW | **Shipped** |
+| **P2·E** | **Depth pass** | F8–F11 | Feature | 03 | HIGH | **Shipped: [`seller-portal-depth-pass`](../../03-selling-and-shops/seller-portal-depth-pass/README.md)** |
+| — | **Emoji dialect** | F1 (icons) | Chore / Sweeper | 09 | LOW | **Shipped in `emoji-to-iconoir-sweep`** |
 
 **Sequence (Daniel-approved):** P0·A (next-up) → P0·B → P1·C (rides `catalog-management`) ∥ P1·D → P2·E.
 
@@ -149,7 +144,7 @@ lint (build-time), not a runtime flag. Nothing to gate; a bad sweep is reverted 
 
 ---
 
-## The other four workstreams (sized at Definition-of-Ready; deep-groom each individually)
+## The other four workstreams (historical umbrella sizing; dedicated seeds/epics own shipped truth)
 
 ### P0·B — Setup guide on dashboard (F3) · area 03 · LOW · Grower
 `lib/setup-guide.ts` reads the existing value-based `completedSections` checks; persistent
@@ -177,6 +172,8 @@ day one (door_share, time_to_payable, S4 approve rate…). Depends on P0·A + P0
 a money-path review (HIGH → Daniel merges).
 
 ### P2·E — Depth pass (F8–F11) · area 03 · MED (confirm) · Feature
+Current scope: [`seller-portal-depth-pass.md`](./seller-portal-depth-pass.md).
+
 `loading.tsx` + content-shaped skeletons per manage route (R5); **soft-delete + 10s "Deshacer"** (R7 —
 precedent: `seller-unclaimed-bug-sweep`); **staged preview for order bulk** (R11 — extends
 catalog-management S3's diff-preview-apply to `OrdersInbox` bulk status); copy sweep (R10 — remove guilt

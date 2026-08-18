@@ -20,7 +20,7 @@
 
 _None._
 
-## ✅ Shipped (143)
+## ✅ Shipped (144)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -57,6 +57,7 @@ _None._
 - [Seller Agent Operations](../../03-selling-and-shops/seller-agent-operations/README.md) — 03 Selling & Shops · 6/6 stories
 - [Seller Coupon Codes](../../03-selling-and-shops/promotions/README.md) — 03 Selling & Shops · 4/4 stories
 - [Seller-catalog null-slot sweep — 23 unsafe reads across 21 runtime files](../../03-selling-and-shops/seller-catalog-null-slot-sweep/README.md) — 03 Selling & Shops · 3/3 stories · risk: High · tbd
+- [Seller-portal depth pass](../../03-selling-and-shops/seller-portal-depth-pass/README.md) — 03 Selling & Shops · 6/6 stories · risk: High · Wave 1
 - [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 4/4 stories · risk: Low · Wave 1
 - [Shop Settings refactor](../../03-selling-and-shops/shop-settings-refactor/README.md) — 03 Selling & Shops · 21/21 stories · risk: Low
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 5/5 stories
@@ -186,4 +187,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Miyagi Partners proposition and recruiting portal v3 | In progress | Shipped |
 
 ---
-_Epics: 149 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 150 · seeds in funnel: 5 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
