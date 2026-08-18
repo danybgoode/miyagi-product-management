@@ -1,7 +1,14 @@
 ---
-status: scaffolded
+title: "Golden Frijoles integration — finish the rebrand, turn the platform all the way on"
 slug: golden-frijoles-integration
-area: 09-platform-infra
+status: shipped
+area: "09"
+type: feature
+priority: null
+risk: null
+epic: "09-platform-infra/golden-frijoles-integration"
+build_order: null
+updated: 2026-08-18
 ---
 
 # Golden Frijoles integration — finish the rebrand, and turn the platform all the way on

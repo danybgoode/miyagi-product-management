@@ -1,7 +1,14 @@
 ---
-status: scaffolded
+title: "Tenant lifecycle — give /admin real control over shops"
 slug: tenant-lifecycle-admin
-area: 09-platform-infra
+status: shipped
+area: "09"
+type: feature
+priority: null
+risk: null
+epic: "09-platform-infra/tenant-lifecycle-admin"
+build_order: null
+updated: 2026-08-18
 ---
 
 # Tenant lifecycle — give /admin real control over shops
