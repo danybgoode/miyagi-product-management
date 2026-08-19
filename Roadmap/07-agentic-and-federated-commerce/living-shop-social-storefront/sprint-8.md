@@ -63,6 +63,36 @@ sidebar the recipe promises was never built.
 - deliberate red mutation for every new spec family;
 - full deterministic gate; `live-smoke` on both dogfood shops.
 
+## Verified live — 2026-08-19, `miyagi-web-00112-d47`
+
+| Shop | preset | rail | hero | panels |
+|---|---|---|---|---|
+| `champions-not` | retro | **on** | yes | 2 |
+| `panfleto` | papel | off | yes | 2 |
+| `el-manchon` | retro | off | yes | 1 |
+
+- The full chrome renders on production: header, hero, shell, rail, panels, footer,
+  post heads with avatars.
+- **The empty-column defect is closed.** `champions-not` serves `data-rail="on"` —
+  the second track holds real panels rather than tiled cards.
+- Post heads read as authored: *"Ayer · Nota de la tienda"*, *"Hace 2 días · …"*.
+- **Product cards resolve live** on `el-manchon` — real titles, real `$150` / `$80`
+  prices, read from the catalog at render time.
+- Regression sweep clean: `/`, `/mx`, `/mx/l`, `/vecindario`, `/acerca`, `/terminos`,
+  `/vende`, `/us`, the Shop index and the Wall API all 200; catalog still 50 items.
+
+**`el-manchon` shows `rail="off"` and that is the rule working, not a bug** — it has
+no About body and no configured dispatch time, so a single panel is not worth a
+column and stacks under the Wall instead. `railOccupiesTrack` requires both a recipe
+that asks for the rail and real content to put in it.
+
+### Still owed
+
+- **Daniel's visual pass** against the concept at desktop and 375px.
+- **A Collection Wall entry has never been seen rendering.** No dogfood shop has
+  seller-defined collections, so the three-up commerce strip is built and spec-covered
+  but not yet observed live. Same class of gap as the Events index.
+
 ## Smoke walkthrough
 
 1. Open `https://miyagisanchez.com/mx/s/champions-not`.
