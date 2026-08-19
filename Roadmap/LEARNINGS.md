@@ -1438,6 +1438,28 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A SPEC CAN PIN THE BUG IN PLACE — CHECK WHAT IT ASSERTS, NOT THAT IT PASSES.** Every product link
+  under `/mx/s/<slug>/tienda` 404'd for days while a spec sat green asserting
+  `expect(view.href).toBe('/mx/s/mi-tienda/l/prod_1')` — **a route that does not exist**. The test
+  written to prove the link worked was the reason nobody noticed it did not. A red-mutation check
+  cannot catch this: mutate the code and the spec correctly goes red, because spec and code agree on
+  the same wrong answer. The only defence is to ask what a passing assertion CLAIMS about the world
+  and whether that claim is true — for a URL, that it resolves. *(2026-08-19, living-shop, PR #397.)*
+- **WHEN ONE STRING SERVES TWO SCOPES, NAME BOTH — A SHARED `basePath` INVITES A 404.** A shop has a
+  SHOP base (`/mx/s/<slug>`, where `/tienda`, `/colecciones` and `/c/<handle>` live) and a LISTING
+  base (`/mx`, where the PDP lives). One `basePath` string carried both, and every surface added later
+  built product links from the shop base. It hid completely on subdomains and custom domains, where
+  **both bases are `''`** and the two are indistinguishable — so the owned-host checks all passed and
+  only the marketplace broke. The fix is a two-field object plus one `listingHref()`: a call site that
+  must choose between two named fields has to think about which it means, where a single string never
+  poses the question. **Any time a value is right for one scope and wrong for another, the type should
+  make the caller say which.** *(2026-08-19, living-shop.)*
+- **A GUARD PINNED TO ONE SPELLING GUARDS ONE SPELLING.** The spec written to stop the 404 above
+  matched `${basePath}/l/` — the exact form the report happened to use — and stayed GREEN through a
+  mutation that rebuilt the identical defect as `${bases.shopBase}/l/`. It now enumerates every
+  identifier that IS the shop base under some name. Same family as *guard the population, not the door
+  you found*, applied to a regex: **enumerate the names a thing goes by, or the guard covers only the
+  instance you were looking at.** *(2026-08-19, living-shop.)*
 - **SHOP SETTINGS LIVE IN TWO STORES, AND THE PUBLIC PAGE READS THE MEDUSA ONE.**
   `marketplace_shops.metadata.settings` (Supabase) is what the seller portal writes and what a SQL
   query shows you; the public shop page reads `getShop()` — the **Medusa seller** — whose metadata

@@ -86,6 +86,36 @@ no About body and no configured dispatch time, so a single panel is not worth a
 column and stacks under the Wall instead. `railOccupiesTrack` requires both a recipe
 that asks for the rail and real content to put in it.
 
+## Follow-ups shipped after the visual pass
+
+Reported by the product owner and fixed in `a1eba64` (PR #394) and `32edbf5` (PR #397):
+
+1. **Two carts.** The shop header carried a bag while the platform navbar already
+   holds the buyer's cart. The concept renders a shop in isolation; this one lives
+   inside the marketplace chrome. Removed.
+2. **Two chromes.** Sprint 8 upgraded only the homepage, leaving `/tienda`,
+   `/colecciones`, `/eventos`, the content pages and the collection pages on the old
+   chip strip — one shop with two navbars depending on the link followed, which is
+   what Story 3.2 exists to prevent. `ShopSectionNav` now renders the header, so all
+   seven surfaces converge by construction.
+3. **The rail count and the rail render disagreed.** An unclaimed shop with no About
+   rendered a panel the layout had already decided did not exist, so the track never
+   opened. One `railPanels()` both sides call.
+4. **The shell is now every theme's layout.** The concept uses one shell for all
+   three of its themes and overrides it for none; `wall_layout` as a per-recipe axis
+   was an invention that left the four pre-Wall presets rendering a lone column.
+   Measuring the population first inverted the priority: **26 of 30 live shops have
+   no Wall entries**, 28 no About, 29 no banner — but **30 of 30 have a payment
+   method**. So commerce signals moved into the rail, which is what gives every shop
+   one, and the catalog joined the Wall's column.
+5. 🚨 **`/mx/s/<slug>/l/<id>` 404'd on every product.** A shop has a SHOP base and a
+   LISTING base; one `basePath` string carried both. It hid on owned hosts, where
+   both are `''`. **A Sprint 2 spec asserted the broken URL as correct**, which is
+   why no gate caught it. Now `ShopBases` + `listingHref()`, with the type forcing
+   every caller to say which base it means.
+6. **Local pickup was claimed twice** in the Perfil panel — found by the codex
+   cross-family review.
+
 ### Still owed
 
 - **Daniel's visual pass** against the concept at desktop and 375px.
