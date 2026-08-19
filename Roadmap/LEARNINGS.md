@@ -543,6 +543,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   owned-shop-operating-channel D3 + D7.)*
 
 ## Tooling gotchas
+- **A TRANSIENT PROVIDER ERROR IS NOT A BROKEN CONTRACT — AND COLLAPSING THEM DISABLES THE TOOL.**
+  `agy-doctor`'s probe classified ANY non-zero exit as `'error'`, `'error'` meant "the CLI interface
+  changed", and that verdict refuses to bump the version pin. So when agy's GPT-OSS fallback started
+  answering *"Our servers are experiencing high traffic right now"*, one busy model pinned the version
+  and **took the whole cross-family reviewer offline indefinitely**, needing a human to unstick it —
+  while `--help`, `agy models` and the primary model were all fine. An epic's review pass ran with two
+  families instead of three because of it. The fix is a fourth verdict (`unavailable`) for
+  provider-busy signatures, kept NARROW so an unknown flag or bad model slug still breaks the contract
+  loudly. **Any health check that gates a capability on "did this exit zero" needs to separate
+  *the interface changed* from *the far end is busy*** — the first is a code problem that must block,
+  the second is weather that must not. Same three-states-never-two rule this file records for reads,
+  applied to a health probe. *(2026-08-19, root #156.)*
 - **Medusa's `updateSellers` MERGES `metadata` — `delete` on the local object clears nothing
   (2026-08-14, `tenant-lifecycle-admin` #157, found by a live run).** Read-modify-write with
   `delete metadata.key` then `updateSellers({ id, metadata })` leaves the stored key intact, because
