@@ -52,21 +52,67 @@ const LIB_PATH = join(__dirname, 'lib', 'cross-agent-cli.mjs');
 //                       model returned empty on the live probe (quota/transient) while the fallback
 //                       carried it — exactly the degrade runAntigravity handles; informational.
 //   'ok'              — everything matches and probes green.
-// `probes` values: 'ok' (real stdout) | 'empty' (exit 0, no output — the quota signature) | 'error'
+// `probes` values: 'ok' (real stdout) | 'empty' (exit 0, no output — the quota signature)
+//                 | 'unavailable' (non-zero, but the provider said it is busy — see UPSTREAM_UNAVAILABLE)
+//                 | 'error'
 // (non-zero exit) | 'skipped'.
+/**
+ * Provider-side "busy, try later" signatures.
+ *
+ * 🚨 WHY THIS EXISTS. `agy -p … --model gpt-oss-120b-medium` began exiting 1 with
+ * "Our servers are experiencing high traffic right now, please try again in a
+ * minute." The probe classified any non-zero exit as 'error', 'error' means
+ * "the interface changed", and that verdict refuses to bump the pin — so a
+ * TRANSIENT CAPACITY BLIP ON ONE MODEL took the whole agy review family offline
+ * and kept it there. Observed live 2026-08-19: the epic's cross-family pass ran
+ * with two families instead of three for exactly this reason.
+ *
+ * The interface was never broken: `--help` still showed the print contract, both
+ * slugs were still listed by `agy models`, and the primary model answered fine.
+ * Three states were not enough — "I could not reach it" is not "it changed", and
+ * collapsing them is the same mistake this codebase keeps recording.
+ *
+ * Kept deliberately NARROW. Anything that does not match stays 'error', so an
+ * unrecognized flag or an unknown model slug — which also exit non-zero — still
+ * break the contract loudly. A guard that swallowed every failure would be worse
+ * than the bug it fixes.
+ */
+export const UPSTREAM_UNAVAILABLE = [
+  /experiencing high traffic/i,
+  /please try again/i,
+  /server is busy/i,
+  /temporarily unavailable/i,
+  /\b(?:429|503)\b/,
+  /rate.?limit/i,
+  /overloaded/i,
+];
+
+/** Whether a non-zero probe was the provider being busy rather than the CLI changing. */
+export function isUpstreamUnavailable(output) {
+  const text = String(output || '');
+  return UPSTREAM_UNAVAILABLE.some((re) => re.test(text));
+}
+
 export function decideDoctorAction({ installed, pinned, helpOk, primaryListed, fallbackListed, probes }) {
   const notes = [];
   if (!installed) return { action: 'contract-broken', notes: ['`agy --version` output didn\'t contain a parseable X.Y.Z — a version this blind cannot be bumped (would write the literal string "null" as the pin).'] };
   if (!helpOk) return { action: 'contract-broken', notes: ['`agy --help` no longer shows the -p/--model print contract.'] };
   if (probes.primary === 'error' || probes.fallback === 'error')
     return { action: 'contract-broken', notes: ['a live `agy -p … --model …` probe exited non-zero (not the quota signature — a real interface error).'] };
-  if (probes.primary === 'empty' && probes.fallback === 'empty')
-    return { action: 'contract-broken', notes: ['BOTH models returned empty on the live probe — could be simultaneous quota exhaustion, but a version this blind cannot be blessed; re-run later or re-verify by hand.'] };
+  // 'unavailable' is the provider being busy, NOT the interface changing — so it
+  // must never break the contract on its own. But a version whose ONLY evidence
+  // is two unreachable models has not been demonstrated to work, so that pairing
+  // is still not blessable.
+  const blind = (p) => p === 'empty' || p === 'unavailable';
+  if (blind(probes.primary) && blind(probes.fallback))
+    return { action: 'contract-broken', notes: ['NEITHER model produced output on the live probe (quota exhaustion and/or provider capacity) — a version this blind cannot be blessed; re-run later or re-verify by hand.'] };
   if (!primaryListed || !fallbackListed) {
     const missing = [!primaryListed && 'AGY_MODEL', !fallbackListed && 'AGY_FALLBACK_MODEL'].filter(Boolean);
     return { action: 'model-drift', notes: [`${missing.join(' and ')} no longer listed by \`agy models\` — pick a replacement (env override or edit the constant); not auto-swapped.`] };
   }
   if (probes.primary === 'empty') notes.push('the primary model returned empty on the live probe (quota/transient) — the fallback carried it.');
+  if (probes.primary === 'unavailable') notes.push('the primary model reported provider capacity trouble — the fallback carried it. Not an interface problem.');
+  if (probes.fallback === 'unavailable') notes.push('the FALLBACK model reported provider capacity trouble. The primary answered, so the contract is intact — but the second quota pool is unavailable right now, which is the whole point of having one. Re-check before relying on it.');
   if (installed !== pinned) return { action: 'bump', notes };
   if (notes.length) return { action: 'quota-warn', notes };
   return { action: 'ok', notes };
@@ -130,7 +176,12 @@ function observe() {
   const modelSlugs = parseAgyModelSlugs(modelsOutput);
   const probe = (model) => {
     const r = agy(['-p', 'Reply with exactly: OK', '--model', model]);
-    if (r.status !== 0) return 'error';
+    // A non-zero exit is an interface break ONLY if the provider did not just say
+    // it was busy. See `UPSTREAM_UNAVAILABLE` for the incident this distinction
+    // comes from.
+    if (r.status !== 0) {
+      return isUpstreamUnavailable((r.stdout || '') + (r.stderr || '')) ? 'unavailable' : 'error';
+    }
     return (r.stdout || '').trim() ? 'ok' : 'empty';
   };
   const probes = { primary: probe(AGY_MODEL), fallback: 'skipped' };

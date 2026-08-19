@@ -11,7 +11,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decideDoctorAction, bumpPinnedSource, parseAgyModelSlugs } from './agy-doctor.mjs';
+import { decideDoctorAction, bumpPinnedSource, parseAgyModelSlugs, isUpstreamUnavailable } from './agy-doctor.mjs';
 
 const base = {
   installed: '1.0.16',
@@ -125,4 +125,65 @@ test('bumpPinnedSource round-trips against the REAL lib source (anchors exist ex
   const out = bumpPinnedSource(lib, '9.9.9', '2099-01-01');
   assert.match(out, /export const AGY_PINNED = '9\.9\.9';/);
   assert.match(out, /agy-doctor: last verified 2099-01-01 against 9\.9\.9\./);
+});
+
+
+// ── Provider capacity is not an interface break (2026-08-19) ────────────────────
+// agy's GPT-OSS fallback started exiting 1 with "Our servers are experiencing high
+// traffic right now, please try again in a minute." The probe called that 'error',
+// 'error' means the CLI changed, and that verdict refuses to bump the pin — so one
+// busy model took the whole review family offline. These pin the distinction.
+
+test('isUpstreamUnavailable: the live message that caused the outage', () => {
+  assert.equal(
+    isUpstreamUnavailable('Error: Our servers are experiencing high traffic right now, please try again in a minute.'),
+    true
+  );
+});
+
+test('isUpstreamUnavailable: other provider-busy phrasings', () => {
+  for (const msg of ['HTTP 429 Too Many Requests', 'model overloaded', 'rate limit exceeded', 'service temporarily unavailable', '503 Service Unavailable']) {
+    assert.equal(isUpstreamUnavailable(msg), true, msg);
+  }
+});
+
+test('isUpstreamUnavailable: a REAL interface break is NOT swallowed', () => {
+  // The negation is the whole safety of this guard. These also exit non-zero, and
+  // every one of them must still reach 'error' and break the contract loudly.
+  for (const msg of [
+    'flags provided but not defined: -models',
+    'Usage of agy:',
+    'unknown model "gpt-oss-120b-low"',
+    'Error: unknown flag --print',
+    '',
+  ]) {
+    assert.equal(isUpstreamUnavailable(msg), false, JSON.stringify(msg));
+  }
+});
+
+test('a busy FALLBACK no longer breaks the contract — the pin can still bump', () => {
+  const d = decideDoctorAction({ ...base, installed: '1.0.19', probes: { primary: 'ok', fallback: 'unavailable' } });
+  assert.equal(d.action, 'bump');
+  assert.match(d.notes.join(' '), /second quota pool/);
+});
+
+test('a busy PRIMARY is carried by the fallback, still not a contract break', () => {
+  const d = decideDoctorAction({ ...base, probes: { primary: 'unavailable', fallback: 'ok' } });
+  assert.equal(d.action, 'quota-warn');
+});
+
+test('but a version with NO working model is still never blessed', () => {
+  for (const probes of [
+    { primary: 'unavailable', fallback: 'unavailable' },
+    { primary: 'empty', fallback: 'unavailable' },
+    { primary: 'unavailable', fallback: 'empty' },
+  ]) {
+    assert.equal(decideDoctorAction({ ...base, installed: '1.0.19', probes }).action, 'contract-broken');
+  }
+});
+
+test('a genuine probe error still outranks everything, both slots', () => {
+  for (const probes of [{ primary: 'error', fallback: 'unavailable' }, { primary: 'unavailable', fallback: 'error' }]) {
+    assert.equal(decideDoctorAction({ ...base, installed: '1.0.19', probes }).action, 'contract-broken');
+  }
 });
