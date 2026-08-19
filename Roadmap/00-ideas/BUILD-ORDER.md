@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-08-18 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-19 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -80,7 +80,7 @@ _None._
 - [Custom-domain paywall + campaign coupon](../../07-agentic-and-federated-commerce/custom-domain-paywall/README.md) — 07 Agentic/Federated · 9/9 stories · risk: High
 - [Domain-coupon mint fix — `miyagisan` won't create on prod](../../07-agentic-and-federated-commerce/domain-coupon-mint-fix/README.md) — 07 Agentic/Federated · 2/2 stories
 - [Embeddable Widget](../../07-agentic-and-federated-commerce/embeddable-widget/README.md) — 07 Agentic/Federated · 7/7 stories
-- [Living Shop — social storefront + expressive customization](../../07-agentic-and-federated-commerce/living-shop-social-storefront/README.md) — 07 Agentic/Federated · 34/34 stories · risk: Low
+- [Living Shop — social storefront + expressive customization](../../07-agentic-and-federated-commerce/living-shop-social-storefront/README.md) — 07 Agentic/Federated · 41/41 stories · risk: Low
 - [Market architecture foundation — owned shops, country marketplaces, and locale](../../07-agentic-and-federated-commerce/market-architecture-foundation/README.md) — 07 Agentic/Federated · 12/12 stories · risk: High · Wave 0 Enablers
 - [Miyagi Partners — multi-tenant MCP credential + roles](../../07-agentic-and-federated-commerce/miyagi-partners-mcp/README.md) — 07 Agentic/Federated · 10/10 stories · risk: High · Wave 2
 - [mschz.org full coverage — short links for every shareable surface](../../07-agentic-and-federated-commerce/mschz-full-coverage/README.md) — 07 Agentic/Federated · 3/3 stories · risk: High · Wave 1
