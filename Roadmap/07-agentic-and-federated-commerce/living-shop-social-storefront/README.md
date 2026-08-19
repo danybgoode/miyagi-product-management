@@ -50,6 +50,25 @@ This epic makes the seller's **Wall** the own-shop homepage narrative and lets c
 | [5](./sprint-5.md) | Seller studio: Wall + Sections + Theme + Brand + responsive live preview | MED |
 | [6](./sprint-6.md) | Agent/config parity: Storefront-as-Code, MCP Wall tools, public agent representation | LOW-MED |
 | [7](./sprint-7.md) | Cross-channel finish: SEO, accessibility, performance, edge states, dogfood | MED |
+| [8](./sprint-8.md) | Concept fidelity: shop chrome, hero, post anatomy, the rail, Retro Social | LOW |
+
+### D13 · The design reference was missed at lock time, and it changed the work (added 2026-08-19)
+
+`references/miyagi-sanchez-living-shop-concepts.html` was not named in the scope seed
+and was not read during the locking pass. Sprints 1–7 therefore built the Wall's data
+model, information architecture and theme mechanism against the written acceptance
+criteria — correctly — while the **presentation** was never measured against the thing
+the product owner had in mind.
+
+**One consequence was a defect, not a matter of taste.** S4's `feed-sidebar` recipe
+made the Wall container a two-column grid whose only children were the post cards, so
+Retro tiled cards into columns with nothing in the second track: the supporting rail
+the recipe named was never built. Sprint 8 builds it and moves the columns to the
+shell.
+
+The lesson for the next epic-mode lock: **a scope that mentions a look owes the
+architect a reference to look at.** "Nostalgic Retro Social theme" is not a
+specification, and the gap between it and the concept was seven sprints wide.
 
 ## Architecture boundaries
 
