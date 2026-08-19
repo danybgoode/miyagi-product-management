@@ -1450,6 +1450,41 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A REDIRECT IS INVISIBLE TO A PASSING SPEC — AFTER A URL MOVE, SWEEP THE SOURCE, NOT THE ROUTES.**
+  Moving `/vende` → `/mx/vende` shipped with a `308` for `/vende/:path*` (query preserved), which is
+  correct and is exactly what hid the problem: **four call sites still linked the old path and all four
+  still worked**, so every route test stayed green. Three were found by hand, one at a time; the fourth
+  only surfaced once a source sweep existed. Two of them mattered beyond a wasted hop — an **absolute**
+  URL on `/agent` that AI agents copy out of the page and quote elsewhere, and a promoter share link
+  that is **minted fresh, then printed on cards**, where it outlives any redirect rule. A move that
+  introduces a compatibility redirect must be followed by a guard that reads the SOURCE for the old
+  literal, because the redirect guarantees no behavioural test can fail. Make the guard narrow enough
+  to survive: strip comments (a dozen JSDoc blocks legitimately explain the move) and treat a literal
+  containing whitespace as prose, not a URL — otherwise it flags a flag description frozen in an
+  applied migration and gets deleted as noise. *(2026-08-19, one-landing-per-market, PR #399.)*
+- **A CLAIM THAT "EVERY CALL SITE READS THE CONSTANT" IS UNGUARDED UNTIL A SPEC SWEEPS FOR THE
+  NEGATION.** The PR that introduced `SELLER_LANDING_PATHS` said in its own commit message that it was
+  "the one place that knows where a market recruits, and every call site reads it" — while four call
+  sites did not. A centralising constant does not centralise anything on its own; it only makes the
+  centralised form *available*. The guard has to look for what should no longer exist. Same shape as
+  *guard the population, not the door you found* — and again the fixture test earns its place: assert
+  the predicate matches the real misses **verbatim**, or the sweep can go green by matching nothing.
+  *(2026-08-19, one-landing-per-market.)*
+- **A HAND-COUNTED "N SPECS ARE RED BUT THEY'RE ALL PRE-EXISTING" IS NOT EVIDENCE — BUILD THE
+  BASELINE.** A patch arrived reporting "43 red, all HTTP specs pointed at production, which has not
+  been deployed." Structurally true, and it would have shipped **two real regressions** hiding inside
+  that number: a stale copy assertion that was green against production precisely BECAUSE production
+  was stale, and a link the patch's own renamed spec was already failing on. Building `origin/main` in
+  a second worktree and serving it the same way split 34 failures into 21 identical-on-both
+  (environment) and 13 attributable — and then proving the remaining 11 were deploy-gated took one
+  `curl` each: the route served `200 image/png` locally and 404'd on production. **When a spec targets
+  an absolute production URL, "it fails locally" and "it is broken" are different facts.**
+  *(2026-08-19, one-landing-per-market.)*
+- **A 256 KB argv CEILING TAKES agy AND vibe OFFLINE ON A FILE-MOVE DIFF.** Both take the review prompt
+  in **argv, not stdin**, so a 257 KB diff — trivially reachable when a rename moves ~35 files — is
+  refused outright and only `codex` can review. This is a tooling limit, not a quota, so the refund
+  pause does not apply; report the layer as SHORT in the PR body rather than letting one family read as
+  two. *(2026-08-19, one-landing-per-market, PR #399.)*
 - **A SPEC CAN PIN THE BUG IN PLACE — CHECK WHAT IT ASSERTS, NOT THAT IT PASSES.** Every product link
   under `/mx/s/<slug>/tienda` 404'd for days while a spec sat green asserting
   `expect(view.href).toBe('/mx/s/mi-tienda/l/prod_1')` — **a route that does not exist**. The test
