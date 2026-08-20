@@ -1450,6 +1450,49 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A SUITE'S BROWSER LOCALE IS PART OF THE CONTRACT IT TESTS — SET IT ON THE PROJECT, NOT PER SPEC.**
+  Playwright defaults to `en-US`. Once `/` had an English twin at `/en` with a client-side hop,
+  every spec that landed on the root — directly, or by being REDIRECTED there from an auth-gated
+  page — silently began testing the English document. It broke two specs whose subject was not
+  language at all: the market-selector contract, and an `/admin/...` authorization refusal that
+  now landed on `/en` and failed a `/\/(sign-in)?$/` pattern. Five more specs were one assertion
+  away. The first fix pinned the locale in the one file that had gone red, which is the same
+  mistake as fixing four stale `/vende` links one at a time; the locale is a property of the
+  MARKET the suite tests, so it belongs to the project. And once it is there, a leftover per-file
+  pin is a second derivation of one question that can silently disagree — delete it. A spec that
+  genuinely tests the other language opts in explicitly, which also proves the default cannot hide
+  a regression in the feature. *(2026-08-19, PR #403.)*
+- **A GUARD THAT NAMES A LANDING SPOT AND THEN REJECTS IT IS REJECTING CORRECT OUTPUT.** The same
+  refusal spec accepted `/sign-in` while anchoring on `$` — so it would have failed on the only
+  form `/sign-in` ever takes, `/sign-in?redirect_url=…`, which this codebase's own auth-gated
+  routes serve. Latent, not firing, because that path is not currently taken. Found by the
+  cross-family layer, and worth recording HOW: in the same round the other family filed two
+  confident blocking findings that did not survive checking (a spec it said would never run
+  runs in the blocking `api` project — proven with `--list` and a suite count moving 4369→4375;
+  and a duplicate-step removal it read as removing the only step — 2→1 on both counts). One real
+  defect, two false ones, same round. Verify every external finding; dismiss none of them.
+  *(2026-08-19, PR #403.)*
+- **AN ENVIRONMENT THAT CANNOT RUN A SPEC SHOULD SKIP IT, LOUDLY — NOT FAIL IT FOREVER.** Reaching
+  an SSO-gated preview means sending `x-vercel-protection-bypass` on every request, which turns
+  third-party script loads into CORS preflights that Clerk's CDN refuses. `window.Clerk` therefore
+  never readies, and two specs downstream of it had failed on EVERY preview run since the bypass
+  existed — errors caused by the act of observing, not by the code. Loosening their assertions
+  would have made them pass on a preview while no longer testing anything on production either;
+  leaving them red is what teaches everyone to ignore a whole `continue-on-error` layer, which is
+  how twelve real browser failures sat unread inside a green job. The third state — a skip that
+  names the cause and says where the coverage actually lives (here: the production sweep) — is the
+  honest one. Guard the SKIP hard, though: its wrong answer is silent, so assert the negative cases
+  (production, localhost, unset env, lookalike domain, and a MALFORMED base URL) more heavily than
+  the positive one. *(2026-08-19, PR #403.)*
+- **THE SESSION MEMORY INDEX HAS A READ LIMIT, AND EXCEEDING IT FAILS SILENTLY.** `MEMORY.md` is
+  loaded into every session but only its first ~24.4 KB; past that the tail is truncated with no
+  error, and the tail is where "Open items owed" lives. It reached 29.7 KB and had been truncating
+  for an unknown number of sessions — an agent that cannot see what it owes and has no way to know.
+  Entries only ever get added, so this recurs by default. `session-resume` now reports it as an
+  anomaly, emitted first, in three states (truncating / near budget / unreadable) because a warning
+  that claims truncation when there is none is the warning people stop reading. Structurally: an
+  index is a POINTER LIST, and history belongs in an archive file — moving ~35 shipped-epic links
+  out recovered a quarter of the budget on its own. *(2026-08-19, PR #160.)*
 - **A WORKFLOW THAT NAMES A SECRET WHICH DOES NOT EXIST GETS AN EMPTY STRING, NEVER AN ERROR.**
   `ci.yml`'s browser job set `MS_TEST_BROWSER_AUTH: "1"` and mapped
   `secrets.MS_TEST_CLERK_PUBLISHABLE_KEY` / `MS_TEST_CLERK_SECRET_KEY`. Neither secret has ever
