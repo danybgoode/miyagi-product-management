@@ -1450,6 +1450,54 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A WORKFLOW THAT NAMES A SECRET WHICH DOES NOT EXIST GETS AN EMPTY STRING, NEVER AN ERROR.**
+  `ci.yml`'s browser job set `MS_TEST_BROWSER_AUTH: "1"` and mapped
+  `secrets.MS_TEST_CLERK_PUBLISHABLE_KEY` / `MS_TEST_CLERK_SECRET_KEY`. Neither secret has ever
+  existed — the repo's are `CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — so `authEnabled()` was
+  false on every run the job ever made and **29 authed tests across 15 spec files skipped while the
+  workflow looked like it was running them**. Nothing failed, because nothing *can*: GitHub
+  substitutes an empty string for an unknown secret. The job was green, the summary printed a skip
+  count, and a skip count is what an anonymous job legitimately prints. What made it survivable for
+  months is that **"deliberately off" and "asked for and did not get" printed the same sentence** —
+  the reporter had two states where the facts have three. Any reporter over a credentialed layer
+  must separate *off*, *on*, and *requested-but-unavailable*, and name the empty variable. Corollary
+  for the sweep runner: an entry whose dependency is unreachable is **UNAVAILABLE, not failed** —
+  sixteen missing selectors in the seller portal were one dead `:9000` and zero shop fixtures, and
+  as a pass/fail table that reads as sixteen regressions. Three exit codes for three facts.
+  *(2026-08-19, smoke-sweep landing, PR #401.)*
+- **A NETWORK DELAY CANNOT SLOW A NAVIGATION THAT NEVER TOUCHES THE NETWORK.** A spec made its
+  navigation "observably slow" by delaying every document/RSC/prefetch request by 1200ms — registered
+  *after* `goto`, and delaying the prefetch rather than refusing it. Against production it measured
+  nothing: the grid prefetches its links while the page settles, the destination lands in the router
+  cache, and **a cache hit issues no request there is anything to delay**. The click resolved in
+  ~150ms, the progress bar correctly declined to paint for a navigation below its 140ms threshold,
+  and the spec failed while the feature worked. It had passed in CI and in the nightly only because
+  both hit a cold edge where the prefetch was still in flight — **green for the wrong reason, which
+  is the same defect as red**. To make a client navigation slow: register the route handler before
+  the first navigation, and `abort()` the prefetch so the click is forced onto the network.
+  *(2026-08-19, PR #401.)*
+- **SAMPLING A URL ONCE PASSES STRAIGHT THROUGH A REDIRECT LOOP; COUNT THE NAVIGATIONS INSTEAD.**
+  A test asserting "`/en` is a terminus, not a bounce" stayed GREEN while the redirect function was
+  deliberately made symmetric — after the settle, the volleying browser simply happened to be sitting
+  on `/en`. What distinguishes a terminus from a loop is that *nothing moves*, so the assertion has to
+  be on movement (`framenavigated`, filtered to paths other than the current one), not on position.
+  Related: **a fixed settle is a number that is too short again on a slower day** — a 1500ms sleep
+  before sampling failed one production run in seven; wait for the path to be *unchanged* for a
+  quiet period instead, and throw rather than return if it never settles. *(2026-08-19, PR #401.)*
+- **A MUTATION THAT DOES NOT KILL THE TEST PROVES NOTHING ABOUT THE TEST.** Two of the red-mutation
+  checks in one PR were duds and had to be redone: one renamed a manifest entry's `id` while leaving
+  its `file` still covered, so the coverage guard was right to stay green; the other removed a
+  `preferred === current` early return that was behaviourally inert (`router.replace` to the page you
+  are already on is a no-op). Both first read as "the spec survived its mutation — rewrite the spec".
+  Before rewriting a spec that survived, **check that the mutation actually changed behaviour**, or
+  you will weaken a correct test to satisfy a broken proof. *(2026-08-19, PR #401.)*
+- **A DUPLICATED CI STEP IS INVISIBLE WHEN THE JOB IS NON-BLOCKING.** `ci.yml`'s browser job ran
+  `npm run test:e2e:browser` **twice** per PR — the second copy with no env at all — each followed by
+  its own summary step, and the second summary **overwrote the first's artifact**, so the uploaded
+  fixture-skip report described the run that had none of the fixtures. Two chromium installs and two
+  full suites per PR for months. `continue-on-error: true` is what hid it: the job reported success
+  with 12 real browser failures inside it. A non-blocking layer needs someone to read its output on
+  purpose, or it is not a layer. *(2026-08-19, PR #401.)*
 - **A REDIRECT IS INVISIBLE TO A PASSING SPEC — AFTER A URL MOVE, SWEEP THE SOURCE, NOT THE ROUTES.**
   Moving `/vende` → `/mx/vende` shipped with a `308` for `/vende/:path*` (query preserved), which is
   correct and is exactly what hid the problem: **four call sites still linked the old path and all four
