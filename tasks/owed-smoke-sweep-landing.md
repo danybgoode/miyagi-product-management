@@ -1,8 +1,17 @@
 # Owed-smoke sweep — landed, plus the CI audit it triggered
 
-**Status: 🟦 IN REVIEW 2026-08-19.** Storefront [PR #401](https://github.com/danybgoode/miyagisanchezcommerce/pull/401)
-open (gate green). Backend [PR #163](https://github.com/danybgoode/medusa-bonsai-backend/pull/163)
-**merged** → `be8708c1`. Root docs: this file + five `LEARNINGS.md` entries.
+**Status: ✅ DONE 2026-08-19/20.** Eight PRs across three repos, all merged.
+
+| PR | repo | merge |
+|---|---|---|
+| #401 | storefront | `b611ddb` — the sweep, de-rotted and guarded |
+| #402 | storefront | `43e787d` — one browser run, dead auth env removed |
+| #403 | storefront | `fa22c5d` — es-MX suite locale, preview-only skips |
+| #163 | backend | `be8708c` — `no-useless-assignment` |
+| #164 | backend | `aecee42` — `preserve-caught-error`, 3 money-path rethrows |
+| #139 | backend | `c3499d2` — the dependabot bump, green at last |
+| #159 | root | `d36b927` — five learnings |
+| #160 | root | the MEMORY.md budget guard |
 
 `chore/smoke-sweep` was a local-only commit from 2026-07-12 (`34a48e7`) — a 41-entry manifest and a
 thin walker over `live-smoke.mjs`, built to work through the "owed to Daniel" smoke backlog. The
@@ -48,13 +57,28 @@ The seven are blocked on two things, neither a product defect:
 2. **No dev Clerk fixture owns a shop** — verified, zero rows in `marketplace_shops` for
    `playwright-buyer`, `playwright-seller` and `agentsm`.
 
+## The preview browser layer
+
+Four specs were failing on every preview run. `admin-seleccion` turned out to be the **same `/en`
+hop** that had broken `market-selector` — an authorization spec failing on a language feature — so
+the fix went to the browser project's default locale rather than to each spec, and
+`market-selector`'s earlier per-file pin was removed as a redundant second derivation.
+
+`home-personalization` and `agent-prompt` cannot run on a preview at all: the `x-vercel-protection-bypass`
+header CORS-blocks clerk-js, so client session state never resolves. They now skip with a stated
+reason and keep their real coverage against production.
+
+Preview browser failures went **12 → 9**, and the job now runs once instead of twice.
+
 ## Owed
 
-- **`.github/workflows/ci.yml` is not in PR #401.** The push token lacks GitHub's `workflow` scope
-  and the contents API 404s on workflow paths. Patch: `scratchpad/ci-browser-job.patch`. To land it,
-  `gh auth refresh -s workflow`, then push. It deletes a duplicated browser step (the suite ran
-  **twice** per PR) and removes the auth env that never resolved.
-- **A seller fixture that owns a shop.** Writing one creates a visible merchant on the live
-  marketplace — a product-owner call, not a builder's.
-- A local Medusa for category B's seller half.
-- `pdp-gallery`'s cold-cache `goto`, observed once.
+- **The remaining 9 preview browser failures** — `pdp-gallery` (6), `trust-signals`, `unclaimed-pdp`,
+  `seller-unclaimed-s3`. All fail as *element not found on a fixture listing*, which is the
+  fixture-data gap `ci.yml`'s own comment already documents ("they fail the moment the fixtures are
+  supplied — a real provisioning gap"). `pdp-gallery` passes against production on demand, so the
+  suspicion is fixture rot in the Actions secrets rather than product code — **suspected, not
+  proven**, and it wants its own pass.
+- **A seller test fixture that owns a shop.** The three dev Clerk users own zero rows in
+  `marketplace_shops`, so every `/shop/manage/*` spec 404s. Creating one is a write to the live
+  Supabase that produces a visible merchant — a product-owner call, not a builder's.
+- A local Medusa on `:9000` for category B's 7 seller entries.

@@ -38,7 +38,12 @@
 // (readLogFromBranch) unchanged. Zero new npm deps — Node >=18 (spawnSync).
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+
+// The session read limit for MEMORY.md, and the working budget that keeps a session's
+// worth of edits from crossing it. Both in bytes; see decideMemoryBudgetAnomaly.
+export const MEMORY_HARD_LIMIT_BYTES = 25_000;
+export const MEMORY_BUDGET_BYTES = 23_552;
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
@@ -242,8 +247,91 @@ export function decideMigrationAnomalies({ repo, unappliedLocal, appliedNoFile, 
 // intent. Order: per-repo (stray branch, dirty tree, worktree dirt, PR conflict, PR CI-red), then
 // migration drift. `repoStates`/`migrationResults` are the already-gathered facts (this function does no
 // I/O of its own — the pure seam the contract requires).
-export function buildAnomalies({ repoStates, migrationResults, expandOrphans = false }) {
+/**
+ * D-mem: the session memory index has a READ LIMIT, and going over it fails silently.
+ *
+ * `~/.claude/projects/<slug>/memory/MEMORY.md` is loaded into every session, but only the
+ * first ~24.4 KB of it. Past that the tail is TRUNCATED with no error anywhere — and the
+ * tail is where the "Open items owed to Daniel" section and the epic lists live, so the
+ * failure mode is an agent that cannot see what it owes and has no way to know. It reached
+ * 29.7 KB on 2026-08-19 and had been truncating for an unknown number of sessions; the only
+ * reason it surfaced was a warning appended to the file's own loaded prefix.
+ *
+ * A byte count is the whole check. It runs at session start, where the answer can still
+ * change what the session does.
+ *
+ * Three states on purpose: over budget, within budget, and UNREADABLE. A memory directory
+ * that cannot be read must never be reported as "fine" — that is the same collapse this
+ * repo bans everywhere else (AGENTS.md rule 5).
+ */
+export function decideMemoryBudgetAnomaly({ available, bytes, limitBytes = MEMORY_HARD_LIMIT_BYTES, budgetBytes = MEMORY_BUDGET_BYTES, path }) {
+  if (!available) {
+    return {
+      kind: 'memory-index-unavailable',
+      text: `Could not read the session memory index${path ? ` (${path})` : ''} — its size is UNKNOWN, not fine. If it is over ~${Math.round(limitBytes / 1024)} KB it is being silently truncated.`,
+    };
+  }
+  // `available: true` with a non-numeric size is a malformed reading, and letting it
+  // fall through would return null — "no anomaly" — from a size nobody actually knows.
+  // That is the exact collapse the three states exist to prevent, so it reports as
+  // unavailable rather than as fine.
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes)) {
+    return {
+      kind: 'memory-index-unavailable',
+      text: `The session memory index reported a size of \`${String(bytes)}\`${path ? ` (${path})` : ''} — UNKNOWN, not fine.`,
+    };
+  }
+  if (bytes > limitBytes) {
+    return {
+      kind: 'memory-index-truncating',
+      text: `MEMORY.md is ${(bytes / 1024).toFixed(1)} KB, over the ~${(limitBytes / 1024).toFixed(1)} KB session read limit — it IS being truncated right now, and the tail (owed items, epic lists) is not reaching this session. Tighten index lines; move detail into topic files.`,
+    };
+  }
+  if (bytes > budgetBytes) {
+    return {
+      kind: 'memory-index-near-limit',
+      text: `MEMORY.md is ${(bytes / 1024).toFixed(1)} KB, over its ${(budgetBytes / 1024).toFixed(0)} KB working budget (hard truncation at ~${(limitBytes / 1024).toFixed(1)} KB). Tighten one line before adding another.`,
+    };
+  }
+  return null;
+}
+
+/**
+ * Reads the size of this project's MEMORY.md. I/O shell only — the DECISION is
+ * `decideMemoryBudgetAnomaly`, which is what the tests exercise.
+ *
+ * `deps.stat` is injected so a test never touches a real home directory. A read that
+ * throws returns `available: false`, never a zero size: "I could not check" is its own
+ * answer here, and the anomaly text says so.
+ */
+export function readMemoryIndex(cwd = process.cwd(), deps = {}) {
+  const stat = deps.stat || statSync;
+  const home = deps.home || process.env.HOME || '';
+  // Claude derives the project slug from the absolute path with every separator replaced
+  // by a dash — mirrored here rather than restated as a constant, so a moved checkout
+  // resolves on its own instead of silently pointing at a stale directory.
+  // The PATH DERIVATION is inside the guard too, not just the stat. `resolve(cwd)`
+  // throws a TypeError on a non-string, which would crash the whole session brief
+  // instead of degrading — and "degrade, never die" is the rule this script is built on.
+  let path = null;
+  try {
+    const slug = resolve(cwd).replace(/\//g, '-');
+    path = join(home, '.claude', 'projects', slug, 'memory', 'MEMORY.md');
+    return { available: true, bytes: stat(path).size, path };
+  } catch {
+    return { available: false, bytes: null, path };
+  }
+}
+
+export function buildAnomalies({ repoStates, migrationResults, expandOrphans = false, memoryIndex }) {
   const anomalies = [];
+  // First, because it is the one anomaly that changes what the rest of this report is
+  // worth: if the index is truncating, the session is missing facts it does not know it
+  // is missing. Absent `memoryIndex` means the caller did not look — not that it is fine.
+  if (memoryIndex) {
+    const mem = decideMemoryBudgetAnomaly(memoryIndex);
+    if (mem) anomalies.push(mem);
+  }
   for (const rs of repoStates || []) {
     if (rs.git?.available) {
       const openPrs = rs.gh?.available ? rs.gh.open : undefined; // undefined → decideStrayBranch treats as "unknown"
@@ -302,11 +390,12 @@ export function buildReport({
   journalReason,
   journalLimit = JOURNAL_LIMIT_DEFAULT,
   expandOrphans = false,
+  memoryIndex,
   generatedAt,
 }) {
   return {
     generatedAt: generatedAt || new Date().toISOString(),
-    anomalies: buildAnomalies({ repoStates, migrationResults, expandOrphans }),
+    anomalies: buildAnomalies({ repoStates, migrationResults, expandOrphans, memoryIndex }),
     gaps: buildGaps({ repoStates, migrationResults, journalAvailable, journalReason }),
     journal: {
       available: journalAvailable,
@@ -561,6 +650,11 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     mergeFn = getPullMergeability,
     rollupFn = getStatusRollup,
     readLogFromBranchFn = readLogFromBranch,
+    // Injected for the same reason as every other dependency in this list: a `main()`
+    // test must not stat a real home directory. Named `statFn`/`homeDir` rather than
+    // passed through as an opaque bag so the seam is visible in this one list.
+    statFn = statSync,
+    homeDir = process.env.HOME,
     now,
   } = deps;
 
@@ -595,6 +689,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalReason: journal.reason,
       journalLimit: args.journalLimit,
       expandOrphans: args.expandOrphans,
+      memoryIndex: readMemoryIndex(args.root, { stat: statFn, home: homeDir }),
       generatedAt: (now || new Date()).toISOString(),
     });
 
@@ -613,6 +708,12 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalEntries: [],
       journalAvailable: false,
       journalReason: `session-resume crashed before the journal could be read: ${e.message}`,
+      // Reported on the CRASH path too. A truncating memory index is exactly the fact
+      // you still want on the worst day — it is cheap (one stat), it is independent of
+      // everything that just failed, and an empty brief that also silently drops it
+      // leaves the session blind twice over. Its own failure is already swallowed by
+      // readMemoryIndex, so this cannot re-enter the catch.
+      memoryIndex: readMemoryIndex(args?.root, { stat: statFn, home: homeDir }),
     });
     log(args?.json ? JSON.stringify(fallback, null, 2) : renderHumanReport(fallback));
     return 0;
