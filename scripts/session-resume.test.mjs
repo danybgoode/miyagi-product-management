@@ -23,6 +23,10 @@ import {
   renderHumanReport,
   parseArgs,
   main,
+  decideMemoryBudgetAnomaly,
+  readMemoryIndex,
+  MEMORY_BUDGET_BYTES,
+  MEMORY_HARD_LIMIT_BYTES,
 } from './session-resume.mjs';
 
 // ---- REPOS constant ----
@@ -513,4 +517,89 @@ test('buildGaps: a successful clean tree produces NO dirty gap', () => {
     journalAvailable: true,
   });
   assert.equal(gaps.some((g) => /UNKNOWN/.test(g)), false);
+});
+
+// ── D-mem: the memory index budget ────────────────────────────────────────────────────────────
+//
+// MEMORY.md is loaded into every session, but only its first ~24.4 KB. Past that the tail is
+// truncated with NO error — and the tail holds "Open items owed to Daniel". It reached 29.7 KB
+// on 2026-08-19 and had been silently truncating for an unknown number of sessions. These guard
+// the decision, never the filesystem.
+
+test('decideMemoryBudgetAnomaly: comfortably under budget is no anomaly', () => {
+  assert.equal(
+    decideMemoryBudgetAnomaly({ available: true, bytes: 18_000, path: '/m/MEMORY.md' }),
+    null,
+  );
+});
+
+test('decideMemoryBudgetAnomaly: over the hard limit says it IS truncating, now', () => {
+  const a = decideMemoryBudgetAnomaly({ available: true, bytes: 29_700, path: '/m/MEMORY.md' });
+  assert.equal(a.kind, 'memory-index-truncating');
+  // The number must be in the text: "it is too big" without the size is unactionable.
+  assert.match(a.text, /29\.0 KB/);
+  assert.match(a.text, /truncated/);
+});
+
+test('decideMemoryBudgetAnomaly: between budget and limit warns WITHOUT claiming truncation', () => {
+  // The distinction is the point. Saying "you are being truncated" when you are not is the
+  // guard-that-cries-wolf failure, and it is how a real warning stops being read.
+  const a = decideMemoryBudgetAnomaly({ available: true, bytes: 24_000, path: '/m/MEMORY.md' });
+  assert.equal(a.kind, 'memory-index-near-limit');
+  assert.doesNotMatch(a.text, /IS being truncated/);
+});
+
+test('decideMemoryBudgetAnomaly: unreadable is UNAVAILABLE, never "fine"', () => {
+  const a = decideMemoryBudgetAnomaly({ available: false, bytes: null, path: '/m/MEMORY.md' });
+  assert.equal(a.kind, 'memory-index-unavailable');
+  assert.match(a.text, /UNKNOWN, not fine/);
+});
+
+test('decideMemoryBudgetAnomaly: the boundaries are inclusive of "still fine"', () => {
+  // Exactly at budget is fine; one byte over is not. A guard that fires ON its own stated
+  // threshold makes the documented number a lie.
+  assert.equal(decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_BUDGET_BYTES }), null);
+  assert.equal(
+    decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_BUDGET_BYTES + 1 }).kind,
+    'memory-index-near-limit',
+  );
+  assert.equal(
+    decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_HARD_LIMIT_BYTES + 1 }).kind,
+    'memory-index-truncating',
+  );
+});
+
+test('buildAnomalies: a truncating memory index leads the report', () => {
+  const anomalies = buildAnomalies({
+    repoStates: [],
+    migrationResults: [],
+    memoryIndex: { available: true, bytes: 30_000, path: '/m/MEMORY.md' },
+  });
+  assert.equal(anomalies.length, 1);
+  assert.equal(anomalies[0].kind, 'memory-index-truncating');
+});
+
+test('buildAnomalies: omitting memoryIndex adds nothing — absence is not a pass', () => {
+  // A caller that did not look must not be reported as having looked and found nothing.
+  assert.deepEqual(buildAnomalies({ repoStates: [], migrationResults: [] }), []);
+});
+
+test('readMemoryIndex: an unreadable path reports unavailable, not zero bytes', () => {
+  const result = readMemoryIndex('/some/project', {
+    home: '/nonexistent-home',
+    stat: () => { throw new Error('ENOENT'); },
+  });
+  assert.equal(result.available, false);
+  // Zero would flow into the size comparison and read as "comfortably under budget".
+  assert.notEqual(result.bytes, 0);
+  assert.equal(result.bytes, null);
+});
+
+test('readMemoryIndex: derives the project slug from the path, dashes for separators', () => {
+  const seen = [];
+  readMemoryIndex('/Users/x/dobby/medusa-bonsai', {
+    home: '/Users/x',
+    stat: (p) => { seen.push(p); return { size: 1234 }; },
+  });
+  assert.equal(seen[0], '/Users/x/.claude/projects/-Users-x-dobby-medusa-bonsai/memory/MEMORY.md');
 });
