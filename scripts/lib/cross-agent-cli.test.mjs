@@ -473,12 +473,21 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // warning into that same "FAILED" line, and this suite is `scripts/lib/*.test.mjs` — running only
 // `node --test scripts/*.test.mjs` reports a clean 159/0 and hides the real failure. Run both
 // globs, exactly as .githooks/pre-commit does.
-test('AGY_PINNED bumped to the verified 1.1.15 (guards the deliberate bump)', () => {
-  // 1.1.13 → 1.1.15 (2026-08-19), verified by `agy-doctor --fix`: help contract
+test('AGY_PINNED bumped to the verified 1.1.16 (guards the deliberate bump)', () => {
+  // 1.1.15 → 1.1.16 (2026-08-20), verified by `agy-doctor --fix`: help contract
   // intact, both slugs still listed by `agy models`, primary model answered a
-  // live probe. The fallback reported provider capacity trouble, which is now a
-  // distinct verdict from an interface break — see UPSTREAM_UNAVAILABLE.
-  assert.equal(AGY_PINNED, '1.1.15');
+  // live probe. agy then reviewed PR #405 normally and returned three real
+  // findings, which is the end-to-end confirmation the probe alone cannot give.
+  //
+  // The refusal that triggered this is the guard WORKING, and worth restating
+  // because it looks like a tooling failure: agy's `--print` prints NOTHING on a
+  // model/flag mismatch (exit 0, empty stdout, error only in its own log), so an
+  // unverified version yields an empty review that reads like a clean pass.
+  //
+  // 1.1.13 → 1.1.15 (2026-08-19) before it: the fallback reported provider
+  // capacity trouble, now a distinct verdict from an interface break — see
+  // UPSTREAM_UNAVAILABLE.
+  assert.equal(AGY_PINNED, '1.1.16');
   assert.equal(typeof AGY_MODEL, 'string');
   assert.ok(AGY_MODEL.length > 0, 'AGY_MODEL must default to a non-empty model name');
   assert.ok(AGY_FALLBACK_MODEL.length > 0, 'AGY_FALLBACK_MODEL must default to a non-empty model name');
