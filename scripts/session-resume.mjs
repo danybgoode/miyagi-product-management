@@ -271,6 +271,16 @@ export function decideMemoryBudgetAnomaly({ available, bytes, limitBytes = MEMOR
       text: `Could not read the session memory index${path ? ` (${path})` : ''} — its size is UNKNOWN, not fine. If it is over ~${Math.round(limitBytes / 1024)} KB it is being silently truncated.`,
     };
   }
+  // `available: true` with a non-numeric size is a malformed reading, and letting it
+  // fall through would return null — "no anomaly" — from a size nobody actually knows.
+  // That is the exact collapse the three states exist to prevent, so it reports as
+  // unavailable rather than as fine.
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes)) {
+    return {
+      kind: 'memory-index-unavailable',
+      text: `The session memory index reported a size of \`${String(bytes)}\`${path ? ` (${path})` : ''} — UNKNOWN, not fine.`,
+    };
+  }
   if (bytes > limitBytes) {
     return {
       kind: 'memory-index-truncating',
@@ -300,9 +310,13 @@ export function readMemoryIndex(cwd = process.cwd(), deps = {}) {
   // Claude derives the project slug from the absolute path with every separator replaced
   // by a dash — mirrored here rather than restated as a constant, so a moved checkout
   // resolves on its own instead of silently pointing at a stale directory.
-  const slug = resolve(cwd).replace(/\//g, '-');
-  const path = join(home, '.claude', 'projects', slug, 'memory', 'MEMORY.md');
+  // The PATH DERIVATION is inside the guard too, not just the stat. `resolve(cwd)`
+  // throws a TypeError on a non-string, which would crash the whole session brief
+  // instead of degrading — and "degrade, never die" is the rule this script is built on.
+  let path = null;
   try {
+    const slug = resolve(cwd).replace(/\//g, '-');
+    path = join(home, '.claude', 'projects', slug, 'memory', 'MEMORY.md');
     return { available: true, bytes: stat(path).size, path };
   } catch {
     return { available: false, bytes: null, path };
@@ -636,6 +650,11 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     mergeFn = getPullMergeability,
     rollupFn = getStatusRollup,
     readLogFromBranchFn = readLogFromBranch,
+    // Injected for the same reason as every other dependency in this list: a `main()`
+    // test must not stat a real home directory. Named `statFn`/`homeDir` rather than
+    // passed through as an opaque bag so the seam is visible in this one list.
+    statFn = statSync,
+    homeDir = process.env.HOME,
     now,
   } = deps;
 
@@ -670,7 +689,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalReason: journal.reason,
       journalLimit: args.journalLimit,
       expandOrphans: args.expandOrphans,
-      memoryIndex: readMemoryIndex(args.root),
+      memoryIndex: readMemoryIndex(args.root, { stat: statFn, home: homeDir }),
       generatedAt: (now || new Date()).toISOString(),
     });
 
@@ -689,6 +708,12 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalEntries: [],
       journalAvailable: false,
       journalReason: `session-resume crashed before the journal could be read: ${e.message}`,
+      // Reported on the CRASH path too. A truncating memory index is exactly the fact
+      // you still want on the worst day — it is cheap (one stat), it is independent of
+      // everything that just failed, and an empty brief that also silently drops it
+      // leaves the session blind twice over. Its own failure is already swallowed by
+      // readMemoryIndex, so this cannot re-enter the catch.
+      memoryIndex: readMemoryIndex(args?.root, { stat: statFn, home: homeDir }),
     });
     log(args?.json ? JSON.stringify(fallback, null, 2) : renderHumanReport(fallback));
     return 0;

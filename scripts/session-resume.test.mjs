@@ -603,3 +603,81 @@ test('readMemoryIndex: derives the project slug from the path, dashes for separa
   });
   assert.equal(seen[0], '/Users/x/.claude/projects/-Users-x-dobby-medusa-bonsai/memory/MEMORY.md');
 });
+
+// Fixes from the agy cross-family pass on PR #160. Each is a real seam, and each would
+// have been invisible: none of them changes the happy path.
+
+test('decideMemoryBudgetAnomaly: a non-numeric size is UNAVAILABLE, not healthy', () => {
+  // `available: true, bytes: null` used to fall through both comparisons and return
+  // null — "no anomaly" — from a size nobody knows. The third state exists for this.
+  for (const bytes of [null, undefined, NaN, 'big']) {
+    const a = decideMemoryBudgetAnomaly({ available: true, bytes, path: '/m/MEMORY.md' });
+    assert.equal(a?.kind, 'memory-index-unavailable', `bytes=${String(bytes)}`);
+  }
+});
+
+test('readMemoryIndex: a non-string cwd degrades instead of throwing', () => {
+  // `resolve(null)` throws a TypeError. Deriving the path outside the guard would take
+  // the whole session brief down — "degrade, never die" is the rule this script is built on.
+  // `undefined` is excluded deliberately: it triggers the default parameter
+  // (`process.cwd()`), which is a real string and correctly succeeds.
+  for (const cwd of [null, 42, {}]) {
+    const result = readMemoryIndex(cwd, { home: '/h', stat: () => ({ size: 1 }) });
+    assert.equal(result.available, false, `cwd=${String(cwd)}`);
+    assert.equal(result.bytes, null);
+  }
+});
+
+test('main: forwards its injected stat/home — never touches the real home directory', async () => {
+  // The convention this whole file rests on. A main() test that stats $HOME is a test
+  // whose result depends on the machine it runs on.
+  const seen = [];
+  await main(['--json'], {
+    log: () => {},
+    warn: () => {},
+    existsSyncFn: () => false,
+    readdirSyncFn: () => [],
+    spawn: () => ({ status: 1, stdout: '', stderr: 'unavailable' }),
+    listPullsFn: () => { throw new Error('gh unavailable'); },
+    mergeFn: () => { throw new Error('gh unavailable'); },
+    rollupFn: () => { throw new Error('gh unavailable'); },
+    readLogFromBranchFn: () => { throw new Error('no journal'); },
+    home: '/injected-home',
+    homeDir: '/injected-home',
+    stat: (p) => { seen.push(p); return { size: 100 }; },
+    statFn: (p) => { seen.push(p); return { size: 100 }; },
+    now: new Date('2026-08-20T00:00:00Z'),
+  });
+  // Exactly one, on EITHER path: this deps set is harsh enough to push main down its
+  // last-resort branch, and that branch was silently dropping the memory check until
+  // this test caught it.
+  assert.equal(seen.length, 1, 'expected exactly one stat call');
+  assert.ok(seen[0].startsWith('/injected-home/'), `stat hit ${seen[0]}, not the injected home`);
+});
+
+test('main: forwards its injected stat/home on the SUCCESS path too', async () => {
+  // The sibling test above turned out to exercise only the last-resort branch: with
+  // harsh deps main falls into its catch, so mutating the SUCCESS-path call site left
+  // it green. A mutation that does not kill the test proves nothing about the test, so
+  // this one keeps main on its normal path — benign deps, nothing throwing.
+  const seen = [];
+  await main(['--json'], {
+    log: () => {},
+    warn: () => {},
+    existsSyncFn: () => false,
+    readdirSyncFn: () => [],
+    spawn: () => ({ status: 0, stdout: '', stderr: '' }),
+    listPullsFn: () => [],
+    mergeFn: () => ({}),
+    rollupFn: () => ({}),
+    readLogFromBranchFn: () => '',
+    homeDir: '/success-path-home',
+    statFn: (p) => { seen.push(p); return { size: 100 }; },
+    now: new Date('2026-08-20T00:00:00Z'),
+  });
+  assert.equal(seen.length, 1, 'expected exactly one stat call on the success path');
+  assert.ok(
+    seen[0].startsWith('/success-path-home/'),
+    `stat hit ${seen[0]} — main is not forwarding its injected home`,
+  );
+});
