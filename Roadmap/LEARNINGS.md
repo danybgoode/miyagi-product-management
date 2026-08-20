@@ -1450,6 +1450,37 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   ops-routines-reporting S3 close-out.)*
 
 ## Build & QA
+- **A `continue-on-error` JOB CANNOT UPLOAD ITS OWN EVIDENCE — `if: failure()` NEVER FIRES THERE.**
+  The PR browser layer is non-blocking by design, so the job reports success no matter what
+  happens inside it. Its artifact upload was `if: failure()` — copied from the nightly workflow,
+  where it is correct because the nightly CAN fail. Here it had never fired once, so every browser
+  failure for the life of that job produced a red ✘ in a log nobody reads and **nothing to diagnose
+  it with**. Nine specs had been failing on every preview run and were unexplained purely because
+  of that one condition. Changing it to `if: always()` produced **3.7 MB of traces on the very next
+  run**, and the nine resolved to a single root cause in one read. If a layer is allowed to fail
+  quietly, it must be *loud in its artifacts*, or it produces findings nobody can act on — which is
+  worse than no layer, because the ✘ still costs attention. *(2026-08-20, PR #405.)*
+- **A FIXTURE THAT PASSES ON PRODUCTION AND FAILS ON A PREVIEW IS AN ENVIRONMENT FACT, NOT ROT.**
+  Nine preview failures across four specs looked like four different problems (a gallery, a trust
+  box, a claim CTA, an unclaimed PDP). The traces showed **all nine rendering the same page**: the
+  404 *"El anuncio o tienda que buscas no existe o fue eliminado"*. One cause, not four. The same
+  specs with the SAME Actions secrets pass against production on the nightly, so it is not stale
+  fixture ids and not broken specs — the preview simply cannot resolve listings that exist in
+  production. Before theorising about a spec, read what the page ACTUALLY RENDERED; a 404 body is
+  not an assertion failure even though Playwright reports both as `toBeVisible` timing out.
+  *(2026-08-20, PR #405.)*
+- **DOCUMENTING A DEPENDENCY IS NOT CHECKING IT — AND THE MAP YOU WRITE IT IN MATTERS.** The
+  seller-portal specs need their dev Clerk seller to OWN a `marketplace_shops` row; without it every
+  `/shop/manage/*` page 404s before rendering and the specs report missing selectors that read
+  exactly like a broken portal. Sixteen of them did. Having created the row, I wrote a note about it
+  into the sweep manifest's `requirements` map — the map whose keys are *probeable requirement
+  names* — so it read like a declared dependency while nothing checked it and no entry listed it.
+  A comment in the shape of a control. The cross-family pass caught it; the fix is a real probe plus
+  a spec asserting no seller-flow entry can be added without declaring it. Corollary found while
+  fixing it: the probe returned `{ok, detail}` and the caller collapsed it to a boolean, so "the
+  fixture is missing" and "I could not reach the database to ask" printed an **identical** line —
+  the same two-states-for-three-facts bug one level down, caught only by mutating the probe both
+  ways and comparing the output. *(2026-08-20, PR #405.)*
 - **A SUITE'S BROWSER LOCALE IS PART OF THE CONTRACT IT TESTS — SET IT ON THE PROJECT, NOT PER SPEC.**
   Playwright defaults to `en-US`. Once `/` had an English twin at `/en` with a client-side hop,
   every spec that landed on the root — directly, or by being REDIRECTED there from an auth-gated
