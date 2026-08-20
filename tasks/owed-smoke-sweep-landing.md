@@ -70,15 +70,53 @@ reason and keep their real coverage against production.
 
 Preview browser failures went **12 → 9**, and the job now runs once instead of twice.
 
+## The 9 preview failures — diagnosed 2026-08-20
+
+They were undiagnosable for a structural reason, now fixed. The PR browser job is
+`continue-on-error: true`, so it reports success whatever happens; its artifact upload was
+`if: failure()`, which in that job **can never fire**. Every browser failure for the life of
+the job produced a red ✘ in a log nobody reads and no trace at all. Changing it to
+`if: always()` produced **3.7 MB of traces on the next run** (PR #405).
+
+With the evidence, all nine resolve to **one** root cause in a single read: every one of them
+rendered the same page —
+
+> 404 — *El anuncio o tienda que buscas no existe o fue eliminado.*
+
+Not four problems across a gallery, a trust box, a claim CTA and an unclaimed PDP. One: **the
+preview cannot resolve listings that exist in production.**
+
+What that rules out, with evidence:
+
+- **Not fixture rot.** The nightly runs the same specs with the same Actions secrets against
+  production — 9/9 pass, 0 fail (run `32364012183`).
+- **Not broken specs.** Same evidence, plus `trust-signals` and `pdp-gallery` reproduced green
+  against production locally.
+- **Not a stale pin for `pdp-gallery`** — it already discovers its fixture from the live catalog
+  and still 404s.
+
+Two candidates remain, and both are infrastructure-side rather than code:
+
+1. **Vercel Preview environment variables.** Vercel scopes envs per environment; if
+   `MEDUSA_STORE_URL` / `MEDUSA_PUBLISHABLE_KEY` are set for Production only, a preview has no
+   catalog and every PDP 404s. This is the leading candidate.
+2. **`STORE_CORS` on `medusa-web` lists only `https://miyagisanchez.com` and `www`** — no
+   `*.vercel.app`. Weaker: the storefront reads Medusa server-side, where CORS does not apply.
+
+Settling it needs either the `VERCEL_AUTOMATION_BYPASS_SECRET` (to reach a preview by hand) or a
+look at the project's Preview env — both Daniel's to run.
+
 ## Owed
 
-- **The remaining 9 preview browser failures** — `pdp-gallery` (6), `trust-signals`, `unclaimed-pdp`,
-  `seller-unclaimed-s3`. All fail as *element not found on a fixture listing*, which is the
-  fixture-data gap `ci.yml`'s own comment already documents ("they fail the moment the fixtures are
-  supplied — a real provisioning gap"). `pdp-gallery` passes against production on demand, so the
-  suspicion is fixture rot in the Actions secrets rather than product code — **suspected, not
-  proven**, and it wants its own pass.
-- **A seller test fixture that owns a shop.** The three dev Clerk users own zero rows in
-  `marketplace_shops`, so every `/shop/manage/*` spec 404s. Creating one is a write to the live
-  Supabase that produces a visible merchant — a product-owner call, not a builder's.
-- A local Medusa on `:9000` for category B's 7 seller entries.
+- **The two candidates above** — check the Vercel project's *Preview* environment for
+  `MEDUSA_STORE_URL` / `MEDUSA_PUBLISHABLE_KEY`. If a preview genuinely cannot carry commerce
+  credentials, the honest move is to stop running PDP-dependent specs against previews at all
+  (`onVercelPreview()` already exists for exactly that) and let the nightly + the sweep carry them
+  against production, where they are green.
+- ✅ **A seller test fixture that owns a shop** — done. `qa-playwright-fixture`, documented in
+  `e2e/README.md`, probed by the sweep so its absence can never be silent again. It removed one of
+  two blockers: `/shop/manage/settings/perfil` went 404 → 500, and the remaining failure is the
+  Medusa call.
+- A local Medusa on `:9000` for category B's 7 seller entries. Note for whoever picks this up: the
+  pre-June **Neon** database is still alive and `apps/backend/.env` still points at it, so a
+  non-production commerce DB already exists — see the dev/staging discussion.
