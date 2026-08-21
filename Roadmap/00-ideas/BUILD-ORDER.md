@@ -16,11 +16,11 @@
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (1)
+## 📋 Ready to build (scaffolded, not started) (0)
 
-- [Imported-shop homepage integrity](../../01-discovery-and-shopping/imported-shop-homepage-integrity/README.md) — 01 Discovery · 0/3 stories · risk: Low
+_None._
 
-## ✅ Shipped (145)
+## ✅ Shipped (146)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -28,6 +28,7 @@
 - [Homepage dynamic rows — restore on prod + polish to spec](../../01-discovery-and-shopping/home-dynamic-rows-restore-and-polish/README.md) — 01 Discovery · 10/10 stories · risk: Low
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
 - [Homepage Selección: bug sweep + admin curation + dynamic rotation](../../01-discovery-and-shopping/homepage-seleccion-curation/README.md) — 01 Discovery · 8/8 stories
+- [Imported-shop homepage integrity](../../01-discovery-and-shopping/imported-shop-homepage-integrity/README.md) — 01 Discovery · 3/3 stories · risk: Low
 - [Neighborhood Pulse — online community feed](../../01-discovery-and-shopping/neighborhood-pulse/README.md) — 01 Discovery · 7/7 stories · risk: Low
 - [PDP follow-ups cleanup](../../01-discovery-and-shopping/pdp-followups-cleanup/README.md) — 01 Discovery · 2/2 stories
 - [PDP interactive image gallery ✅ COMPLETE](../../01-discovery-and-shopping/pdp-image-gallery/README.md) — 01 Discovery · 2/2 stories · risk: Low

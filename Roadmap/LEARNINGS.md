@@ -2386,12 +2386,17 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   page, fetch the subset via its own metadata filter and UNION it into the pool** (dedupe by id, degrade
   per-fetch), mirroring the route's existing filter convention. The homepage Selección showed admin pins
   only when they fell inside the freshest-24 pool; fix: a backend `?featured=true` read-filter (fetch-all →
-  filter → paginate, so nothing is missed) + a frontend union into the cached pool seam. Two corollaries:
+  filter → paginate, so nothing is missed) + a frontend union into the cached pool seam. **The same rule
+  applies to the editor/control plane:** an admin candidate screen limited to newest-N can hide older pins,
+  making them impossible to inspect or remove; union a paginated explicit-pin read into that pool too.
+  Three corollaries:
   **(1)** the union/filter wrappers must degrade on a *throw*, not just `!res.ok` — a network reject or
   malformed JSON would otherwise reject `Promise.all` and break the static prerender (wrap each fetch in
-  try/catch → `[]`). **(2)** if a reviewer calls an in-memory filter "after pagination → results missed,"
+  try/catch → `[]`). **(2)** paginate the explicit read until exhaustion; a one-page `limit=100` silently
+  recreates the same blind spot at pin 101. **(3)** if a reviewer calls an in-memory filter "after pagination → results missed,"
   check the actual fetch shape first — if the route loads all rows then filters then paginates, it's
-  correct; decline with the trace instead of patching. *(2026-06-25, seleccion-pins-authoritative S2.)*
+  correct; decline with the trace instead of patching. *(2026-06-25, seleccion-pins-authoritative S2;
+  sharpened 2026-08-21, imported-shop-homepage-integrity.)*
 - **VALIDATE-FIRST: confirm a live data source exists before scoping a signal/UI that displays it; if it
   doesn't, ship the static/degraded-but-honest version, defer the dynamic part, and write the gap into the
   PR — never invent the data.** The read-side mirror of "grep the route before scoping a backend story." In
