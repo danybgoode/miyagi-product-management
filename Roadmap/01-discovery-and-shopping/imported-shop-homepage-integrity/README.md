@@ -53,6 +53,31 @@ The backend is unchanged. After the frontend deploy, keep the approved five pins
 old pins, normalize their ranks, and verify admin + homepage live. Every read degrades per fetch so a
 featured-filter failure cannot break the admin page.
 
+## Architecture lock (2026-08-21)
+
+- **D1 — Images use the shipped supply write rail.** Verified live records have empty image arrays;
+  `/api/supply/upload` writes supported files to R2 and `/api/supply/listing-images` replaces Medusa
+  images, mirrors Supabase, and revalidates. No direct bucket, database, or backend mutation.
+- **D2 — Generic shop price stays null.** These are “Explora…” shop-level records, not one concrete
+  purchasable product. A sourced photo does not provide a truthful listing price.
+- **D3 — Admin candidates adopt the shipped explicit-subset union.** The homepage and backend
+  `featured=true` filter are working. Only `getSeleccionCandidates` is incomplete: it must union the
+  newest candidate fetch with the complete featured fetch using the existing `unionById` seam.
+- **D4 — The product owner approved the retained set.** Keep the five pins visible at approval time,
+  unpin the 23 hidden old pins, and normalize the retained order to 1–5. Do not infer a different set
+  from homepage order because duplicate stored ranks make that order non-authoritative.
+- **D5 — No speculative first-paint patch.** Static server rendering emits the package branch for an
+  empty image array and the live reproduction produced no failed image request or console error. Story
+  1.1 removes that branch for the named records; further loader work requires new evidence.
+
+### Sprint 1 build contract (locked before implementation)
+
+Frontend-only code change in `apps/miyagisanchez`, based on current `origin/main`, in an isolated
+worktree. Add one pure/admin-read regression seam and spec; observe it red by temporarily removing the
+featured union, then restore. Run focused specs, typecheck, build, and live smoke. Catalog writes and
+pin cleanup use only existing authenticated production routes. No backend, schema, migration,
+dependency, flag, price, or card-design change is permitted.
+
 ## Definition of Done (epic)
 - [ ] All sprints merged to `main` + smoke-tested (gaps stated)
 - [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
