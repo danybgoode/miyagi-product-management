@@ -1,139 +1,326 @@
 #!/usr/bin/env node
-// cloudflare-cache-provision.mjs — Sprint 3 (09-platform-infra deploy-pipeline-tuning).
+// cloudflare-cache-provision.mjs — the single owner of miyagi-web Cache Rules.
 //
-// Adds a scoped Cloudflare Cache Rule so the confirmed-static homepage (`/`) is served straight
-// from Cloudflare's edge instead of round-tripping to Cloud Run on every request. This is the
-// epic's one genuinely new capability — nothing in this repo has cached anything at Cloudflare's
-// edge before this (Cloud CDN is explicitly disabled at the ALB).
-//
-// CONFIRMED_STATIC_PATHS is the single source of truth for what this rule caches, and it must
-// match exactly what Sprint 3's S3.1 live origin probe found cacheable (see sprint-3.md) — do NOT
-// widen this list without re-running that probe first. The `(shell)` subtree (every seller
-// storefront) reads `headers()` and is genuinely dynamic; a probe found `/faq` and `/politicas`
-// 404 (a separate, pre-existing bug, unrelated to caching).
-//
-// Mode: respect origin `Cache-Control` — this rule does NOT set a forced edge TTL, so Next's own
-// `s-maxage=60` (from `app/(site)/page.tsx`'s `revalidate`) keeps driving the actual edge TTL.
+// The homepage rule came from deploy-pipeline-tuning S3, /api/img from
+// hyper-performant-website S1, and the public-read HTML rule from hyper-performant-runtime S2.
+// Keep them together: the phase entrypoint is one PUT-replaceable resource, so independent
+// mutators can overwrite one another. D20 keeps the public-read rule on Cloudflare's Free-plan
+// expression language and leaves claim/privacy decisions at the origin.
 //
 // Usage:
 //   node infra/gcp/cloudflare-cache-provision.mjs
+//   node infra/gcp/cloudflare-cache-provision.mjs --verify-only  # GET-only live invariant
 //
-// Credentials: same resolution as the sibling Cloudflare scripts (env var, else Secret Manager).
-// Zero npm deps — Node 18+ (global fetch).
+// Credentials: env var, else Secret Manager. Zero npm dependencies; Node 18+ global fetch.
 
 import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { isDeepStrictEqual } from 'node:util'
 
-const GCP_PROJECT = process.env.PROJECT_ID || 'miyagisanchez-prod' // env-overridable since gcp-account-migration S2 — the .sh family always was
+const DEFAULT_GCP_PROJECT = 'miyagisanchez-prod'
 const CF_API = 'https://api.cloudflare.com/client/v4'
-const DOMAIN = 'miyagisanchez.com'
+export const DOMAIN = 'miyagisanchez.com'
 
-function resolveSecret(envName, secretName) {
-  if (process.env[envName]) return process.env[envName]
-  try {
-    return execFileSync('gcloud', [
-      'secrets', 'versions', 'access', 'latest',
-      `--secret=${secretName}`, `--project=${GCP_PROJECT}`,
-    ], { encoding: 'utf8' }).trim()
-  } catch {
-    console.error(`✗ Could not resolve ${envName}: set the env var, or populate Secret Manager secret ${secretName} in ${GCP_PROJECT}.`)
-    process.exit(1)
-  }
-}
-const CF_TOKEN = resolveSecret('CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_API_TOKEN')
+export const HOMEPAGE_RULE_DESCRIPTION = 'miyagi-web edge cache — confirmed-static paths only (Sprint 3, deploy-pipeline-tuning)'
+export const IMG_PROXY_RULE_DESCRIPTION = 'miyagi-web edge cache — /api/img proxy variants (S1, hyper-performant-website)'
+export const PUBLIC_READ_RULE_DESCRIPTION = 'miyagi-web edge cache — public read HTML (S2, hyper-performant-runtime)'
 
-async function cfApi(path, opts = {}) {
-  const r = await fetch(`${CF_API}${path}`, {
-    ...opts,
-    headers: { Authorization: `Bearer ${CF_TOKEN}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
-  })
-  // Read as text first — an outage/edge error (502/504) returns an HTML page, not JSON, and
-  // parsing that directly throws a SyntaxError that masks the real HTTP status.
-  const body = await r.text()
-  let j
-  try { j = JSON.parse(body) } catch {
-    throw new Error(`Cloudflare ${path} → ${r.status} (non-JSON response): ${body.slice(0, 300)}`)
-  }
-  if (!r.ok || j.success === false) {
-    throw new Error(`Cloudflare ${path} → ${r.status} ${JSON.stringify(j.errors || j).slice(0, 400)}`)
-  }
-  return j
-}
-
-// Sprint 3 S3.1's confirmed-cacheable path list — see sprint-3.md for the live probe evidence.
-const CONFIRMED_STATIC_PATHS = ['/']
-
-// Scoped to the apex + www host only — deliberately excludes every shop subdomain/custom domain,
-// since `x-miyagi-channel` custom-domain routing means the same path can render differently per
-// host, and this rule must never cache anything that varies by tenant.
 const HOST_EXPRESSION = `(http.host eq "${DOMAIN}" or http.host eq "www.${DOMAIN}")`
-const PATH_EXPRESSION = CONFIRMED_STATIC_PATHS.map((p) => `http.request.uri.path eq "${p}"`).join(' or ')
-const CACHE_RULE_EXPRESSION = `${HOST_EXPRESSION} and (${PATH_EXPRESSION})`
+const HOMEPAGE_RULE_EXPRESSION = `${HOST_EXPRESSION} and (http.request.uri.path eq "/")`
+const IMG_PROXY_RULE_EXPRESSION = `${HOST_EXPRESSION} and (http.request.uri.path eq "/api/img")`
 
-const RULE_DESCRIPTION = 'miyagi-web edge cache — confirmed-static paths only (Sprint 3, deploy-pipeline-tuning)'
+const MARKETPLACE_PUBLIC_PREFIXES = ['/mx/s/', '/mx/l/', '/embed/s/']
+const SUBDOMAIN_PUBLIC_PREFIXES = ['/l/']
 
-// hyper-performant-website S1's image proxy (/api/img) — extension-less, so Cloudflare's default
-// file-extension caching never touches it and EVERY request re-fetched + re-encoded on Cloud Run
-// (13-14 s per variant, cf-cache-status: DYNAMIC — measured live 2026-07-18, the exact miss the
-// nightly browser-smoke timeouts surfaced). The route itself marks success responses
-// `public, max-age=31536000, immutable` (URLs are content-addressed by url+w+q+format) and its
-// error responses carry NO Cache-Control — so respect_origin caches exactly the good encodes and
-// never the 4xx/5xx paths. Same-host scoping as the static rule.
-const IMG_PROXY_RULE_DESCRIPTION = 'miyagi-web edge cache — /api/img proxy variants (S1, hyper-performant-website)'
-const IMG_PROXY_EXPRESSION = `${HOST_EXPRESSION} and (http.request.uri.path eq "/api/img")`
+// D10/D11/D20: every matched URL has an empty query; apex/www owns marketplace + embed,
+// while only first-party *.miyagisanchez.com hosts (excluding www) own shop root + PDP.
+// A custom domain cannot satisfy either host branch. Do not name a product fixture here: entitlement
+// and privacy are origin decisions, and missing/no-store origin policy is fail-closed by the TTL mode.
+export const PUBLIC_READ_RULE_EXPRESSION = [
+  '(http.request.uri.query eq "")',
+  'and',
+  '(',
+  `(${HOST_EXPRESSION} and (${MARKETPLACE_PUBLIC_PREFIXES.map((prefix) => `starts_with(http.request.uri.path, "${prefix}")`).join(' or ')}))`,
+  'or',
+  `((ends_with(http.host, ".${DOMAIN}") and http.host ne "www.${DOMAIN}") and (http.request.uri.path eq "/" or ${SUBDOMAIN_PUBLIC_PREFIXES.map((prefix) => `starts_with(http.request.uri.path, "${prefix}")`).join(' or ')}))`,
+  ')',
+].join(' ')
 
-;(async () => {
-  const zoneList = await cfApi(`/zones?name=${encodeURIComponent(DOMAIN)}`)
-  const zone = zoneList.result?.[0]
-  if (!zone) throw new Error(`Zone ${DOMAIN} not found`)
-  console.log(`▶ Zone: ${zone.id} (${zone.name})`)
-
-  // The http_request_cache_settings phase's entrypoint ruleset is a single PUT-replaceable
-  // resource per zone — read the current rules first so a re-run doesn't clobber any OTHER rule a
-  // human added by hand in the dashboard; only add/update the one this script owns (matched by its
-  // fixed description). Unlike the WAF script's Bot Fight Mode step, this call is NOT soft-failed:
-  // the Cache Rule is the entire point of this script, so a permission error should surface
-  // loudly (the token needs the "Cache Rules: Edit" zone permission).
-  let existingRules = []
-  try {
-    const entry = await cfApi(`/zones/${zone.id}/rulesets/phases/http_request_cache_settings/entrypoint`)
-    existingRules = entry.result?.rules ?? []
-  } catch (e) {
-    // Cloudflare error code 10003 = "no entrypoint ruleset in this phase yet" — starting from
-    // empty is correct. Any OTHER failure (permission lost, 5xx, transient network) must NOT fall
-    // through to a PUT that would silently clobber existing Cache Rules — rethrow (cross-review
-    // finding, fixed pre-merge).
-    if (!/"code":\s*10003/.test(e.message)) throw e
+export function matchesPublicReadRule({ host, path, query = '' }) {
+  if (query !== '') return false
+  if (host === DOMAIN || host === `www.${DOMAIN}`) {
+    return MARKETPLACE_PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix))
   }
+  const isFirstPartySubdomain = host.endsWith(`.${DOMAIN}`) && host !== `www.${DOMAIN}`
+  return isFirstPartySubdomain && (path === '/' || SUBDOMAIN_PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix)))
+}
 
-  const ownRule = {
-    expression: CACHE_RULE_EXPRESSION,
+export const CANONICAL_OWN_RULES = [
+  {
+    expression: HOMEPAGE_RULE_EXPRESSION,
     action: 'set_cache_settings',
-    action_parameters: {
-      cache: true,
-      edge_ttl: { mode: 'respect_origin' },
-    },
-    description: RULE_DESCRIPTION,
+    action_parameters: { cache: true, edge_ttl: { mode: 'respect_origin' } },
+    description: HOMEPAGE_RULE_DESCRIPTION,
     enabled: true,
-  }
-  const imgProxyRule = {
-    expression: IMG_PROXY_EXPRESSION,
+  },
+  {
+    expression: IMG_PROXY_RULE_EXPRESSION,
     action: 'set_cache_settings',
-    action_parameters: {
-      cache: true,
-      edge_ttl: { mode: 'respect_origin' },
-    },
+    action_parameters: { cache: true, edge_ttl: { mode: 'respect_origin' } },
     description: IMG_PROXY_RULE_DESCRIPTION,
     enabled: true,
+  },
+  {
+    expression: PUBLIC_READ_RULE_EXPRESSION,
+    action: 'set_cache_settings',
+    action_parameters: { cache: true, edge_ttl: { mode: 'bypass_by_default' } },
+    description: PUBLIC_READ_RULE_DESCRIPTION,
+    enabled: true,
+  },
+]
+
+const OWN_DESCRIPTIONS = new Set(CANONICAL_OWN_RULES.map((rule) => rule.description))
+
+function comparableOwnedRule(rule) {
+  // Cloudflare decorates GET results with provider metadata that is not accepted/owned config.
+  // Strip only those documented decorations; any other extra field is meaningful drift.
+  const { id: _id, version: _version, last_updated: _lastUpdated, ref: _ref, ...configured } = rule
+  return configured
+}
+
+function rulesEqual(left, right) {
+  return isDeepStrictEqual(comparableOwnedRule(left), comparableOwnedRule(right))
+}
+
+export function inspectOwnedRuleState(existingRules) {
+  const counts = new Map(CANONICAL_OWN_RULES.map((rule) => [rule.description, 0]))
+  for (const rule of existingRules) {
+    if (counts.has(rule.description)) counts.set(rule.description, counts.get(rule.description) + 1)
   }
-  const OWN_DESCRIPTIONS = new Set([RULE_DESCRIPTION, IMG_PROXY_RULE_DESCRIPTION])
-  const otherRules = existingRules.filter((r) => !OWN_DESCRIPTIONS.has(r.description))
-  const newRules = [...otherRules, ownRule, imgProxyRule]
 
-  await cfApi(`/zones/${zone.id}/rulesets/phases/http_request_cache_settings/entrypoint`, {
+  const absent = [...counts].filter(([, count]) => count === 0).map(([description]) => description)
+  const duplicates = [...counts].filter(([, count]) => count > 1).map(([description]) => description)
+  const canonicalTail = existingRules.slice(-CANONICAL_OWN_RULES.length)
+  const exactTail = canonicalTail.length === CANONICAL_OWN_RULES.length &&
+    canonicalTail.every((rule, index) => rulesEqual(rule, CANONICAL_OWN_RULES[index]))
+  const ownedCount = [...counts.values()].reduce((sum, count) => sum + count, 0)
+  const drifted = CANONICAL_OWN_RULES
+    .filter((canonical) => {
+      const matches = existingRules.filter((rule) => rule.description === canonical.description)
+      return matches.length === 1 && !rulesEqual(matches[0], canonical)
+    })
+    .map((rule) => rule.description)
+
+  const exact = absent.length === 0 && duplicates.length === 0 && drifted.length === 0 &&
+    ownedCount === CANONICAL_OWN_RULES.length && exactTail
+  const reasons = []
+  if (absent.length) reasons.push(`absent: ${absent.join(', ')}`)
+  if (duplicates.length) reasons.push(`duplicate: ${duplicates.join(', ')}`)
+  if (drifted.length) reasons.push(`drifted: ${drifted.join(', ')}`)
+  if (!exact && absent.length === 0 && duplicates.length === 0 && drifted.length === 0) {
+    reasons.push('owned rules are not the canonical appended tail')
+  }
+  return { exact, absent, duplicates, drifted, reasons }
+}
+
+export function reconcileOwnedRules(existingRules) {
+  const state = inspectOwnedRuleState(existingRules)
+  if (state.exact) return { changed: false, rules: existingRules, state }
+
+  // Filtering only our fixed descriptions preserves every unrelated object byte-for-byte and in
+  // the same relative order. Appending one canonical copy also collapses any duplicate owned rules.
+  const unrelatedRules = existingRules.filter((rule) => !OWN_DESCRIPTIONS.has(rule.description))
+  return { changed: true, rules: [...unrelatedRules, ...CANONICAL_OWN_RULES], state }
+}
+
+export class CloudflareApiError extends Error {
+  constructor(message, { status = null, codes = [], kind = 'api' } = {}) {
+    super(message)
+    this.name = 'CloudflareApiError'
+    this.status = status
+    this.codes = codes
+    this.kind = kind
+  }
+}
+
+export class MissingSecretError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'MissingSecretError'
+  }
+}
+
+function errorCodes(json) {
+  return Array.isArray(json?.errors)
+    ? json.errors.map((error) => Number(error?.code)).filter(Number.isFinite)
+    : []
+}
+
+export function isNoEntrypointError(error) {
+  return error instanceof CloudflareApiError && error.codes.includes(10003) &&
+    error.status !== 401 && error.status !== 403 && error.status !== 429 &&
+    !(error.status !== null && error.status >= 500)
+}
+
+export function isUnavailableError(error) {
+  if (error instanceof MissingSecretError) return true
+  if (!(error instanceof CloudflareApiError)) return false
+  if (isNoEntrypointError(error)) return false
+  return error.kind === 'network' || error.kind === 'non-json' || error.status === 401 ||
+    error.status === 403 || error.status === 429 || (error.status !== null && error.status >= 500) ||
+    error.kind === 'api'
+}
+
+export async function cfApi(path, { token, method = 'GET', body } = {}, deps = {}) {
+  const fetchImpl = deps.fetchImpl || globalThis.fetch
+  let response
+  try {
+    response = await fetchImpl(`${CF_API}${path}`, {
+      method,
+      body,
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    throw new CloudflareApiError(`Cloudflare ${path} → network/DNS failure: ${error.message || error}`, { kind: 'network' })
+  }
+
+  let text
+  try {
+    text = await response.text()
+  } catch (error) {
+    throw new CloudflareApiError(`Cloudflare ${path} → network failure while reading response: ${error.message || error}`, {
+      status: response.status,
+      kind: 'network',
+    })
+  }
+  let json
+  try {
+    json = JSON.parse(text)
+  } catch {
+    throw new CloudflareApiError(`Cloudflare ${path} → ${response.status} (non-JSON response): ${text.slice(0, 300)}`, {
+      status: response.status,
+      kind: 'non-json',
+    })
+  }
+  if (!response.ok || json.success === false) {
+    throw new CloudflareApiError(`Cloudflare ${path} → ${response.status} ${JSON.stringify(json.errors || json).slice(0, 400)}`, {
+      status: response.status,
+      codes: errorCodes(json),
+    })
+  }
+  return json
+}
+
+export function resolveToken(env, deps = {}) {
+  if (env.CLOUDFLARE_API_TOKEN) return env.CLOUDFLARE_API_TOKEN
+  const project = env.PROJECT_ID || DEFAULT_GCP_PROJECT
+  const execImpl = deps.execFileSyncImpl || execFileSync
+  try {
+    const token = execImpl('gcloud', [
+      'secrets', 'versions', 'access', 'latest',
+      '--secret=CLOUDFLARE_API_TOKEN', `--project=${project}`,
+    ], { encoding: 'utf8' }).trim()
+    if (token) return token
+  } catch {
+    // The caller assigns the mode-specific exit code; verification must report this as unavailable.
+  }
+  throw new MissingSecretError(`Could not resolve CLOUDFLARE_API_TOKEN from the environment or Secret Manager in ${project}`)
+}
+
+const entrypointPath = (zoneId) => `/zones/${zoneId}/rulesets/phases/http_request_cache_settings/entrypoint`
+
+async function readZone(token, deps) {
+  const zoneList = await cfApi(`/zones?name=${encodeURIComponent(DOMAIN)}`, { token }, deps)
+  return zoneList.result?.[0] ?? null
+}
+
+async function readEntrypointRules(zoneId, token, deps) {
+  const entry = await cfApi(entrypointPath(zoneId), { token }, deps)
+  return entry.result?.rules ?? []
+}
+
+export async function verifyLiveInvariant({ env = process.env } = {}, deps = {}) {
+  const token = resolveToken(env, deps)
+  const zone = await readZone(token, deps)
+  if (!zone) return { status: 'drift', reason: `zone ${DOMAIN} absent` }
+  try {
+    const rules = await readEntrypointRules(zone.id, token, deps)
+    const state = inspectOwnedRuleState(rules)
+    return state.exact
+      ? { status: 'exact', zone, state }
+      : { status: 'drift', zone, state, reason: state.reasons.join('; ') }
+  } catch (error) {
+    if (isNoEntrypointError(error)) return { status: 'drift', zone, reason: 'cache-settings entrypoint absent (Cloudflare code 10003)' }
+    throw error
+  }
+}
+
+export async function applyCanonicalRules({ env = process.env } = {}, deps = {}) {
+  const token = resolveToken(env, deps)
+  const zone = await readZone(token, deps)
+  if (!zone) throw new Error(`Zone ${DOMAIN} not found`)
+
+  let existingRules
+  try {
+    existingRules = await readEntrypointRules(zone.id, token, deps)
+  } catch (error) {
+    // Only 10003 means the phase has no entrypoint. Never convert auth, rate-limit, 5xx,
+    // non-JSON or network failures into an empty list followed by a destructive replacement PUT.
+    if (!isNoEntrypointError(error)) throw error
+    existingRules = []
+  }
+
+  const reconciliation = reconcileOwnedRules(existingRules)
+  if (!reconciliation.changed) return { status: 'exact', zone, put: false, reconciliation }
+
+  await cfApi(entrypointPath(zone.id), {
+    token,
     method: 'PUT',
-    body: JSON.stringify({ rules: newRules }),
-  })
-  console.log(`  = cache rules in place for ${CONFIRMED_STATIC_PATHS.join(', ')} + /api/img (${otherRules.length} other rule(s) preserved untouched)`)
+    body: JSON.stringify({ rules: reconciliation.rules }),
+  }, deps)
+  return { status: 'applied', zone, put: true, reconciliation }
+}
 
-  console.log('\n✓ Done. Verify: curl -sI https://miyagisanchez.com/ and any /api/img?url=…&w=… URL (run twice — first MISS, second should show cf-cache-status: HIT)')
-})().catch((e) => { console.error(e.message || e); process.exit(1) })
+export async function main(argv = process.argv.slice(2), deps = {}) {
+  const log = deps.log || console.log
+  const errorLog = deps.error || console.error
+  const verifyOnly = argv.includes('--verify-only')
+  if (argv.some((arg) => arg !== '--verify-only')) {
+    errorLog('Usage: node infra/gcp/cloudflare-cache-provision.mjs [--verify-only]')
+    return 1
+  }
+
+  try {
+    if (verifyOnly) {
+      const result = await verifyLiveInvariant({ env: deps.env || process.env }, deps)
+      if (result.status === 'exact') {
+        log(`✓ EXACT — ${PUBLIC_READ_RULE_DESCRIPTION} and sibling owned rules are canonical and unique`)
+        return 0
+      }
+      errorLog(`✗ DRIFT — ${result.reason}`)
+      return 1
+    }
+
+    const result = await applyCanonicalRules({ env: deps.env || process.env }, deps)
+    log(`▶ Zone: ${result.zone.id} (${result.zone.name})`)
+    if (!result.put) {
+      log('  = owned cache rules already canonical and unique; PUT skipped')
+    } else {
+      const preserved = result.reconciliation.rules.length - CANONICAL_OWN_RULES.length
+      log(`  = cache rules reconciled (${preserved} unrelated rule(s) preserved in order)`)
+    }
+    log('\n✓ Done. Run --verify-only, then probe each eligible channel twice for an isolated MISS → HIT.')
+    return 0
+  } catch (error) {
+    if (verifyOnly && isUnavailableError(error)) {
+      errorLog(`UNAVAILABLE — not evidence of health: ${error.message || error}`)
+      return 2
+    }
+    errorLog(error.message || error)
+    return 1
+  }
+}
+
+const isDirectExecution = process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
+if (isDirectExecution) process.exitCode = await main()

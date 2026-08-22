@@ -1,67 +1,238 @@
-// cloudflare-cache-provision.test.mjs — Sprint 3 (09-platform-infra deploy-pipeline-tuning):
-// static drift guard for the Cache Rule provisioning script (infra is not Playwright-gated).
-// Pure fs read, zero deps, no live Cloudflare calls. Run: `node --test infra/gcp/test/`.
+// Deterministic contract for the one Cloudflare Cache Rules owner. No live API calls.
+// Run: node --test infra/gcp/test/cloudflare-cache-provision.test.mjs
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import {
+  CANONICAL_OWN_RULES,
+  CloudflareApiError,
+  DOMAIN,
+  HOMEPAGE_RULE_DESCRIPTION,
+  IMG_PROXY_RULE_DESCRIPTION,
+  PUBLIC_READ_RULE_DESCRIPTION,
+  PUBLIC_READ_RULE_EXPRESSION,
+  applyCanonicalRules,
+  inspectOwnedRuleState,
+  isNoEntrypointError,
+  main,
+  matchesPublicReadRule,
+  reconcileOwnedRules,
+} from '../cloudflare-cache-provision.mjs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const src = readFileSync(join(__dirname, '..', 'cloudflare-cache-provision.mjs'), 'utf8')
+const tokenEnv = { CLOUDFLARE_API_TOKEN: 'test-token' }
+const zone = { id: 'zone-1', name: DOMAIN }
 
-test('cloudflare-cache-provision.mjs: caches ONLY the paths Sprint 3.1 confirmed static ("/") — do not widen without re-running the probe', () => {
-  const match = src.match(/CONFIRMED_STATIC_PATHS\s*=\s*(\[[^\]]*\])/)
-  assert.ok(match, 'expected a CONFIRMED_STATIC_PATHS constant')
-  const paths = JSON.parse(match[1].replace(/'/g, '"'))
-  assert.deepEqual(paths, ['/'], 'S3.1 only confirmed "/" as cacheable — the (shell) subtree and /faq, /politicas are not eligible')
+function jsonResponse(status, value) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    async text() { return JSON.stringify(value) },
+  }
+}
+
+function textResponse(status, value) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    async text() { return value },
+  }
+}
+
+function queuedFetch(responses) {
+  const calls = []
+  const fetchImpl = async (url, opts) => {
+    calls.push({ url, opts })
+    const next = responses.shift()
+    if (next instanceof Error) throw next
+    assert.ok(next, `unexpected fetch call: ${url}`)
+    return next
+  }
+  return { fetchImpl, calls }
+}
+
+function zoneResponse(result = [zone]) {
+  return jsonResponse(200, { success: true, result })
+}
+
+function rulesResponse(rules) {
+  return jsonResponse(200, { success: true, result: { rules } })
+}
+
+function withProviderMetadata(rule, index) {
+  return { id: `rule-${index}`, version: '8', last_updated: '2026-08-22', ref: rule.description, ...structuredClone(rule) }
+}
+
+const exactLiveRules = () => CANONICAL_OWN_RULES.map(withProviderMetadata)
+
+test('public-read expression matches only locked empty-query first-party route shapes', () => {
+  const included = [
+    { host: DOMAIN, path: '/mx/s/piezas-unicas' },
+    { host: `www.${DOMAIN}`, path: '/mx/l/prod_123' },
+    { host: DOMAIN, path: '/embed/s/piezas-unicas' },
+    { host: `panfleto.${DOMAIN}`, path: '/' },
+    { host: `some-other-shop.${DOMAIN}`, path: '/l/prod_123' },
+  ]
+  const excluded = [
+    { host: DOMAIN, path: '/mx/s/piezas-unicas', query: 'preview=1' },
+    { host: DOMAIN, path: '/embed/s/piezas-unicas', query: 'lang=en' },
+    { host: 'tienda.example.com', path: '/' },
+    { host: `www.${DOMAIN}`, path: '/' },
+    { host: DOMAIN, path: '/s/piezas-unicas' },
+    { host: DOMAIN, path: '/l/prod_123' },
+    { host: DOMAIN, path: '/us/l/prod_123' },
+    { host: `panfleto.${DOMAIN}`, path: '/shop/manage/settings' },
+  ]
+  for (const request of included) assert.equal(matchesPublicReadRule(request), true, JSON.stringify(request))
+  for (const request of excluded) assert.equal(matchesPublicReadRule(request), false, JSON.stringify(request))
+
+  assert.match(PUBLIC_READ_RULE_EXPRESSION, /http\.request\.uri\.query eq ""/)
+  assert.match(PUBLIC_READ_RULE_EXPRESSION, /starts_with\(http\.request\.uri\.path, "\/mx\/s\/"\)/)
+  assert.match(PUBLIC_READ_RULE_EXPRESSION, /starts_with\(http\.request\.uri\.path, "\/mx\/l\/"\)/)
+  assert.match(PUBLIC_READ_RULE_EXPRESSION, /starts_with\(http\.request\.uri\.path, "\/embed\/s\/"\)/)
+  assert.match(PUBLIC_READ_RULE_EXPRESSION, /ends_with\(http\.host, "\.miyagisanchez\.com"\)/)
+  assert.doesNotMatch(PUBLIC_READ_RULE_EXPRESSION, /matches|contains|panfleto/)
 })
 
-test('cloudflare-cache-provision.mjs: respects the origin Cache-Control — never forces an override TTL', () => {
-  assert.match(src, /edge_ttl:\s*\{\s*mode:\s*'respect_origin'\s*\}/, 'expected edge_ttl.mode to be respect_origin')
-  assert.doesNotMatch(src, /override_origin/, 'a forced override TTL would ignore Next\'s own revalidate directive')
+test('public-read rule uses fail-closed origin TTL policy and the default host/full-URL cache key', () => {
+  const publicRule = CANONICAL_OWN_RULES.find((rule) => rule.description === PUBLIC_READ_RULE_DESCRIPTION)
+  assert.deepEqual(publicRule.action_parameters, {
+    cache: true,
+    edge_ttl: { mode: 'bypass_by_default' },
+  })
+  assert.equal('cache_key' in publicRule.action_parameters, false)
+  assert.equal(CANONICAL_OWN_RULES.filter((rule) => rule.description === PUBLIC_READ_RULE_DESCRIPTION).length, 1)
+
+  const homepage = CANONICAL_OWN_RULES.find((rule) => rule.description === HOMEPAGE_RULE_DESCRIPTION)
+  const image = CANONICAL_OWN_RULES.find((rule) => rule.description === IMG_PROXY_RULE_DESCRIPTION)
+  assert.equal(homepage.action_parameters.edge_ttl.mode, 'respect_origin')
+  assert.equal(image.action_parameters.edge_ttl.mode, 'respect_origin')
 })
 
-test('cloudflare-cache-provision.mjs: PUT to the entrypoint preserves any OTHER existing rule (filters by own description only)', () => {
-  assert.match(src, /otherRules\s*=\s*existingRules\.filter/, 'a re-run must not clobber a rule a human added by hand in the dashboard')
+test('reconciliation preserves unrelated objects/order, collapses owned duplicates, and appends one canonical copy each', () => {
+  const unrelatedA = { id: 'manual-a', description: 'manual A', action: 'set_cache_settings', enabled: false }
+  const unrelatedB = { id: 'manual-b', description: 'manual B', expression: 'true', custom: { keep: 'exactly' } }
+  const driftedHomepage = { ...structuredClone(CANONICAL_OWN_RULES[0]), enabled: false }
+  const duplicatePublic = structuredClone(CANONICAL_OWN_RULES[2])
+  const existing = [unrelatedA, duplicatePublic, unrelatedB, driftedHomepage, duplicatePublic]
+
+  const result = reconcileOwnedRules(existing)
+  assert.equal(result.changed, true)
+  assert.equal(result.rules[0], unrelatedA)
+  assert.equal(result.rules[1], unrelatedB)
+  assert.deepEqual(result.rules.slice(2), CANONICAL_OWN_RULES)
+  for (const description of [HOMEPAGE_RULE_DESCRIPTION, IMG_PROXY_RULE_DESCRIPTION, PUBLIC_READ_RULE_DESCRIPTION]) {
+    assert.equal(result.rules.filter((rule) => rule.description === description).length, 1)
+  }
 })
 
-test('cloudflare-cache-provision.mjs: the entrypoint-read catch only swallows "no ruleset yet" (10003), rethrows every other failure', () => {
-  const catchIdx = src.indexOf('} catch (e) {')
-  assert.ok(catchIdx !== -1, 'expected a catch(e) block around the entrypoint read, not a bare catch that swallows everything')
-  const catchBlockEnd = src.indexOf('\n  }', catchIdx)
-  const catchBody = src.slice(catchIdx, catchBlockEnd)
-  assert.match(catchBody, /10003/, 'expected the catch to check for Cloudflare error code 10003 specifically')
-  assert.match(catchBody, /throw e/, 'a 403/5xx/transient failure must rethrow, not silently proceed as if no rules exist (would clobber existing rules on the PUT)')
+test('reconciliation is an idempotent no-op when canonical provider-decorated state is exact and unique', () => {
+  const unrelated = { id: 'manual', description: 'manual rule', untouched: true }
+  const existing = [unrelated, ...exactLiveRules()]
+  const result = reconcileOwnedRules(existing)
+  assert.equal(result.changed, false)
+  assert.equal(result.rules, existing)
+  assert.equal(result.state.exact, true)
 })
 
-test('cloudflare-cache-provision.mjs: targets the Cache Rules phase, not the WAF script\'s firewall phase', () => {
-  assert.match(src, /http_request_cache_settings/)
-  assert.doesNotMatch(src, /http_request_firewall_custom/)
+test('inspection distinguishes exact, absent, drifted, duplicate, and misplaced owned states', () => {
+  assert.equal(inspectOwnedRuleState(exactLiveRules()).exact, true)
+
+  const absent = inspectOwnedRuleState(exactLiveRules().slice(0, 2))
+  assert.deepEqual(absent.absent, [PUBLIC_READ_RULE_DESCRIPTION])
+
+  const driftRules = exactLiveRules()
+  driftRules[2].action_parameters.edge_ttl.mode = 'respect_origin'
+  assert.deepEqual(inspectOwnedRuleState(driftRules).drifted, [PUBLIC_READ_RULE_DESCRIPTION])
+
+  const duplicateRules = [...exactLiveRules(), structuredClone(CANONICAL_OWN_RULES[2])]
+  assert.deepEqual(inspectOwnedRuleState(duplicateRules).duplicates, [PUBLIC_READ_RULE_DESCRIPTION])
+
+  const misplaced = exactLiveRules()
+  misplaced.unshift(misplaced.pop())
+  assert.match(inspectOwnedRuleState(misplaced).reasons.join(' '), /canonical appended tail/)
 })
 
-test('cloudflare-cache-provision.mjs: the rule action is set_cache_settings with cache:true', () => {
-  assert.match(src, /action:\s*'set_cache_settings'/)
-  assert.match(src, /cache:\s*true/)
+test('only Cloudflare code 10003 is classified as a known-absent entrypoint', () => {
+  assert.equal(isNoEntrypointError(new CloudflareApiError('absent', { status: 404, codes: [10003] })), true)
+  for (const error of [
+    new CloudflareApiError('auth', { status: 401, codes: [10000] }),
+    new CloudflareApiError('permission', { status: 403, codes: [10000] }),
+    new CloudflareApiError('rate', { status: 429, codes: [10003] }),
+    new Error('message happens to contain 10003'),
+  ]) assert.equal(isNoEntrypointError(error), false, 'classification uses structured code without swallowing unavailable HTTP classes')
 })
 
-test('cloudflare-cache-provision.mjs: scoped to the apex/www host only, never a wildcard that would catch shop subdomains or custom domains', () => {
-  assert.match(src, /http\.host eq "\$\{DOMAIN\}"/, 'expected an exact-match host check against the apex DOMAIN constant')
-  assert.match(src, /http\.host eq "www\.\$\{DOMAIN\}"/, 'expected an exact-match host check against www.<DOMAIN>')
-  assert.doesNotMatch(src, /http\.host contains/, 'a "contains" host match could accidentally catch a custom domain or shop subdomain')
+test('--verify-only is GET-only and returns 0 exact; 1 absent/drift/duplicate/zone absent/10003', async () => {
+  const cases = [
+    { name: 'exact', responses: [zoneResponse(), rulesResponse(exactLiveRules())], exit: 0 },
+    { name: 'zone absent', responses: [zoneResponse([])], exit: 1 },
+    { name: 'rule absent', responses: [zoneResponse(), rulesResponse(exactLiveRules().slice(0, 2))], exit: 1 },
+    { name: 'duplicate', responses: [zoneResponse(), rulesResponse([...exactLiveRules(), CANONICAL_OWN_RULES[2]])], exit: 1 },
+    {
+      name: 'entrypoint 10003',
+      responses: [zoneResponse(), jsonResponse(404, { success: false, errors: [{ code: 10003, message: 'missing' }] })],
+      exit: 1,
+    },
+  ]
+  for (const fixture of cases) {
+    const io = queuedFetch(fixture.responses)
+    const exit = await main(['--verify-only'], { ...io, env: tokenEnv, log() {}, error() {} })
+    assert.equal(exit, fixture.exit, fixture.name)
+    assert.ok(io.calls.every((call) => call.opts.method === 'GET'), `${fixture.name}: verifier attempted a write`)
+  }
 })
 
-test('cloudflare-cache-provision.mjs: the /api/img proxy rule exists, exact-path, respect-origin, own description (hyper-performant-website S1 infra ask)', () => {
-  assert.match(src, /IMG_PROXY_RULE_DESCRIPTION = 'miyagi-web edge cache — \/api\/img proxy variants/)
-  // Exact path match — a prefix/contains match could catch an unrelated future /api/img* sibling.
-  assert.match(src, /http\.request\.uri\.path eq "\/api\/img"/)
-  // Both own rules must be filtered by description before the PUT so a re-run stays idempotent
-  // and preserves hand-added rules.
-  assert.match(src, /OWN_DESCRIPTIONS = new Set\(\[RULE_DESCRIPTION, IMG_PROXY_RULE_DESCRIPTION\]\)/)
-  // The img rule must respect origin Cache-Control (the route marks success immutable and errors
-  // uncacheable) — never a forced edge TTL that would cache 4xx/5xx.
-  const imgIdx = src.indexOf('const imgProxyRule')
-  const imgBlock = src.slice(imgIdx, src.indexOf('}', src.indexOf('edge_ttl', imgIdx)) + 1)
-  assert.match(imgBlock, /respect_origin/)
+test('--verify-only returns 2 and the required warning for missing secret/auth/permission/rate/5xx/non-JSON/network', async () => {
+  const cases = [
+    {
+      name: 'missing secret',
+      env: {},
+      deps: { execFileSyncImpl() { throw new Error('not available') } },
+    },
+    { name: '401', env: tokenEnv, responses: [jsonResponse(401, { success: false, errors: [{ code: 10000 }] })] },
+    { name: '403', env: tokenEnv, responses: [jsonResponse(403, { success: false, errors: [{ code: 10000 }] })] },
+    { name: '429', env: tokenEnv, responses: [jsonResponse(429, { success: false, errors: [{ code: 1015 }] })] },
+    { name: '500', env: tokenEnv, responses: [jsonResponse(500, { success: false, errors: [{ code: 1000 }] })] },
+    { name: 'non-JSON', env: tokenEnv, responses: [textResponse(502, '<html>bad gateway</html>')] },
+    { name: 'network', env: tokenEnv, responses: [new Error('getaddrinfo ENOTFOUND')] },
+    {
+      name: 'response stream network',
+      env: tokenEnv,
+      responses: [{ ok: true, status: 200, async text() { throw new Error('socket reset') } }],
+    },
+  ]
+  for (const fixture of cases) {
+    const errors = []
+    const io = fixture.responses ? queuedFetch(fixture.responses) : { calls: [] }
+    const exit = await main(['--verify-only'], {
+      ...io,
+      ...(fixture.deps || {}),
+      env: fixture.env,
+      log() {},
+      error(message) { errors.push(message) },
+    })
+    assert.equal(exit, 2, fixture.name)
+    assert.match(errors.join('\n'), /UNAVAILABLE — not evidence of health/, fixture.name)
+  }
+})
+
+test('apply skips PUT when exact and otherwise sends one preserving reconciliation; a 403 GET stops before PUT', async () => {
+  const exactIo = queuedFetch([zoneResponse(), rulesResponse(exactLiveRules())])
+  const exact = await applyCanonicalRules({ env: tokenEnv }, exactIo)
+  assert.equal(exact.put, false)
+  assert.equal(exactIo.calls.length, 2)
+
+  const manual = { id: 'manual', description: 'manual rule', expression: 'true' }
+  const putIo = queuedFetch([zoneResponse(), rulesResponse([manual]), jsonResponse(200, { success: true, result: {} })])
+  const applied = await applyCanonicalRules({ env: tokenEnv }, putIo)
+  assert.equal(applied.put, true)
+  assert.deepEqual(JSON.parse(putIo.calls[2].opts.body).rules, [manual, ...CANONICAL_OWN_RULES])
+  assert.equal(putIo.calls[2].opts.method, 'PUT')
+
+  const deniedIo = queuedFetch([
+    zoneResponse(),
+    jsonResponse(403, { success: false, errors: [{ code: 10000, message: 'permission denied' }] }),
+  ])
+  await assert.rejects(() => applyCanonicalRules({ env: tokenEnv }, deniedIo), /403/)
+  assert.equal(deniedIo.calls.length, 2, 'a permission-denied read must never fall through to PUT')
 })
