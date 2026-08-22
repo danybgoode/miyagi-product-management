@@ -68,7 +68,7 @@ test('a reachable non-2xx locked fixture is absent and makes the baseline exit n
   assert.equal(report.unavailable, 0)
   assert.equal(report.absent, 4)
   assert.equal(probeExitCode(report), 1)
-  assert.match(formatReport(report), /non-2xx response/)
+  assert.match(formatReport(report), /non-2xx or invalid measurement/)
 })
 
 test('a 3xx first hop is absent, never a false low-byte successful fixture', async () => {
@@ -99,8 +99,36 @@ test('a fixed-format image returning the wrong type is absent', async () => {
   assert.equal(result.content_type.state, 'absent')
 })
 
+test('a legacy image returning HTML is absent even without a fixed-format expectation', async () => {
+  const result = await measureFixture({ id: 'image', label: 'image', url: 'https://example.test/api/img?url=x&w=640&q=75', image: true }, {
+    request: async (url) => ({ url, statusCode: 200, bytes: 10, body: Buffer.from('<html>'), ttfbMs: 2, headers: { 'content-type': 'text/html' } }),
+  })
+  assert.equal(result.status, 'absent')
+  assert.equal(result.content_type.state, 'absent')
+})
+
+test('a page with no Next client scripts is absent, never a green zero-measurement row', async () => {
+  const result = await measureFixture({ id: 'home', label: 'home', url: 'https://example.test/mx' }, {
+    request: async (url) => ({ url, statusCode: 200, bytes: 20, body: Buffer.from('<html><main>fallback</main></html>'), ttfbMs: 2, headers: { 'content-type': 'text/html' } }),
+  })
+  assert.equal(result.status, 'absent')
+  assert.equal(result.client_js_transfer_bytes.state, 'absent')
+})
+
 test('a probe without an identified deployed revision exits nonzero', () => {
   assert.equal(probeExitCode({ unavailable: 0, absent: 0, deployed_revision: { state: 'unavailable' } }), 1)
+})
+
+test('failure diagnostics name invalid measurements and an unidentified revision honestly', () => {
+  const output = formatReport({
+    measured_at: '2026-08-22T00:00:00.000Z',
+    deployed_revision: { state: 'unavailable', detail: 'missing' },
+    fixtures: [],
+    unavailable: 0,
+    absent: 1,
+  })
+  assert.match(output, /non-2xx or invalid measurement/)
+  assert.match(output, /deployed revision was not identified/)
 })
 
 test('--dry-run is fully read-only: it returns fixtures without invoking the injected network reader', async () => {

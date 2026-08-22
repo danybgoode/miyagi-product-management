@@ -147,6 +147,11 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
     }
 
     if (fixture.image) {
+      if (!String(result.content_type.value ?? '').startsWith('image/')) {
+        result.status = 'absent'
+        result.content_type = metric('absent', result.content_type.value, 'expected an image response')
+        return result
+      }
       const requestedFormat = new URL(fixture.url).searchParams.get('f')
       const expectedType = requestedFormat ? `image/${requestedFormat === 'jpeg' ? 'jpeg' : requestedFormat}` : null
       if (expectedType && result.content_type.value !== expectedType) {
@@ -164,7 +169,11 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
       return result
     }
     const scripts = extractClientScriptUrls(html, fixture.url)
-    if (scripts.length === 0) return result
+    if (scripts.length === 0) {
+      result.client_js_transfer_bytes = metric('absent', undefined, 'no Next client scripts found in the HTML')
+      result.status = 'absent'
+      return result
+    }
     try {
       const transfers = await Promise.all(scripts.map((src) => request(src)))
       const failed = transfers.find((item) => item.statusCode < 200 || item.statusCode >= 300)
@@ -230,7 +239,8 @@ export function formatReport(report) {
     lines.push(`| ${item.label} | ${item.status} | ${display(item.ttfb_ms, ' ms')} | ${display(item.cf_cache_status)} | ${display(item.total_transfer_bytes, ' B')} | ${display(item.client_js_transfer_bytes, ' B')} |`)
   }
   if (report.unavailable) lines.push(`\nUNAVAILABLE: ${report.unavailable} fixture(s) could not be measured; this is not a green run.`)
-  if (report.absent) lines.push(`\nFAILED: ${report.absent} locked fixture(s) returned a non-2xx response; this is not a green run.`)
+  if (report.absent) lines.push(`\nFAILED: ${report.absent} locked fixture(s) returned a non-2xx or invalid measurement; this is not a green run.`)
+  if (report.deployed_revision.state !== 'present') lines.push(`\nFAILED: deployed revision was not identified; pass --revision with the live Git SHA.`)
   return `${lines.join('\n')}\n`
 }
 
@@ -243,7 +253,8 @@ async function main() {
     if (!options.dryRun && probeExitCode(report)) {
       const reasons = [
         report.unavailable ? `${report.unavailable} unreachable or unreadable` : null,
-        report.absent ? `${report.absent} non-2xx` : null,
+        report.absent ? `${report.absent} non-2xx or invalid measurement` : null,
+        report.deployed_revision.state !== 'present' ? 'deployed revision unidentified' : null,
       ].filter(Boolean).join('; ')
       process.stderr.write(`perf-probe: locked fixture failure (${reasons}); see rows above.\n`)
       process.exitCode = 1
