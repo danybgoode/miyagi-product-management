@@ -11,11 +11,15 @@
 **As a** buyer arriving after a quiet hour, **I want** the first page to render as fast as the tenth,
 **so that** the site never feels dead on the first click of the day.
 
-**Context:** `infra/gcp/deploy-frontend.sh:91-94` sets `--min-instances=0 --max-instances=4 --cpu=1
---memory=1Gi`. Scale-to-zero costs twice: a container cold start, **and** an empty `unstable_cache`
+**Lock-time context:** before this sprint, `infra/gcp/deploy-frontend.sh:91-94` set
+`--min-instances=0 --max-instances=4 --cpu=1 --memory=1Gi`. Scale-to-zero costs twice: a container
+cold start, **and** an empty `unstable_cache`
 (Next's incremental cache is per-container, so a fresh instance re-runs every `getShop`/`getShopListings`
 read against Medusa/Cloud SQL and Supabase). `medusa-web` has run `min=1` since
 `postgres-neon-to-cloudsql`; `miyagi-web` never got the same treatment.
+
+**Live apply (2026-08-22):** revision `miyagi-web-00132-s6q` is Ready, serves 100% of traffic and
+reports `autoscaling.knative.dev/minScale: '1'`.
 
 **Acceptance:**
 - `gcloud run services describe miyagi-web --region us-east4` reports `minScale: 1`.
@@ -50,6 +54,9 @@ measurement supersedes the anecdote for this fixture and is the honest compariso
 - `lib/image-loader.ts` still emits `/api/img?...`; `next.config.ts` keeps `loader: 'custom'`.
 - Loader URLs include the versioned fixed cache-key tokens `f=webp&v=2`; fixed-format responses omit `Vary: Accept`,
   so Cloudflare cannot replay an AVIF cache entry to a WebP request. Unknown formats fail 400.
+- Fixed URLs accept only the loader's single imported width contract, canonical source/numeric spelling
+  and quality 75. Legacy URLs keep every width emitted by the prior Next config and its old effective
+  snap behavior; stale HTML must not receive a 400 during cutover.
 - Legacy URLs without `f` retain their existing WebP/AVIF/JPEG Accept negotiation for compatibility.
 - The loader emits quality 75 and a reduced, explicit responsive-width set covering the actual
   optimized call sites; the route retains the shipped `[60, 75, 90]` compatibility ladder.

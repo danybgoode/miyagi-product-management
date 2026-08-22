@@ -82,8 +82,10 @@ replace any conflicting scaffold language below or in a sprint file.
    There is no empty-table or migration window to spend. Medusa, checkout, payments and fulfillment
    stay untouched.
 3. **D3 — The frontend warm-instance contract lives only in
-   `infra/gcp/deploy-frontend.sh`.** Live `miyagi-web` has no `minScale` annotation (effective zero),
-   while the script says `--min-instances=0`; both become one. `cloudbuild.yaml` remains image-only.
+   `infra/gcp/deploy-frontend.sh`.** At lock time, live `miyagi-web` had no `minScale` annotation
+   (effective zero) and the script said `--min-instances=0`; both were changed to one. The live apply
+   produced Ready revision `miyagi-web-00132-s6q`, serving 100% with `minScale: '1'`.
+   `cloudbuild.yaml` remains image-only.
    The orchestrator applies and verifies the service config before its PR merges because merge deploys
    code that assumes the scoped runtime posture.
 4. **D4 — Cloudflare image transformations are rejected; the zone stays Free.** The live zone reports
@@ -159,7 +161,9 @@ replace any conflicting scaffold language below or in a sprint file.
     Cloudflare consequently stored an AVIF response under that immutable key. The shipped loader emits
     `f=webp&v=2`, making the poisoned object unreachable. The probe's safe default remains the legacy
     no-`f` fixture; the orchestrator supplies the versioned URL explicitly only after the new route is
-    live. Image rollback is staged: revert loader/config emission first, retain the route's `f`/`v`
+    live. Fixed keys require canonical source/numeric spelling and import their emitted width set once;
+    legacy keys retain every old Next-emitted width and map through the shipped transform ladder, so
+    stale HTML does not break. Image rollback is staged: revert loader/config emission first, retain the route's `f`/`v`
     compatibility until stale HTML can no longer request it, then remove that compatibility in a later
     deploy. A one-step full revert is not format-safe. This is a review-time correction to D5, recorded
     rather than hidden as builder discovery.
