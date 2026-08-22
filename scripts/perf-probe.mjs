@@ -79,10 +79,11 @@ export function requestTransport(url, deps = { httpRequest: http.request, httpsR
   throw new Error(`unsupported URL protocol '${protocol}'`)
 }
 
-export function rawRequest(url, { headers = {}, timeoutMs = 30_000 } = {}) {
+export function rawRequest(url, { headers = {}, timeoutMs = 30_000 } = {}, deps = {}) {
   return new Promise((resolve, reject) => {
     const startedAt = process.hrtime.bigint()
-    const req = requestTransport(url)(url, {
+    const transport = deps.transport ?? requestTransport(url)
+    const req = transport(url, {
       method: 'GET',
       headers: {
         // https.request does not auto-decompress. Explicitly negotiate normal
@@ -96,6 +97,7 @@ export function rawRequest(url, { headers = {}, timeoutMs = 30_000 } = {}) {
       let bytes = 0
       const chunks = []
       res.on('data', (chunk) => { bytes += chunk.length; chunks.push(chunk) })
+      res.on('error', reject)
       res.on('end', () => resolve({
         url,
         statusCode: res.statusCode ?? 0,

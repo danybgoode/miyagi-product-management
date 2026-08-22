@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
+import { EventEmitter } from 'node:events'
 import test from 'node:test'
 import { gzipSync } from 'node:zlib'
-import { DEFAULT_IMAGE_URL, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, requestTransport, runProbe } from './perf-probe.mjs'
+import { DEFAULT_IMAGE_URL, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, rawRequest, requestTransport, runProbe } from './perf-probe.mjs'
 
 test('fixtureUrls locks the marketplace symptoms and an explicitly configurable real image fixture', () => {
   const fixtures = fixtureUrls({ baseUrl: 'https://preview.example', imageUrl: 'https://preview.example/api/img?url=x&w=640&q=75' })
@@ -24,6 +25,26 @@ test('raw transport supports local HTTP probes without attempting a TLS handshak
   assert.equal(requestTransport('http://127.0.0.1:3000/mx', { httpRequest, httpsRequest }), httpRequest)
   assert.equal(requestTransport('https://miyagisanchez.com/mx', { httpRequest, httpsRequest }), httpsRequest)
   assert.throws(() => requestTransport('ftp://example.test/file', { httpRequest, httpsRequest }), /unsupported URL protocol/)
+})
+
+test('rawRequest rejects a response-stream failure instead of crashing or hanging', async () => {
+  const transport = (_url, _options, onResponse) => {
+    const request = new EventEmitter()
+    request.setTimeout = () => {}
+    request.destroy = (error) => request.emit('error', error)
+    request.end = () => {
+      const response = new EventEmitter()
+      response.statusCode = 200
+      response.headers = { 'content-type': 'text/plain' }
+      onResponse(response)
+      queueMicrotask(() => {
+        response.emit('data', Buffer.from('partial'))
+        response.emit('error', new Error('forced response failure'))
+      })
+    }
+    return request
+  }
+  await assert.rejects(rawRequest('https://example.test/partial', {}, { transport }), /forced response failure/)
 })
 
 test('extractClientScriptUrls resolves and de-duplicates only Next client chunks', () => {
