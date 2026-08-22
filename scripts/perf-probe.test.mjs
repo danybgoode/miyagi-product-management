@@ -150,6 +150,13 @@ test('a fixed-format image accepts legal Content-Type parameters', async () => {
   assert.equal(result.content_type.value, 'image/webp')
 })
 
+test('a jpg image format expects the standard image/jpeg media type', async () => {
+  const result = await measureFixture({ id: 'image', label: 'image', url: 'https://example.test/api/img?url=x&w=640&q=75&f=jpg&v=2', image: true }, {
+    request: async (url) => ({ url, statusCode: 200, bytes: 10, body: Buffer.alloc(10), ttfbMs: 2, headers: { 'content-type': 'image/jpeg' } }),
+  })
+  assert.equal(result.status, 'present')
+})
+
 test('measureFixture forwards protocol-specific transport dependencies to rawRequest', async () => {
   const httpRequest = (_url, _options, onResponse) => {
     const request = new EventEmitter()
@@ -201,6 +208,7 @@ test('failure diagnostics name invalid measurements and an unidentified revision
   })
   assert.match(output, /non-2xx or invalid measurement/)
   assert.match(output, /deployed revision was not identified/)
+  assert.doesNotMatch(formatReport({ measured_at: '2026-08-22T00:00:00.000Z', deployed_revision: { state: 'unavailable' }, fixtures: [], unavailable: 0, absent: 0 }), /undefined/)
 })
 
 test('--dry-run is fully read-only: it returns fixtures without invoking the injected network reader', async () => {

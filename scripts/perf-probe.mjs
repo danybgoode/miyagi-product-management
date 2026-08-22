@@ -163,7 +163,8 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
         return result
       }
       const requestedFormat = new URL(fixture.url).searchParams.get('f')
-      const expectedType = requestedFormat ? `image/${requestedFormat === 'jpeg' ? 'jpeg' : requestedFormat}` : null
+      const expectedFormat = requestedFormat === 'jpg' ? 'jpeg' : requestedFormat
+      const expectedType = expectedFormat ? `image/${expectedFormat}` : null
       if (expectedType && result.content_type.value !== expectedType) {
         result.status = 'absent'
         result.content_type = metric('absent', result.content_type.value, `expected ${expectedType}`)
@@ -243,7 +244,7 @@ export function formatReport(report) {
   if (report.dry_run) return `DRY RUN — no network calls or writes\n${report.fixtures.map((f) => `- ${f.id}: ${f.url}`).join('\n')}\n`
   const lines = [
     `Performance probe — ${report.measured_at}`,
-    `Deployed revision: ${report.deployed_revision.state === 'present' ? report.deployed_revision.value : `unavailable (${report.deployed_revision.detail})`}`,
+    `Deployed revision: ${report.deployed_revision.state === 'present' ? report.deployed_revision.value : `unavailable (${report.deployed_revision.detail ?? 'not identified'})`}`,
     '',
     '| Fixture | Status | TTFB | CF cache | Transfer | Client JS |',
     '|---|---|---:|---|---:|---:|',
