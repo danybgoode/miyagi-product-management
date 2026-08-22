@@ -1,5 +1,5 @@
 ---
-status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: hyper-performant-runtime
 build_order: null    # integer position in the ONE global build sequence — the SSOT once the epic
                      # exists (the seed's value is only a fallback). Fill it in at the betting
@@ -41,11 +41,14 @@ What changes is **how existing pages render and what the browser downloads** —
 edge-config and bundle-composition epic. If a story proposes editing a Medusa module or a Supabase
 migration, that is a signal something has been misread.
 
-### The root cause, as found at grooming (verified in the tree, 2026-08-22)
+### The root cause, as found at grooming (corrected by the architecture lock, 2026-08-22)
 
 `app/(shell)/layout.tsx:38` calls `await headers()` — deliberately, to make the channel/chrome
-decision. That opts the **entire `(shell)` subtree** into dynamic rendering, with three consequences
-nobody has been reading:
+decision. That opts the **entire `(shell)` subtree** into dynamic rendering. The locking pass also
+found request reads inside the two headline pages themselves: `s/[slug]/page.tsx` reads `headers()`
+and calls the Clerk-backed `applyPreviewOverlay()`, while `l/[id]/page.tsx` reads `headers()` and
+`currentUser()`. Moving one layout read was therefore never sufficient; the public renderer and the
+viewer/owner-only renderer have to be separated as an authorization boundary.
 
 1. **`export const revalidate = 120` is a silent no-op on ~15 public routes** — `s/[slug]/page.tsx:42`
    and its six sub-pages, `s/[slug]/c/[collection]`, `mx/s/[slug]/*`, `colecciones`, `tienda`,
@@ -57,9 +60,135 @@ nobody has been reading:
    `unstable_cache`. The backend has run `min=1` since
    [`postgres-neon-to-cloudsql`](../postgres-neon-to-cloudsql/README.md); the frontend never got it.
 
-Plus, measured against the live build (BUILD_ID `3G3h-WqNxT8DegPaaMSVJ`, 2026-08-20): **4.3 MB of
-client chunks**, the largest being **309 KB of Sentry with Session Replay enabled on every page**,
-and **212 of 443 components marked `'use client'`** (48,815 lines).
+Plus, measured from the shipped `origin/main` build during the lock: **4.3 MB of client chunks**; the
+largest chunk is **315,519 bytes** and contains Sentry Replay, which the static homepage loads too.
+The earlier claim that buyer routes also load `xlsx`, `jszip`, `mercadopago` and `@dnd-kit` was false:
+their actual Turbopack client-reference manifests contain none of those packages. That story is now a
+guard over an already-correct boundary, not a dependency-moving build.
+
+## Architecture lock — verified decisions (2026-08-22)
+
+These decisions were made against frontend `origin/main` at `0eb9985`, the deployed Cloud Run and
+Cloudflare configuration, a production HTTP probe, and read-only live Supabase/Medusa queries. They
+replace any conflicting scaffold language below or in a sprint file.
+
+1. **D1 — This is a two-repository delivery.** Product code lives in `apps/miyagisanchez`; Cloud Run,
+   Cloudflare, the probe and roadmap docs live in the root repo. Each repo uses the same stack
+   (`feat/hyper-performant-runtime` → `-s2` → `-s3`) where that sprint has a diff. A sprint that spans
+   both repos necessarily has one PR per repo; the infra/root PR merges first only when the frontend
+   deploy depends on it, otherwise the frontend deploy is proven before the live config mutation.
+2. **D2 — No database or commerce schema work exists.** Live Supabase has 57 shops (15 claimed,
+   42 unclaimed), four non-activated preview anchors, and one configured but unverified custom domain.
+   There is no empty-table or migration window to spend. Medusa, checkout, payments and fulfillment
+   stay untouched.
+3. **D3 — The frontend warm-instance contract lives only in
+   `infra/gcp/deploy-frontend.sh`.** Live `miyagi-web` has no `minScale` annotation (effective zero),
+   while the script says `--min-instances=0`; both become one. `cloudbuild.yaml` remains image-only.
+   The orchestrator applies and verifies the service config before its PR merges because merge deploys
+   code that assumes the scoped runtime posture.
+4. **D4 — Cloudflare image transformations are rejected; the zone stays Free.** The live zone reports
+   the Free plan and `/cdn-cgi/image/*` returns 404. Enabling it would require new permissions/execution
+   surface and its 5,000-new-transform ceiling can fail closed with error 9422. The shipped contract
+   remains `lib/image-loader.ts` → `app/api/img/route.ts`, importing the route's HTTPS host allow-list,
+   `redirect: 'error'`, streamed 25 MB cap and immutable success response exactly once from that route.
+5. **D5 — Story 1.2 was scoped against the wrong image surface.** The critical shop/PDP components use
+   raw R2 `<img>` URLs and never invoke `/api/img`; the proxy is used only by the handful of optimized
+   `next/image` call sites. It is not retired. Cold encoding is reduced by preferring WebP over AVIF,
+   emitting quality 75 from the loader (the route keeps the shipped compatibility ladder), and reducing
+   the generated width set to the responsive widths those call sites actually need. No R2 ingest or
+   storage code changes. A named-variant Cloudflare Worker is recorded as a future free-tier option,
+   not part of this build.
+6. **D6 — `scripts/perf-probe.mjs` measures bytes on the wire.** It uses a raw compressed HTTP read,
+   not Fetch/Playwright `body()`, and reports TTFB, `cf-cache-status`, total transfer and route client-JS
+   transfer with present/absent/unavailable states. Its live fixtures are marketplace URLs; a missing
+   fixture is unavailable, never silently replaced. The committed baseline is dated and identifies the
+   deployed revision it measured.
+7. **D7 — Public rendering is an internal rewrite, not a request-header layout.** Middleware rewrites
+   marketplace, entitled subdomain and embed reads to a private internal public-read route tree whose
+   channel and identity are path parameters. Direct requests to that internal prefix fail. The renderer
+   imports the shipped cache windows from `lib/cache-policy.ts`; it contains no `headers()`, `cookies()`,
+   Clerk server read or owner preview overlay. Existing external URLs, canonical bytes and chrome remain
+   unchanged.
+8. **D8 — Personalized PDP state is one no-store client island.** The generic public HTML reserves a
+   stable action region. After Clerk settles, one authenticated viewer-state read supplies ownership,
+   favorite, active-deal and buyer-prefill state. Until then no buy/offer/owner assertion is shown; on
+   failure personalized actions stay unavailable instead of rendering the wrong state. Existing auth,
+   checkout and offer authorization remain their own shipped server contracts and are imported, never
+   restated.
+9. **D9 — Owner preview stays a separate dynamic renderer.** `?preview=1` is rewritten to a no-store
+   route that imports `lib/shop-presentation/preview.ts` unchanged. It never shares a Next or Cloudflare
+   cache entry with public HTML.
+10. **D10 — Privacy decides cache eligibility.** Public reads for claimed shops may be cached; an
+    unclaimed shop/listing, a preview-private shop, an unresolved lookup, any query-string request and
+    every custom-domain request bypasses edge caching. This imports the claim rule from `lib/claim.ts`
+    and the fail-closed preview rule from `lib/preview-access.ts`. The four live preview-private anchors
+    are real fixtures for 404 proof. Cache keys retain host + path, so marketplace, subdomain and embed
+    cannot collapse.
+11. **D11 — Custom domains are explicitly excluded.** The only configured live custom domain is not
+    verified and currently terminates on the old Vercel rail. This epic neither changes its DNS/TLS nor
+    claims a custom-domain cache proof. Its existing dynamic behavior must remain intact.
+12. **D12 — Build glyphs are evidence, not the render-mode contract.** A parameterized ISR route may
+    still appear as `ƒ`; acceptance is no request APIs in the public chain, origin cache headers matching
+    `lib/cache-policy.ts`, and a live Cloudflare MISS→HIT on the original URL. Story 2.3 guards the source
+    condition that made the old `revalidate` declarations dishonest.
+13. **D13 — Sentry Replay is the only telemetry removal.** Remove its static integration and sample-rate
+    keys; keep the SDK, DSN, tracing, server/edge configs and `withSentryConfig`. The built chunks, not
+    source grep alone, prove Replay is absent.
+14. **D14 — Vendor separation is already shipped.** `xlsx`, `jszip` and `mercadopago` are server-only;
+    `@dnd-kit` occurs only in `/admin/seleccion`. Story 3.2 adds a built-manifest regression guard and
+    touches none of those imports or any payment/checkout file. The fictional real-payment smoke caused
+    by a nonexistent move is deleted.
+15. **D15 — The native-HTML sweep has three removals and one progressive enhancement.**
+    `CollapsibleDescription` and `ExcerptPanel` become server-rendered `<details>`; `CuentaMenu` uses
+    native popover with a positioned fallback. `AIAgentButton` still needs JavaScript for context,
+    clipboard and handoff, but its modal uses native `<dialog>`. Existing tokens and design are preserved.
+16. **D16 — The JavaScript budget is route-manifest based.** It resolves the built route-to-chunk graph
+    and sums reproducible Brotli transfer bytes for unique client chunks. Post-diet measurements set the
+    committed `/mx`, `/mx/l/[id]` and `/mx/s/[slug]` ceilings; aggregate `.next/static` size is not a
+    route budget.
+17. **D17 — Routing and review are fixed for the run.** Sprint 2, which defines the auth/cache boundary
+    imported by the rest, routes to the strongest builder (`gpt-5.6-sol`); Sprints 1 and 3 route to the
+    faster workhorse (`gpt-5.6-terra`). Every PR declares HIGH risk. The orchestrator runs
+    `scripts/review-route.mjs` and executes both external-family commands; a fresh `pr-reviewer` subagent
+    is mandatory too. Findings are fixed or answered before an independent reviewer merges.
+
+### Sprint 1 — Build contract (locked by the architect before the builder started)
+
+- Cite D1–D6 and D17. Root owns the deploy flag, invariant, probe and baseline; frontend owns only the
+  image proxy/loader/config and its existing performance spec.
+- Story order is 1.3 baseline → 1.2 measured encode change → 1.1 live warm-instance apply. Do not delete
+  `/api/img`, use `/cdn-cgi/image`, add a Worker, add a dependency, or touch R2 ingest.
+- The image contract is imported from `app/api/img/route.ts`. The builder may narrow emitted variants
+  but may not weaken host, redirect, streaming-cap, content-type or error-cache behavior.
+- Every new assertion is observed red once. The orchestrator, not the builder, changes live Cloud Run.
+
+### Sprint 2 — Build contract (locked by the architect before the builder started)
+
+- Cite D1–D2, D7–D12 and D17. This builder owns the internal public-read tree, middleware rewrite,
+  viewer-state island/endpoint, cache-eligibility seam and their tests in the frontend; root owns the
+  existing Cloudflare provisioner extension and live invariant.
+- Marketplace (`/mx/s/**`, `/mx/l/[id]` and their unprefixed canonical compatibility paths), entitled
+  subdomain shop/PDP, and `/embed/s/[slug]` use the public renderer. `?preview=1`, custom domains and all
+  authed routes remain dynamic. No diff under checkout, account, admin, messages or seller-management
+  route trees except a test import that names them as forbidden.
+- Public HTML is viewer-neutral. The single island must reserve space, settle once, and fail disabled.
+  Do not move authorization into Cloudflare or treat a flag as privacy.
+- Cache rules respect origin, require an empty query string, keep the default host-aware key and exclude
+  custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and a live preview-private 404;
+  `piezas-unicas.miyagisanchez.com` is not entitled and is not a valid subdomain fixture.
+- The builder stops on any need for new Cloudflare permissions, DNS/TLS, a secret, checkout/auth policy
+  change or a second failed implementation attempt.
+
+### Sprint 3 — Build contract (locked by the architect before the builder started)
+
+- Cite D1–D2 and D13–D17. Remove Replay; guard the already-correct vendor boundary; perform only the four
+  named native-HTML changes; add the route-manifest Brotli budget.
+- No `xlsx`, `jszip`, `mercadopago`, `@dnd-kit`, checkout or payment implementation file changes are
+  permitted. Story 3.2 is complete when its guard proves the current route manifests.
+- AIAgentButton remains a client component. Native behavior must retain keyboard/focus behavior and use
+  the existing design tokens; CSS anchor positioning is enhancement-only.
+- Record before/after route transfer values and observed-red mutations. Browser smoke covers the native
+  interactions; no payment smoke is owed because no money-path code moves.
 
 ## What already exists (reuse, don't rebuild)
 
@@ -72,10 +201,10 @@ and **212 of 443 components marked `'use client'`** (48,815 lines).
   (`/api/img` rode it in `hyper-performant-website` S1). S2.2 extends it. Do not write a second one.
   `cloudflare-waf-provision.mjs` is the canonical idempotent-script shape.
 - **`lib/image-loader.ts`** — the custom `next/image` loader seam; `next.config.ts` already declares
-  `loader: 'custom'`. S1.2 changes **where it points**, not the seam.
-- **`app/api/img/route.ts`** — the route being retired. Its host allow-list, `redirect:'error'`,
-  streamed byte-cap and `QUALITY_LADDER` are the **security contract to preserve at the edge**, not
-  to discard. It is also the only `sharp` importer in the app (verified).
+  `loader: 'custom'`. It keeps pointing to `/api/img`; S1.2 narrows what it emits.
+- **`app/api/img/route.ts`** — the route being optimized, not retired. Its host allow-list,
+  `redirect:'error'`, streamed byte-cap and `QUALITY_LADDER` remain the security/compatibility
+  contract. It is also the only request-path `sharp` importer in the app (verified).
 - **`lib/r2.ts` + `ingestImageUrls()` + `lib/supply-import.ts`** — the R2 ingest path. **Unchanged.**
   Storage stays in R2; only *transformation* moves.
 - **`e2e/perf-budget.spec.ts`** — 11 source-code checks + 3 live checks, already written. S1.2 updates
@@ -88,11 +217,10 @@ and **212 of 443 components marked `'use client'`** (48,815 lines).
 - **`app/(site)/page.tsx` + `app/(mx-site)/mx/page.tsx`** — this codebase's own proof of a genuinely
   edge-cacheable route (no `headers()`/`cookies()`, auth gated client-side via `AuthShow`). S2.1's
   target shape, already demonstrated once.
-- **`app/components/clerk-lazy/*`** — four `next/dynamic({ssr:false})` wrappers. The pattern S3.2
-  copies for vendor deps; the wrappers themselves are untouched (AGENTS rule #4).
-- **`app/components/HomePersonalizationProvider.tsx`** — one fetch, not a poll; already carries the
-  `isLoaded`/`isSignedIn`/`settled` three-state model that killed the pop-in. S3 tunes *when* it
-  fires; it does not rewrite it.
+- **Built client-reference manifests** — the route-level source of truth for S3.2 and S3.4. They
+  already prove the named vendor packages do not ship to buyer routes; guard that fact directly.
+- **`app/components/HomePersonalizationProvider.tsx`** — one fetch, not a poll; its
+  `isLoaded`/`isSignedIn`/`settled` three-state model is the behavior S2's PDP viewer island imports.
 - **The channel guard suite** — `own-shop-seo.spec.ts`, the embed specs, `ChannelLayout`/white-label
   specs, `nav-entry-points.spec.ts`. **This is S2.1's acceptance harness, already written.**
 - **`scripts/neon-egress.mjs`** — the measurement-harness shape S1.3's `perf-probe` clones (measure,
@@ -103,13 +231,13 @@ and **212 of 443 components marked `'use client'`** (48,815 lines).
 | Sprint | Story | Risk |
 |---|---|---|
 | 1 | 1.1 Frontend Cloud Run `min-instances=1` + drift-guard assertion | **high** |
-| 1 | 1.2 Image transforms → Cloudflare `/cdn-cgi/image/`; retire `/api/img` + the sharp encode | low |
+| 1 | 1.2 Keep the free-tier image proxy; reduce its cold variant cost and cardinality | low |
 | 1 | 1.3 `scripts/perf-probe.mjs` — TTFB / `cf-cache-status` / transfer / client-JS baseline | low |
-| 2 | 2.1 Lift `headers()` out of the **public read** `(shell)` subtree (`/s/**`, `/l/[id]`) | **high** |
+| 2 | 2.1 Split the viewer-neutral public renderer from request/auth/preview state | **high** |
 | 2 | 2.2 Cloudflare Cache Rule for the public read paths + MISS→HIT probe per channel | **high** |
 | 2 | 2.3 Guard spec — no `revalidate` export under a `headers()`-tainted layout | low |
 | 3 | 3.1 Drop Sentry Session Replay from the client bundle (error reporting stays) | low |
-| 3 | 3.2 `next/dynamic` the vendor deps at their real call sites (`xlsx`, `jszip`, `mercadopago`, `@dnd-kit`) | low |
+| 3 | 3.2 Guard the already-shipped vendor boundary (`xlsx`, `jszip`, `mercadopago`, `@dnd-kit`) | low |
 | 3 | 3.3 HTML-native sweep on the named buyer surfaces (`<details>` / `<dialog>` / `popover`) | low |
 | 3 | 3.4 Per-route client-JS **transfer** budget in the deterministic gate | low |
 
@@ -124,15 +252,15 @@ Sprints are ordered by dependency and must ship in order:
   learned here on 2026-07-18 (`/api/img` set `immutable` and still ran `cf-cache-status: DYNAMIC`
   until an explicit rule existed). Ship the render-mode change and the rule in the same wave, and
   prove it with a MISS→HIT probe, never with response headers alone.
-- **S3 is independent** of S1/S2 and may land in parallel, but it shares hot files with nothing else
-  in flight — check for sibling PRs on `app/components/*` before starting.
+- **S3 is stacked on S2** even though its code is mechanically independent; this preserves the one
+  ordered epic rail and makes the post-diet budget measure the public renderer that will ship.
 
-**Shared-surface announcements owed:** S1.1 changes live Cloud Run service config; S2.1 touches
-`app/(shell)/layout.tsx` (every route in the subtree); S2.2 changes shared Cloudflare edge config.
-All three can break sibling PRs and must be announced before merge.
+**Shared-surface announcements owed:** S1.1 changes live Cloud Run service config; S2.1 changes
+middleware and the public shop/PDP route boundary; S2.2 changes shared Cloudflare edge config. All
+three can break sibling PRs and must be announced before merge.
 
-**Degrade-gracefully:** S1.2's old `/api/img` URLs keep serving until the deploy flips the loader, so
-images never break mid-rollout. S3.1/S3.2 are removals — nothing consumes their output.
+**Degrade-gracefully:** S1.2 keeps the same `/api/img` URL contract and merely emits fewer, cheaper
+variants. S3.1 is a scoped removal; S3.2 is a guard-only story.
 
 ## Kill-switch — decided at grooming (Stage 6b): **carve-out, no flag**
 

@@ -1,10 +1,9 @@
 # Hyper-performant runtime — Sprint 1: Origin — kill the cold start and the origin image encode
 
-**Status:** ⬜ not started
+**Status:** 🟨 in progress — architecture locked; builder dispatch next
 
-> **Sprint goal:** the origin stops being in the critical path. A visitor never pays a Cloud Run cold
-> start, and no image is ever re-encoded on our own CPU while someone waits for it. Plus the
-> measurement harness every later story reports against.
+> **Sprint goal:** the frontend stays warm, the remaining origin image variants become materially
+> cheaper on the Free tier, and every later story reports through one honest measurement harness.
 
 ## Stories
 
@@ -33,36 +32,33 @@ approved the cost at the scope gate (2026-08-22); he merges.
 
 ---
 
-### Story 1.2 — Images transform at the edge, not on our CPU
+### Story 1.2 — Free-tier image variants cost less at the origin
 **As a** buyer scrolling a shop, **I want** product photos to appear immediately, **so that** the
 catalog feels instant instead of loading in.
 
-**Context:** `hyper-performant-website`'s retro logged this and never actioned it — *"sharp AVIF
-encode latency on cold variants (4–22 s) — consider lower effort or webp-default for w≥640."*
-`app/api/img/route.ts` is the app's **only** `sharp` importer (verified) and re-encodes on every
-Cloudflare cache miss. The images already live in R2 behind the same Cloudflare zone, so the
-transform can happen at the edge with the bytes never leaving it.
-
-**Do not move the storage.** R2 stays. Only the transform moves.
+**Architecture-lock correction (D4–D5):** the live zone is on Cloudflare Free and
+`/cdn-cgi/image/*` returns 404. More importantly, the critical shop and PDP surfaces use direct R2
+`<img>` URLs and never call `/api/img`; the original story attributed their latency to a proxy they do
+not use. The proxy remains valuable for the handful of optimized `next/image` call sites, but its cold
+AVIF variants take 4–22 seconds. Keep its security boundary and make those variants cheaper.
 
 **Acceptance:**
-- `lib/image-loader.ts` emits `/cdn-cgi/image/...` URLs; `next.config.ts` keeps `loader: 'custom'`.
-- `app/api/img/route.ts` is deleted and `sharp` is no longer imported anywhere in a request path.
-- A **cold** (never-before-requested) width/format variant of a real listing image returns in
-  **< 1 s** (baseline: 4–22 s), measured with Story 1.3's probe.
+- `lib/image-loader.ts` still emits `/api/img?...`; `next.config.ts` keeps `loader: 'custom'`.
+- Modern clients receive WebP rather than cold AVIF. JPEG remains the fallback.
+- The loader emits quality 75 and a reduced, explicit responsive-width set covering the actual
+  optimized call sites; the route retains the shipped `[60, 75, 90]` compatibility ladder.
+- A cold real-listing WebP variant is materially faster than the recorded AVIF baseline, measured by
+  Story 1.3. Do not invent a sub-second threshold if the live result does not support one.
 - Responses still carry `public, max-age=31536000, immutable`.
-- **The security contract survives the move:** the old route's host allow-list, `redirect:'error'`
-  and fixed `QUALITY_LADDER = [60, 75, 90]` are reproduced at the edge. Prove it — a transform
-  request naming a **disallowed** host must fail, tested explicitly, not assumed.
-- `e2e/perf-budget.spec.ts`'s `/api/img` assertions are rewritten to the new target (they currently
-  hard-assert `\/api\/img\?` and `app/api/img/route.ts` internals — those tests must change *with*
-  the code, not be deleted).
+- **The security contract is unchanged:** HTTPS allowed-host resolution, `redirect:'error'`, image
+  content-type validation, streamed 25 MB cap and uncacheable errors stay in `app/api/img/route.ts`.
+- `e2e/perf-budget.spec.ts` keeps and sharpens its `/api/img` assertions; a disallowed host still fails.
 - `lib/r2.ts`, `ingestImageUrls()` and `lib/supply-import.ts` are **untouched**.
+- No Cloudflare Worker, Images product, new permission, dependency or prewarm write path is added.
 
-**Rabbit hole, patched in advance:** confirm the live zone's plan and the transformation quota
-**before** flipping the loader. On the free tier, transforms past 5,000/month fail with error `9422`
-rather than billing — which breaks images silently instead of expensively. If the zone is on the free
-tier, that is a decision for the product owner, not a workaround for the builder.
+**Future option, explicitly not built:** a Free-tier Worker could expose a small named-variant map and
+keep current volume below the 5,000-new-transform allowance. It still introduces a new deployed
+execution surface and permission set; the product owner chose the origin optimization instead.
 
 **Risk:** low — degrades gracefully (old URLs keep serving until the deploy flips the loader), no
 money/auth path.
@@ -95,8 +91,8 @@ assumed.
 **Risk:** low — a read-only reporting script, no product surface.
 
 ## Sprint QA
-- **api spec(s):** 1.2 → `e2e/perf-budget.spec.ts` (rewrite the `/api/img` assertions to the edge
-  target; add the disallowed-host rejection check). 1.1 → `infra/gcp/test/deploy-invariants.test.js`
+- **api spec(s):** 1.2 → `e2e/perf-budget.spec.ts` (keep the `/api/img` security assertions and add
+  WebP/default-quality/width-cardinality coverage). 1.1 → `infra/gcp/test/deploy-invariants-frontend.test.js`
   (frontend). 1.3 → a pure-logic spec on the probe's parse/format seam — extract it so the spec needs
   no network, per AGENTS *keep a pure seam*.
 - **browser smoke owed:** yes, to the product owner — the cold-image-variant check and the
@@ -107,19 +103,19 @@ assumed.
 ## Sprint 1 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
 
-1. Open https://miyagisanchez.com/mx/s/piezas-unicas in a private window and scroll to the bottom of
-   the catalog.
-   → Every product photo is already there as you reach it. No grey boxes filling in behind you.
-2. Right-click any product photo → "Open image in new tab" and look at the URL.
-   → It contains `/cdn-cgi/image/`. It does **not** contain `/api/img`.
-3. Reload that image tab once.
-   → It appears instantly (it is now an edge cache hit).
+1. Open https://miyagisanchez.com/mx and inspect one optimized catalog image request.
+   → Its URL still contains `/api/img`; its response type is WebP in a modern browser and it keeps
+   `public, max-age=31536000, immutable`.
+2. Reload that image request once.
+   → Cloudflare reports `HIT`; the source URL, size cap and host restrictions are unchanged.
+3. Open https://miyagisanchez.com/mx/s/piezas-unicas and its linked PDP.
+   → Their existing direct R2 photos still render; this sprint does not reroute those surfaces.
 4. Leave the browser closed for at least an hour, then open
    https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW cold.
    → The page renders in roughly the same time as it does on a second visit. There is no multi-second
    first-of-the-day pause.
 5. Ask the builder for the `perf-probe` before/after table.
-   → Cold image variant is under 1 second (was 4–22 s), and the PDP's cold TTFB is in the same band
-   as its warm TTFB.
+   → The cold WebP variant is materially faster than the recorded cold AVIF baseline, and the PDP's
+   cold TTFB is in the same band as its warm TTFB.
 
 If any step fails, note the step number + what you saw — that's the bug report.

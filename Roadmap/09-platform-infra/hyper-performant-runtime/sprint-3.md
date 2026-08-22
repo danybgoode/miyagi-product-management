@@ -6,10 +6,11 @@
 > fails if that ever regresses. **Archetype: Sweeper** — acceptance is *less code, same behaviour, no
 > regressions*, and every removal ships with a guard against its return.
 
-**Baseline (live build `3G3h-WqNxT8DegPaaMSVJ`, 2026-08-20):** 4.3 MB of `static/chunks`; largest
-chunk **309 KB containing Sentry** (with Session Replay), then **242 KB** carrying `xlsx` +
-`mercadopago`, **235 KB** carrying `@supabase/supabase-js`, and three more ≥180 KB. **212 of 443**
-components are `'use client'` — 48,815 lines. Story 1.3's probe supplies the before/after.
+**Architecture-lock baseline (frontend `origin/main` `0eb9985`, 2026-08-22):** 4.3 MB of
+`.next/static/chunks`; largest chunk **315,519 bytes containing Sentry Replay** and loaded by `/mx`.
+The route manifests for `/mx`, `/mx/l/[id]` and `/mx/s/[slug]` contain none of `xlsx`, `jszip`,
+`mercadopago` or `@dnd-kit`; the earlier aggregate-chunk attribution mistook build output for a
+route dependency. Story 1.3 supplies the wire baseline and Story 3.4 guards the actual route graph.
 
 ## Stories
 
@@ -38,29 +39,25 @@ page load.
 
 ---
 
-### Story 3.2 — Heavy vendor deps load where they're used, not everywhere
+### Story 3.2 — The existing vendor boundary becomes enforceable
 **As a** buyer browsing a shop, **I want** not to download a spreadsheet parser, **so that** the page
 is about the shop.
 
-**Context:** `xlsx` (bulk catalog import), `jszip`, `mercadopago` (checkout) and `@dnd-kit/core`
-(seller catalog drag-ordering) are sitting in chunks that buyer pages pull. These belong to
-`/shop/manage/import`, `/shop/manage/catalogo`, `/admin/*` and `/checkout` — not to `/mx`,
-`/l/[id]` or `/s/[slug]`. The pattern is already in the codebase: `app/components/clerk-lazy/*`
-wraps Clerk's UI components in `next/dynamic(..., { ssr: false })` for exactly this reason
-(`hyper-performant-website` S2.2 — a **runtime** render conditional is not a build-time split, which
-is why static imports kept shipping the bundle to everyone).
+**Architecture-lock correction (D14):** built Turbopack client-reference manifests prove the named
+packages already do **not** ship to buyer routes. `xlsx`, `jszip` and `mercadopago` are server-only;
+`@dnd-kit` appears only on `/admin/seleccion`. Moving them would manufacture checkout/payment risk
+without changing a buyer byte. The story is now the missing regression guard.
 
 **Acceptance:**
-- `xlsx`, `jszip`, `mercadopago` and `@dnd-kit` appear in **no chunk loaded by** `/mx`,
-  `/l/[id]` or `/s/[slug]` — asserted against the built output, not the import graph by eye.
-- The surfaces that need them still work: bulk import parses a real `.xlsx`; catalog drag-reorder
-  still reorders; **checkout still completes a real test-mode payment**.
-- A spec guards the separation so a future static import re-fattens nothing silently.
+- A spec resolves the built client-reference manifests for `/mx`, `/mx/l/[id]` and `/mx/s/[slug]`
+  and fails if any of `xlsx`, `jszip`, `mercadopago` or `@dnd-kit` enters their chunk graph.
+- The guard fails loudly when the build artifact or a route manifest is missing; unavailable is not
+  reported as an empty, passing dependency set.
+- No named vendor import, checkout file, payment file, admin implementation or import implementation
+  changes. The current boundary is the accepted behavior.
 
-**Risk:** low **on the buyer side**, but the `mercadopago` move touches the **money path** —
-its verification is a real test-mode checkout, owed to the product owner by name (step 5 below). If
-the split turns out to require restructuring the checkout client, **stop and hand back** rather than
-refactoring checkout inside a perf sprint.
+**Risk:** low — test-only. If the guard suggests a real buyer-route vendor leak after all, stop and
+hand back; do not expand into checkout or payment restructuring.
 
 ---
 
@@ -81,7 +78,7 @@ toggle.
 | `app/(shell)/l/[id]/CollapsibleDescription.tsx` | 61 | `<details>` / `hidden="until-found"` |
 | `app/(shell)/l/[id]/ExcerptPanel.tsx` | 72 | `<details>` |
 | `app/components/CuentaMenu.tsx` | 161 | `popover` + CSS anchor positioning |
-| `app/components/AIAgentButton.tsx` | 216 | `popover` or `<dialog>` |
+| `app/components/AIAgentButton.tsx` | 216 | native `<dialog>` for modality; client context/copy logic stays |
 
 **Acceptance:**
 - Each converted surface behaves identically or better, including keyboard and screen-reader access
@@ -94,6 +91,8 @@ toggle.
   fallback position, never be the sole positioning mechanism. Its cross-browser support is still
   uneven, and this is the one place the reference guide runs ahead of what ships safely today.
 - Net client-side lines removed is stated in the PR body (Sweeper acceptance).
+- `AIAgentButton` remains a client component: HTML replaces modal mechanics, not its agent-context,
+  clipboard or handoff behavior.
 
 **Explicitly out:** `app/(shell)/l/[id]/Gallery.tsx` (452 L) — the PDP lightbox has its own open seed
 (`00-ideas/seeds/pdp-lightbox-close-button-occluded.md`) and a shipped epic behind it; converting it
@@ -114,9 +113,9 @@ scoped that way because the first version of its budget measured same-origin bun
 per-route budget the original attempt couldn't land, done correctly.
 
 **Acceptance:**
-- The gate fails when a route's client-JS **transfer** size (compressed, over the wire) exceeds its
-  budget. *(LEARNINGS, 2026-07-18: a perf/transfer budget guard must measure what it polices —
-  Playwright's `body()` returns decompressed bytes.)*
+- The gate resolves the built route-to-chunk graph and fails when the Brotli-compressed bytes of its
+  unique client JS exceed budget. *(LEARNINGS, 2026-07-18: a perf/transfer budget guard must measure
+  what it polices — Playwright's `body()` returns decompressed bytes.)*
 - Budgets are set from Story 1.3's post-diet measurement and each is committed **with the number that
   set it**, so a future reader knows whether a failure is a regression or a stale budget.
 - Covers at minimum `/mx`, `/l/[id]` and `/s/[slug]`.
@@ -128,12 +127,11 @@ per-route budget the original attempt couldn't land, done correctly.
 **Risk:** low — test-only.
 
 ## Sprint QA
-- **api spec(s):** 3.1 → a built-output assertion that no Replay code ships. 3.2 → a chunk-composition
+- **api spec(s):** 3.1 → a built-output assertion that no Replay code ships. 3.2 → a manifest-composition
   spec per buyer route. 3.3 → one spec per converted surface (house convention: one concern per spec
   file, not one giant spec). 3.4 → extends `e2e/perf-budget.spec.ts`.
-- **browser smoke owed:** yes, to the product owner — the signed-in homepage (step 1), the converted
-  surfaces (steps 2–3), and **a real test-mode checkout (step 5), which is the money path and is owed
-  by name**; an automated browser smoke cannot fully cover it.
+- **browser smoke owed:** yes, to Daniel — the signed-in homepage (step 1) and native interactions
+  (steps 2–4). No payment smoke is owed: D14 proves no money-path code moves.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 - **Coordination:** check for in-flight PRs on `app/components/*` before starting — S3.3 touches
   shared buyer components.
@@ -151,16 +149,14 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
 3. Click your account menu in the header, then press `Esc`.
    → It opens under the button and `Esc` closes it. Tab into it with the keyboard → focus moves
    through the items in order.
-4. Open https://miyagisanchez.com/shop/manage/import and import a real `.xlsx` catalog file.
-   → It parses and imports exactly as before. (This proves the spreadsheet parser still loads where
-   it is actually needed.)
-5. **(money path — owed to the product owner by name)** Add an item to the cart from
-   https://miyagisanchez.com/mx/s/piezas-unicas, check out as a guest, and pay with a Stripe test
-   card `4242 4242 4242 4242`. Then repeat with a Mercado Pago test credential.
-   → Both complete. The order confirmation arrives and the seller's order screen shows the order.
+4. Open the AI handoff button, press `Esc`, reopen it, copy the prompt and continue to the agent.
+   → Native dialog focus closes/restores correctly and the context/copy/handoff behavior is unchanged.
+5. Ask the builder for the built-manifest vendor report.
+   → `/mx`, `/mx/l/[id]` and `/mx/s/[slug]` contain none of the four named vendor packages; missing
+   manifests would fail the command instead of reading as zero.
 6. Ask the builder for the before/after `perf-probe` table.
    → Client-JS transfer on `/mx`, `/l/[id]` and `/s/[slug]` is materially lower than the 2026-08-20
    baseline, and each route now has a committed budget.
 
-If any step fails, note the step number + what you saw — that's the bug report. **Step 5 is the money
-path: if either payment provider fails, stop the merge.**
+If any step fails, note the step number + what you saw — that's the bug report. Checkout and payment
+verification are deliberately absent because this sprint's locked diff cannot touch them.
