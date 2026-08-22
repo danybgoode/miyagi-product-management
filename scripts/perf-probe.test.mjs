@@ -47,6 +47,25 @@ test('rawRequest rejects a response-stream failure instead of crashing or hangin
   await assert.rejects(rawRequest('https://example.test/partial', {}, { transport }), /forced response failure/)
 })
 
+test('rawRequest forwards protocol-specific injected transports', async () => {
+  let called = false
+  const httpRequest = (_url, _options, onResponse) => {
+    called = true
+    const request = new EventEmitter()
+    request.setTimeout = () => {}
+    request.end = () => {
+      const response = new EventEmitter()
+      response.statusCode = 200
+      response.headers = { 'content-type': 'text/plain' }
+      onResponse(response)
+      queueMicrotask(() => response.emit('end'))
+    }
+    return request
+  }
+  await rawRequest('http://unused.test/fixture', {}, { httpRequest })
+  assert.equal(called, true)
+})
+
 test('extractClientScriptUrls resolves and de-duplicates only Next client chunks', () => {
   const html = '<script src="/_next/static/a.js"></script><script src="/_next/static/a.js"></script><script src="/other.js"></script>'
   assert.deepEqual(extractClientScriptUrls(html, 'https://miyagisanchez.com/mx'), ['https://miyagisanchez.com/_next/static/a.js'])
@@ -122,6 +141,14 @@ test('a fixed-format image returning the wrong type is absent', async () => {
   assert.equal(result.content_type.state, 'absent')
 })
 
+test('a fixed-format image accepts legal Content-Type parameters', async () => {
+  const result = await measureFixture({ id: 'image', label: 'image', url: 'https://example.test/api/img?url=x&w=640&q=75&f=webp&v=2', image: true }, {
+    request: async (url) => ({ url, statusCode: 200, bytes: 10, body: Buffer.alloc(10), ttfbMs: 2, headers: { 'content-type': 'image/webp; charset=binary' } }),
+  })
+  assert.equal(result.status, 'present')
+  assert.equal(result.content_type.value, 'image/webp')
+})
+
 test('a legacy image returning HTML is absent even without a fixed-format expectation', async () => {
   const result = await measureFixture({ id: 'image', label: 'image', url: 'https://example.test/api/img?url=x&w=640&q=75', image: true }, {
     request: async (url) => ({ url, statusCode: 200, bytes: 10, body: Buffer.from('<html>'), ttfbMs: 2, headers: { 'content-type': 'text/html' } }),
@@ -160,4 +187,5 @@ test('--dry-run is fully read-only: it returns fixtures without invoking the inj
   const report = await runProbe({ dryRun: true }, { request: async () => { calls += 1 }, now: () => new Date('2026-08-22T00:00:00.000Z') })
   assert.equal(report.dry_run, true)
   assert.equal(calls, 0)
+  assert.equal(probeExitCode(report), 0)
 })

@@ -72,17 +72,17 @@ function metric(state, value, detail) {
   return { state, ...(value === undefined ? {} : { value }), ...(detail ? { detail } : {}) }
 }
 
-export function requestTransport(url, deps = { httpRequest: http.request, httpsRequest: https.request }) {
+export function requestTransport(url, deps = {}) {
   const protocol = new URL(url).protocol
-  if (protocol === 'http:') return deps.httpRequest
-  if (protocol === 'https:') return deps.httpsRequest
+  if (protocol === 'http:') return deps.httpRequest ?? http.request
+  if (protocol === 'https:') return deps.httpsRequest ?? https.request
   throw new Error(`unsupported URL protocol '${protocol}'`)
 }
 
 export function rawRequest(url, { headers = {}, timeoutMs = 30_000 } = {}, deps = {}) {
   return new Promise((resolve, reject) => {
     const startedAt = process.hrtime.bigint()
-    const transport = deps.transport ?? requestTransport(url)
+    const transport = deps.transport ?? requestTransport(url, deps)
     const req = transport(url, {
       method: 'GET',
       headers: {
@@ -150,7 +150,9 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
       cf_cache_status: cache ? metric('present', String(cache)) : metric('absent'),
       total_transfer_bytes: metric('present', response.bytes),
       client_js_transfer_bytes: metric('absent'),
-      content_type: response.headers['content-type'] ? metric('present', String(response.headers['content-type'])) : metric('absent'),
+      content_type: response.headers['content-type']
+        ? metric('present', String(response.headers['content-type']).split(';', 1)[0].trim().toLowerCase())
+        : metric('absent'),
     }
 
     if (fixture.image) {
@@ -230,6 +232,7 @@ export async function runProbe(options, deps = { request: rawRequest, now: () =>
 // but either means this baseline did not observe every locked fixture and must
 // never exit green.
 export function probeExitCode(report) {
+  if (report.dry_run) return 0
   const revision = report.deployed_revision
   const identifiedRevision = revision?.state === 'present' && typeof revision.value === 'string' && revision.value.trim()
   return report.unavailable || report.absent || !identifiedRevision ? 1 : 0
