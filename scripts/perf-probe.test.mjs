@@ -69,6 +69,7 @@ test('rawRequest forwards protocol-specific injected transports', async () => {
 test('extractClientScriptUrls resolves and de-duplicates only Next client chunks', () => {
   const html = '<script src="/_next/static/a.js"></script><script src="/_next/static/a.js"></script><script src="/other.js"></script>'
   assert.deepEqual(extractClientScriptUrls(html, 'https://miyagisanchez.com/mx'), ['https://miyagisanchez.com/_next/static/a.js'])
+  assert.deepEqual(extractClientScriptUrls("<script src='/_next/static/b.js' id=\"single-quoted\"></script>", 'https://miyagisanchez.com/mx'), ['https://miyagisanchez.com/_next/static/b.js'])
 })
 
 test('decodeBodyForInspection parses compressed HTML without changing wire-byte measurement', () => {
@@ -147,6 +148,26 @@ test('a fixed-format image accepts legal Content-Type parameters', async () => {
   })
   assert.equal(result.status, 'present')
   assert.equal(result.content_type.value, 'image/webp')
+})
+
+test('measureFixture forwards protocol-specific transport dependencies to rawRequest', async () => {
+  const httpRequest = (_url, _options, onResponse) => {
+    const request = new EventEmitter()
+    request.setTimeout = () => {}
+    request.end = () => {
+      const response = new EventEmitter()
+      response.statusCode = 200
+      response.headers = { 'content-type': 'image/webp' }
+      onResponse(response)
+      queueMicrotask(() => {
+        response.emit('data', Buffer.alloc(10))
+        response.emit('end')
+      })
+    }
+    return request
+  }
+  const result = await measureFixture({ id: 'image', label: 'image', url: 'http://unused.test/api/img?url=x&w=640&q=75&f=webp&v=2', image: true }, { httpRequest })
+  assert.equal(result.status, 'present')
 })
 
 test('a legacy image returning HTML is absent even without a fixed-format expectation', async () => {

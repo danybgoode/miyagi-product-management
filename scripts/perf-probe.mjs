@@ -9,6 +9,7 @@
 
 import http from 'node:http'
 import https from 'node:https'
+import { pathToFileURL } from 'node:url'
 import { brotliDecompressSync, gunzipSync, inflateSync } from 'node:zlib'
 
 export const DEFAULT_BASE_URL = 'https://miyagisanchez.com'
@@ -135,7 +136,7 @@ export function decodeBodyForInspection(body, contentEncoding = '') {
 export async function measureFixture(fixture, deps = { request: rawRequest }) {
   const request = deps.request ?? rawRequest
   try {
-    const response = await request(fixture.url, fixture.image ? { headers: { accept: MODERN_IMAGE_ACCEPT } } : {})
+    const response = await request(fixture.url, fixture.image ? { headers: { accept: MODERN_IMAGE_ACCEPT } } : {}, deps)
     const cache = response.headers['cf-cache-status']
     const result = {
       id: fixture.id,
@@ -184,7 +185,7 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
       return result
     }
     try {
-      const transfers = await Promise.all(scripts.map((src) => request(src)))
+      const transfers = await Promise.all(scripts.map((src) => request(src, {}, deps)))
       const failed = transfers.find((item) => item.statusCode < 200 || item.statusCode >= 300)
       if (failed) {
         result.client_js_transfer_bytes = metric('absent', undefined, `client script returned HTTP ${failed.statusCode}: ${failed.url}`)
@@ -278,4 +279,4 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main()
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main()
