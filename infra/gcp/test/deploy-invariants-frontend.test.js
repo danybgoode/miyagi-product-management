@@ -67,6 +67,15 @@ test('deploy-frontend.sh: liveness probe on /api/health exists', () => {
   assert.match(p, /httpGet\.path=\/api\/health/, 'liveness probe must hit /api/health')
 })
 
+// D3 — a scale-to-zero revision loses both its Cloud Run process and the
+// per-container Next incremental cache. Keep this assertion next to the one
+// authoritative scaling source rather than attempting to infer live config
+// from an image-only Cloud Build deploy.
+test('deploy-frontend.sh: keeps one warm frontend instance', () => {
+  assert.match(deploySrc, /--min-instances=1\b/, 'miyagi-web must keep min-instances=1')
+  assert.doesNotMatch(deploySrc, /--min-instances=0\b/, 'scale-to-zero violates the D3 warm-instance contract')
+})
+
 // --- no VPC connector invariant ----------------------------------------------
 // The frontend never talks to Cloud SQL/Redis directly — a future edit adding
 // --vpc-connector would silently widen this service's network reach for no

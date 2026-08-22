@@ -84,11 +84,14 @@ else
 fi
 
 echo "▶ Deploying ${SERVICE_WEB}…"
+# D3 — miyagi-web must retain one warm instance. This full-config deploy
+# script is the sole scaling authority; cloudbuild.yaml stays image-only so
+# normal image deploys preserve this costed runtime contract.
 gcloud run deploy "$SERVICE_WEB" \
   --image="$IMAGE" \
   --region="$REGION" \
   --service-account="$RUN_SA_EMAIL" \
-  --min-instances=0 \
+  --min-instances=1 \
   --max-instances=4 \
   --cpu=1 \
   --memory=1Gi \
