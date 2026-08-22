@@ -163,8 +163,8 @@ replace any conflicting scaffold language below or in a sprint file.
     no-`f` fixture; the orchestrator supplies the versioned URL explicitly only after the new route is
     live. Fixed keys require canonical source/numeric spelling and import their emitted width set once;
     both fixed and legacy keys reject nested source queries because the allow-listed public-image
-    contract has none and R2 ignores arbitrary query aliases. The live catalog check found 43 absolute
-    R2 image URLs and zero with a query; its other 97 image candidates are pre-existing protocol-relative
+    contract has none and R2 ignores arbitrary query aliases. A complete three-page live catalog sweep
+    found 115 listings, 153 absolute R2 image URLs and zero R2 URLs with a query; its other 97 image candidates are pre-existing protocol-relative
     Shopify URLs the route already rejects. Legacy keys retain every old Next-emitted width and map
     through the shipped transform ladder, so stale HTML does not break. Image rollback is staged: revert loader/config emission first, retain the route's `f`/`v`
     compatibility until stale HTML can no longer request it, then remove that compatibility in a later
