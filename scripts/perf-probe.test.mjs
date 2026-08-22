@@ -8,7 +8,7 @@ test('fixtureUrls locks the marketplace symptoms and an explicitly configurable 
   assert.deepEqual(fixtures.map((fixture) => fixture.id), ['home', 'pdp', 'shop', 'image'])
   assert.equal(fixtures[1].url, 'https://preview.example/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW')
   assert.equal(fixtures[3].url, 'https://preview.example/api/img?url=x&w=640&q=75')
-  assert.match(DEFAULT_IMAGE_URL, /[?&]f=webp(?:&|$)/)
+  assert.doesNotMatch(DEFAULT_IMAGE_URL, /[?&]f=/, 'the default must be safe to run against pre-deploy production')
 })
 
 test('parseArgs accepts a deployed revision and rejects incomplete flags', () => {
@@ -70,6 +70,29 @@ test('a 3xx first hop is absent, never a false low-byte successful fixture', asy
   assert.equal(result.status, 'absent')
   assert.equal(result.total_transfer_bytes.value, 12)
   assert.equal(probeExitCode({ unavailable: 0, absent: 1 }), 1)
+})
+
+test('a missing client chunk is absent and cannot produce a green partial JS total', async () => {
+  const response = (url, statusCode, bytes, body, headers = {}) => ({ url, statusCode, bytes, body: Buffer.from(body), ttfbMs: 2, headers })
+  const result = await measureFixture({ id: 'home', label: 'home', url: 'https://example.test/mx' }, {
+    request: async (url) => url.endsWith('/mx')
+      ? response(url, 200, 100, '<script src="/_next/static/missing.js"></script>', { 'content-type': 'text/html' })
+      : response(url, 404, 9, 'not found'),
+  })
+  assert.equal(result.status, 'absent')
+  assert.equal(result.client_js_transfer_bytes.state, 'absent')
+})
+
+test('a fixed-format image returning the wrong type is absent', async () => {
+  const result = await measureFixture({ id: 'image', label: 'image', url: 'https://example.test/api/img?url=x&w=640&q=75&f=webp&v=2', image: true }, {
+    request: async (url) => ({ url, statusCode: 200, bytes: 10, body: Buffer.alloc(10), ttfbMs: 2, headers: { 'content-type': 'image/avif' } }),
+  })
+  assert.equal(result.status, 'absent')
+  assert.equal(result.content_type.state, 'absent')
+})
+
+test('a probe without an identified deployed revision exits nonzero', () => {
+  assert.equal(probeExitCode({ unavailable: 0, absent: 0, deployed_revision: { state: 'unavailable' } }), 1)
 })
 
 test('--dry-run is fully read-only: it returns fixtures without invoking the injected network reader', async () => {

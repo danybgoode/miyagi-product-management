@@ -14,8 +14,11 @@ export const DEFAULT_BASE_URL = 'https://miyagisanchez.com'
 // 160px is a real route-ladder variant for the recorded listing, deliberately
 // separate from the homepage's already-warm 640px candidate. It makes the
 // baseline exercise an origin encode; callers can replace only this fixture
-// with --image-url when they need a different real listing/variant.
-export const DEFAULT_IMAGE_URL = `${DEFAULT_BASE_URL}/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75&f=webp`
+// with --image-url when they need a different real listing/variant. Keep this
+// default on the already-shipped legacy key: production before PR #416 ignores
+// `f`, so publishing a future fixed-format key here would let a pre-deploy probe
+// cache AVIF forever under a URL the new loader later promises is WebP.
+export const DEFAULT_IMAGE_URL = `${DEFAULT_BASE_URL}/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75`
 
 const PRODUCT_ID = 'prod_01M0JCJC0FKNEFYK81HSVD72GW'
 const SHOP_SLUG = 'piezas-unicas'
@@ -135,7 +138,15 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
       content_type: response.headers['content-type'] ? metric('present', String(response.headers['content-type'])) : metric('absent'),
     }
 
-    if (fixture.image) return result
+    if (fixture.image) {
+      const requestedFormat = new URL(fixture.url).searchParams.get('f')
+      const expectedType = requestedFormat ? `image/${requestedFormat === 'jpeg' ? 'jpeg' : requestedFormat}` : null
+      if (expectedType && result.content_type.value !== expectedType) {
+        result.status = 'absent'
+        result.content_type = metric('absent', result.content_type.value, `expected ${expectedType}`)
+      }
+      return result
+    }
     let html
     try {
       html = decodeBodyForInspection(response.body, response.headers['content-encoding'])
@@ -148,6 +159,12 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
     if (scripts.length === 0) return result
     try {
       const transfers = await Promise.all(scripts.map((src) => request(src)))
+      const failed = transfers.find((item) => item.statusCode < 200 || item.statusCode >= 300)
+      if (failed) {
+        result.client_js_transfer_bytes = metric('absent', undefined, `client script returned HTTP ${failed.statusCode}: ${failed.url}`)
+        result.status = 'absent'
+        return result
+      }
       result.client_js_transfer_bytes = metric('present', transfers.reduce((total, item) => total + item.bytes, 0))
     } catch (error) {
       result.client_js_transfer_bytes = metric('unavailable', undefined, error instanceof Error ? error.message : String(error))
@@ -188,7 +205,7 @@ export async function runProbe(options, deps = { request: rawRequest, now: () =>
 // but either means this baseline did not observe every locked fixture and must
 // never exit green.
 export function probeExitCode(report) {
-  return report.unavailable || report.absent ? 1 : 0
+  return report.unavailable || report.absent || report.deployed_revision?.state !== 'present' ? 1 : 0
 }
 
 export function formatReport(report) {
