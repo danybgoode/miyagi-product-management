@@ -40,11 +40,15 @@ catalog feels instant instead of loading in.
 `/cdn-cgi/image/*` returns 404. More importantly, the critical shop and PDP surfaces use direct R2
 `<img>` URLs and never call `/api/img`; the original story attributed their latency to a proxy they do
 not use. The proxy remains valuable for the handful of optimized `next/image` call sites, but its cold
-AVIF variants take 4–22 seconds. Keep its security boundary and make those variants cheaper.
+AVIF variants had an older 4–22-second anecdote. Story 1.3's locked live fixture measured a real
+first-observed AVIF MISS at **1,266.1 ms / 13,071 transfer bytes** on deployed `0eb9985`; that dated
+measurement supersedes the anecdote for this fixture and is the honest comparison point.
 
 **Acceptance:**
 - `lib/image-loader.ts` still emits `/api/img?...`; `next.config.ts` keeps `loader: 'custom'`.
-- Modern clients receive WebP rather than cold AVIF. JPEG remains the fallback.
+- Loader URLs include the fixed cache-key token `f=webp`; fixed-format responses omit `Vary: Accept`,
+  so Cloudflare cannot replay an AVIF cache entry to a WebP request. Unknown formats fail 400.
+- Legacy URLs without `f` retain their existing WebP/AVIF/JPEG Accept negotiation for compatibility.
 - The loader emits quality 75 and a reduced, explicit responsive-width set covering the actual
   optimized call sites; the route retains the shipped `[60, 75, 90]` compatibility ladder.
 - A cold real-listing WebP variant is materially faster than the recorded AVIF baseline, measured by
@@ -53,6 +57,8 @@ AVIF variants take 4–22 seconds. Keep its security boundary and make those var
 - **The security contract is unchanged:** HTTPS allowed-host resolution, `redirect:'error'`, image
   content-type validation, streamed 25 MB cap and uncacheable errors stay in `app/api/img/route.ts`.
 - `e2e/perf-budget.spec.ts` keeps and sharpens its `/api/img` assertions; a disallowed host still fails.
+- A same-URL probe under conflicting Accept headers stays WebP on MISS then HIT, proving the cache key
+  carries the format rather than trusting Cloudflare's currently unconfigured `Vary` behavior.
 - `lib/r2.ts`, `ingestImageUrls()` and `lib/supply-import.ts` are **untouched**.
 - No Cloudflare Worker, Images product, new permission, dependency or prewarm write path is added.
 
@@ -87,6 +93,8 @@ assumed.
 - It **fails loudly** when a target is unreachable rather than printing a confident empty result, and
   distinguishes known-absent from could-not-check (AGENTS rules #5 and *three states, never two*).
 - A committed baseline run of the current production state, so S2 and S3 have a before.
+  The artifact is `s1-production-baseline-2026-08-22.json` and identifies frontend revision
+  `0eb9985c06356505ce7341ed345cbf0536264aa8`.
 
 **Risk:** low — a read-only reporting script, no product surface.
 

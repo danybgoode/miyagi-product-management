@@ -93,11 +93,13 @@ replace any conflicting scaffold language below or in a sprint file.
    `redirect: 'error'`, streamed 25 MB cap and immutable success response exactly once from that route.
 5. **D5 — Story 1.2 was scoped against the wrong image surface.** The critical shop/PDP components use
    raw R2 `<img>` URLs and never invoke `/api/img`; the proxy is used only by the handful of optimized
-   `next/image` call sites. It is not retired. Cold encoding is reduced by preferring WebP over AVIF,
-   emitting quality 75 from the loader (the route keeps the shipped compatibility ladder), and reducing
-   the generated width set to the responsive widths those call sites actually need. No R2 ingest or
-   storage code changes. A named-variant Cloudflare Worker is recorded as a future free-tier option,
-   not part of this build.
+   `next/image` call sites. It is not retired. A live two-request probe proved the current Cloudflare
+   rule ignores `Vary: Accept`: an AVIF MISS followed by a WebP-only request to the same URL returned
+   the cached AVIF HIT. Therefore the loader emits an explicit fixed `f=webp` cache-key parameter plus
+   quality 75; the route allow-lists that format and retains its no-format legacy negotiation for old
+   URLs. The generated width set is reduced to the responsive widths the optimized call sites need.
+   No R2 ingest/storage or edge-rule permission changes. A named-variant Cloudflare Worker is recorded
+   as a future free-tier option, not part of this build.
 6. **D6 — `scripts/perf-probe.mjs` measures bytes on the wire.** It uses a raw compressed HTTP read,
    not Fetch/Playwright `body()`, and reports TTFB, `cf-cache-status`, total transfer and route client-JS
    transfer with present/absent/unavailable states. Its live fixtures are marketplace URLs; a missing
@@ -160,6 +162,8 @@ replace any conflicting scaffold language below or in a sprint file.
   `/api/img`, use `/cdn-cgi/image`, add a Worker, add a dependency, or touch R2 ingest.
 - The image contract is imported from `app/api/img/route.ts`. The builder may narrow emitted variants
   but may not weaken host, redirect, streaming-cap, content-type or error-cache behavior.
+- Loader URLs must include `f=webp`; a fixed-format response does not emit `Vary: Accept`. Legacy URLs
+  without `f` keep the old allow-listed Accept negotiation and `Vary` behavior. An unknown `f` is 400.
 - Every new assertion is observed red once. The orchestrator, not the builder, changes live Cloud Run.
 
 ### Sprint 2 — Build contract (locked by the architect before the builder started)
