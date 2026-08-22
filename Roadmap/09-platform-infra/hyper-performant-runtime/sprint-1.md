@@ -7,7 +7,7 @@
 
 ## Stories
 
-### Story 1.1 — Frontend Cloud Run runs warm (`min-instances=1`)
+### Story 1.1 — Frontend Cloud Run runs warm (`min-instances=1`) ✅
 **As a** buyer arriving after a quiet hour, **I want** the first page to render as fast as the tenth,
 **so that** the site never feels dead on the first click of the day.
 
@@ -38,7 +38,7 @@ approved the cost at the scope gate (2026-08-22); he merges.
 
 ---
 
-### Story 1.2 — Free-tier image variants cost less at the origin
+### Story 1.2 — Free-tier image variants cost less at the origin ✅
 **As a** buyer scrolling a shop, **I want** product photos to appear immediately, **so that** the
 catalog feels instant instead of loading in.
 
@@ -97,7 +97,7 @@ money/auth path.
 
 ---
 
-### Story 1.3 — `scripts/perf-probe.mjs`, the measurement this epic reports against
+### Story 1.3 — `scripts/perf-probe.mjs`, the measurement this epic reports against ✅
 **As the** product owner, **I want** one command that prints what each page actually costs, **so that**
 every later claim in this epic is a number and not an impression.
 
@@ -150,13 +150,15 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
 3. Open https://miyagisanchez.com/mx/s/piezas-unicas and then
    https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW.
    → Their existing direct R2 photos still render; this sprint does not reroute those surfaces.
-4. Leave the browser closed for at least an hour, then open
+4. **Owed to Daniel (perception-only; no money/auth):** leave the browser closed for at least an hour,
+   then open
    https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW cold.
    → The page renders in roughly the same time as it does on a second visit. There is no multi-second
    first-of-the-day pause.
-5. Ask the builder for the `perf-probe` before/after table.
-   → The cold WebP variant is materially faster than the recorded cold AVIF baseline, and the PDP's
-   cold TTFB is in the same band as its warm TTFB.
+5. Ask the builder for the `perf-probe` table and same-width origin codec comparison.
+   → The record shows WebP's proven same-width origin reduction separately from the full-path edge
+   MISS. It labels PDP/shop TTFB as single observations and does not claim the unexecuted ≥1-hour
+   cold/warm comparison passed.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
