@@ -7,6 +7,7 @@
 // the wire (with an explicit Accept-Encoding), which is what a transfer budget
 // must police. It is a reporting read only: --dry-run makes no network call.
 
+import http from 'node:http'
 import https from 'node:https'
 import { brotliDecompressSync, gunzipSync, inflateSync } from 'node:zlib'
 
@@ -66,10 +67,17 @@ function metric(state, value, detail) {
   return { state, ...(value === undefined ? {} : { value }), ...(detail ? { detail } : {}) }
 }
 
+export function requestTransport(url, deps = { httpRequest: http.request, httpsRequest: https.request }) {
+  const protocol = new URL(url).protocol
+  if (protocol === 'http:') return deps.httpRequest
+  if (protocol === 'https:') return deps.httpsRequest
+  throw new Error(`unsupported URL protocol '${protocol}'`)
+}
+
 export function rawRequest(url, { headers = {}, timeoutMs = 30_000 } = {}) {
   return new Promise((resolve, reject) => {
     const startedAt = process.hrtime.bigint()
-    const req = https.request(url, {
+    const req = requestTransport(url)(url, {
       method: 'GET',
       headers: {
         // https.request does not auto-decompress. Explicitly negotiate normal

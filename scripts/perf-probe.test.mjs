@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { gzipSync } from 'node:zlib'
-import { DEFAULT_IMAGE_URL, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, runProbe } from './perf-probe.mjs'
+import { DEFAULT_IMAGE_URL, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, requestTransport, runProbe } from './perf-probe.mjs'
 
 test('fixtureUrls locks the marketplace symptoms and an explicitly configurable real image fixture', () => {
   const fixtures = fixtureUrls({ baseUrl: 'https://preview.example', imageUrl: 'https://preview.example/api/img?url=x&w=640&q=75' })
@@ -14,6 +14,14 @@ test('fixtureUrls locks the marketplace symptoms and an explicitly configurable 
 test('parseArgs accepts a deployed revision and rejects incomplete flags', () => {
   assert.deepEqual(parseArgs(['--revision', 'abc123', '--json']).revision, 'abc123')
   assert.throws(() => parseArgs(['--image-url']), /requires a value/)
+})
+
+test('raw transport supports local HTTP probes without attempting a TLS handshake', () => {
+  const httpRequest = () => 'http'
+  const httpsRequest = () => 'https'
+  assert.equal(requestTransport('http://127.0.0.1:3000/mx', { httpRequest, httpsRequest }), httpRequest)
+  assert.equal(requestTransport('https://miyagisanchez.com/mx', { httpRequest, httpsRequest }), httpsRequest)
+  assert.throws(() => requestTransport('ftp://example.test/file', { httpRequest, httpsRequest }), /unsupported URL protocol/)
 })
 
 test('extractClientScriptUrls resolves and de-duplicates only Next client chunks', () => {
