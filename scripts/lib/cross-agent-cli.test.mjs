@@ -473,8 +473,8 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // warning into that same "FAILED" line, and this suite is `scripts/lib/*.test.mjs` — running only
 // `node --test scripts/*.test.mjs` reports a clean 159/0 and hides the real failure. Run both
 // globs, exactly as .githooks/pre-commit does.
-test('AGY_PINNED bumped to the verified 1.1.17 (guards the deliberate bump)', () => {
-  // 1.1.16 → 1.1.17 (2026-08-22), verified by `agy-doctor --fix`: help contract
+test('AGY_PINNED bumped to the verified 1.1.18 (guards the deliberate bump)', () => {
+  // 1.1.17 → 1.1.18 (2026-08-22), verified by `agy-doctor --fix`: help contract
   // intact, both slugs still listed by `agy models`, primary model answered a
   // live probe. agy then reviewed PR #405 normally and returned three real
   // findings, which is the end-to-end confirmation the probe alone cannot give.
@@ -487,7 +487,7 @@ test('AGY_PINNED bumped to the verified 1.1.17 (guards the deliberate bump)', ()
   // 1.1.13 → 1.1.15 (2026-08-19) before it: the fallback reported provider
   // capacity trouble, now a distinct verdict from an interface break — see
   // UPSTREAM_UNAVAILABLE.
-  assert.equal(AGY_PINNED, '1.1.17');
+  assert.equal(AGY_PINNED, '1.1.18');
   assert.equal(typeof AGY_MODEL, 'string');
   assert.ok(AGY_MODEL.length > 0, 'AGY_MODEL must default to a non-empty model name');
   assert.ok(AGY_FALLBACK_MODEL.length > 0, 'AGY_FALLBACK_MODEL must default to a non-empty model name');
