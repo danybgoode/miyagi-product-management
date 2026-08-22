@@ -1,6 +1,6 @@
 # Hyper-performant runtime — Sprint 2: Edge — make the public shell cacheable
 
-**Status:** ⬜ not started
+**Status:** 🟦 in progress — architecture deviations D19–D20 locked before build
 
 > **Sprint goal:** a PDP → shop click stops being an origin render. The public read tree honours the
 > `revalidate` windows it has claimed since the static-shell split, and Cloudflare can finally cache
@@ -36,12 +36,18 @@ internal middleware rewrite into a channel/path-parameterized public renderer, a
 preview renderer, and one no-store PDP viewer-state island. `middleware.ts` already resolves the
 channel; it passes that decision as path data rather than a trusted client header read in the renderer.
 
+**Second code-verified correction (D19):** request reads also exist in shop-presentation context and
+owned-host subpages. `/us/**` is excluded; unprefixed `/s/**` and `/l/**` keep their shipped redirect.
+Only an empty query enters the public renderer. Next requires literal `revalidate` exports, so the
+guard imports `lib/cache-policy.ts` and proves those literals match instead of exporting a non-literal.
+
 **Acceptance:**
 - The internal public renderer's complete layout/page chain contains no `headers()`, `cookies()`,
   Clerk server read or owner preview overlay. Parameterized build glyphs are recorded but are not used
   as a false binary proxy for ISR.
-- Origin responses on the original URLs carry the `lib/cache-policy.ts` window and a repeated request
-  proves an origin cache hit before the Cloudflare rule is enabled.
+- Origin responses on the original URLs carry the literal window guarded against
+  `lib/cache-policy.ts`, and a repeated request proves an origin cache hit before the Cloudflare rule
+  is enabled.
 - Public PDP HTML is viewer-neutral. One fixed-size client island settles once and supplies ownership,
   favorite, active-deal and buyer-prefill state; it never flashes an incorrect CTA and fails disabled.
 - `?preview=1` remains owner-authorized and `no-store` through `lib/shop-presentation/preview.ts`.
@@ -83,13 +89,16 @@ do not write a second script.**
   failure mode that would leak one seller's storefront onto another's domain; prove it, don't reason
   about it.
 - The origin contract marks unclaimed, preview-private and unresolved responses `no-store`; the edge
-  rule separately requires an empty query string, excludes those responses and respects origin.
+  rule separately requires an empty query string and uses Cloudflare's fail-closed
+  `bypass_by_default` origin-header mode, so a response missing cache policy is bypassed rather than
+  falling back to a default TTL.
   Query-bearing requests bypass the edge rule, and custom domains remain outside it.
 - A **preview-private** shop is not servable from cache under any included variant, proven against one
   of the four live non-activated anchors.
 - The provisioning script stays idempotent and filters by its own rule description, so a re-run
   preserves hand-added rules (the `cloudflare-waf-provision.mjs` shape).
-- An invariant test asserts the rule exists live, matching the existing `infra/gcp/test/` pattern.
+- The existing provisioner gains a read-only, three-state `--verify-only` live invariant. Missing or
+  drifted is a failure; an unavailable credential/API/network is named and never reported green.
 
 **Risk:** **high** — shared Cloudflare edge config on the platform zone. Announce; an independent
 reviewer merges only after the live rule and findings are verified.

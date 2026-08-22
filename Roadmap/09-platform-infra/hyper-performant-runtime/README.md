@@ -171,6 +171,29 @@ replace any conflicting scaffold language below or in a sprint file.
     compatibility until stale HTML can no longer request it, then remove that compatibility in a later
     deploy. A one-step full revert is not format-safe. This is a review-time correction to D5, recorded
     rather than hidden as builder discovery.
+19. **D19 — The shipped public-read shapes narrow the scaffold.** Current code proves the dynamic read
+    is not confined to `(shell)/layout.tsx`: shop presentation context and owned-host subpages read
+    headers, while the PDP reads Clerk, favorites and deal state. Privacy is therefore decided in
+    middleware before an empty-query public rewrite, importing `lib/claim.ts` and
+    `lib/preview-access.ts`; direct internal-prefix requests 404 before host resolution. `?preview=1`
+    enters the separate dynamic preview renderer, every other query stays on the existing dynamic
+    path, and `/us/**` is outside this epic. Existing unprefixed `/s/**` and `/l/**` compatibility URLs
+    keep their shipped redirect to `/mx/**` rather than becoming a second rendered URL. Next requires
+    a literal `revalidate` export, so public routes use the literal matching the relevant
+    `lib/cache-policy.ts` value and a deterministic guard imports that SSOT to reject drift; a
+    non-literal export is not an acceptable attempt to "import" the window.
+20. **D20 — Public HTML uses one fail-closed Free-plan Cache Rule.** The current zone already has the
+    homepage and `/api/img` rules, and the existing token has edited the same
+    `http_request_cache_settings` phase; no new permission, DNS, TLS, IAM, secret or dependency is
+    expected. Add one owned public-read rule using Free-plan `starts_with`/`ends_with`, an empty query,
+    apex marketplace/embed paths and `*.miyagisanchez.com` shop-root/PDP paths. It keeps Cloudflare's
+    default host-and-full-URL cache key and cannot match custom domains. Its edge TTL mode is
+    `bypass_by_default`, not the scaffold's looser `respect_origin`: Cloudflare documents that the
+    former follows an origin cache header but bypasses when it is absent, whereas the latter falls back
+    to Cloudflare defaults. Origin claim/privacy/no-store remains authoritative. The existing
+    provisioner gains a read-only `--verify-only` three-state live invariant; 401/403, 429/5xx,
+    non-JSON, DNS/network failure or a missing secret is UNAVAILABLE, never an empty green result. A
+    403 is a new permission gap and stops the run before any PUT.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 
@@ -186,18 +209,23 @@ replace any conflicting scaffold language below or in a sprint file.
 
 ### Sprint 2 — Build contract (locked by the architect before the builder started)
 
-- Cite D1–D2, D7–D12 and D17. This builder owns the internal public-read tree, middleware rewrite,
+- Cite D1–D2, D7–D12, D17 and D19–D20. This builder owns the internal public-read tree, middleware rewrite,
   viewer-state island/endpoint, cache-eligibility seam and their tests in the frontend; root owns the
   existing Cloudflare provisioner extension and live invariant.
-- Marketplace (`/mx/s/**`, `/mx/l/[id]` and their unprefixed canonical compatibility paths), entitled
-  subdomain shop/PDP, and `/embed/s/[slug]` use the public renderer. `?preview=1`, custom domains and all
-  authed routes remain dynamic. No diff under checkout, account, admin, messages or seller-management
-  route trees except a test import that names them as forbidden.
+- Marketplace (`/mx/s/**`, `/mx/l/[id]`), entitled subdomain shop/PDP, and empty-query
+  `/embed/s/[slug]` use the public renderer. Unprefixed compatibility paths retain their redirect;
+  `/us/**`, other query-bearing requests, `?preview=1`, custom domains and all authed routes remain
+  dynamic. No diff under checkout, account, admin, messages or seller-management route trees except a
+  test import that names them as forbidden.
 - Public HTML is viewer-neutral. The single island must reserve space, settle once, and fail disabled.
   Do not move authorization into Cloudflare or treat a flag as privacy.
-- Cache rules respect origin, require an empty query string, keep the default host-aware key and exclude
-  custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and a live preview-private 404;
-  `piezas-unicas.miyagisanchez.com` is not entitled and is not a valid subdomain fixture.
+- Public `revalidate` exports are literals; the guard imports `lib/cache-policy.ts` once and proves the
+  literals match. Direct internal-prefix requests 404 before host resolution, and middleware decides
+  claim/privacy eligibility before rewriting.
+- The single new Cache Rule uses `bypass_by_default`, requires an empty query string, keeps the default
+  host-aware key and excludes custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and
+  a live preview-private 404; `piezas-unicas.miyagisanchez.com` is not entitled and is not a valid
+  subdomain fixture. `--verify-only` is read-only and three-state.
 - The builder stops on any need for new Cloudflare permissions, DNS/TLS, a secret, checkout/auth policy
   change or a second failed implementation attempt.
 
