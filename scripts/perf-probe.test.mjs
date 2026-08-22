@@ -14,6 +14,8 @@ test('fixtureUrls locks the marketplace symptoms and an explicitly configurable 
 test('parseArgs accepts a deployed revision and rejects incomplete flags', () => {
   assert.deepEqual(parseArgs(['--revision', 'abc123', '--json']).revision, 'abc123')
   assert.throws(() => parseArgs(['--image-url']), /requires a value/)
+  assert.throws(() => parseArgs(['--revision', '   ']), /requires a non-blank value/)
+  assert.throws(() => parseArgs(['--revision=\t']), /requires a non-blank value/)
 })
 
 test('raw transport supports local HTTP probes without attempting a TLS handshake', () => {
@@ -117,6 +119,7 @@ test('a page with no Next client scripts is absent, never a green zero-measureme
 
 test('a probe without an identified deployed revision exits nonzero', () => {
   assert.equal(probeExitCode({ unavailable: 0, absent: 0, deployed_revision: { state: 'unavailable' } }), 1)
+  assert.equal(probeExitCode({ unavailable: 0, absent: 0, deployed_revision: { state: 'present', value: '   ' } }), 1)
 })
 
 test('failure diagnostics name invalid measurements and an unidentified revision honestly', () => {

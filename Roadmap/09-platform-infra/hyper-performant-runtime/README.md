@@ -205,6 +205,9 @@ replace any conflicting scaffold language below or in a sprint file.
 
 - Cite D1–D2 and D13–D17. Remove Replay; guard the already-correct vendor boundary; perform only the four
   named native-HTML changes; add the route-manifest Brotli budget.
+- `sentry.client.config.ts` is the single Sentry configuration file permitted to change: remove only
+  `replayIntegration` and its two replay sample rates. Import the shipped error/tracing rules from that
+  file; do not restate them. The server and edge Sentry configs and `withSentryConfig` stay untouched.
 - No `xlsx`, `jszip`, `mercadopago`, `@dnd-kit`, checkout or payment implementation file changes are
   permitted. Story 3.2 is complete when its guard proves the current route manifests.
 - AIAgentButton remains a client component. Native behavior must retain keyboard/focus behavior and use

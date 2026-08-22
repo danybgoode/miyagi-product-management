@@ -29,9 +29,10 @@ page load.
 - No Replay code in any client chunk (grep the built output, not the source).
 - The 309 KB chunk shrinks by a measured amount, recorded in the PR body from Story 1.3's probe.
 - **Error reporting still works** — throw a deliberate client-side error on prod and confirm it
-  arrives in Sentry. The DSN wiring, `tracesSampleRate`, the three `sentry.*.config.ts` files and
-  `withSentryConfig` in `next.config.ts` are all **untouched**. This story removes one integration,
-  not the SDK.
+  arrives in Sentry. In `sentry.client.config.ts`, remove only `replayIntegration` and its two replay
+  sample rates; its shipped DSN/error/tracing rules remain the single imported contract. The server
+  and edge Sentry configs and `withSentryConfig` in `next.config.ts` are **untouched**. This story
+  removes one integration, not the SDK.
 - If replay is wanted back later, it returns **lazily and behind an explicit trigger** — never as a
   static import in the client entry.
 
@@ -155,7 +156,7 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
    → `/mx`, `/mx/l/[id]` and `/mx/s/[slug]` contain none of the four named vendor packages; missing
    manifests would fail the command instead of reading as zero.
 6. Ask the builder for the before/after `perf-probe` table.
-   → Client-JS transfer on `/mx`, `/l/[id]` and `/s/[slug]` is materially lower than the 2026-08-20
+   → Client-JS transfer on `/mx`, `/l/[id]` and `/s/[slug]` is materially lower than the 2026-08-22
    baseline, and each route now has a committed budget.
 
 If any step fails, note the step number + what you saw — that's the bug report. Checkout and payment

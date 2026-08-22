@@ -37,6 +37,11 @@ export function fixtureUrls({ baseUrl = DEFAULT_BASE_URL, imageUrl = DEFAULT_IMA
 
 export function parseArgs(argv) {
   const out = { baseUrl: DEFAULT_BASE_URL, imageUrl: DEFAULT_IMAGE_URL, json: false, dryRun: false, revision: null, help: false }
+  const assignValue = (arg, value) => {
+    if (!value?.trim()) throw new Error(`${arg} requires a non-blank value`)
+    const key = { '--base-url': 'baseUrl', '--image-url': 'imageUrl', '--revision': 'revision' }[arg]
+    out[key] = arg === '--revision' ? value.trim() : value
+  }
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i]
     if (arg === '--json') out.json = true
@@ -45,10 +50,10 @@ export function parseArgs(argv) {
     else if (arg === '--base-url' || arg === '--image-url' || arg === '--revision') {
       const value = argv[++i]
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`)
-      out[{ '--base-url': 'baseUrl', '--image-url': 'imageUrl', '--revision': 'revision' }[arg]] = value
-    } else if (arg.startsWith('--base-url=')) out.baseUrl = arg.slice('--base-url='.length)
-    else if (arg.startsWith('--image-url=')) out.imageUrl = arg.slice('--image-url='.length)
-    else if (arg.startsWith('--revision=')) out.revision = arg.slice('--revision='.length)
+      assignValue(arg, value)
+    } else if (arg.startsWith('--base-url=')) assignValue('--base-url', arg.slice('--base-url='.length))
+    else if (arg.startsWith('--image-url=')) assignValue('--image-url', arg.slice('--image-url='.length))
+    else if (arg.startsWith('--revision=')) assignValue('--revision', arg.slice('--revision='.length))
     else throw new Error(`unknown argument '${arg}'`)
   }
   return out
@@ -209,9 +214,10 @@ export async function runProbe(options, deps = { request: rawRequest, now: () =>
   if (options.dryRun) return { dry_run: true, fixtures }
   const results = []
   for (const fixture of fixtures) results.push(await measureFixture(fixture, deps))
+  const revision = typeof options.revision === 'string' ? options.revision.trim() : ''
   return {
     measured_at: (deps.now ?? (() => new Date()))().toISOString(),
-    deployed_revision: options.revision ? metric('present', options.revision) : metric('unavailable', undefined, 'pass --revision with the deployed Git SHA'),
+    deployed_revision: revision ? metric('present', revision) : metric('unavailable', undefined, 'pass --revision with the deployed Git SHA'),
     fixtures: results,
     unavailable: results.filter((result) => result.status === 'unavailable').length,
     absent: results.filter((result) => result.status === 'absent').length,
@@ -222,7 +228,9 @@ export async function runProbe(options, deps = { request: rawRequest, now: () =>
 // but either means this baseline did not observe every locked fixture and must
 // never exit green.
 export function probeExitCode(report) {
-  return report.unavailable || report.absent || report.deployed_revision?.state !== 'present' ? 1 : 0
+  const revision = report.deployed_revision
+  const identifiedRevision = revision?.state === 'present' && typeof revision.value === 'string' && revision.value.trim()
+  return report.unavailable || report.absent || !identifiedRevision ? 1 : 0
 }
 
 export function formatReport(report) {
