@@ -1,6 +1,6 @@
 # Hyper-performant runtime — Sprint 1: Origin — kill the cold start and the origin image encode
 
-**Status:** 🟦 in review — Sprint 1 PRs open; required findings in resolution
+**Status:** 🟦 epic in progress — Sprint 1 shipped at frontend `1b106952`; root PR is its record
 
 > **Sprint goal:** the frontend stays warm, the remaining origin image variants become materially
 > cheaper on the Free tier, and every later story reports through one honest measurement harness.
@@ -60,8 +60,9 @@ measurement supersedes the anecdote for this fixture and is the honest compariso
 - Legacy URLs without `f` retain their existing WebP/AVIF/JPEG Accept negotiation for compatibility.
 - The loader emits quality 75 and a reduced, explicit responsive-width set covering the actual
   optimized call sites; the route retains the shipped `[60, 75, 90]` compatibility ladder.
-- A cold real-listing WebP variant is materially faster than the recorded AVIF baseline, measured by
-  Story 1.3. Do not invent a sub-second threshold if the live result does not support one.
+- At the same 384 px origin path, fixed WebP materially reduces transform time versus legacy AVIF.
+  Record that encode comparison separately from the first full Cloudflare MISS; do not attribute
+  source-fetch, revision-start or edge transit time to the codec.
 - Responses still carry `public, max-age=31536000, immutable`.
 - **The security contract is unchanged:** HTTPS allowed-host resolution, `redirect:'error'`, image
   content-type validation, streamed 25 MB cap and uncacheable errors stay in `app/api/img/route.ts`.
@@ -75,6 +76,21 @@ measurement supersedes the anecdote for this fixture and is the honest compariso
 **Future option, explicitly not built:** a Free-tier Worker could expose a small named-variant map and
 keep current volume below the 5,000-new-transform allowance. It still introduces a new deployed
 execution surface and permission set; the product owner chose the origin optimization instead.
+
+**Live result (2026-08-22):** frontend PR
+[`miyagisanchezcommerce#416`](https://github.com/danybgoode/miyagisanchezcommerce/pull/416)
+squash-merged as `1b1069526bfda5228d9464b29858917d5e947294`. Cloud Build
+`8ba6fa6f-e42a-4f53-8a48-0397cde72712` succeeded; Cloud Run revision
+`miyagi-web-00133-x9b` is Ready on 100% traffic and retained `minScale: 1`.
+
+- The untouched 384 px v2 key returned `MISS`, `image/webp`, 37,790 B, immutable caching, no
+  `Vary: Accept`, and 1,279.2 ms TTFB. A conflicting `Accept: image/jpeg` repeat returned `HIT`, the
+  same WebP bytes and 154.3 ms TTFB.
+- The first full-path MISS was not faster than the old 160 px AVIF baseline (1,266.1 ms), and the
+  widths differ, so it is not used as codec evidence.
+- Five alternating direct-origin transforms at the same 384 px width measured median WebP at
+  578.2 ms / 37,790 B versus AVIF at 4,911.5 ms / 51,923 B: WebP was **88.2% faster** and **27.2%
+  smaller**. This is the origin-CPU result Story 1.2 claims.
 
 **Risk:** low — degrades gracefully (old URLs keep serving until the deploy flips the loader), no
 money/auth path.
@@ -106,6 +122,10 @@ assumed.
   The artifact is `s1-production-baseline-2026-08-22.json` and identifies frontend revision
   `0eb9985c06356505ce7341ed345cbf0536264aa8`.
 
+**After deploy (2026-08-22, frontend `1b106952`):** the explicit v2 probe reported `/mx` 289.1 ms,
+PDP 2,780.0 ms, shop 3,625.6 ms and the already-warm image `HIT` 52.8 ms / 37,790 B. The page samples
+remain `DYNAMIC` until Sprint 2 and are single observations, not a claimed latency improvement.
+
 **Risk:** low — a read-only reporting script, no product surface.
 
 ## Sprint QA
@@ -113,8 +133,9 @@ assumed.
   WebP/default-quality/width-cardinality coverage). 1.1 → `infra/gcp/test/deploy-invariants-frontend.test.js`
   (frontend). 1.3 → a pure-logic spec on the probe's parse/format seam — extract it so the spec needs
   no network, per AGENTS *keep a pure seam*.
-- **browser smoke owed:** yes, to the product owner — the cold-image-variant check and the
-  idle-then-navigate check (step 1 and step 4 below). Neither is a money path.
+- **browser smoke:** production `/mx`, shop and PDP passed in real Chromium after deploy. The
+  continuous build session did not manufacture a one-hour idle window; `minScale: 1` is verified live,
+  and the optional long-idle perception check remains a product-owner observation. No money/auth step.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 - **Every new spec observed red at least once** via a deliberate break-the-implementation mutation.
 
@@ -138,3 +159,24 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
    cold TTFB is in the same band as its warm TTFB.
 
 If any step fails, note the step number + what you saw — that's the bug report.
+
+### Executed smoke — 2026-08-22
+
+1. Requested the untouched versioned image URL on production.
+   → `MISS`, HTTP 200, `image/webp`, immutable, 37,790 B; `Vary` contained Next router tokens but not
+   `Accept`.
+2. Repeated the exact URL with `Accept: image/jpeg`.
+   → `HIT`, HTTP 200, still `image/webp`, age 17 seconds, 154.3 ms TTFB.
+3. Opened https://miyagisanchez.com/mx, https://miyagisanchez.com/mx/s/piezas-unicas and
+   https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW in real Chromium.
+   → All returned 200 and rendered. Shop and PDP showed their direct R2 photos with zero console
+   errors. `/mx` showed optimized WebP photos; four pre-existing protocol-relative Shopify candidates
+   still returned the same 400s the old route returned.
+4. Described `miyagi-web` after the deploy.
+   → `miyagi-web-00133-x9b` Ready, 100% traffic, image `frontend:1b10695`, `minScale: 1`.
+5. Compared five alternating same-width origin transforms.
+   → Median WebP 578.2 ms versus AVIF 4,911.5 ms. The first edge MISS was 1,279.2 ms, so the record
+   distinguishes codec CPU from full-path cold latency.
+
+The ≥1-hour browser-idle perception check was not executed inside this continuous session; no
+technical gate is represented as though it observed that interval.
