@@ -1,6 +1,6 @@
 # Hyper-performant runtime — Sprint 1: Origin — kill the cold start and the origin image encode
 
-**Status:** 🟨 in progress — architecture locked; builder dispatch next
+**Status:** 🟦 in review — Sprint 1 PRs open; required findings in resolution
 
 > **Sprint goal:** the frontend stays warm, the remaining origin image variants become materially
 > cheaper on the Free tier, and every later story reports through one honest measurement harness.
@@ -19,8 +19,10 @@ read against Medusa/Cloud SQL and Supabase). `medusa-web` has run `min=1` since
 
 **Acceptance:**
 - `gcloud run services describe miyagi-web --region us-east4` reports `minScale: 1`.
-- `infra/gcp/test/deploy-invariants.test.js` (frontend equivalent) asserts it and goes **red** if the
-  live service drifts back to 0 — observed red once via a deliberate mutation.
+- `infra/gcp/test/deploy-invariants-frontend.test.js` asserts the authoritative deploy source and goes
+  **red** if it regresses to zero — observed red once via a deliberate mutation. The orchestrator
+  separately describes the live service before merge and fails the sprint if `minScale` is not one;
+  the source test does not pretend to observe production drift.
 - A request to `https://miyagisanchez.com/mx/s/piezas-unicas` after ≥1 h of no traffic returns in the
   same TTFB band as a warm one (compare with Story 1.3's probe, before vs after).
 - `deploy-frontend.sh` remains the only place scaling is set — **no scaling flags leak into
@@ -46,7 +48,7 @@ measurement supersedes the anecdote for this fixture and is the honest compariso
 
 **Acceptance:**
 - `lib/image-loader.ts` still emits `/api/img?...`; `next.config.ts` keeps `loader: 'custom'`.
-- Loader URLs include the fixed cache-key token `f=webp`; fixed-format responses omit `Vary: Accept`,
+- Loader URLs include the versioned fixed cache-key tokens `f=webp&v=2`; fixed-format responses omit `Vary: Accept`,
   so Cloudflare cannot replay an AVIF cache entry to a WebP request. Unknown formats fail 400.
 - Legacy URLs without `f` retain their existing WebP/AVIF/JPEG Accept negotiation for compatibility.
 - The loader emits quality 75 and a reduced, explicit responsive-width set covering the actual
@@ -57,7 +59,8 @@ measurement supersedes the anecdote for this fixture and is the honest compariso
 - **The security contract is unchanged:** HTTPS allowed-host resolution, `redirect:'error'`, image
   content-type validation, streamed 25 MB cap and uncacheable errors stay in `app/api/img/route.ts`.
 - `e2e/perf-budget.spec.ts` keeps and sharpens its `/api/img` assertions; a disallowed host still fails.
-- A same-URL probe under conflicting Accept headers stays WebP on MISS then HIT, proving the cache key
+- After the new route is live, a same-versioned-URL probe under conflicting Accept headers stays WebP
+  on MISS then HIT, proving the cache key
   carries the format rather than trusting Cloudflare's currently unconfigured `Vary` behavior.
 - `lib/r2.ts`, `ingestImageUrls()` and `lib/supply-import.ts` are **untouched**.
 - No Cloudflare Worker, Images product, new permission, dependency or prewarm write path is added.
@@ -116,7 +119,8 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
    `public, max-age=31536000, immutable`.
 2. Reload that image request once.
    → Cloudflare reports `HIT`; the source URL, size cap and host restrictions are unchanged.
-3. Open https://miyagisanchez.com/mx/s/piezas-unicas and its linked PDP.
+3. Open https://miyagisanchez.com/mx/s/piezas-unicas and then
+   https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW.
    → Their existing direct R2 photos still render; this sprint does not reroute those surfaces.
 4. Leave the browser closed for at least an hour, then open
    https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW cold.

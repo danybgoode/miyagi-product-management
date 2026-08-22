@@ -82,8 +82,9 @@ do not write a second script.**
   marketplace, entitled subdomain and embed must never serve each other's HTML. This is the
   failure mode that would leak one seller's storefront onto another's domain; prove it, don't reason
   about it.
-- The rule requires an empty query string and respects origin. Unclaimed, preview-private, unresolved
-  and query-bearing responses are `no-store`; custom domains are outside the rule.
+- The origin contract marks unclaimed, preview-private and unresolved responses `no-store`; the edge
+  rule separately requires an empty query string, excludes those responses and respects origin.
+  Query-bearing requests bypass the edge rule, and custom domains remain outside it.
 - A **preview-private** shop is not servable from cache under any included variant, proven against one
   of the four live non-activated anchors.
 - The provisioning script stays idempotent and filters by its own rule description, so a re-run

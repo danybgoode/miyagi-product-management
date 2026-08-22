@@ -138,7 +138,8 @@ replace any conflicting scaffold language below or in a sprint file.
     source grep alone, prove Replay is absent.
 14. **D14 — Vendor separation is already shipped.** `xlsx`, `jszip` and `mercadopago` are server-only;
     `@dnd-kit` occurs only in `/admin/seleccion`. Story 3.2 adds a built-manifest regression guard and
-    touches none of those imports or any payment/checkout file. The fictional real-payment smoke caused
+    touches no payment/checkout implementation file; its guard may name those imports. The fictional
+    real-payment smoke caused
     by a nonexistent move is deleted.
 15. **D15 — The native-HTML sweep has three removals and one progressive enhancement.**
     `CollapsibleDescription` and `ExcerptPanel` become server-rendered `<details>`; `CuentaMenu` uses
@@ -153,16 +154,25 @@ replace any conflicting scaffold language below or in a sprint file.
     faster workhorse (`gpt-5.6-terra`). Every PR declares HIGH risk. The orchestrator runs
     `scripts/review-route.mjs` and executes both external-family commands; a fresh `pr-reviewer` subagent
     is mandatory too. Findings are fixed or answered before an independent reviewer merges.
+18. **D18 — The fixed-format image cutover uses a new immutable key.** A fresh HIGH-tier reviewer
+    proved that pre-deploy production ignores `f` by requesting the proposed unversioned `f=webp` URL;
+    Cloudflare consequently stored an AVIF response under that immutable key. The shipped loader emits
+    `f=webp&v=2`, making the poisoned object unreachable. The probe's safe default remains the legacy
+    no-`f` fixture; the orchestrator supplies the versioned URL explicitly only after the new route is
+    live. Image rollback is staged: revert loader/config emission first, retain the route's `f`/`v`
+    compatibility until stale HTML can no longer request it, then remove that compatibility in a later
+    deploy. A one-step full revert is not format-safe. This is a review-time correction to D5, recorded
+    rather than hidden as builder discovery.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 
-- Cite D1–D6 and D17. Root owns the deploy flag, invariant, probe and baseline; frontend owns only the
+- Cite D1–D6 and D17–D18. Root owns the deploy flag, invariant, probe and baseline; frontend owns only the
   image proxy/loader/config and its existing performance spec.
 - Story order is 1.3 baseline → 1.2 measured encode change → 1.1 live warm-instance apply. Do not delete
   `/api/img`, use `/cdn-cgi/image`, add a Worker, add a dependency, or touch R2 ingest.
 - The image contract is imported from `app/api/img/route.ts`. The builder may narrow emitted variants
   but may not weaken host, redirect, streaming-cap, content-type or error-cache behavior.
-- Loader URLs must include `f=webp`; a fixed-format response does not emit `Vary: Accept`. Legacy URLs
+- Loader URLs must include `f=webp&v=2`; a fixed-format response does not emit `Vary: Accept`. Legacy URLs
   without `f` keep the old allow-listed Accept negotiation and `Vary` behavior. An unknown `f` is 400.
 - Every new assertion is observed red once. The orchestrator, not the builder, changes live Cloud Run.
 
@@ -207,10 +217,12 @@ replace any conflicting scaffold language below or in a sprint file.
 - **`lib/image-loader.ts`** — the custom `next/image` loader seam; `next.config.ts` already declares
   `loader: 'custom'`. It keeps pointing to `/api/img`; S1.2 narrows what it emits.
 - **`app/api/img/route.ts`** — the route being optimized, not retired. Its host allow-list,
-  `redirect:'error'`, streamed byte-cap and `QUALITY_LADDER` remain the security/compatibility
-  contract. It is also the only request-path `sharp` importer in the app (verified).
+  `redirect:'error'`, streamed byte-cap and legacy width/quality ladders remain the
+  security/compatibility contract. It is also the only request-path `sharp` importer in the app
+  (verified).
 - **`lib/r2.ts` + `ingestImageUrls()` + `lib/supply-import.ts`** — the R2 ingest path. **Unchanged.**
-  Storage stays in R2; only *transformation* moves.
+  Storage stays in R2; transformation stays in `/api/img`. Only the emitted format and bounded
+  cache-key cardinality change.
 - **`e2e/perf-budget.spec.ts`** — 11 source-code checks + 3 live checks, already written. S1.2 updates
   its `/api/img` assertions; S3.4 extends it. Its header comment records *why* it measures what it
   measures — preserve that reasoning.
@@ -269,8 +281,9 @@ variants. S3.1 is a scoped removal; S3.2 is a guard-only story.
 ## Kill-switch — decided at grooming (Stage 6b): **carve-out, no flag**
 
 *Is there a runtime seam a kill-switch can gate?* **No, and a flag would be the wrong tool for all
-three high-risk stories.** S1.1 is Cloud Run service config (rollback = re-run the deploy script,
-drift guard proves it). S2.1 is a build-time property of the route tree — nothing evaluates at
+three high-risk stories.** S1.1 is Cloud Run service config (rollback = revert the source change,
+explicitly update `miyagi-web` back to min zero, and verify live; the source guard then follows the
+revert). S2.1 is a build-time property of the route tree — nothing evaluates at
 runtime for a flag to intercept (rollback = `git revert`). S2.2 is edge config provisioned by an
 idempotent script that filters by its own rule description, so hand-added rules survive a rollback.
 
