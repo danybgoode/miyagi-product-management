@@ -476,8 +476,9 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 test('AGY_PINNED bumped to the verified 1.1.18 (guards the deliberate bump)', () => {
   // 1.1.17 → 1.1.18 (2026-08-22), verified by `agy-doctor --fix`: help contract
   // intact, both slugs still listed by `agy models`, primary model answered a
-  // live probe. agy then reviewed PR #405 normally and returned three real
-  // findings, which is the end-to-end confirmation the probe alone cannot give.
+  // live probe. agy then reviewed PR #163 normally and returned a real HTTP
+  // transport finding, which is the end-to-end confirmation the probe alone
+  // cannot give.
   //
   // The refusal that triggered this is the guard WORKING, and worth restating
   // because it looks like a tooling failure: agy's `--print` prints NOTHING on a
