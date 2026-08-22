@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-08-22T16:21:27.277Z",
+  "architecture_lock_decisions": ["D1", "D6", "D17"],
+  "command": "node scripts/perf-probe.mjs --json --revision 0eb9985c06356505ce7341ed345cbf0536264aa8 --image-url 'https://miyagisanchez.com/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75'",
+  "deployed_revision": {
+    "state": "present",
+    "value": "0eb9985c06356505ce7341ed345cbf0536264aa8"
+  },
+  "fixtures": [
+    {
+      "id": "home",
+      "label": "marketplace home (signed-out)",
+      "url": "https://miyagisanchez.com/mx",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 273.9 },
+      "cf_cache_status": { "state": "present", "value": "DYNAMIC" },
+      "total_transfer_bytes": { "state": "present", "value": 50769 },
+      "client_js_transfer_bytes": { "state": "present", "value": 396584 },
+      "content_type": { "state": "present", "value": "text/html; charset=utf-8" }
+    },
+    {
+      "id": "pdp",
+      "label": "marketplace PDP",
+      "url": "https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 1209.4 },
+      "cf_cache_status": { "state": "present", "value": "DYNAMIC" },
+      "total_transfer_bytes": { "state": "present", "value": 44402 },
+      "client_js_transfer_bytes": { "state": "present", "value": 407245 },
+      "content_type": { "state": "present", "value": "text/html; charset=utf-8" }
+    },
+    {
+      "id": "shop",
+      "label": "marketplace shop",
+      "url": "https://miyagisanchez.com/mx/s/piezas-unicas",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 1366.5 },
+      "cf_cache_status": { "state": "present", "value": "DYNAMIC" },
+      "total_transfer_bytes": { "state": "present", "value": 43377 },
+      "client_js_transfer_bytes": { "state": "present", "value": 387628 },
+      "content_type": { "state": "present", "value": "text/html; charset=utf-8" }
+    },
+    {
+      "id": "image",
+      "label": "cold real image variant",
+      "url": "https://miyagisanchez.com/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 1266.1 },
+      "cf_cache_status": { "state": "present", "value": "MISS" },
+      "total_transfer_bytes": { "state": "present", "value": 13071 },
+      "client_js_transfer_bytes": { "state": "absent" },
+      "content_type": { "state": "present", "value": "image/avif" }
+    }
+  ],
+  "unavailable": 0,
+  "notes": [
+    "Transfer values are raw compressed HTTP response bytes; HTML is separately decoded only to discover client chunks.",
+    "The image URL is a first-observed Cloudflare MISS for a real listing and records the pre-S1.2 AVIF encode baseline.",
+    "This is an observed production baseline, not an SLO or a post-deploy comparison."
+  ]
+}
