@@ -27,7 +27,8 @@ page load.
 
 **Acceptance:**
 - No Replay code in any client chunk (grep the built output, not the source).
-- The 309 KB chunk shrinks by a measured amount, recorded in the PR body from Story 1.3's probe.
+- The locked 315,519-byte Replay-containing chunk shrinks by a measured amount, recorded in the PR
+  body from Story 1.3's probe.
 - **Error reporting still works** — throw a deliberate client-side error on prod and confirm it
   arrives in Sentry. In `sentry.client.config.ts`, remove only `replayIntegration` and its two replay
   sample rates; its shipped DSN/error/tracing rules remain the single imported contract. The server
