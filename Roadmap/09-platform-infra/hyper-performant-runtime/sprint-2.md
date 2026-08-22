@@ -6,11 +6,11 @@
 > `revalidate` windows it has claimed since the static-shell split, and Cloudflare can finally cache
 > the HTML. **This is the highest-risk sprint of the epic.**
 
-> ⚠️ **Scope fence, decided at grooming — do not widen it.** Only the **public read** routes move:
-> `app/(shell)/s/[slug]/**`, `app/(shell)/mx/s/[slug]/**` and `app/(shell)/l/[id]`. Authed routes
+> ⚠️ **Scope fence, corrected and locked in D7–D12.** Only the **public read** routes move through an
+> internal path-parameterized renderer: marketplace shop/PDP, entitled subdomain shop/PDP and embed. Authed routes
 > (`/shop/manage/*`, `/account/*`, `/admin/*`, `/checkout`, `/messages`) keep the dynamic layout
-> **untouched**. If the public subtree cannot be split cleanly from the shared layout, **stop and hand
-> back** — do not redesign the channel model inside a performance epic.
+> **untouched**. Owner `?preview=1` and custom domains remain dynamic. If that boundary cannot be kept,
+> **stop and hand back** — do not redesign auth or channel policy inside a performance epic.
 
 ## Stories
 
@@ -29,19 +29,28 @@ to make the channel/chrome decision (white-label vs buyer chrome vs seller-mode)
 - The layout does work *before* the page starts (`getShop`, `isShopPreviewPrivateBySlug`,
   `deriveShopTrustInputs`), then `s/[slug]/page.tsx` awaits ~11 more reads.
 
-`middleware.ts` + `lib/channel.ts` **already** resolve the channel and set `x-miyagi-channel` /
-`x-miyagi-shop-slug` / `x-miyagi-domain` / `x-miyagi-embed`. The question this story answers is
-whether the public subtree can consume that via a **rewrite into a channel-specific segment** rather
-than a `headers()` read in a shared layout — the same manoeuvre `marketplace-static-shell` S1 used to
-split `(site)` from `(shell)`, applied one level down.
+**Architecture-lock correction:** the layout is not the only dynamic read. The shop page itself calls
+`headers()` plus Clerk-backed `applyPreviewOverlay()`. The PDP calls `headers()` and `currentUser()` and
+renders viewer-specific ownership, favorites, offers and buyer prefill. Therefore the contract is an
+internal middleware rewrite into a channel/path-parameterized public renderer, a separate dynamic owner
+preview renderer, and one no-store PDP viewer-state island. `middleware.ts` already resolves the
+channel; it passes that decision as path data rather than a trusted client header read in the renderer.
 
 **Acceptance:**
-- `npm run build` marks `/s/[slug]`, `/mx/s/[slug]` and `/l/[id]` as `○` or `◐` — **not `ƒ`**. This is
-  the single check that proves the story; put it in the PR body.
+- The internal public renderer's complete layout/page chain contains no `headers()`, `cookies()`,
+  Clerk server read or owner preview overlay. Parameterized build glyphs are recorded but are not used
+  as a false binary proxy for ISR.
+- Origin responses on the original URLs carry the `lib/cache-policy.ts` window and a repeated request
+  proves an origin cache hit before the Cloudflare rule is enabled.
+- Public PDP HTML is viewer-neutral. One fixed-size client island settles once and supplies ownership,
+  favorite, active-deal and buyer-prefill state; it never flashes an incorrect CTA and fails disabled.
+- `?preview=1` remains owner-authorized and `no-store` through `lib/shop-presentation/preview.ts`.
 - The **entire channel guard suite stays green**: `own-shop-seo.spec.ts`, the embed specs, the
   `ChannelLayout`/white-label specs, `nav-entry-points.spec.ts`.
-- All four surfaces render correctly, checked individually: marketplace (`/mx/s/piezas-unicas`),
-  subdomain, live custom domain, and the `/embed/s/[slug]` iframe.
+- Marketplace (`/mx/s/piezas-unicas`), entitled subdomain
+  (`panfleto.miyagisanchez.com`) and `/embed/s/[slug]` render correctly. The sole configured custom
+  domain is unverified/on the old Vercel rail and is explicitly excluded from this epic's cache proof;
+  its current dynamic behavior must not regress.
 - **A preview-private shop still 404s** — `isShopPreviewPrivateBySlug` must not become bypassable or
   cacheable. Verify against a real preview-private shop, not a unit test alone.
 - URLs are byte-identical before and after: canonical tags, `robots.txt`, `sitemap`, OG metadata.
@@ -49,8 +58,8 @@ split `(site)` from `(shell)`, applied one level down.
 - Authed `(shell)` routes are untouched — no diff under `/shop/manage`, `/account`, `/admin`,
   `/checkout`.
 
-**Risk:** **high** — shared surface (`app/(shell)/layout.tsx` governs every route in the subtree; a
-sibling PR touching it will conflict). Announce before merge. The product owner merges.
+**Risk:** **high** — authorization/render boundary plus shared middleware. Announce before merge; an
+independent reviewer merges only after the locked review stack is green.
 
 ---
 
@@ -69,17 +78,21 @@ do not write a second script.**
 - A second request to `https://miyagisanchez.com/mx/s/piezas-unicas` returns `cf-cache-status: HIT`.
 - The MISS→HIT timing delta is **recorded in this sprint doc** at close (the `/api/img` precedent:
   16.2 s → 0.3 s), measured with Story 1.3's probe.
-- **Each channel variant is probed separately** and the cache key does not collapse them —
-  marketplace, subdomain, custom domain and embed must never serve each other's HTML. This is the
+- **Each included channel variant is probed separately** and the cache key does not collapse them —
+  marketplace, entitled subdomain and embed must never serve each other's HTML. This is the
   failure mode that would leak one seller's storefront onto another's domain; prove it, don't reason
   about it.
-- A **preview-private** shop is not servable from cache under any variant.
+- The origin contract marks unclaimed, preview-private and unresolved responses `no-store`; the edge
+  rule separately requires an empty query string, excludes those responses and respects origin.
+  Query-bearing requests bypass the edge rule, and custom domains remain outside it.
+- A **preview-private** shop is not servable from cache under any included variant, proven against one
+  of the four live non-activated anchors.
 - The provisioning script stays idempotent and filters by its own rule description, so a re-run
   preserves hand-added rules (the `cloudflare-waf-provision.mjs` shape).
 - An invariant test asserts the rule exists live, matching the existing `infra/gcp/test/` pattern.
 
-**Risk:** **high** — shared Cloudflare edge config; affects every tenant domain. Announce. The product
-owner merges.
+**Risk:** **high** — shared Cloudflare edge config on the platform zone. Announce; an independent
+reviewer merges only after the live rule and findings are verified.
 
 ---
 
@@ -93,8 +106,8 @@ AGENTS, *a script that exits green having run nothing is worse than no script* �
 actually resolve the layout chain, not pattern-match a filename.
 
 **Acceptance:**
-- A spec fails when a `revalidate` export sits under a layout that reads `headers()` / `cookies()`
-  in the same segment chain.
+- A spec resolves the full page/layout/import chain and fails when a `revalidate` export depends on
+  `headers()`, `cookies()`, a Clerk server request read or the owner preview overlay.
 - It **allows the negation**: a route that is deliberately dynamic and declares no `revalidate`
   passes cleanly. *(LEARNINGS: a guard that rejects correct output is worse than one that misses a
   rare fault — it trains people to bypass it.)*
@@ -108,9 +121,9 @@ actually resolve the layout chain, not pattern-match a filename.
   add a build-output assertion for `○`/`◐` on the three routes). 2.2 → a live MISS→HIT probe spec,
   gated on prod like `perf-budget.spec.ts`'s live checks, plus an `infra/gcp/test/` invariant for the
   rule. 2.3 → its own spec file, per the house one-concern-per-spec split.
-- **browser smoke owed:** **yes, to the product owner — and this sprint's is the important one.** All
-  four channel surfaces must be eyeballed by a human, including a private-window subdomain check and
-  a preview-private shop. An automated smoke cannot fully cover the white-label boundary.
+- **browser smoke owed:** **yes, to Daniel — and this sprint's is the important one.** Marketplace,
+  entitled subdomain, embed and preview-private behavior must be checked, plus the signed-in PDP island.
+  The live-smoke rail covers anonymous renders; the signed-in check is owed to Daniel by name.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` + Playwright `api` green before merge.
 - **Cross-family review:** both external passes are mandatory here, and per WAYS-OF-WORKING the
   **fresh reviewer subagent is also mandatory on HIGH tier** — shared infra is exactly where context
@@ -125,18 +138,22 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
    should feel like a different site.
 2. Reload https://miyagisanchez.com/mx/s/piezas-unicas.
    → Still instant. (The builder will show you `cf-cache-status: HIT` for this request.)
-3. Open a **seller's own subdomain** (e.g. `https://<shop-slug>.miyagisanchez.com`) in a private
-   window.
+3. Open https://panfleto.miyagisanchez.com in a private window.
    → The shop renders white-label — the seller's own header and branding, **no Miyagi Sánchez
    platform chrome**, and it is that seller's shop, not another's.
-4. Open a live **custom domain** shop in a private window.
-   → Same as step 3: correct shop, white-label, no platform chrome.
-5. Open a shop you have set to **preview-private** (or ask the builder to point you at one).
+4. Open a live preview-private fixture supplied in the PR.
    → It still shows "not found". It must not be reachable, and must not appear after a reload.
-6. Open any shop inside the **embed** iframe surface.
+5. Open https://miyagisanchez.com/embed/s/piezas-unicas inside the embed smoke fixture.
    → It renders bare, with no platform header/footer/tab bar.
-7. Sign in, go to https://miyagisanchez.com/shop/manage/settings.
+6. **(auth path — owed to Daniel by name)** Sign in and open
+   https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW.
+   → The page paints once with reserved action space; favorite/offer/owner state settles without a
+   wrong CTA or layout shift. If viewer state is deliberately unavailable, personalized actions stay
+   disabled.
+7. Still signed in, go to https://miyagisanchez.com/shop/manage/settings.
    → The seller portal looks and behaves exactly as before. This sprint must not have touched it.
 
-If any step fails, note the step number + what you saw — that's the bug report. **Steps 3–6 are the
-white-label boundary; if any of them shows the wrong shop or leaks platform chrome, stop the merge.**
+Custom-domain caching is deliberately not a smoke step: the only configured domain is unverified and
+currently served by Vercel, so claiming it as a Cloud Run/Cloudflare proof would be fiction. If any
+step fails, note the step number + what you saw — that's the bug report. **Steps 3–5 are the white-label
+boundary; if any shows the wrong shop or leaks platform chrome, stop the merge.**
