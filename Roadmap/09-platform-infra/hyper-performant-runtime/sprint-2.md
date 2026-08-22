@@ -114,9 +114,16 @@ it because nothing was looking. This is the regression class the whole epic is p
 AGENTS, *a script that exits green having run nothing is worse than no script* — the guard must
 actually resolve the layout chain, not pattern-match a filename.
 
+**Locked correction (D21):** the live population was 29 declarations, not ~15; 19 were request-tainted
+and have had the fictional export removed. Next 16.2.6 also proved that the two unbounded public-read
+templates require an empty `generateStaticParams()` to become runtime ISR. Their truthful build marker
+is `●`, not the scaffold's `○`/`◐` shorthand.
+
 **Acceptance:**
 - A spec resolves the full page/layout/import chain and fails when a `revalidate` export depends on
   `headers()`, `cookies()`, a Clerk server request read or the owner preview overlay.
+- The scan discovers every live declaration, and the post-build invariant proves both internal public
+  templates exist in `prerender-manifest.json` as runtime ISR entries.
 - It **allows the negation**: a route that is deliberately dynamic and declares no `revalidate`
   passes cleanly. *(LEARNINGS: a guard that rejects correct output is worse than one that misses a
   rare fault — it trains people to bypass it.)*
@@ -127,7 +134,7 @@ actually resolve the layout chain, not pattern-match a filename.
 
 ## Sprint QA
 - **api spec(s):** 2.1 → the existing channel suite is the harness (already written — keep it green;
-  add a build-output assertion for `○`/`◐` on the three routes). 2.2 → a live MISS→HIT probe spec,
+  assert `●` plus the manifest entries for the two D21 templates covering the three public shapes). 2.2 → a live MISS→HIT probe spec,
   gated on prod like `perf-budget.spec.ts`'s live checks, plus an `infra/gcp/test/` invariant for the
   rule. 2.3 → its own spec file, per the house one-concern-per-spec split.
 - **browser smoke owed:** **yes, to Daniel — and this sprint's is the important one.** Marketplace,

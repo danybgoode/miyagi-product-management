@@ -194,6 +194,17 @@ replace any conflicting scaffold language below or in a sprint file.
     provisioner gains a read-only `--verify-only` three-state live invariant; 401/403, 429/5xx,
     non-JSON, DNS/network failure or a missing secret is UNAVAILABLE, never an empty green result. A
     403 is a new permission gap and stops the run before any PUT.
+21. **D21 — Runtime ISR needs an explicit empty build population on Next 16.2.6.** A production build
+    disproved the sprint scaffold's `○`/`◐` expectation and D19's initial assumption that a literal
+    `revalidate` plus a request-neutral graph was sufficient: both unbounded internal templates still
+    built as `ƒ`, and neither appeared in `prerender-manifest.json`. Each of the two internal templates
+    now exports an empty `generateStaticParams()` so the first eligible request seeds ISR; the build
+    reports `●` for both and the manifest contains both runtime ISR entries. The two templates cover
+    the three public shapes (shop, PDP and embed) rather than creating three route files. Import this
+    built-artifact contract only from `scripts/assert-public-read-build.mjs`, which runs after every
+    `npm run build`. The same full-population guard found 29 live `revalidate` declarations and proved
+    19 under request-dependent graphs were fictional; those declarations are removed rather than
+    preserved as no-ops.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 
@@ -209,7 +220,7 @@ replace any conflicting scaffold language below or in a sprint file.
 
 ### Sprint 2 — Build contract (locked by the architect before the builder started)
 
-- Cite D1–D2, D7–D12, D17 and D19–D20. This builder owns the internal public-read tree, middleware rewrite,
+- Cite D1–D2, D7–D12, D17 and D19–D21. This builder owns the internal public-read tree, middleware rewrite,
   viewer-state island/endpoint, cache-eligibility seam and their tests in the frontend; root owns the
   existing Cloudflare provisioner extension and live invariant.
 - Marketplace (`/mx/s/**`, `/mx/l/[id]`), entitled subdomain shop/PDP, and empty-query
@@ -219,9 +230,10 @@ replace any conflicting scaffold language below or in a sprint file.
   test import that names them as forbidden.
 - Public HTML is viewer-neutral. The single island must reserve space, settle once, and fail disabled.
   Do not move authorization into Cloudflare or treat a flag as privacy.
-- Public `revalidate` exports are literals; the guard imports `lib/cache-policy.ts` once and proves the
-  literals match. Direct internal-prefix requests 404 before host resolution, and middleware decides
-  claim/privacy eligibility before rewriting.
+- Public `revalidate` exports are literals and both templates return an empty build population; the
+  source guard imports `lib/cache-policy.ts` once, while the post-build guard owns the manifest rule.
+  Direct internal-prefix requests 404 before host resolution, and middleware decides claim/privacy
+  eligibility before rewriting.
 - The single new Cache Rule uses `bypass_by_default`, requires an empty query string, keeps the default
   host-aware key and excludes custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and
   a live preview-private 404; `piezas-unicas.miyagisanchez.com` is not entitled and is not a valid
