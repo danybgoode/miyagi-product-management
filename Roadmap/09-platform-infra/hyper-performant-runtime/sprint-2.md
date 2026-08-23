@@ -61,8 +61,9 @@ guard imports `lib/cache-policy.ts` and proves those literals match instead of e
   cacheable. Verify against a real preview-private shop, not a unit test alone.
 - URLs are byte-identical before and after: canonical tags, `robots.txt`, `sitemap`, OG metadata.
   *(LEARNINGS: when replacing a metadata path, diff the exact bytes the old one emitted.)*
-- Authed `(shell)` routes are untouched — no diff under `/shop/manage`, `/account`, `/admin`,
-  `/checkout`.
+- Authed `(shell)` routes keep the same dynamic layout and behavior. The sole diff permitted under
+  `/shop/manage`, `/account`, `/admin` or `/checkout` is D21's removal of a fictional `revalidate`
+  declaration; no functional implementation moves.
 
 **Risk:** **high** — authorization/render boundary plus shared middleware. Announce before merge; an
 independent reviewer merges only after the locked review stack is green.

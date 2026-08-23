@@ -238,8 +238,9 @@ replace any conflicting scaffold language below or in a sprint file.
 - Marketplace (`/mx/s/**`, `/mx/l/[id]`), entitled subdomain shop/PDP, and empty-query
   `/embed/s/[slug]` use the public renderer. Unprefixed compatibility paths retain their redirect;
   `/us/**`, other query-bearing requests, `?preview=1`, custom domains and all authed routes remain
-  dynamic. No diff under checkout, account, admin, messages or seller-management route trees except a
-  test import that names them as forbidden.
+  dynamic. No functional diff is permitted under checkout, account, admin, messages or
+  seller-management route trees; D21's removal of fictional `revalidate` declarations is the sole
+  behavior-neutral exception, plus test imports that name those trees as forbidden.
 - Public HTML is viewer-neutral. The single island must reserve space, settle once, and fail disabled.
   Do not move authorization into Cloudflare or treat a flag as privacy.
 - Public `revalidate` exports are literals and both templates return an empty build population; the
