@@ -236,9 +236,15 @@ async function readZone(token, deps) {
     throw new CloudflareApiError('Cloudflare zone result is not an array', { status: 200, kind: 'schema' })
   }
   if (zoneList.result.length === 0) return null
+  if (zoneList.result.length !== 1) {
+    throw new CloudflareApiError(
+      `Cloudflare zone result must contain exactly one ${DOMAIN} zone`,
+      { status: 200, kind: 'schema' },
+    )
+  }
   const zone = zoneList.result[0]
-  if (!zone || typeof zone !== 'object' || typeof zone.id !== 'string' || !zone.id || typeof zone.name !== 'string' || !zone.name) {
-    throw new CloudflareApiError('Cloudflare zone result has no usable id/name', { status: 200, kind: 'schema' })
+  if (!zone || typeof zone !== 'object' || typeof zone.id !== 'string' || !zone.id || zone.name !== DOMAIN) {
+    throw new CloudflareApiError(`Cloudflare zone result has no usable ${DOMAIN} id/name`, { status: 200, kind: 'schema' })
   }
   return zone
 }

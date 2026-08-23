@@ -274,8 +274,14 @@ test('apply stops and verify reports unavailable when a successful entrypoint pa
   }
 })
 
-test('malformed successful zone payload is unavailable and never constructs an undefined-zone request', async () => {
-  for (const result of [{}, null, [{}]]) {
+test('malformed, mismatched or ambiguous zone payload is unavailable before any phase request', async () => {
+  for (const result of [
+    {},
+    null,
+    [{}],
+    [{ id: 'wrong-zone', name: 'other.example' }],
+    [zone, { id: 'zone-2', name: DOMAIN }],
+  ]) {
     const applyIo = queuedFetch([jsonResponse(200, { success: true, result })])
     await assert.rejects(() => applyCanonicalRules({ env: tokenEnv }, applyIo), /zone result/)
     assert.equal(applyIo.calls.length, 1)
