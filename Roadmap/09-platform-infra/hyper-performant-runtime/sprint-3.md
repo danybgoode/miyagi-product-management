@@ -144,7 +144,7 @@ Env: production · https://miyagisanchez.com   (or the preview URL while testing
 1. Sign in, then open https://miyagisanchez.com/mx and watch the area where your "retoma" and seller
    modules appear.
    → They are there as the page settles. No skeleton shimmer that resolves a beat later.
-2. Open https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW and expand the full product
+2. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM and expand the full product
    description.
    → It opens instantly. Press `Ctrl/⌘+F` and search for a word that is inside the collapsed text →
    the browser finds it and opens the section for you.
