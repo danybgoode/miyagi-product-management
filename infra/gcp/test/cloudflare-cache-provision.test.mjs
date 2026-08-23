@@ -254,3 +254,40 @@ test('apply skips PUT when exact and otherwise sends one preserving reconciliati
   await assert.rejects(() => applyCanonicalRules({ env: tokenEnv }, deniedIo), /403/)
   assert.equal(deniedIo.calls.length, 2, 'a permission-denied read must never fall through to PUT')
 })
+
+test('apply and verify fail closed when a successful entrypoint payload has no rules array', async () => {
+  for (const result of [{}, { rules: null }, { rules: {} }]) {
+    const applyIo = queuedFetch([zoneResponse(), jsonResponse(200, { success: true, result })])
+    await assert.rejects(() => applyCanonicalRules({ env: tokenEnv }, applyIo), /rules array/)
+    assert.equal(applyIo.calls.length, 2, 'malformed live state must never reach PUT')
+
+    const errors = []
+    const verifyIo = queuedFetch([zoneResponse(), jsonResponse(200, { success: true, result })])
+    const exit = await main(['--verify-only'], {
+      ...verifyIo,
+      env: tokenEnv,
+      log() {},
+      error(message) { errors.push(message) },
+    })
+    assert.equal(exit, 1)
+    assert.doesNotMatch(errors.join('\n'), /UNAVAILABLE/)
+  }
+})
+
+test('--rollback removes only the owned public-read rule and is idempotent when absent', async () => {
+  const manual = { id: 'manual', description: 'manual rule', expression: 'true' }
+  const live = [manual, ...exactLiveRules()]
+  const io = queuedFetch([zoneResponse(), rulesResponse(live), jsonResponse(200, { success: true, result: {} })])
+  const exit = await main(['--rollback'], { ...io, env: tokenEnv, log() {}, error() {} })
+  assert.equal(exit, 0)
+  assert.equal(io.calls[2].opts.method, 'PUT')
+  assert.deepEqual(
+    JSON.parse(io.calls[2].opts.body).rules,
+    live.filter((rule) => rule.description !== PUBLIC_READ_RULE_DESCRIPTION),
+  )
+
+  const absent = live.filter((rule) => rule.description !== PUBLIC_READ_RULE_DESCRIPTION)
+  const noOpIo = queuedFetch([zoneResponse(), rulesResponse(absent)])
+  assert.equal(await main(['--rollback'], { ...noOpIo, env: tokenEnv, log() {}, error() {} }), 0)
+  assert.equal(noOpIo.calls.length, 2)
+})

@@ -10,6 +10,7 @@
 // Usage:
 //   node infra/gcp/cloudflare-cache-provision.mjs
 //   node infra/gcp/cloudflare-cache-provision.mjs --verify-only  # GET-only live invariant
+//   node infra/gcp/cloudflare-cache-provision.mjs --rollback     # remove only this epic's rule
 //
 // Credentials: env var, else Secret Manager. Zero npm dependencies; Node 18+ global fetch.
 
@@ -236,7 +237,13 @@ async function readZone(token, deps) {
 
 async function readEntrypointRules(zoneId, token, deps) {
   const entry = await cfApi(entrypointPath(zoneId), { token }, deps)
-  return entry.result?.rules ?? []
+  if (!Array.isArray(entry?.result?.rules)) {
+    throw new CloudflareApiError(
+      `Cloudflare ${entrypointPath(zoneId)} → successful response missing result.rules array`,
+      { status: 200, kind: 'schema' },
+    )
+  }
+  return entry.result.rules
 }
 
 export async function verifyLiveInvariant({ env = process.env } = {}, deps = {}) {
@@ -281,12 +288,37 @@ export async function applyCanonicalRules({ env = process.env } = {}, deps = {})
   return { status: 'applied', zone, put: true, reconciliation }
 }
 
+export async function rollbackPublicReadRule({ env = process.env } = {}, deps = {}) {
+  const token = resolveToken(env, deps)
+  const zone = await readZone(token, deps)
+  if (!zone) throw new Error(`Zone ${DOMAIN} not found`)
+
+  let existingRules
+  try {
+    existingRules = await readEntrypointRules(zone.id, token, deps)
+  } catch (error) {
+    if (isNoEntrypointError(error)) return { status: 'absent', zone, put: false, rules: [] }
+    throw error
+  }
+
+  const rules = existingRules.filter((rule) => rule.description !== PUBLIC_READ_RULE_DESCRIPTION)
+  if (rules.length === existingRules.length) return { status: 'absent', zone, put: false, rules }
+
+  await cfApi(entrypointPath(zone.id), {
+    token,
+    method: 'PUT',
+    body: JSON.stringify({ rules }),
+  }, deps)
+  return { status: 'rolled-back', zone, put: true, rules }
+}
+
 export async function main(argv = process.argv.slice(2), deps = {}) {
   const log = deps.log || console.log
   const errorLog = deps.error || console.error
   const verifyOnly = argv.includes('--verify-only')
-  if (argv.length > 1 || (argv.length === 1 && argv[0] !== '--verify-only')) {
-    errorLog('Usage: node infra/gcp/cloudflare-cache-provision.mjs [--verify-only]')
+  const rollback = argv.includes('--rollback')
+  if (argv.length > 1 || (argv.length === 1 && !verifyOnly && !rollback)) {
+    errorLog('Usage: node infra/gcp/cloudflare-cache-provision.mjs [--verify-only | --rollback]')
     return 1
   }
 
@@ -299,6 +331,15 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       }
       errorLog(`✗ DRIFT — ${result.reason}`)
       return 1
+    }
+
+    if (rollback) {
+      const result = await rollbackPublicReadRule({ env: deps.env || process.env }, deps)
+      log(`▶ Zone: ${result.zone.id} (${result.zone.name})`)
+      log(result.put
+        ? `✓ Rolled back only: ${PUBLIC_READ_RULE_DESCRIPTION}`
+        : `= Rollback already exact; ${PUBLIC_READ_RULE_DESCRIPTION} is absent`)
+      return 0
     }
 
     const result = await applyCanonicalRules({ env: deps.env || process.env }, deps)
