@@ -255,7 +255,7 @@ test('apply skips PUT when exact and otherwise sends one preserving reconciliati
   assert.equal(deniedIo.calls.length, 2, 'a permission-denied read must never fall through to PUT')
 })
 
-test('apply and verify fail closed when a successful entrypoint payload has no rules array', async () => {
+test('apply stops and verify reports unavailable when a successful entrypoint payload has no rules array', async () => {
   for (const result of [{}, { rules: null }, { rules: {} }]) {
     const applyIo = queuedFetch([zoneResponse(), jsonResponse(200, { success: true, result })])
     await assert.rejects(() => applyCanonicalRules({ env: tokenEnv }, applyIo), /rules array/)
@@ -269,8 +269,8 @@ test('apply and verify fail closed when a successful entrypoint payload has no r
       log() {},
       error(message) { errors.push(message) },
     })
-    assert.equal(exit, 1)
-    assert.doesNotMatch(errors.join('\n'), /UNAVAILABLE/)
+    assert.equal(exit, 2)
+    assert.match(errors.join('\n'), /UNAVAILABLE — not evidence of health/)
   }
 })
 

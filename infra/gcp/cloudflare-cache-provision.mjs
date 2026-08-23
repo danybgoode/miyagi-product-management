@@ -168,7 +168,7 @@ export function isUnavailableError(error) {
   if (error instanceof MissingSecretError) return true
   if (!(error instanceof CloudflareApiError)) return false
   if (isNoEntrypointError(error)) return false
-  return error.kind === 'network' || error.kind === 'non-json' || error.status === 401 ||
+  return error.kind === 'network' || error.kind === 'non-json' || error.kind === 'schema' || error.status === 401 ||
     error.status === 403 || error.status === 429 || (error.status !== null && error.status >= 500)
 }
 
