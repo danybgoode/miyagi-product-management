@@ -326,7 +326,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
   const verifyOnly = argv.includes('--verify-only')
   const rollback = argv.includes('--rollback')
   if (argv.length > 1 || (argv.length === 1 && !verifyOnly && !rollback)) {
-    errorLog('Usage: node infra/gcp/cloudflare-cache-provision.mjs [--verify-only | --rollback]')
+    errorLog('Usage: node infra/gcp/cloudflare-cache-provision.mjs [no flag: apply canonical rules | --verify-only | --rollback]')
     return 1
   }
 
