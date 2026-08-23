@@ -1,6 +1,6 @@
 # Hyper-performant runtime — Sprint 2: Edge — make the public shell cacheable
 
-**Status:** 🟦 in progress — architecture deviations D19–D20 locked before build
+**Status:** 🟩 shipped — frontend revision `miyagi-web-00134-qtq`; Cloudflare invariant EXACT
 
 > **Sprint goal:** a PDP → shop click stops being an origin render. The public read tree honours the
 > `revalidate` windows it has claimed since the static-shell split, and Cloudflare can finally cache
@@ -145,31 +145,40 @@ is `●`, not the scaffold's `○`/`◐` shorthand.
   **fresh reviewer subagent is also mandatory on HIGH tier** — shared infra is exactly where context
   independence catches what family independence misses.
 
-## Sprint 2 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+## Sprint 2 — Smoke walkthrough (executed in order)
+Env: production · https://miyagisanchez.com · 2026-08-23 · frontend `c121c60` /
+Cloud Run `miyagi-web-00134-qtq`
 
-1. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM and click through to the
-   merchant "Ylai Studio".
-   → The shop page appears immediately. This is the exact navigation that prompted the epic — it
-   should feel like a different site.
-2. Reload https://miyagisanchez.com/mx/s/ylai-studio.
-   → Still instant. (The builder will show you `cf-cache-status: HIT` for this request.)
-3. Open https://panfleto.miyagisanchez.com in a private window.
-   → The shop renders white-label — the seller's own header and branding, **no Miyagi Sánchez
-   platform chrome**, and it is that seller's shop, not another's.
-4. Open https://miyagisanchez.com/mx/s/concrete-garden-preview-retired-20260820.
-   → It still shows "not found". It must not be reachable, and must not appear after a reload.
-5. Open https://miyagisanchez.com/embed/s/panfleto inside the embed smoke fixture.
-   → It renders bare, with no platform header/footer/tab bar.
-6. **(auth path — owed to Daniel by name)** Sign in and open
+1. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM, then follow its Ylai Studio
+   merchant destination at https://miyagisanchez.com/mx/s/ylai-studio.
+   → Expected/result: real Chromium rendered both at HTTP 200 with the correct titles and zero console
+   errors; the shop destination displayed Ylai Studio's catalog and marketplace chrome.
+2. Request https://miyagisanchez.com/mx/s/ylai-studio twice from the same Cloudflare point of presence.
+   → Expected/result: `MISS` at 3.488 s became `HIT` at 0.148 s; the corrected `perf-probe` repeat
+   independently reported `HIT` at 57.7 ms with 389,224 B of route client JavaScript.
+3. Open https://panfleto.miyagisanchez.com in production Chromium and request it twice.
+   → Expected/result: HTTP 200 with Panfleto's white-label header and no platform navigation or console
+   errors; `MISS` at 2.612 s became `HIT` at 0.150 s.
+4. Open https://miyagisanchez.com/mx/s/concrete-garden-preview-retired-20260820 and reload it.
+   → Expected/result: the real non-activated fixture rendered "404 Página no encontrada"; the response
+   stayed `private, no-store` and Cloudflare reported `BYPASS`, never a cached shop page.
+5. Open https://miyagisanchez.com/embed/s/panfleto in production Chromium and request it twice.
+   → Expected/result: HTTP 200 with the bare Panfleto embed and no platform navigation or console errors;
+   `MISS` at 0.566 s became `HIT` at 0.152 s.
+6. Compare the cached marketplace, entitled-subdomain and embed response bodies, then request
+   https://miyagisanchez.com/mx/s/ylai-studio?probe=1.
+   → Expected/result: the three SHA-256 values were distinct (`213ac63a…`, `051e66eb…`, `8fa8e748…`),
+   while the query-bearing response remained `private, no-store` and `cf-cache-status: DYNAMIC`.
+7. **(auth path — owed to Daniel by name)** Sign in and open
    https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM.
-   → The page paints once with reserved action space; favorite/offer/owner state settles without a
-   wrong CTA or layout shift. If viewer state is deliberately unavailable, personalized actions stay
-   disabled.
-7. Still signed in, go to https://miyagisanchez.com/shop/manage/settings.
-   → The seller portal looks and behaves exactly as before. This sprint must not have touched it.
+   → Expected/result owed: the reserved action space settles once with correct favorite/offer/owner
+   state; unavailable viewer state leaves personalized actions disabled.
+8. **(auth path — owed to Daniel by name)** Still signed in, open
+   https://miyagisanchez.com/shop/manage/settings.
+   → Expected/result owed: the seller portal looks and behaves exactly as before.
 
 Custom-domain caching is deliberately not a smoke step: the only configured domain is unverified and
 currently served by Vercel, so claiming it as a Cloud Run/Cloudflare proof would be fiction. If any
 step fails, note the step number + what you saw — that's the bug report. **Steps 3–5 are the white-label
-boundary; if any shows the wrong shop or leaks platform chrome, stop the merge.**
+boundary; all anonymous checks passed. Steps 7–8 remain explicitly owed to Daniel because production
+Clerk does not accept the test-token rail.
