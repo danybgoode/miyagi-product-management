@@ -205,6 +205,17 @@ replace any conflicting scaffold language below or in a sprint file.
     `npm run build`. The same full-population guard found 29 live `revalidate` declarations and proved
     19 under request-dependent graphs were fictional; those declarations are removed rather than
     preserved as no-ops.
+22. **D22 — The scaffold's named Sprint 2 smoke fixtures are not cache-eligible live data.** The
+    post-deploy origin gate re-queried production before the Cloudflare apply and disproved the
+    scaffold: `piezas-unicas` is unclaimed with zero active listing mirrors, while
+    `prod_01M0JCJC0FKNEFYK81HSVD72GW` has no live mirror. D10 correctly keeps both on the shipped
+    dynamic `private, no-store` path; weakening that privacy boundary to make the old walkthrough pass
+    is forbidden. The live claimed fixtures are `ylai-studio` plus PDP
+    `prod_01KZJJPXY8XFV90WDFN43RTBBM`, and `panfleto` for the entitled-subdomain/embed comparison.
+    `concrete-garden-preview-retired-20260820` is one of the four live non-activated anchors and is the
+    preview-private 404 fixture. This deviation was caught by the orchestrator's production gate after
+    the frontend build—not hidden as a builder discovery—and the sprint walkthrough is corrected to
+    those live identities before the edge mutation.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 
@@ -220,7 +231,7 @@ replace any conflicting scaffold language below or in a sprint file.
 
 ### Sprint 2 — Build contract (locked by the architect before the builder started)
 
-- Cite D1–D2, D7–D12, D17 and D19–D21. This builder owns the internal public-read tree, middleware rewrite,
+- Cite D1–D2, D7–D12, D17 and D19–D22. This builder owns the internal public-read tree, middleware rewrite,
   viewer-state island/endpoint, cache-eligibility seam and their tests in the frontend; root owns the
   existing Cloudflare provisioner extension and live invariant.
 - Marketplace (`/mx/s/**`, `/mx/l/[id]`), entitled subdomain shop/PDP, and empty-query
@@ -236,8 +247,8 @@ replace any conflicting scaffold language below or in a sprint file.
   eligibility before rewriting.
 - The single new Cache Rule uses `bypass_by_default`, requires an empty query string, keeps the default
   host-aware key and excludes custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and
-  a live preview-private 404; `piezas-unicas.miyagisanchez.com` is not entitled and is not a valid
-  subdomain fixture. `--verify-only` is read-only and three-state.
+  a live preview-private 404 using D22's live fixtures; `piezas-unicas` is unclaimed and is not a valid
+  cache fixture on any channel. `--verify-only` is read-only and three-state.
 - The builder stops on any need for new Cloudflare permissions, DNS/TLS, a secret, checkout/auth policy
   change or a second failed implementation attempt.
 

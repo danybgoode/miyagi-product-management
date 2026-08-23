@@ -53,7 +53,7 @@ guard imports `lib/cache-policy.ts` and proves those literals match instead of e
 - `?preview=1` remains owner-authorized and `no-store` through `lib/shop-presentation/preview.ts`.
 - The **entire channel guard suite stays green**: `own-shop-seo.spec.ts`, the embed specs, the
   `ChannelLayout`/white-label specs, `nav-entry-points.spec.ts`.
-- Marketplace (`/mx/s/piezas-unicas`), entitled subdomain
+- Marketplace (`/mx/s/ylai-studio`), entitled subdomain
   (`panfleto.miyagisanchez.com`) and `/embed/s/[slug]` render correctly. The sole configured custom
   domain is unverified/on the old Vercel rail and is explicitly excluded from this epic's cache proof;
   its current dynamic behavior must not regress.
@@ -81,7 +81,7 @@ MISS 16.2 s → HIT 0.3 s once the rule shipped. **Extend `infra/gcp/cloudflare-
 do not write a second script.**
 
 **Acceptance:**
-- A second request to `https://miyagisanchez.com/mx/s/piezas-unicas` returns `cf-cache-status: HIT`.
+- A second request to `https://miyagisanchez.com/mx/s/ylai-studio` returns `cf-cache-status: HIT`.
 - The MISS→HIT timing delta is **recorded in this sprint doc** at close (the `/api/img` precedent:
   16.2 s → 0.3 s), measured with Story 1.3's probe.
 - **Each included channel variant is probed separately** and the cache key does not collapse them —
@@ -148,21 +148,21 @@ is `●`, not the scaffold's `○`/`◐` shorthand.
 ## Sprint 2 — Smoke walkthrough (do these in order)
 Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
 
-1. Open https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW and click through to the
-   merchant "Piezas Únicas".
+1. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM and click through to the
+   merchant "Ylai Studio".
    → The shop page appears immediately. This is the exact navigation that prompted the epic — it
    should feel like a different site.
-2. Reload https://miyagisanchez.com/mx/s/piezas-unicas.
+2. Reload https://miyagisanchez.com/mx/s/ylai-studio.
    → Still instant. (The builder will show you `cf-cache-status: HIT` for this request.)
 3. Open https://panfleto.miyagisanchez.com in a private window.
    → The shop renders white-label — the seller's own header and branding, **no Miyagi Sánchez
    platform chrome**, and it is that seller's shop, not another's.
-4. Open a live preview-private fixture supplied in the PR.
+4. Open https://miyagisanchez.com/mx/s/concrete-garden-preview-retired-20260820.
    → It still shows "not found". It must not be reachable, and must not appear after a reload.
-5. Open https://miyagisanchez.com/embed/s/piezas-unicas inside the embed smoke fixture.
+5. Open https://miyagisanchez.com/embed/s/panfleto inside the embed smoke fixture.
    → It renders bare, with no platform header/footer/tab bar.
 6. **(auth path — owed to Daniel by name)** Sign in and open
-   https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW.
+   https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM.
    → The page paints once with reserved action space; favorite/offer/owner state settles without a
    wrong CTA or layout shift. If viewer state is deliberately unavailable, personalized actions stay
    disabled.
