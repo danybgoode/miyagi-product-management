@@ -171,6 +171,52 @@ replace any conflicting scaffold language below or in a sprint file.
     compatibility until stale HTML can no longer request it, then remove that compatibility in a later
     deploy. A one-step full revert is not format-safe. This is a review-time correction to D5, recorded
     rather than hidden as builder discovery.
+19. **D19 — The shipped public-read shapes narrow the scaffold.** Current code proves the dynamic read
+    is not confined to `(shell)/layout.tsx`: shop presentation context and owned-host subpages read
+    headers, while the PDP reads Clerk, favorites and deal state. Privacy is therefore decided in
+    middleware before an empty-query public rewrite, importing `lib/claim.ts` and
+    `lib/preview-access.ts`; direct internal-prefix requests 404 before host resolution. `?preview=1`
+    enters the separate dynamic preview renderer, every other query stays on the existing dynamic
+    path, and `/us/**` is outside this epic. Existing unprefixed `/s/**` and `/l/**` compatibility URLs
+    keep their shipped redirect to `/mx/**` rather than becoming a second rendered URL. Next requires
+    a literal `revalidate` export, so public routes use the literal matching the relevant
+    `lib/cache-policy.ts` value and a deterministic guard imports that SSOT to reject drift; a
+    non-literal export is not an acceptable attempt to "import" the window.
+20. **D20 — Public HTML uses one fail-closed Free-plan Cache Rule.** The current zone already has the
+    homepage and `/api/img` rules, and the existing token has edited the same
+    `http_request_cache_settings` phase; no new permission, DNS, TLS, IAM, secret or dependency is
+    expected. Add one owned public-read rule using Free-plan `starts_with`/`ends_with`, an empty query,
+    apex marketplace/embed paths and `*.miyagisanchez.com` shop-root/PDP paths. It keeps Cloudflare's
+    default host-and-full-URL cache key and cannot match custom domains. Its edge TTL mode is
+    `bypass_by_default`, not the scaffold's looser `respect_origin`: Cloudflare documents that the
+    former follows an origin cache header but bypasses when it is absent, whereas the latter falls back
+    to Cloudflare defaults. Origin claim/privacy/no-store remains authoritative. The existing
+    provisioner gains a read-only `--verify-only` three-state live invariant; 401/403, 429/5xx,
+    non-JSON, DNS/network failure or a missing secret is UNAVAILABLE, never an empty green result. A
+    403 is a new permission gap and stops the run before any PUT.
+21. **D21 — Runtime ISR needs an explicit empty build population on Next 16.2.6.** A production build
+    disproved the sprint scaffold's `○`/`◐` expectation and D19's initial assumption that a literal
+    `revalidate` plus a request-neutral graph was sufficient: both unbounded internal templates still
+    built as `ƒ`, and neither appeared in `prerender-manifest.json`. Each of the two internal templates
+    now exports an empty `generateStaticParams()` so the first eligible request seeds ISR; the build
+    reports `●` for both and the manifest contains both runtime ISR entries. The two templates cover
+    the three public shapes (shop, PDP and embed) rather than creating three route files. Import this
+    built-artifact contract only from `scripts/assert-public-read-build.mjs`, which runs after every
+    `npm run build`. The same full-population guard found 29 live `revalidate` declarations and proved
+    19 under request-dependent graphs were fictional; those declarations are removed rather than
+    preserved as no-ops.
+22. **D22 — The scaffold's named Sprint 2 smoke fixtures are not cache-eligible live data.** The
+    post-deploy origin gate re-queried production before the Cloudflare apply and disproved the
+    scaffold: `piezas-unicas` is unclaimed with zero active listing mirrors, while
+    `prod_01M0JCJC0FKNEFYK81HSVD72GW` has no live mirror. D10 correctly keeps both on the shipped
+    dynamic `private, no-store` path; weakening that privacy boundary to make the old walkthrough pass
+    is forbidden. The live claimed fixtures are `ylai-studio` plus PDP
+    `prod_01KZJJPXY8XFV90WDFN43RTBBM`, and `panfleto` for the entitled-subdomain/embed comparison.
+    `concrete-garden-preview-retired-20260820` is one of the four live non-activated anchors and is the
+    preview-private 404 fixture. This deviation was caught by the orchestrator's production gate after
+    the frontend build—not hidden as a builder discovery—and the sprint walkthrough is corrected to
+    those live identities before the edge mutation. `scripts/perf-probe.mjs` now defaults to the same
+    claimed PDP/shop pair; the dated Sprint 1 baseline remains immutable evidence of its original URLs.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 
@@ -186,18 +232,25 @@ replace any conflicting scaffold language below or in a sprint file.
 
 ### Sprint 2 — Build contract (locked by the architect before the builder started)
 
-- Cite D1–D2, D7–D12 and D17. This builder owns the internal public-read tree, middleware rewrite,
+- Cite D1–D2, D7–D12, D17 and D19–D22. This builder owns the internal public-read tree, middleware rewrite,
   viewer-state island/endpoint, cache-eligibility seam and their tests in the frontend; root owns the
   existing Cloudflare provisioner extension and live invariant.
-- Marketplace (`/mx/s/**`, `/mx/l/[id]` and their unprefixed canonical compatibility paths), entitled
-  subdomain shop/PDP, and `/embed/s/[slug]` use the public renderer. `?preview=1`, custom domains and all
-  authed routes remain dynamic. No diff under checkout, account, admin, messages or seller-management
-  route trees except a test import that names them as forbidden.
+- Marketplace (`/mx/s/**`, `/mx/l/[id]`), entitled subdomain shop/PDP, and empty-query
+  `/embed/s/[slug]` use the public renderer. Unprefixed compatibility paths retain their redirect;
+  `/us/**`, other query-bearing requests, `?preview=1`, custom domains and all authed routes remain
+  dynamic. No functional diff is permitted under checkout, account, admin, messages or
+  seller-management route trees; D21's removal of fictional `revalidate` declarations is the sole
+  behavior-neutral exception, plus test imports that name those trees as forbidden.
 - Public HTML is viewer-neutral. The single island must reserve space, settle once, and fail disabled.
   Do not move authorization into Cloudflare or treat a flag as privacy.
-- Cache rules respect origin, require an empty query string, keep the default host-aware key and exclude
-  custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and a live preview-private 404;
-  `piezas-unicas.miyagisanchez.com` is not entitled and is not a valid subdomain fixture.
+- Public `revalidate` exports are literals and both templates return an empty build population; the
+  source guard imports `lib/cache-policy.ts` once, while the post-build guard owns the manifest rule.
+  Direct internal-prefix requests 404 before host resolution, and middleware decides claim/privacy
+  eligibility before rewriting.
+- The single new Cache Rule uses `bypass_by_default`, requires an empty query string, keeps the default
+  host-aware key and excludes custom domains. Prove marketplace, `panfleto.miyagisanchez.com`, embed and
+  a live preview-private 404 using D22's live fixtures; `piezas-unicas` is unclaimed and is not a valid
+  cache fixture on any channel. `--verify-only` is read-only and three-state.
 - The builder stops on any need for new Cloudflare permissions, DNS/TLS, a secret, checkout/auth policy
   change or a second failed implementation attempt.
 

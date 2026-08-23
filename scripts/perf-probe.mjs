@@ -22,8 +22,11 @@ export const DEFAULT_BASE_URL = 'https://miyagisanchez.com'
 // cache AVIF forever under a URL the new loader later promises is WebP.
 export const DEFAULT_IMAGE_URL = `${DEFAULT_BASE_URL}/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75`
 
-const PRODUCT_ID = 'prod_01M0JCJC0FKNEFYK81HSVD72GW'
-const SHOP_SLUG = 'piezas-unicas'
+// D22: these defaults must remain a live, claimed shop + its public PDP. The
+// historical S1 baseline keeps the original symptom URLs, but the executable
+// probe cannot report an edge-cache result against an unclaimed/no-mirror pair.
+const PRODUCT_ID = 'prod_01KZJJPXY8XFV90WDFN43RTBBM'
+const SHOP_SLUG = 'ylai-studio'
 const MODERN_IMAGE_ACCEPT = 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
 
 export function fixtureUrls({ baseUrl = DEFAULT_BASE_URL, imageUrl = DEFAULT_IMAGE_URL } = {}) {

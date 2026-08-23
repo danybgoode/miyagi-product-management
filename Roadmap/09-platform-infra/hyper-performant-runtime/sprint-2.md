@@ -1,6 +1,6 @@
 # Hyper-performant runtime — Sprint 2: Edge — make the public shell cacheable
 
-**Status:** ⬜ not started
+**Status:** 🟩 shipped — frontend revision `miyagi-web-00134-qtq`; Cloudflare invariant EXACT
 
 > **Sprint goal:** a PDP → shop click stops being an origin render. The public read tree honours the
 > `revalidate` windows it has claimed since the static-shell split, and Cloudflare can finally cache
@@ -36,18 +36,24 @@ internal middleware rewrite into a channel/path-parameterized public renderer, a
 preview renderer, and one no-store PDP viewer-state island. `middleware.ts` already resolves the
 channel; it passes that decision as path data rather than a trusted client header read in the renderer.
 
+**Second code-verified correction (D19):** request reads also exist in shop-presentation context and
+owned-host subpages. `/us/**` is excluded; unprefixed `/s/**` and `/l/**` keep their shipped redirect.
+Only an empty query enters the public renderer. Next requires literal `revalidate` exports, so the
+guard imports `lib/cache-policy.ts` and proves those literals match instead of exporting a non-literal.
+
 **Acceptance:**
 - The internal public renderer's complete layout/page chain contains no `headers()`, `cookies()`,
   Clerk server read or owner preview overlay. Parameterized build glyphs are recorded but are not used
   as a false binary proxy for ISR.
-- Origin responses on the original URLs carry the `lib/cache-policy.ts` window and a repeated request
-  proves an origin cache hit before the Cloudflare rule is enabled.
+- Origin responses on the original URLs carry the literal window guarded against
+  `lib/cache-policy.ts`, and a repeated request proves an origin cache hit before the Cloudflare rule
+  is enabled.
 - Public PDP HTML is viewer-neutral. One fixed-size client island settles once and supplies ownership,
   favorite, active-deal and buyer-prefill state; it never flashes an incorrect CTA and fails disabled.
 - `?preview=1` remains owner-authorized and `no-store` through `lib/shop-presentation/preview.ts`.
 - The **entire channel guard suite stays green**: `own-shop-seo.spec.ts`, the embed specs, the
   `ChannelLayout`/white-label specs, `nav-entry-points.spec.ts`.
-- Marketplace (`/mx/s/piezas-unicas`), entitled subdomain
+- Marketplace (`/mx/s/ylai-studio`), entitled subdomain
   (`panfleto.miyagisanchez.com`) and `/embed/s/[slug]` render correctly. The sole configured custom
   domain is unverified/on the old Vercel rail and is explicitly excluded from this epic's cache proof;
   its current dynamic behavior must not regress.
@@ -55,8 +61,9 @@ channel; it passes that decision as path data rather than a trusted client heade
   cacheable. Verify against a real preview-private shop, not a unit test alone.
 - URLs are byte-identical before and after: canonical tags, `robots.txt`, `sitemap`, OG metadata.
   *(LEARNINGS: when replacing a metadata path, diff the exact bytes the old one emitted.)*
-- Authed `(shell)` routes are untouched — no diff under `/shop/manage`, `/account`, `/admin`,
-  `/checkout`.
+- Authed `(shell)` routes keep the same dynamic layout and behavior. The sole diff permitted under
+  `/shop/manage`, `/account`, `/admin` or `/checkout` is D21's removal of a fictional `revalidate`
+  declaration; no functional implementation moves.
 
 **Risk:** **high** — authorization/render boundary plus shared middleware. Announce before merge; an
 independent reviewer merges only after the locked review stack is green.
@@ -75,7 +82,7 @@ MISS 16.2 s → HIT 0.3 s once the rule shipped. **Extend `infra/gcp/cloudflare-
 do not write a second script.**
 
 **Acceptance:**
-- A second request to `https://miyagisanchez.com/mx/s/piezas-unicas` returns `cf-cache-status: HIT`.
+- A second request to `https://miyagisanchez.com/mx/s/ylai-studio` returns `cf-cache-status: HIT`.
 - The MISS→HIT timing delta is **recorded in this sprint doc** at close (the `/api/img` precedent:
   16.2 s → 0.3 s), measured with Story 1.3's probe.
 - **Each included channel variant is probed separately** and the cache key does not collapse them —
@@ -83,13 +90,16 @@ do not write a second script.**
   failure mode that would leak one seller's storefront onto another's domain; prove it, don't reason
   about it.
 - The origin contract marks unclaimed, preview-private and unresolved responses `no-store`; the edge
-  rule separately requires an empty query string, excludes those responses and respects origin.
+  rule separately requires an empty query string and uses Cloudflare's fail-closed
+  `bypass_by_default` origin-header mode, so a response missing cache policy is bypassed rather than
+  falling back to a default TTL.
   Query-bearing requests bypass the edge rule, and custom domains remain outside it.
 - A **preview-private** shop is not servable from cache under any included variant, proven against one
   of the four live non-activated anchors.
 - The provisioning script stays idempotent and filters by its own rule description, so a re-run
   preserves hand-added rules (the `cloudflare-waf-provision.mjs` shape).
-- An invariant test asserts the rule exists live, matching the existing `infra/gcp/test/` pattern.
+- The existing provisioner gains a read-only, three-state `--verify-only` live invariant. Missing or
+  drifted is a failure; an unavailable credential/API/network is named and never reported green.
 
 **Risk:** **high** — shared Cloudflare edge config on the platform zone. Announce; an independent
 reviewer merges only after the live rule and findings are verified.
@@ -105,9 +115,16 @@ it because nothing was looking. This is the regression class the whole epic is p
 AGENTS, *a script that exits green having run nothing is worse than no script* — the guard must
 actually resolve the layout chain, not pattern-match a filename.
 
+**Locked correction (D21):** the live population was 29 declarations, not ~15; 19 were request-tainted
+and have had the fictional export removed. Next 16.2.6 also proved that the two unbounded public-read
+templates require an empty `generateStaticParams()` to become runtime ISR. Their truthful build marker
+is `●`, not the scaffold's `○`/`◐` shorthand.
+
 **Acceptance:**
 - A spec resolves the full page/layout/import chain and fails when a `revalidate` export depends on
   `headers()`, `cookies()`, a Clerk server request read or the owner preview overlay.
+- The scan discovers every live declaration, and the post-build invariant proves both internal public
+  templates exist in `prerender-manifest.json` as runtime ISR entries.
 - It **allows the negation**: a route that is deliberately dynamic and declares no `revalidate`
   passes cleanly. *(LEARNINGS: a guard that rejects correct output is worse than one that misses a
   rare fault — it trains people to bypass it.)*
@@ -118,7 +135,7 @@ actually resolve the layout chain, not pattern-match a filename.
 
 ## Sprint QA
 - **api spec(s):** 2.1 → the existing channel suite is the harness (already written — keep it green;
-  add a build-output assertion for `○`/`◐` on the three routes). 2.2 → a live MISS→HIT probe spec,
+  assert `●` plus the manifest entries for the two D21 templates covering the three public shapes). 2.2 → a live MISS→HIT probe spec,
   gated on prod like `perf-budget.spec.ts`'s live checks, plus an `infra/gcp/test/` invariant for the
   rule. 2.3 → its own spec file, per the house one-concern-per-spec split.
 - **browser smoke owed:** **yes, to Daniel — and this sprint's is the important one.** Marketplace,
@@ -129,31 +146,40 @@ actually resolve the layout chain, not pattern-match a filename.
   **fresh reviewer subagent is also mandatory on HIGH tier** — shared infra is exactly where context
   independence catches what family independence misses.
 
-## Sprint 2 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+## Sprint 2 — Smoke walkthrough (executed in order)
+Env: production · https://miyagisanchez.com · 2026-08-23 · frontend `c121c60` /
+Cloud Run `miyagi-web-00134-qtq`
 
-1. Open https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW and click through to the
-   merchant "Piezas Únicas".
-   → The shop page appears immediately. This is the exact navigation that prompted the epic — it
-   should feel like a different site.
-2. Reload https://miyagisanchez.com/mx/s/piezas-unicas.
-   → Still instant. (The builder will show you `cf-cache-status: HIT` for this request.)
-3. Open https://panfleto.miyagisanchez.com in a private window.
-   → The shop renders white-label — the seller's own header and branding, **no Miyagi Sánchez
-   platform chrome**, and it is that seller's shop, not another's.
-4. Open a live preview-private fixture supplied in the PR.
-   → It still shows "not found". It must not be reachable, and must not appear after a reload.
-5. Open https://miyagisanchez.com/embed/s/piezas-unicas inside the embed smoke fixture.
-   → It renders bare, with no platform header/footer/tab bar.
-6. **(auth path — owed to Daniel by name)** Sign in and open
-   https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW.
-   → The page paints once with reserved action space; favorite/offer/owner state settles without a
-   wrong CTA or layout shift. If viewer state is deliberately unavailable, personalized actions stay
-   disabled.
-7. Still signed in, go to https://miyagisanchez.com/shop/manage/settings.
-   → The seller portal looks and behaves exactly as before. This sprint must not have touched it.
+1. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM, then follow its Ylai Studio
+   merchant destination at https://miyagisanchez.com/mx/s/ylai-studio.
+   → Expected/result: real Chromium rendered both at HTTP 200 with the correct titles and zero console
+   errors; the shop destination displayed Ylai Studio's catalog and marketplace chrome.
+2. Request https://miyagisanchez.com/mx/s/ylai-studio twice from the same Cloudflare point of presence.
+   → Expected/result: `MISS` at 3.488 s became `HIT` at 0.148 s; the corrected `perf-probe` repeat
+   independently reported `HIT` at 57.7 ms with 389,224 B of route client JavaScript.
+3. Open https://panfleto.miyagisanchez.com in production Chromium and request it twice.
+   → Expected/result: HTTP 200 with Panfleto's white-label header and no platform navigation or console
+   errors; `MISS` at 2.612 s became `HIT` at 0.150 s.
+4. Open https://miyagisanchez.com/mx/s/concrete-garden-preview-retired-20260820 and reload it.
+   → Expected/result: the real non-activated fixture rendered "404 Página no encontrada"; the response
+   stayed `private, no-store` and Cloudflare reported `BYPASS`, never a cached shop page.
+5. Open https://miyagisanchez.com/embed/s/panfleto in production Chromium and request it twice.
+   → Expected/result: HTTP 200 with the bare Panfleto embed and no platform navigation or console errors;
+   `MISS` at 0.566 s became `HIT` at 0.152 s.
+6. Compare the cached marketplace, entitled-subdomain and embed response bodies, then request
+   https://miyagisanchez.com/mx/s/ylai-studio?probe=1.
+   → Expected/result: the three SHA-256 values were distinct (`213ac63a…`, `051e66eb…`, `8fa8e748…`),
+   while the query-bearing response remained `private, no-store` and `cf-cache-status: DYNAMIC`.
+7. **(auth path — owed to Daniel by name)** Sign in and open
+   https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM.
+   → Expected/result owed: the reserved action space settles once with correct favorite/offer/owner
+   state; unavailable viewer state leaves personalized actions disabled.
+8. **(auth path — owed to Daniel by name)** Still signed in, open
+   https://miyagisanchez.com/shop/manage/settings.
+   → Expected/result owed: the seller portal looks and behaves exactly as before.
 
 Custom-domain caching is deliberately not a smoke step: the only configured domain is unverified and
 currently served by Vercel, so claiming it as a Cloud Run/Cloudflare proof would be fiction. If any
 step fails, note the step number + what you saw — that's the bug report. **Steps 3–5 are the white-label
-boundary; if any shows the wrong shop or leaks platform chrome, stop the merge.**
+boundary; all anonymous checks passed. Steps 7–8 remain explicitly owed to Daniel because production
+Clerk does not accept the test-token rail.
