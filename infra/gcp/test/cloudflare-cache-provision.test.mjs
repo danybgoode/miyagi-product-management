@@ -274,6 +274,26 @@ test('apply stops and verify reports unavailable when a successful entrypoint pa
   }
 })
 
+test('malformed successful zone payload is unavailable and never constructs an undefined-zone request', async () => {
+  for (const result of [{}, null, [{}]]) {
+    const applyIo = queuedFetch([jsonResponse(200, { success: true, result })])
+    await assert.rejects(() => applyCanonicalRules({ env: tokenEnv }, applyIo), /zone result/)
+    assert.equal(applyIo.calls.length, 1)
+
+    const errors = []
+    const verifyIo = queuedFetch([jsonResponse(200, { success: true, result })])
+    const exit = await main(['--verify-only'], {
+      ...verifyIo,
+      env: tokenEnv,
+      log() {},
+      error(message) { errors.push(message) },
+    })
+    assert.equal(exit, 2)
+    assert.match(errors.join('\n'), /UNAVAILABLE — not evidence of health/)
+    assert.equal(verifyIo.calls.length, 1)
+  }
+})
+
 test('--rollback removes only the owned public-read rule and is idempotent when absent', async () => {
   const manual = { id: 'manual', description: 'manual rule', expression: 'true' }
   const live = [manual, ...exactLiveRules()]

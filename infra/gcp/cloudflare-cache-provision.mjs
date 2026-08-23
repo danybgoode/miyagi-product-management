@@ -232,7 +232,15 @@ const entrypointPath = (zoneId) => `/zones/${zoneId}/rulesets/phases/http_reques
 
 async function readZone(token, deps) {
   const zoneList = await cfApi(`/zones?name=${encodeURIComponent(DOMAIN)}`, { token }, deps)
-  return zoneList.result?.[0] ?? null
+  if (!Array.isArray(zoneList?.result)) {
+    throw new CloudflareApiError('Cloudflare zone result is not an array', { status: 200, kind: 'schema' })
+  }
+  if (zoneList.result.length === 0) return null
+  const zone = zoneList.result[0]
+  if (!zone || typeof zone !== 'object' || typeof zone.id !== 'string' || !zone.id || typeof zone.name !== 'string' || !zone.name) {
+    throw new CloudflareApiError('Cloudflare zone result has no usable id/name', { status: 200, kind: 'schema' })
+  }
+  return zone
 }
 
 async function readEntrypointRules(zoneId, token, deps) {
