@@ -216,6 +216,24 @@ test('--verify-only returns 2 and the required warning for missing secret/auth/p
   }
 })
 
+test('--verify-only treats ordinary 4xx API errors as failures, not unavailable infrastructure', async () => {
+  for (const fixture of [
+    jsonResponse(400, { success: false, errors: [{ code: 1001, message: 'bad request' }] }),
+    jsonResponse(404, { success: false, errors: [{ code: 1001, message: 'not found' }] }),
+  ]) {
+    const errors = []
+    const io = queuedFetch([zoneResponse(), fixture])
+    const exit = await main(['--verify-only'], {
+      ...io,
+      env: tokenEnv,
+      log() {},
+      error(message) { errors.push(message) },
+    })
+    assert.equal(exit, 1)
+    assert.doesNotMatch(errors.join('\n'), /UNAVAILABLE/)
+  }
+})
+
 test('apply skips PUT when exact and otherwise sends one preserving reconciliation; a 403 GET stops before PUT', async () => {
   const exactIo = queuedFetch([zoneResponse(), rulesResponse(exactLiveRules())])
   const exact = await applyCanonicalRules({ env: tokenEnv }, exactIo)

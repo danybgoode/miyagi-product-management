@@ -168,8 +168,7 @@ export function isUnavailableError(error) {
   if (!(error instanceof CloudflareApiError)) return false
   if (isNoEntrypointError(error)) return false
   return error.kind === 'network' || error.kind === 'non-json' || error.status === 401 ||
-    error.status === 403 || error.status === 429 || (error.status !== null && error.status >= 500) ||
-    error.kind === 'api'
+    error.status === 403 || error.status === 429 || (error.status !== null && error.status >= 500)
 }
 
 export async function cfApi(path, { token, method = 'GET', body } = {}, deps = {}) {
@@ -286,7 +285,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
   const log = deps.log || console.log
   const errorLog = deps.error || console.error
   const verifyOnly = argv.includes('--verify-only')
-  if (argv.some((arg) => arg !== '--verify-only')) {
+  if (argv.length > 1 || (argv.length === 1 && argv[0] !== '--verify-only')) {
     errorLog('Usage: node infra/gcp/cloudflare-cache-provision.mjs [--verify-only]')
     return 1
   }
@@ -314,10 +313,10 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     return 0
   } catch (error) {
     if (verifyOnly && isUnavailableError(error)) {
-      errorLog(`UNAVAILABLE — not evidence of health: ${error.message || error}`)
+      errorLog(`UNAVAILABLE — not evidence of health: ${error instanceof Error ? error.message : String(error)}`)
       return 2
     }
-    errorLog(error.message || error)
+    errorLog(error instanceof Error ? error.message : String(error))
     return 1
   }
 }
