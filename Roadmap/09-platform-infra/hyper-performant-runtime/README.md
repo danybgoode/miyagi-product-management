@@ -215,7 +215,8 @@ replace any conflicting scaffold language below or in a sprint file.
     `concrete-garden-preview-retired-20260820` is one of the four live non-activated anchors and is the
     preview-private 404 fixture. This deviation was caught by the orchestrator's production gate after
     the frontend build—not hidden as a builder discovery—and the sprint walkthrough is corrected to
-    those live identities before the edge mutation.
+    those live identities before the edge mutation. `scripts/perf-probe.mjs` now defaults to the same
+    claimed PDP/shop pair; the dated Sprint 1 baseline remains immutable evidence of its original URLs.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 

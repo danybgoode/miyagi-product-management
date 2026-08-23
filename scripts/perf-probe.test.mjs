@@ -4,10 +4,11 @@ import test from 'node:test'
 import { gzipSync } from 'node:zlib'
 import { DEFAULT_IMAGE_URL, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, rawRequest, requestTransport, runProbe } from './perf-probe.mjs'
 
-test('fixtureUrls locks the marketplace symptoms and an explicitly configurable real image fixture', () => {
+test('fixtureUrls locks a live claimed PDP/shop pair and an explicitly configurable real image fixture', () => {
   const fixtures = fixtureUrls({ baseUrl: 'https://preview.example', imageUrl: 'https://preview.example/api/img?url=x&w=640&q=75' })
   assert.deepEqual(fixtures.map((fixture) => fixture.id), ['home', 'pdp', 'shop', 'image'])
-  assert.equal(fixtures[1].url, 'https://preview.example/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW')
+  assert.equal(fixtures[1].url, 'https://preview.example/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM')
+  assert.equal(fixtures[2].url, 'https://preview.example/mx/s/ylai-studio')
   assert.equal(fixtures[3].url, 'https://preview.example/api/img?url=x&w=640&q=75')
   assert.doesNotMatch(DEFAULT_IMAGE_URL, /[?&]f=/, 'the default must be safe to run against pre-deploy production')
 })
