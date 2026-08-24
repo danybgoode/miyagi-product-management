@@ -53,6 +53,12 @@ Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋
 
 ## Feature map
 
+- **2026-08-24 — Hyper-performant runtime SHIPPED (3 HIGH sprints).** Marketplace browsing now keeps a
+  frontend instance warm, serves eligible public shop/PDP/embed reads from the edge without mixing in
+  viewer state, and enforces a client-JavaScript diet in the build. The final production probe observed
+  all locked public fixtures; signed-in native-interaction and Sentry-dashboard checks remain explicitly
+  owed to Daniel. See [09 · Platform & Infra › Hyper-performant runtime](09-platform-infra/hyper-performant-runtime/).
+
 ### 01 · Discovery & Shopping
 - ✅ **Purposeful two-state homepage** (Dirección B «catálogo limpio») — signed-out leads with a value-prop ribbon → curated "Selección de la semana" (featured + price-loudest grid) → "Categorías con vida" (only categories with listings) → a live Vecindario strip → a terminal CTA; **signed-in** swaps in a "Retoma donde te quedaste" favorites rail, an actionable pending-offer alert (≤2), and a seller snapshot. One Iconoir icon language across the buyer surface (no emoji). The **Selección is admin-curated** — pin/unpin + drag-reorder from `/admin/seleccion` (Medusa product metadata `featured`/`featured_rank`) — and **rotates per ISR window** (the unpinned remainder is deterministically shuffled by the revalidate time-bucket; pinned/featured stay fixed) so it feels alive without un-static-ing `/`. The admin candidate pool now unions the complete explicit pin set (not just the newest 50), and imported/hotlinked homepage images are re-homed to first-party R2 before display.
 - ✅ Search & browse listings with category filters
