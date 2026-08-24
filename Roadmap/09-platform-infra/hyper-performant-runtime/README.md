@@ -377,10 +377,9 @@ epic adds no flags.**
 - [x] Product poster (`Roadmap/README.md`) and platform index updated
 - [x] Durable learnings deduped against `Roadmap/LEARNINGS.md`: D18/D22 already retain the applicable
   image/data and live-fixture lessons; no duplicate learning appended
-- [x] Team memory updated: `~/.claude/projects/-Users-cosmo-dobby-medusa-bonsai/memory/` now contains
-  `hyper-performant-runtime-epic.md`, and its `MEMORY.md` index points to the shipped epic and Daniel's
-  remaining owed checks
+- [x] Team memory updated: the external project-memory topic and its `MEMORY.md` index point to the
+  shipped epic and Daniel's remaining owed checks
 - [x] **Kill-switch:** N/A — the carved-out infra/render-mode rollback is verified in the shipped contract
-- [ ] Feature branch deletion: superseded S1/S2/S3 stack refs are deleted; the sole remaining closeout
-  branch is intentionally retained until PR #166 merges, then must be deleted and verified. This README
-  frontmatter is the shipped SSOT.
+- [x] Superseded S1/S2/S3 stack refs deleted.
+- [ ] Final closeout branch deletion remains pending PR #166's independent merge; delete it immediately
+  afterward and verify the remote ref is gone. This README frontmatter is the shipped SSOT.
