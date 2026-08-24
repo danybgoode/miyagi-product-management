@@ -381,5 +381,5 @@ epic adds no flags.**
   shipped epic and Daniel's remaining owed checks
 - [x] **Kill-switch:** N/A — the carved-out infra/render-mode rollback is verified in the shipped contract
 - [x] Superseded S1/S2/S3 stack refs deleted in both repositories (verified after targeted deletion).
-- [ ] Final closeout branch deletion remains pending PR #166's independent merge; delete it immediately
-  afterward and verify the remote ref is gone. This README frontmatter is the shipped SSOT.
+- [x] Final closeout branch deleted after PR #166's independent merge; verified absent from the root and
+  frontend remotes. This README frontmatter is the shipped SSOT.
