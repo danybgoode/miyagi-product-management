@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-08-24T14:33:34.643Z",
+  "architecture_lock_decisions": ["D1", "D6", "D13", "D14", "D16", "D22"],
+  "command": "node scripts/perf-probe.mjs --revision 03108bd2a538dee4508d313496274e30468d10df --json",
+  "deployed_revision": {
+    "state": "present",
+    "value": "03108bd2a538dee4508d313496274e30468d10df"
+  },
+  "fixtures": [
+    {
+      "id": "home",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 303 },
+      "cf_cache_status": { "state": "present", "value": "DYNAMIC" },
+      "total_transfer_bytes": { "state": "present", "value": 50363 },
+      "client_js_transfer_bytes": { "state": "present", "value": 358055 }
+    },
+    {
+      "id": "pdp",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 968.4 },
+      "cf_cache_status": { "state": "present", "value": "MISS" },
+      "total_transfer_bytes": { "state": "present", "value": 48928 },
+      "client_js_transfer_bytes": { "state": "present", "value": 370806 }
+    },
+    {
+      "id": "shop",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 615.5 },
+      "cf_cache_status": { "state": "present", "value": "REVALIDATED" },
+      "total_transfer_bytes": { "state": "present", "value": 44424 },
+      "client_js_transfer_bytes": { "state": "present", "value": 349863 }
+    },
+    {
+      "id": "image",
+      "status": "present",
+      "http_status": 200,
+      "ttfb_ms": { "state": "present", "value": 2036.9 },
+      "cf_cache_status": { "state": "present", "value": "MISS" },
+      "total_transfer_bytes": { "state": "present", "value": 13071 },
+      "client_js_transfer_bytes": { "state": "absent" }
+    }
+  ],
+  "unavailable": 0,
+  "absent": 0,
+  "notes": [
+    "This is a read-only raw-transfer production measurement after the S3 deploy.",
+    "D22 replaced stale S1 PDP/shop identities with live claimed fixtures; do not use this as a causal same-fixture comparison to the dated baseline."
+  ]
+}

@@ -1,6 +1,7 @@
 # Hyper-performant runtime — Sprint 3: Client — the JavaScript diet
 
-**Status:** ⬜ not started
+**Status:** 🟩 shipped — frontend PR [#418](https://github.com/danybgoode/miyagisanchezcommerce/pull/418),
+squash `03108bd`; production Cloud Run `miyagi-web-00135-czg` (100% traffic, `minScale: 1`)
 
 > **Sprint goal:** a buyer page downloads materially less JavaScript, and the deterministic gate
 > fails if that ever regresses. **Archetype: Sweeper** — acceptance is *less code, same behaviour, no
@@ -138,27 +139,39 @@ per-route budget the original attempt couldn't land, done correctly.
 - **Coordination:** check for in-flight PRs on `app/components/*` before starting — S3.3 touches
   shared buyer components.
 
-## Sprint 3 — Smoke walkthrough (do these in order)
-Env: production · https://miyagisanchez.com   (or the preview URL while testing pre-merge)
+## Sprint 3 — Smoke walkthrough (executed in order)
+Env: production · https://miyagisanchez.com · 2026-08-24 · frontend `03108bd` /
+Cloud Run `miyagi-web-00135-czg`
 
-1. Sign in, then open https://miyagisanchez.com/mx and watch the area where your "retoma" and seller
-   modules appear.
-   → They are there as the page settles. No skeleton shimmer that resolves a beat later.
-2. Open https://miyagisanchez.com/mx/l/prod_01M0JCJC0FKNEFYK81HSVD72GW and expand the full product
-   description.
-   → It opens instantly. Press `Ctrl/⌘+F` and search for a word that is inside the collapsed text →
-   the browser finds it and opens the section for you.
-3. Click your account menu in the header, then press `Esc`.
-   → It opens under the button and `Esc` closes it. Tab into it with the keyboard → focus moves
-   through the items in order.
-4. Open the AI handoff button, press `Esc`, reopen it, copy the prompt and continue to the agent.
-   → Native dialog focus closes/restores correctly and the context/copy/handoff behavior is unchanged.
-5. Ask the builder for the built-manifest vendor report.
-   → `/mx`, `/mx/l/[id]` and `/mx/s/[slug]` contain none of the four named vendor packages; missing
-   manifests would fail the command instead of reading as zero.
-6. Ask the builder for the before/after `perf-probe` table.
-   → Client-JS transfer on `/mx`, `/l/[id]` and `/s/[slug]` is materially lower than the 2026-08-22
-   baseline, and each route now has a committed budget.
+1. Open https://miyagisanchez.com/mx in real Chromium.
+   → HTTP 200; marketplace chrome rendered. Four legacy protocol-relative Shopify image candidates
+   returned 400 from the intentionally R2/Supabase-only proxy, exactly as Sprint 1 already recorded in
+   D18; they are a pre-existing catalog-content limitation, not a Sprint 3 regression.
+2. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM and activate its description
+   summary.
+   → HTTP 200; the production DOM contained one closed native `<details>`, and clicking its `summary`
+   changed `open` from `false` to `true` without a client-state transition.
+3. Read the S3 built-artifact gate from the merged PR.
+   → It rejects Replay in client output, resolves the three buyer route manifests, and enforces Brotli
+   ceilings of 90,861 B (`/mx`), 101,601 B (PDP) and 83,565 B (shop). The deliberate Replay/vendor/fat
+   import/native-behaviour mutations were each observed red before merge.
+4. Measure the deployed public fixtures with
+   `node scripts/perf-probe.mjs --revision 03108bd2a538dee4508d313496274e30468d10df --json`.
+   → All four locked fixtures were present. Client-JS transfer was 358,055 B (`/mx`), 370,806 B (PDP),
+   and 349,863 B (shop); see `s3-production-final-2026-08-24.json`. The Sprint 1 baseline has old,
+   now-ineligible PDP/shop identities, so it is retained as historical evidence rather than presented
+   as a like-for-like S3 latency claim.
+5. **Owed to Daniel (signed-in/auth state):** sign in and open https://miyagisanchez.com/mx, then open
+   Cuenta and press `Esc`.
+   → Expected: the native popover opens below its trigger, `Esc` closes it, and keyboard focus proceeds
+   through account actions in order.
+6. **Owed to Daniel (signed-in/auth state):** open the AI handoff control, press `Esc`, reopen it, copy
+   the prompt and continue to the agent.
+   → Expected: native dialog focus traps/restores correctly and context, copy and handoff remain intact.
+7. **Owed to Daniel (Sentry dashboard access):** cause the approved deliberate client-error check and
+   inspect the production Sentry project.
+   → Expected: the error arrives while no Session Replay is created; DSN, tracing and server/edge
+   reporting remain the shipped configuration.
 
 If any step fails, note the step number + what you saw — that's the bug report. Checkout and payment
-verification are deliberately absent because this sprint's locked diff cannot touch them.
+verification are deliberately absent because D14 proves this locked diff did not move a money path.

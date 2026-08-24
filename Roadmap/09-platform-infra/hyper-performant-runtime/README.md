@@ -1,5 +1,5 @@
 ---
-status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: hyper-performant-runtime
 build_order: null    # integer position in the ONE global build sequence — the SSOT once the epic
                      # exists (the seed's value is only a fallback). Fill it in at the betting
@@ -7,6 +7,11 @@ build_order: null    # integer position in the ONE global build sequence — the
 ---
 
 # Epic: Hyper-performant runtime
+
+> ✅ **Shipped 2026-08-24.** Three ordered high-risk sprints reached production: Cloud Run keeps one
+> frontend instance warm, public claimed reads have a privacy-preserving edge cache, and buyer runtime
+> JavaScript has enforceable route budgets. The remaining signed-in and Sentry-dashboard observations are
+> explicitly owed to Daniel in the sprint walkthroughs; they are not represented as automated proof.
 
 > **Area:** 09-platform-infra · **Risk:** high · **Class:** Chore · **Archetype:** Maintainer · **Scope seed:** [`00-ideas/seeds/hyper-performant-runtime.md`](../../00-ideas/seeds/hyper-performant-runtime.md)
 
@@ -215,8 +220,10 @@ replace any conflicting scaffold language below or in a sprint file.
     `concrete-garden-preview-retired-20260820` is one of the four live non-activated anchors and is the
     preview-private 404 fixture. This deviation was caught by the orchestrator's production gate after
     the frontend build—not hidden as a builder discovery—and the sprint walkthrough is corrected to
-    those live identities before the edge mutation. `scripts/perf-probe.mjs` now defaults to the same
-    claimed PDP/shop pair; the dated Sprint 1 baseline remains immutable evidence of its original URLs.
+    those live identities before the edge mutation. The same correction applies to every later epic
+    walkthrough, including Sprint 3; a dead PDP never becomes valid evidence merely because the test is
+    now about client behavior. `scripts/perf-probe.mjs` defaults to the same claimed PDP/shop pair; the
+    dated Sprint 1 baseline remains immutable evidence of its original URLs.
 
 ### Sprint 1 — Build contract (locked by the architect before the builder started)
 
@@ -354,13 +361,25 @@ idempotent script that filters by its own rule description, so hand-added rules 
 Consistent with WAYS-OF-WORKING → *Feature flags — OFF by default as a practice* (2026-08-10). **This
 epic adds no flags.**
 
+## Delivery record
+
+| Sprint | Shipped evidence |
+|---|---|
+| S1 · Origin | Root PR [#163](https://github.com/danybgoode/miyagi-product-management/pull/163) `bdc6f43`; frontend PR [#416](https://github.com/danybgoode/miyagisanchezcommerce/pull/416) `1b10695`; Cloud Run `miyagi-web-00133-x9b` verified ready with `minScale: 1`. |
+| S2 · Edge | Root PR [#164](https://github.com/danybgoode/miyagi-product-management/pull/164) `8465fd3`; frontend PR [#417](https://github.com/danybgoode/miyagisanchezcommerce/pull/417) `c121c60`; real cache proofs are recorded in `sprint-2.md`, including marketplace, subdomain and embed MISS→HIT. |
+| S3 · Client | Frontend PR [#418](https://github.com/danybgoode/miyagisanchezcommerce/pull/418) squash `03108bd`; Cloud Run `miyagi-web-00135-czg` Ready at 100% traffic. The final read-only probe is `s3-production-final-2026-08-24.json`. |
+
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** N/A — carve-out recorded above (infra/render-mode; no runtime seam). *Verify-only.*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated in the sprint walkthroughs)
+- [x] Each `sprint-N.md` has its smoke walkthrough with real URLs
+- [x] This README marked ✅; every sprint status has committed evidence
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) and platform index updated
+- [x] Durable learnings deduped against `Roadmap/LEARNINGS.md`: D18/D22 already retain the applicable
+  image/data and live-fixture lessons; no duplicate learning appended
+- [x] Team memory updated: the external project-memory topic and its `MEMORY.md` index point to the
+  shipped epic and Daniel's remaining owed checks
+- [x] **Kill-switch:** N/A — the carved-out infra/render-mode rollback is verified in the shipped contract
+- [x] Superseded S1/S2/S3 stack refs deleted in both repositories (verified after targeted deletion).
+- [ ] Final closeout branch deletion remains pending PR #166's independent merge; delete it immediately
+  afterward and verify the remote ref is gone. This README frontmatter is the shipped SSOT.
