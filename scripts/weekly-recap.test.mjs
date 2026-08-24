@@ -311,3 +311,87 @@ test('buildMessage: a repo that hit the gh fetch cap is flagged as possibly-inco
   });
   assert.match(msg, /hit the fetch cap/);
 });
+
+// ---- the 2026-08-24 "message too long" failure -------------------------------------------------
+// The routine could not post for ~6 weeks. Its own diagnosis was "52 epics blow past Telegram's 4096
+// limit", which is the TRIGGER but not the defect: buildMessage already ended in truncateForTelegram,
+// and that truncator is correct and unit-tested. The defect was WHERE the net sat — main() called
+// `buildMessage(...).replace(/\n/, prose)`, growing an already-at-the-cap message by the length of the
+// prose, so the guarantee was voided one layer above the function that made it. These two tests pin the
+// two halves of the fix: the epics section now has a primary cap like the PR section always had, and the
+// cap is applied to the message that is actually SENT, prose included.
+const bigEpics = (n) => ({
+  available: true,
+  epics: Array.from({ length: n }, (_, i) => ({
+    name: `Epic number ${i + 1} with a fairly long product-shaped title`,
+    status: i % 5 === 0 ? 'archived' : 'shipped',
+    retroDigest: 'R'.repeat(320), // RETRO_DIGEST_MAX_CHARS — the real worst case per epic
+  })),
+});
+
+test('buildMessage: a 52-epic catch-up window caps the list and keeps the true count visible', () => {
+  const msg = buildMessage({
+    sinceISO: '2026-07-13T00:00:00.000Z',
+    untilISO: '2026-08-24T00:00:00.000Z',
+    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    shippedEpics: bigEpics(52),
+  });
+  assert.ok(msg.length <= 4096, `message was ${msg.length} chars`);
+  assert.match(msg, /…and 42 more/, 'the 42 epics not listed must still be counted, not silently dropped');
+});
+
+// The tail above is the FIRST thing the net eats on a real catch-up week, where the PR sections alone
+// run ~2.5k chars. Verified against the live 2026-07-13→08-24 window: the cut landed inside the epic
+// list, so "…and 42 more" never rendered. The header count is what actually survives, so it is what
+// gets asserted under realistic (not fixture-convenient) pressure.
+test('buildMessage: the epic COUNT survives even when the net cuts through the list itself', () => {
+  const fatRepo = (repo) => ({
+    available: true,
+    prs: Array.from({ length: 84 }, (_, i) => ({ number: 400 - i, title: `a realistically long merged pull request title ${i}` })),
+    repo,
+  });
+  const msg = buildMessage({
+    sinceISO: '2026-07-13T00:00:00.000Z',
+    untilISO: '2026-08-24T00:00:00.000Z',
+    repoResults: [fatRepo('danybgoode/miyagisanchezcommerce'), fatRepo('danybgoode/medusa-bonsai-backend')],
+    shippedEpics: bigEpics(52),
+    prose: 'P'.repeat(1200),
+  });
+  assert.ok(msg.length <= 4096, `message was ${msg.length} chars`);
+  assert.doesNotMatch(msg, /…and 42 more/, 'precondition: this window must be big enough that the tail IS cut');
+  assert.match(msg, /Shipped \/ closed epics<\/b> \(52\)/, 'the header count must survive the cut');
+});
+
+test('buildMessage: the cap covers the PROSE too — the net sits where the message is assembled', () => {
+  const prose = 'P'.repeat(1200); // a ~150-word CPO-voice recap, comfortably realistic
+  const msg = buildMessage({
+    sinceISO: '2026-07-13T00:00:00.000Z',
+    untilISO: '2026-08-24T00:00:00.000Z',
+    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    shippedEpics: bigEpics(52),
+    prose,
+  });
+  assert.ok(msg.length <= 4096, `message was ${msg.length} chars — Telegram would reject it`);
+  // Prose leads, so the cap must eat the tallies and never the hand-written recap.
+  assert.ok(msg.includes(prose), 'the prose must survive the cap intact — it is the point of the message');
+});
+
+test('buildMessage: a quiet week still carries its prose, and still respects the cap', () => {
+  const prose = 'Q'.repeat(5000); // pathological, to prove the quiet path is netted too
+  const msg = buildMessage({
+    sinceISO: '2026-08-17T00:00:00.000Z',
+    untilISO: '2026-08-24T00:00:00.000Z',
+    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    shippedEpics: { available: true, epics: [] },
+    prose: 'the week was quiet',
+  });
+  assert.match(msg, /the week was quiet/);
+  const huge = buildMessage({
+    sinceISO: '2026-08-17T00:00:00.000Z',
+    untilISO: '2026-08-24T00:00:00.000Z',
+    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    shippedEpics: { available: true, epics: [] },
+    prose,
+  });
+  assert.ok(huge.length <= 4096, `quiet-week message was ${huge.length} chars`);
+});
