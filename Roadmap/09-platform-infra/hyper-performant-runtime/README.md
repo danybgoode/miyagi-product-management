@@ -379,7 +379,8 @@ epic adds no flags.**
 - [x] Durable learnings deduped against `Roadmap/LEARNINGS.md`: D18/D22 already retain the applicable
   image/data and live-fixture lessons; no duplicate learning appended
 - [x] **Kill-switch:** N/A — the carved-out infra/render-mode rollback is verified in the shipped contract
-- [x] Feature branches deleted after their independent merges; this README frontmatter is the shipped SSOT
+- [x] Superseded S1/S2/S3 stack refs deleted; the sole remaining closeout PR branch is deleted immediately
+  after its independent merge. This README frontmatter is the shipped SSOT.
 
 **Team-memory note:** no `MEMORY.md` index or local team-memory artifact exists in this repository checkout.
 Rather than inventing a parallel memory entry, this closeout keeps the durable decisions in D18/D22 and

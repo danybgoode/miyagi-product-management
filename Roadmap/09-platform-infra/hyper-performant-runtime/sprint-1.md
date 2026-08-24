@@ -1,6 +1,7 @@
 # Hyper-performant runtime — Sprint 1: Origin — kill the cold start and the origin image encode
 
-**Status:** 🟦 epic in progress — Sprint 1 shipped at frontend `1b106952`; root PR is its record
+**Status:** 🟩 shipped — frontend PR [#416](https://github.com/danybgoode/miyagisanchezcommerce/pull/416)
+`1b106952`; root PR [#163](https://github.com/danybgoode/miyagi-product-management/pull/163) `bdc6f43`
 
 > **Sprint goal:** the frontend stays warm, the remaining origin image variants become materially
 > cheaper on the Free tier, and every later story reports through one honest measurement harness.
