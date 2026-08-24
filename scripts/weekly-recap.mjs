@@ -90,6 +90,11 @@ const BACKEND_REPO = 'danybgoode/medusa-bonsai-backend';
 const RETRO_DIGEST_MAX_CHARS = 320;
 const DEFAULT_WINDOW_DAYS = 7;
 const MAX_PRS_SHOWN_PER_REPO = 12; // caps a busy-week PR listing before it dominates the message
+// Caps the epic listing the same way MAX_PRS_SHOWN_PER_REPO caps PRs. There was NO cap here, which is
+// how the 2026-08-24 run died: a ~6-week catch-up window (the last successful post was 2026-07-13) found
+// 52 shipped/archived epics and rendered every one with its retro digest — each up to
+// RETRO_DIGEST_MAX_CHARS. A per-section cap is the PRIMARY control; truncateForTelegram is only the net.
+const MAX_EPICS_SHOWN = 10;
 const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a safety net, not the primary control
 
 function esc(s) {
@@ -278,7 +283,7 @@ function loadChatId() {
 // Pure — builds the Telegram message from already-gathered data. No I/O.
 // `shippedEpics` is `{ available, epics }` — `available: false` (a git-log read failure) must render as
 // "unavailable", never fold into "none this week"/the quiet-week collapse (that's a different fact).
-export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) {
+export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, prose = null }) {
   const since = sinceISO.slice(0, 10);
   const until = untilISO.slice(0, 10);
   const lines = [`<b>Weekly recap · ${since} – ${until}</b>`];
@@ -308,16 +313,25 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) 
   lines.push(`Frontend: ${feResult?.available ? feResult.prs.length : 'unavailable'} · Backend: ${beResult?.available ? beResult.prs.length : 'unavailable'}`);
 
   lines.push('');
-  lines.push('<b>✅ Shipped / closed epics</b>');
+  // The count goes in the HEADER, not only in the "…and N more" tail, because the tail is the first
+  // thing the 4096-char net eats: a 6-week catch-up renders long enough that truncation lands INSIDE
+  // the epic list, taking the tail — and with it the only remaining evidence of how many epics there
+  // were — while the header survives. Same shape the PR section has always had: `repo (84): …`.
+  const epicCount = shippedEpics.available ? shippedEpics.epics.length : null;
+  lines.push(`<b>✅ Shipped / closed epics</b>${epicCount ? ` (${epicCount})` : ''}`);
   if (!shippedEpics.available) {
     lines.push('unavailable (git log read failed)');
   } else if (!shippedEpics.epics.length) {
     lines.push('none this week');
   } else {
-    for (const e of shippedEpics.epics) {
+    for (const e of shippedEpics.epics.slice(0, MAX_EPICS_SHOWN)) {
       lines.push(`${e.status === 'shipped' ? '✅' : '🗄️'} <b>${esc(e.name)}</b>`);
       if (e.retroDigest) lines.push(esc(e.retroDigest));
     }
+    // The count above the fold stays TRUE even when the list is cut — a reader must not read a capped
+    // list as the whole week. Same contract as formatPrList's "…and N more".
+    const rest = shippedEpics.epics.length - MAX_EPICS_SHOWN;
+    if (rest > 0) lines.push(`…and ${rest} more`);
   }
 
   // Only collapse to the quiet-week one-liner when every signal actually reported in — an unavailable
@@ -325,10 +339,23 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics }) 
   // framing (those are different facts a reader needs distinguished).
   const allAvailable = repoResults.every((r) => r.available) && shippedEpics.available;
   if (allAvailable && totalPrs === 0 && !shippedEpics.epics.length) {
-    return `<b>Weekly recap · ${since} – ${until}</b>\n🌙 Quiet week — nothing merged or shipped since the last recap.`;
+    const quiet = `<b>Weekly recap · ${since} – ${until}</b>\n🌙 Quiet week — nothing merged or shipped since the last recap.`;
+    return truncateForTelegram(spliceProse(quiet, prose), TELEGRAM_MAX_CHARS);
   }
 
-  return truncateForTelegram(lines.join('\n'), TELEGRAM_MAX_CHARS);
+  // The prose is spliced in HERE, before the cap — not by the caller afterwards. It used to be
+  // `buildMessage(...).replace(/\n/, prose)` in main(), which meant the safety net was applied one layer
+  // BELOW the message that actually got sent: buildMessage returned exactly <=4096, then main() grew it
+  // by the length of the prose. That is why the 2026-08-24 run died on "message too long" despite a
+  // correct, unit-tested truncator — the pure core was right and the assembly it did not own was wrong.
+  return truncateForTelegram(spliceProse(lines.join('\n'), prose), TELEGRAM_MAX_CHARS);
+}
+
+// Prose leads, the existing tallies follow (the standup makes the same shape decision). Prose going
+// FIRST also decides what survives the cap: the hand-written recap is the point of the message, so a
+// truncation eats the tallies, never the prose.
+function spliceProse(base, prose) {
+  return prose ? base.replace(/\n/, `\n\n${prose}\n`) : base;
 }
 
 // ---- Telegram (same shape standup.mjs reimplements standalone) ----
@@ -436,9 +463,7 @@ async function main() {
     prose = verdict.ok ? draft : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
   }
 
-  const base = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics });
-  // Prose leads, the existing tallies follow — same shape decision as the standup.
-  const message = prose ? base.replace(/\n/, `\n\n${prose}\n`) : base;
+  const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, prose });
   console.log(message.replace(/<\/?[^>]+>/g, ''));
 
   if (!DRY_RUN) {

@@ -103,6 +103,26 @@ export function seedStatusLabel(status, file = 'seed') {
   return label;
 }
 
+// A seed's `epic:` is a POINTER into Roadmap/<NN-macro>/<slug>, and it is the only key joining a seed's
+// grooming fields (priority, risk, type, build_order fallback) onto its epic's board row. The join is a
+// Map.get() that yields `undefined` on a miss, which `|| {}` then turns into a confident blank — so a
+// pointer with a typo or a missing macro-area prefix publishes an epic with Priority and Risk EMPTY and
+// says nothing. That is exactly what `epic: us-marketplace` (no `07-agentic-and-federated-commerce/`)
+// did to build_order #1 and all 7 of its sprint rows, silently, until the 2026-08-24 grooming audit
+// queried the live board. A miss is also doubly invisible: a seed with `epic:` set is excluded from the
+// Seed rows too (see the `!x.epic` filter below), so the grooming data lands in NEITHER place.
+//
+// So the miss is promoted to a hard failure, the same way an out-of-enum `status:` is. The guard bans
+// only what it can prove wrong — a NON-NULL pointer naming no epic directory. `epic: null`, an absent
+// key, and a trailing `# comment` all pass untouched, because "not scaffolded yet" is the normal
+// resting state of a seed and a guard that rejects correct output gets bypassed.
+export function danglingSeedEpicPointers(seeds, epicKeys) {
+  const known = epicKeys instanceof Set ? epicKeys : new Set(epicKeys);
+  return seeds
+    .filter((s) => s.epic && !known.has(s.epic))
+    .map((s) => ({ file: s._file || 'seed', epic: s.epic }));
+}
+
 function listEpicDirs() {
   const out = [];
   for (const macro of readdirSync(ROADMAP)) {
@@ -319,12 +339,26 @@ function sprintKickoff({ epicKey, slug, n, risk }) {
 
 function buildRows() {
   const seeds = readSeeds();
+  const epicDirs = listEpicDirs();
+
+  // Fail before the first row is built: a dangling pointer would otherwise publish blank grooming
+  // fields to the live board, which reads as "this epic has no priority" rather than "the join broke".
+  const dangling = danglingSeedEpicPointers(seeds, epicDirs.map((e) => `${e.macro}/${e.slug}`));
+  if (dangling.length) {
+    const detail = dangling.map((d) => `${d.file}: epic: "${d.epic}"`).join('\n  ');
+    throw new Error(
+      'seed frontmatter `epic:` names no epic directory under Roadmap/<NN-macro>/<slug>/ ' +
+      '(expected the full macro-area path, e.g. "07-agentic-and-federated-commerce/us-marketplace", ' +
+      `or null if the seed is not scaffolded yet):\n  ${detail}`,
+    );
+  }
+
   const seedByEpic = new Map();
   for (const s of seeds) if (s.epic) seedByEpic.set(s.epic, s);
 
   const rows = [];
 
-  for (const e of listEpicDirs()) {
+  for (const e of epicDirs) {
     const epicKey = `${e.macro}/${e.slug}`;
     const seed = seedByEpic.get(epicKey) || {};
     const sprints = epicSprints(e.path);

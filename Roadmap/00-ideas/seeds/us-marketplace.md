@@ -8,7 +8,7 @@ priority: next
 appetite: L
 underwritten_by: null
 risk: high
-epic: us-marketplace
+epic: "07-agentic-and-federated-commerce/us-marketplace"
 build_order: 1
 updated: 2026-08-10
 ---
