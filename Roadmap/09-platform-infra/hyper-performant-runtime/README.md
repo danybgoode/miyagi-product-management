@@ -361,7 +361,6 @@ idempotent script that filters by its own rule description, so hand-added rules 
 Consistent with WAYS-OF-WORKING → *Feature flags — OFF by default as a practice* (2026-08-10). **This
 epic adds no flags.**
 
-## Definition of Done (epic)
 ## Delivery record
 
 | Sprint | Shipped evidence |
@@ -378,10 +377,10 @@ epic adds no flags.**
 - [x] Product poster (`Roadmap/README.md`) and platform index updated
 - [x] Durable learnings deduped against `Roadmap/LEARNINGS.md`: D18/D22 already retain the applicable
   image/data and live-fixture lessons; no duplicate learning appended
+- [x] Team memory updated: `~/.claude/projects/-Users-cosmo-dobby-medusa-bonsai/memory/` now contains
+  `hyper-performant-runtime-epic.md`, and its `MEMORY.md` index points to the shipped epic and Daniel's
+  remaining owed checks
 - [x] **Kill-switch:** N/A — the carved-out infra/render-mode rollback is verified in the shipped contract
-- [x] Superseded S1/S2/S3 stack refs deleted; the sole remaining closeout PR branch is deleted immediately
-  after its independent merge. This README frontmatter is the shipped SSOT.
-
-**Team-memory note:** no `MEMORY.md` index or local team-memory artifact exists in this repository checkout.
-Rather than inventing a parallel memory entry, this closeout keeps the durable decisions in D18/D22 and
-the deduped `LEARNINGS.md` source of truth.
+- [ ] Feature branch deletion: superseded S1/S2/S3 stack refs are deleted; the sole remaining closeout
+  branch is intentionally retained until PR #166 merges, then must be deleted and verified. This README
+  frontmatter is the shipped SSOT.
