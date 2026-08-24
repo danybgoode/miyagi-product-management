@@ -5,23 +5,22 @@
 
 # Build order — generated status board
 
-> **Generated 2026-08-22 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-08-24 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
-- [Hyper-performant runtime](../../09-platform-infra/hyper-performant-runtime/README.md) — 09 Platform-infra · 3/10 stories · risk: High
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
 ## 📋 Ready to build (scaffolded, not started) (0)
 
 _None._
 
-## ✅ Shipped (146)
+## ✅ Shipped (147)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -141,6 +140,7 @@ _None._
 - [GitHub Actions minutes — local-first checks, GH Actions as fallback](../../09-platform-infra/github-actions-local-first/README.md) — 09 Platform-infra · 1/1 stories
 - [Golden Frijoles integration — finish the rebrand, turn the platform all the way on](../../09-platform-infra/golden-frijoles-integration/README.md) — 09 Platform-infra · 10/10 stories
 - [Groom archetype-lens wiring — optional Stage-2 archetype tag](../../09-platform-infra/groom-archetype-lens/README.md) — 09 Platform-infra · 2/2 stories
+- [Hyper-performant runtime](../../09-platform-infra/hyper-performant-runtime/README.md) — 09 Platform-infra · 10/10 stories · risk: High
 - [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 6/6 stories · risk: Low · #4
 - [In-house feature flags (replace Flagsmith)](../../09-platform-infra/feature-flags-inhouse/README.md) — 09 Platform-infra · 7/7 stories
 - [Interaction feedback + the admin surfaces that were lying](../../09-platform-infra/interaction-feedback-and-admin-repair/README.md) — 09 Platform-infra · 11/11 stories

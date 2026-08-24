@@ -1,5 +1,5 @@
 ---
-status: in-progress  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: hyper-performant-runtime
 build_order: null    # integer position in the ONE global build sequence — the SSOT once the epic
                      # exists (the seed's value is only a fallback). Fill it in at the betting
@@ -7,6 +7,11 @@ build_order: null    # integer position in the ONE global build sequence — the
 ---
 
 # Epic: Hyper-performant runtime
+
+> ✅ **Shipped 2026-08-24.** Three ordered high-risk sprints reached production: Cloud Run keeps one
+> frontend instance warm, public claimed reads have a privacy-preserving edge cache, and buyer runtime
+> JavaScript has enforceable route budgets. The remaining signed-in and Sentry-dashboard observations are
+> explicitly owed to Daniel in the sprint walkthroughs; they are not represented as automated proof.
 
 > **Area:** 09-platform-infra · **Risk:** high · **Class:** Chore · **Archetype:** Maintainer · **Scope seed:** [`00-ideas/seeds/hyper-performant-runtime.md`](../../00-ideas/seeds/hyper-performant-runtime.md)
 
@@ -357,12 +362,25 @@ Consistent with WAYS-OF-WORKING → *Feature flags — OFF by default as a pract
 epic adds no flags.**
 
 ## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Product poster (`Roadmap/README.md`) updated
-- [ ] Team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` (dedupe — sharpen, don't append)
-- [ ] **Kill-switch:** N/A — carve-out recorded above (infra/render-mode; no runtime seam). *Verify-only.*
-- [ ] Feature branch deleted; **this README's frontmatter `status: shipped`** (the SSOT — the board & Notion derive from it; run `node scripts/build-order.mjs`)
+## Delivery record
+
+| Sprint | Shipped evidence |
+|---|---|
+| S1 · Origin | Root PR [#163](https://github.com/danybgoode/miyagi-product-management/pull/163) `bdc6f43`; frontend PR [#416](https://github.com/danybgoode/miyagisanchezcommerce/pull/416) `1b10695`; Cloud Run `miyagi-web-00133-x9b` verified ready with `minScale: 1`. |
+| S2 · Edge | Root PR [#164](https://github.com/danybgoode/miyagi-product-management/pull/164) `8465fd3`; frontend PR [#417](https://github.com/danybgoode/miyagisanchezcommerce/pull/417) `c121c60`; real cache proofs are recorded in `sprint-2.md`, including marketplace, subdomain and embed MISS→HIT. |
+| S3 · Client | Frontend PR [#418](https://github.com/danybgoode/miyagisanchezcommerce/pull/418) squash `03108bd`; Cloud Run `miyagi-web-00135-czg` Ready at 100% traffic. The final read-only probe is `s3-production-final-2026-08-24.json`. |
+
+## Definition of Done (epic)
+- [x] All sprints merged to `main` + smoke-tested (gaps stated in the sprint walkthroughs)
+- [x] Each `sprint-N.md` has its smoke walkthrough with real URLs
+- [x] This README marked ✅; every sprint status has committed evidence
+- [x] `RETROSPECTIVE.md` written
+- [x] Product poster (`Roadmap/README.md`) and platform index updated
+- [x] Durable learnings deduped against `Roadmap/LEARNINGS.md`: D18/D22 already retain the applicable
+  image/data and live-fixture lessons; no duplicate learning appended
+- [x] **Kill-switch:** N/A — the carved-out infra/render-mode rollback is verified in the shipped contract
+- [x] Feature branches deleted after their independent merges; this README frontmatter is the shipped SSOT
+
+**Team-memory note:** no `MEMORY.md` index or local team-memory artifact exists in this repository checkout.
+Rather than inventing a parallel memory entry, this closeout keeps the durable decisions in D18/D22 and
+the deduped `LEARNINGS.md` source of truth.
