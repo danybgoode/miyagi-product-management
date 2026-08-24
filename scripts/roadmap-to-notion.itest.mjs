@@ -22,8 +22,10 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'roadmap-to-notion.mjs');
+
 
 // The corpus walk, run ONCE for this whole file. All three tests below assert against the same
 // immutable projection; each used to spawn its own --extract, so this file alone paid for three
@@ -90,4 +92,56 @@ test('--extract: fully-shipped epics report FULL story completion (the audit §6
   const inflight = rows.find((r) => r.grain === 'Epic' && r.status === 'In progress');
   assert.ok(inflight, 'expected at least one in-progress epic in the live Roadmap to use as the negative-control example');
   assert.equal(inflight.status, 'In progress');
+});
+
+// --- the grooming fields actually reach the board -----------------------------------------------
+// A seed's `epic:` pointer is the ONLY key joining its grooming fields (priority, risk, type) onto the
+// epic's board row, and the join is a Map miss defaulting to `{}` — so a malformed pointer publishes a
+// confident blank rather than an error. That is what `epic: us-marketplace` (missing its
+// `07-agentic-and-federated-commerce/` prefix) did to that epic and all 7 of its sprint rows,
+// invisibly, until the 2026-08-24 grooming audit queried the live Notion board.
+//
+// This sweeps the POPULATION — every seed that both points at an epic and grooms a priority/risk — and
+// not one hand-picked epic. The first draft asserted against "the top build_order epic", which is
+// `market-architecture-foundation` at build_order 0: a HEALTHY row. It stayed green with the real
+// defect reintroduced AND the guard disarmed, because it never looked at the broken epic at all. A
+// spec must baseline on the state it is not testing.
+test('--extract: every groomed seed pointing at an epic lands its Priority/Risk on that epic row', () => {
+  const rows = JSON.parse(extractOnce());
+  const epicByKey = new Map(
+    rows.filter((r) => r.grain === 'Epic')
+      .map((r) => [r.doc_link.replace(/^Roadmap\//, '').replace(/\/README\.md$/, ''), r]));
+
+  const seedsDir = join(dirname(SCRIPT), '..', 'Roadmap', '00-ideas', 'seeds');
+  const groomed = [];
+  const unresolved = [];
+  for (const f of readdirSync(seedsDir).filter((x) => x.endsWith('.md'))) {
+    const fm = readFileSync(join(seedsDir, f), 'utf8').match(/^---\n([\s\S]*?)\n---/);
+    if (!fm) continue;
+    const field = (k) => {
+      const line = fm[1].split('\n').find((l) => l.startsWith(`${k}:`));
+      if (!line) return null;
+      const v = line.slice(k.length + 1).split('#')[0].trim().replace(/^["']|["']$/g, '');
+      return !v || v === 'null' ? null : v;
+    };
+    const epic = field('epic');
+    // THREE states, not two. `epic: null` is the un-scaffolded funnel and is asserted nowhere (the
+    // allowed negation). A pointer that RESOLVES must land its groomed fields. A pointer that does
+    // NOT resolve is the defect itself — so it is collected, never filtered away. Treating
+    // "unresolvable" as "not applicable" is what let the first two drafts of this test stay green
+    // with the real defect reintroduced: the filter excluded exactly the row under test.
+    if (!epic) continue;
+    if (!epicByKey.has(epic)) { unresolved.push(`${f} → epic: "${epic}"`); continue; }
+    if (field('priority') && field('risk')) groomed.push({ file: f, epic, row: epicByKey.get(epic) });
+  }
+
+  assert.deepEqual(unresolved, [],
+    'these seeds name an epic that does not exist under Roadmap/<NN-macro>/<slug>/ — their grooming '
+    + 'fields reach NEITHER an epic row nor a seed row, and the board shows a confident blank');
+
+  assert.ok(groomed.length > 10, `only ${groomed.length} groomed seed→epic pairs found; the sweep would pass near-vacuously`);
+
+  const blank = groomed.filter((g) => !g.row.priority || !g.row.risk);
+  assert.deepEqual(blank.map((g) => `${g.file} → ${g.epic}`), [],
+    'these seeds groom a priority/risk that never reached their epic board row — the seed→epic join is broken for them');
 });

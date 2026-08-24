@@ -95,7 +95,7 @@ _None._
 - [Short links (`mschz.org/shop` and `mschz.org/product`)](../../07-agentic-and-federated-commerce/short-links/README.md) — 07 Agentic/Federated · 4/4 stories
 - [Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU](../../07-agentic-and-federated-commerce/subdomain-pricing/README.md) — 07 Agentic/Federated · 6/6 stories
 - [Support Widget](../../07-agentic-and-federated-commerce/support-widget/README.md) — 07 Agentic/Federated · 9/9 stories
-- [US marketplace — open `/us` as the finished product](../../07-agentic-and-federated-commerce/us-marketplace/README.md) — 07 Agentic/Federated · 16/16 stories
+- [US marketplace — open `/us` as the finished product](../../07-agentic-and-federated-commerce/us-marketplace/README.md) — 07 Agentic/Federated · 16/16 stories · risk: High · next
 - [Admin content & announcements — runtime marketing copy + platform banners ✅ shipped 2026-07-09](../../08-growth-and-promotions/admin-content-and-announcements/README.md) — 08 Growth · 8/8 stories
 - [CMS restore & polish — /admin/contenido saves again, then gets previews](../../08-growth-and-promotions/cms-contenido-restore-and-polish/README.md) — 08 Growth · 12/12 stories · risk: High · tbd
 - [Comparador de costos — the stacking-costs sales tool on the homepage](../../08-growth-and-promotions/cost-comparator-homepage/README.md) — 08 Growth · 8/8 stories · risk: Low · Wave 3

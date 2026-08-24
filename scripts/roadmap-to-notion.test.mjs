@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   floorSprintStatus, lifecycleForPr, normalizeBuildOrder, deriveEpicStatus,
-  frontmatterStatusBucket, seedStatusLabel, floorSprintDone,
+  frontmatterStatusBucket, seedStatusLabel, floorSprintDone, danglingSeedEpicPointers,
 } from './roadmap-to-notion.mjs';
 
 // The `--lifecycle` test below spawns the real CLI, but it stays in the FAST tier deliberately:
@@ -162,4 +162,36 @@ test('floorSprintDone: a Shipped sprint counts ALL its stories done; other statu
   assert.equal(floorSprintDone('In progress', 4, 2), 2);
   assert.equal(floorSprintDone('Planned', 4, 0), 0);
   assert.equal(floorSprintDone('Archived', 4, 1), 1);  // archived stories were dropped, not done
+});
+
+// The 2026-08-24 grooming audit found `epic: us-marketplace` (no macro-area prefix) on build_order #1,
+// which blanked Priority and Risk for that epic and all 7 of its sprints on the LIVE Notion board. The
+// join is a Map miss defaulting to `{}`, so it fails silently — these assertions pin that a dangling
+// pointer is now loud, and, just as importantly, that the NEGATION is still allowed: an un-scaffolded
+// seed (`epic: null`/absent) is the normal resting state and must never trip the guard.
+test('danglingSeedEpicPointers: flags a pointer naming no epic dir, and only that', () => {
+  const keys = ['07-agentic-and-federated-commerce/us-marketplace', '09-platform-infra/pmo-operational-reports'];
+
+  // The real defect: the slug alone, missing its macro-area prefix.
+  assert.deepEqual(
+    danglingSeedEpicPointers(
+      [{ _file: 'Roadmap/00-ideas/seeds/us-marketplace.md', epic: 'us-marketplace' }], keys),
+    [{ file: 'Roadmap/00-ideas/seeds/us-marketplace.md', epic: 'us-marketplace' }]);
+
+  // A well-formed pointer resolves.
+  assert.deepEqual(
+    danglingSeedEpicPointers([{ _file: 'a.md', epic: keys[0] }], keys), []);
+
+  // The negation of what is banned — the un-scaffolded funnel — must pass untouched.
+  assert.deepEqual(danglingSeedEpicPointers([{ _file: 'b.md', epic: null }], keys), []);
+  assert.deepEqual(danglingSeedEpicPointers([{ _file: 'c.md' }], keys), []);
+  assert.deepEqual(danglingSeedEpicPointers([{ _file: 'd.md', epic: '' }], keys), []);
+
+  // A Set is accepted as-is (what buildRows would grow into), and every dangler is reported, not the first.
+  assert.equal(danglingSeedEpicPointers(
+    [{ _file: 'e.md', epic: 'nope' }, { _file: 'f.md', epic: keys[1] }, { _file: 'g.md', epic: 'also-nope' }],
+    new Set(keys)).length, 2);
+
+  // No _file (a hand-built seed object) still names the field rather than printing `undefined:`.
+  assert.equal(danglingSeedEpicPointers([{ epic: 'x' }], keys)[0].file, 'seed');
 });
