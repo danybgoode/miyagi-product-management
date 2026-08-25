@@ -27,17 +27,56 @@ if ! command -v node >/dev/null 2>&1; then
   exit 0
 fi
 
-# What is actually being pushed: the range from the remote's current tip to local HEAD. Falls back
-# to "changed vs origin/main" when the remote ref is unknown (a brand-new branch), and to a no-op
-# when even that fails — a hook that cannot determine scope must not silently check nothing AND
-# must not block the push, so it degrades to running the cheap suite rather than guessing.
-remote_head=$(git rev-parse --verify --quiet '@{upstream}' 2>/dev/null)
-if [ -n "$remote_head" ]; then
-  changed=$(git diff --name-only "$remote_head"...HEAD 2>/dev/null)
-else
-  changed=$(git diff --name-only origin/main...HEAD 2>/dev/null)
+# What is actually being pushed — read from git, not guessed from HEAD.
+#
+# git feeds a pre-push hook one line per ref on STDIN: "<local ref> <local sha> <remote ref>
+# <remote sha>". This hook used to ignore that entirely and derive its scope from the CURRENT BRANCH
+# (`@{upstream}...HEAD`, falling back to `origin/main...HEAD`, then to `HEAD~1...HEAD`). For an
+# ordinary `git push` of the checked-out branch those agree, so the bug stayed invisible.
+#
+# They do NOT agree when the pushed ref is not the checked-out branch. `scripts/lib/log-branch.mjs`
+# pushes append-only log commits by plumbing — `git push origin <sha>:refs/heads/claude/<log>` — for
+# the session journal, the standup, the weekly recap and the PMO reports. Those commits contain one
+# flat log file and share no ancestry with the working tree, but the hook measured `HEAD~1...HEAD` of
+# `main` instead. So a Roadmap-touching commit on main made the hook run `build-order --check`
+# against the WORKING TREE, and a stale board — including one caused by another agent's UNTRACKED
+# file in this shared checkout — blocked the journal push.
+#
+# That failure mode was the worst possible one: `session-note.mjs` fails soft by design (a log must
+# never break the work it records), so the journal silently stopped recording the one thing that
+# cannot be re-derived later — intent. Observed 2026-08-25.
+#
+# Reading stdin fixes the general case, not just log branches: every push is now gated on the paths
+# it actually carries. Deletions (local sha all-zero) contribute nothing. A brand-new remote ref
+# (remote sha all-zero) has no range, so it falls back to `origin/main...<local sha>`.
+#
+# If stdin is empty or unreadable (a manual invocation, or a git that passes nothing), we fall back
+# to the old HEAD-derived scope rather than checking nothing — a hook that cannot determine scope
+# must not silently pass, and must not block either.
+zero=0000000000000000000000000000000000000000
+stdin_seen=0
+changed=''
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [ -z "$local_sha" ] && continue
+  stdin_seen=1
+  [ "$local_sha" = "$zero" ] && continue                      # branch deletion — carries no paths
+  if [ "$remote_sha" = "$zero" ] || [ -z "$remote_sha" ]; then
+    range=$(git diff --name-only "origin/main...$local_sha" 2>/dev/null)
+  else
+    range=$(git diff --name-only "$remote_sha...$local_sha" 2>/dev/null)
+  fi
+  changed=$(printf '%s\n%s' "$changed" "$range")
+done
+
+if [ "$stdin_seen" -eq 0 ]; then
+  remote_head=$(git rev-parse --verify --quiet '@{upstream}' 2>/dev/null)
+  if [ -n "$remote_head" ]; then
+    changed=$(git diff --name-only "$remote_head"...HEAD 2>/dev/null)
+  else
+    changed=$(git diff --name-only origin/main...HEAD 2>/dev/null)
+  fi
+  [ -z "$changed" ] && changed=$(git diff --name-only HEAD~1...HEAD 2>/dev/null)
 fi
-[ -z "$changed" ] && changed=$(git diff --name-only HEAD~1...HEAD 2>/dev/null)
 
 fail=0
 
