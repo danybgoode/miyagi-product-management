@@ -141,12 +141,13 @@ per-route budget the original attempt couldn't land, done correctly.
 
 ## Sprint 3 — Smoke walkthrough (executed in order)
 Env: production · https://miyagisanchez.com · 2026-08-24 · frontend `03108bd` /
-Cloud Run `miyagi-web-00135-czg`
+Cloud Run `miyagi-web-00137-bwz`
 
 1. Open https://miyagisanchez.com/mx in real Chromium.
-   → HTTP 200; marketplace chrome rendered. Four legacy protocol-relative Shopify image candidates
-   returned 400 from the intentionally R2/Supabase-only proxy, exactly as Sprint 1 already recorded in
-   D18; they are a pre-existing catalog-content limitation, not a Sprint 3 regression.
+   → HTTP 200; marketplace chrome rendered. The four previously broken homepage records now use the
+   public R2 host; no Shopify URLs or image 400s appeared, and the browser smoke captured zero console
+   errors. A focused scroll assertion loaded GORRA, BOLSA, Cheems, and Cabina Guarda Llaves with
+   `naturalWidth > 0`.
 2. Open https://miyagisanchez.com/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM and activate its description
    summary.
    → HTTP 200; the production DOM contained one closed native `<details>`, and clicking its `summary`

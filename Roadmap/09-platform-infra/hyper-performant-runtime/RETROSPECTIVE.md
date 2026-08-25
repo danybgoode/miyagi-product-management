@@ -38,8 +38,13 @@ _Closed: 2026-08-24_
 
 - **Owed to Daniel:** signed-in Cuenta popover and AI-dialog browser walkthrough; production Sentry
   dashboard verification that a deliberate client error still arrives while Replay stays absent.
-- Four legacy homepage records still contain protocol-relative Shopify image URLs. The Free-plan proxy
-  deliberately accepts only HTTPS R2/Supabase sources, so they return 400; this pre-existing content debt
-  is documented in D18 and Sprint 1, not hidden as a clean home-page smoke. The existing report-only
-  `backfill-hotlinked-images.mjs` is the safe remediation path when production R2/Medusa credentials are
-  available; it was not run here because those credentials are intentionally absent.
+- **Resolved 2026-08-24:** the four legacy homepage records named above were repaired as a targeted
+  production content operation. Eight Shopify images were copied to the existing public R2 bucket, and
+  both the Supabase mirror and Medusa products were updated for listing IDs
+  `f1dae53e-7835-4ad1-9a60-174d30a45533`, `29cb62c1-4847-433e-ba4f-8d8fbe1d2213`,
+  `0134419a-36dc-493b-ba78-3debc8e337be`, and `ab988b2a-a3f3-44e9-b688-6ac7d9ea094e`.
+  The unchanged production source was rebuilt so the prerendered shell picked up the corrected data;
+  Cloud Run revision `miyagi-web-00137-bwz` is at 100% traffic. Direct R2 probes returned 200 for all
+  four first images, the production homepage smoke was HTTP 200 with zero browser console errors, and a
+  focused browser assertion loaded all four images with `naturalWidth > 0`. No unrelated hotlinked
+  listings were touched.
