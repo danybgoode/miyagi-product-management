@@ -205,7 +205,6 @@ export function decideStalePrAnomalies(open, { nowISO, thresholdDays = STALE_PR_
   if (!Number.isFinite(now)) return []; // no trustworthy clock ⇒ assert nothing, rather than assert wrongly
   const out = [];
   for (const pr of open || []) {
-    if (pr.isDraft) continue;
     const created = Date.parse(pr.createdAt ?? '');
     if (!Number.isFinite(created)) {
       out.push({
@@ -215,12 +214,34 @@ export function decideStalePrAnomalies(open, { nowISO, thresholdDays = STALE_PR_
       continue;
     }
     const days = Math.floor((now - created) / 86400000);
-    if (days >= thresholdDays) {
-      out.push({
-        type: 'pr-stale',
-        detail: `PR #${pr.number} "${pr.title}" (${pr.url}) has been open ${days} days — decide it or close it.`,
-      });
+    if (days < thresholdDays) continue;
+
+    // A draft needs a SHARPER test than age, not an exemption. The first cut of this guard skipped
+    // every draft on the reasoning that "a draft is open on purpose" — and that reasoning is exactly
+    // wrong for the failure this repo has already recorded: nightly smoke-fix routines open DRAFTS,
+    // and they pile up (4 stacked by 2026-08-02; six red nights were unmerged fixes, not quota).
+    // Proven again 2026-08-25 — frontend #404 sat a green, finished, 5-day-old draft that this guard
+    // skipped by design, and merging it was the fix for a nightly red.
+    //
+    // So the question is not "is it a draft" but "does it look FINISHED": a draft whose CI is green
+    // and which GitHub says is mergeable is done work nobody landed. A draft still red, still
+    // pending, or conflicting is genuinely in progress and stays silent — that is the negation this
+    // guard must keep allowing, or it goes back to crying wolf.
+    if (pr.isDraft) {
+      const looksFinished = pr.ciAvailable && !pr.ciFailing && !pr.ciPending && pr.mergeable === 'MERGEABLE';
+      if (looksFinished) {
+        out.push({
+          type: 'pr-draft-finished',
+          detail: `PR #${pr.number} "${pr.title}" (${pr.url}) is a DRAFT that has been green and mergeable for ${days} days — finished work nobody landed. Mark it ready or close it.`,
+        });
+      }
+      continue;
     }
+
+    out.push({
+      type: 'pr-stale',
+      detail: `PR #${pr.number} "${pr.title}" (${pr.url}) has been open ${days} days — decide it or close it.`,
+    });
   }
   return out;
 }

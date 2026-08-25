@@ -712,9 +712,33 @@ test('decideStalePrAnomalies: a fresh PR is silent, and the boundary is inclusiv
   assert.equal(decideStalePrAnomalies([pr({ createdAt: '2026-08-17T12:00:01.000Z' })], { nowISO: NOW }).length, 0);
 });
 
-test('decideStalePrAnomalies: a DRAFT is never flagged — it is open on purpose', () => {
+// The first cut of this guard exempted every draft ("a draft is open on purpose"). That is exactly
+// wrong for the failure already recorded here: nightly smoke-fix routines open DRAFTS and they pile up
+// (4 stacked by 2026-08-02; six red nights were unmerged fixes, not quota). Proven again 2026-08-25 —
+// frontend #404 was a green, finished, 5-day-old draft this guard skipped by design, and merging it was
+// the fix for a nightly red. The test is "does it look FINISHED", not "is it a draft".
+const finished = { ciAvailable: true, ciFailing: false, ciPending: false, mergeable: 'MERGEABLE' };
+
+test('decideStalePrAnomalies: an old draft that is GREEN and mergeable is finished work nobody landed', () => {
+  const out = decideStalePrAnomalies(
+    [pr({ number: 404, title: 'nightly smoke fix', createdAt: '2026-08-15T00:00:00.000Z', isDraft: true, ...finished })],
+    { nowISO: NOW });
+  assert.equal(out.length, 1);
+  assert.equal(out[0].type, 'pr-draft-finished');
+  assert.match(out[0].detail, /#404 .* DRAFT .* green and mergeable for 9 days/);
+});
+
+test('decideStalePrAnomalies: a draft still in flight stays silent — the negation the guard must allow', () => {
+  const old = { createdAt: '2026-06-01T00:00:00.000Z', isDraft: true };
+  // red CI, pending CI, conflicting, and "CI not reported at all" are all genuinely in-progress.
+  assert.deepEqual(decideStalePrAnomalies([pr({ ...old, ...finished, ciFailing: true })], { nowISO: NOW }), []);
+  assert.deepEqual(decideStalePrAnomalies([pr({ ...old, ...finished, ciPending: true })], { nowISO: NOW }), []);
+  assert.deepEqual(decideStalePrAnomalies([pr({ ...old, ...finished, mergeable: 'CONFLICTING' })], { nowISO: NOW }), []);
+  assert.deepEqual(decideStalePrAnomalies([pr({ ...old, ...finished, ciAvailable: false })], { nowISO: NOW }), []);
+  assert.deepEqual(decideStalePrAnomalies([pr({ ...old })], { nowISO: NOW }), []);
+  // and a FRESH finished draft is not nagged either
   assert.deepEqual(
-    decideStalePrAnomalies([pr({ createdAt: '2026-06-01T00:00:00.000Z', isDraft: true })], { nowISO: NOW }), []);
+    decideStalePrAnomalies([pr({ createdAt: '2026-08-23T00:00:00.000Z', isDraft: true, ...finished })], { nowISO: NOW }), []);
 });
 
 test('decideStalePrAnomalies: an unreadable createdAt is UNKNOWN, never silently "fresh"', () => {
