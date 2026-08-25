@@ -16,6 +16,9 @@ import {
   decideDirtyTree,
   decideWorktreeAnomalies,
   decidePrAnomalies,
+  decideStalePrAnomalies,
+  assertRenderableAnomalies,
+  prAgeLabel,
   decideMigrationAnomalies,
   buildAnomalies,
   buildGaps,
@@ -270,7 +273,10 @@ test('buildAnomalies: reproduces the apps/backend stray-branch case end-to-end',
       repo: 'danybgoode/medusa-bonsai-backend',
       dir: 'apps/backend',
       git: { available: true, branch: 'feat/order-payment-capture-state', detached: false, dirtyFiles: 0, worktrees: [] },
-      gh: { available: true, open: [{ number: 110, title: 'dependabot bump', headRefName: 'dependabot/x', mergeable: 'MERGEABLE', ciFailing: false }] },
+      // `createdAt` is RELATIVE, not a literal date: gatherRepoGh always carries one through from the
+      // REST payload, and a hardcoded date would silently age past STALE_PR_DAYS and turn this
+      // stray-branch assertion red for a reason that has nothing to do with stray branches.
+      gh: { available: true, open: [{ number: 110, title: 'dependabot bump', headRefName: 'dependabot/x', createdAt: new Date().toISOString(), isDraft: false, mergeable: 'MERGEABLE', ciFailing: false }] },
     },
   ];
   const anomalies = buildAnomalies({ repoStates, migrationResults: [] });
@@ -535,24 +541,24 @@ test('decideMemoryBudgetAnomaly: comfortably under budget is no anomaly', () => 
 
 test('decideMemoryBudgetAnomaly: over the hard limit says it IS truncating, now', () => {
   const a = decideMemoryBudgetAnomaly({ available: true, bytes: 29_700, path: '/m/MEMORY.md' });
-  assert.equal(a.kind, 'memory-index-truncating');
+  assert.equal(a.type, 'memory-index-truncating');
   // The number must be in the text: "it is too big" without the size is unactionable.
-  assert.match(a.text, /29\.0 KB/);
-  assert.match(a.text, /truncated/);
+  assert.match(a.detail, /29\.0 KB/);
+  assert.match(a.detail, /truncated/);
 });
 
 test('decideMemoryBudgetAnomaly: between budget and limit warns WITHOUT claiming truncation', () => {
   // The distinction is the point. Saying "you are being truncated" when you are not is the
   // guard-that-cries-wolf failure, and it is how a real warning stops being read.
   const a = decideMemoryBudgetAnomaly({ available: true, bytes: 24_000, path: '/m/MEMORY.md' });
-  assert.equal(a.kind, 'memory-index-near-limit');
-  assert.doesNotMatch(a.text, /IS being truncated/);
+  assert.equal(a.type, 'memory-index-near-limit');
+  assert.doesNotMatch(a.detail, /IS being truncated/);
 });
 
 test('decideMemoryBudgetAnomaly: unreadable is UNAVAILABLE, never "fine"', () => {
   const a = decideMemoryBudgetAnomaly({ available: false, bytes: null, path: '/m/MEMORY.md' });
-  assert.equal(a.kind, 'memory-index-unavailable');
-  assert.match(a.text, /UNKNOWN, not fine/);
+  assert.equal(a.type, 'memory-index-unavailable');
+  assert.match(a.detail, /UNKNOWN, not fine/);
 });
 
 test('decideMemoryBudgetAnomaly: the boundaries are inclusive of "still fine"', () => {
@@ -560,11 +566,11 @@ test('decideMemoryBudgetAnomaly: the boundaries are inclusive of "still fine"', 
   // threshold makes the documented number a lie.
   assert.equal(decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_BUDGET_BYTES }), null);
   assert.equal(
-    decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_BUDGET_BYTES + 1 }).kind,
+    decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_BUDGET_BYTES + 1 }).type,
     'memory-index-near-limit',
   );
   assert.equal(
-    decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_HARD_LIMIT_BYTES + 1 }).kind,
+    decideMemoryBudgetAnomaly({ available: true, bytes: MEMORY_HARD_LIMIT_BYTES + 1 }).type,
     'memory-index-truncating',
   );
 });
@@ -576,7 +582,7 @@ test('buildAnomalies: a truncating memory index leads the report', () => {
     memoryIndex: { available: true, bytes: 30_000, path: '/m/MEMORY.md' },
   });
   assert.equal(anomalies.length, 1);
-  assert.equal(anomalies[0].kind, 'memory-index-truncating');
+  assert.equal(anomalies[0].type, 'memory-index-truncating');
 });
 
 test('buildAnomalies: omitting memoryIndex adds nothing — absence is not a pass', () => {
@@ -612,7 +618,7 @@ test('decideMemoryBudgetAnomaly: a non-numeric size is UNAVAILABLE, not healthy'
   // null — "no anomaly" — from a size nobody knows. The third state exists for this.
   for (const bytes of [null, undefined, NaN, 'big']) {
     const a = decideMemoryBudgetAnomaly({ available: true, bytes, path: '/m/MEMORY.md' });
-    assert.equal(a?.kind, 'memory-index-unavailable', `bytes=${String(bytes)}`);
+    assert.equal(a?.type, 'memory-index-unavailable', `bytes=${String(bytes)}`);
   }
 });
 
@@ -680,4 +686,93 @@ test('main: forwards its injected stat/home on the SUCCESS path too', async () =
     seen[0].startsWith('/success-path-home/'),
     `stat hit ${seen[0]} — main is not forwarding its injected home`,
   );
+});
+
+// ---- decideStalePrAnomalies ----
+// Added 2026-08-24 after the backend carried four dependabot PRs aged 10–17 days and this repo had four
+// advisory audit PRs stranded since 08-03, none of which any session ever announced: `open PRs: 4` reads
+// the same whether they are hours or five weeks old.
+const NOW = '2026-08-24T12:00:00.000Z';
+const pr = (o) => ({ number: 1, title: 't', url: 'u', createdAt: NOW, isDraft: false, ...o });
+
+test('decideStalePrAnomalies: flags a PR past the threshold and names its age', () => {
+  const out = decideStalePrAnomalies(
+    [pr({ number: 151, title: 'bump', createdAt: '2026-08-07T11:20:14.000Z' })], { nowISO: NOW });
+  assert.equal(out.length, 1);
+  assert.equal(out[0].type, 'pr-stale');
+  assert.match(out[0].detail, /#151 .* has been open 17 days/);
+});
+
+test('decideStalePrAnomalies: a fresh PR is silent, and the boundary is inclusive', () => {
+  // 6 days — in flight, says nothing. The negation of what is flagged must stay allowed, or the line
+  // gets skimmed and the whole anomaly is worth less than nothing.
+  assert.deepEqual(decideStalePrAnomalies([pr({ createdAt: '2026-08-18T12:00:00.000Z' })], { nowISO: NOW }), []);
+  // exactly 7 → flagged; a hair under 7 → not.
+  assert.equal(decideStalePrAnomalies([pr({ createdAt: '2026-08-17T12:00:00.000Z' })], { nowISO: NOW }).length, 1);
+  assert.equal(decideStalePrAnomalies([pr({ createdAt: '2026-08-17T12:00:01.000Z' })], { nowISO: NOW }).length, 0);
+});
+
+test('decideStalePrAnomalies: a DRAFT is never flagged — it is open on purpose', () => {
+  assert.deepEqual(
+    decideStalePrAnomalies([pr({ createdAt: '2026-06-01T00:00:00.000Z', isDraft: true })], { nowISO: NOW }), []);
+});
+
+test('decideStalePrAnomalies: an unreadable createdAt is UNKNOWN, never silently "fresh"', () => {
+  for (const bad of [undefined, null, '', 'not-a-date']) {
+    const out = decideStalePrAnomalies([pr({ number: 9, createdAt: bad })], { nowISO: NOW });
+    assert.equal(out.length, 1, `createdAt=${JSON.stringify(bad)} must not be collapsed into "fresh"`);
+    assert.equal(out[0].type, 'pr-age-unknown');
+    assert.match(out[0].detail, /age is UNKNOWN/);
+  }
+});
+
+test('decideStalePrAnomalies: no trustworthy clock ⇒ assert nothing rather than assert wrongly', () => {
+  assert.deepEqual(decideStalePrAnomalies([pr({ createdAt: '2026-01-01T00:00:00.000Z' })], { nowISO: 'garbage' }), []);
+  assert.deepEqual(decideStalePrAnomalies(undefined, { nowISO: NOW }), []);
+  assert.deepEqual(decideStalePrAnomalies([], { nowISO: NOW }), []);
+});
+
+test('prAgeLabel: renders days, and says unknown rather than a plausible 0', () => {
+  assert.equal(prAgeLabel({ createdAt: '2026-08-17T12:00:00.000Z' }, NOW), '7d');
+  assert.equal(prAgeLabel({ createdAt: NOW }, NOW), '0d');
+  assert.equal(prAgeLabel({ createdAt: 'nonsense' }, NOW), 'unknown');
+  assert.equal(prAgeLabel({}, NOW), 'unknown');
+  assert.equal(prAgeLabel(undefined, NOW), 'unknown');
+});
+
+// ---- assertRenderableAnomalies ----
+// The report renders every anomaly as `[${a.type}] ${a.detail}`. decideMemoryBudgetAnomaly returned
+// {kind, text} from the day it was added, so the ONE anomaly whose whole job is to say "MEMORY.md is
+// silently truncating" was itself unreadable — it printed "[undefined] undefined" at the top of every
+// report. The bug survived because the tests asserted `.kind`/`.text`: they pinned the broken shape
+// rather than the rendered outcome. These assert the shared contract instead.
+test('assertRenderableAnomalies: throws on an anomaly that would render as [undefined] undefined', () => {
+  assert.throws(() => assertRenderableAnomalies([{ kind: 'memory-index-near-limit', text: 'over budget' }]),
+    /\[undefined\] undefined/);
+  assert.throws(() => assertRenderableAnomalies([{ type: 'x' }]), /lack a string/);
+  assert.throws(() => assertRenderableAnomalies([{ detail: 'y' }]), /lack a string/);
+  assert.throws(() => assertRenderableAnomalies([null]), /lack a string/);
+});
+
+test('assertRenderableAnomalies: a well-formed set passes through unchanged', () => {
+  const ok = [{ type: 'dirty-tree', detail: 'x' }, { type: 'pr-stale', detail: 'y', repo: 'r' }];
+  assert.equal(assertRenderableAnomalies(ok), ok);
+  assert.deepEqual(assertRenderableAnomalies([]), []);
+});
+
+test('every memory-budget verdict is renderable — the population, not one sampled case', () => {
+  const cases = [
+    { available: false },
+    { available: true, bytes: 'nope' },
+    { available: true, bytes: MEMORY_HARD_LIMIT_BYTES + 1 },
+    { available: true, bytes: MEMORY_BUDGET_BYTES + 1 },
+  ];
+  for (const c of cases) {
+    const a = decideMemoryBudgetAnomaly(c);
+    assert.ok(a, `expected an anomaly for ${JSON.stringify(c)}`);
+    // The real assertion: it survives the same guard buildAnomalies runs, so it can actually be READ.
+    assertRenderableAnomalies([a]);
+  }
+  // And the healthy case still yields nothing at all.
+  assert.equal(decideMemoryBudgetAnomaly({ available: true, bytes: 1024 }), null);
 });
