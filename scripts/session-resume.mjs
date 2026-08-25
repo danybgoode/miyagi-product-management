@@ -63,6 +63,11 @@ export const REPOS = [
 
 const JOURNAL_LIMIT_DEFAULT = 10;
 const RECENT_MERGED_LIMIT = 8;
+// 7 days. Delivery here is measured in hours and dependabot's cadence is weekly, so a non-draft PR
+// still open after a week has stopped being in-flight work and started being a decision nobody made.
+// Deliberately not lower: a threshold that fires on healthy PRs gets skimmed past, and a skimmed
+// anomaly line is worth less than no line at all.
+const STALE_PR_DAYS = 7;
 const MIGRATION_TIMEOUT_MS = 60000;
 
 function lastLine(s) {
@@ -182,6 +187,73 @@ export function decideWorktreeAnomalies(worktrees) {
     .map((w) => ({ type: 'dirty-tree', detail: `worktree ${w.path} (branch ${w.branch || 'detached'}): uncommitted changes.` }));
 }
 
+// A PR nobody has closed the loop on is the single most repeated failure this report exists to catch,
+// and until now it was invisible here: `open PRs: 4` reads identically whether they were opened this
+// morning or five weeks ago. On 2026-08-24 the backend carried four dependabot PRs aged 10–17 days and
+// this repo had four advisory audit PRs stranded since 08-03 — the audit series had simply stopped
+// being harvested, and nothing in any session ever said so out loud.
+//
+// THREE states, not two, because "I could not work out the age" is a different fact from "it is fresh":
+//   • a parseable createdAt older than the threshold  → stale, with the age named
+//   • a parseable createdAt inside the threshold      → nothing (the overwhelmingly common case)
+//   • createdAt absent or unparseable                 → an explicit unknown-age anomaly, never silence
+//
+// Drafts are EXCLUDED. A draft is open on purpose — flagging it would train the reader to skim past
+// this line, which is the failure mode that made the stale PRs invisible in the first place.
+export function decideStalePrAnomalies(open, { nowISO, thresholdDays = STALE_PR_DAYS } = {}) {
+  const now = Date.parse(nowISO);
+  if (!Number.isFinite(now)) return []; // no trustworthy clock ⇒ assert nothing, rather than assert wrongly
+  const out = [];
+  for (const pr of open || []) {
+    if (pr.isDraft) continue;
+    const created = Date.parse(pr.createdAt ?? '');
+    if (!Number.isFinite(created)) {
+      out.push({
+        type: 'pr-age-unknown',
+        detail: `PR #${pr.number} "${pr.title}" (${pr.url}) — open, but its creation date could not be read, so its age is UNKNOWN.`,
+      });
+      continue;
+    }
+    const days = Math.floor((now - created) / 86400000);
+    if (days >= thresholdDays) {
+      out.push({
+        type: 'pr-stale',
+        detail: `PR #${pr.number} "${pr.title}" (${pr.url}) has been open ${days} days — decide it or close it.`,
+      });
+    }
+  }
+  return out;
+}
+
+// Renders an age for the full-state listing. Returns 'unknown' rather than a plausible-looking 0 when
+// the date cannot be read — the same three-state discipline decideStalePrAnomalies applies.
+export function prAgeLabel(pr, nowISO = new Date().toISOString()) {
+  const now = Date.parse(nowISO);
+  const created = Date.parse(pr?.createdAt ?? '');
+  if (!Number.isFinite(now) || !Number.isFinite(created)) return 'unknown';
+  return `${Math.floor((now - created) / 86400000)}d`;
+}
+
+// Every anomaly is rendered as `[${a.type}] ${a.detail}`, so a decider returning any other shape prints
+// "[undefined] undefined" — a line that looks like a bug in the reader's terminal rather than the fact it
+// is carrying. That is not hypothetical: decideMemoryBudgetAnomaly returned {kind, text} from the day it
+// was added (#160), so the ONE anomaly whose entire job is to say "MEMORY.md is silently truncating" was
+// itself silently unreadable, and it printed that way at the top of every report for weeks. Found
+// 2026-08-24 with the index 0.3 KB over budget and the warning live.
+//
+// Normalising the shape is the fix; this is the guard that keeps it normalised. It asserts on the
+// POPULATION every run rather than on the one decider that was wrong.
+export function assertRenderableAnomalies(anomalies) {
+  const bad = (anomalies || []).filter((a) => !a || typeof a.type !== 'string' || typeof a.detail !== 'string');
+  if (bad.length) {
+    throw new Error(
+      `${bad.length} anomaly/anomalies lack a string \`type\`+\`detail\` and would render as ` +
+      `"[undefined] undefined": ${JSON.stringify(bad).slice(0, 400)}`,
+    );
+  }
+  return anomalies;
+}
+
 export function decidePrAnomalies(open) {
   const out = [];
   for (const pr of open || []) {
@@ -267,8 +339,8 @@ export function decideMigrationAnomalies({ repo, unappliedLocal, appliedNoFile, 
 export function decideMemoryBudgetAnomaly({ available, bytes, limitBytes = MEMORY_HARD_LIMIT_BYTES, budgetBytes = MEMORY_BUDGET_BYTES, path }) {
   if (!available) {
     return {
-      kind: 'memory-index-unavailable',
-      text: `Could not read the session memory index${path ? ` (${path})` : ''} — its size is UNKNOWN, not fine. If it is over ~${Math.round(limitBytes / 1024)} KB it is being silently truncated.`,
+      type: 'memory-index-unavailable',
+      detail: `Could not read the session memory index${path ? ` (${path})` : ''} — its size is UNKNOWN, not fine. If it is over ~${Math.round(limitBytes / 1024)} KB it is being silently truncated.`,
     };
   }
   // `available: true` with a non-numeric size is a malformed reading, and letting it
@@ -277,20 +349,20 @@ export function decideMemoryBudgetAnomaly({ available, bytes, limitBytes = MEMOR
   // unavailable rather than as fine.
   if (typeof bytes !== 'number' || !Number.isFinite(bytes)) {
     return {
-      kind: 'memory-index-unavailable',
-      text: `The session memory index reported a size of \`${String(bytes)}\`${path ? ` (${path})` : ''} — UNKNOWN, not fine.`,
+      type: 'memory-index-unavailable',
+      detail: `The session memory index reported a size of \`${String(bytes)}\`${path ? ` (${path})` : ''} — UNKNOWN, not fine.`,
     };
   }
   if (bytes > limitBytes) {
     return {
-      kind: 'memory-index-truncating',
-      text: `MEMORY.md is ${(bytes / 1024).toFixed(1)} KB, over the ~${(limitBytes / 1024).toFixed(1)} KB session read limit — it IS being truncated right now, and the tail (owed items, epic lists) is not reaching this session. Tighten index lines; move detail into topic files.`,
+      type: 'memory-index-truncating',
+      detail: `MEMORY.md is ${(bytes / 1024).toFixed(1)} KB, over the ~${(limitBytes / 1024).toFixed(1)} KB session read limit — it IS being truncated right now, and the tail (owed items, epic lists) is not reaching this session. Tighten index lines; move detail into topic files.`,
     };
   }
   if (bytes > budgetBytes) {
     return {
-      kind: 'memory-index-near-limit',
-      text: `MEMORY.md is ${(bytes / 1024).toFixed(1)} KB, over its ${(budgetBytes / 1024).toFixed(0)} KB working budget (hard truncation at ~${(limitBytes / 1024).toFixed(1)} KB). Tighten one line before adding another.`,
+      type: 'memory-index-near-limit',
+      detail: `MEMORY.md is ${(bytes / 1024).toFixed(1)} KB, over its ${(budgetBytes / 1024).toFixed(0)} KB working budget (hard truncation at ~${(limitBytes / 1024).toFixed(1)} KB). Tighten one line before adding another.`,
     };
   }
   return null;
@@ -343,6 +415,9 @@ export function buildAnomalies({ repoStates, migrationResults, expandOrphans = f
     }
     if (rs.gh?.available) {
       for (const a of decidePrAnomalies(rs.gh.open)) anomalies.push({ repo: rs.repo, ...a });
+      for (const a of decideStalePrAnomalies(rs.gh.open, { nowISO: new Date().toISOString() })) {
+        anomalies.push({ repo: rs.repo, ...a });
+      }
     }
   }
   for (const m of migrationResults || []) {
@@ -350,7 +425,7 @@ export function buildAnomalies({ repoStates, migrationResults, expandOrphans = f
       for (const a of decideMigrationAnomalies({ ...m, expandOrphans })) anomalies.push(a);
     }
   }
-  return anomalies;
+  return assertRenderableAnomalies(anomalies);
 }
 
 // D4: names every degraded source instead of silently dropping it. A missing repo path, an
@@ -457,7 +532,7 @@ export function renderHumanReport(report) {
       lines.push(`    open PRs: ${(rs.gh.open || []).length}; recently merged: ${(rs.gh.recentMerged || []).length}`);
       for (const pr of rs.gh.open || []) {
         lines.push(
-          `      #${pr.number} ${pr.title} [${pr.headRefName}] mergeable=${pr.mergeable} ` +
+          `      #${pr.number} ${pr.title} [${pr.headRefName}] age=${prAgeLabel(pr)} mergeable=${pr.mergeable} ` +
             `ciFailing=${pr.ciFailing} ciPending=${pr.ciPending}`
         );
       }
@@ -552,6 +627,8 @@ function gatherRepoGh({ repo, listPullsFn, mergeFn, rollupFn }) {
       title: p.title,
       url: p.url,
       headRefName: p.headRefName,
+      createdAt: p.createdAt,
+      isDraft: p.isDraft,
       mergeable,
       ciAvailable: rollup !== null,
       ciFailing: rollupHasFailure(rollup),
