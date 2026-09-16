@@ -26,6 +26,7 @@ on:
     paths:
       - 'Roadmap/**'
       - 'scripts/**'
+      - '.claude/**'
       - 'infra/**'
       - '.github/workflows/**'
   push:
@@ -33,6 +34,7 @@ on:
     paths:
       - 'Roadmap/**'
       - 'scripts/**'
+      - '.claude/**'
       - 'infra/**'
       - '.github/workflows/**'
 
@@ -75,6 +77,7 @@ jobs:
           {
             echo "roadmap=$(echo "$changed" | grep -qE '^(Roadmap/|scripts/(build-order|doc-format|roadmap-to-notion)\.mjs)' && echo true || echo false)"
             echo "scripts=$(echo "$changed" | grep -qE '^scripts/' && echo true || echo false)"
+            echo "claude=$(echo "$changed" | grep -qE '^(\.claude/|scripts/permissions-smoke)' && echo true || echo false)"
             echo "infra=$(echo "$changed" | grep -qE '^infra/' && echo true || echo false)"
             echo "workflows=$(echo "$changed" | grep -qE '^\.github/workflows/' && echo true || echo false)"
           } >> "$GITHUB_OUTPUT"
@@ -118,6 +121,13 @@ jobs:
       - name: scripts/ — CLI/tooling node:test (pure, ~0.6s for 37 files)
         if: steps.areas.outputs.scripts == 'true'
         run: node --test 'scripts/lib/*.test.mjs' 'scripts/*.test.mjs'
+
+      # The committed permission rules (ways-of-work-lean-pass S1): every deny/ask rule cited in
+      # .claude/permissions-ledger.json, verb-class allow list, no project-level auto mode.
+      # Static — the --live behavioural replay needs a real session and is human-run.
+      - name: permissions — contract holds
+        if: steps.areas.outputs.claude == 'true'
+        run: node scripts/permissions-smoke.mjs
 
       # The integration tier. `*.itest.mjs` files spawn a real `roadmap-to-notion.mjs --extract`,
       # which parses every doc under Roadmap/ (~860 files). They are CI-only by design: they were
