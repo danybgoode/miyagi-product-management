@@ -249,7 +249,7 @@ export function draftWithCodex(prompt, deps = {}) {
     return { ok: false, text: '', model: 'codex', error: 'codex auth has lapsed — run `codex login`', retryable: false };
   }
   if (r.cliOutdated) {
-    return { ok: false, text: '', model: 'codex', error: 'codex CLI is too old for its model — run `node scripts/codex-doctor.mjs`', retryable: false };
+    return { ok: false, text: '', model: 'codex', error: 'codex CLI is too old for its model — run `node scripts/cross-agent-doctor.mjs codex`', retryable: false };
   }
   return {
     ok: false,

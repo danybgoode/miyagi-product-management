@@ -59,6 +59,13 @@ import {
   stripGeneratedFileDiffs,
   shortSha,
 } from './lib/cross-agent-cli.mjs';
+import {
+  assertReviewOutput,
+  cliVersionNote,
+  isReReview,
+  postReviewStatus,
+  RE_REVIEW_NOTE,
+} from './lib/review-guard.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = join(__dirname, 'cross-review.prompt.md');
@@ -157,6 +164,19 @@ function ghDiff(pr, repo) {
   return r.stdout;
 }
 
+/** Comment bodies already on the PR, for re-review convergence. [] on any failure (degrade to first pass). */
+function ghComments(pr, repo) {
+  const args = ['pr', 'view', String(pr), '--json', 'comments'];
+  if (repo) args.push('--repo', repo);
+  const r = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  if (r.status !== 0) return [];
+  try {
+    return (JSON.parse(r.stdout || '{}').comments || []).map((c) => c.body || '');
+  } catch {
+    return [];
+  }
+}
+
 // Changed-file stats for the cost guard: [{ path, additions, deletions }, …]. Returns [] on any failure so
 // the guard degrades to "not trivial" (review runs) rather than silently skipping on a transient gh hiccup.
 function ghFiles(pr, repo) {
@@ -237,18 +257,19 @@ export function promptPathFor(lens) {
 // If that config drifts, review strength changes family and nothing notices. Naming it makes the
 // review auditable; when it genuinely cannot be resolved we say so rather than printing a default
 // that may be wrong.
-export function buildComment(agentLabel, findings, fellBack, { lens = null, model = null } = {}) {
+export function buildComment(agentLabel, findings, fellBack, { lens = null, model = null, version = null, reReview = false } = {}) {
   // When codex fell back, make it unmistakable so nobody reads an Antigravity review as a Codex one.
   const header = fellBack ? `${AGENTS.antigravity} — Codex unavailable` : agentLabel;
   const title = lens
     ? `### 🔐 Cross-agent review — ${lens} lens (${header})`
     : `### 🔎 Cross-agent review (${header})`;
-  const attribution = `\n\n_Model: ${model || 'unrecorded — resolve failed'}._`;
+  const attribution = `\n\n_Model: ${model || 'unrecorded — resolve failed'}${version ? ` · ${version}` : ''}._`;
   // A security pass that reads as a clean bill of health is worse than none. State the limit inline.
   const limit = lens === 'security'
     ? `\n\n> **Scope of this pass:** one advisory, single-pass read by a different model family. It is **not** static analysis, not exhaustive, and not a required check. A clean result here is not a security guarantee.`
     : '';
-  return `${title}\n\n${BANNER}${attribution}${limit}\n\n---\n\n${findings}\n`;
+  const convergence = reReview ? `\n\n> **Re-review:** Blocking/Important findings only — earlier nits are deliberately not repeated.` : '';
+  return `${title}\n\n${BANNER}${attribution}${limit}${convergence}\n\n---\n\n${findings}\n`;
 }
 
 function postComment(pr, repo, body) {
@@ -318,7 +339,9 @@ function main() {
     ensureCmd(AGENT_BIN.claude, 'claude not found — install Claude Code (https://claude.com/claude-code) and run `claude auth login`, then retry.');
   }
 
-  const prompt = loadPromptBody(promptPathFor(lens));
+  // Re-review convergence (ways-of-work-lean-pass D8): a prior pass for THIS lens means Blocking/Important only.
+  const reReview = isReReview(ghComments(pr, repo), lens);
+  const prompt = loadPromptBody(promptPathFor(lens)) + (reReview ? RE_REVIEW_NOTE : '');
   const rawDiff = ghDiff(pr, repo);
   let diff = rawDiff;
   if (!includeLockfiles) {
@@ -332,20 +355,36 @@ function main() {
     }
   }
   const { findings, fellBack } = runReview(agent, prompt, diff);
-  if (!findings) die(`${fellBack ? AGENTS.antigravity : AGENTS[agent]} returned no output.`);
+
+  // THE GUARD (ways-of-work-lean-pass D9). With ONE external pass, a CLI that exits 0 with nothing to say
+  // reads exactly like a clean review and nothing contradicts it. A structureless reply FAILS the run and
+  // fails the PR's `cross-review/<lens>` status rather than posting a comment that looks like a pass.
+  const verdict = assertReviewOutput(findings);
+  if (!verdict.ok) {
+    const who = fellBack ? AGENTS.antigravity : AGENTS[agent];
+    if (!dryRun) {
+      const st = postReviewStatus({ pr, repo, state: 'failure', lens, description: `${who}: ${verdict.reason}` });
+      process.stderr.write(st.posted ? `✗ marked cross-review/${lens || 'general'} FAILED on PR #${pr}.\n` : `✗ could not post the failing status (${st.detail}).\n`);
+    }
+    die(`${who} did not return a review: ${verdict.reason}`);
+  }
 
   // Resolve the model actually used. CODEX_MODEL wins when set; otherwise codex inherits its config
   // default, which we read rather than guess. agy/devin report their own via the runner.
   const body = buildComment(AGENTS[agent], findings, fellBack, {
     lens,
     model: resolveReviewModel(agent, fellBack),
+    version: cliVersionNote(fellBack ? 'antigravity' : agent),
+    reReview,
   });
   if (dryRun) {
     process.stdout.write(body);
     process.stderr.write('\n(dry-run — no comment posted)\n');
   } else {
     const url = postComment(pr, repo, body);
-    process.stderr.write(`✓ Advisory comment posted${url ? `: ${url}` : ''}\n`);
+    process.stderr.write(`✓ Review comment posted${url ? `: ${url}` : ''}\n`);
+    const st = postReviewStatus({ pr, repo, state: 'success', lens, description: `${AGENTS[agent]} — ${verdict.reason}` });
+    process.stderr.write(st.posted ? `✓ cross-review/${lens || 'general'} status: success.\n` : `⚠ review posted but its status did not (${st.detail}).\n`);
   }
 }
 

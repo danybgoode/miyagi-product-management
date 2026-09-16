@@ -1,0 +1,27 @@
+{
+  "_about": "Which PRs get which review layers (ways-of-work-lean-pass D5/D7). reviewScope 'security-paths-only' matches this repo's operating posture (2026-08-10): the deterministic gate is the gate, and the judgment layers — the fresh pr-reviewer subagent + one external general pass — run on money/auth PRs only. securityPaths ALSO decides the lean external security lens. NOTE: cross-review.mjs is run from THIS checkout for the two app repos too (`--repo`), so their money/auth paths are listed here as well; they are distinct from this repo's own paths and cannot collide.",
+  "reviewScope": "security-paths-only",
+  "securityPaths": [
+    ".claude/settings.json",
+    ".claude/permissions-ledger.json",
+    ".github/workflows/**",
+    ".githooks/**",
+    "infra/**",
+    "scripts/lib/**",
+    "app/api/**",
+    "**/checkout/**",
+    "**/*stripe*",
+    "**/*mercadopago*",
+    "**/*payment*",
+    "**/*payout*",
+    "**/*refund*",
+    "**/*webhook*",
+    "**/auth/**",
+    "**/*clerk*",
+    "middleware.ts",
+    "**/middleware.ts",
+    "**/flags.ts",
+    "supabase/migrations/*.sql",
+    "**/migrations/*.ts"
+  ]
+}

@@ -89,7 +89,7 @@ test('runWithCodexFallback: stale-CLI codex failure → falls back to Antigravit
   assert.deepEqual(r, { findings: 'ANTIGRAVITY FINDINGS', fellBack: true, from: 'codex', to: 'antigravity' });
   assert.equal(d.calls.antigravity, 1);
   assert.match(d.calls.warnMsg, /behind its model requirement/);
-  assert.match(d.calls.warnMsg, /codex-doctor/); // points at the diagnosis, not `codex login`
+  assert.match(d.calls.warnMsg, /cross-agent-doctor/); // points at the diagnosis, not `codex login`
 });
 
 test('runWithCodexFallback: stale-CLI + agy absent → fails naming the upgrade, not a token restore', () => {
@@ -463,7 +463,7 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // fixed). These lock the new invocation (a stubbed agy → non-empty capture, the --model + argv framing present,
 // empty stdout treated as failure, the size cap intact) and the fail-loud version gate.
 
-// NOTE for whoever next runs `node scripts/agy-doctor.mjs --fix`: that command rewrites
+// NOTE for whoever next runs `node scripts/cross-agent-doctor.mjs agy --fix`: that command rewrites
 // AGY_PINNED and its marker in cross-agent-cli.mjs, but it does NOT rewrite the literal below —
 // so a green-probe bump always leaves this test red until you update it here too, deliberately.
 // That is the intended shape (the assertion IS the "somebody decided this" record), but the

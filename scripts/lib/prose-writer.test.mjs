@@ -355,7 +355,7 @@ test('draftWithCodex: a STALE CLI is non-retryable and names the doctor script',
   const r = draftWithCodex('p', { run: () => ({ ok: false, text: '', cliOutdated: true }) });
   assert.equal(r.ok, false);
   assert.equal(r.retryable, false);
-  assert.match(r.error, /codex-doctor/);
+  assert.match(r.error, /cross-agent-doctor/);
 });
 
 test('draftWithCodex: a quota cap IS retryable — that is the recoverable case', () => {

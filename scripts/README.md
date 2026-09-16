@@ -227,14 +227,14 @@ The two recoverable causes:
 the exact fix (agents are pre-authorized to run it, LOW tier):
 
 ```bash
-node scripts/codex-doctor.mjs
+node scripts/cross-agent-doctor.mjs codex
 # → auth-lapsed  → `codex login`
 # → cli-outdated → `npm install -g @openai/codex@latest` (or your channel), OR set CODEX_MODEL to a
 #                  model the installed CLI supports as a stopgap (cross-review then runs `codex exec -m …`)
 # → missing / broken → named plainly
 ```
 
-Unlike `agy-doctor`, there is **no `--fix`**: codex isn't version-pinned in the repo (nothing to bump),
+Unlike the agy half, there is **no `--fix`**: codex isn't version-pinned in the repo (nothing to bump),
 and upgrading a global binary is an environment-specific system change the script won't run on its own.
 It diagnoses and names the fix. After fixing, re-run cross-review with `--agent codex` and the header reads
 `(Codex)` again — the fallback is per-invocation, not a persisted mode.

@@ -350,7 +350,7 @@ one message. Everything else in a scoped epic is pre-authorized by the scope its
 exact command; run **the first command it prints** and stop there. A family never reviews its own diff;
 preference order is codex → agy → vibe → claude (`claude` last, because Claude capacity is usually the
 thing *building*; `devin` is off the order entirely — its findings were mostly false positives and it
-carries prose duty). Health/pins: `node scripts/{codex,agy}-doctor.mjs` are pre-authorized. **Verify a
+carries prose duty). Health/pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]` (one doctor, merged 2026-09-16) is pre-authorized. **Verify a
 confident external finding against the diff before acting on it** — the most concrete claims from a
 capped or misconfigured reviewer have been wrong more than once. If no other family is available, say so
 in the PR body and merge on the gate.
