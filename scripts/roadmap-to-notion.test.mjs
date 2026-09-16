@@ -195,3 +195,15 @@ test('danglingSeedEpicPointers: flags a pointer naming no epic dir, and only tha
   // No _file (a hand-built seed object) still names the field rather than printing `undefined:`.
   assert.equal(danglingSeedEpicPointers([{ epic: 'x' }], keys)[0].file, 'seed');
 });
+
+// ways-of-work-lean-pass S1: this epic's sprint docs live in dobby-foundation, so there is nothing
+// local to derive from. Without the short-circuit the board flags drift on EVERY regeneration, forever
+// — the same trap the `archived` case was fixed for.
+test('deriveEpicStatus: an epic whose sprints live in another repo derives from its frontmatter', () => {
+  assert.equal(deriveEpicStatus([], false, 'in-progress', { external: true }), 'In progress');
+  assert.equal(deriveEpicStatus([], false, 'shipped', { external: true }), 'Shipped');
+  // No marker → the old behaviour, which is what makes a forgotten close-out visible.
+  assert.equal(deriveEpicStatus([], false, 'in-progress'), 'Scaffolded');
+  // Marked external but local sprints exist → a real inconsistency, so the normal rules still apply.
+  assert.equal(deriveEpicStatus([{ status: 'Shipped' }], false, 'in-progress', { external: true }), 'Shipped');
+});

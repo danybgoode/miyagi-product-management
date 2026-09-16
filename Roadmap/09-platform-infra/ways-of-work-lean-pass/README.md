@@ -1,6 +1,7 @@
 ---
 status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: ways-of-work-lean-pass
+sprints_in: https://github.com/danybgoode/dobby-foundation/tree/main/Roadmap/09-platform-infra/ways-of-work-lean-pass  # sprint docs + retro live in the foundation repo (S1.1)
 build_order: 3
 ---
 
