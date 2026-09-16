@@ -12,37 +12,39 @@ Canales: X `@miyagi_sanchez`, Threads `@miyagi_sanchez`, Instagram `@miyagi_sanc
 | Objetos sin material real | Se programan como **borradores** en Buffer, con los huecos visibles entre corchetes. No se autopublican. |
 | Formato de creativo | Tarjeta 4:5 (1080 × 1350) por objeto; carrusel de 6 para O05, O12 y O20, que tienen estructura de lista. |
 
-## Qué está en Buffer ahora
+## Estado en Buffer — actualizado 2 sep
 
-**Programados** (se publican solos): 12 objetos — 6 en X, 6 en Threads.
+**Lote 1 (O01–O10) — cerrado.** Los 12 objetos programados se publicaron sin errores en X, Threads e Instagram.
 
-| Objeto | X | Threads |
-|---|---|---|
-| O02 · vie 21 ago | 10:00 | 13:30 |
-| O04 · lun 24 ago | 10:00 | 13:30 |
-| O05 · mar 25 ago | 10:00 | 13:30 |
-| O06 · jue 27 ago | 10:00 | 13:30 |
-| O07 · vie 28 ago | 10:00 | 13:30 |
-| O10 · mar 1 sep | 10:00 | 13:30 |
+**Lote 2 (O11–O20) — programado el 2 sep.** 17 publicaciones automáticas:
 
-**Borradores** (esperan material real): 8 objetos — 4 en X, 4 en Threads.
+| Objeto | Fecha | X | Threads | Instagram |
+|---|---|---|---|---|
+| O11 | jue 3 sep | 10:00 | 13:30 | — |
+| O12 | vie 4 sep | 10:00 | 13:30 | 19:00 |
+| O13 | sáb 5 sep | 11:30 | 12:30 | 12:00 |
+| O14 | lun 7 sep | 10:00 | 13:30 | 19:00 |
+| O17 | vie 11 sep | 10:00 | 13:30 | — |
+| O19 | lun 14 sep | 10:00 | 13:30 | — |
+| O18 | sáb 12 sep | 11:30 | 12:30 | borrador · falta imagen |
+
+Por canal: 7 en X, 7 en Threads, 3 en Instagram. El tope del plan gratuito es de 10 programados por canal, así que queda margen.
+
+**Borradores que esperan material real** — 21 en total. Nueve del lote 2:
 
 | Objeto | Qué falta |
 |---|---|
-| O01 · jue 20 ago | Un comercio real con permiso: foto del objeto, del puesto y de la tienda si ya existe. Sin esto no se publica. |
-| O03 · sáb 22 ago | Conversaciones reales de bazar/comercio de esta semana. Si no hubo trabajo de campo, el board dice: no inventar el formato — publicar en su lugar una observación real de producto o comercio. |
-| O08 · sáb 29 ago | Cinco productos reales de comercios con permiso o públicamente enlazables. Una frase por objeto sobre por qué se notó. Sin ranking. |
-| O09 · lun 31 ago | Una observación real de activación: qué fricción esperábamos vs. cuál reportan los comercios, y qué cambió o se está probando el equipo. |
+| O15 · mar 8 sep | Comercio/producto real de EE. UU. con permiso o crédito público claro. |
+| O16 · jue 10 sep | Un comercio real con las tres piezas: foto del puesto, foto del producto, y su tienda Miyagi Sánchez terminada. El comercio es el protagonista, no nosotros. |
+| O20 · mar 15 sep | De 3 a 5 observaciones REALES del mes: conversaciones sostenidas, el problema que más se repitió, el mensaje que trajo interés calificado, algo que no funcionó, y una cosa que cambia. Sin narrativa de victoria. |
 
-**Instagram**: pendiente del paso de alojamiento (abajo). Los 13 creativos del lote 1 ya están hechos.
+Y doce del lote 1 que nunca salieron, con la fecha ya pasada: **O01** (20 ago), **O03** (22 ago), **O08** (29 ago) y **O09** (31 ago), en los tres canales. Hay que decidir uno por uno: completarlos y publicarlos tarde, reprogramarlos para el mes dos, o borrarlos. Un borrador con fecha vencida no se publica solo.
 
-## El único paso que falta para Instagram
+## Pendientes
 
-Buffer descarga la imagen de una URL pública en el momento de publicar. No puede leerla de tu disco ni de esta sesión.
-
-1. Sube la carpeta `creativos-ig/` a Google Drive.
-2. Botón derecho → Compartir → **Cualquier persona con el enlace · Lector**.
-3. Avísame y programo los 8 posts de Instagram del lote 1 con las URLs `lh3.googleusercontent.com` — el mismo patrón que ya usó el carrusel de mayo.
+1. **O18 · Instagram** — el `O18.png` que está en Drive sigue siendo la versión vieja (lleva impreso "Tiendas fundadoras · 25 lugares" y la URL deprecada). El archivo corregido está en `creativos-ig/O18.png`. Sustitúyelo en Drive y el borrador se puede completar y programar. X y Threads de ese día sí están programados con el copy corregido.
+2. **O20 · 15 sep** — es el cierre de mes y necesita observaciones reales. Vale la pena empezar a juntarlas ahora, no el día 14.
+3. **Días 28–30** (16–18 sep) siguen sin publicación programada, a propósito.
 
 ## Los 20 objetos
 
