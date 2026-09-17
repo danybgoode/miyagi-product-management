@@ -57,7 +57,7 @@ cost nothing — the leverage is the defined verb, not trimming "great work."
 | **Build epic \<epic\>** | §2 — build a WHOLE epic in one orchestrated run (**the default**) |
 | **Build S\<N\> of \<epic\>** | §2b — build a single sprint (the exception) |
 | **Spike \<name\>** | §3 — run a spike |
-| **Review PR #\<N\>** | §4 — route it: `node scripts/review-route.mjs --builder <who> --tier <low\|high> <N>` → **two** cross-family passes. Fresh `pr-reviewer` subagent on HIGH only; **never spawned on LOW** |
+| **Review PR #\<N\>** | §4 — route it: `node scripts/review-route.mjs --builder <who> <N>` → one external general pass, a security lens when the paths trigger it, and the fresh `pr-reviewer` subagent |
 | **Cross-review PR #\<N\>** | §4 — synonym. **REQUIRED on every PR**, run locally. Always route it; hand-picking `--agent` is how a family ends up reviewing its own diff. Resolve every finding before merge; the run itself never authorizes one |
 | **Refund \<tool\>** | a reviewer family is capped — Daniel tops up the quota so the external layer stays lit instead of being replaced by orchestrator subagents |
 | **Panel: \<scope-doc \| ask\>** | advisory second opinion on a *plan* — `node scripts/cross-panel.mjs <doc> --lens both --agent codex\|antigravity` (single-pass, print-only, never gates; surfaced at groom Stage 2/4) |
@@ -102,11 +102,9 @@ Build Sprint <N> of "<epic-slug>" per WAYS-OF-WORKING, in your OWN git worktree 
 feat/<epic-slug>. Plan mode → confirm stories with me → build one story at a time. Commit per story
 PATH-SCOPED (git add <your files> && git commit -- <those paths>; never -A). App copy is es-MX. One api spec
 per testable story. Keep the CI gate (tsc + build + Playwright) green; open a draft PR declaring risk <risk>.
-Route the review with `node scripts/review-route.mjs --builder <you> --tier <risk> <PR#>` — two
-cross-family passes; do NOT spawn your own reviewer subagents on a LOW PR.
-Write the sprint smoke walkthrough into sprint-<N>.md before calling it done.
-```
-*HIGH-risk: add — "all stories HIGH → Daniel merges; the fresh pr-reviewer subagent is mandatory; the authed money-path browser smoke is owed to Daniel."*
+Route the review with `node scripts/review-route.mjs --builder <you> <PR#>` — it prints one external
+general pass, a security lens when the changed paths trigger it, and the fresh `pr-reviewer` subagent
+(money/auth PRs only in this repo; see §4).
 
 > **Mirrored to Notion.** This §2 prompt is generated per-sprint by `scripts/roadmap-to-notion.mjs`
 > (`sprintKickoff()`) and synced into each Sprint card's **"Kickoff"** property — so opening a Grain=Sprint card
@@ -123,27 +121,25 @@ already-possible / light-enhancement / genuinely-new; end with Go / No-go / Go-w
 I sign off the decision before anything gets groomed.
 ```
 
-## 4 · Review a PR — two cross-family passes, routed (NOT the builder)
-```
-Route the review FIRST — never hand-pick --agent:
-  node scripts/review-route.mjs --builder <who-wrote-it> --tier <low|high> <N>
-It prints the TWO cross-family passes to run (a family never reviews its own diff) and whether the fresh
-pr-reviewer subagent applies. Run both passes locally (single-pass each; --skip-trivial for tiny diffs).
-Every finding must be fixed or answered on the PR before merge; the runs themselves authorize nothing.
+## 4 · Review a PR — one external pass (+ a security lens when triggered), routed (NOT the builder)
 
-LOW tier: those two passes plus the green CI gate are the WHOLE review layer — do NOT also spawn your own
-reviewer subagents. Merge on green once every finding is resolved (never your own PR).
-HIGH tier: additionally run the fresh pr-reviewer subagent — you did NOT build it. Run gh pr diff <N> and
-read the changed files. SINGLE PASS on a green CI gate — no iterative refine loop. Check correctness + the
-five AGENTS rules (Medusa owns commerce · Supabase non-commerce only · UCP/MCP first-class · Clerk
-untouched · es-MX copy). Do not use /code-review ultra. Read the cross-family review comments FIRST and do
-not restate what they already found and the builder fixed; DO re-check anything the builder argued down.
-Post findings; hand to Daniel to merge.
-
-If a reviewer family is quota-capped: STOP AND ASK DANIEL FOR A REFUND before substituting orchestrator
-subagents for the missing pass. Proceed with subagents only after the window review-route states
-(--fallback-after, default 30 min), and record the downgrade in the PR body.
 ```
+node scripts/review-route.mjs --builder <who-wrote-it> <N>
+```
+
+It prints the exact commands: the **general pass** by the highest-preference family that did not build
+the diff, the **security lens** by the next family when a changed path matches `scripts/review-config.json`
+→ `securityPaths` (or the body declares `risk: high`), and the **fresh `pr-reviewer` subagent** — family
+independence and context independence, each covered once.
+
+A capped family simply falls to the next in the order (`codex → agy → vibe → claude`); there is no refund
+pause. If only one family can run it runs both prompts and you say so in the PR body; if none can, the
+layer is DARK and you say that. **A reviewer that returns nothing is a FAILED run** — the script prints
+its reply, exits non-zero and fails the PR's `cross-review/<lens>` status; it is never a clean review.
+Health/pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]`.
+
+Findings are fixed, or answered on the PR. Neither pass authorizes a merge; the builder merges on a green
+gate at any tier (`WAYS-OF-WORKING.md` → *Review & merge*).
 
 ## 5 · Strategy / process work — Cowork (strong model)
 ```
