@@ -214,6 +214,28 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 
 ## Recent highlights
 
+- **2026-09-17 — Ways-of-work lean pass SHIPPED (3 sprints, 3 repos, HIGH — it edits the agent
+  authorization boundary).** The process stopped being prose an agent has to remember and became things a
+  check can hold. **Permissions are committed**: a verb-class `allow` (never a command that destroys
+  uncommitted work — an allowed command skips the auto-mode classifier), a `deny` list of the
+  irreversible-by-rule, and an `ask` list for production secrets, env writes and a service deploy — every
+  rule cited in `.claude/permissions-ledger.json` and probed by `scripts/permissions-smoke.mjs`, in all
+  three repos. A live session proved the rules are text matching, not a sandbox: `PATH=/x:$PATH vercel
+  deploy --prod` escaped a bare rule, so deny **and** ask rules are now generated in three spellings from
+  one `CRITICAL_COMMANDS` list, and the contract fails on a bare-only rule instead of waiting for a
+  reviewer to find it — which is how four review rounds found `vercel --yes --prod`, `rm -fr`, `supabase db
+  reset`, `git -C … push --force`, an escaped `gcloud run deploy`, and eleven `Write(<path>)` rules that
+  Claude Code never checked at all. **The review stack collapsed to three reads that answer different
+  questions**: CI (the only merge authority), a fresh `pr-reviewer` for context independence, one external
+  cross-family pass, plus a lean security lens when the changed paths trigger it — here, money and auth
+  paths only, per this repo's pre-launch posture — and the builder merges at every tier. A reviewer that
+  exits 0 printing nothing now **fails** the PR's `cross-review` status instead of reading as a clean pass.
+  **`WAYS-OF-WORKING.md` is generated** in four places from one template plus each project's
+  `fill-ins.yml` (CI fails on drift; an empty required slot is a hard error), and `epic-dod.mjs --check`
+  derives five of the nine epic-DoD items — including, for this repo's pointer epic, by *reading* the
+  sprint docs that live in `dobby-foundation`. See [09 · Platform & Infra ›
+  ways-of-work-lean-pass](09-platform-infra/ways-of-work-lean-pass/).
+
 - **2026-08-18 — Living Shop SHIPPED (7 sprints, LOW throughout — no money path).** The own-shop
   storefront became a place a merchant inhabits: a **Wall** homepage carrying posts, products,
   collections and events; seven controlled sections with one nav on all three channels; and three
