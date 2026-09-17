@@ -18,9 +18,9 @@
 
 ## 📋 Ready to build (scaffolded, not started) (3)
 
-- [Golden Frijoles is the flag provider — the mandate, the preflight, the onboarding](../../09-platform-infra/flag-provider-mandate/README.md) — 09 Platform-infra · 0/9 stories · risk: High · wave-2026-09-16
-- [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0/14 stories · risk: Low · wave-2026-09-16
-- [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0/13 stories · risk: Low · wave-2026-09-16
+- [Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror](../../09-platform-infra/flag-provider-mandate/README.md) — 09 Platform-infra · 0/7 stories · risk: High · wave-2026-09-16
+- [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
+- [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 
 ## ✅ Shipped (148)
 
