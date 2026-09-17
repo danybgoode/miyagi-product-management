@@ -1,103 +1,92 @@
-# Golden Frijoles is the flag provider — Sprint 1: The mandate, the preflight and the agent-guided onboarding
+# Golden Frijoles is the only flag surface — Sprint 1: Measure, repair the write path, activate
 
 **Status:** ⬜ not started
 
-**Epic:** [Golden Frijoles is the flag provider](README.md) · **Risk: MIXED (LOW + HIGH)** — 1.2 and 1.6 are HIGH (they define how every future project reads flags); the rest LOW
+**Epic:** [Golden Frijoles is the only flag surface](README.md) · **Risk: HIGH — the product owner merges** (these flags gate checkout)
 
-**Lands in `dobby-foundation`.** No runtime change in any consuming app. **Blocked on the CLI epic's
-Sprint 2** — every artefact in this sprint names commands that must exist.
+**This sprint changes no code paths.** It measures the live configuration, repairs the admin write
+credential if it is still read-only, and creates the activation rows in Golden that have never
+existed. Everything here is reversible by deactivating.
+
+**Why it exists:** production runs `*=golden`, definitions sync, and `/admin/flags` already writes to
+Golden — yet **39 of 42 flags in production have no activation row**, so the provider finds nothing to
+serve and the evaluator falls through to the durable mirror, then `platform_flags`, then the
+compile-time default. The console you manage in is not currently the thing deciding.
 
 ## Stories
 
-### Story 1.1 — `groom` Stage 6b rewritten to the Golden Frijoles contract
-**As a** groom session planning a HIGH-risk epic, **I want** the kill-switch story to name a real,
-project-agnostic flag mechanism, **so that** the planning skill stops hardcoding one consumer's
-architecture into every future project.
-**Acceptance:** Stage 6b names `gf flags create <key> --kill-switch --all-envs` and the SDK's
-`createFlagProvider` in place of *"extending `lib/flags.ts` `DEFAULT_FLAGS`"*. **The polarity doctrine
-is unchanged** — kill-switch ⇒ default `true`, created ENABLED; enablement ⇒ default `false`, created
-DISABLED — because it is correct and already matches the SDK's semantics. Only the mechanism changes.
+### Story 1.1 — Measure the live cutover config in both runtimes
+**As the** product owner, **I want** the actual serving configuration written down,
+**so that** "where are flags managed" has a measured answer instead of an inferred one.
+**Acceptance:** per **D1**, the real values of `GOLDEN_BEANS_FLAG_CUTOVER` and
+`GOLDEN_BEANS_FLAG_PROVIDER_MODE` are read from **both** the Vercel project and the Cloud Run service
+(`miyagi-web`) and recorded in this file with the date and the command used. If they disagree between
+runtimes, or with `LEARNINGS.md`'s `*=golden`, **that discrepancy is the finding** and the sprint
+stops to reshape. `scripts/vercel-env.mjs` is the reliable reader for the Vercel half — the CLI
+silently stores empty values and `vercel env pull` redacts them.
 **Risk:** low
 
-### Story 1.2 — `scripts/preflight.mjs` — the mandate becomes checkable
-**As the** maintainer, **I want** the mandate enforced by a check rather than a sentence,
-**so that** "always use Golden Frijoles" is a property of the system instead of a hope.
-**Acceptance:** `node scripts/preflight.mjs` verifies a project is linked, a `flag_read` key resolves,
-and the CLI is installed and current. On failure it prints **the exact install command**. Per **D1**
-it **fails hard on init-time absence and fails SOFT on runtime unreachability** — a transient Golden
-Frijoles outage must never break a build, a test run or checkout. The skill declares it in
-`requires_scripts`, so `check-skill-scripts.mjs` keeps it honest.
-**Risk:** high — **D1 backwards is the way this story breaks every consuming project's CI.**
+### Story 1.2 — Prove (or repair) the Golden admin write credential
+**As an** operator, **I want** the toggle in `/admin/flags` to actually work,
+**so that** a control surface isn't decorative.
+**Acceptance:** per **D2**, `POST /api/v1/flags/admin` with Miyagi's `GOLDEN_BEANS_FLAG_ADMIN_KEY` is
+exercised against a throwaway flag. If it returns 401 — as `LEARNINGS.md` recorded on 2026-07-31,
+*"GET returns 200 while POST with the same bearer returns 401"* — the credential is reissued with
+write scope from Golden's console and re-verified. The result either way is written here.
+**Risk:** high — **if this is still 401, it is the root cause of the whole confusion** and every later
+story depends on it.
 
-### Story 1.3 — `check-plugin-leaks.mjs` gains a flag-mechanism rule
-**As the** maintainer, **I want** the leak that caused this epic to be catchable,
-**so that** a consumer's flag architecture can't quietly re-enter the template.
-**Acceptance:** the guard fails when a template or plugin file names a project-specific flag
-mechanism (a bare `lib/flags.ts`, `DEFAULT_FLAGS`, `platform_flags`, `flagsmith`). Deliberate matches
-go in the `ALLOW` list **with a written reason**, and a stale entry fails — the same discipline the
-guard already applies to itself.
-**Risk:** low
+### Story 1.3 — Activate every flag in Golden, in every environment
+**As the** product owner, **I want** every flag to have a real activation in Golden,
+**so that** "Never turned on here" stops being the answer for 39 of 42 flags and the console tells
+the truth.
+**Acceptance:** per **D4**, each flag's **current effective value is derived from the live fallback
+chain, per environment, and recorded first** — then reproduced as its Golden activation. Not its
+compile default: its *effective* value. Development, preview and production are each done and each
+verified. Afterwards Golden's console shows ~0 in the "never" state for this project.
+**A flag whose effective value cannot be determined is a stop, not a guess.**
+**Risk:** high
 
-### Story 1.4 — Agent-guided onboarding
-**As a** developer installing the plugin, **I want** the agent to ask for a Golden Frijoles project
-and hand me the command, **so that** onboarding is one line rather than a docs hunt.
-**Acceptance:** the plugin's install path has the agent detect the absence of a linked project and
-print **one command** — `npx @golden-frijoles/cli init`. The text matches what `/install` and
-`gf init` themselves print; **the three are one surface and must say the same thing.**
-**Risk:** low
-
-### Story 1.5 — `template/AGENTS.md` gains the rule and the plan table
-**As a** builder agent in any spawned project, **I want** the flag rule stated where the
-cannot-be-violated rules live, **so that** it carries the same weight as the other invariants.
-**Acceptance:** a numbered rule — *"Feature flags are Golden Frijoles. Never build a parallel flag
-store."* — in the same shape as golden-beans' AGENTS rule #1 about telemetry. The plan table from the
-epic README lands in `template/AGENTS.md` and the plugin README **with the "not enforced yet" note
-intact**, so nobody builds against limits that don't exist.
-**Risk:** low
-
-### Story 1.6 — Template SDK wiring
-**As a** newly spawned project, **I want** the flag client already wired,
-**so that** the first kill-switch story is a flag creation rather than an integration.
-**Acceptance:** `createFlagProvider` is configured in the template with the env var names decided in
-the CLI epic's **D6**, the server-only warning is prominent (`flagReadKey` must never reach a browser
-bundle), `.env.local` is gitignored, and **D2's verified Edge-runtime answer is written down** — so
-the first middleware-gated feature doesn't rediscover it the hard way. Per **D5**, only `flag_read`
-is written locally; `flag_sync` is documented as a CI secret.
+### Story 1.4 — Prove the runtime reads the Golden activation, not the fallback
+**As the** product owner, **I want** evidence that Golden is deciding,
+**so that** Sprint 2 can delete the fallback without changing behaviour.
+**Acceptance:** for a sample across polarities, flipping the flag **in Golden** changes live
+behaviour within the snapshot TTL, and the `flag-authority` control-plane record reports
+`source: 'golden'` rather than `'fallback'` or `'durable'`. The evidence — flags sampled, records
+observed — is written into this file. **This is the gate on Sprint 2.2.**
 **Risk:** high
 
 ## Sprint QA
-- **api spec(s):** unit tests for `preflight.mjs` covering all five states (no project · no key · CLI
-  absent · CLI outdated · all good) **plus the fail-soft case**: API unreachable at runtime must not
-  fail a build. A `check-plugin-leaks` fixture asserts the new rule fires and that a stale `ALLOW`
-  entry fails.
-- **browser smoke owed:** no.
-- **deterministic gate:** `node --test` + `check-plugin-leaks.mjs` + `check-skill-scripts.mjs` green before merge.
+- **api spec(s):** a parity spec asserting each flag's effective value is unchanged before vs. after
+  activation, per environment; a spec asserting `flag-authority` reports `golden` for the sampled
+  flags; the existing fail-open specs on the checkout guards must stay green throughout.
+- **browser smoke owed:** **yes, to the product owner by name** — the money path, and the
+  `/admin/flags` toggle round-trip.
+- **deterministic gate:** `tsc --noEmit` + `npm run build` (both apps) + `medusa build` + unit +
+  Playwright `api` green before merge.
 
 ## Sprint 1 — Smoke walkthrough (do these in order)
-Env: local · a freshly spawned project from `dobby-foundation/template/`
+Env: production · https://miyagisanchez.com · https://golden-beans-gamma.vercel.app
 
-1. Spawn a new project from the template and run `node scripts/preflight.mjs` with no credentials.
-   → It **fails**, and the message names `npx @golden-frijoles/cli init` verbatim.
-2. Run that command, complete `gf init`, then re-run preflight.
-   → It passes.
-3. Create a flag with `gf flags create demo.hello_enabled --kill-switch --all-envs`, then start the app.
-   → The SDK resolves it. Value `true`, enabled everywhere.
-4. Point `GROWTH_ENGINE_URL` at a dead host and run `npm run build` and the test suite.
-   → **Both still pass.** Evaluation falls back to the caller-supplied default. *(This is D1. If the
-     build fails here, the story is not done.)*
-5. Start a groom session on a HIGH-risk ask.
-   → The kill-switch story it produces names a **Golden Frijoles** flag, the right polarity, one
-     resolver seam, and the CLI command to create it in every env. It does **not** mention
-     `DEFAULT_FLAGS`.
-6. Add `lib/flags.ts` with a `DEFAULT_FLAGS` export to the template and run `node scripts/check-plugin-leaks.mjs`.
-   → It **fails**. *(Then revert.)*
-7. Open `template/AGENTS.md`.
-   → The flag rule is present among the cannot-be-violated rules, and the plan table carries the
-     "not enforced yet" note.
-8. Compare the onboarding text the agent prints, `/install`'s CLI block, and `gf init`'s next-step line.
-   → All three are identical.
+1. Open this file's Story 1.1 record.
+   → The real cutover value is written down, with the date and both runtimes named.
+2. Open https://golden-beans-gamma.vercel.app/app/flags/<miyagi-project>.
+   → The "never turned on here" count is ~0, not 39. Every flag shows on or off in every environment.
+3. Compare that list against https://miyagisanchez.com/admin/flags.
+   → Same flags, same states. *(They are the same data — this step is confirming the two windows
+     finally agree, which they could not while activations were missing.)*
+4. In **Golden's** console, toggle a low-risk flag off.
+   → Within the snapshot TTL the live site reflects it, and `/admin/flags` shows the new state too.
+5. Toggle it back on from **`/admin/flags`**.
+   → It round-trips. *(If this fails with a 401, Story 1.2 was not done.)*
+6. Check the `flag-authority` control-plane records for the flag you toggled.
+   → `source: 'golden'`. **Not `fallback`, not `durable`.**
+7. (money/auth path — **owed to the product owner by name**) Complete a real test-mode checkout.
+   → Order completes; the coordinated-delivery and payment-rail guards behave exactly as before.
+8. Stop Golden from being reachable briefly (revoke the read key).
+   → The site **stays up** and checkout does not error — the fallback is still present in Sprint 1 and
+     this is the last time that is true. *(Restore immediately.)*
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-**Step 4 is the load-bearing one.** A flag provider that can break your CI when it hiccups is a
-dependency nobody should accept, mandate or not.
+**Steps 2 and 6 are the sprint.** Everything else confirms nothing regressed while they happened.

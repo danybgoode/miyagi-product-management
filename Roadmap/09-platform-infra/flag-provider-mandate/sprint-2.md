@@ -1,82 +1,80 @@
-# Golden Frijoles is the flag provider — Sprint 2: Medusa cutover — `platform_flags` to Golden Frijoles
+# Golden Frijoles is the only flag surface — Sprint 2: Retire the second lane
 
 **Status:** ⬜ not started
 
-**Epic:** [Golden Frijoles is the flag provider](README.md) · **Risk: HIGH — the product owner merges** (these flags gate checkout in two apps)
+**Epic:** [Golden Frijoles is the only flag surface](README.md) · **Risk: HIGH — the product owner merges** (deleting the fallback on a commerce path)
 
-**Lands in `medusa-bonsai`.** ⛔ **Does not start until the CLI epic's Sprint 2 has shipped.**
-
-**This is a data migration on a live money path.** Two apps — the Next.js frontend and the Medusa
-backend — read the **same** `platform_flags` rows, so one flip governs both. That is a strength
-during dual-read and a single point of failure during contraction. Expand/contract, verified on real
-traffic, never a big-bang switch.
+⛔ **Does not start until Sprint 1's Story 1.4 is green.** Deleting the fallback while any flag lacks a
+Golden activation changes live behaviour silently — a `killswitch` would resolve to its compile
+default ON, an `enablement` to OFF.
 
 ## Stories
 
-### Story 2.1 — Generate and sync the flag catalog
-**As the** operator, **I want** medusa's existing flags registered in Golden Frijoles without
-hand-creating each one, **so that** the cutover doesn't spend its appetite on data entry.
-**Acceptance:** per **D4**, a generated catalog is produced from the **live `platform_flags` rows**
-(read live — row counts and actual polarity decide what is safe, not the migration files) and synced
-with `gf flags sync`. Every flag arrives with its **current polarity and per-env state preserved**.
-Nothing reads Golden Frijoles yet — this story is dark. An identical definition reports
-`created: false`; any semantic drift surfaces as a 409 for a human to resolve.
+### Story 2.1 — `/admin/flags` becomes a labelled read-only mirror
+**As the** product owner, **I want** exactly one place that can change a flag,
+**so that** I am never again unsure where to manage anything.
+**Acceptance:** the page keeps rendering Golden's snapshot — the operational view inside Miyagi is
+worth keeping — but **the toggle is removed** and `app/api/admin/flags/route.ts` loses its write path
+entirely (`setGoldenAdminFlag` deleted, not merely hidden). The page carries an unmissable label
+saying it is a read-only mirror of Golden Frijoles, and links straight to this project's flag console.
+Per **D5**. The existing "Golden no está disponible" empty state stays as-is — it is already correct.
+**Risk:** low
+
+### Story 2.2 — Delete `local`, `shadow`, and the machinery that chose between them
+**As the** maintainer, **I want** one code path, **so that** no env var can silently move the
+commerce path back to a second store.
+**Acceptance:** `flag-provider-evaluator.ts` collapses to a single Golden read with a safe default.
+Deleted: `flag-cutover.ts`, `flag-provider-mode.ts`, `flag-shadow-observation.ts`,
+`flag-authority-observation.ts`, the `readLocal` lane, and both env vars. **The specific hazard this
+closes:** `parseFlagCutover` resolves any malformed *or unset* manifest to `local`, silently — one
+typo could move every flag decision back to `platform_flags` with no error anywhere. After this there
+is nothing to fall back to and nothing to mis-parse. The durable mirror **stays** — it is the outage
+fallback, and `LEARNINGS.md` already records what removing it cost (a cold instance served a compile
+default and 404'd one live `/us/operators` request).
 **Risk:** high
 
-### Story 2.2 — Dual-read, parity verified on real traffic
-**As the** product owner, **I want** both providers read side by side before anything switches,
-**so that** a disagreement is discovered by a log line rather than by a broken checkout.
-**Acceptance:** `flag-provider-mode.ts`'s **existing** resolver (do not write a second one) reads both
-providers and serves the **outgoing** one, recording any disagreement. Runs on real production
-traffic until parity holds across every flag and env. The parity evidence — flags compared, duration,
-disagreements found and explained — is written into this file before 2.3 starts.
-**Risk:** high
-
-### Story 2.3 — Contract, and delete the Flagsmith wrapper
-**As the** maintainer, **I want** exactly one flag provider, **so that** the three-provider situation
-this epic exists to end actually ends.
-**Acceptance:** `platform.golden_frijoles_flags_enabled` is flipped **on** in the outgoing provider,
-Golden Frijoles becomes the only reader, and the dual-read path is removed. **`scripts/flags.mjs` —
-the Flagsmith Admin-API wrapper for a provider we left months ago — is deleted in the same PR**, along
-with any now-dead cutover scaffolding. `platform_flags` is left in place, unread, for one wave as the
-rollback, then dropped by a follow-up chore. **Rollback is the flag, not a revert.**
+### Story 2.3 — Park `platform_flags`, delete the Flagsmith wrapper
+**As the** maintainer, **I want** the dead store and the dead tooling gone,
+**so that** nobody rediscovers a second flag surface in six months.
+**Acceptance:** nothing reads `platform_flags`; the table is **left in place, unread, for one wave** as
+the rollback, with a follow-up chore seeded to drop it. **`scripts/flags.mjs` is deleted** — a
+Flagsmith Admin-API wrapper for a provider this project left months ago. Any now-dead migration or
+mirror scaffolding goes with it.
 **Risk:** high
 
 ## Sprint QA
-- **api spec(s):** a parity spec asserting both providers return identical resolutions for every flag
-  × env; a fail-open spec asserting an unreachable Golden Frijoles falls back to `DEFAULT_FLAGS`
-  behaviour and **never throws on the checkout path**; regression specs for the two highest-risk
-  gated paths (`checkout-options` catalog and the `start-checkout` guard).
-- **browser smoke owed:** **yes, to the product owner by name** — the money path. An automated smoke
-  cannot fully cover a real checkout.
+- **api spec(s):** the checkout guards' fail-open specs re-run against the collapsed evaluator (a
+  Golden outage must still resolve to the safe default and never throw); a spec asserting no code path
+  reads `platform_flags`; a spec asserting the admin route rejects a write.
+- **browser smoke owed:** **yes, to the product owner by name** — the money path, after the fallback
+  is gone.
 - **deterministic gate:** `tsc --noEmit` + `npm run build` (both apps) + `medusa build` + unit +
-  Playwright `api` green before merge. **Migrations applied before merge, not after** — merging deploys.
+  Playwright `api` green before merge.
 
 ## Sprint 2 — Smoke walkthrough (do these in order)
-Env: production · the live storefront and admin
+Env: production · https://miyagisanchez.com
 
-1. Run `gf flags ls --project miyagi` and compare against `/admin/flags`.
-   → Same flags, same per-env state, same polarity. Count matches.
-2. With dual-read enabled and the switch still **off**, watch the disagreement log for a full traffic day.
-   → Zero unexplained disagreements. *(Any disagreement is a stop, not a note.)*
-3. Flip `platform.golden_frijoles_flags_enabled` **on** in `/admin/flags`.
-   → The apps serve flags from Golden Frijoles. No error rate change.
-4. Kill a non-money flag with `gf flags kill <key> --env production`.
-   → The storefront reflects it within the snapshot TTL. **Both** the frontend and the backend agree.
-5. Simulate a Golden Frijoles outage (block the host at the edge, or revoke the key briefly).
-   → The site **stays up**. Flags resolve to their safe defaults. **Checkout does not error.**
-   *(Restore immediately.)*
-6. (money path — **owed to the product owner by name**) Complete a real test-mode checkout end to end.
-   → Order completes. The coordinated-delivery and payment-rail guards behave exactly as before.
-7. Flip the switch **off** again.
-   → The apps fall back to `platform_flags` cleanly. *(This is the rollback rehearsal — do it before
-     trusting the cutover, not after needing it.)* Then flip it back on.
-8. Run `git grep -n flagsmith -- ':!Roadmap' ':!references'`.
-   → No hits in live code. `scripts/flags.mjs` is gone.
-9. Open https://golden-beans-gamma.vercel.app/app/flag-audit/miyagi.
-   → Recent flips are attributed, with the CLI and the console distinguishable.
+1. Open https://miyagisanchez.com/admin/flags.
+   → It renders Golden's flags, is **clearly labelled a read-only mirror**, links to Golden's console,
+     and **has no toggle**.
+2. `POST` to `/api/admin/flags` directly.
+   → Rejected. The write path is gone, not hidden.
+3. Change a flag in **Golden's** console.
+   → The live site and the mirror both reflect it within the snapshot TTL.
+4. `git grep -n "platform_flags" -- apps` .
+   → No read path. Only the parked migration and a comment saying it is parked.
+5. `git grep -rn "flagsmith\|FLAG_PROVIDER_MODE\|FLAG_CUTOVER" -- apps scripts`.
+   → Nothing in live code. `scripts/flags.mjs` is gone.
+6. Set `GOLDEN_BEANS_FLAG_CUTOVER` to deliberate nonsense and redeploy a preview.
+   → **Nothing happens.** The var is not read any more. *(Before this sprint, that typo would have
+     moved every flag decision to `platform_flags` silently.)*
+7. Make Golden unreachable briefly.
+   → The site stays up; the durable mirror serves last-known-good; checkout does not error.
+     *(Restore immediately.)*
+8. (money/auth path — **owed to the product owner by name**) Complete a real test-mode checkout.
+   → Order completes; the guards behave as before.
 
 If any step fails, note the step number + what you saw — that's the bug report.
 
-**Steps 5 and 7 are the ones that decide whether this merges.** A flag provider that can take the
-storefront down, or a cutover whose rollback has never been rehearsed, is not ready for a money path.
+**Steps 6 and 7 are the two that matter.** One proves the silent-downgrade hazard is closed; the other
+proves closing it didn't cost the outage fallback.

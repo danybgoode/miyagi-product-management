@@ -1,19 +1,34 @@
 ---
-title: "Golden Frijoles is the flag provider — the mandate, the preflight, the onboarding"
+title: "Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror"
 slug: flag-provider-mandate
 status: scaffolded
 area: "09"
-type: feature
+type: chore
 priority: wave-2026-09-16
 appetite: M
 underwritten_by: wave-2026-09-16
 risk: high
 epic: "09-platform-infra/flag-provider-mandate"
 build_order: 5
-updated: 2026-09-16
+updated: 2026-09-17
 ---
 
-# Pitch — Golden Frijoles is the flag provider
+# Pitch — Golden Frijoles is the only flag surface
+
+> **Rescoped 2026-09-17, after reading the code rather than trusting this pitch.** The original
+> version planned a cutover to Golden. **The cutover is already built and production already runs on
+> it** (`GOLDEN_BEANS_FLAG_CUTOVER = *=golden`), `/admin/flags` already writes only to Golden, and a
+> definitions-sync script exists. The one thing actually broken is that **the flags were never
+> *activated* in Golden** — 39 of 42 read "Never turned on here" in production, so the provider finds
+> nothing to serve and the evaluator falls through to the durable mirror, then `platform_flags`, then
+> the compile default.
+>
+> The template/plugin half of this pitch moved to `dobby-foundation` as
+> [`golden-flags-by-default`](https://github.com/danybgoode/dobby-foundation/tree/main/Roadmap/09-platform-infra/golden-flags-by-default).
+> What remains here is Miyagi's own work: activate, then delete the second lane, and make
+> `/admin/flags` an honestly-labelled read-only mirror. **Read the epic README, not the sections
+> below — they describe the superseded scope and are kept for provenance.**
+
 
 > **Repo note.** Lands in `dobby-foundation` (+ a migration story in `medusa-bonsai`). Seeded here
 > for the same reason as [`ways-of-work-lean-pass`](ways-of-work-lean-pass.md).
