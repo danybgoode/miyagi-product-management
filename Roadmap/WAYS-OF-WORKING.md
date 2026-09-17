@@ -118,7 +118,7 @@ Plan → Branch + scaffold docs → Build story → Verify → QA/smoke-test (pr
    - **Live confirmation can be async + divided** (it's *confirmation*, not the gate): the agent owns API-level smoke (`curl`/Playwright) where it has access; **Daniel owns the browser / real-seller-session smoke** (he's notified when Cloud Run finishes and holds the live sessions/tokens). Exercise real behaviour — a disposable/test shop for anything that mutates data; clean up after (revoke test tokens).
    - **Backend (Cloud Run) has no per-branch preview** — it can only be confirmed *post-merge* against prod. The agent does the API-level prod smoke + a route-deployed probe; Daniel picks up the seller/browser parts. State this split in the PR.
 6. **Push as you go.** Each push updates the preview; the reviewer (and Daniel) can test per story without touching production.
-7. **PR → merge to `main`.** Open a PR via `gh` and keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). Flip draft → ready the moment the deterministic gate is green and the self-QA note is posted — the roadmap board's Lifecycle overlay reads that (draft PR → In progress, ready PR → In review), so finished work left in draft hides itself. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. **On a money-path PR, run one cross-family review** (`node scripts/review-route.mjs --builder <who-wrote-it> --tier high <PR#>`, then the first command it prints) and resolve its findings. **On everything else, no review pass is required** — the deterministic gate is the gate. When the gate is green and any required findings are resolved, **merge your own PR**; there is no second-agent merge requirement. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
+7. **PR → merge to `main`.** Open a PR via `gh` and keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). Flip draft → ready the moment the deterministic gate is green and the self-QA note is posted — the roadmap board's Lifecycle overlay reads that (draft PR → In progress, ready PR → In review), so finished work left in draft hides itself. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. **On a money/auth PR, run the review stack** (`node scripts/review-route.mjs --builder <who-wrote-it> <PR#>`, then the commands it prints: one external general pass, the security lens when the paths trigger it, and the fresh `pr-reviewer` subagent) and resolve its findings. **On everything else, no review pass is required** — the deterministic gate is the gate. Which PRs are in scope is `scripts/review-config.json`, not a judgement call. When the gate is green and any required findings are resolved, **merge your own PR**; there is no second-agent merge requirement. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
 8. **Continue / close.** Roll into the next story. At **sprint close**, emit the sprint-wrap terminal summary (`SESSION-KICKOFFS.md` §7) — a thin pointer to the sprint doc + what's owed/next, never a re-summary. At **epic close**, do the epic Definition of Done (below) — including updating the product poster. **Close-out prose (retro, poster entry, sprint-wrap) may be first-drafted by `node scripts/prose-draft.mjs`** (cheap different-family model, house-voice prompt, file-derived inputs only) — the coordinating agent **must edit the draft for factual accuracy before committing** (drafts invent plausible gaps; the banner says so). PR bodies stay with the builder — they're cheapest written by the agent holding the context.
 
 ## Epic-mode builds — the default for a scaffolded epic (2026-07-24)
@@ -307,56 +307,63 @@ merely failed to check is exactly the confident falsehood the guard exists to st
 
 ## Review & merge
 
-The deterministic gate is the gate. Everything else is judgment, and by default the judgment is
-"merge it".
+The deterministic gate is the gate. Everything else is judgment, and on a money/auth PR the judgment is
+three reads that answer **different questions** (2026-09-16, `ways-of-work-lean-pass`).
 
-| Layer | When | Blocks merge? |
-|---|---|---|
-| **Deterministic gate** — `tsc` + lint + `build` + Playwright `api` | **Every PR, both repos.** CI runs it; the builder runs it locally too | **Yes.** Red gate, no merge, no exceptions |
-| **One cross-family review** (`cross-review.mjs`) | **Money-path PRs only** — Stripe/checkout/payment capture/refund, or auth/authorization boundaries | Its findings must be resolved or answered on the PR |
-| **Fresh `pr-reviewer` subagent** | **Only when the product owner asks for it** on a specific PR | Only when run |
+```
+CI (deterministic gate)            — does it build, typecheck, pass the suite?   BLOCKS merge
+  → fresh pr-reviewer subagent     — context independence: did not hold the diff
+  → one external cross-family pass — family independence: different blind spots
+  → + a lean security lens         — when the diff touches a security path
+  → the builder merges on green
+```
 
-**Why it shrank (2026-08-10).** The old stack ran two mandatory cross-family passes on *every* PR plus a
-fresh Claude reviewer subagent on every HIGH PR — and "HIGH" was defined as anything touching payments,
-auth, migrations or shared infra, which is most of what gets built here. In practice review, not
-building, became the dominant token cost of a session, and it was buying protection for a live commerce
-platform that does not exist yet (see *Operating posture*). The layer that actually catches defects
-cheaply is the deterministic gate, and it has grown materially stronger: lint in both repos, coverage
-measured, the owed ledger generated, a security lens, one API spec per testable story, and every new
-spec observed red once.
+**Which PRs get the judgment layers.** `scripts/review-config.json` sets `reviewScope:
+security-paths-only` here — this is the pre-launch posture from 2026-08-10, unchanged: **on everything
+else the gate is the whole gate and you merge on green.** A PR is in scope when a changed path matches a
+`securityPaths` glob (Stripe/checkout/payment/refund/webhooks, auth and Clerk, migrations, middleware,
+`.claude/settings.json`, CI and infra — the two app repos' money/auth paths are listed there too, because
+their reviews are run from this checkout) **or** its body declares `risk: high`.
 
-**The builder merges their own PR.** The old "a fresh agent must merge" rule existed to supply a second
-pair of eyes on a production deploy that could break real merchants. There are no real merchants. A bad
-merge is reverted with `git revert` on `main` in under a minute.
+**Who reviews** is one rule, printed by the router — never picked by hand:
 
-**Every PR still declares a risk tier in its body** — but the tier now only selects whether the
-money-path review runs, not who may merge:
+```
+node scripts/review-route.mjs --builder <who-wrote-it> <PR#>
+```
 
-- **LOW** — docs, copy, UI, routes, admin surfaces, agent tools behind auth, tests, tooling, schema
-  additions. Gate green ⇒ merge.
-- **HIGH** — Stripe/checkout/payment/refund code paths, and authorization boundaries. Gate green +
-  one cross-family pass resolved ⇒ merge.
+The highest-preference family that did **not** build the diff runs the general pass; the next one runs
+the security lens (`--lens security`) when the paths trigger it. Preference order is
+`codex → agy → vibe → claude` (`claude` last: its capacity is usually the thing *building*). A capped
+family falls to the next — **no refund pause, no waiting.** If only one family is left it runs both
+prompts and the PR body says so; if none is, the layer is **DARK** and the PR body says that. Health and
+pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]`, pre-authorized.
 
-When unsure which tier, treat it as HIGH — one external pass is cheap.
+**A silent reviewer is a FAILED run, not a clean one.** With one external pass, nothing contradicts a CLI
+that exits 0 printing nothing — agy shipped empty reviews for weeks that way. `cross-review.mjs` asserts
+the reply carries real review structure, posts a `pending` status before the reviewer runs, pins the
+reviewed sha, and on a structureless reply prints the full text, exits non-zero and fails the PR's
+`cross-review/<lens>` status. **This is the most load-bearing line in the policy.**
 
-**Three actions still get one focused question to Daniel before you take them**, and they are about
-irreversibility, not about review: a destructive or hard-to-reverse change to live data; spending real
-money or a third party's metered resource; and production secrets/IAM/DNS/TLS. Name the exact action in
-one message. Everything else in a scoped epic is pre-authorized by the scope itself.
+**One prompt, two readers.** `scripts/cross-review.prompt.md` is read by both the external CLI and the
+fresh subagent: one pass, a `file:line` citation or the finding is not posted, at most 3 nits (the rest
+as a count), skip what CI already enforces, Blocking/Should-fix only on a re-review of a new commit.
 
-### Running the cross-family pass
+**Every finding is fixed, or answered on the PR.** Neither pass authorizes anything.
 
-`node scripts/review-route.mjs --builder <who-wrote-it> --tier high <PR#>` prints the routing and the
-exact command; run **the first command it prints** and stop there. A family never reviews its own diff;
-preference order is codex → agy → vibe → claude (`claude` last, because Claude capacity is usually the
-thing *building*; `devin` is off the order entirely — its findings were mostly false positives and it
-carries prose duty). Health/pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]` (one doctor, merged 2026-09-16) is pre-authorized. **Verify a
-confident external finding against the diff before acting on it** — the most concrete claims from a
-capped or misconfigured reviewer have been wrong more than once. If no other family is available, say so
-in the PR body and merge on the gate.
+**The builder merges their own PR, at every risk tier**, once CI is green and findings are resolved. The
+declared tier selects the review scope, not the merge authority. A bad merge is `git revert` on `main`,
+which is faster than any approval round-trip.
 
-The pass runs **locally**, not in CI (a GitHub runner has no codex/agy auth). "Required on money paths"
-therefore means an agent must run it before merging, not that a status check enforces it.
+**Three actions still get one focused question before you take them**, and they are about
+irreversibility, not review: a destructive or hard-to-reverse change to live data; real money or a third
+party's metered resource; and production secrets/IAM/DNS/TLS. The committed `ask` rules in
+`.claude/settings.json` make that prompt automatic for the commands that do it.
+
+**A deterministic security floor runs underneath, free and without an LLM** (2026-09-16): GitHub secret
+scanning with push protection on all five repos, and CodeQL default setup on `miyagisanchezcommerce` and
+`medusa-bonsai-backend`. The security lens finds logic flaws — cross-tenant reads, money-path mistakes,
+authorization gated on the wrong thing; the scanners find known patterns and leaked credentials. Neither
+replaces the other. `/security-review` is available locally as a pre-push self-check, never a gate.
 
 ## Definition of Ready (a story can start)
 - The "as a / I want / so that" is clear and the acceptance check is testable.
