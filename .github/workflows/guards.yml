@@ -131,7 +131,7 @@ jobs:
 
       # The committed permission rules (ways-of-work-lean-pass S1): every deny/ask rule cited in
       # .claude/permissions-ledger.json, verb-class allow list, no project-level auto mode.
-      # Static — the --live behavioural replay needs a real session and is human-run.
+      # Static only. The --live replay (benign probes, real sessions) is run by hand when rules change.
       - name: permissions — contract holds
         if: steps.areas.outputs.claude == 'true'
         run: node scripts/permissions-smoke.mjs
