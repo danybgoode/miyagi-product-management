@@ -61,6 +61,7 @@ import {
 } from './lib/cross-agent-cli.mjs';
 import {
   assertReviewOutput,
+  changedFileCount,
   cliVersionNote,
   decideSecurityPass,
   parseReviewConfig,
@@ -366,7 +367,12 @@ function main() {
   let securityOwed = null;
   if (!lens) {
     const cfg = loadReviewConfig();
-    const decision = decideSecurityPass({ files: ghFiles(pr, repo), body: ghBody(pr, repo), securityPaths: cfg.securityPaths });
+    const decision = decideSecurityPass({
+      files: ghFiles(pr, repo),
+      body: ghBody(pr, repo),
+      securityPaths: cfg.securityPaths,
+      totalFiles: changedFileCount({ pr, repo }),
+    });
     if (decision.run) {
       securityOwed = decision.reason;
       process.stderr.write(`⚠ this PR triggers the security lens (${decision.reason}) — run: node scripts/cross-review.mjs ${pr}${repo ? ` --repo ${repo}` : ''} --agent <another-family> --lens security\n`);

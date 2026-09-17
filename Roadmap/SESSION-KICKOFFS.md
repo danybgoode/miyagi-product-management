@@ -44,7 +44,7 @@ orchestrator. See `LEARNINGS.md` → salvage the tree.)*
 - `<epic-slug>` — e.g. `discovery-polish`
 - `<NN-macro>` — macro-section folder, e.g. `01-discovery-and-shopping`
 - `<N>` — sprint number
-- `<risk>` — **LOW** (an agent other than the builder may merge on green CI, once the cross-agent review is clean or answered) / **HIGH** (Daniel merges; the fresh-reviewer pass is mandatory)
+- `<risk>` — **LOW** / **HIGH** (money, auth, migrations, shared infra). HIGH puts the PR in review scope (fresh reviewer + one external pass + the security lens); **the builder merges on green at either tier**
 
 ## Command shorthands
 A small, fixed vocabulary so the *instruction* half of a message is unambiguous — each verb just **points**
@@ -59,11 +59,11 @@ cost nothing — the leverage is the defined verb, not trimming "great work."
 | **Spike \<name\>** | §3 — run a spike |
 | **Review PR #\<N\>** | §4 — route it: `node scripts/review-route.mjs --builder <who> <N>` → one external general pass, a security lens when the paths trigger it, and the fresh `pr-reviewer` subagent |
 | **Cross-review PR #\<N\>** | §4 — synonym. **Required on money/auth PRs here** (`scripts/review-config.json` → `reviewScope: security-paths-only`), run locally. Always route it; hand-picking `--agent` is how a family ends up reviewing its own diff. Resolve every finding before merge; the run itself never authorizes one |
-| **Refund \<tool\>** | a reviewer family is capped — Daniel tops up the quota so the external layer stays lit instead of being replaced by orchestrator subagents |
+| **Skip \<family\>** | a reviewer family is capped — re-route past it: `node scripts/review-route.mjs --builder <who> <N> --exclude <family>` (there is no refund pause) |
 | **Panel: \<scope-doc \| ask\>** | advisory second opinion on a *plan* — `node scripts/cross-panel.mjs <doc> --lens both --agent codex\|antigravity` (single-pass, print-only, never gates; surfaced at groom Stage 2/4) |
 | **Wrap S\<N\>** | tick the sprint doc status + emit the §7 sprint-wrap terminal summary |
 | **Close epic \<slug\>** | §6 — full epic Definition of Done |
-| **Clear to merge — LOW** / **Daniel-merge** | the risk-tier gate: an agent other than the builder merges on green CI (cross-agent review clean or answered) / Daniel merges |
+| **Clear to merge** | the builder merges on a green gate with every finding fixed or answered — at any risk tier |
 | **Next** | proceed to the next story/sprint per the current `sprint-N.md` |
 
 ---
@@ -132,8 +132,8 @@ the diff, the **security lens** by the next family when a changed path matches `
 → `securityPaths` (or the body declares `risk: high`), and the **fresh `pr-reviewer` subagent** — family
 independence and context independence, each covered once.
 
-A capped family simply falls to the next in the order (`codex → agy → vibe → claude`); there is no refund
-pause. If only one family can run it runs both prompts and you say so in the PR body; if none can, the
+A capped family is routed past with `--exclude <family>` (order `codex → agy → vibe → claude`); there is no
+refund pause. If only one family can run it runs both prompts and you say so in the PR body; if none can, the
 layer is DARK and you say that. **A reviewer that returns nothing is a FAILED run** — the script prints
 its reply, exits non-zero and fails the PR's `cross-review/<lens>` status; it is never a clean review.
 Health/pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]`.
