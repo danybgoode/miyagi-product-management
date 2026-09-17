@@ -79,10 +79,9 @@ const SECURITY_PROMPT_PATH = join(__dirname, 'cross-review.security.prompt.md');
 export const LENSES = ['security'];
 
 const BANNER =
-  '> **Required cross-agent review — resolve every finding before merge, but this does not authorize one.** ' +
-  'Fix each finding or answer it on this PR with the reason it is not a bug. ' +
-  'CI + the risk-tier merge rule remain authoritative (HIGH tier also gets a fresh `pr-reviewer` pass). ' +
-  'This is a single-pass second opinion from a different model family.';
+  '> **Cross-agent review — every finding is fixed, or answered on this PR, before merge. This does not authorize one.** ' +
+  'CI and the risk-tier merge rule remain the only merge authority. A fresh `pr-reviewer` pass covers context independence; ' +
+  'this is the family-independence pass: one single-pass read by a model family that did not build the diff.';
 
 const HELP = `cross-review.mjs — the required cross-agent review of a PR diff (run on EVERY PR).
 
@@ -383,6 +382,16 @@ function main() {
     }
   }
 
+  // Pin the commit being reviewed BEFORE the reviewer runs: a push mid-review would otherwise move the
+  // status onto a commit nobody read, and the re-review check needs to tell a new commit from a retry.
+  const reviewedSha = ghHeadSha(pr, repo);
+
+  // Post PENDING before the CLI is even checked. A version-pin mismatch or a dead token exits the
+  // script BEFORE the guard runs (observed live on PR #177, where the agy pin refused the run), and an
+  // ABSENT status is indistinguishable from "never ran". A stuck `pending` is visibly not-clean.
+  if (!dryRun)
+    postReviewStatus({ pr, repo, state: 'pending', lens, sha: reviewedSha, description: `${AGENTS[agent]} reviewing…` });
+
   if (agent === 'codex') {
     ensureCmd('codex', 'codex not found — install Codex CLI (https://github.com/openai/codex) and `codex login`.');
   } else if (agent === 'antigravity') {
@@ -393,10 +402,6 @@ function main() {
   } else if (agent === 'claude') {
     ensureCmd(AGENT_BIN.claude, 'claude not found — install Claude Code (https://claude.com/claude-code) and run `claude auth login`, then retry.');
   }
-
-  // Pin the commit being reviewed BEFORE the reviewer runs: a push mid-review would otherwise move the
-  // status onto a commit nobody read, and the re-review check needs to tell a new commit from a retry.
-  const reviewedSha = ghHeadSha(pr, repo);
 
   // Re-review convergence (ways-of-work-lean-pass D8): a prior pass for THIS lens means Blocking/Important only.
   const reReview = isReReview(ghComments(pr, repo), lens, reviewedSha);
@@ -413,12 +418,6 @@ function main() {
       );
     }
   }
-  // Post PENDING before the reviewer runs. If the CLI dies mid-run (a dead token, a context overflow),
-  // the script exits without reaching the guard — and an ABSENT status is indistinguishable from "never
-  // ran". A stuck `pending` is visibly not-clean, which is the whole point of the guard.
-  if (!dryRun)
-    postReviewStatus({ pr, repo, state: 'pending', lens, sha: reviewedSha, description: `${AGENTS[agent]} reviewing…` });
-
   const { findings, fellBack } = runReview(agent, prompt, diff);
 
   // THE GUARD (ways-of-work-lean-pass D9). With ONE external pass, a CLI that exits 0 with nothing to say

@@ -58,7 +58,7 @@ cost nothing — the leverage is the defined verb, not trimming "great work."
 | **Build S\<N\> of \<epic\>** | §2b — build a single sprint (the exception) |
 | **Spike \<name\>** | §3 — run a spike |
 | **Review PR #\<N\>** | §4 — route it: `node scripts/review-route.mjs --builder <who> <N>` → one external general pass, a security lens when the paths trigger it, and the fresh `pr-reviewer` subagent |
-| **Cross-review PR #\<N\>** | §4 — synonym. **REQUIRED on every PR**, run locally. Always route it; hand-picking `--agent` is how a family ends up reviewing its own diff. Resolve every finding before merge; the run itself never authorizes one |
+| **Cross-review PR #\<N\>** | §4 — synonym. **Required on money/auth PRs here** (`scripts/review-config.json` → `reviewScope: security-paths-only`), run locally. Always route it; hand-picking `--agent` is how a family ends up reviewing its own diff. Resolve every finding before merge; the run itself never authorizes one |
 | **Refund \<tool\>** | a reviewer family is capped — Daniel tops up the quota so the external layer stays lit instead of being replaced by orchestrator subagents |
 | **Panel: \<scope-doc \| ask\>** | advisory second opinion on a *plan* — `node scripts/cross-panel.mjs <doc> --lens both --agent codex\|antigravity` (single-pass, print-only, never gates; surfaced at groom Stage 2/4) |
 | **Wrap S\<N\>** | tick the sprint doc status + emit the §7 sprint-wrap terminal summary |
