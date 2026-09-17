@@ -29,6 +29,10 @@
     "**/middleware.ts",
     "**/flags.ts",
     "supabase/migrations/*.sql",
-    "**/migrations/*.ts"
+    "**/migrations/*.ts",
+    "scripts/review-route.mjs",
+    "scripts/review-config.json",
+    "scripts/cross-review.mjs",
+    "scripts/lib/review-guard.mjs"
   ]
 }

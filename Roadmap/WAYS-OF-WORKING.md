@@ -334,7 +334,8 @@ node scripts/review-route.mjs --builder <who-wrote-it> <PR#>
 The highest-preference family that did **not** build the diff runs the general pass; the next one runs
 the security lens (`--lens security`) when the paths trigger it. Preference order is
 `codex → agy → vibe → claude` (`claude` last: its capacity is usually the thing *building*). A capped
-family falls to the next — **no refund pause, no waiting.** If only one family is left it runs both
+family is routed past with `--exclude <family>` (an installed CLI cannot be told from a capped one without
+spending a run) — **no refund pause, no waiting.** If only one family is left it runs both
 prompts and the PR body says so; if none is, the layer is **DARK** and the PR body says that. Health and
 pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]`, pre-authorized.
 
@@ -350,7 +351,8 @@ as a count), skip what CI already enforces, Blocking/Should-fix only on a re-rev
 
 **Every finding is fixed, or answered on the PR.** Neither pass authorizes anything.
 
-**The builder merges their own PR, at every risk tier**, once CI is green and findings are resolved. The
+**Risk tiers.** **HIGH** = Stripe/checkout/payment/refund paths, auth and authorization boundaries, DB
+migrations, shared infra; **LOW** = everything else. When unsure, HIGH. **The builder merges their own PR, at every risk tier**, once CI is green and findings are resolved. The
 declared tier selects the review scope, not the merge authority. A bad merge is `git revert` on `main`,
 which is faster than any approval round-trip.
 
