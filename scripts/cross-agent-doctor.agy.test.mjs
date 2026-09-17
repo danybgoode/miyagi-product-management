@@ -7,11 +7,11 @@
 // rename/retirement ('model-drift'), a clean self-update ('bump'), and the 2026-07-06 transient
 // Gemini-quota blank the fallback absorbed ('quota-warn').
 //
-// Run: node --test 'scripts/agy-doctor.test.mjs'   (scripts-guard runs the full glob in CI).
+// Run: node --test 'scripts/cross-agent-doctor.agy.test.mjs'   (scripts-guard runs the full glob in CI).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decideDoctorAction, bumpPinnedSource, parseAgyModelSlugs, isUpstreamUnavailable } from './agy-doctor.mjs';
+import { decideDoctorAction, bumpPinnedSource, parseAgyModelSlugs, isUpstreamUnavailable } from './cross-agent-doctor.mjs';
 
 const base = {
   installed: '1.0.16',

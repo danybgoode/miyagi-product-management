@@ -27,6 +27,17 @@ the one that wrote this code, and that is the point: re-derive intent from the d
 
 **One pass. No debate loop.** Report what you find and stop.
 
+**Scope: security only.** No style, naming, formatting, test coverage or general correctness — the
+general pass covers those. **No nits.** Blocking and Should-fix only.
+
+**Every finding names the attack:** the input an attacker controls → the code path it reaches
+(`file:line`) → the concrete consequence. A finding without that chain is not a finding; drop it rather
+than pad the list.
+
+**When it runs (ways-of-work-lean-pass D7):** one pass, triggered by the changed paths
+(`scripts/review-config.json` → `securityPaths`) or a `risk: high` PR body. A builder can add it by hand;
+a builder cannot skip it.
+
 ## What matters most here
 
 Report findings in this order of severity, and be concrete: name the file, the line, the input that

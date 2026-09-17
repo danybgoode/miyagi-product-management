@@ -17,7 +17,7 @@
 //       ended. Please log in again." / "refresh token was revoked" / 401). Restore: `codex login`.
 //   (b) STALE CLI — the installed codex is too old for the model it runs (its own default, or CODEX_MODEL),
 //       e.g. "The 'gpt-5.6-sol' model requires a newer version of Codex." (hit all through the 2026-07-20
-//       batch — codex 0.142.5 vs its default gpt-5.6-sol). Restore: `node scripts/codex-doctor.mjs` names
+//       batch — codex 0.142.5 vs its default gpt-5.6-sol). Restore: `node scripts/cross-agent-doctor.mjs codex` names
 //       the upgrade, or set CODEX_MODEL to a model the installed CLI supports as a stopgap.
 // Both return `{ fellBack: true, from: 'codex', to: 'antigravity' }` so the caller can label the output; the
 // banner text branches on the cause. The triggers live in the pure, testable `decideCodexFallback` (fed
@@ -60,7 +60,7 @@ export const AGENT_BIN = { codex: 'codex', antigravity: 'agy', devin: 'devin', v
 // `agy models`), but it means a future typo in either constant would silently review with the WRONG model
 // instead of failing loud — watch for that if either constant is ever edited.
 // agy-doctor: last verified 2026-08-23 against 1.1.19.
-//   ^ machine-managed marker — `node scripts/agy-doctor.mjs --fix` rewrites it (with the constant
+//   ^ machine-managed marker — `node scripts/cross-agent-doctor.mjs agy --fix` rewrites it (with the constant
 //   below) after a green live contract probe. Don't hand-edit the marker's shape.
 export const AGY_PINNED = '1.1.19';
 
@@ -303,7 +303,7 @@ export function checkAgyVersion(deps = {}) {
   if (m[0] !== pinned)
     return failFn(
       `agy ${m[0]} != pinned ${pinned} — the print/--model contract may have shifted. ` +
-        `Run \`node scripts/agy-doctor.mjs --fix\` (authorized for agents: it re-verifies the live ` +
+        `Run \`node scripts/cross-agent-doctor.mjs agy --fix\` (authorized for agents: it re-verifies the live ` +
         `contract and bumps the pin only on a green probe), then commit the bump. ` +
         `Manual path: re-verify runAntigravity() against \`agy --help\`, then bump AGY_PINNED to ${m[0]}.`
     );
@@ -450,7 +450,7 @@ export function runWithCodexFallback(
   // The two recoverable causes want different operator guidance — a lapsed token vs a stale binary — so the
   // banner/fatal text branches on the flag even though the ACTION (fall back to agy) is the same.
   const cause = codex.cliOutdated
-    ? { blurb: 'Codex CLI is behind its model requirement', restore: 'upgrade codex (see `node scripts/codex-doctor.mjs`)' }
+    ? { blurb: 'Codex CLI is behind its model requirement', restore: 'upgrade codex (see `node scripts/cross-agent-doctor.mjs codex`)' }
     : { blurb: 'Codex token revoked', restore: '`codex login`' };
 
   switch (action) {

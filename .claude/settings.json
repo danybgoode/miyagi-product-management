@@ -38,6 +38,7 @@
       "Bash(npx eslint *)",
       "Bash(npx playwright test *)",
       "Bash(node scripts/*)",
+      "Bash(node skills/*)",
       "Bash(node --test *)",
       "Bash(jq *)",
       "Bash(supabase migration list *)",

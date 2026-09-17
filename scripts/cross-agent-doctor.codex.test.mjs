@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { decideCodexDoctorAction, remediation } from './codex-doctor.mjs';
+import { decideCodexDoctorAction, remediation } from './cross-agent-doctor.mjs';
 
 test('decideCodexDoctorAction: missing binary short-circuits before any probe', () => {
   assert.equal(decideCodexDoctorAction({ present: false, probe: 'skipped' }).action, 'missing');
