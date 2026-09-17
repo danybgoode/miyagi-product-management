@@ -604,32 +604,17 @@
     {
       "list": "deny",
       "rule": "Edit(/Roadmap/00-ideas/BUILD-ORDER.md)",
-      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness)."
-    },
-    {
-      "list": "deny",
-      "rule": "Write(/Roadmap/00-ideas/BUILD-ORDER.md)",
-      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness)."
+      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness). (`Write(<path>)` was dropped 2026-09-16: Claude Code checks only `Edit(<path>)` for FILE tools — a nested session refuses to start while a Write rule is present, saying so in as many words. The Edit rule covers Write, Edit and NotebookEdit alike, so nothing is lost.)"
     },
     {
       "list": "deny",
       "rule": "Edit(/Roadmap/00-ideas/OWED-LEDGER.md)",
-      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness)."
-    },
-    {
-      "list": "deny",
-      "rule": "Write(/Roadmap/00-ideas/OWED-LEDGER.md)",
-      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness)."
+      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness). (`Write(<path>)` was dropped 2026-09-16: Claude Code checks only `Edit(<path>)` for FILE tools — a nested session refuses to start while a Write rule is present, saying so in as many words. The Edit rule covers Write, Edit and NotebookEdit alike, so nothing is lost.)"
     },
     {
       "list": "deny",
       "rule": "Edit(/Roadmap/00-ideas/OWED-LEDGER.json)",
-      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness)."
-    },
-    {
-      "list": "deny",
-      "rule": "Write(/Roadmap/00-ideas/OWED-LEDGER.json)",
-      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness)."
+      "cites": "AGENTS.md rule #2: generated artifacts are NEVER hand-edited — BUILD-ORDER.md and OWED-LEDGER.{md,json} are outputs; a hand edit is silently reverted by the next regeneration (CI guards staleness). (`Write(<path>)` was dropped 2026-09-16: Claude Code checks only `Edit(<path>)` for FILE tools — a nested session refuses to start while a Write rule is present, saying so in as many words. The Edit rule covers Write, Edit and NotebookEdit alike, so nothing is lost.)"
     },
     {
       "list": "ask",
