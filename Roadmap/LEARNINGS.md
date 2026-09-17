@@ -562,6 +562,18 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   uses — one door guarded out of several. Deny the dangerous invocations by name; deny beats allow.
 - **Project-level `defaultMode: "auto"` is ignored AND masks the user default** — auto mode is a user
   setting, and a config guard should fail on the wrong-scope setting, not only on a missing one.
+- **Claude Code refuses a `PATH=`-prefixed command itself** — "prepending a directory to PATH before
+  invoking git is a binary-hijacking pattern", even with that command explicitly allowed. Probe the
+  prefixed rule forms with a plain assignment (`FOO=1 …`), which runs; a probe the platform will not run
+  can never have a baseline, so it can never prove a rule.
+- **A behavioural test needs a baseline the system will actually produce.** `permissions-smoke --live` asks
+  a throwaway session to run each probe with NO rules, so that a later refusal proves the rule. Told the
+  probes were harmless shims, and with the commands explicitly allowed, a session still **refuses**
+  `rm -rf`, a force push or a deploy on its own judgement — so those probes can have no baseline, and the
+  replay can only speak for the benign ones (the staging family). Three more faults surfaced on its first
+  real run: a shim file named `PATH=/x:$PATH`, a temp workspace Claude Code treated as UNTRUSTED (so it
+  ignored the rules under test, keyed by the resolved `/private/var/…` path), and ~300 probes overflowing a
+  session that has no `--max-turns` to raise. A test that has never gone green has not tested anything yet.
 - **A reviewer that exits 0 printing nothing is a FAILED run, not a clean one.** With one external pass and
   no second opinion, nothing contradicts it — assert the reply carries real review structure, pin the
   reviewed sha, and fail the PR status on a structureless reply.
