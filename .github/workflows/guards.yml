@@ -114,6 +114,13 @@ jobs:
           git push origin HEAD:"$HEAD_REF"
           node scripts/build-order.mjs --check
 
+      # WAYS-OF-WORKING.md is GENERATED from the vendored template + Roadmap/fill-ins.yml
+      # (ways-of-work-lean-pass S3.5). A hand edit to the generated file, or a source change without a
+      # re-render, fails here — without this the fork would reappear within a month.
+      - name: WAYS-OF-WORKING — rendered file matches its source
+        if: steps.areas.outputs.roadmap == 'true' || steps.areas.outputs.scripts == 'true'
+        run: node scripts/render-ways-of-working.mjs --check
+
       - name: doc-format — Roadmap doc canonical shape (enforced paths only)
         if: steps.areas.outputs.roadmap == 'true'
         run: node scripts/doc-format.mjs --check
