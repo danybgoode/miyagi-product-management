@@ -1,0 +1,18 @@
+{
+  "_about": "epic-dod.mjs config. `aliases` maps how sprint docs name a repo (`frontend #83`) to owner/repo. `exemptions` excuse ONE derived item on ONE epic closed before a convention existed, with the reason; an exemption on an item that now passes is STALE and fails the check. `bareRefsRepo` is null here on purpose: this is a multi-repo project, so a bare #N in a sprint doc could be any of three repos and is treated as unverifiable rather than guessed.",
+  "aliases": {
+    "medusa-bonsai": "danybgoode/miyagi-product-management",
+    "root": "danybgoode/miyagi-product-management",
+    "frontend": "danybgoode/miyagisanchezcommerce",
+    "storefront": "danybgoode/miyagisanchezcommerce",
+    "backend": "danybgoode/medusa-bonsai-backend",
+    "dobby-foundation": "danybgoode/dobby-foundation",
+    "golden-beans": "danybgoode/golden-beans",
+    "miyagisanchezcommerce": "danybgoode/miyagisanchezcommerce",
+    "medusa-bonsai-backend": "danybgoode/medusa-bonsai-backend",
+    "miyagi-product-management": "danybgoode/miyagi-product-management",
+    "app": "danybgoode/miyagisanchezcommerce"
+  },
+  "exemptions": [],
+  "bareRefsRepo": null
+}

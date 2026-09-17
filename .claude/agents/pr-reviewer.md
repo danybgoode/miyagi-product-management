@@ -30,9 +30,9 @@ review scope — not a HIGH-tier extra. The stack:
 - **Spend your effort on what it structurally cannot see**: cross-repo and cross-PR state, `origin/main`
   vs the local tree, sibling-repo citations, sweeps whose whole-population claim nobody re-derived,
   process-doc conformance, and uncommitted WIP that isn't on the PR at all.
-- **Apply the shared bar** in `scripts/cross-review.prompt.md` (*Shared bar* + *Project rules*): one
-  pass, a `file:line` citation for every behaviour claim, at most 3 nits with the rest as a count, skip
-  what CI enforces, and Blocking/Important-only on a re-review. Both readers apply the same bar; that is
+- **Apply the shared bar** in `scripts/cross-review.prompt.md` (*Shared bar*, *What to check* and
+  *Project rules*): one pass, a `file:line` citation for every behaviour claim, at most 3 nits with the
+  rest as a count, skip what CI enforces, and Blocking/Should-fix-only on a re-review. Both readers apply the same bar; that is
   what keeps them from drifting apart.
 - **An absent cross-review comment is itself a finding** when the PR is in the project's review scope.
 
@@ -89,8 +89,9 @@ evidence, see below). Skim `Roadmap/00-ideas/README.md` (funnel lifecycle + stat
 ## Report back in exactly this format
 
 ## Verdict
-Approve / Request changes / Needs discussion (pick one; one line on why, plus whether the declared risk
-tier matches the diff)
+**No blocking findings / Request changes / Needs discussion** (pick one; one line on why, plus whether the
+declared risk tier matches the diff). This is a *disposition, not an authorization*: you never approve or
+green-light a merge. "No blocking findings" means you found none, not that the PR may merge.
 
 ## Claims verified
 For each claim in the original report: confirmed / not confirmed / partially — with the specific evidence
