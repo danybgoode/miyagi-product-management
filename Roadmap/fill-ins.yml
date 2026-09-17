@@ -1,8 +1,9 @@
 # This project's own paragraphs in Roadmap/WAYS-OF-WORKING.md (rendered by
 # `node scripts/render-ways-of-working.mjs`, checked in CI with --check). Shared process text lives in
-# WAYS-OF-WORKING.template.md, vendored from dobby-foundation's template. Everything here was carried
-# VERBATIM from the hand-maintained file on 2026-09-17 (ways-of-work-lean-pass S3.5); what the template now
-# says instead, and what was deliberately dropped, is listed in that epic's RETROSPECTIVE.md.
+# WAYS-OF-WORKING.template.md, vendored from dobby-foundation's template. This file holds ONLY what the
+# template does not already say — carried verbatim from the hand-maintained file on 2026-09-16
+# (ways-of-work-lean-pass S3.5). Every paragraph dropped because the template now states it is classified
+# in that epic's RETROSPECTIVE.md cut ledger.
 
 product_owner: "Daniel (product owner)"
 
@@ -81,29 +82,33 @@ operating_posture: |
   "does the product owner want a flag here? default no"), and the epic Definition of Done verifies a flag
   **only when the epic scoped one**.
 
-design_is_scope: "Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list."
+design_is_scope: |
+  Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list (`groom/templates/scope-seed.md` in the `ways-of-work` plugin, dobby-foundation marketplace).
 
 deploy_rail: |
   **Deploy rail.** Frontend: pushing a branch builds a **Vercel preview** (SSO-protected; the Playwright
-  harness reaches it with the `x-vercel-protection-bypass` token, and falls back to prod-after-merge without
-  it). Merging to `main` builds the production image on **Cloud Build us-east4 → Cloud Run `miyagi-web`**
-  behind Cloudflare — Vercel prod deploys have been disabled since the 2026-07-10 cutover. Backend: merge →
-  Cloud Build us-east4 → Cloud Run `medusa-web` (~12 min), with **no per-branch preview**, so it is confirmed
-  post-merge: the agent does the API-level prod smoke, Daniel the browser/seller-session parts — state the
-  split in the PR. **After merge, confirm the Cloud Build succeeded** (`gcloud builds list --region=us-east4`);
-  CI green is the preview, not the prod image. **Never deploy with the Vercel CLI** (it is on the deny list).
+     harness reaches it with the `x-vercel-protection-bypass` token, and falls back to prod-after-merge without
+     it). Merging to `main` builds the production image on **Cloud Build us-east4 → Cloud Run `miyagi-web`**
+     behind Cloudflare — Vercel prod deploys have been disabled since the 2026-07-10 cutover. Backend: merge →
+     Cloud Build us-east4 → Cloud Run `medusa-web` (~12 min), with **no per-branch preview**, so it is confirmed
+     post-merge: the agent does the API-level prod smoke, Daniel the browser/seller-session parts — state the
+     split in the PR. **After merge, confirm the Cloud Build succeeded** (`gcloud builds list --region=us-east4`);
+     CI green is the preview, not the prod image. **Never deploy with the Vercel CLI** (it is on the deny list).
 
 review_scope_note: |
-  **Here `reviewScope` is `security-paths-only`** — the operating posture above: on everything else the
-  deterministic gate is the whole gate and you merge on green. The two app repos' money/auth paths are
-  listed in `scripts/review-config.json` too, because their reviews are run from this checkout. Health and
-  pins: `node scripts/cross-agent-doctor.mjs [codex|agy] [--fix]`, pre-authorized.
+  **In this repo:** `scripts/review-config.json` sets `reviewScope:
+  security-paths-only` here — this is the pre-launch posture from 2026-08-10, unchanged: **on everything
+  else the gate is the whole gate and you merge on green.** A PR is in scope when a changed path matches a
+  `securityPaths` glob (Stripe/checkout/payment/refund/webhooks, auth and Clerk, migrations, middleware,
+  `.claude/settings.json`, CI and infra — the two app repos' money/auth paths are listed there too, because
+  their reviews are run from this checkout) **or** its body declares `risk: high`.
 
 security_floor: |
   **A deterministic security floor runs underneath, free and without an LLM** (2026-09-16): GitHub secret
   scanning with push protection on all five repos, and CodeQL default setup on `miyagisanchezcommerce` and
-  `medusa-bonsai-backend`. The security lens finds logic flaws; the scanners find known patterns and leaked
-  credentials. Neither replaces the other.
+  `medusa-bonsai-backend`. The security lens finds logic flaws — cross-tenant reads, money-path mistakes,
+  authorization gated on the wrong thing; the scanners find known patterns and leaked credentials. Neither
+  replaces the other. `/security-review` is available locally as a pre-push self-check, never a gate.
 
 kill_switch_dod: "- [ ] **Flag — ONLY if the product owner asked for one** (see *Feature flags*): it exists in Golden in every environment with the stated polarity. An epic that scoped none is not missing anything."
 
@@ -170,14 +175,6 @@ project_sections: |
   the whole-epic orchestrator prompt. Hand-composing it is how the architecture-lock pass gets summarised
   away and the review policy reverts to whatever the composing agent remembered — which is exactly what
   happened while no epic-mode generator existed.
-
-  **Merges do not wait on a round-trip.** Gate green ⇒ merge. Do not stop at a sprint boundary to ask for
-  permission to merge, to apply an epic's own migrations, or to enable something the epic scoped. The
-  short list that still gets one focused question before you act is in *Operating posture*: an
-  irreversible/destructive data change, real money or third-party spend, and production
-  secrets/IAM/DNS/TLS. Ask about those in one message naming the exact action — do not turn them into a
-  per-sprint checkpoint. **Done means shipped**, not merged: a merged PR that hasn't deployed, or a
-  migration written but not applied, is not done.
 
   **Pre-launch smoke is right-sized, in writing.** With zero real tenants, a smoke walkthrough that
   presupposes live operations — a real buyer, a funded carrier account, a merchant session that nobody
@@ -255,7 +252,7 @@ project_sections: |
   flag), and **"unknown" and "none" are different facts** — a report that says nothing is live when it
   merely failed to check is exactly the confident falsehood the guard exists to stop.
 
-  ## Automated QA — where we are
+  ## Automated QA — this project's harness
   The Playwright harness has **two layers** and grows by **one spec per new browser-/API-testable story** —
   coverage accretes with the work, not as a separate project. A spec replaces the equivalent hand-driven run on
   every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2e/README.md`.
@@ -276,6 +273,32 @@ project_sections: |
     full env × auth matrix and the Claude-in-Chrome fallback boundary.
     - *Owed (Daniel, one-time):* the `MS_TEST_*` repo secrets — buyer/seller password-auth accounts +
       `MS_TEST_PERSONALIZED_LISTING_ID` — so the credentialed/epic browser smokes light up (they skip until then).
+
+  ## Cadence, Definitions of Done and docs — this project's specifics
+
+  - **Live confirmation, divided** (it's *confirmation*, not the gate): the agent owns API-level smoke (`curl`/Playwright) where it has access; **Daniel owns the browser / real-seller-session smoke** (he's notified when Cloud Run finishes and holds the live sessions/tokens). Exercise real behaviour — a disposable/test shop for anything that mutates data; clean up after (revoke test tokens).
+
+  - **Draft → ready.** Flip draft → ready the moment the deterministic gate is green and the self-QA note is posted — the roadmap board's Lifecycle overlay reads that (draft PR → In progress, ready PR → In review), so finished work left in draft hides itself. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment.
+
+  - **Close-out prose (retro, poster entry, sprint-wrap) may be first-drafted by `node scripts/prose-draft.mjs`** (cheap different-family model, house-voice prompt, file-derived inputs only) — the coordinating agent **must edit the draft for factual accuracy before committing** (drafts invent plausible gaps; the banner says so). PR bodies stay with the builder — they're cheapest written by the agent holding the context.
+
+  - **Smoke-tested** (on the branch's preview where applicable). The story's real behaviour is exercised
+    end-to-end with an appropriate tool — the `live-smoke` skill (`node scripts/live-smoke.mjs`,
+    apps/miyagisanchez) is the **default** for rendered-page verification, cross-agent (Codex/Antigravity
+    can run it too, no Claude-specific tooling); `curl`, a Playwright spec, or a real artifact render fit
+    API-only/non-browser checks. **Claude-in-Chrome stays a narrow fallback** — the one thing it can do that
+    `live-smoke` structurally cannot is an *authed* check against **production** (Clerk rejects its
+    testing-token bypass for prod secret keys by design). Never "build passes, therefore done." If a live
+    smoke test genuinely can't run (no test account, money-/account-gated), that gap is stated explicitly in
+    the PR rather than glossed.
+
+  - **Product poster updated — `Roadmap/README.md`.** Find the epic's macro-section in the **Feature map**
+  and update its line(s) to reflect what's now live (✅), and add a **Recent highlights** entry. If the
+  epic introduces a capability the poster doesn't mention, add the line. The poster is the at-a-glance
+  product source of truth — it must never lag a shipped epic.
+
+  - **`Roadmap/00-ideas/`** — see `00-ideas/README.md`. Seed frontmatter owns only the un-scaffolded funnel; `BUILD-ORDER.md` **and** the Notion roadmap are both *derived views* of each epic README's `status:` — regenerated, not maintained. CI (`build-order-guard.yml`) fails if the board is stale; for a local pre-commit catch, opt in with `git config core.hooksPath .githooks`.
+
 
   ## Conventions — this project's specifics
 
@@ -328,95 +351,16 @@ project_sections: |
     the *foundation* right — grooming, spikes, plan mode, review — so run those on **Opus 4.8** with full
     deep-thinking, and don't rush them. Once the plan and slices are approved, per-story execution is
     mechanical, so **Sonnet 5** runs the build; Claude Code's plan-mode largely automates this hand-off, so
-    there's nothing to micromanage mid-session. **Escalate-don't-guess:** a Sonnet-5 build session stops and
-    asks / hands back to Opus — instead of inventing an answer — on payments / checkout / fulfillment /
-    auth / DB migrations / shared infra / money, **plus** plan ambiguity, a decision the plan doesn't
-    cover, or a repeated failed attempt (2+ tries at the same problem). *(This is a **model-routing**
-    trigger — "get a stronger model on it" — not a merge gate; merge authority is in *Review & merge*.)* Default to escalate when unsure. This is a default, not a constraint — a story that
+    there's nothing to micromanage mid-session. **Escalate-don't-guess** on any trigger in the ONE list above (*Escalate, don't guess*) — this is a model-routing trigger, not a merge gate. This is a default, not a constraint — a story that
     still carries real judgment or money-path risk stays on the strong model end to end. Planning in Cowork;
     building in Claude Code.
-  - **Never use the Vercel CLI to deploy.** Deploys are git-driven only. For the frontend, pushing a branch
-    gets you a **Vercel preview** and merging to `main` builds the **production image on Cloud Build → Cloud Run
-    `miyagi-web`** — Vercel prod deploys have been disabled since the 2026-07-10 cutover, so `vercel --prod`
-    would not even reach production; it would push a stray out-of-band deployment. Same rule for the backend
-    (merge to `main` → Cloud Build → Cloud Run `medusa-web`).
-  - Build from existing primitives first (commerce lives in Medusa; non-commerce/editorial data in Supabase).
   - `Roadmap/` **is tracked in git** — in the **monorepo-root repo**, which versions the product /
     orchestration docs (`Roadmap/`, `tasks/`, `skills/`, `infra/`, root configs). The two app repos under
     `apps/` stay independent and are **git-ignored here** (they have their own repos + deploy rails), as are
     `.worktrees/`. Tracking gives product docs history, blame, and backup — note worktrees already reach
     `Roadmap/` by relative path, so this is about versioning, not access. Doc-only changes are **low-risk
     tier**. Commit planning work as `plan(<epic-slug>): …`. Keep app secrets out of these docs (history).
-  - **Parallel agents + async deploys.** `main` moves under you and the two repos deploy at different
-    speeds (frontend fast w/ preview; backend ~12 min, no preview). Merge latest `main` into your
-    branch before/while a PR is open; merge backend-first when the frontend depends on its data; make
-    the frontend degrade gracefully. See `LEARNINGS.md → Multi-agent & async deploy coordination`.
-
-  ---
-
-  ## Cadence, Definitions of Done and docs — this project's specifics
-
-  These were the hand-maintained file's own paragraphs; the shared versions of the same rules are above.
-
-  5. **QA — the deterministic gate (pre-merge) + the live confirmation (split).** Two distinct layers; don't conflate them.
-     - **Deterministic gate — must be green BEFORE merge:** `tsc --noEmit` + `npm run build` + the Playwright suite, run by the building agent. This is non-negotiable — nothing merges on a red gate. Where the acceptance check is browser-/API-testable, add **one** Playwright spec as part of the story.
-     - **Run the suite against the branch's Vercel preview** (`PLAYWRIGHT_BASE_URL=<preview-url>`). Note: previews are **SSO-protected** (401 to anonymous curl/Playwright), so the harness uses a **Vercel protection-bypass token** (`x-vercel-protection-bypass` header) to reach them. Without that token the preview is unreachable and the suite falls back to prod-after-merge.
-     - **Live confirmation can be async + divided** (it's *confirmation*, not the gate): the agent owns API-level smoke (`curl`/Playwright) where it has access; **Daniel owns the browser / real-seller-session smoke** (he's notified when Cloud Run finishes and holds the live sessions/tokens). Exercise real behaviour — a disposable/test shop for anything that mutates data; clean up after (revoke test tokens).
-     - **Backend (Cloud Run) has no per-branch preview** — it can only be confirmed *post-merge* against prod. The agent does the API-level prod smoke + a route-deployed probe; Daniel picks up the seller/browser parts. State this split in the PR.
-  6. **Push as you go.** Each push updates the preview; the reviewer (and Daniel) can test per story without touching production.
-  7. **PR → merge to `main`.** Open a PR via `gh` and keep it updated with a self-QA note **and a risk tier** (see *Review & merge* below). Flip draft → ready the moment the deterministic gate is green and the self-QA note is posted — the roadmap board's Lifecycle overlay reads that (draft PR → In progress, ready PR → In review), so finished work left in draft hides itself. Set the sprint doc's `Status:` line to `🟦 In review` at the same moment. **On a money/auth PR, run the review stack** (`node scripts/review-route.mjs --builder <who-wrote-it> <PR#>`, then the commands it prints: one external general pass, the security lens when the paths trigger it, and the fresh `pr-reviewer` subagent) and resolve its findings. **On everything else, no review pass is required** — the deterministic gate is the gate. Which PRs are in scope is `scripts/review-config.json`, not a judgement call. When the gate is green and any required findings are resolved, **merge your own PR**; there is no second-agent merge requirement. **Merging to `main` is the production deploy** (frontend → Cloud Build us-east4 → Cloud Run `miyagi-web` behind Cloudflare — Vercel prod deploys disabled since the 2026-07-10 cutover, Vercel survives only as the per-PR preview + CI target; backend → Cloud Build us-east4 → Cloud Run `medusa-web`, ~12 min). **After merge, confirm the Cloud Build actually succeeded** (`gcloud builds list --region=us-east4`) — CI green is the preview, not the prod image. Small epics merge once; larger ones may merge per sprint. Delete the branch after merge.
-  8. **Continue / close.** Roll into the next story. At **sprint close**, emit the sprint-wrap terminal summary (`SESSION-KICKOFFS.md` §7) — a thin pointer to the sprint doc + what's owed/next, never a re-summary. At **epic close**, do the epic Definition of Done (below) — including updating the product poster. **Close-out prose (retro, poster entry, sprint-wrap) may be first-drafted by `node scripts/prose-draft.mjs`** (cheap different-family model, house-voice prompt, file-derived inputs only) — the coordinating agent **must edit the draft for factual accuracy before committing** (drafts invent plausible gaps; the banner says so). PR bodies stay with the builder — they're cheapest written by the agent holding the context.
-
-  ### Definition of Done (a story) — as practised here
-  - Acceptance criteria met and confirmed working.
-  - Type-check + lint + build clean.
-  - **Smoke-tested** (on the branch's preview where applicable). The story's real behaviour is exercised
-    end-to-end with an appropriate tool — the `live-smoke` skill (`node scripts/live-smoke.mjs`,
-    apps/miyagisanchez) is the **default** for rendered-page verification, cross-agent (Codex/Antigravity
-    can run it too, no Claude-specific tooling); `curl`, a Playwright spec, or a real artifact render fit
-    API-only/non-browser checks. **Claude-in-Chrome stays a narrow fallback** — the one thing it can do that
-    `live-smoke` structurally cannot is an *authed* check against **production** (Clerk rejects its
-    testing-token bypass for prod secret keys by design). Never "build passes, therefore done." If a live
-    smoke test genuinely can't run (no test account, money-/account-gated), that gap is stated explicitly in
-    the PR rather than glossed.
-  - **Every new spec was observed failing (red) at least once** — via a deliberate
-    break-the-implementation mutation check if the test was written after the code. This verifies
-    the spec isn't a false-positive tautology; it is **not** an ordering mandate — don't force
-    test-first (agents often do it anyway).
-  - Committed to the feature branch; sprint doc status ticked.
-
-  ### Definition of Done (an epic) — the full close-out checklist here
-  When the last story of an epic is merged, the epic is not "done" until ALL of these are true:
-  - [ ] All sprints' stories merged to `main` and smoke-tested (gaps stated).
-  - [ ] **Each sprint has a fool-proof smoke walkthrough in its `sprint-N.md`** — numbered steps, one
-        action + one expected result each, using **real production URLs** once deployed (preview URLs
-        pre-merge). Money/auth/checkout steps are flagged by name as **owed to Daniel** (an automated
-        browser smoke can't fully cover them). Format + example: `groom` skill, Stage 8b.
-  - [ ] Epic `README.md` marked ✅ complete; every `sprint-N.md` status ticked with commit refs.
-  - [ ] **`RETROSPECTIVE.md`** written alongside the epic (what shipped / went well / learned / gaps).
-  - [ ] **Product poster updated — `Roadmap/README.md`.** Find the epic's macro-section in the **Feature map**
-        and update its line(s) to reflect what's now live (✅), and add a **Recent highlights** entry. If the
-        epic introduces a capability the poster doesn't mention, add the line. The poster is the at-a-glance
-        product source of truth — it must never lag a shipped epic.
-  - [ ] Team memory updated (epic memory + the index in `MEMORY.md`).
-  - [ ] **`Roadmap/LEARNINGS.md` updated** — promote any durable, generalizable learning from the
-        `RETROSPECTIVE.md` into the right section (one-liner + *why* + date/source). Dedupe — sharpen
-        the existing line, don't append a near-duplicate. This is how a retro reaches the next agent.
-  - [ ] **Flag (ONLY if the product owner asked for one — see *Feature flags*):** the flag exists in Golden
-        in every environment with the stated polarity. Most epics have no flag and skip this line entirely;
-        an epic that scoped none is not missing anything.
-  - [ ] Feature branch deleted; PR merged.
-
-  ### Documentation map — as practised here
-  - **`Roadmap/`** — product source of truth (this folder). Plain language, no tech. Macro-section → Epic → Sprint → Story, plus the feature poster.
-  - **`Roadmap/LEARNINGS.md`** — the distilled, cross-cutting wisdom from past epics' retrospectives.
-    **Read it at session start** (it's in AGENTS.md "Start here"). Fed at every epic close — see the
-    epic Definition of Done. The full story of any item stays in its epic `RETROSPECTIVE.md`; this is
-    the transferable digest so a retro reaches the *next* agent instead of dying in its folder.
-  - **`Roadmap/00-ideas/`** — the idea funnel: `seeds/` (one .md per idea, lifecycle in **frontmatter** — no folder shuffling), `audits/` (UX/UI findings), and `BUILD-ORDER.md` — a **generated** status board (`node scripts/build-order.mjs`, CI-guarded), **never hand-edited**. See `00-ideas/README.md`. **Status SSOT = each epic README's frontmatter `status:`** (seed frontmatter owns only the un-scaffolded funnel); `BUILD-ORDER.md` **and** the Notion roadmap are both *derived views* of it — regenerated, not maintained. CI (`build-order-guard.yml`) fails if the board is stale; for a local pre-commit catch, opt in with `git config core.hooksPath .githooks`.
-  - **`tasks/`** — engineering delivery log: what was built, decisions, commit hashes, runbooks, known limitations.
-  - **Team memory** (`~/.claude/.../memory/`) — durable cross-session facts and pointers.
-  - **Retrospectives** — one per epic/sprint, alongside the epic.
+  - Build from existing primitives first (commerce lives in Medusa; non-commerce/editorial data in Supabase).
 
 tooling_table: |
   Claude has authenticated CLI access to the full delivery toolchain and can run the pipeline end-to-end:
@@ -430,6 +374,4 @@ tooling_table: |
   | **Docker** | Build & smoke-test container images locally before deploying |
   | **node / npm** | Type-check (`tsc`), lint (`eslint`), build (`npm run build`), local dev server |
 
-  This means a story can go from code → verified → preview-deployed → live-tested on a branch, then merged to production via PR — with verification at each step. Actions that touch live commerce, real money, or paid infrastructure are surfaced to Daniel for a green light before running.
-
-  **Dynamic workflows (Claude Code) — available, not required.** Claude Code can fan a task across many parallel subagents with independent verification and adversarial cross-checking (the `ultracode` effort setting, or "create a workflow"). It is **token-heavy**, so it's reserved for two cases: (1) **repo-wide doc↔code drift audits** (its strongest fit — verifying many claims against the codebase in parallel), and (2) an **optional adversarial second review of HIGH-risk money-path PRs**. It is **never a gate and never required**: the deterministic CI gate plus a single-pass reviewer remain the baseline. This is a Claude-Code-specific capability — agents on other tools (CODEX, Antigravity, etc.) achieve the same ends their own way or skip it, and **nothing in this process blocks on it**.
+  This means a story can go from code → verified → preview-deployed → live-tested on a branch, then merged to production via PR — with verification at each step.
