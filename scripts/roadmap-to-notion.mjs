@@ -223,7 +223,13 @@ function epicShippedByRetro(epicPath) {
 // decision — it cannot be derived from sprints/retro — so when the epic declares `archived`, the
 // derivation must also say Archived; otherwise an archived epic with open-looking sprints false-flags
 // drift (status=Archived vs status_derived=In progress) on EVERY board regeneration, forever.
-export function deriveEpicStatus(sprints, retroShipped, epicFmStatus) {
+export function deriveEpicStatus(sprints, retroShipped, epicFmStatus, { external = false } = {}) {
+  // An epic whose sprint docs live in ANOTHER repo (frontmatter `sprints_in:`) has nothing local to
+  // derive from, so the derivation would say Scaffolded forever and false-flag drift on every
+  // regeneration — the same trap the `archived` short-circuit above exists for. With no local sprints
+  // the frontmatter IS the derivation. A `sprints_in:` epic that still has local sprints is a real
+  // inconsistency and falls through to the normal rules.
+  if (external && !sprints.length) return EPIC_FM_TO_BUCKET[epicFmStatus] || 'Scaffolded';
   if (epicFmStatus === 'archived') return 'Archived';
   if (retroShipped) return 'Shipped';
   if (sprints.length && sprints.every((s) => s.status === 'Shipped')) return 'Shipped';
@@ -237,7 +243,7 @@ export function deriveEpicStatus(sprints, retroShipped, epicFmStatus) {
 // status, which made `status === status_derived` by construction — so the advisory drift check could
 // never fire on exactly the class of error it exists to catch (an epic mislabeled with an out-of-enum
 // value, e.g. `mercadolibre-sync` at `status: ready` while fully shipped; audit 2026-07-06 §1).
-const EPIC_FM_TO_BUCKET = { shipped: 'Shipped', 'in-progress': 'In progress', scaffolded: 'Scaffolded', queued: 'Scaffolded', archived: 'Archived' };
+export const EPIC_FM_TO_BUCKET = { shipped: 'Shipped', 'in-progress': 'In progress', scaffolded: 'Scaffolded', queued: 'Scaffolded', archived: 'Archived' };
 function epicFrontmatter(epicPath) {
   return parseFrontmatter(readFileSync(join(epicPath, 'README.md'), 'utf8'));
 }
@@ -364,7 +370,7 @@ function buildRows() {
     const sprints = epicSprints(e.path);
     const retroShipped = epicShippedByRetro(e.path);
     const epicFm = epicFrontmatter(e.path);                          // read README frontmatter once
-    const statusDerived = deriveEpicStatus(sprints, retroShipped, epicFm.status); // prose/retro fallback + drift signal (archived short-circuits)
+    const statusDerived = deriveEpicStatus(sprints, retroShipped, epicFm.status, { external: Boolean(epicFm.sprints_in) }); // prose/retro fallback + drift signal (archived + sprints_in short-circuit)
     const status = frontmatterStatusBucket(epicFm, `Roadmap/${epicKey}/README.md`) || statusDerived; // README frontmatter is authoritative; invalid value throws
     const buildOrder = normalizeBuildOrder(epicFm.build_order ?? seed.build_order); // epic FM is SSOT, seed fallback
     // Board view of each sprint: status floored against the authoritative epic status, done-count

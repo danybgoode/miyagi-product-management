@@ -24,10 +24,26 @@ import { fileURLToPath } from 'node:url';
 
 const HOOK = join(dirname(fileURLToPath(import.meta.url)), '..', '.githooks', 'pre-push');
 
+// ⚠️ SEALED against the repository this file runs in. `.githooks/pre-push` runs this suite, and git
+// exports GIT_DIR (and friends) into hooks — from a LINKED WORKTREE it points at the real repo's
+// gitdir. GIT_DIR overrides `cwd`, so the fixture's `git init` / `git config user.*` below rewrote the
+// REAL repository: on 2026-09-16 a worktree push flipped medusa-bonsai's `core.bare` to `true` (every
+// agent's checkout stopped working) and replaced its user identity with `t <t@t>`. golden-beans hit
+// the same leak on 2026-09-09 (design-coverage.test.mjs) and sealed it the same way.
+const GIT_ENV_TO_CLEAR = [
+  'GIT_DIR', 'GIT_INDEX_FILE', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_CEILING_DIRECTORIES', 'GIT_PREFIX',
+];
+export function sealedEnv(base = process.env) {
+  const env = { ...base };
+  for (const k of GIT_ENV_TO_CLEAR) delete env[k];
+  return env;
+}
+
 // Builds a repo with two commits, the second touching exactly `path`. Returns both shas.
 function repoTouching(path) {
   const dir = mkdtempSync(join(tmpdir(), 'prepush-'));
-  const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim();
+  const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', env: sealedEnv() }).trim();
   git('init', '-q', '-b', 'main');
   git('config', 'user.email', 't@t'); git('config', 'user.name', 't');
   writeFileSync(join(dir, 'seed.txt'), 'seed\n');
@@ -43,7 +59,7 @@ function repoTouching(path) {
 function runHook({ dir, stdin }) {
   try {
     const out = execFileSync('sh', [HOOK, 'origin', 'https://example.invalid/x'], {
-      cwd: dir, input: stdin, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: dir, input: stdin, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], env: sealedEnv(),
     });
     return { code: 0, out };
   } catch (e) {
@@ -79,7 +95,7 @@ test('pre-push: scope comes from the PUSHED refs, not the checked-out branch', (
   // The first draft of this test built the log commit ON TOP of main, so HEAD~1...HEAD was the log
   // file and the buggy fallback passed too — it proved nothing. The two lineages must be disjoint.
   const { dir, after } = repoTouching('Roadmap/00-ideas/seeds/x.md');   // main tip = a Roadmap commit
-  const git = (...a) => execFileSync('git', a, { cwd: dir, encoding: 'utf8' }).trim();
+  const git = (...a) => execFileSync('git', a, { cwd: dir, encoding: 'utf8', env: sealedEnv() }).trim();
 
   // An orphan log branch, exactly like claude/weekly-recap-log: its own root, one flat file.
   git('checkout', '-q', '--orphan', 'logs');
@@ -109,4 +125,10 @@ test('pre-push: a branch DELETION carries no paths and gates nothing', () => {
   assert.equal(r.code, 0, `a deletion must not be gated:\n${r.out}`);
   assert.doesNotMatch(r.out, /BUILD-ORDER/);
   rmSync(dir, { recursive: true, force: true });
+});
+
+test('sealedEnv strips every git location variable a hook exports (else fixtures rewrite the real repo)', () => {
+  const env = sealedEnv({ GIT_DIR: '/real/.git/worktrees/x', GIT_INDEX_FILE: 'i', GIT_WORK_TREE: 'w', GIT_COMMON_DIR: 'c', PATH: '/bin' });
+  for (const k of ['GIT_DIR', 'GIT_INDEX_FILE', 'GIT_WORK_TREE', 'GIT_COMMON_DIR']) assert.equal(env[k], undefined, k);
+  assert.equal(env.PATH, '/bin');
 });
