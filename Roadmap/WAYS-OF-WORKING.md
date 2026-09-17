@@ -247,7 +247,8 @@ retrospective, no leftover branch) — **and** the three judgment items are true
 - [ ] **`RETROSPECTIVE.md`** says what actually happened, and its durable learnings are promoted into
       `Roadmap/LEARNINGS.md` — sharpen the existing line, don't append a near-duplicate.
 - [ ] **Each sprint has a smoke walkthrough** a person can follow blind, with real URLs; money/auth steps
-      are flagged by name as owed to the product owner. - [ ] **Flag — ONLY if the product owner asked for one** (see *Feature flags*): it exists in Golden in every environment with the stated polarity. An epic that scoped none is not missing anything.
+      are flagged by name as owed to the product owner.
+- [ ] **Flag — ONLY if the product owner asked for one** (see *Feature flags*): it exists in Golden in every environment with the stated polarity. An epic that scoped none is not missing anything.
 
 ## Documentation map
 
@@ -270,7 +271,8 @@ derived views. **`Roadmap/bets/`** holds one file per wave; **`tasks/`** is the 
 - **Worker death is a normal case.** Each builder on its own worktree; a killed worker's uncommitted tree
   is evidence, not garbage; **verify by re-deriving repo state, never by trusting a completion report** —
   a rate-limited subagent still returns a plausible-sounding result. Compact at sprint/PR boundaries.
-- Commit messages end with the `Co-Authored-By: Claude` trailer. - **Language.** Docs are written in **English** — everything under `Roadmap/` (epic READMEs, sprint files,
+- Commit messages end with the `Co-Authored-By: Claude` trailer.
+- **Language.** Docs are written in **English** — everything under `Roadmap/` (epic READMEs, sprint files,
   retrospectives, the poster, `LEARNINGS.md`), `tasks/`, code comments, and PR descriptions. The **only**
   exception is user-facing app copy, which is `es-MX` (Spanish, Mexico) to match the live app. App copy is
   **es-MX by default, with a defined bilingual allow-list** — a `locales/{es,en}.json` dictionary (~119 keys)
