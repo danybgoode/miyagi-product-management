@@ -5,17 +5,16 @@
 
 # Build order — generated status board
 
-> **Generated 2026-09-16 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-09-17 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
-- [Ways-of-work lean pass — remove the training wheels, close the adoption gap](../../09-platform-infra/ways-of-work-lean-pass/README.md) — 09 Platform-infra · 0 sprints · risk: High · wave-2026-09-16
 
 ## 📋 Ready to build (scaffolded, not started) (3)
 
@@ -23,7 +22,7 @@
 - [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0/14 stories · risk: Low · wave-2026-09-16
 - [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0/13 stories · risk: Low · wave-2026-09-16
 
-## ✅ Shipped (147)
+## ✅ Shipped (148)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -170,6 +169,7 @@
 - [UI refresh before launch](../../09-platform-infra/ui-refresh-launch/README.md) — 09 Platform-infra · 7/7 stories · risk: High · #6
 - [Unified CI/CD + Git event notifications via Telegram](../../09-platform-infra/cicd-telegram-notifications/README.md) — 09 Platform-infra · 3/3 stories · risk: Low · Wave 0 Enablers
 - [Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)](../../09-platform-infra/vercel-function-cost-reduction/README.md) — 09 Platform-infra · 5/5 stories · risk: Low · Wave 1
+- [Ways-of-work lean pass — remove the training wheels, close the adoption gap](../../09-platform-infra/ways-of-work-lean-pass/README.md) — 09 Platform-infra · 0 sprints · risk: High · wave-2026-09-16
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 

@@ -542,6 +542,33 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   already been asked to write a spec encoding the false mechanism, and correctly refused. *(2026-07-31,
   owned-shop-operating-channel D3 + D7.)*
 
+## Permissions & guardrails (ways-of-work-lean-pass, 2026-09-17)
+- **A deny rule is text matching, and patching rules one at a time cannot close a rule CLASS.** A leading
+  assignment whose value contains an expansion (`PATH=/x:$PATH vercel deploy --prod`) was observed LIVE to
+  escape a bare rule. Patching the four rules that had been probed left `vercel --yes --prod`, `rm -fr`,
+  `supabase db reset`, `git push origin +main`, `git -C <path> push --force` and `npx supabase --debug db
+  push` matching nothing — each found separately across four review rounds. Generate the spellings from a
+  list the contract checks (`CRITICAL_COMMANDS` → bare + `*=*` + `env *`) so a bare-only rule fails CI.
+- **The same escape applies to `ask`, where it is worse.** An escaped deny is a gap; an escaped ask silently
+  demotes "a human decides" to "the classifier decides". Carry ask rules in all three spellings, and treat a
+  deny that swallows an ask as a finding — a refusal cannot be approved once for a legitimate need.
+- **`*=*` matches an `=` ANYWHERE in the line, not an assignment prefix.** A `Bash(*=* vercel*)` catch-all
+  hard-refused `grep -rn --include=*.json vercel .` — ordinary reading. Keep prefixed rules per dangerous
+  subcommand and pin the safe negations (`MUST_NOT_DENY`): a guard that rejects correct output gets bypassed.
+- **`Write(<path>)` permission rules are INERT.** Claude Code checks only `Edit(<path>)` for file tools, and
+  a nested `claude -p` refuses to start while a Write rule exists. `Edit` covers Write/Edit/NotebookEdit.
+- **An ALLOW skips the classifier.** `Bash(node scripts/*)` pre-approved `vercel-env.mjs set|delete`, which
+  writes production secrets over REST, while the `ask` rules guarded only the `vercel env` CLI path nobody
+  uses — one door guarded out of several. Deny the dangerous invocations by name; deny beats allow.
+- **Project-level `defaultMode: "auto"` is ignored AND masks the user default** — auto mode is a user
+  setting, and a config guard should fail on the wrong-scope setting, not only on a missing one.
+- **A reviewer that exits 0 printing nothing is a FAILED run, not a clean one.** With one external pass and
+  no second opinion, nothing contradicts it — assert the reply carries real review structure, pin the
+  reviewed sha, and fail the PR status on a structureless reply.
+- **"I could not check" must survive every layer.** `gh pr view --json files` silently caps at 100 files;
+  `git merge-base --is-ancestor` exits 128 (not 1) when `origin/main` is missing. Both read as facts —
+  "no security path touched", "cites an UNMERGED PR" — until the unknown state is carried explicitly.
+
 ## Tooling gotchas
 - **A TRANSIENT PROVIDER ERROR IS NOT A BROKEN CONTRACT — AND COLLAPSING THEM DISABLES THE TOOL.**
   `agy-doctor`'s probe classified ANY non-zero exit as `'error'`, `'error'` meant "the CLI interface
