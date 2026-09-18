@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  buildSmallDocsUrl,
+  buildDocViewerUrl,
   buildTemplateData,
   fillPmoTemplate,
   fillTemplate,
@@ -42,7 +42,7 @@ test('buildTemplateData maps PMO metrics into stable template fields', () => {
     window: {
       sinceISO: '2026-07-01T00:00:00Z',
       untilISO: '2026-07-08T00:00:00Z',
-      label: '2026-07-01 a 2026-07-08',
+      label: '2026-07-01 to 2026-07-08',
       generatedDate: '2026-07-09',
     },
     throughput: { shippedStories: 8, shippedEpics: 2, closedEpics: 2 },
@@ -58,31 +58,31 @@ test('buildTemplateData maps PMO metrics into stable template fields', () => {
       changeFailureRatePercent: 15,
       restoreTimeHours: 24,
       framing: 'Differential, not a controlled experiment.',
-      sourceLine: 'DORA / Four Keys (2024-01-23; consultado 2026-07-13)',
+      sourceLine: 'DORA / Four Keys (2024-01-23; accessed 2026-07-13)',
     },
   });
 });
 
 test('fillTemplate replaces dotted placeholders and leaves unknown placeholders visible', () => {
   const output = fillTemplate(
-    'Semana {{ window.label }}: {{throughput.shippedStories}} historias; {{missing.value}}.',
+    'Week {{ window.label }}: {{throughput.shippedStories}} stories; {{missing.value}}.',
     METRICS,
     { generatedAt: new Date('2026-07-09T12:00:00Z') }
   );
-  assert.equal(output, 'Semana 2026-07-01 a 2026-07-08: 8 historias; {{missing.value}}.');
+  assert.equal(output, 'Week 2026-07-01 to 2026-07-08: 8 stories; {{missing.value}}.');
 });
 
-test('weekly story-deck fixture fills to exact smalldocs markdown markers', () => {
+test('weekly story-deck fixture fills to exact doc-viewer markdown markers', () => {
   const output = fillPmoTemplate('weekly', METRICS, {
     generatedAt: new Date('2026-07-09T12:00:00Z'),
     benchmarks: BENCHMARKS,
   });
-  assert.match(output, /^---\ntitle: "PMO semanal - 2026-07-01 a 2026-07-08"/);
+  assert.match(output, /^---\ntitle: "PMO weekly - 2026-07-01 to 2026-07-08"/);
   assert.match(output, /slideAspectRatio: "16:9"/);
   assert.match(output, /#metric: 8/);
   assert.match(output, /"values":\[8,2,6,1\]/);
-  assert.match(output, /PR cycle mediano: \*\*9.5h\*\* vs referencia one-day \*\*24h\*\*/);
-  assert.match(output, /DORA \/ Four Keys \(2024-01-23; consultado 2026-07-13\)/);
+  assert.match(output, /Median PR cycle: \*\*9.5h\*\* vs the one-day reference \*\*24h\*\*/);
+  assert.match(output, /DORA \/ Four Keys \(2024-01-23; accessed 2026-07-13\)/);
   assert.doesNotMatch(output, /\{\{/);
 });
 
@@ -91,9 +91,9 @@ test('monthly packet fixture fills table and chart output', () => {
     generatedAt: new Date('2026-07-09T12:00:00Z'),
     benchmarks: BENCHMARKS,
   });
-  assert.match(output, /\| Historias shipped \| 8 \|/);
-  assert.match(output, /\| Ciclo PR mediano \| 9.5h \|/);
-  assert.match(output, /\| Change-failure proxy \| 16.7% \| 15% \| Menor es mejor \|/);
+  assert.match(output, /\| Stories shipped \| 8 \|/);
+  assert.match(output, /\| Median PR cycle \| 9.5h \|/);
+  assert.match(output, /\| Change-failure proxy \| 16.7% \| 15% \| Lower is better \|/);
   assert.match(output, /"values":\[8,2,6,3\]/);
   assert.doesNotMatch(output, /\{\{/);
 });
@@ -104,14 +104,14 @@ test('metrics sheet fixture exports live formula cells', () => {
     benchmarks: BENCHMARKS,
   });
   assert.equal(output, `---
-title: "PMO metrics sheet - 2026-07-01 a 2026-07-08"
+title: "PMO metrics sheet - 2026-07-01 to 2026-07-08"
 styles:
   fontFamily: "Inter"
   baseFontSize: 15
   lineHeight: 1.6
 ---
 
-# PMO metrics sheet - 2026-07-01 a 2026-07-08
+# PMO metrics sheet - 2026-07-01 to 2026-07-08
 
 \`\`\`cells
 Metric,Value,Benchmark,Direction,Differential
@@ -125,16 +125,20 @@ LEARNINGS promotions,3,0,internal signal,=B8-C8
 Retro coverage %,100,0,internal signal,=B9-C9
 \`\`\`
 
-Notas:
+Notes:
 
-- Las formulas exportan a Excel como formulas vivas.
-- Fuente benchmarks: DORA / Four Keys (2024-01-23; consultado 2026-07-13).
+- The formulas export to a spreadsheet as live formulas.
+- Benchmark source: DORA / Four Keys (2024-01-23; accessed 2026-07-13).
 - Differential, not a controlled experiment.
 `);
 });
 
-test('buildSmallDocsUrl emits a smalldocs hash URL with md payload and optional present mode', () => {
-  const url = buildSmallDocsUrl('# Hola', { baseUrl: 'https://example.test', present: true });
+test('buildDocViewerUrl emits a doc-viewer hash URL with md payload and optional present mode', () => {
+  const url = buildDocViewerUrl('# Hello', { baseUrl: 'https://example.test', present: true });
   assert.match(url, /^https:\/\/example\.test\/#md=/);
   assert.match(url, /present=0/);
+});
+
+test('buildDocViewerUrl refuses to build a link with no configured viewer — no borrowed default host', () => {
+  assert.throws(() => buildDocViewerUrl('# Hello'), /artifacts\.docViewerUrl/);
 });

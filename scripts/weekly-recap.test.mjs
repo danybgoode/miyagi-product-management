@@ -211,9 +211,9 @@ test('buildMessage: fully quiet week collapses to a one-line message', () => {
     sinceISO: '2026-07-02T00:00:00Z',
     untilISO: '2026-07-09T00:00:00Z',
     repoResults: [
-      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
-      { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+      { repo: 'acme/product', available: true, prs: [] },
+      { repo: 'acme/web', available: true, prs: [] },
+      { repo: 'acme/api', available: true, prs: [] },
     ],
     shippedEpics: { available: true, epics: [] },
   });
@@ -225,13 +225,13 @@ test('buildMessage: a merged PR and a shipped epic both surface, with the retro 
     sinceISO: '2026-07-02T00:00:00Z',
     untilISO: '2026-07-09T00:00:00Z',
     repoResults: [
-      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
+      { repo: 'acme/product', available: true, prs: [] },
       {
-        repo: 'danybgoode/miyagisanchezcommerce',
+        repo: 'acme/web',
         available: true,
         prs: [{ number: 200, title: 'feat: something', url: 'https://x' }],
       },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+      { repo: 'acme/api', available: true, prs: [] },
     ],
     shippedEpics: {
       available: true,
@@ -249,13 +249,13 @@ test('buildMessage: an unavailable repo is labeled, not silently dropped', () =>
     sinceISO: '2026-07-02T00:00:00Z',
     untilISO: '2026-07-09T00:00:00Z',
     repoResults: [
-      { repo: 'danybgoode/miyagi-product-management', available: false, prs: [] },
-      { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+      { repo: 'acme/product', available: false, prs: [] },
+      { repo: 'acme/web', available: true, prs: [] },
+      { repo: 'acme/api', available: true, prs: [] },
     ],
     shippedEpics: { available: true, epics: [] },
   });
-  assert.match(msg, /miyagi-product-management: unavailable/);
+  assert.match(msg, /product: unavailable/);
 });
 
 test('buildMessage: an unavailable epic read is labeled, never folded into "none"/quiet-week', () => {
@@ -263,9 +263,9 @@ test('buildMessage: an unavailable epic read is labeled, never folded into "none
     sinceISO: '2026-07-02T00:00:00Z',
     untilISO: '2026-07-09T00:00:00Z',
     repoResults: [
-      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
-      { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+      { repo: 'acme/product', available: true, prs: [] },
+      { repo: 'acme/web', available: true, prs: [] },
+      { repo: 'acme/api', available: true, prs: [] },
     ],
     shippedEpics: { available: false, epics: [] },
   });
@@ -282,13 +282,13 @@ test('buildMessage: a busy repo caps its listed PRs via formatPrList (message st
     sinceISO: '2026-06-25T00:00:00Z',
     untilISO: '2026-07-02T00:00:00Z',
     repoResults: [
-      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
-      { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: busyPrs },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+      { repo: 'acme/product', available: true, prs: [] },
+      { repo: 'acme/web', available: true, prs: busyPrs },
+      { repo: 'acme/api', available: true, prs: [] },
     ],
     shippedEpics: { available: true, epics: [] },
   });
-  assert.match(msg, /miyagisanchezcommerce \(40\):/); // the header count stays exact
+  assert.match(msg, /web \(40\):/); // the header count stays exact
   assert.match(msg, /…and 28 more/); // only 12 titles listed, per MAX_PRS_SHOWN_PER_REPO
   assert.ok(msg.length < 4096);
 });
@@ -298,14 +298,14 @@ test('buildMessage: a repo that hit the gh fetch cap is flagged as possibly-inco
     sinceISO: '2026-06-01T00:00:00Z',
     untilISO: '2026-06-30T23:59:59Z',
     repoResults: [
-      { repo: 'danybgoode/miyagi-product-management', available: true, prs: [] },
+      { repo: 'acme/product', available: true, prs: [] },
       {
-        repo: 'danybgoode/miyagisanchezcommerce',
+        repo: 'acme/web',
         available: true,
         capped: true,
         prs: [{ number: 1, title: 'x' }],
       },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [] },
+      { repo: 'acme/api', available: true, prs: [] },
     ],
     shippedEpics: { available: true, epics: [] },
   });
@@ -333,7 +333,7 @@ test('buildMessage: a 52-epic catch-up window caps the list and keeps the true c
   const msg = buildMessage({
     sinceISO: '2026-07-13T00:00:00.000Z',
     untilISO: '2026-08-24T00:00:00.000Z',
-    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    repoResults: [{ repo: 'acme/web', available: true, prs: [] }],
     shippedEpics: bigEpics(52),
   });
   assert.ok(msg.length <= 4096, `message was ${msg.length} chars`);
@@ -353,7 +353,7 @@ test('buildMessage: the epic COUNT survives even when the net cuts through the l
   const msg = buildMessage({
     sinceISO: '2026-07-13T00:00:00.000Z',
     untilISO: '2026-08-24T00:00:00.000Z',
-    repoResults: [fatRepo('danybgoode/miyagisanchezcommerce'), fatRepo('danybgoode/medusa-bonsai-backend')],
+    repoResults: [fatRepo('acme/web'), fatRepo('acme/api')],
     shippedEpics: bigEpics(52),
     prose: 'P'.repeat(1200),
   });
@@ -367,7 +367,7 @@ test('buildMessage: the cap covers the PROSE too — the net sits where the mess
   const msg = buildMessage({
     sinceISO: '2026-07-13T00:00:00.000Z',
     untilISO: '2026-08-24T00:00:00.000Z',
-    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    repoResults: [{ repo: 'acme/web', available: true, prs: [] }],
     shippedEpics: bigEpics(52),
     prose,
   });
@@ -381,7 +381,7 @@ test('buildMessage: a quiet week still carries its prose, and still respects the
   const msg = buildMessage({
     sinceISO: '2026-08-17T00:00:00.000Z',
     untilISO: '2026-08-24T00:00:00.000Z',
-    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    repoResults: [{ repo: 'acme/web', available: true, prs: [] }],
     shippedEpics: { available: true, epics: [] },
     prose: 'the week was quiet',
   });
@@ -389,7 +389,7 @@ test('buildMessage: a quiet week still carries its prose, and still respects the
   const huge = buildMessage({
     sinceISO: '2026-08-17T00:00:00.000Z',
     untilISO: '2026-08-24T00:00:00.000Z',
-    repoResults: [{ repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [] }],
+    repoResults: [{ repo: 'acme/web', available: true, prs: [] }],
     shippedEpics: { available: true, epics: [] },
     prose,
   });

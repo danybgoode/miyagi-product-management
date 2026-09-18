@@ -1,10 +1,15 @@
 #!/usr/bin/env node
-// standup.mjs — gathers overnight signals across the 3 repos and posts a DELTA-ONLY Telegram standup.
+// standup.mjs — gathers overnight signals across the project's repos and posts a DELTA-ONLY Telegram standup.
 //
-// Signals: opened/merged PRs + CI status + merge-conflict state (gh, all 3 repos), the latest
-// browser-smoke.yml run (frontend repo only — the backend has no per-branch preview / no Playwright),
-// BUILD-ORDER.md drift (`node scripts/build-order.mjs --check`), open-PR state, and the stale-preview
-// count (`node scripts/vercel-prune-previews.mjs --age 7`, dry-run — never `--apply`). The CI-red and
+// Project values (repos, smoke workflow, stale-preview age, live-flag source, chat, doc viewer) come
+// from reporting.config.json via scripts/lib/reporting-config.mjs. An absent optional section turns
+// that signal OFF rather than borrowing a default. Ported into the dobby-foundation template by
+// plugin-audit-and-extraction S1; the gathering and delta logic are unchanged from the origin.
+//
+// Signals: opened/merged PRs + CI status + merge-conflict state (gh, every configured repo), the latest
+// run of the configured browser-smoke workflow (`smoke`), BUILD-ORDER.md drift
+// (`node scripts/build-order.mjs --check`), open-PR state, and the stale-preview count
+// (`node scripts/vercel-prune-previews.mjs --age <stalePreviewAgeDays>`, dry-run — never `--apply`). The CI-red and
 // conflict signals are this standup's OWN independent read — taken after babysit-pr has had a chance
 // to act (it runs earlier in the same ops-nightly routine), so a "still red" line reflects state
 // post-retry, not pre-retry.
@@ -26,15 +31,15 @@
 //                                         # the existing URL-hash fallback link in that case).
 //
 // Reuse, don't rebuild: ensureGh()/die() (scripts/lib/cross-agent-cli.mjs), build-order.mjs --check,
-// vercel-prune-previews.mjs dry-run, the api.telegram.org sendMessage shape from
-// apps/miyagisanchez/lib/telegram.ts (reimplemented standalone — this script has no access to the app's
-// node_modules/TS build). Zero npm deps — Node >=20 (global fetch, spawnSync).
+// vercel-prune-previews.mjs dry-run, and the api.telegram.org sendMessage shape (reimplemented standalone —
+// this script has no access to the app's node_modules/TS build). Zero npm deps — Node >=20 (global fetch, spawnSync).
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync, writeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+import { loadReportingConfig, chatIdFor, shortRepo, ReportingConfigError } from './lib/reporting-config.mjs';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
 import { formatPrList, telegramHtmlToConsoleText } from './lib/telegram-format.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
@@ -52,7 +57,6 @@ import { parseStatusFlipsFromLog } from './weekly-recap.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const CONFIG_PATH = join(ROOT, '.claude/config/standup-post.json');
 
 // The delta log lives on a dedicated `claude/`-prefixed branch, not committed to `main` — a routine's
 // DEFAULT push scope already covers `claude/`-prefixed branches, so this needs no extra permission (see
@@ -85,28 +89,11 @@ const STANDUP_MAX_WORDS = 90;
 // may hard-depend on the other's merge order.
 const OWED_LEDGER_PATH = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json');
 
-// Confirmed via `git remote -v` in each checkout (2026-07-02) — see the epic README for the deploy topology.
-const REPOS = [
-  'danybgoode/miyagi-product-management',
-  'danybgoode/miyagisanchezcommerce',
-  'danybgoode/medusa-bonsai-backend',
-];
-const SMOKE_REPO = 'danybgoode/miyagisanchezcommerce';
-const SMOKE_WORKFLOW = 'browser-smoke.yml';
-
-// vercel-prune-previews.mjs' own default is `--age 0` (flags EVERY non-production preview, including one
-// from a PR opened yesterday) — not a meaningful "stale" signal for a standup. 7 days is our own choice.
-const STALE_PREVIEW_AGE_DAYS = 7;
-
 const MAX_PRS_SHOWN_PER_REPO = 12; // caps a busy-night delta listing before it dominates the message
 const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a safety net, not the primary control
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function shortRepo(repo) {
-  return repo.split('/')[1] || repo;
 }
 
 // ---- gather: gh-backed signals (each degrades to `available: false` on any gh error — one repo being
@@ -159,9 +146,10 @@ function gatherRepoPrs(repo) {
   };
 }
 
-function gatherSmoke() {
+function gatherSmoke(smokeConfig) {
+  if (!smokeConfig) return { available: false };
   const runs = ghJson([
-    'run', 'list', '--repo', SMOKE_REPO, '--workflow', SMOKE_WORKFLOW, '-L', '1',
+    'run', 'list', '--repo', smokeConfig.repo, '--workflow', smokeConfig.workflow, '-L', '1',
     '--json', 'conclusion,status,createdAt,url',
   ]);
   if (runs === null || !runs.length) return { available: false };
@@ -176,8 +164,9 @@ function gatherBuildOrderDrift() {
   return { drifted: r.status !== 0 };
 }
 
-function gatherStalePreviews() {
-  const r = spawnSync('node', ['scripts/vercel-prune-previews.mjs', '--age', String(STALE_PREVIEW_AGE_DAYS)], {
+function gatherStalePreviews(ageDays) {
+  if (!ageDays) return { available: false };
+  const r = spawnSync('node', ['scripts/vercel-prune-previews.mjs', '--age', String(ageDays)], {
     cwd: ROOT,
     encoding: 'utf8',
   });
@@ -218,22 +207,24 @@ export function gatherRoadmapDeltas(sinceExpr = '1 day ago', deps = {}) {
 
 // Flags currently ON — real input for the guard's `flag-state-claim` rule (README D6).
 //
-// Source is the in-house `platform_flags` table (epic 09 feature-flags-inhouse), NOT scripts/flags.mjs
-// — that one still drives the retired Flagsmith Admin API and has no read for the live store.
+// Source is the project's own flag store, read by the argv in reporting.config.json → liveFlags.command
+// (run from liveFlags.cwd). It must print one flag key per line; a `key` header line is ignored, so a
+// CSV query result works as-is. No command configured → unavailable, never "none are on".
 //
 // Returns `{ available, flags }`, and the distinction is load-bearing: "no flags are on" and "I could
 // not check" are different facts, and collapsing them to an empty array would let the brief tell the
 // writer nothing is live when the truth is unknown. Unavailable is the expected case in a routine
 // sandbox with no database credentials, so it must read as unknown, not as a negative finding.
-export function gatherLiveFlags(deps = {}) {
+export function gatherLiveFlags(liveFlagsConfig, deps = {}) {
   const {
     run = () =>
-      spawnSync(
-        'supabase',
-        ['db', 'query', '--linked', '--csv', 'SELECT key FROM platform_flags WHERE enabled IS TRUE ORDER BY key'],
-        { cwd: join(ROOT, 'apps/miyagisanchez'), encoding: 'utf8', timeout: 60000 }
-      ),
+      spawnSync(liveFlagsConfig.command[0], liveFlagsConfig.command.slice(1), {
+        cwd: join(ROOT, liveFlagsConfig.cwd || '.'),
+        encoding: 'utf8',
+        timeout: 60000,
+      }),
   } = deps;
+  if (!liveFlagsConfig && !deps.run) return { available: false, flags: [] };
   try {
     const r = run();
     if (!r || r.status !== 0) return { available: false, flags: [] };
@@ -260,30 +251,11 @@ export function gatherWindowFacts(sinceExpr = '1 day ago', deps = {}) {
   const areas = [...new Set(paths.map((p) => {
     if (p.startsWith('Roadmap/')) return 'roadmap docs';
     if (p.startsWith('scripts/')) return 'internal tooling';
-    if (p.includes('/app/')) return 'storefront pages';
+    if (p.includes('/app/')) return 'customer-facing pages';
     if (p.includes('/e2e/')) return 'test suite';
     return p.split('/')[0] || 'other';
   }))];
   return { subjects, areas };
-}
-
-// ---- config / secrets ----
-
-// config.json is gitignored and a routine's cloud sandbox is a fresh checkout every run — it has no
-// mechanism to persist a locally-written config.json across separate runs. So a routine environment
-// can't rely on the interactive AskUserQuestion-then-write-config.json flow; it needs TELEGRAM_CHAT_ID
-// as an env var instead (the same var already required for the optional failure-ping), which this
-// falls back to when config.json doesn't exist. A local/interactive run still prefers config.json.
-function loadChatId() {
-  if (existsSync(CONFIG_PATH)) {
-    try {
-      const cfg = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
-      if (cfg.chat_id) return cfg.chat_id;
-    } catch {
-      /* fall through to the env var */
-    }
-  }
-  return process.env.TELEGRAM_CHAT_ID || null;
 }
 
 // ---- delta log (JSONL, one line per run — lives on a dedicated branch, see below) ----
@@ -329,7 +301,7 @@ function buildSnapshot({ repoSignals, smoke, buildOrder, previews }) {
 // posting or persisting a log (confirmed live, 2026-07-02/03: standups.log had never been committed, so
 // every run re-derived a from-scratch "merged: <100+ PR titles>" dump and died). On a missing baseline,
 // emit ONE bounded summary line per repo (counts only, no per-PR title enumeration) instead.
-export function diffSnapshots(prev, cur, repoSignals) {
+export function diffSnapshots(prev, cur, repoSignals, { stalePreviewAgeDays = null } = {}) {
   const lines = [];
   const byNumberByRepo = Object.fromEntries(repoSignals.map((r) => [r.repo, r.byNumber || {}]));
 
@@ -388,11 +360,13 @@ export function diffSnapshots(prev, cur, repoSignals) {
     );
   }
 
-  if (!prev || prev.stalePreviews !== cur.stalePreviews) {
+  // Only when the project turned the signal on (stalePreviewAgeDays) — an unconfigured signal is silent,
+  // not a nightly "unavailable" line nobody can act on.
+  if (stalePreviewAgeDays && (!prev || prev.stalePreviews !== cur.stalePreviews)) {
     lines.push(
       cur.stalePreviews == null
         ? '🧹 Stale previews: unavailable'
-        : `🧹 Stale previews (>${STALE_PREVIEW_AGE_DAYS}d): ${cur.stalePreviews}`
+        : `🧹 Stale previews (>${stalePreviewAgeDays}d): ${cur.stalePreviews}`
     );
   }
 
@@ -440,16 +414,23 @@ function appendRunAndPush(snapshot) {
 // ---- main ----
 
 async function main() {
+  let config;
+  try {
+    config = loadReportingConfig({ root: ROOT });
+  } catch (e) {
+    if (e instanceof ReportingConfigError) die(e.message);
+    throw e;
+  }
   ensureGh();
 
-  const repoSignals = REPOS.map(gatherRepoPrs);
-  const smoke = gatherSmoke();
+  const repoSignals = config.repos.map(gatherRepoPrs);
+  const smoke = gatherSmoke(config.smoke);
   const buildOrder = gatherBuildOrderDrift();
-  const previews = gatherStalePreviews();
+  const previews = gatherStalePreviews(config.stalePreviewAgeDays);
 
   const cur = buildSnapshot({ repoSignals, smoke, buildOrder, previews });
   const prev = loadLastRun();
-  const deltaLines = diffSnapshots(prev, cur, repoSignals);
+  const deltaLines = diffSnapshots(prev, cur, repoSignals, { stalePreviewAgeDays: config.stalePreviewAgeDays });
 
   const header = `<b>Standup · ${cur.ts.slice(0, 10)}</b>`;
 
@@ -470,7 +451,7 @@ async function main() {
       roadmapDeltas,
       owed: loadOwedLedger(OWED_LEDGER_PATH),
       repoSignals: deltaLines.map((l) => telegramHtmlToConsoleText(l)),
-      liveFlags: gatherLiveFlags(),
+      liveFlags: gatherLiveFlags(config.liveFlags),
       smoke: smoke.available ? smoke.conclusion || smoke.status : null,
     });
     writeSync(1, `${buildBrief({ scriptsDir: __dirname, surface: 'standup', pack })}\n`);
@@ -498,10 +479,10 @@ async function main() {
     const evidence = deriveEvidenceFlags({
       subjects: windowFacts.subjects,
       areas: windowFacts.areas,
-      liveFlags: gatherLiveFlags().flags,
+      liveFlags: gatherLiveFlags(config.liveFlags).flags,
       maxWords: STANDUP_MAX_WORDS,
     });
-    const verdict = checkProse(draft, evidence);
+    const verdict = checkProse(draft, { ...evidence, extraBannedToolNames: config.prose.extraBannedToolNames });
     if (!verdict.ok && !FORCE_POST) {
       // Non-zero exit + the numbered revision note. The routine revises once and re-runs with
       // --force-post (D3: a labelled imperfect report beats a missing one).
@@ -518,12 +499,22 @@ async function main() {
     : deltaLines.length
       ? [header, ...deltaLines].join('\n')
       : `${header}\n🌙 Quiet night — nothing new since the last standup.`;
-  const artifacts = buildStandupArtifacts({ snapshot: cur, deltaLines, generatedAt: new Date(cur.ts) });
+  const artifacts = buildStandupArtifacts({
+    docViewerUrl: config.artifacts.docViewerUrl,
+    snapshot: cur,
+    deltaLines,
+    generatedAt: new Date(cur.ts),
+  });
   // reporthub-as-notion S1.3: try to upgrade the standup deck's URL-hash link to a short gs://-backed
   // /r/<slug> link (scripts/lib/report-registry.mjs). `--dry-run` must stay fully read-only, so it's
   // passed straight through as `dryRun` — a dry run logs the would-be slug/link but performs no upload.
   // On any real-run upload failure the artifact keeps the URL-hash link it already had.
-  await upgradeArtifactLinks(artifacts, { date: new Date(cur.ts), dryRun: DRY_RUN });
+  await upgradeArtifactLinks(artifacts, {
+    date: new Date(cur.ts),
+    dryRun: DRY_RUN,
+    baseUrl: config.artifacts.registry?.resolverBaseUrl,
+    bucket: process.env.REPORT_REGISTRY_BUCKET || config.artifacts.registry?.bucket,
+  });
   // Last-resort safety net for Telegram's hard 4096-char limit — the per-repo caps above (baseline
   // summary lines, formatPrList) should already keep any normal night well under this.
   const message = appendStandupArtifactsToMessage(rawMessage, artifacts, TELEGRAM_MAX_CHARS);
@@ -531,11 +522,11 @@ async function main() {
   console.log(telegramHtmlToConsoleText(message));
 
   if (!DRY_RUN) {
-    const chatId = loadChatId();
+    const chatId = chatIdFor(config, 'standup');
     if (!chatId) {
       die(
-        `No Telegram chat id configured — set "chat_id" in ${CONFIG_PATH} ` +
-          `(copy .claude/config/standup-post.example.json, or let the standup-post skill ask via AskUserQuestion).`
+        'No Telegram chat id configured — set "telegram.chatIds.standup" or "telegram.chatId" in ' +
+          'reporting.config.json, or export TELEGRAM_CHAT_ID.'
       );
     }
     await sendTelegram(chatId, message);

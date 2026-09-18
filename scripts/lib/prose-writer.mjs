@@ -17,7 +17,7 @@
 // Roadmap/09-platform-infra/prose-rail-headless/README.md, which records the rejected design so
 // nobody re-derives it.
 //
-// ── The router (README D1, and Daniel's call at golden-beans, 2026-07-26) ──────────────────────
+// ── The router (README D1, and the product owner's call, 2026-07-26) ──────────────────────
 // **devin → agy (`gpt-oss-120b-medium`) → codex.** devin is the DEDICATED prose writer; agy is the
 // fallback; codex is the last resort, added 2026-07-28.
 //

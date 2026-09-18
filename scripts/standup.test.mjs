@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { diffSnapshots } from './standup.mjs';
 
-const REPO = 'danybgoode/miyagi-product-management';
+const REPO = 'acme/product';
 
 function repoSignal({ byNumber = {} } = {}) {
   return [{ repo: REPO, byNumber }];
@@ -33,7 +33,7 @@ test('diffSnapshots: no prior snapshot (prev=null) → ONE bounded summary line 
     stalePreviews: null,
   };
   const lines = diffSnapshots(null, cur, repoSignal());
-  assert.equal(lines.filter((l) => l.includes('miyagi-product-management')).length, 1);
+  assert.equal(lines.filter((l) => l.includes('product')).length, 1);
   assert.match(lines[0], /baseline established/);
   assert.match(lines[0], /120 recently merged/);
   assert.doesNotMatch(lines.join('\n'), /#\d+/); // no individual PR numbers/titles enumerated
@@ -43,18 +43,18 @@ test('diffSnapshots: bootstrap message stays short regardless of history size (t
   const cur = {
     ts: '2026-07-03T00:00:00Z',
     repos: {
-      'danybgoode/a': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
-      'danybgoode/b': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
-      'danybgoode/c': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
+      'acme/a': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
+      'acme/b': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
+      'acme/c': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
     },
     smoke: null,
     buildOrderDrifted: false,
     stalePreviews: null,
   };
   const signals = [
-    { repo: 'danybgoode/a', byNumber: {} },
-    { repo: 'danybgoode/b', byNumber: {} },
-    { repo: 'danybgoode/c', byNumber: {} },
+    { repo: 'acme/a', byNumber: {} },
+    { repo: 'acme/b', byNumber: {} },
+    { repo: 'acme/c', byNumber: {} },
   ];
   const lines = diffSnapshots(null, cur, signals);
   const message = lines.join('\n');

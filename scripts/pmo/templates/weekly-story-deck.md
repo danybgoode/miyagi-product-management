@@ -1,5 +1,5 @@
 ---
-title: "PMO semanal - {{window.label}}"
+title: "PMO weekly - {{window.label}}"
 styles:
   fontFamily: "Inter"
   baseFontSize: 15
@@ -9,58 +9,58 @@ styles:
   h2: { fontSize: 1.35, fontWeight: 600 }
 ---
 
-# PMO semanal - {{window.label}}
+# PMO weekly - {{window.label}}
 
-Linea honesta: esto muestra un diferencial operativo frente a referencias externas; no es un experimento controlado.
+Honest line: this shows an operational differential against external references; it is not a controlled experiment.
 
 ~~~slide
 @extends cover
-#title: PMO semanal
+#title: PMO weekly
 #subtitle: {{window.label}}
-#kicker: Miyagi - reporte operativo
-#footer: Generado desde git, GitHub REST y Roadmap
+#kicker: Operational report
+#footer: Generated from git, GitHub REST and the Roadmap
 ~~~
 
 ~~~slide
 @extends metric
-#title: Flujo de entrega
+#title: Delivery flow
 #metric: {{throughput.shippedStories}}
-#label: historias shipped
-#caption: {{throughput.shippedEpics}} epics shipped - {{deploys.perWeek}} deploys/semana vs benchmark {{benchmarks.deploysPerWeek}}
+#label: stories shipped
+#caption: {{throughput.shippedEpics}} epics shipped - {{deploys.perWeek}} deploys/week vs benchmark {{benchmarks.deploysPerWeek}}
 ~~~
 
 ~~~slide
 @extends exhibit
-#title: Cadencia y calidad
+#title: Cadence and quality
 #chart:
   ```chart
-  {"type":"bar","title":"Senales PMO","labels":["Historias","Epics","Deploys","Reverts/hotfix"],"values":[{{throughput.shippedStories}},{{throughput.shippedEpics}},{{deploys.total}},{{quality.changeFailProxy}}],"color":"#2563eb"}
+  {"type":"bar","title":"PMO signals","labels":["Stories","Epics","Deploys","Reverts/hotfix"],"values":[{{throughput.shippedStories}},{{throughput.shippedEpics}},{{deploys.total}},{{quality.changeFailProxy}}],"color":"#2563eb"}
   ```
 #takeaway:
-  Ciclo PR mediano: **{{cycle.medianHours}}h**.
+  Median PR cycle: **{{cycle.medianHours}}h**.
 
-  Lead time epic mediano: **{{epics.medianDays}} dias**.
-#source: Datos internos, {{window.generatedDate}}.
+  Median epic lead time: **{{epics.medianDays}} days**.
+#source: Internal data, {{window.generatedDate}}.
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Operacion documental
+#title: Documentation operations
 #body:
   ```chart
-  {"type":"bar","title":"Doc-ops","labels":["LEARNINGS","Retros cubiertas"],"values":[{{docOps.learningsPromotions}},{{docOps.retroCovered}}],"color":"#0f766e"}
+  {"type":"bar","title":"Doc-ops","labels":["LEARNINGS","Retros covered"],"values":[{{docOps.learningsPromotions}},{{docOps.retroCovered}}],"color":"#0f766e"}
   ```
 #footer: Retro coverage {{docOps.retroCovered}}/{{docOps.retroTotal}}.
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Lectura ejecutiva
+#title: Executive reading
 #body:
-- Throughput: **{{throughput.shippedStories}}** historias y **{{throughput.shippedEpics}}** epics shipped.
-- Deploy frequency: **{{deploys.perWeek}}** por semana; benchmark DORA/Four Keys daily: **{{benchmarks.deploysPerWeek}}** dias con deployment por semana.
-- PR cycle mediano: **{{cycle.medianHours}}h** vs referencia one-day **{{benchmarks.prCycleMedianHours}}h**.
-- Change-failure proxy: **{{quality.changeFailureRatePercent}}%** vs referencia top bucket **{{benchmarks.changeFailureRatePercent}}%**.
-- Doc-ops: **{{docOps.learningsPromotions}}** promociones a LEARNINGS.
+- Throughput: **{{throughput.shippedStories}}** stories and **{{throughput.shippedEpics}}** epics shipped.
+- Deploy frequency: **{{deploys.perWeek}}** per week; DORA/Four Keys daily benchmark: **{{benchmarks.deploysPerWeek}}** deployment days per week.
+- Median PR cycle: **{{cycle.medianHours}}h** vs the one-day reference **{{benchmarks.prCycleMedianHours}}h**.
+- Change-failure proxy: **{{quality.changeFailureRatePercent}}%** vs the top-bucket reference **{{benchmarks.changeFailureRatePercent}}%**.
+- Doc-ops: **{{docOps.learningsPromotions}}** LEARNINGS promotions.
 #footer: {{benchmarks.sourceLine}}. {{benchmarks.framing}}
 ~~~

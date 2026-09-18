@@ -29,9 +29,8 @@ code, open a PR, or change a required status check. The Telegram post plus the P
 the entire output.
 
 ## The one step - `pmo-report`
-Use the `pmo-report` skill exactly. It handles the config check (chat id from
-`.claude/config/pmo-report.json` if present, else the `TELEGRAM_CHAT_ID` env var; the env var is what
-works in this unattended routine session), the `TELEGRAM_BOT_TOKEN` check, running
+Use the `pmo-report` skill exactly. It handles the config check (the committed `reporting.config.json`
+for repos and deck hosting; the chat id from the `TELEGRAM_CHAT_ID` env var in this unattended session), the `TELEGRAM_BOT_TOKEN` check, running
 `node scripts/pmo-report.mjs --weekly`, and reporting the headline metrics plus generated deck link.
 
 ## Nothing else

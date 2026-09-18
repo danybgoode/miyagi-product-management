@@ -76,6 +76,8 @@ apps/
 # Skill user-specific setup (e.g. a Telegram chat id) — see .claude/config/*.example.json for the template
 .claude/config/*.json
 !.claude/config/*.example.json
+# Local overlay for reporting.config.json — the chat id, which this PUBLIC repo does not commit
+reporting.config.local.json
 
 # Staging / reference asset drops (binaries; not repo history) — blanket-ignored so new drops
 # (screenshots, PDFs, scratch notes) never sit as untracked/dirty. Files already committed here

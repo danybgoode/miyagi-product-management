@@ -161,7 +161,7 @@ export function deriveEvidenceFlags({ subjects = [], areas = [], liveFlags = [],
   return {
     allowsFixClaim: subjects.some((s) => /^(?:fix|hotfix|revert)(?:\([^)]*\))?!?:/i.test(s)),
     allowsBeneficiary: areas.some((a) =>
-      /storefront|checkout|seller portal|admin|public page|shop page|listing/i.test(a)
+      /customer-facing|storefront|checkout|seller portal|admin|public page|shop page|listing/i.test(a)
     ),
     liveFlags,
     // Chat-message surface: structural markdown is forbidden, so the strict `unfinished` rule applies.

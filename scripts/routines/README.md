@@ -209,10 +209,10 @@ routine (cap-safe) — see the budget table below.
      **LOAD-BEARING** (step 4's actual output), not the optional failure-ping the other three routines
      use.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
-     unattended routine run.** `.claude/config/standup-post.json`'s `chat_id` (gitignored, per the
-     D-spike's user-specific-setup convention) is preferred when present, but a routine's cloud sandbox
-     is a fresh checkout every run, so a locally-written `config.json` never persists to the next run —
-     `standup.mjs` falls back to this env var, and it's the same one the optional failure-ping already
+     unattended routine run.** The committed `reporting.config.json` carries repos and signals but
+     deliberately NOT the chat id (this repo is public); a local run may put it in the gitignored
+     `reporting.config.local.json`, which never exists in a routine's fresh checkout — so
+     `standup.mjs` uses this env var, and it's the same one the optional failure-ping already
      needed, so one setting covers both.
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other three routines' optional ping — here it's required for step 4 to do anything at all).
@@ -299,10 +299,9 @@ and a short retro digest per shipped epic — then posts one Telegram message.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — this routine's Telegram use is
      **LOAD-BEARING** (its one step's actual output), same as `ops-nightly`'s.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
-     unattended routine run** (same reasoning as `ops-nightly`'s: `.claude/config/weekly-recap.json`'s
-     `chat_id`, its own file separate from `standup-post.json` per the D-spike's per-skill
-     convention, is preferred when present, but can't persist across a routine's fresh-checkout-per-run
-     sandbox — `weekly-recap.mjs` falls back to this env var, the same one the optional failure-ping
+     unattended routine run** (same reasoning as `ops-nightly`'s: the chat id is not in the committed
+     `reporting.config.json`, and the gitignored local overlay never reaches a routine's fresh
+     checkout — `weekly-recap.mjs` uses this env var, the same one the optional failure-ping
      already needed).
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other routines).
@@ -332,9 +331,8 @@ then advances the PMO window log.
      reads merged/open PRs across all 3 repos through the REST rail.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — load-bearing; the Telegram post is the
      routine's actual output.
-   - **`TELEGRAM_CHAT_ID`** in the routine's environment — the unattended path. A local
-     `.claude/config/pmo-report.json` is still supported for manual runs, but it is gitignored and will
-     not survive routine sessions.
+   - **`TELEGRAM_CHAT_ID`** in the routine's environment — the unattended path. A local run can put the
+     chat id in the gitignored `reporting.config.local.json`; it never reaches a routine session.
    - **Network access -> Custom**, with **`api.telegram.org`** allow-listed.
    - **No unrestricted branch push needed** — the PMO window log lives on `claude/pmo-reports-log`
      through `scripts/lib/log-branch.mjs`.

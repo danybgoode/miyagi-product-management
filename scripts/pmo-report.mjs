@@ -3,8 +3,13 @@
 //
 // This is intentionally a root-repo script, not an app surface. It reuses the ops-routines rail:
 // REST-only GitHub reads (gh-rest), the weekly-recap-style window log, log-branch persistence, and the
-// Telegram formatter's length guard. Delivery to Telegram/decks comes in later sprints; Sprint 1 prints
-// the report and persists the window only on non-dry runs.
+// Telegram formatter's length guard. Prints the report, delivers the weekly one, and persists the window
+// only on non-dry --weekly runs.
+//
+// Project values (repos, deploy repos, chat, doc viewer, registry) come from reporting.config.json via
+// scripts/lib/reporting-config.mjs; Roadmap rows come from scripts/roadmap-extract.mjs (the same SSOT
+// extractor build-order.mjs reads). Ported into the dobby-foundation template by
+// plugin-audit-and-extraction S1 — metric logic unchanged from the origin.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -13,17 +18,14 @@ import { dirname, join, resolve } from 'node:path';
 import { listPulls, searchMergedPrs } from './lib/gh-rest.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
 import { telegramHtmlToConsoleText, truncateForTelegram } from './lib/telegram-format.mjs';
-import {
-  buildTelegramDeliveryMessage,
-  loadTelegramChatId,
-  sendTelegramMessage,
-} from './lib/pmo-delivery.mjs';
+import { buildTelegramDeliveryMessage, sendTelegramMessage } from './lib/pmo-delivery.mjs';
+import { loadReportingConfig, chatIdFor, ReportingConfigError } from './lib/reporting-config.mjs';
 import {
   benchmarkTemplateValues,
   loadBenchmarkDataset,
   validateBenchmarkDataset,
 } from './lib/pmo-benchmarks.mjs';
-import { buildSmallDocsUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
+import { buildDocViewerUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
 import { upgradeArtifactLinks } from './lib/report-registry.mjs';
 import { parseStatusFlipsFromLog, filterFlipsToWindow } from './weekly-recap.mjs';
 import {
@@ -43,17 +45,6 @@ const ROOT = resolve(__dirname, '..');
 const LOG_BRANCH = 'claude/pmo-reports-log';
 const LOG_BRANCH_PATH = 'pmo-reports.log';
 const LOG_MESSAGE = 'chore(pmo): append operational report window';
-const CONFIG_PATH = join(ROOT, '.claude/config/pmo-report.json');
-
-const REPOS = [
-  'danybgoode/miyagi-product-management',
-  'danybgoode/miyagisanchezcommerce',
-  'danybgoode/medusa-bonsai-backend',
-];
-const DEPLOY_REPOS = [
-  'danybgoode/miyagisanchezcommerce',
-  'danybgoode/medusa-bonsai-backend',
-];
 
 export function parseArgs(argv) {
   const has = (flag) => argv.includes(flag);
@@ -81,7 +72,7 @@ function runNode(args) {
 }
 
 function loadRoadmapRows() {
-  const result = runNode(['scripts/roadmap-to-notion.mjs', '--extract']);
+  const result = runNode(['scripts/roadmap-extract.mjs']);
   if (result.status !== 0) return [];
   try {
     return JSON.parse(result.stdout || '[]');
@@ -97,10 +88,11 @@ export function loadLogContent({
 }
 
 export function gatherRepoResults(sinceISO, untilISO, {
+  repos,
   searchMerged = searchMergedPrs,
   listOpen = listPulls,
 } = {}) {
-  return REPOS.map((repo) => {
+  return repos.map((repo) => {
     const prs = searchMerged({ repo, sinceDate: sinceISO.slice(0, 10), base: 'main' });
     const openPrs = listOpen({ repo, state: 'open', perPage: 100 });
     if (prs === null || openPrs === null) return { repo, available: false, prs: [], openPrs: [] };
@@ -175,11 +167,11 @@ function gatherEpicLeadInputs(epicStatusFlips) {
   });
 }
 
-export function buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs }) {
+export function buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs, deployRepos = [] }) {
   const prs = repoResults.flatMap((result) => result.prs);
   const metrics = summarizePmoMetrics({
     ...window,
-    deployRepos: DEPLOY_REPOS,
+    deployRepos,
     repoResults,
     prs,
     changeItems: prs,
@@ -202,8 +194,12 @@ export function loadReportBenchmarks() {
   return benchmarkTemplateValues(dataset);
 }
 
-export function buildReportArtifacts(metrics, args, { benchmarks = loadReportBenchmarks() } = {}) {
+// No doc viewer configured → no artifacts. The Telegram text and the console report still carry every
+// number; the decks are an optional rendering and never borrow another project's hosting.
+export function buildReportArtifacts(metrics, args, { docViewerUrl = null, benchmarks } = {}) {
   const artifacts = [];
+  if (!docViewerUrl) return artifacts;
+  benchmarks ??= loadReportBenchmarks();
   for (const [name, enabled] of [
     ['weekly', args.weekly],
     ['monthly', args.monthly],
@@ -214,7 +210,7 @@ export function buildReportArtifacts(metrics, args, { benchmarks = loadReportBen
     artifacts.push({
       name,
       markdown,
-      url: buildSmallDocsUrl(markdown, { present: name === 'weekly' }),
+      url: buildDocViewerUrl(markdown, { baseUrl: docViewerUrl, present: name === 'weekly' }),
     });
   }
   return artifacts;
@@ -237,19 +233,33 @@ function openUrl(url) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  let config;
+  try {
+    config = loadReportingConfig({ root: ROOT });
+  } catch (e) {
+    if (e instanceof ReportingConfigError) {
+      console.error(e.message);
+      process.exit(1);
+    }
+    throw e;
+  }
+  const deployRepos = config.deployRepos.map((d) => d.repo);
   const logContent = loadLogContent();
   const lastLog = lastPmoLogEntry(logContent);
   const window = computePmoWindow(lastLog, new Date(), args);
 
   const roadmapRows = loadRoadmapRows();
-  const repoResults = gatherRepoResults(window.sinceISO, window.untilISO);
+  const repoResults = gatherRepoResults(window.sinceISO, window.untilISO, { repos: config.repos });
   const epicStatusFlips = gatherEpicStatusFlips(window.sinceISO, window.untilISO);
   const docOpsInputs = gatherDocOpsInputs(window.sinceISO, window.untilISO, epicStatusFlips);
   const epicLeadInputs = gatherEpicLeadInputs(epicStatusFlips);
-  const { metrics, text } = buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs });
+  const { metrics, text } = buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs, deployRepos });
 
   console.log(text);
-  const artifacts = buildReportArtifacts(metrics, args);
+  const artifacts = buildReportArtifacts(metrics, args, { docViewerUrl: config.artifacts.docViewerUrl });
+  if ((args.weekly || args.monthly || args.sheet) && !config.artifacts.docViewerUrl) {
+    console.log('\nNo artifacts.docViewerUrl in reporting.config.json — deck/packet/sheet links skipped.');
+  }
   // reporthub-as-notion S1.3: try to upgrade each artifact's URL-hash link to a short gs://-backed
   // /r/<slug> link (scripts/lib/report-registry.mjs). Mutates `artifacts` in place; on any upload
   // failure (no credentials, unreachable bucket, ...) the artifact keeps the URL-hash link it already
@@ -259,9 +269,11 @@ async function main() {
   await upgradeArtifactLinks(artifacts, {
     date: window.untilISO ? new Date(window.untilISO) : new Date(),
     dryRun: args.dryRun,
+    baseUrl: config.artifacts.registry?.resolverBaseUrl,
+    bucket: process.env.REPORT_REGISTRY_BUCKET || config.artifacts.registry?.bucket,
   });
   for (const artifact of artifacts) {
-    console.log(`\nSmallDocs ${artifact.name}: ${artifact.url}`);
+    console.log(`\nDeck ${artifact.name}: ${artifact.url}`);
     if (args.open) {
       const opened = openUrl(artifact.url);
       console.log(opened ? `Opened ${artifact.name} in the browser.` : `Could not auto-open ${artifact.name}; use the URL above.`);
@@ -271,7 +283,7 @@ async function main() {
   if (args.weekly) {
     const message = buildTelegramDeliveryMessage({ metrics, artifacts });
     if (shouldSendWeeklyTelegram(args)) {
-      const chatId = loadTelegramChatId({ configPath: CONFIG_PATH });
+      const chatId = chatIdFor(config, 'pmo');
       await sendTelegramMessage({ chatId, text: message });
       console.log('\nTelegram weekly PMO report sent.');
     } else {

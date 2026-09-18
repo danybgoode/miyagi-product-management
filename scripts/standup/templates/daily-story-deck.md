@@ -1,5 +1,5 @@
 ---
-title: "Standup diario - {{window.date}}"
+title: "Daily standup - {{window.date}}"
 styles:
   fontFamily: "Inter"
   baseFontSize: 15
@@ -9,38 +9,38 @@ styles:
   h2: { fontSize: 1.25, fontWeight: 600 }
 ---
 
-# Standup diario - {{window.date}}
+# Daily standup - {{window.date}}
 
 ~~~slide
 @extends cover
-#title: Standup diario
+#title: Daily standup
 #subtitle: {{window.date}}
-#kicker: Miyagi ops-nightly
-#footer: El texto de Telegram sigue siendo la lectura canónica; este deck es el artefacto móvil.
+#kicker: ops-nightly
+#footer: The Telegram text stays the canonical read; this deck is the mobile artifact.
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Qué cambió
+#title: What changed
 #body:
 {{summary.bullets}}
-#footer: Generado {{window.generatedDate}}
+#footer: Generated {{window.generatedDate}}
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Repositorios
+#title: Repositories
 #body:
 {{repos.bullets}}
-#footer: GitHub REST + log incremental del standup.
+#footer: GitHub REST + the standup's incremental log.
 ~~~
 
 ~~~slide
 @extends title-body
-#title: Controles
+#title: Guards
 #body:
 - Browser smoke: **{{guards.browserSmoke}}**
 - BUILD-ORDER.md: **{{guards.buildOrder}}**
 - Stale previews: **{{guards.stalePreviews}}**
-#footer: Las mismas señales del standup de Telegram, listas para reenviar.
+#footer: The same signals as the Telegram standup, ready to forward.
 ~~~

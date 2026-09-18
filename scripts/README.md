@@ -47,6 +47,32 @@ the integration). Zero npm deps — Node 18+ (uses global `fetch`).
 on `workflow_dispatch`. It needs the `NOTION_TOKEN` repo secret (`gh secret set NOTION_TOKEN`);
 `NOTION_DB_ID` is optional (the Marketplace Roadmap id above is the workflow default).
 
+## The reporting family — the dobby-foundation template's copy, configured by `reporting.config.json`
+
+`standup.mjs`, `weekly-recap.mjs`, `pmo-report.mjs` and their libraries (`lib/reporting-config.mjs`,
+`lib/prose-{brief,guard,writer}.mjs`, `lib/standup-deck.mjs`, `lib/pmo-{delivery,templates}.mjs`, and the
+`telegram-format`/`log-branch`/`gh-rest`/`pmo-{benchmarks,metrics,window-log}` libs that were already
+identical) are **byte-identical to `dobby-foundation/template/scripts/`**. This repo was their origin; the
+plugin-audit-and-extraction epic generalized them into the template and this repo moved onto that copy in
+the same wave, so there is ONE implementation per rail. Change them in dobby-foundation and copy back —
+never fork them here.
+
+Everything project-specific lives in the committed **`reporting.config.json`** (repos, deploy repos, the
+browser-smoke workflow, the stale-preview age, the live-flag query, the deck viewer + registry, and this
+stack's names for the prose guard). The chat id is **not** committed — this repo is public: routines use
+`TELEGRAM_CHAT_ID`, a local run uses the gitignored `reporting.config.local.json`.
+
+**Deliberate divergences, with reasons:**
+- **`lib/report-registry.mjs` stays this repo's own.** The template's copy has no default bucket or
+  resolver (a default is one project's storage). The reporthub here — `publish-live-views.mjs`,
+  `lib/pmo-report-hub-data.mjs` and `infra/gcp/test/report-registry-invariants.test.js` — relies on those
+  defaults, and the template's callers pass `baseUrl`/`bucket` explicitly, so this copy serves both.
+- **`prose/*.md` and `prose-lessons.md` stay this repo's own** — they are the project's persona and
+  lessons (data, not code), which the template ships only as a fill-in.
+- **`roadmap-extract.mjs` delegates to `roadmap-to-notion.mjs --extract`** rather than being the template's
+  extractor: this repo's extractor carries checks the template's does not (dangling seed pointers,
+  external-sprint epics).
+
 ## build-order.mjs — generate the in-repo status board
 
 Renders `Roadmap/00-ideas/BUILD-ORDER.md` from the **same projection** the Notion sync reads

@@ -61,17 +61,17 @@ test('summarizeEpicLeadTime computes lead time from scaffold to shipped date', (
 
 test('summarizeDeployFrequency treats merges to main as deploys and labels unavailable repos', () => {
   const repoResults = [
-    { repo: 'danybgoode/miyagisanchezcommerce', available: true, prs: [{ number: 1 }, { number: 2 }] },
-    { repo: 'danybgoode/medusa-bonsai-backend', available: true, prs: [{ number: 3 }] },
-    { repo: 'danybgoode/miyagi-product-management', available: false, prs: [] },
+    { repo: 'acme/web', available: true, prs: [{ number: 1 }, { number: 2 }] },
+    { repo: 'acme/api', available: true, prs: [{ number: 3 }] },
+    { repo: 'acme/product', available: false, prs: [] },
   ];
   assert.deepEqual(summarizeDeployFrequency(repoResults, {
-    deployRepos: ['danybgoode/miyagisanchezcommerce', 'danybgoode/medusa-bonsai-backend'],
+    deployRepos: ['acme/web', 'acme/api'],
   }), {
     total: 3,
     byRepo: {
-      'danybgoode/miyagisanchezcommerce': 2,
-      'danybgoode/medusa-bonsai-backend': 1,
+      'acme/web': 2,
+      'acme/api': 1,
     },
     unavailable: 0,
   });
