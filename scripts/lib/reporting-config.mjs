@@ -109,6 +109,28 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
     liveFlags = { command: cmd, cwd: raw.liveFlags.cwd || '.' };
   }
 
+  // Where each repo is checked out locally (session-resume.mjs's git read), relative to the repo root.
+  const checkouts = raw.checkouts ?? {};
+  if (typeof checkouts !== 'object' || Array.isArray(checkouts)) fail(path, '"checkouts" must map "owner/name" to a local directory');
+  for (const [repo, dir] of Object.entries(checkouts)) {
+    if (!repos.includes(repo)) fail(path, `"checkouts.${repo}" is not one of "repos"`);
+    if (typeof dir !== 'string' || !dir || dir.startsWith('/') || dir.split('/').includes('..')) {
+      fail(path, `"checkouts.${repo}" must be a relative directory inside the repo root`);
+    }
+  }
+
+  // What owed-ledger.mjs counts: who manual checks are owed to, and where the specs live.
+  const owed = raw.owed ?? {};
+  if (typeof owed !== 'object' || Array.isArray(owed)) fail(path, '"owed" must be an object {owners, specDirs}');
+  for (const k of ['owners', 'specDirs']) {
+    if (owed[k] != null && (!Array.isArray(owed[k]) || owed[k].some((v) => typeof v !== 'string' || !v.trim()))) {
+      fail(path, `"owed.${k}" must be an array of non-empty strings`);
+    }
+  }
+  for (const d of owed.specDirs ?? []) {
+    if (d.startsWith('/') || d.split('/').includes('..')) fail(path, `"owed.specDirs" entry "${d}" must be relative, inside the repo`);
+  }
+
   const stalePreviewAgeDays = raw.stalePreviewAgeDays ?? null;
   if (stalePreviewAgeDays !== null && !(Number.isInteger(stalePreviewAgeDays) && stalePreviewAgeDays > 0)) {
     fail(path, '"stalePreviewAgeDays" must be a positive integer, or absent to skip the stale-preview signal');
@@ -140,6 +162,8 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
   return {
     repos,
     deployRepos,
+    checkouts,
+    owed: { owners: owed.owners ?? null, specDirs: owed.specDirs ?? null },
     telegram: { chatId: telegram.chatId ?? null, chatIds },
     smoke,
     liveFlags,

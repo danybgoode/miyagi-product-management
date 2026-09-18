@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// owed-ledger.mjs — turn 76 scattered "owed to Daniel" comments into one generated, categorised number.
+// owed-ledger.mjs — turn scattered "owed to <the product owner>" comments into one generated, categorised number.
 //
 // ── Why this exists ───────────────────────────────────────────────────────────────────────────
 // The manual-QA debt has only ever been countable by grepping, which means it is quoted from memory
@@ -22,6 +22,13 @@
 // never in the bin: a ledger that quietly loses items is worse than the comments it replaced, because
 // it looks authoritative. A test asserts input count === output count.
 //
+// ── Project values (plugin-audit-and-extraction S2.5) ──────────────────────────────────────────
+// WHO checks are owed to, and WHERE the specs live, come from reporting.config.json's optional `owed`
+// section: `{ "owners": ["the product owner"], "specDirs": ["apps/web/e2e"] }`. Owners default to the
+// role name the templates use ("the product owner"); list a person's name too if your specs say it.
+// Spec dirs default to every `apps/*/e2e` that exists — derived, like everything else here.
+// (The origin's numbers above: 76 markers across 71 files, all of them "owed to <one person>".)
+//
 // Usage:
 //   node scripts/owed-ledger.mjs             # write the markdown + json artifacts
 //   node scripts/owed-ledger.mjs --check     # exit 1 if the committed artifact is stale (CI/hook)
@@ -33,12 +40,35 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const SPEC_DIR = join(ROOT, 'apps/miyagisanchez/e2e');
+import { loadReportingConfig, ReportingConfigError } from './lib/reporting-config.mjs';
 const OUT_MD = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.md');
 const OUT_JSON = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json');
 
-// Case-insensitive: real comments say "owed to Daniel", "Owed (Daniel…)", "stay owed to Daniel".
-const MARKER = /owed\s*(?:to|\()?\s*daniel/i;
+// Case-insensitive, and tolerant of the real shapes: "owed to <owner>", "Owed (<owner>…)", "stay owed to
+// <owner>". One alternation per configured owner name; spacing inside a name is flexible.
+export function markerFor(owners) {
+  const names = owners.map((o) => o.trim().split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'));
+  return new RegExp(`owed\\s*(?:to|\\()?\\s*(?:${names.join('|')})`, 'i');
+}
+export const DEFAULT_OWNERS = ['the product owner'];
+
+/** The project's owners + spec dirs: reporting.config.json's `owed`, else the defaults (derived dirs). */
+export function resolveOwedConfig({ root = ROOT, load = loadReportingConfig, exists = existsSync, readdir = readdirSync } = {}) {
+  let owed = {};
+  try {
+    owed = load({ root }).owed || {};
+  } catch (e) {
+    if (!(e instanceof ReportingConfigError)) throw e;
+  }
+  const owners = owed.owners?.length ? owed.owners : DEFAULT_OWNERS;
+  let specDirs = owed.specDirs;
+  if (!specDirs?.length) {
+    const apps = join(root, 'apps');
+    specDirs = exists(apps) ? readdir(apps).map((a) => join('apps', a, 'e2e')).filter((d) => exists(join(root, d))) : [];
+  }
+  return { owners, specDirs };
+}
+
 
 export const CATEGORIES = ['money-path', 'auth-path', 'admin-only', 'other'];
 
@@ -111,11 +141,11 @@ export function listSpecFiles(dir, deps = {}) {
  * Captures the line and a little surrounding context, because the comment text is what makes the
  * categorisation possible and what makes the ledger readable.
  */
-export function extractMarkers(contents, file) {
+export function extractMarkers(contents, file, marker = markerFor(DEFAULT_OWNERS)) {
   const lines = String(contents ?? '').split('\n');
   const found = [];
   for (let i = 0; i < lines.length; i++) {
-    if (!MARKER.test(lines[i])) continue;
+    if (!marker.test(lines[i])) continue;
     // Strip comment punctuation so the text reads as prose in the report.
     const text = lines[i].replace(/^\s*(?:\/\/|\/\*+|\*+\/?|#)\s?/, '').trim();
     found.push({ file, line: i + 1, text });
@@ -172,12 +202,13 @@ export function renderMarkdown(ledger, generatedAt) {
   return `${l.join('\n')}\n`;
 }
 
-function gather() {
-  const files = listSpecFiles(SPEC_DIR);
+function gather({ owners, specDirs }) {
+  const marker = markerFor(owners);
   const markers = [];
-  for (const f of files) {
-    const rel = relative(ROOT, f);
-    markers.push(...extractMarkers(readFileSync(f, 'utf8'), rel));
+  for (const dir of specDirs) {
+    for (const f of listSpecFiles(join(ROOT, dir))) {
+      markers.push(...extractMarkers(readFileSync(f, 'utf8'), relative(ROOT, f), marker));
+    }
   }
   return buildLedger(markers);
 }
@@ -187,17 +218,19 @@ function main() {
   const check = argv.includes('--check');
   const jsonOnly = argv.includes('--json');
 
-  if (!existsSync(SPEC_DIR)) {
-    // The spec tree lives in a sibling repo that is gitignored here. Its absence is a real
-    // possibility (a fresh clone of the root repo alone), and it must not read as "zero owed".
+  const owedConfig = resolveOwedConfig();
+  const missing = owedConfig.specDirs.filter((d) => !existsSync(join(ROOT, d)));
+  if (!owedConfig.specDirs.length || missing.length) {
+    // A spec tree can live in a separate, gitignored checkout. Its absence is a real possibility (a
+    // fresh clone of the root repo alone), and it must not read as "zero owed".
     process.stderr.write(
-      `owed-ledger: ${relative(ROOT, SPEC_DIR)} not found — the frontend repo is not checked out here.\n` +
+      `owed-ledger: ${owedConfig.specDirs.length ? `${missing.join(', ')} not found` : 'no spec directory found (apps/*/e2e, or reporting.config.json → owed.specDirs)'}.\n` +
         `  Refusing to emit a ledger that would read as "nothing is owed".\n`
     );
     process.exit(jsonOnly || check ? 1 : 0);
   }
 
-  const ledger = gather();
+  const ledger = gather(owedConfig);
   const generatedAt = new Date().toISOString().slice(0, 10);
 
   if (jsonOnly) {

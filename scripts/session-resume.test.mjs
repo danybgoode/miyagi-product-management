@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  REPOS,
+  resolveRepos,
   parseWorktreeListPorcelain,
   parseMigrationListTable,
   rollupHasFailure,
@@ -32,23 +32,50 @@ import {
   MEMORY_HARD_LIMIT_BYTES,
 } from './session-resume.mjs';
 
-// ---- REPOS constant ----
+// ---- resolveRepos: the project's one repo list, from reporting.config.json ----
+// The origin hard-coded its three repos and their checkout dirs; the template reads them from config.
+// Fixture repos below: a root repo, an app checkout and an api checkout — the origin's shape, renamed.
 
-test('REPOS: the same 3 repos as standup.mjs, root first', () => {
-  assert.deepEqual(
-    REPOS.map((r) => r.repo),
-    ['danybgoode/miyagi-product-management', 'danybgoode/miyagisanchezcommerce', 'danybgoode/medusa-bonsai-backend']
-  );
+const FIXTURE_REPOS = [
+  { repo: 'acme/root', dir: '.' },
+  { repo: 'acme/web', dir: 'apps/web' },
+  { repo: 'acme/api', dir: 'apps/api' },
+];
+const originSpawn = (url) => () => ({ status: 0, stdout: `${url}\n`, stderr: '' });
+
+test('resolveRepos: config repos + checkouts; the origin remote is "." unless mapped; unmapped = no checkout', () => {
+  const { repos, note } = resolveRepos({
+    root: '/r',
+    spawn: originSpawn('git@github.com:acme/root.git'),
+    loadConfig: () => ({ repos: ['acme/root', 'acme/web', 'acme/lib'], checkouts: { 'acme/web': 'apps/web' } }),
+  });
+  assert.equal(note, null);
+  assert.deepEqual(repos, [
+    { repo: 'acme/root', dir: '.' },
+    { repo: 'acme/web', dir: 'apps/web' },
+    { repo: 'acme/lib', dir: null },
+  ]);
+});
+
+test('resolveRepos: no reporting config degrades to THIS repo and names the gap (D4 — never dies)', async () => {
+  const { ReportingConfigError } = await import('./lib/reporting-config.mjs');
+  const { repos, note } = resolveRepos({
+    root: '/r',
+    spawn: originSpawn('https://github.com/acme/root.git'),
+    loadConfig: () => { throw new ReportingConfigError('/r/reporting.config.json not found — …'); },
+  });
+  assert.deepEqual(repos, [{ repo: 'acme/root', dir: '.' }]);
+  assert.match(note, /reading only this repo/);
 });
 
 // ---- parseWorktreeListPorcelain (fixture: real `git worktree list --porcelain` output, this repo) ----
 
 const WORKTREE_FIXTURE = [
-  'worktree /Users/cosmo/dobby/medusa-bonsai',
+  'worktree /Users/dev/dobby/project',
   'HEAD a684cccedf5979e01f027ffcdab722884d91c78b',
   'branch refs/heads/feat/exec-prose-rail',
   '',
-  'worktree /Users/cosmo/dobby/medusa-bonsai/.worktrees/session-continuity',
+  'worktree /Users/dev/dobby/project/.worktrees/session-continuity',
   'HEAD 7e7eb185775f90b32100ac12b590fcb8d980a83c',
   'branch refs/heads/feat/session-continuity',
   '',
@@ -57,9 +84,9 @@ const WORKTREE_FIXTURE = [
 test('parseWorktreeListPorcelain: parses both worktree blocks and strips refs/heads/', () => {
   const wts = parseWorktreeListPorcelain(WORKTREE_FIXTURE);
   assert.equal(wts.length, 2);
-  assert.equal(wts[0].path, '/Users/cosmo/dobby/medusa-bonsai');
+  assert.equal(wts[0].path, '/Users/dev/dobby/project');
   assert.equal(wts[0].branch, 'feat/exec-prose-rail');
-  assert.equal(wts[1].path, '/Users/cosmo/dobby/medusa-bonsai/.worktrees/session-continuity');
+  assert.equal(wts[1].path, '/Users/dev/dobby/project/.worktrees/session-continuity');
   assert.equal(wts[1].branch, 'feat/session-continuity');
 });
 
@@ -159,7 +186,7 @@ test('rollupHasPending: an in-progress/queued check with no conclusion yet is pe
   assert.equal(rollupHasPending([{ status: 'COMPLETED', conclusion: 'SUCCESS' }]), false);
 });
 
-// ---- decideStrayBranch — THE motivating anomaly (apps/backend / feat/order-payment-capture-state) ----
+// ---- decideStrayBranch — THE motivating anomaly (apps/api / feat/order-payment-capture-state) ----
 
 test('decideStrayBranch: a non-main branch with NO matching open PR is the stray-branch anomaly', () => {
   const a = decideStrayBranch({ branch: 'feat/order-payment-capture-state', detached: false, openPrs: [] });
@@ -192,8 +219,8 @@ test('decideStrayBranch: openPrs unknown (gh unavailable) → null, NOT a false-
 
 test('decideDirtyTree: 0 dirty files → no anomaly; >0 → anomaly naming the count', () => {
   assert.equal(decideDirtyTree({ label: '.', dirtyFiles: 0 }), null);
-  const a = decideDirtyTree({ label: 'apps/backend', dirtyFiles: 3 });
-  assert.match(a.detail, /apps\/backend: 3 uncommitted/);
+  const a = decideDirtyTree({ label: 'apps/api', dirtyFiles: 3 });
+  assert.match(a.detail, /apps\/api: 3 uncommitted/);
 });
 
 test('decideWorktreeAnomalies: only dirty worktrees surface, clean ones do not', () => {
@@ -265,13 +292,13 @@ test('decideMigrationAnomalies: zero orphans emits NO summary line at all', () =
   assert.deepEqual(out, []);
 });
 
-// ---- buildAnomalies — the aggregation, incl. the apps/backend end-to-end scenario ----
+// ---- buildAnomalies — the aggregation, incl. the apps/api end-to-end scenario ----
 
-test('buildAnomalies: reproduces the apps/backend stray-branch case end-to-end', () => {
+test('buildAnomalies: reproduces the apps/api stray-branch case end-to-end', () => {
   const repoStates = [
     {
-      repo: 'danybgoode/medusa-bonsai-backend',
-      dir: 'apps/backend',
+      repo: 'acme/api',
+      dir: 'apps/api',
       git: { available: true, branch: 'feat/order-payment-capture-state', detached: false, dirtyFiles: 0, worktrees: [] },
       // `createdAt` is RELATIVE, not a literal date: gatherRepoGh always carries one through from the
       // REST payload, and a hardcoded date would silently age past STALE_PR_DAYS and turn this
@@ -282,7 +309,7 @@ test('buildAnomalies: reproduces the apps/backend stray-branch case end-to-end',
   const anomalies = buildAnomalies({ repoStates, migrationResults: [] });
   assert.equal(anomalies.length, 1);
   assert.equal(anomalies[0].type, 'stray-branch');
-  assert.equal(anomalies[0].repo, 'danybgoode/medusa-bonsai-backend');
+  assert.equal(anomalies[0].repo, 'acme/api');
 });
 
 test('buildAnomalies: gh unavailable for a repo suppresses stray-branch AND PR anomalies for it (no false positive)', () => {
@@ -345,8 +372,8 @@ test('renderHumanReport: anomalies section precedes the journal section, which p
   const report = buildReport({
     repoStates: [
       {
-        repo: 'danybgoode/medusa-bonsai-backend',
-        dir: 'apps/backend',
+        repo: 'acme/api',
+        dir: 'apps/api',
         git: { available: true, branch: 'feat/stray', detached: false, dirtyFiles: 0, worktrees: [] },
         gh: { available: true, open: [], recentMerged: [] },
       },
@@ -397,6 +424,7 @@ function baseDeps(overrides = {}) {
     rollupFn: () => [],
     readLogFromBranchFn: () => null,
     now: new Date('2026-07-26T00:00:00Z'),
+    resolveReposFn: () => ({ repos: FIXTURE_REPOS, note: null }),
     ...overrides,
   };
 }
@@ -413,7 +441,7 @@ test('main(): a missing repo path → degrades, git gap named, exit 0', async ()
   const code = await main(
     [],
     baseDeps({
-      existsSyncFn: (p) => !String(p).includes('apps/backend'),
+      existsSyncFn: (p) => !String(p).includes('apps/api'),
       log: (m) => (out += m),
     })
   );
@@ -444,14 +472,14 @@ test('main(): migration CLI unavailable (spawn error) → degrades, migration ga
   assert.match(out, /migration drift check unavailable/);
 });
 
-test('main(): apps/backend on a stray branch with no open PR → the anomaly appears in real output', async () => {
+test('main(): apps/api on a stray branch with no open PR → the anomaly appears in real output', async () => {
   let out = '';
   const code = await main(
     [],
     baseDeps({
       spawn: (cmd, args, opts) => {
         if (cmd === 'git' && args[0] === 'rev-parse') {
-          return { status: 0, stdout: opts.cwd.includes('backend') ? 'feat/order-payment-capture-state\n' : 'main\n' };
+          return { status: 0, stdout: opts.cwd.includes('apps/api') ? 'feat/order-payment-capture-state\n' : 'main\n' };
         }
         if (cmd === 'git' && args[0] === 'worktree') return { status: 0, stdout: '' };
         return { status: 0, stdout: '' };
@@ -528,7 +556,7 @@ test('buildGaps: a successful clean tree produces NO dirty gap', () => {
 // ── D-mem: the memory index budget ────────────────────────────────────────────────────────────
 //
 // MEMORY.md is loaded into every session, but only its first ~24.4 KB. Past that the tail is
-// truncated with NO error — and the tail holds "Open items owed to Daniel". It reached 29.7 KB
+// truncated with NO error — and the tail holds "Open items owed to the product owner". It reached 29.7 KB
 // on 2026-08-19 and had been silently truncating for an unknown number of sessions. These guard
 // the decision, never the filesystem.
 
@@ -603,11 +631,11 @@ test('readMemoryIndex: an unreadable path reports unavailable, not zero bytes', 
 
 test('readMemoryIndex: derives the project slug from the path, dashes for separators', () => {
   const seen = [];
-  readMemoryIndex('/Users/x/dobby/medusa-bonsai', {
+  readMemoryIndex('/Users/x/dobby/project', {
     home: '/Users/x',
     stat: (p) => { seen.push(p); return { size: 1234 }; },
   });
-  assert.equal(seen[0], '/Users/x/.claude/projects/-Users-x-dobby-medusa-bonsai/memory/MEMORY.md');
+  assert.equal(seen[0], '/Users/x/.claude/projects/-Users-x-dobby-project/memory/MEMORY.md');
 });
 
 // Fixes from the agy cross-family pass on PR #160. Each is a real seam, and each would
@@ -648,6 +676,7 @@ test('main: forwards its injected stat/home — never touches the real home dire
     mergeFn: () => { throw new Error('gh unavailable'); },
     rollupFn: () => { throw new Error('gh unavailable'); },
     readLogFromBranchFn: () => { throw new Error('no journal'); },
+    resolveReposFn: () => ({ repos: FIXTURE_REPOS, note: null }),
     home: '/injected-home',
     homeDir: '/injected-home',
     stat: (p) => { seen.push(p); return { size: 100 }; },
@@ -677,6 +706,7 @@ test('main: forwards its injected stat/home on the SUCCESS path too', async () =
     mergeFn: () => ({}),
     rollupFn: () => ({}),
     readLogFromBranchFn: () => '',
+    resolveReposFn: () => ({ repos: FIXTURE_REPOS, note: null }),
     homeDir: '/success-path-home',
     statFn: (p) => { seen.push(p); return { size: 100 }; },
     now: new Date('2026-08-20T00:00:00Z'),

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // doc-format.mjs — check Roadmap/ epic docs (README.md, sprint-N.md, RETROSPECTIVE.md) against the
 // canonical shape: the `groom` plugin's scaffolding templates (dobby-foundation/ways-of-work,
-// skills/groom/templates/) — proven canonical by the zero-drift 00-ideas/seeds/*.md control group
-// (one authoring path, 81 files, identical shape; epic READMEs drift because they get hand-edited
-// after scaffolding, away from the template). See Roadmap/09-platform-infra/doc-format-consistency/
-// for the full rationale + the decisions behind each rule below.
+// skills/groom/templates/) — proven canonical in the project this was ported from by a zero-drift
+// control group (81 seeds, one authoring path, identical shape; epic READMEs drift because they get
+// hand-edited after scaffolding, away from the template). dobby-foundation's CI renders a scaffolded
+// epic and runs this checker over it, so the producer validates its own templates.
 //
 // This is FORMAT checking (headings, frontmatter shape, section order) — complementary to
 // doc-hygiene.mjs's CONTENT checking (dedupe, dead paths, staleness) on exactly two files.
@@ -20,10 +20,10 @@
 //                                            content (Class/Risk/Area/Scope-seed/dates/sections).
 //                                            Everything else is reported as still needing hand-fix.
 //
-// Reuse, don't rebuild: epic discovery + status come from `roadmap-to-notion.mjs --extract` (the
-// same SSOT build-order.mjs and doc-hygiene.mjs read) — this script does not re-derive epic status
-// itself, and NEVER rewrites the `status:` frontmatter field (the Notion `Lifecycle ?? Status`
-// fallback in roadmap-to-notion.mjs depends on that field's name + values staying stable).
+// Reuse, don't rebuild: epic discovery + status come from `roadmap-extract.mjs` (the same SSOT
+// build-order.mjs and doc-hygiene.mjs read) — this script does not re-derive epic status itself, and
+// NEVER rewrites the `status:` frontmatter field (everything that reads the board depends on that
+// field's name + values staying stable).
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
@@ -32,188 +32,34 @@ import { dirname, join, resolve, relative } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(__dirname, '..');
-const EXTRACTOR = join(__dirname, 'roadmap-to-notion.mjs');
+const EXTRACTOR = join(__dirname, 'roadmap-extract.mjs');
+const ENFORCED_PATH = join(__dirname, 'doc-format.enforced.json');
 
 // Active (non-archived) epics are the only ones the sweep + hard gate ever apply to — status:
 // archived epics are frozen historical record (Decision D3, doc-format-consistency epic README).
 const ACTIVE_STATUSES = new Set(['Scaffolded', 'In progress', 'Shipped']);
 
-// Grows as each macro-section is swept. 09-platform-infra swept 2026-07-15 (every README/sprint-N/
-// RETROSPECTIVE under it that has zero findings) — same incremental-adoption shape as
-// lib/design-token-audit.ts's and lib/emoji-guard.ts's own enforcedSweptPaths in apps/miyagisanchez.
-// Deliberately EXCLUDED (still have real findings, not enforced yet):
-//   - neon-egress-and-db-isolation/README.md — status: archived, frozen historical record (not swept).
-//   - build-order-ci-self-heal, dobby-foundation, hyper-performant-website, process-token-diet,
-//     reporthub-as-notion, ui-refresh-launch RETROSPECTIVE.md — status: scaffolded, epic never shipped;
-//     the RETROSPECTIVE.md is an unfilled scaffold template (`_Closed: <date>_` placeholder, no real
-//     content) — fabricating a close date/body would violate "never fabricate real content."
-export const ENFORCED_SWEPT_PATHS = new Set([
-  'Roadmap/09-platform-infra/admin-consolidation/README.md',
-  'Roadmap/09-platform-infra/admin-consolidation/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/admin-consolidation/sprint-1.md',
-  'Roadmap/09-platform-infra/admin-consolidation/sprint-2.md',
-  'Roadmap/09-platform-infra/admin-consolidation/sprint-3.md',
-  'Roadmap/09-platform-infra/admin-consolidation/sprint-4.md',
-  'Roadmap/09-platform-infra/agy-drift-doctor/README.md',
-  'Roadmap/09-platform-infra/agy-drift-doctor/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/agy-drift-doctor/sprint-1.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/README.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/sprint-0.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/sprint-1.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/sprint-2.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/sprint-3.md',
-  'Roadmap/09-platform-infra/backend-production-readiness/sprint-4.md',
-  'Roadmap/09-platform-infra/build-order-ci-self-heal/README.md',
-  'Roadmap/09-platform-infra/build-order-ci-self-heal/sprint-1.md',
-  'Roadmap/09-platform-infra/cicd-telegram-notifications/README.md',
-  'Roadmap/09-platform-infra/cicd-telegram-notifications/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/cicd-telegram-notifications/sprint-1.md',
-  'Roadmap/09-platform-infra/cicd-telegram-notifications/sprint-2.md',
-  'Roadmap/09-platform-infra/cicd-telegram-notifications/sprint-3.md',
-  'Roadmap/09-platform-infra/cross-agent-code-review/README.md',
-  'Roadmap/09-platform-infra/cross-agent-code-review/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/cross-agent-code-review/sprint-1.md',
-  'Roadmap/09-platform-infra/cross-agent-planning-panel/README.md',
-  'Roadmap/09-platform-infra/cross-agent-planning-panel/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/cross-agent-planning-panel/sprint-1.md',
-  'Roadmap/09-platform-infra/cross-agent-review-always/README.md',
-  'Roadmap/09-platform-infra/cross-agent-review-always/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/cross-agent-review-always/sprint-1.md',
-  'Roadmap/09-platform-infra/cross-agent-review-always/sprint-2.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/README.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/sprint-1.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/sprint-2.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/sprint-3.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/sprint-4.md',
-  'Roadmap/09-platform-infra/deploy-pipeline-tuning/sprint-5.md',
-  'Roadmap/09-platform-infra/design-token-foundation/README.md',
-  'Roadmap/09-platform-infra/design-token-foundation/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/design-token-foundation/sprint-1.md',
-  'Roadmap/09-platform-infra/design-token-foundation/sprint-2.md',
-  'Roadmap/09-platform-infra/design-token-foundation/sprint-3.md',
-  'Roadmap/09-platform-infra/dev-tooling-reliability/README.md',
-  'Roadmap/09-platform-infra/dev-tooling-reliability/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/dev-tooling-reliability/sprint-1.md',
-  'Roadmap/09-platform-infra/dev-tooling-reliability/sprint-2.md',
-  'Roadmap/09-platform-infra/dev-tooling-reliability/sprint-3.md',
-  'Roadmap/09-platform-infra/devops-reliability-cleanup/README.md',
-  'Roadmap/09-platform-infra/devops-reliability-cleanup/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/devops-reliability-cleanup/sprint-1.md',
-  'Roadmap/09-platform-infra/devops-reliability-cleanup/sprint-2.md',
-  'Roadmap/09-platform-infra/dobby-foundation/README.md',
-  'Roadmap/09-platform-infra/dobby-foundation/sprint-1.md',
-  'Roadmap/09-platform-infra/doc-format-consistency/README.md',
-  'Roadmap/09-platform-infra/doc-format-consistency/sprint-1.md',
-  'Roadmap/09-platform-infra/doc-format-consistency/sprint-2.md',
-  'Roadmap/09-platform-infra/doc-format-consistency/sprint-3.md',
-  'Roadmap/09-platform-infra/doc-hygiene-learnings-sweep/README.md',
-  'Roadmap/09-platform-infra/doc-hygiene-learnings-sweep/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/doc-hygiene-learnings-sweep/sprint-1.md',
-  'Roadmap/09-platform-infra/emoji-to-iconoir-sweep/README.md',
-  'Roadmap/09-platform-infra/emoji-to-iconoir-sweep/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/emoji-to-iconoir-sweep/sprint-1.md',
-  'Roadmap/09-platform-infra/feature-flags-inhouse/README.md',
-  'Roadmap/09-platform-infra/feature-flags-inhouse/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/feature-flags-inhouse/sprint-1.md',
-  'Roadmap/09-platform-infra/feature-flags-inhouse/sprint-2.md',
-  'Roadmap/09-platform-infra/feature-flags-inhouse/sprint-3.md',
-  'Roadmap/09-platform-infra/feature-flags-killswitches/README.md',
-  'Roadmap/09-platform-infra/feature-flags-killswitches/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/feature-flags-killswitches/sprint-1.md',
-  'Roadmap/09-platform-infra/feature-flags-killswitches/sprint-2.md',
-  'Roadmap/09-platform-infra/frontend-vercel-to-cloudrun/README.md',
-  'Roadmap/09-platform-infra/frontend-vercel-to-cloudrun/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/frontend-vercel-to-cloudrun/sprint-1.md',
-  'Roadmap/09-platform-infra/frontend-vercel-to-cloudrun/sprint-2.md',
-  'Roadmap/09-platform-infra/frontend-vercel-to-cloudrun/sprint-3.md',
-  'Roadmap/09-platform-infra/frontend-vercel-to-cloudrun/sprint-4.md',
-  'Roadmap/09-platform-infra/groom-archetype-lens/README.md',
-  'Roadmap/09-platform-infra/groom-archetype-lens/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/groom-archetype-lens/sprint-1.md',
-  'Roadmap/09-platform-infra/hyper-performant-website/README.md',
-  'Roadmap/09-platform-infra/hyper-performant-website/sprint-1.md',
-  'Roadmap/09-platform-infra/hyper-performant-website/sprint-2.md',
-  'Roadmap/09-platform-infra/marketplace-static-shell/README.md',
-  'Roadmap/09-platform-infra/marketplace-static-shell/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/marketplace-static-shell/sprint-1.md',
-  'Roadmap/09-platform-infra/marketplace-static-shell/sprint-2.md',
-  'Roadmap/09-platform-infra/marketplace-static-shell/sprint-3.md',
-  'Roadmap/09-platform-infra/marketplace-static-shell/sprint-4.md',
-  'Roadmap/09-platform-infra/model-split-sonnet5-execution/README.md',
-  'Roadmap/09-platform-infra/model-split-sonnet5-execution/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/model-split-sonnet5-execution/sprint-1.md',
-  'Roadmap/09-platform-infra/navigation-settings-reorg/README.md',
-  'Roadmap/09-platform-infra/navigation-settings-reorg/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/navigation-settings-reorg/sprint-1.md',
-  'Roadmap/09-platform-infra/navigation-settings-reorg/sprint-2.md',
-  'Roadmap/09-platform-infra/navigation-settings-reorg/sprint-3.md',
-  'Roadmap/09-platform-infra/navigation-settings-reorg/sprint-4.md',
-  'Roadmap/09-platform-infra/neon-egress-and-db-isolation/sprint-1.md',
-  'Roadmap/09-platform-infra/neon-egress-and-db-isolation/sprint-2.md',
-  'Roadmap/09-platform-infra/neon-egress-and-db-isolation/sprint-3.md',
-  'Roadmap/09-platform-infra/neon-egress-and-db-isolation/sprint-4.md',
-  'Roadmap/09-platform-infra/neon-egress-and-db-isolation/sprint-5.md',
-  'Roadmap/09-platform-infra/notion-board-hygiene/README.md',
-  'Roadmap/09-platform-infra/notion-board-hygiene/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/notion-board-hygiene/sprint-1.md',
-  'Roadmap/09-platform-infra/notion-board-hygiene/sprint-2.md',
-  'Roadmap/09-platform-infra/ops-routines-reporting/README.md',
-  'Roadmap/09-platform-infra/ops-routines-reporting/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/ops-routines-reporting/sprint-1.md',
-  'Roadmap/09-platform-infra/ops-routines-reporting/sprint-2.md',
-  'Roadmap/09-platform-infra/ops-routines-reporting/sprint-3.md',
-  'Roadmap/09-platform-infra/pmo-operational-reports/README.md',
-  'Roadmap/09-platform-infra/pmo-operational-reports/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/pmo-operational-reports/sprint-1.md',
-  'Roadmap/09-platform-infra/pmo-operational-reports/sprint-2.md',
-  'Roadmap/09-platform-infra/pmo-operational-reports/sprint-3.md',
-  'Roadmap/09-platform-infra/postgres-neon-to-cloudsql/README.md',
-  'Roadmap/09-platform-infra/postgres-neon-to-cloudsql/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/postgres-neon-to-cloudsql/sprint-1.md',
-  'Roadmap/09-platform-infra/postgres-neon-to-cloudsql/sprint-2.md',
-  'Roadmap/09-platform-infra/postgres-neon-to-cloudsql/sprint-3.md',
-  'Roadmap/09-platform-infra/process-token-diet/README.md',
-  'Roadmap/09-platform-infra/process-token-diet/sprint-1.md',
-  'Roadmap/09-platform-infra/process-ux-rails-and-red-green/README.md',
-  'Roadmap/09-platform-infra/process-ux-rails-and-red-green/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/process-ux-rails-and-red-green/sprint-1.md',
-  'Roadmap/09-platform-infra/pwa-liquid-glass-nav-polish/README.md',
-  'Roadmap/09-platform-infra/pwa-liquid-glass-nav-polish/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/pwa-liquid-glass-nav-polish/sprint-1.md',
-  'Roadmap/09-platform-infra/pwa-liquid-glass-nav-polish/sprint-2.md',
-  'Roadmap/09-platform-infra/repo-readmes-branding/README.md',
-  'Roadmap/09-platform-infra/repo-readmes-branding/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/repo-readmes-branding/sprint-1.md',
-  'Roadmap/09-platform-infra/reporthub-as-notion/README.md',
-  'Roadmap/09-platform-infra/reporthub-as-notion/sprint-1.md',
-  'Roadmap/09-platform-infra/reporthub-as-notion/sprint-2.md',
-  'Roadmap/09-platform-infra/reporthub-as-notion/sprint-3.md',
-  'Roadmap/09-platform-infra/routines-enablement/README.md',
-  'Roadmap/09-platform-infra/routines-enablement/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/routines-enablement/sprint-1.md',
-  'Roadmap/09-platform-infra/seller-nav-consolidation/README.md',
-  'Roadmap/09-platform-infra/seller-nav-consolidation/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/seller-nav-consolidation/sprint-1.md',
-  'Roadmap/09-platform-infra/seller-nav-consolidation/sprint-2.md',
-  'Roadmap/09-platform-infra/seller-portal-rails-foundation/README.md',
-  'Roadmap/09-platform-infra/seller-portal-rails-foundation/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/seller-portal-rails-foundation/sprint-1.md',
-  'Roadmap/09-platform-infra/seller-portal-rails-foundation/sprint-2.md',
-  'Roadmap/09-platform-infra/site-wide-analytics-gtm/README.md',
-  'Roadmap/09-platform-infra/site-wide-analytics-gtm/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/site-wide-analytics-gtm/sprint-1.md',
-  'Roadmap/09-platform-infra/ui-refresh-launch/README.md',
-  'Roadmap/09-platform-infra/ui-refresh-launch/sprint-1.md',
-  'Roadmap/09-platform-infra/ui-refresh-launch/sprint-2.md',
-  'Roadmap/09-platform-infra/ui-refresh-launch/sprint-3.md',
-  'Roadmap/09-platform-infra/vercel-function-cost-reduction/README.md',
-  'Roadmap/09-platform-infra/vercel-function-cost-reduction/RETROSPECTIVE.md',
-  'Roadmap/09-platform-infra/vercel-function-cost-reduction/sprint-1.md',
-  'Roadmap/09-platform-infra/vercel-function-cost-reduction/sprint-2.md',
-  'Roadmap/09-platform-infra/vercel-function-cost-reduction/sprint-3.md',
-]);
+// WHICH docs `--check` fails on is the PROJECT's decision, so it lives in the committed
+// scripts/doc-format.enforced.json, not in this file: `{ "enforced": [ ... ] }`. An entry ending in `/` is
+// a prefix. A new project enforces `Roadmap/` from day one — nothing predates the templates. A project
+// adopting this late lists files as each area is swept, so `--check` stays green on today's state and
+// red on anything new (the origin project swept incrementally this way, one macro-section at a time).
+// A missing file enforces nothing, and says so. Everything outside the list is still REPORTED.
+export function loadEnforced(path = ENFORCED_PATH) {
+  if (!existsSync(path)) return { entries: [], source: null };
+  const raw = JSON.parse(readFileSync(path, 'utf8'));
+  if (!Array.isArray(raw.enforced) || raw.enforced.some((e) => typeof e !== 'string')) {
+    throw new Error(`${path}: "enforced" must be an array of paths (a trailing "/" makes a prefix)`);
+  }
+  return { entries: raw.enforced, source: path };
+}
+
+export function isEnforced(relPath, entries) {
+  return entries.some((e) => (e.endsWith('/') ? relPath.startsWith(e) : relPath === e));
+}
+
+const ENFORCED = loadEnforced();
+export const ENFORCED_SWEPT_PATHS = { has: (p) => isEnforced(p, ENFORCED.entries), get size() { return ENFORCED.entries.length; } };
 
 const VALID_EPIC_STATUSES = ['scaffolded', 'in-progress', 'shipped', 'archived'];
 const CANONICAL_DOD_HEADING = '## Definition of Done (epic)';
@@ -221,7 +67,7 @@ const CANONICAL_RETRO_SECTIONS = ['## What shipped', '## What went well', '## Wh
 const VALID_CLASSES = ['Feature', 'Spike', 'Bug', 'Chore'];
 
 export function extractEpics() {
-  const json = execFileSync('node', [EXTRACTOR, '--extract'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const json = execFileSync('node', [EXTRACTOR], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   return JSON.parse(json).filter((r) => r.grain === 'Epic');
 }
 
@@ -249,12 +95,12 @@ export function siblingDocs(readmeRelPath) {
 
 // ── Individual checkers — each returns a list of { rule, detail } offenses for one file's content ──
 
-export function checkEpicReadme(content, { slug } = {}) {
+export function checkEpicReadme(content, { slug, exists = existsRelative } = {}) {
   const offenses = [];
   // Many epics predate the seeds/ convention and genuinely have no seed file to link — that's an
   // accepted state (Sprint 2 sweep decision), not drift. Only require a **Scope seed:** field when a
   // real seed file exists for this epic's slug; a seed that exists but isn't linked IS still flagged.
-  const hasRealSeed = Boolean(slug) && existsRelative(join('Roadmap', '00-ideas', 'seeds', `${slug}.md`));
+  const hasRealSeed = Boolean(slug) && exists(join('Roadmap', '00-ideas', 'seeds', `${slug}.md`));
 
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (!fmMatch) {
@@ -301,7 +147,7 @@ export function checkEpicReadme(content, { slug } = {}) {
       const linkMatch = headerLine.match(/\(([^)]*00-ideas\/seeds\/[^)]+)\)/);
       if (linkMatch) {
         const linkTarget = linkMatch[1].replace(/^\.\.\/\.\.\//, '');
-        if (!existsRelative(join('Roadmap', linkTarget))) {
+        if (!exists(join('Roadmap', linkTarget))) {
           offenses.push({ rule: 'header-scope-seed-broken-link', detail: `**Scope seed:** links to ${linkTarget}, which doesn't exist` });
         }
       }
@@ -348,35 +194,41 @@ export function checkSprintDoc(content) {
   return offenses;
 }
 
+// Accepted section headings, by stem. Triage against a second project (golden-beans, plugin-audit-and-
+// extraction S2.4) found the canonical sections written with a subtitle ("## What we learned the hard
+// way", "## Gaps, stated rather than implied") or a plain synonym ("## Follow-ups", "## Durable
+// learnings"). Same section, same job — flagging them was a rule tuned to one corpus, so it is relaxed
+// to the stem. A retro with none of a section's stems is still flagged.
+export const RETRO_SECTION_STEMS = [
+  { canonical: '## What shipped', stems: ['## What shipped'] },
+  { canonical: '## What went well', stems: ['## What went well', '## What worked'] },
+  { canonical: '## What we learned', stems: ['## What we learned', '## What was learned', '## Durable learning'] },
+  { canonical: '## Gaps / follow-ups', stems: ['## Gaps', '## Follow-ups', '## Remaining follow-up'] },
+];
+
+// The close line: the date a reader (and weekly-recap's retro digest) looks for near the top. The same
+// triage found it written "**Shipped:** 2026-08-20", "_Shipped & LIVE …: 2026-07-23_", "_Written:
+// 2026-07-20…_" and "_Closed 2026-07-21._" — each carries the date the rule exists to find, so the rule is
+// "a close marker with a date in the first lines", not one exact spelling. The scaffold's own
+// "_Closed: <date>_" placeholder stays valid (an unbuilt epic has no date yet). A BOLD "**Closed" line is
+// still reported: it is the one legacy form `--fix` rewrites mechanically.
+const CLOSE_MARKER = /(?<![a-z])(closed|shipped|written|launched|close)(?![a-z])/i; // `_` is a word char, so no \b
+const ISO_DATE = /\d{4}-\d{2}-\d{2}/;
+
 export function checkRetrospective(content) {
   const offenses = [];
-  const closedLine = content.split('\n').find((l) => /closed/i.test(l) && l.trim() !== '');
+  const top = content.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 8);
+  const closedLine = top.find((l) => (CLOSE_MARKER.test(l) && ISO_DATE.test(l)) || l === '_Closed: <date>_');
   if (!closedLine) {
-    offenses.push({ rule: 'retro-closed-missing', detail: 'no "Closed" date line found near the top' });
-  } else {
-    const trimmed = closedLine.trim();
-    // Canonical is an italic line STARTING with "_Closed: YYYY-MM-DD" — trailing content after the
-    // date (sprint counts, PR refs, caveats) is genuinely the norm across real retros, not drift, as
-    // long as the italic markup actually closes somewhere (immediately after the date, or at the end
-    // of the line). Require: starts with the italic-open + "Closed:" + a real date, and a closing "_"
-    // appears somewhere after that.
-    // The canonical groom scaffold intentionally has no close date yet. Accept its literal sentinel:
-    // treating an unbuilt epic as closed would make roadmap-to-notion derive a false Shipped state.
-    const isScaffoldPlaceholder = trimmed === '_Closed: <date>_';
-    const startsWithDate = /^_Closed:\s*\d{4}-\d{2}-\d{2}/.test(trimmed);
-    const hasClosingItalic = trimmed.slice(1).includes('_');
-    if (!isScaffoldPlaceholder && (!startsWithDate || !hasClosingItalic)) {
-      if (/^\*\*Closed/.test(trimmed)) {
-        offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
-      } else {
-        offenses.push({ rule: 'retro-closed-format', detail: `"Closed" line doesn't match canonical "_Closed: YYYY-MM-DD_" — found: "${trimmed}"` });
-      }
-    }
+    offenses.push({ rule: 'retro-closed-missing', detail: 'no close line with a date (e.g. "_Closed: YYYY-MM-DD_") near the top' });
+  } else if (/^\*\*Closed/.test(closedLine)) {
+    offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
   }
 
-  for (const heading of CANONICAL_RETRO_SECTIONS) {
-    if (!content.includes(heading)) {
-      offenses.push({ rule: 'retro-section-missing', detail: `missing canonical section "${heading}"` });
+  const headings = content.split('\n').filter((l) => l.startsWith('## '));
+  for (const { canonical, stems } of RETRO_SECTION_STEMS) {
+    if (!headings.some((h) => stems.some((stem) => h.startsWith(stem)))) {
+      offenses.push({ rule: 'retro-section-missing', detail: `missing canonical section "${canonical}"` });
     }
   }
 
@@ -434,7 +286,7 @@ export function fixSprintStatusLine(content) {
     // Blockquote form: the Status line may be this line, or the block may span a preceding
     // `> Epic: ... **Risk: ...**` line immediately above — collapse the whole contiguous blockquote
     // run into one plain Status line, but ONLY when that block is short backlink/Risk noise. A long
-    // or prose-heavy block (PR links, findings, "Owed to Daniel" notes, etc.) is real documentation,
+    // or prose-heavy block (PR links, findings, "Owed to the product owner" notes, etc.) is real documentation,
     // not formatting cruft — silently discarding it is worse than leaving it for hand-fix.
     let start = idx;
     while (start > 0 && lines[start - 1].trim().startsWith('>')) start--;

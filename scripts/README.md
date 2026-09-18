@@ -62,6 +62,14 @@ browser-smoke workflow, the stale-preview age, the live-flag query, the deck vie
 stack's names for the prose guard). The chat id is **not** committed — this repo is public: routines use
 `TELEGRAM_CHAT_ID`, a local run uses the gitignored `reporting.config.local.json`.
 
+**Also byte-identical to the template since its Sprint 2** — `doc-format.mjs` (this repo's 165 swept paths
+now live in `doc-format.enforced.json`), `session-note.mjs`, `session-resume.mjs` (repos + local checkout
+dirs from `reporting.config.json` → `checkouts`), `lib/session-journal.mjs`, and `owed-ledger.mjs` (owners
+and spec dir from `reporting.config.json` → `owed`). Verified equivalent on adoption: the owed ledger
+byte-identical (87 owed), `doc-format --check` the same 165 enforced paths clean (advisory findings 224 →
+203: the template relaxed two retro rules after a second project's triage), `session-resume` the same repos,
+anomalies and gaps.
+
 **Deliberate divergences, with reasons:**
 - **`lib/report-registry.mjs` stays this repo's own.** The template's copy has no default bucket or
   resolver (a default is one project's storage). The reporthub here — `publish-live-views.mjs`,

@@ -35,7 +35,8 @@ Reason.
 ## Definition of Done (epic)
 - [ ] Done.
 `;
-  assert.deepEqual(checkEpicReadme(content), []);
+  // The seed file is injected as existing — the test must not depend on which seeds this repo carries.
+  assert.deepEqual(checkEpicReadme(content, { exists: () => true }), []);
 });
 
 test('checkEpicReadme: missing frontmatter block', () => {
@@ -76,7 +77,7 @@ test('checkEpicReadme: no Scope-seed field is NOT flagged when the epic genuinel
 
 test('checkEpicReadme: no Scope-seed field IS flagged when a real seed file exists for this slug and just is not linked', () => {
   const content = '---\nstatus: shipped\nslug: doc-format-consistency\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
-  const offenses = checkEpicReadme(content, { slug: 'doc-format-consistency' });
+  const offenses = checkEpicReadme(content, { slug: 'doc-format-consistency', exists: () => true });
   assert.ok(offenses.some((o) => o.rule === 'header-missing-scope-seed'));
 });
 
@@ -255,11 +256,11 @@ test('fixSprintStatusLine: a blockquote Status block with substantial multi-line
 
 **Epic:** [X](README.md) · **Goal:** something.
 
-> **Status: ✅ MERGED + DEPLOYED 2026-07-01 (Daniel-authorized merge on green, HIGH).**
-> S1.1 \`6463a46\` + applied to shared Supabase · S1.2 \`67ee051\` · S1.3 \`d8c2e22\`.
+> **Status: ✅ MERGED + DEPLOYED 2026-07-01 (product-owner-authorized merge on green, HIGH).**
+> S1.1 \`6463a46\` + applied to the shared database · S1.2 \`67ee051\` · S1.3 \`d8c2e22\`.
 > Merged: **FE [#150](https://github.com/x/y/pull/150)** (S1.1 + S1.2) → main \`b0582b0\`
 >
-> **Owed to Daniel (money/auth path):** the live flip smoke below.
+> **Owed to the product owner (money/auth path):** the live flip smoke below.
 `;
   assert.equal(fixSprintStatusLine(content), content);
 });
@@ -270,7 +271,7 @@ test('fixSprintStatusLine: a short blockquote block with a non-Epic/Risk continu
 });
 
 test('fixSprintStatusLine: a short blockquote block that IS purely Epic/Risk backlink noise still collapses cleanly', () => {
-  const content = '# Sprint 0\n\n> Epic: [X](README.md) · Risk: **HIGH** (entitlement) — **Daniel merges**\n> Status: ✅ closed 2026-07-02 — **not reproducible**\n\nBody.\n';
+  const content = '# Sprint 0\n\n> Epic: [X](README.md) · Risk: **HIGH** (entitlement) — **the product owner merges**\n> Status: ✅ closed 2026-07-02 — **not reproducible**\n\nBody.\n';
   const fixed = fixSprintStatusLine(content);
   assert.ok(fixed.includes('**Status:** ✅ closed 2026-07-02 — **not reproducible**'));
   assert.ok(!fixed.includes('Epic:'));
@@ -289,7 +290,7 @@ test('fixSprintStatusLine: "**Status:** value" (label bold closes right at the c
 });
 
 test('fixSprintStatusLine: a single-line combined Status whose bold span closes mid-sentence (not at value end) is left untouched, not left with a dangling ** (real bug found sweeping feature-flags-inhouse/sprint-3.md)', () => {
-  const content = '### S3.1 — Something\n> **Status: ✅ MERGED+DEPLOYED 2026-07-01.** FE [x](y) squash `d9eddd1`. **Owed to Daniel:** the live smoke.\n';
+  const content = '### S3.1 — Something\n> **Status: ✅ MERGED+DEPLOYED 2026-07-01.** FE [x](y) squash `d9eddd1`. **Owed to the product owner:** the live smoke.\n';
   const fixed = fixSprintStatusLine(content);
   assert.equal(fixed, content);
 });
@@ -308,7 +309,7 @@ test('fixRetroClosedLine: already-italic content is left untouched (nothing bold
 });
 
 test('fixRetroClosedLine: a "**Closed <date>.**" line that is really the FIRST line of a soft-wrapped multi-line paragraph is left untouched — rewriting just line 1 would strand the continuation lines as an orphaned fragment (real bug found sweeping delivery-money-polish/RETROSPECTIVE.md)', () => {
-  const content = '# X — Retrospective\n\n**Closed 2026-06-09.** Three sprints, all shipped to prod. HIGH-risk (refunds / payments / fulfillment /\norder state) — Daniel merged every PR.\n\n## What shipped\n';
+  const content = '# X — Retrospective\n\n**Closed 2026-06-09.** Three sprints, all shipped to prod. HIGH-risk (refunds / payments / fulfillment /\norder state) — the product owner merged every PR.\n\n## What shipped\n';
   assert.equal(fixRetroClosedLine(content), content);
 });
 
@@ -324,4 +325,43 @@ test('applyMechanicalFixes: a retrospective with a fixable Closed line and all s
   const { content: fixed, fixedRules } = applyMechanicalFixes(content, 'retrospective');
   assert.ok(fixedRules.includes('retro-closed-bold'));
   assert.deepEqual(checkRetrospective(fixed), []);
+});
+
+// ── Relaxed after triage against a second project (plugin-audit-and-extraction S2.4) ──────────────
+
+test('checkRetrospective: a close line with a date passes in the forms a second project really writes', () => {
+  const body = '\n\n## What shipped\nX.\n\n## What went well\nY.\n\n## What we learned\nZ.\n\n## Gaps / follow-ups\nNone.\n';
+  for (const close of [
+    '**Shipped:** 2026-08-20 · **PR:** [#102](x)',
+    '**Shipped 2026-08-13.** PR [#95](x), merged.',
+    '_Shipped & LIVE in production: 2026-07-23 (PRs #19/#22)._',
+    '_Written: 2026-07-20. Epic status: **shipped**._',
+    '_Closed 2026-07-21. **Launched**: the gate is flipped._',
+  ]) {
+    assert.deepEqual(checkRetrospective(`# X — Retrospective\n\n${close}${body}`), [], close);
+  }
+});
+
+test('checkRetrospective: a close word with NO date is still missing — the date is the point', () => {
+  const offenses = checkRetrospective('# X\n\n**Shipped.** Soon.\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n');
+  assert.ok(offenses.some((o) => o.rule === 'retro-closed-missing'));
+});
+
+test('checkRetrospective: canonical sections match by stem — a subtitle or a synonym is the same section', () => {
+  const content = '# X\n\n_Closed: 2026-07-16_\n\n## What shipped\n## What worked\n## What we learned the hard way\n## Gaps, stated rather than implied\n';
+  assert.deepEqual(checkRetrospective(content), []);
+  const missing = checkRetrospective('# X\n\n_Closed: 2026-07-16_\n\n## What shipped\n## Notes\n');
+  assert.deepEqual(missing.map((o) => o.detail).sort(), [
+    'missing canonical section "## Gaps / follow-ups"',
+    'missing canonical section "## What we learned"',
+    'missing canonical section "## What went well"',
+  ]);
+});
+
+test('enforced list: exact paths and trailing-slash prefixes; no file enforces nothing', async () => {
+  const { isEnforced, loadEnforced } = await import('./doc-format.mjs');
+  assert.ok(isEnforced('Roadmap/09-x/y/README.md', ['Roadmap/']));
+  assert.ok(isEnforced('Roadmap/09-x/y/README.md', ['Roadmap/09-x/y/README.md']));
+  assert.ok(!isEnforced('Roadmap/09-x/y/README.md', ['Roadmap/09-x/y/sprint-1.md', 'Roadmap/01-']));
+  assert.deepEqual(loadEnforced('/nonexistent/doc-format.enforced.json').entries, []);
 });
