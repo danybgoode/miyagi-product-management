@@ -74,6 +74,7 @@ test('shape errors name the offending key', () => {
     [{ ...MIN, prose: { extraBannedToolNames: 'acmecart' } }, /prose\.extraBannedToolNames/],
     [{ ...MIN, prose: { extraBannedToolNames: ['acme(cart'] } }, /invalid regex fragment "acme\(cart"/],
     [{ ...MIN, telegram: { chatId: { id: 1 } } }, /telegram\.chatId" must be a string or number/],
+    [{ ...MIN, telegram: { chatIds: { weekly: { id: 1 } } } }, /telegram\.chatIds\.weekly" must be a string or number/],
     [{ ...MIN, smoke: 'acme/web' }, /"smoke" must be an object/],
   ];
   for (const [raw, re] of cases) assert.throws(() => validateReportingConfig(raw), re);

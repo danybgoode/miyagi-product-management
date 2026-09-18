@@ -89,6 +89,7 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
   const chatIds = telegram.chatIds ?? {};
   for (const k of Object.keys(chatIds)) {
     if (!SURFACES.includes(k)) fail(path, `"telegram.chatIds.${k}" is not a surface — use one of ${SURFACES.join(', ')}`);
+    if (typeof chatIds[k] !== 'string' && typeof chatIds[k] !== 'number') fail(path, `"telegram.chatIds.${k}" must be a string or number`);
   }
 
   let smoke = null;
