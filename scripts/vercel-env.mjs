@@ -2,8 +2,8 @@
 // vercel-env.mjs — set + verify Vercel project env vars via the REST API.
 //
 // Why a script: the Vercel CLI (`vercel env add`) SILENTLY stores EMPTY values (both stdin-pipe and
-// --value), and `vercel env pull` redacts every value to "" so it can't verify either (LEARNINGS →
-// Tooling gotchas, 2026-06-06 Flagsmith epic). The reliable path is the REST API:
+// --value), and `vercel env pull` redacts every value to "" so it can't verify either (learned the hard
+// way in the origin project, 2026-06-06). The reliable path is the REST API:
 //   • update = DELETE the existing var, then POST a fresh one (PATCH doesn't reliably update the value).
 //   • verify = read the value back (the single-entry endpoint decrypts; the list endpoint never does,
 //     even with ?decrypt=true) and confirm by LENGTH — enough to prove a non-empty, right-sized value
@@ -46,7 +46,7 @@ function die(msg) {
 
 function envOrDie(name) {
   const v = process.env[name];
-  if (!v) die(`${name} is not set — export it (see apps/miyagisanchez/.env.local for the project values).`);
+  if (!v) die(`${name} is not set — export it (the project's .env.local holds its values).`);
   return v;
 }
 

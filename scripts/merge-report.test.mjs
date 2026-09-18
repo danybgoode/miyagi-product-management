@@ -56,7 +56,7 @@ test('summarizeAreas maps paths to human areas and dedupes', () => {
     'Roadmap/README.md',
     'Roadmap/LEARNINGS.md',
     'scripts/x.mjs',
-    'apps/miyagisanchez/app/page.tsx',
+    'apps/web/app/page.tsx',
     'src/api/store/route.ts',
     'supabase/migrations/1_x.sql',
   ]);
@@ -139,4 +139,14 @@ test('buildMessage names the writer and model, so the channel records who wrote 
     model: 'gpt-oss-120b-medium',
   });
   assert.match(msg, /agy\/gpt-oss-120b-medium/);
+});
+
+test('loadChatId: the merge surface, then the project chat, then TELEGRAM_CHAT_ID; no config falls back to env', async () => {
+  const { loadChatId } = await import('./merge-report.mjs');
+  const { ReportingConfigError } = await import('./lib/reporting-config.mjs');
+  const cfg = (telegram) => () => ({ telegram: { chatId: null, chatIds: {}, ...telegram } });
+  assert.equal(loadChatId({ load: cfg({ chatIds: { merge: 'm' }, chatId: 'p' }), env: { TELEGRAM_CHAT_ID: 'e' } }), 'm');
+  assert.equal(loadChatId({ load: cfg({ chatId: 'p' }), env: { TELEGRAM_CHAT_ID: 'e' } }), 'p');
+  assert.equal(loadChatId({ load: () => { throw new ReportingConfigError('absent'); }, env: { TELEGRAM_CHAT_ID: 'e' } }), 'e');
+  assert.equal(loadChatId({ load: () => { throw new ReportingConfigError('absent'); }, env: {} }), null);
 });

@@ -70,6 +70,13 @@ byte-identical (87 owed), `doc-format --check` the same 165 enforced paths clean
 203: the template relaxed two retro rules after a second project's triage), `session-resume` the same repos,
 anomalies and gaps.
 
+**And since its Sprint 3** — `prod-smoke.mjs` (engine; this project's checks + UCP helpers now live in
+`prod-smoke.checks.mjs`), `smoke-triage-scope.mjs` (its policy in `smoke-triage.config.json` — required, the
+gate fails closed without it), `merge-report.mjs` (chat via `reporting.config.json` → `telegram`, the `merge`
+surface), `perf-probe.mjs` (targets in `perf-probe.config.json`) and `vercel-env.mjs`. Verified equivalent
+on adoption: prod-smoke 8/8 pass against production either way; the merge gate gives the same BLOCK (2
+blockers) on a real app-repo PR; perf-probe's fixture URLs identical.
+
 **Deliberate divergences, with reasons:**
 - **`lib/report-registry.mjs` stays this repo's own.** The template's copy has no default bucket or
   resolver (a default is one project's storage). The reporthub here — `publish-live-views.mjs`,

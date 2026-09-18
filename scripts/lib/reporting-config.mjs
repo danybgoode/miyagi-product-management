@@ -36,7 +36,7 @@ export const CONFIG_FILENAME = 'reporting.config.json';
 export const EXAMPLE_FILENAME = 'reporting.config.example.json';
 export const LOCAL_FILENAME = 'reporting.config.local.json';
 
-export const SURFACES = ['standup', 'weekly', 'pmo'];
+export const SURFACES = ['standup', 'weekly', 'pmo', 'merge'];
 const REPO_RE = /^[\w.-]+\/[\w.-]+$/;
 
 export class ReportingConfigError extends Error {

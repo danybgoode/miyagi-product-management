@@ -3,11 +3,27 @@ import assert from 'node:assert/strict';
 
 import {
   normalizeRepoPath,
-  isTestSurface,
-  inspectPatch,
+  isTestSurface as isTestSurfaceWith,
   decideAutoMerge,
   formatReport,
+  validatePolicy,
+  loadPolicy,
+  main,
 } from './smoke-triage-scope.mjs';
+
+// The origin project's policy, as a fixture — every origin test below runs against exactly the rules
+// it was written for. In a real project this is smoke-triage.config.json.
+const POLICY = {
+  testSurface: [
+    { prefix: 'e2e/', why: 'the Playwright specs and their helpers — the smoke itself' },
+    { exact: 'playwright.config.ts', why: 'projects, timeouts, workers — how the smoke runs' },
+    { exact: '.github/workflows/browser-smoke.yml', why: 'the nightly detector workflow' },
+    { prefix: 'scripts/browser-smoke-', why: 'the smoke reporting helpers' },
+  ],
+  assertionCalls: ['expect', 'expectListingFound'],
+};
+const isTestSurface = (p) => isTestSurfaceWith(p, POLICY.testSurface);
+const decide = (files) => decideAutoMerge(files, POLICY);
 
 // A minimal `GET /pulls/{n}/files` entry. Every test builds from this so the shape stays honest to
 // the real API rather than to whatever each test found convenient.
@@ -50,7 +66,7 @@ test('isTestSurface admits the smoke scaffolding and nothing else', () => {
 });
 
 test('a test-only diff that changes real behaviour is allowed', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/_helpers/gallery-fixture.ts',
       '@@ -75,7 +75,7 @@\n-  if (envOverride) return { listingId: envOverride, source: \'env\' }\n+  const pinned = await resolvePinnedListing(request, photos, envOverride)\n'),
     file('e2e/gallery-fixture.spec.ts',
@@ -63,7 +79,7 @@ test('a test-only diff that changes real behaviour is allowed', () => {
 });
 
 test('one app-code file blocks the whole PR, however green it is', () => {
-  const decision = decideAutoMerge([clean('e2e/pdp-gallery.browser.spec.ts'), clean('app/(shell)/l/[id]/Gallery.tsx')]);
+  const decision = decide([clean('e2e/pdp-gallery.browser.spec.ts'), clean('app/(shell)/l/[id]/Gallery.tsx')]);
   assert.equal(decision.verdict, 'block');
   assert.equal(decision.exitCode, 1);
   assert.deepEqual(decision.appCode, ['app/(shell)/l/[id]/Gallery.tsx']);
@@ -71,7 +87,7 @@ test('one app-code file blocks the whole PR, however green it is', () => {
 });
 
 test('a traversal path is app code, not test surface', () => {
-  const decision = decideAutoMerge([clean('e2e/../app/page.tsx')]);
+  const decision = decide([clean('e2e/../app/page.tsx')]);
   assert.equal(decision.verdict, 'block');
   assert.ok(decision.blockers.some((b) => b.id === 'outside-test-surface'));
 });
@@ -79,7 +95,7 @@ test('a traversal path is app code, not test surface', () => {
 // ── The weakening gate: every cheap way to turn a red nightly green ────────────────────────────
 
 test('adding test.skip() blocks, even inside the test surface', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/pdp-gallery.browser.spec.ts', '@@ -1 +1,2 @@\n+  test.skip(true, \'flaky\')\n'),
   ]);
   assert.equal(decision.verdict, 'block');
@@ -92,14 +108,14 @@ test('test.fixme, test.only and serial mode each block', () => {
     ['+  test.only(\'just this one\', async () => {})', 'only-added'],
     ['+  test.describe.configure({ mode: \'serial\' })', 'serial-added'],
   ]) {
-    const decision = decideAutoMerge([file('e2e/x.spec.ts', `@@ -1 +1,2 @@\n${line}\n`)]);
+    const decision = decide([file('e2e/x.spec.ts', `@@ -1 +1,2 @@\n${line}\n`)]);
     assert.equal(decision.verdict, 'block', `${id} should block`);
     assert.ok(decision.blockers.some((b) => b.id === id), `${id} not detected in: ${line}`);
   }
 });
 
 test('deleting an assertion blocks — the spec would test less than it did', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/pdp-gallery.browser.spec.ts',
       '@@ -1,3 +1,2 @@\n   await page.goto(url)\n-  await expect(page.getByTestId(\'gallery-counter\')).toBeVisible()\n'),
   ]);
@@ -108,7 +124,7 @@ test('deleting an assertion blocks — the spec would test less than it did', ()
 });
 
 test('deleting a spec FILE blocks', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/pdp-gallery.browser.spec.ts', '@@ -1,2 +0,0 @@\n-test(\'x\', () => {})\n', { status: 'removed' }),
   ]);
   assert.equal(decision.verdict, 'block');
@@ -117,8 +133,8 @@ test('deleting a spec FILE blocks', () => {
 
 test('retiring the zero-photo spec blocks — correct, but the product owner\'s call, not the routine\'s', () => {
   // The real 2026-08-17 change. It was right, and it still must not auto-merge: the reason it was
-  // right is that Daniel said so after it was surfaced to him twice.
-  const decision = decideAutoMerge([
+  // right is that the product owner said so after it was surfaced to him twice.
+  const decision = decide([
     file('e2e/pdp-gallery.browser.spec.ts',
       '@@ -169,10 +169,1 @@\n-test.describe(\'pdp · zero-image placeholder parity (browser)\', () => {\n'
       + '-    await expect(page.getByTestId(\'gallery-back\')).toBeVisible()\n'
@@ -132,14 +148,14 @@ test('retiring the zero-photo spec blocks — correct, but the product owner\'s 
 test('test.slow() is NOT a weakening — raising a timeout budget is a legitimate shipped fix', () => {
   // PR #349 did exactly this. A guard that rejects correct output is worse than one that misses a
   // rare fault: block this and the routine is useless for the commonest real failure it sees.
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/agent-prompt.browser.spec.ts', '@@ -1 +1,2 @@\n+  test.slow()\n'),
   ]);
   assert.equal(decision.verdict, 'allow');
 });
 
 test('a word ending in the pattern name is not the pattern', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/x.spec.ts', '@@ -1 +1,2 @@\n+  const shouldNotTest = maybeTest.skipped\n+  // mytest.skip is a comment about test.skip\n'),
   ]);
   // `mytest.skip(` never appears with a paren, and `maybeTest.skipped` is not a call.
@@ -147,7 +163,7 @@ test('a word ending in the pattern name is not the pattern', () => {
 });
 
 test('diff headers are not scanned as content', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     file('e2e/x.spec.ts', '--- a/e2e/x.spec.ts\n+++ b/e2e/x.spec.ts\n@@ -1 +1 @@\n-const a = 1\n+const a = 2\n'),
   ]);
   assert.equal(decision.verdict, 'allow');
@@ -157,7 +173,7 @@ test('diff headers are not scanned as content', () => {
 
 test('zero files is UNDECIDABLE, never allow', () => {
   for (const input of [[], null, undefined, 'nonsense']) {
-    const decision = decideAutoMerge(input);
+    const decision = decide(input);
     assert.equal(decision.verdict, 'undecidable');
     assert.equal(decision.exitCode, 2);
   }
@@ -166,28 +182,28 @@ test('zero files is UNDECIDABLE, never allow', () => {
 test('an unreadable patch is UNDECIDABLE, never allow', () => {
   // GitHub omits `patch` for binaries and for diffs past its size cap. "I could not look" is not
   // "it is fine" — this is the exact collapse AGENTS.md rule 5 bans.
-  const decision = decideAutoMerge([file('e2e/fixtures/screenshot.png', undefined)]);
+  const decision = decide([file('e2e/fixtures/screenshot.png', undefined)]);
   assert.equal(decision.verdict, 'undecidable');
   assert.equal(decision.exitCode, 2);
   assert.ok(decision.blockers.some((b) => b.id === 'patch-unreadable'));
 });
 
 test('undecidable outranks block — a partly-unread diff must not report as merely blocked', () => {
-  const decision = decideAutoMerge([clean('app/page.tsx'), file('e2e/img.png', undefined)]);
+  const decision = decide([clean('app/page.tsx'), file('e2e/img.png', undefined)]);
   assert.equal(decision.verdict, 'undecidable');
   assert.ok(decision.blockers.some((b) => b.id === 'outside-test-surface'));
   assert.ok(decision.blockers.some((b) => b.id === 'patch-unreadable'));
 });
 
 test('a pure rename carries no patch and is not undecidable', () => {
-  const decision = decideAutoMerge([
+  const decision = decide([
     { filename: 'e2e/renamed.spec.ts', status: 'renamed', changes: 0 },
   ]);
   assert.equal(decision.verdict, 'allow');
 });
 
 test('formatReport names the verdict, the files and every blocker', () => {
-  const report = formatReport(decideAutoMerge([
+  const report = formatReport(decide([
     clean('app/page.tsx'),
     file('e2e/x.spec.ts', '@@ -1 +1,2 @@\n+  test.skip(true)\n'),
   ]));
@@ -195,4 +211,62 @@ test('formatReport names the verdict, the files and every blocker', () => {
   assert.match(report, /app code \(1\): app\/page\.tsx/);
   assert.match(report, /outside-test-surface/);
   assert.match(report, /skip-added/);
+});
+
+// ── D4: the policy is required, and its absence FAILS CLOSED ──────────────────────────────────────
+// The sprint's "step that matters": an autonomy-boundary check that silently defaults is a routine
+// merging code nobody authorized.
+
+test('D4: NO policy → UNDECIDABLE for a diff that would otherwise be allowed — never allow', () => {
+  const onlyTests = [clean('e2e/pdp-gallery.browser.spec.ts')];
+  assert.equal(decideAutoMerge(onlyTests, POLICY).verdict, 'allow', 'precondition: allowed WITH the policy');
+  for (const missing of [undefined, null, {}, { testSurface: POLICY.testSurface }, { assertionCalls: ['expect'] }]) {
+    const d = decideAutoMerge(onlyTests, missing);
+    assert.equal(d.verdict, 'undecidable');
+    assert.equal(d.exitCode, 2);
+    assert.equal(d.blockers[0].id, 'no-policy');
+  }
+});
+
+test('D4: a malformed policy is refused, rule by rule', () => {
+  for (const [raw, re] of [
+    [{ testSurface: [], assertionCalls: ['expect'] }, /testSurface/],
+    [{ testSurface: [{ prefix: 'e2e/' }], assertionCalls: ['expect'] }, /needs a "why"/],
+    [{ testSurface: [{ prefix: 'e2e/', exact: 'x', why: 'y' }], assertionCalls: ['expect'] }, /exactly one/],
+    [{ testSurface: POLICY.testSurface, assertionCalls: [] }, /assertionCalls/],
+    [{ testSurface: POLICY.testSurface, assertionCalls: ['expect(x'] }, /assertionCalls/],
+  ]) {
+    const v = validatePolicy(raw);
+    assert.equal(v.ok, false);
+    assert.match(v.reason, re);
+  }
+});
+
+test("D4: a project's own assertion helper, deleted, blocks — the name comes from the policy", () => {
+  const patch = '@@ -1,2 +1 @@\n-  await expectListingFound(page, id)\n const x = 1\n';
+  assert.equal(decide([file('e2e/x.spec.ts', patch)]).verdict, 'block');
+  // With only `expect` configured, that helper's deletion is invisible — which is exactly why the
+  // policy is the project's to write and has no template default.
+  const narrow = { ...POLICY, assertionCalls: ['expect'] };
+  assert.equal(decideAutoMerge([file('e2e/x.spec.ts', patch)], narrow).verdict, 'allow');
+});
+
+test('D4: loadPolicy names the missing file; main() refuses before any network call', async () => {
+  const r = loadPolicy({ path: '/nope/smoke-triage.config.json', exists: () => false });
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /smoke-triage\.config\.json not found/);
+  let out = '';
+  const write = process.stdout.write;
+  process.stdout.write = (c) => ((out += c), true);
+  let code;
+  try {
+    code = await main(['--repo', 'acme/web', '--pr', '1'], {
+      loadPolicy: () => r,
+      execFileSync: () => { throw new Error('must not reach GitHub without a policy'); },
+    });
+  } finally {
+    process.stdout.write = write;
+  }
+  assert.equal(code, 2);
+  assert.match(out, /UNDECIDABLE — .*not found/);
 });

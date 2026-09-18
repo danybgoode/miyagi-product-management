@@ -11,23 +11,26 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CHECKS,
-  DEFAULT_BASE,
-  evaluateCheck,
-  firstShopSlug,
+  evaluateCheck as evaluateWith,
   framesAllowedFromAnywhere,
   formatReport,
-  normalizeLocation,
-  parseCatalogItems,
+  normalizeLocation as normalizeWith,
   parseMediaType,
   describeShapeProblem,
   isJsonMediaType,
   readJsonPath,
   resolvePath,
-  runChecks,
+  runChecks as runWith,
   summarize,
   wantsBody,
 } from "./prod-smoke.mjs";
+import { BASE as DEFAULT_BASE, CHECKS, firstShopSlug, parseCatalogItems } from "./prod-smoke.test-fixture.mjs";
+
+// The engine takes its base and checks explicitly; these bind it to the fixture so every origin test
+// below reads exactly as it was written.
+const evaluateCheck = (c, o, base = DEFAULT_BASE) => evaluateWith(c, o, base);
+const normalizeLocation = (l, base = DEFAULT_BASE) => normalizeWith(l, base);
+const runChecks = (base, deps = {}) => runWith(base, { checks: CHECKS, ...deps });
 
 const check = (id) => CHECKS.find((c) => c.id === id);
 
@@ -36,7 +39,7 @@ const check = (id) => CHECKS.find((c) => c.id === id);
 test('evaluateCheck: a matching status passes', () => {
   const r = evaluateCheck(check('embed-js'), {
     status: 200,
-    body: 'customElements.define("miyagi-buy-button", X)',
+    body: 'customElements.define("acme-buy-button", X)',
     headers: { 'content-type': 'text/javascript; charset=utf-8' },
   });
   assert.equal(r.status, 'pass');
@@ -77,7 +80,7 @@ test('evaluateCheck: /l serving 200 directly fails — the redirect is the contr
 // ---- evaluateCheck: absolute vs relative redirect targets (codex review, PR #118) ----
 
 test('normalizeLocation: a same-origin absolute target reduces to its path', () => {
-  assert.equal(normalizeLocation('https://miyagisanchez.com/mx/l'), '/mx/l');
+  assert.equal(normalizeLocation('https://shop.example.test/mx/l'), '/mx/l');
 });
 
 test('normalizeLocation: a relative target is already normal, and passes through untouched', () => {
@@ -97,14 +100,14 @@ test('normalizeLocation: same-origin is judged against the BASE BEING CHECKED, n
   // agy review, PR #118: hardcoding DEFAULT_BASE made --base=<staging> treat every absolute
   // redirect as cross-origin and fail a correct run — a false red on the one flag whose entire
   // purpose is pointing this script somewhere other than production.
-  const staging = 'https://staging.miyagisanchez.com';
+  const staging = 'https://staging.shop.example.test';
   assert.equal(normalizeLocation(`${staging}/mx/l`, staging), '/mx/l');
   // ...and prod is now the foreign origin when staging is the target.
-  assert.equal(normalizeLocation('https://miyagisanchez.com/mx/l', staging), 'https://miyagisanchez.com/mx/l');
+  assert.equal(normalizeLocation('https://shop.example.test/mx/l', staging), 'https://shop.example.test/mx/l');
 });
 
 test('evaluateCheck: an absolute redirect passes against a non-prod base', () => {
-  const staging = 'https://staging.miyagisanchez.com';
+  const staging = 'https://staging.shop.example.test';
   const r = evaluateCheck(
     check('browse-redirect'),
     { status: 308, location: `${staging}/mx/l`, body: '', headers: {} },
@@ -117,7 +120,7 @@ test('evaluateCheck: base defaults to prod when the caller omits it', () => {
   // Every other spec in this file relies on that default, so it is worth asserting directly.
   const r = evaluateCheck(check('browse-redirect'), {
     status: 308,
-    location: 'https://miyagisanchez.com/mx/l',
+    location: 'https://shop.example.test/mx/l',
     body: '',
     headers: {},
   });
@@ -129,7 +132,7 @@ test('evaluateCheck: /l redirecting to the ABSOLUTE same-origin target still pas
   // Reddening here would reject correct output — the guard failure AGENTS.md calls the worse one.
   const r = evaluateCheck(check('browse-redirect'), {
     status: 308,
-    location: 'https://miyagisanchez.com/mx/l',
+    location: 'https://shop.example.test/mx/l',
     body: '',
     headers: {},
   });
@@ -162,7 +165,7 @@ test('evaluateCheck: embed.js served as HTML fails despite a 200', () => {
 test('evaluateCheck: embed.js served as javascript passes, and the match is case-insensitive', () => {
   const r = evaluateCheck(check('embed-js'), {
     status: 200,
-    body: 'customElements.define("miyagi-buy-button", X)',
+    body: 'customElements.define("acme-buy-button", X)',
     headers: { 'content-type': 'TEXT/JavaScript; charset=utf-8' },
   });
   assert.equal(r.status, 'pass');
@@ -175,7 +178,7 @@ test('evaluateCheck: an expectation spelled Content-Type still matches the store
   const mixedCase = { ...check('embed-js'), expect: { status: 200, headerIncludes: { 'Content-Type': 'javascript' } } };
   const r = evaluateCheck(mixedCase, {
     status: 200,
-    body: 'customElements.define("miyagi-buy-button", X)',
+    body: 'customElements.define("acme-buy-button", X)',
     headers: { 'content-type': 'text/javascript' },
   });
   assert.equal(r.status, 'pass');
@@ -347,24 +350,24 @@ test('evaluateCheck: a browse page with a real product grid passes', () => {
 // ---- structural JSON + media-type sets (codex, final round) ----
 
 test('evaluateCheck: an error object QUOTING the manifest name does not pass', () => {
-  // `{"error":"miyagisanchez-ucp unavailable"}` contains the identifier while being the opposite of
+  // `{"error":"acme-ucp unavailable"}` contains the identifier while being the opposite of
   // a healthy manifest. Substring matching could not tell them apart.
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
-    body: JSON.stringify({ error: 'miyagisanchez-ucp unavailable' }),
+    body: JSON.stringify({ error: 'acme-ucp unavailable' }),
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'fail');
-  assert.match(r.detail, /JSON field "name" is undefined, expected "miyagisanchez-ucp"/);
+  assert.match(r.detail, /JSON field "name" is undefined, expected "acme-ucp"/);
 });
 
 test('evaluateCheck: the real manifest, with its discovery contract intact, passes', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
     body: JSON.stringify({
-      name: 'miyagisanchez-ucp',
+      name: 'acme-ucp',
       capabilities: ['catalog_search', 'listing_detail'],
-      endpoints: { catalog: { url: 'https://miyagisanchez.com/api/ucp/catalog' } },
+      endpoints: { catalog: { url: 'https://shop.example.test/api/ucp/catalog' } },
     }),
     headers: { 'content-type': 'application/json' },
   });
@@ -372,10 +375,10 @@ test('evaluateCheck: the real manifest, with its discovery contract intact, pass
 });
 
 test('evaluateCheck: a name-only manifest FAILS — the discovery contract is the point', () => {
-  // codex: `{"name":"miyagisanchez-ucp"}` passed while carrying nothing an agent can actually use.
+  // codex: `{"name":"acme-ucp"}` passed while carrying nothing an agent can actually use.
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
-    body: JSON.stringify({ name: 'miyagisanchez-ucp' }),
+    body: JSON.stringify({ name: 'acme-ucp' }),
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'fail');
@@ -386,7 +389,7 @@ test('evaluateCheck: a name-only manifest FAILS — the discovery contract is th
 test('evaluateCheck: a manifest missing the core capability FAILS', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
-    body: JSON.stringify({ name: 'miyagisanchez-ucp', capabilities: ['escrow'], endpoints: { x: 1 } }),
+    body: JSON.stringify({ name: 'acme-ucp', capabilities: ['escrow'], endpoints: { x: 1 } }),
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'fail');
@@ -396,7 +399,7 @@ test('evaluateCheck: a manifest missing the core capability FAILS', () => {
 test('evaluateCheck: a STRING endpoints field fails the object requirement', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
-    body: JSON.stringify({ name: 'miyagisanchez-ucp', capabilities: ['catalog_search'], endpoints: 'garbage' }),
+    body: JSON.stringify({ name: 'acme-ucp', capabilities: ['catalog_search'], endpoints: 'garbage' }),
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'fail');
@@ -406,7 +409,7 @@ test('evaluateCheck: a STRING endpoints field fails the object requirement', () 
 test('evaluateCheck: an EMPTY endpoints object counts as missing, not present', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
-    body: JSON.stringify({ name: 'miyagisanchez-ucp', capabilities: ['catalog_search'], endpoints: {} }),
+    body: JSON.stringify({ name: 'acme-ucp', capabilities: ['catalog_search'], endpoints: {} }),
     headers: { 'content-type': 'application/json' },
   });
   assert.equal(r.status, 'fail');
@@ -420,7 +423,7 @@ test('evaluateCheck: an endpoints map with no CATALOG endpoint fails', () => {
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
     body: JSON.stringify({
-      name: 'miyagisanchez-ucp',
+      name: 'acme-ucp',
       capabilities: ['catalog_search'],
       endpoints: { garbage: true },
     }),
@@ -434,7 +437,7 @@ test('evaluateCheck: a catalog endpoint present but with no usable url fails', (
   const r = evaluateCheck(check('ucp-manifest'), {
     status: 200,
     body: JSON.stringify({
-      name: 'miyagisanchez-ucp',
+      name: 'acme-ucp',
       capabilities: ['catalog_search'],
       endpoints: { catalog: { method: 'GET' } },
     }),
@@ -464,7 +467,7 @@ test('evaluateCheck: text/notjavascript is rejected by the allow-list', () => {
   // Substring matching accepted it. The parsed type does not.
   const r = evaluateCheck(check('embed-js'), {
     status: 200,
-    body: 'customElements.define("miyagi-buy-button", X)',
+    body: 'customElements.define("acme-buy-button", X)',
     headers: { 'content-type': 'text/notjavascript' },
   });
   assert.equal(r.status, 'fail');
@@ -475,7 +478,7 @@ test('evaluateCheck: embed.js served as text/ecmascript is accepted', () => {
   // A guard that rejects correct output is the worse failure — ecmascript media types are valid and
   // functional, and a server-side MIME preference must not redden a working loader.
   for (const ct of ['text/javascript', 'application/javascript', 'text/ecmascript', 'application/ecmascript']) {
-    const body = 'customElements.define("miyagi-buy-button", X)';
+    const body = 'customElements.define("acme-buy-button", X)';
     const r = evaluateCheck(check('embed-js'), { status: 200, body, headers: { 'content-type': ct } });
     assert.equal(r.status, 'pass', `${ct} should be accepted`);
   }
@@ -554,7 +557,7 @@ test('evaluateCheck: some OTHER valid script served at /embed.js does not pass',
     headers: { 'content-type': 'text/javascript' },
   });
   assert.equal(r.status, 'fail');
-  assert.match(r.detail, /miyagi-buy-button/);
+  assert.match(r.detail, /acme-buy-button/);
 });
 
 test('evaluateCheck: a STALLED embed.js body is unavailable, not a pass', () => {
@@ -677,9 +680,9 @@ test('evaluateCheck: real catalog JSON passes', () => {
 // ---- protocol-relative redirects (codex round 4) ----
 
 test('normalizeLocation: a PROTOCOL-RELATIVE target resolves to the same path', () => {
-  // `//miyagisanchez.com/mx/l` is a legal URI reference that every browser resolves to the required
+  // `//shop.example.test/mx/l` is a legal URI reference that every browser resolves to the required
   // target. Comparing it as a literal string failed a correct redirect.
-  assert.equal(normalizeLocation('//miyagisanchez.com/mx/l'), '/mx/l');
+  assert.equal(normalizeLocation('//shop.example.test/mx/l'), '/mx/l');
 });
 
 test('normalizeLocation: a protocol-relative CROSS-origin target is still foreign', () => {
@@ -697,7 +700,7 @@ test('normalizeLocation: a missing Location stays missing, never a resolved "/nu
 test('evaluateCheck: /l redirecting protocol-relative to /mx/l passes', () => {
   const r = evaluateCheck(check('browse-redirect'), {
     status: 308,
-    location: '//miyagisanchez.com/mx/l',
+    location: '//shop.example.test/mx/l',
     body: '',
     headers: {},
   });
@@ -914,7 +917,7 @@ test('runChecks: a dependency failure degrades only the dependent check, not the
   // Degrade per check: one dead endpoint must never hide the state of the others.
   const fetchImpl = stubFetch({
     '/api/ucp/catalog': { status: 500, headers: {}, body: '' },
-    '/embed.js': { status: 200, headers: { 'content-type': 'text/javascript' }, body: 'customElements.define("miyagi-buy-button", X)' },
+    '/embed.js': { status: 200, headers: { 'content-type': 'text/javascript' }, body: 'customElements.define("acme-buy-button", X)' },
   });
   return runChecks(DEFAULT_BASE, { fetchImpl }).then((results) => {
     assert.equal(results.find((r) => r.id === 'ucp-catalog').status, 'fail');
@@ -976,4 +979,25 @@ test('CHECKS: the marketplace and selector checks cannot both be satisfied by on
     (marketplace.expect.bodyExcludes ?? []).includes(m),
   );
   assert.ok(overlap.length > 0, 'the selector must require a marker the marketplace forbids');
+});
+
+// ── The checks are the project's (S3.1) ───────────────────────────────────────────────────────────
+
+test('runChecks refuses to run with no checks — nothing checked is never a pass', async () => {
+  await assert.rejects(runWith('https://shop.example.test', {}), /no checks given/);
+  await assert.rejects(runWith('https://shop.example.test', { checks: [] }), /no checks given/);
+});
+
+test("the project's checks module (else the shipped example) is a valid, runnable table", async () => {
+  // In a configured project this pins the REAL checks the daily routine runs; in the template, the example.
+  const { existsSync } = await import('node:fs');
+  const own = new URL('./prod-smoke.checks.mjs', import.meta.url);
+  const ex = await import(existsSync(own) ? own.href : './prod-smoke.checks.example.mjs');
+  assert.ok(Array.isArray(ex.CHECKS) && ex.CHECKS.length > 0);
+  for (const c of ex.CHECKS) {
+    assert.ok(c.id && c.name && (c.path || c.dependsOn) && c.expect && typeof c.expect.status === 'number', c.id);
+    assert.ok(c.why, `${c.id} must say why it exists`);
+  }
+  // Identity, not just status: at least one check must assert what answered (the origin's lesson).
+  assert.ok(ex.CHECKS.some((c) => c.expect.bodyIncludes || c.expect.bodyJsonMatches), 'no identity marker anywhere');
 });

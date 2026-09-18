@@ -1,46 +1,57 @@
 #!/usr/bin/env node
-// perf-probe.mjs — raw transfer baseline for the marketplace runtime.
+// perf-probe.mjs — raw transfer baseline for the project's production runtime.
 //
-// D1/D6: this belongs in the root repo, alongside the Cloud Run/Cloudflare
-// posture it observes. Fetch and Playwright transparently decompress bodies;
+// Ported from the origin project by plugin-audit-and-extraction S3.2. Fetch and
+// Playwright transparently decompress bodies;
 // this deliberately uses node:https so byte counts are the bytes received on
 // the wire (with an explicit Accept-Encoding), which is what a transfer budget
 // must police. It is a reporting read only: --dry-run makes no network call.
+//
+// WHAT to probe is the project's: perf-probe.config.json at the repo root —
+//   { "baseUrl": "https://example.com",
+//     "targets": [ { "id": "home", "label": "home (signed-out)", "path": "/" },
+//                   { "id": "image", "label": "cold real image variant", "path": "/api/img?…", "image": true } ] }
+// Pick REAL, live pages — a fixture that 404s measures an error page. No config → a clear error, never
+// a probe of someone else's site.
 
 import http from 'node:http'
 import https from 'node:https'
-import { pathToFileURL } from 'node:url'
+import { pathToFileURL, fileURLToPath } from 'node:url'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+
+export const CONFIG_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'perf-probe.config.json')
 import { brotliDecompressSync, gunzipSync, inflateSync } from 'node:zlib'
 
-export const DEFAULT_BASE_URL = 'https://miyagisanchez.com'
-// 160px is a real route-ladder variant for the recorded listing, deliberately
-// separate from the homepage's already-warm 640px candidate. It makes the
-// baseline exercise an origin encode; callers can replace only this fixture
-// with --image-url when they need a different real listing/variant. Keep this
-// default on the already-shipped legacy key: production before PR #416 ignores
-// `f`, so publishing a future fixed-format key here would let a pre-deploy probe
-// cache AVIF forever under a URL the new loader later promises is WebP.
-export const DEFAULT_IMAGE_URL = `${DEFAULT_BASE_URL}/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75`
-
-// D22: these defaults must remain a live, claimed shop + its public PDP. The
-// historical S1 baseline keeps the original symptom URLs, but the executable
-// probe cannot report an edge-cache result against an unclaimed/no-mirror pair.
-const PRODUCT_ID = 'prod_01KZJJPXY8XFV90WDFN43RTBBM'
-const SHOP_SLUG = 'ylai-studio'
 const MODERN_IMAGE_ACCEPT = 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
 
-export function fixtureUrls({ baseUrl = DEFAULT_BASE_URL, imageUrl = DEFAULT_IMAGE_URL } = {}) {
+/** Read + validate perf-probe.config.json. Throws naming the file — there is no default target. */
+export function loadProbeConfig({ path = CONFIG_PATH, exists = existsSync, read = readFileSync } = {}) {
+  if (!exists(path)) throw new Error(`${path} not found — copy perf-probe.config.example.json and list your real pages`)
+  const raw = JSON.parse(read(path, 'utf8'))
+  if (!/^https?:\/\//.test(raw.baseUrl || '')) throw new Error(`${path}: "baseUrl" must be an http(s) URL`)
+  if (!Array.isArray(raw.targets) || raw.targets.length === 0) throw new Error(`${path}: "targets" must list at least one page`)
+  for (const [i, t] of raw.targets.entries()) {
+    if (!t?.id || !t?.label || typeof t.path !== 'string' || !t.path.startsWith('/')) {
+      throw new Error(`${path}: "targets[${i}]" needs id, label and a path starting with "/"`)
+    }
+  }
+  return { baseUrl: raw.baseUrl, targets: raw.targets }
+}
+
+// `imageUrl`, when given, replaces ONLY the image target's URL (an explicit, named substitution).
+export function fixtureUrls({ baseUrl, imageUrl = null, targets }) {
   const base = baseUrl.replace(/\/$/, '')
-  return [
-    { id: 'home', label: 'marketplace home (signed-out)', url: `${base}/mx` },
-    { id: 'pdp', label: 'marketplace PDP', url: `${base}/mx/l/${PRODUCT_ID}` },
-    { id: 'shop', label: 'marketplace shop', url: `${base}/mx/s/${SHOP_SLUG}` },
-    { id: 'image', label: 'cold real image variant', url: imageUrl, image: true },
-  ]
+  return targets.map((t) => ({
+    id: t.id,
+    label: t.label,
+    url: t.image && imageUrl ? imageUrl : `${base}${t.path}`,
+    ...(t.image ? { image: true } : {}),
+  }))
 }
 
 export function parseArgs(argv) {
-  const out = { baseUrl: DEFAULT_BASE_URL, imageUrl: DEFAULT_IMAGE_URL, json: false, dryRun: false, revision: null, help: false }
+  const out = { baseUrl: null, imageUrl: null, json: false, dryRun: false, revision: null, help: false }
   const assignValue = (arg, value) => {
     if (!value?.trim()) throw new Error(`${arg} requires a non-blank value`)
     const key = { '--base-url': 'baseUrl', '--image-url': 'imageUrl', '--revision': 'revision' }[arg]
@@ -63,13 +74,13 @@ export function parseArgs(argv) {
   return out
 }
 
-export const HELP = `perf-probe.mjs — raw compressed marketplace-transfer baseline
+export const HELP = `perf-probe.mjs — raw compressed transfer baseline
 
 Usage:
   node scripts/perf-probe.mjs [--json] [--base-url <url>] [--image-url <url>] [--revision <id>] [--dry-run]
 
-Fixtures: /mx, the locked PDP, the PDP-linked shop, and one real /api/img variant.
---image-url replaces only that explicitly named fixture; it is never silently substituted.
+Fixtures: the targets in perf-probe.config.json (--base-url overrides its baseUrl).
+--image-url replaces only the target marked image; it is never silently substituted.
 --dry-run prints the configured fixtures and makes no network calls or writes.`
 
 function metric(state, value, detail) {
@@ -93,7 +104,7 @@ export function rawRequest(url, { headers = {}, timeoutMs = 30_000 } = {}, deps 
         // https.request does not auto-decompress. Explicitly negotiate normal
         // CDN encodings so the collected chunks are the real transfer payload.
         'accept-encoding': 'gzip, br, deflate',
-        'user-agent': 'miyagi-perf-probe/1.0',
+        'user-agent': 'perf-probe/1.0',
         ...headers,
       },
     }, (res) => {
@@ -219,7 +230,14 @@ export async function measureFixture(fixture, deps = { request: rawRequest }) {
 }
 
 export async function runProbe(options, deps = { request: rawRequest, now: () => new Date() }) {
-  const fixtures = fixtureUrls(options)
+  // CLI flags override the config only where GIVEN — parseArgs defaults unset flags to null, and a plain
+  // spread would let those nulls wipe the config's baseUrl.
+  const config = options.targets ? options : (deps.loadConfig ?? loadProbeConfig)()
+  const fixtures = fixtureUrls({
+    targets: options.targets ?? config.targets,
+    baseUrl: options.baseUrl ?? config.baseUrl,
+    imageUrl: options.imageUrl ?? null,
+  })
   if (options.dryRun) return { dry_run: true, fixtures }
   const results = []
   for (const fixture of fixtures) results.push(await measureFixture(fixture, deps))

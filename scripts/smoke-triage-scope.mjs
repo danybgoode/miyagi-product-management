@@ -17,7 +17,7 @@
 //
 //   1. SURFACE — every changed path is test scaffolding (e2e/, the Playwright config, the browser
 //      smoke workflow). A fix to app/, lib/ or components/ changes what customers get and stays a
-//      draft for a human, no matter how green it is. This is Daniel's call, 2026-08-17.
+//      draft for a human, no matter how green it is. The product owner's call (origin project, 2026-08-17).
 //
 //   2. NO WEAKENING — the diff must not make the smoke pass by asking it to test less. This is the
 //      one that actually needs machinery. "Never weaken the test" has been written in the routine
@@ -27,11 +27,21 @@
 //
 // Gate 2 deliberately blocks things that are RIGHT but not the routine's to decide. Retiring the
 // zero-photo gallery spec on 2026-08-17 was correct — and it was correct because the product owner
-// said so, after it had been surfaced to him twice. Blocked-to-draft is not "rejected"; it is the
+// said so, after it had been surfaced to them twice. Blocked-to-draft is not "rejected"; it is the
 // same PR, waiting for the person whose call it is. That is the intended cost.
 //
 // A blocked diff is NEVER discarded and never silently trimmed to fit. The routine opens the draft
 // PR exactly as before and pings. Degrading to yesterday's behaviour is the correct failure mode.
+//
+// ── The policy is the PROJECT's, and it is REQUIRED (plugin-audit-and-extraction D4) ────────────
+// Which paths count as test scaffolding, and which calls are assertions, are facts about ONE project's
+// layout. The origin hard-coded its own. A template default here would be the worst failure mode in the
+// whole epic: a routine in a project whose layout differs would ALLOW merges of things that are not test
+// scaffolding, or miss the deletion of that project's own assertion helper. So both live in the
+// committed smoke-triage.config.json:
+//   { "testSurface": [ { "prefix": "e2e/", "why": "…" }, { "exact": "playwright.config.ts", "why": "…" } ],
+//     "assertionCalls": ["expect", "expectListingFound"] }
+// and an absent or malformed policy is UNDECIDABLE — never allow, never a default. Fail closed.
 //
 //   node scripts/smoke-triage-scope.mjs --repo <owner/name> --pr <n>   # decide a live PR
 //   node scripts/smoke-triage-scope.mjs --json                          # machine-readable
@@ -43,18 +53,55 @@
 
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { readFileSync, existsSync, realpathSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+export const POLICY_PATH = join(__dirname, '..', 'smoke-triage.config.json');
 
 // ── Gate 1: the test surface ──────────────────────────────────────────────────────────────────
 //
 // An allow-list, not a deny-list. A deny-list of "app code" silently admits every directory nobody
 // thought of — including ones that do not exist yet. Whatever is not named here is app code by
 // default, which is the safe direction to be wrong in for a gate that ends in a production deploy.
-export const TEST_SURFACE = [
-  { prefix: 'e2e/', why: 'the Playwright specs and their helpers — the smoke itself' },
-  { exact: 'playwright.config.ts', why: 'projects, timeouts, workers — how the smoke runs' },
-  { exact: '.github/workflows/browser-smoke.yml', why: 'the nightly detector workflow' },
-  { prefix: 'scripts/browser-smoke-', why: 'the smoke reporting helpers' },
-];
+// The shape of each rule: `{ prefix, why }` or `{ exact, why }`. Supplied by the project's policy.
+
+/**
+ * Pure — validate a policy object. Returns `{ ok: true, policy }` or `{ ok: false, reason }`. Never
+ * throws and never fills a gap with a default: a policy that is not fully specified is not a policy.
+ */
+export function validatePolicy(raw) {
+  if (!raw || typeof raw !== 'object') return { ok: false, reason: 'no smoke-triage policy' };
+  const { testSurface, assertionCalls } = raw;
+  if (!Array.isArray(testSurface) || testSurface.length === 0) {
+    return { ok: false, reason: '"testSurface" must list at least one { prefix | exact, why } rule' };
+  }
+  for (const [i, r] of testSurface.entries()) {
+    const kinds = ['prefix', 'exact'].filter((k) => typeof r?.[k] === 'string' && r[k]);
+    if (kinds.length !== 1) return { ok: false, reason: `"testSurface[${i}]" needs exactly one of "prefix" / "exact"` };
+    if (typeof r.why !== 'string' || !r.why.trim()) return { ok: false, reason: `"testSurface[${i}]" needs a "why"` };
+    if (normalizeRepoPath(r.prefix ?? r.exact) === null && !(r.prefix ?? '').endsWith('/')) {
+      return { ok: false, reason: `"testSurface[${i}]" is not a plain repo-relative path` };
+    }
+  }
+  if (!Array.isArray(assertionCalls) || assertionCalls.length === 0 || assertionCalls.some((c) => !/^[A-Za-z_$][\w$]*$/.test(c))) {
+    return { ok: false, reason: '"assertionCalls" must list the assertion function names (at least "expect")' };
+  }
+  return { ok: true, policy: { testSurface, assertionCalls } };
+}
+
+/** Read the committed policy. Missing or malformed → `{ ok: false, reason }` naming the file. */
+export function loadPolicy({ path = POLICY_PATH, exists = existsSync, read = readFileSync } = {}) {
+  if (!exists(path)) return { ok: false, reason: `${path} not found — the merge gate has no policy, so it cannot allow anything` };
+  let raw;
+  try {
+    raw = JSON.parse(read(path, 'utf8'));
+  } catch (e) {
+    return { ok: false, reason: `${path} is not valid JSON (${e.message})` };
+  }
+  const v = validatePolicy(raw);
+  return v.ok ? v : { ok: false, reason: `${path}: ${v.reason}` };
+}
 
 /**
  * Normalize before matching, because `e2e/../app/page.tsx` starts with `e2e/` and is app code.
@@ -75,10 +122,10 @@ export function normalizeRepoPath(raw) {
   return out.join('/');
 }
 
-export function isTestSurface(rawPath) {
+export function isTestSurface(rawPath, testSurface) {
   const path = normalizeRepoPath(rawPath);
-  if (path === null) return false;
-  return TEST_SURFACE.some((rule) =>
+  if (path === null || !Array.isArray(testSurface)) return false;
+  return testSurface.some((rule) =>
     rule.exact ? path === rule.exact : path.startsWith(rule.prefix));
 }
 
@@ -100,12 +147,15 @@ export const WEAKENING_PATTERNS = [
   { id: 'serial-added', re: /mode:\s*['"`]serial['"`]/, why: 'serial mode added — a failure there logs as "did not run", which reads as green-by-skip' },
 ];
 
-/** An assertion that ran yesterday and does not run today. */
-export const DELETED_ASSERTION = {
-  id: 'assertion-deleted',
-  re: /(^|[^\w.])(expect|expectListingFound)\s*\(/,
-  why: 'an assertion was removed — the spec now tests less than it did',
-};
+/** An assertion that ran yesterday and does not run today — built from the policy's assertion names. */
+export function deletedAssertionRule(assertionCalls) {
+  const names = assertionCalls.map((n) => n.replace(/[$]/g, '\\$')).join('|');
+  return {
+    id: 'assertion-deleted',
+    re: new RegExp(`(^|[^\\w.])(${names})\\s*\\(`),
+    why: 'an assertion was removed — the spec now tests less than it did',
+  };
+}
 
 /**
  * Read one file's unified-diff patch for weakenings.
@@ -115,7 +165,7 @@ export const DELETED_ASSERTION = {
  * that is the confident-empty-result failure AGENTS.md rule 5 bans. It returns `readable: false`,
  * which the caller turns into UNDECIDABLE, not into a pass.
  */
-export function inspectPatch(file) {
+export function inspectPatch(file, deletedAssertion) {
   const findings = [];
   const patch = file?.patch;
   if (typeof patch !== 'string' || patch === '') {
@@ -136,8 +186,8 @@ export function inspectPatch(file) {
         if (p.re.test(body)) findings.push({ id: p.id, path: file.filename, why: p.why, line: body.trim() });
       }
     } else if (line.startsWith('-')) {
-      if (DELETED_ASSERTION.re.test(body)) {
-        findings.push({ id: DELETED_ASSERTION.id, path: file.filename, why: DELETED_ASSERTION.why, line: body.trim() });
+      if (deletedAssertion.re.test(body)) {
+        findings.push({ id: deletedAssertion.id, path: file.filename, why: deletedAssertion.why, line: body.trim() });
       }
     }
   }
@@ -151,7 +201,18 @@ export function inspectPatch(file) {
  *        exactly the shape of `GET /repos/{owner}/{repo}/pulls/{n}/files`.
  * @returns {{verdict: 'allow'|'block'|'undecidable', exitCode: 0|1|2, blockers: object[], surface: string[], appCode: string[]}}
  */
-export function decideAutoMerge(files) {
+export function decideAutoMerge(files, policy) {
+  // FAIL CLOSED (D4). No valid policy means no answer — checked FIRST, before a single file is read.
+  const checked = validatePolicy(policy);
+  if (!checked.ok) {
+    return {
+      verdict: 'undecidable', exitCode: 2, surface: [], appCode: [],
+      blockers: [{ id: 'no-policy', why: `${checked.reason} — refusing to authorize any merge without the project's own policy` }],
+    };
+  }
+  const { testSurface, assertionCalls } = checked.policy;
+  const deletedAssertion = deletedAssertionRule(assertionCalls);
+
   // An empty file list is UNDECIDABLE, never `allow`. A PR with no files is not a safe PR; it is a
   // symptom — a bad ref, a failed API call, a truncated page. "Exited green having run nothing"
   // is the exact failure this repo deletes scripts for.
@@ -169,7 +230,7 @@ export function decideAutoMerge(files) {
 
   for (const file of files) {
     const path = file?.filename;
-    if (isTestSurface(path)) surface.push(path);
+    if (isTestSurface(path, testSurface)) surface.push(path);
     else {
       appCode.push(path ?? String(path));
       blockers.push({
@@ -178,7 +239,7 @@ export function decideAutoMerge(files) {
       });
     }
 
-    const { readable, findings } = inspectPatch(file);
+    const { readable, findings } = inspectPatch(file, deletedAssertion);
     if (!readable) {
       undecidable = true;
       blockers.push({ id: 'patch-unreadable', path, why: 'GitHub returned no patch for this file (binary or too large) — it could not be checked' });
@@ -195,7 +256,7 @@ export function formatReport(decision) {
   const lines = [];
   const headline = {
     allow: 'ALLOW — auto-merge permitted: test scaffolding only, nothing weakened',
-    block: 'BLOCK — open/keep the DRAFT PR and ping Daniel',
+    block: 'BLOCK — open/keep the DRAFT PR and ping the product owner',
     undecidable: 'UNDECIDABLE — the diff could not be fully read; treat as BLOCK and say so',
   }[decision.verdict];
   lines.push(`smoke-triage scope: ${headline}`);
@@ -232,6 +293,13 @@ export async function main(argv, deps = {}) {
     return 2;
   }
 
+  const policy = (deps.loadPolicy ?? loadPolicy)();
+  if (!policy.ok) {
+    const message = `UNDECIDABLE — ${policy.reason}`;
+    process.stdout.write(values.json ? `${JSON.stringify({ verdict: 'undecidable', error: message })}\n` : `${message}\n`);
+    return 2;
+  }
+
   let files;
   try {
     const { execFileSync } = await import('node:child_process');
@@ -243,11 +311,17 @@ export async function main(argv, deps = {}) {
     return 2;
   }
 
-  const decision = decideAutoMerge(files);
+  const decision = decideAutoMerge(files, policy.policy);
   process.stdout.write(values.json ? `${JSON.stringify(decision, null, 2)}\n` : `${formatReport(decision)}\n`);
   return decision.exitCode;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+let isMain = false;
+try {
+  isMain = !!process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+} catch {
+  isMain = false;
+}
+if (isMain) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; });
 }
