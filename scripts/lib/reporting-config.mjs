@@ -114,7 +114,7 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
   if (typeof checkouts !== 'object' || Array.isArray(checkouts)) fail(path, '"checkouts" must map "owner/name" to a local directory');
   for (const [repo, dir] of Object.entries(checkouts)) {
     if (!repos.includes(repo)) fail(path, `"checkouts.${repo}" is not one of "repos"`);
-    if (typeof dir !== 'string' || !dir || dir.startsWith('/') || dir.split('/').includes('..')) {
+    if (typeof dir !== 'string' || !dir || dir.startsWith('/') || dir.includes('\\') || dir.split('/').includes('..')) {
       fail(path, `"checkouts.${repo}" must be a relative directory inside the repo root`);
     }
   }
@@ -128,7 +128,7 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
     }
   }
   for (const d of owed.specDirs ?? []) {
-    if (d.startsWith('/') || d.split('/').includes('..')) fail(path, `"owed.specDirs" entry "${d}" must be relative, inside the repo`);
+    if (d.startsWith('/') || d.includes('\\') || d.split('/').includes('..')) fail(path, `"owed.specDirs" entry "${d}" must be relative, inside the repo`);
   }
 
   const stalePreviewAgeDays = raw.stalePreviewAgeDays ?? null;

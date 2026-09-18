@@ -67,6 +67,8 @@ test('shape errors name the offending key', () => {
     [{ ...MIN, telegram: [] }, /"telegram" must be an object/],
     [{ ...MIN, owed: { owners: 'Jordan' } }, /owed\.owners" must be an array/],
     [{ ...MIN, owed: { specDirs: ['../x'] } }, /must be relative, inside the repo/],
+    [{ ...MIN, owed: { specDirs: ['..\\..\\x'] } }, /must be relative, inside the repo/],
+    [{ ...MIN, checkouts: { 'acme/web': 'apps\\..\\..\\x' } }, /relative directory inside the repo root/],
     [{ ...MIN, checkouts: { 'acme/other': 'apps/x' } }, /checkouts\.acme\/other" is not one of "repos"/],
     [{ ...MIN, checkouts: { 'acme/web': '../elsewhere' } }, /relative directory inside the repo root/],
     [{ ...MIN, telegram: { chatIds: { nightly: '1' } } }, /telegram\.chatIds\.nightly" is not a surface/],
