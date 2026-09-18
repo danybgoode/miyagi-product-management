@@ -1,0 +1,28 @@
+{
+  "$comment": "Read by scripts/{standup,weekly-recap,pmo-report}.mjs via scripts/lib/reporting-config.mjs (the dobby-foundation template's reporting seam). The chat id is NOT here — this repo is public: routines use TELEGRAM_CHAT_ID, local runs use the gitignored reporting.config.local.json.",
+  "repos": [
+    "danybgoode/miyagi-product-management",
+    "danybgoode/miyagisanchezcommerce",
+    "danybgoode/medusa-bonsai-backend"
+  ],
+  "deployRepos": [
+    { "label": "Frontend", "repo": "danybgoode/miyagisanchezcommerce" },
+    { "label": "Backend", "repo": "danybgoode/medusa-bonsai-backend" }
+  ],
+  "smoke": { "repo": "danybgoode/miyagisanchezcommerce", "workflow": "browser-smoke.yml" },
+  "stalePreviewAgeDays": 7,
+  "liveFlags": {
+    "command": ["supabase", "db", "query", "--linked", "--csv", "SELECT key FROM platform_flags WHERE enabled IS TRUE ORDER BY key"],
+    "cwd": "apps/miyagisanchez"
+  },
+  "artifacts": {
+    "docViewerUrl": "https://pmo-smalldocs-121711078446.us-east4.run.app",
+    "registry": {
+      "resolverBaseUrl": "https://pmo-smalldocs-121711078446.us-east4.run.app",
+      "bucket": "miyagi-pmo-reports"
+    }
+  },
+  "prose": {
+    "extraBannedToolNames": ["medusa", "clerk", "cloud run", "mercado ?libre"]
+  }
+}

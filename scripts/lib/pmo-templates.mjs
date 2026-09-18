@@ -7,7 +7,6 @@ import { dirname } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
 const TEMPLATE_DIR = join(ROOT, 'scripts', 'pmo', 'templates');
-export const DEFAULT_SMALLDOCS_URL = 'https://pmo-smalldocs-121711078446.us-east4.run.app';
 
 const TEMPLATE_FILES = {
   weekly: 'weekly-story-deck.md',
@@ -40,7 +39,7 @@ function windowDays(metrics) {
 function benchmarkSourceLine(benchmarks) {
   const firstSource = benchmarks.sources?.[0];
   if (!firstSource) return 'Benchmarks no cargados.';
-  return `${firstSource.publisher} (${firstSource.publishedDate}; consultado ${firstSource.accessedDate})`;
+  return `${firstSource.publisher} (${firstSource.publishedDate}; accessed ${firstSource.accessedDate})`;
 }
 
 export function buildTemplateData(metrics, { benchmarks = {}, generatedAt = new Date() } = {}) {
@@ -54,7 +53,7 @@ export function buildTemplateData(metrics, { benchmarks = {}, generatedAt = new 
     window: {
       sinceISO: metrics.window.sinceISO,
       untilISO: metrics.window.untilISO,
-      label: `${metrics.window.sinceISO.slice(0, 10)} a ${metrics.window.untilISO.slice(0, 10)}`,
+      label: `${metrics.window.sinceISO.slice(0, 10)} to ${metrics.window.untilISO.slice(0, 10)}`,
       generatedDate,
     },
     throughput: {
@@ -119,7 +118,12 @@ function toBase64Url(buffer) {
   return Buffer.from(buffer).toString('base64url');
 }
 
-export function buildSmallDocsUrl(markdown, { baseUrl = DEFAULT_SMALLDOCS_URL, present = false } = {}) {
+// A URL-hash markdown viewer: the whole document rides in the fragment (brotli + base64url), so the
+// viewer never stores anything and the link IS the artifact. `baseUrl` is the project's own viewer
+// deployment (reporting.config.json → artifacts.docViewerUrl) and is REQUIRED — there is no default,
+// because a default points every project's reports at one project's hosting.
+export function buildDocViewerUrl(markdown, { baseUrl, present = false } = {}) {
+  if (!baseUrl) throw new Error('buildDocViewerUrl: no baseUrl — set artifacts.docViewerUrl in reporting.config.json');
   const compressed = brotliCompressSync(Buffer.from(markdown, 'utf8'), {
     params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
   });

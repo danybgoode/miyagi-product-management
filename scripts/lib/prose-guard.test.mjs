@@ -93,28 +93,33 @@ test('tool, framework and model names are flagged', () => {
   assert.ok(codes(r).includes('names-implementation'));
 });
 
-test('OUR stack names are flagged too — the ones a draft here actually reaches for', () => {
-  // golden-beans never sees these words; every one of them appears in our sprint docs constantly,
-  // which is exactly why a draft derived from those docs leaks them.
+test("a project's OWN stack names are flagged when it configures them (prose.extraBannedToolNames)", () => {
+  // The shipped list is universal; a project's commerce engine, auth provider and integrations are
+  // not, so they arrive through config. Unconfigured, they must NOT be flagged — this list ships to
+  // every project and one project's product noun is another's ordinary word.
+  const extraBannedToolNames = ['acmecart', 'authly', 'cloud run', 'mega ?market'];
   for (const draft of [
-    'The Medusa module now owns the write path for the whole catalog.',
-    'Clerk sessions survive the redirect, so nobody is signed out twice.',
+    'The Acmecart module now owns the write path for the whole catalog.',
+    'Authly sessions survive the redirect, so nobody is signed out twice.',
     'The service runs on Cloud Run in a single region with a warm instance.',
-    'The Mercado Libre sync pulls orders every ten minutes without a manual step.',
-    'The MercadoLibre sync pulls orders every ten minutes without a manual step.',
+    'The Mega Market sync pulls orders every ten minutes without a manual step.',
+    'The MegaMarket sync pulls orders every ten minutes without a manual step.',
   ]) {
-    const r = checkProse(draft, { allowsBeneficiary: true, minWords: 1 });
-    assert.ok(codes(r).includes('names-implementation'), `missed a stack name: ${draft}`);
+    const r = checkProse(draft, { allowsBeneficiary: true, minWords: 1, extraBannedToolNames });
+    assert.ok(codes(r).includes('names-implementation'), `missed a configured stack name: ${draft}`);
+    const bare = checkProse(draft, { allowsBeneficiary: true, minWords: 1 });
+    assert.ok(!codes(bare).includes('names-implementation'), `flagged an unconfigured name: ${draft}`);
   }
 });
 
 test('the finding names the offending tool in readable form, not as a regex fragment', () => {
-  const r = checkProse('The Mercado Libre bridge and the Node.js runner both changed.', {
+  const r = checkProse('The Mega Market bridge and the Node.js runner both changed.', {
     allowsBeneficiary: true,
     minWords: 1,
+    extraBannedToolNames: ['mega ?market'],
   });
   const note = r.findings.find((f) => f.code === 'names-implementation').note;
-  assert.match(note, /mercado libre/);
+  assert.match(note, /mega market/);
   assert.match(note, /node\.js/);
   assert.ok(!note.includes('?'), `regex metacharacters leaked into a human note: ${note}`);
 });
@@ -232,7 +237,7 @@ test('every fabricated-deadline phrasing is caught', () => {
 test('an honest owed-item WITHOUT a date is not flagged', () => {
   // The correct way to report an obligation: name it, name who holds it, attach no invented date.
   const draft =
-    'Daniel still needs to add a repository secret before the automatic push turns on, and to read the three views himself.';
+    'The product owner still needs to add a repository secret before the automatic push turns on, and to read the three views themselves.';
   const r = checkProse(draft, { allowsFixClaim: false, allowsBeneficiary: false });
   assert.ok(!codes(r).includes('invented-commitment'), JSON.stringify(r.findings));
 });
@@ -240,7 +245,7 @@ test('an honest owed-item WITHOUT a date is not flagged', () => {
 // ── flag-state-claim — OUR rule (README D6) ─────────────────────────────────────────────────
 // Ours is a flag-gated shop: five epics in two weeks shipped dark behind a default-OFF flag. A
 // report calling one of them "live" is the highest-risk falsehood this guard can catch, because it
-// is the sentence that would stop Daniel doing the flip the epic is waiting on.
+// is the sentence that would stop the product owner doing the flip the epic is waiting on.
 
 test('D6: a flag-OFF epic CANNOT be reported as live', () => {
   // partner_portfolio_enabled shipped OFF on 2026-07-25 and is still OFF. This is the sentence.
@@ -290,7 +295,7 @@ test('D6: the honest dark-shipping sentence is NOT flagged', () => {
   // the truth it exists to protect would be worse than no guard.
   for (const draft of [
     'The rail is built and nothing is live yet, because the flag it sits behind has never been flipped.',
-    'Everything landed dark; no part of it is enabled for anyone until Daniel flips the switch himself.',
+    'Everything landed dark; no part of it is enabled for anyone until the product owner flips the switch themselves.',
     'The portfolio is not live and will stay dark until someone reads it end to end.',
   ]) {
     const r = checkProse(draft, { allowsBeneficiary: true, liveFlags: [], minWords: 1 });

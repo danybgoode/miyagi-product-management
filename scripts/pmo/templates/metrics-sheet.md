@@ -20,8 +20,8 @@ LEARNINGS promotions,{{docOps.learningsPromotions}},0,internal signal,=B8-C8
 Retro coverage %,{{docOps.retroPercent}},0,internal signal,=B9-C9
 ```
 
-Notas:
+Notes:
 
-- Las formulas exportan a Excel como formulas vivas.
-- Fuente benchmarks: {{benchmarks.sourceLine}}.
+- The formulas export to a spreadsheet as live formulas.
+- Benchmark source: {{benchmarks.sourceLine}}.
 - {{benchmarks.framing}}

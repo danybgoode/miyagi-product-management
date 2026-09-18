@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildSmallDocsUrl } from './pmo-templates.mjs';
+import { buildDocViewerUrl } from './pmo-templates.mjs';
 import { isFunnelSeed } from './roadmap-status-buckets.mjs';
 
 const DEFAULT_SOURCE_BASE = 'https://github.com/danybgoode/miyagi-product-management/blob/main';
@@ -134,7 +134,7 @@ export function summarizeRoadmapRows(rows) {
 }
 
 function hrefForMarkdown(markdown, { present = false } = {}) {
-  const url = buildSmallDocsUrl(markdown, { baseUrl: HASH_BASE, present });
+  const url = buildDocViewerUrl(markdown, { baseUrl: HASH_BASE, present });
   return `/docs${new URL(url).hash}`;
 }
 

@@ -69,9 +69,10 @@ guard checks your draft before it posts.**
 `prose-draft.mjs`** — none of them is authenticated here, and reaching for one produces no report at
 all rather than an obvious failure. This is the single most important line in this file.
 
-Config/secrets first, exactly as before: chat id from `.claude/config/standup-post.json` if present,
-else the `TELEGRAM_CHAT_ID` env var (the env var is what actually works in this unattended session,
-since `config.json` is gitignored and can't survive between runs). If genuinely BOTH are unset, that's
+Config/secrets first: `standup.mjs` reads the committed `reporting.config.json` (repos, smoke workflow,
+signals) and takes the chat id from the `TELEGRAM_CHAT_ID` env var — this repo is public, so the chat id
+is deliberately NOT in the committed file, and a gitignored `reporting.config.local.json` only exists on a
+local machine, never in this unattended session. If `TELEGRAM_CHAT_ID` is unset, that's
 a hard stop — use the failure ping below instead of guessing; never `AskUserQuestion`, no interactive
 human is present. `TELEGRAM_BOT_TOKEN` must be set.
 
@@ -102,7 +103,7 @@ node scripts/standup.mjs --post --prose-file <your-file>
 - Do not loop more than that. One revision, then post.
 
 The posted message is prose first, then the compact actionable signals (CI red, conflicts, stale
-board), then the `SmallDocs standup:` deck link. Its CI-red and merge-conflict signals are read fresh
+board), then the `Deck standup:` link. Its CI-red and merge-conflict signals are read fresh
 at this point — after steps 1–3 had a chance to fix/flag things — so they reflect current state, not a
 stale pre-run snapshot.
 
@@ -124,6 +125,5 @@ If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silen
 and **never** ping after a run that completed successfully, even a fully quiet one.
 
 Note: `TELEGRAM_CHAT_ID` here (the failure-ping env var, matching the other three routines' convention)
-and the `chat_id` in `.claude/config/standup-post.json` (what `standup.mjs` actually posts the standup
-to) are typically the **same** MiyagiDevopsTele bot/chat, just sourced differently for two different
-call sites — don't be confused into thinking they must be configured independently of each other.
+is also what `standup.mjs` posts the standup to in this session — one variable, both call sites (a local
+run may override it via the gitignored `reporting.config.local.json`).

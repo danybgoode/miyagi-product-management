@@ -1,8 +1,12 @@
 #!/usr/bin/env node
-// weekly-recap.mjs — gathers the week's merged PRs (all 3 repos) + shipped/closed epics (README
-// frontmatter status: flips) + a short retro digest, and posts a formatted weekly Telegram recap.
+// weekly-recap.mjs — gathers the week's merged PRs (every repo in reporting.config.json) + shipped/closed
+// epics (README frontmatter status: flips) + a short retro digest, and posts a formatted weekly Telegram recap.
 //
-// "Deploys" = merged-PR counts on the frontend/backend repos, not a live Vercel/Cloud-Build API read.
+// Project values (repo list, deploy repos, chat) come from reporting.config.json via
+// scripts/lib/reporting-config.mjs — see that module for why there is no default. Ported into the
+// dobby-foundation template by plugin-audit-and-extraction S1; the logic is unchanged from the origin.
+//
+// "Deploys" = merged-PR counts on the configured deploy repos, not a live hosting-platform API read.
 // Per WAYS-OF-WORKING.md, "merging to main IS the production deploy" — so this is exactly the number a
 // human would get by manually tallying merges for the week (the sprint's own acceptance bar), and it
 // avoids a new external API dependency this script would need real credentials for.
@@ -33,6 +37,7 @@ import { readFileSync, existsSync, writeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
+import { loadReportingConfig, chatIdFor, shortRepo, ReportingConfigError } from './lib/reporting-config.mjs';
 import { searchMergedPrs } from './lib/gh-rest.mjs';
 import { formatPrList, truncateForTelegram } from './lib/telegram-format.mjs';
 import { readLogFromBranch, appendLineToBranch } from './lib/log-branch.mjs';
@@ -54,7 +59,6 @@ const ROOT = join(__dirname, '..');
 // failed to save live, 2026-07-02/03).
 const LOG_BRANCH = 'claude/weekly-recap-log';
 const LOG_BRANCH_PATH = 'weekly-recaps.log'; // flat filename — git mktree needs a single-level tree
-const CONFIG_PATH = join(ROOT, '.claude/config/weekly-recap.json');
 
 const argv = process.argv.slice(2);
 const DRY_RUN = argv.includes('--dry-run');
@@ -78,14 +82,6 @@ function argValue(flag) {
 const SINCE_OVERRIDE = argValue('--since');
 const UNTIL_OVERRIDE = argValue('--until');
 
-// Same 3 repos standup.mjs already lists — confirmed via `git remote -v` in each checkout (2026-07-02).
-const REPOS = [
-  'danybgoode/miyagi-product-management',
-  'danybgoode/miyagisanchezcommerce',
-  'danybgoode/medusa-bonsai-backend',
-];
-const FRONTEND_REPO = 'danybgoode/miyagisanchezcommerce';
-const BACKEND_REPO = 'danybgoode/medusa-bonsai-backend';
 
 const RETRO_DIGEST_MAX_CHARS = 320;
 const DEFAULT_WINDOW_DAYS = 7;
@@ -99,10 +95,6 @@ const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a
 
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function shortRepo(repo) {
-  return repo.split('/')[1] || repo;
 }
 
 // ---- window / memory log (JSONL, one line per run — lives on a dedicated branch, see above) ----
@@ -257,25 +249,6 @@ export function extractRetroDigest(markdown, maxChars) {
   return firstBlock.length > maxChars ? `${firstBlock.slice(0, maxChars).trim()}…` : firstBlock;
 }
 
-// ---- config / secrets ----
-
-// config.json is gitignored and a routine's cloud sandbox is a fresh checkout every run — it has no
-// mechanism to persist a locally-written config.json across separate runs. So a routine environment
-// can't rely on the interactive AskUserQuestion-then-write-config.json flow; it needs TELEGRAM_CHAT_ID
-// as an env var instead (the same var already required for the optional failure-ping), which this
-// falls back to when config.json doesn't exist. A local/interactive run still prefers config.json.
-function loadChatId() {
-  if (existsSync(CONFIG_PATH)) {
-    try {
-      const cfg = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
-      if (cfg.chat_id) return cfg.chat_id;
-    } catch {
-      /* fall through to the env var */
-    }
-  }
-  return process.env.TELEGRAM_CHAT_ID || null;
-}
-
 // ---- message ----
 // formatPrList/truncateForTelegram now live in scripts/lib/telegram-format.mjs (shared with
 // standup.mjs, which hit the exact same message-length failure mode live).
@@ -283,7 +256,7 @@ function loadChatId() {
 // Pure — builds the Telegram message from already-gathered data. No I/O.
 // `shippedEpics` is `{ available, epics }` — `available: false` (a git-log read failure) must render as
 // "unavailable", never fold into "none this week"/the quiet-week collapse (that's a different fact).
-export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, prose = null }) {
+export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, deployRepos = [], prose = null }) {
   const since = sinceISO.slice(0, 10);
   const until = untilISO.slice(0, 10);
   const lines = [`<b>Weekly recap · ${since} – ${until}</b>`];
@@ -306,11 +279,16 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, pr
     lines.push(`${label} (${r.prs.length}${cappedNote}): ${formatPrList(r.prs, MAX_PRS_SHOWN_PER_REPO)}`);
   }
 
-  lines.push('');
-  lines.push('<b>📦 Deploys</b> (merges to main)');
-  const feResult = repoResults.find((r) => r.repo === FRONTEND_REPO);
-  const beResult = repoResults.find((r) => r.repo === BACKEND_REPO);
-  lines.push(`Frontend: ${feResult?.available ? feResult.prs.length : 'unavailable'} · Backend: ${beResult?.available ? beResult.prs.length : 'unavailable'}`);
+  // Only when the project names its deploy repos — "merging to main IS the deploy" is a per-repo fact,
+  // and guessing which repos deploy would print a number that means nothing.
+  if (deployRepos.length) {
+    lines.push('');
+    lines.push('<b>📦 Deploys</b> (merges to main)');
+    lines.push(deployRepos.map(({ label, repo }) => {
+      const r = repoResults.find((x) => x.repo === repo);
+      return `${esc(label)}: ${r?.available ? r.prs.length : 'unavailable'}`;
+    }).join(' · '));
+  }
 
   lines.push('');
   // The count goes in the HEADER, not only in the "…and N more" tail, because the tail is the first
@@ -399,13 +377,20 @@ function appendRunAndPush(entry) {
 // ---- main ----
 
 async function main() {
+  let config;
+  try {
+    config = loadReportingConfig({ root: ROOT });
+  } catch (e) {
+    if (e instanceof ReportingConfigError) die(e.message);
+    throw e;
+  }
   ensureGh();
 
   const now = new Date();
   const lastRun = loadLastRun();
   const { sinceISO, untilISO } = computeWindow(lastRun, now, SINCE_OVERRIDE, UNTIL_OVERRIDE);
 
-  const repoResults = REPOS.map((repo) => gatherMergedPrs(repo, sinceISO, untilISO));
+  const repoResults = config.repos.map((repo) => gatherMergedPrs(repo, sinceISO, untilISO));
   const shippedEpics = gatherShippedEpics(sinceISO, untilISO);
 
   // ── Phase 1: --brief ──────────────────────────────────────────────────────────────────────
@@ -430,7 +415,7 @@ async function main() {
       windowLabel,
       roadmapDeltas,
       owed: loadOwedLedger(join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json')),
-      repoSignals: [`${prCount} pull request(s) merged across the three repositories this week.`],
+      repoSignals: [`${prCount} pull request(s) merged across ${config.repos.length} repositor${config.repos.length === 1 ? 'y' : 'ies'} this week.`],
       liveFlags: { available: false, flags: [] },
     });
     writeSync(1, `${buildBrief({ scriptsDir: __dirname, surface: 'weekly', pack })}\n`);
@@ -453,9 +438,9 @@ async function main() {
     const draft = readFileSync(resolve(ROOT, PROSE_FILE), 'utf8').trim();
     // Derived from the window, not hardcoded — see standup.mjs.
     const subjects = repoResults.flatMap((r) => (r.available ? r.prs.map((p) => p.title || '') : []));
-    const areas = shippedEpics.available && shippedEpics.epics.length ? ['storefront pages'] : [];
+    const areas = shippedEpics.available && shippedEpics.epics.length ? ['customer-facing pages'] : [];
     const evidence = deriveEvidenceFlags({ subjects, areas, liveFlags: [], maxWords: WEEKLY_MAX_WORDS });
-    const verdict = checkProse(draft, evidence);
+    const verdict = checkProse(draft, { ...evidence, extraBannedToolNames: config.prose.extraBannedToolNames });
     if (!verdict.ok && !FORCE_POST) {
       process.stderr.write(`${findingsToRevisionNote(verdict.findings)}\n`);
       process.exit(2);
@@ -463,15 +448,15 @@ async function main() {
     prose = verdict.ok ? draft : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
   }
 
-  const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, prose });
+  const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, deployRepos: config.deployRepos, prose });
   console.log(message.replace(/<\/?[^>]+>/g, ''));
 
   if (!DRY_RUN) {
-    const chatId = loadChatId();
+    const chatId = chatIdFor(config, 'weekly');
     if (!chatId) {
       die(
-        `No Telegram chat id configured — set "chat_id" in ${CONFIG_PATH} ` +
-          `(copy .claude/config/weekly-recap.example.json, or let the weekly-recap skill ask via AskUserQuestion).`
+        'No Telegram chat id configured — set "telegram.chatIds.weekly" or "telegram.chatId" in ' +
+          'reporting.config.json, or export TELEGRAM_CHAT_ID.'
       );
     }
     await sendTelegram(chatId, message);

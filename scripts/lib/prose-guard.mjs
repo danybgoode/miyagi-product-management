@@ -11,7 +11,7 @@
 // falsehoods on two of its first three runs: it invented customer impact for internal tooling, and
 // it claimed a commit had FIXED an open-redirect bug when the commit only added tests for a fix
 // that shipped weeks earlier. Both read as confident good news, which is exactly what makes them
-// dangerous in a channel treated as status. Daniel reads our standup on his phone; a wrong report
+// dangerous in a channel treated as status. the product owner reads the standup on their phone; a wrong report
 // there is the real risk of this epic (README → "Risk tier").
 //
 // A guard cannot verify truth. What it CAN do is catch the specific, recurring shapes those
@@ -59,8 +59,10 @@ export const BANNED_PHRASES = [
  * Entries are regex fragments, matched on word boundaries so ordinary words are never caught —
  * "next" the adverb must not trip the "Next.js" rule, and "react" the verb must not trip React.
  *
- * The last four are OUR additions to golden-beans' list: this is a Medusa commerce stack on Cloud
- * Run with Clerk auth and a Mercado Libre integration, so those are the names our drafts reach for.
+ * A project adds ITS OWN stack's names (its commerce engine, auth provider, hosting, integrations —
+ * the names its drafts actually reach for) through reporting.config.json's
+ * `prose.extraBannedToolNames`, passed to checkProse as `evidence.extraBannedToolNames`. They are not
+ * in this list because this list ships to every project.
  */
 export const BANNED_TOOL_NAMES = [
   'playwright',
@@ -82,11 +84,6 @@ export const BANNED_TOOL_NAMES = [
   'node\\.js',
   'github actions',
   'telegram',
-  // ── our stack ──
-  'medusa',
-  'clerk',
-  'cloud run',
-  'mercado ?libre',
   // DELIBERATELY ABSENT: 'react' and 'next' on their own — golden-beans' omission, carried over
   // with its reasoning. Both are ordinary English words — "the page does not react to a stale
   // value", "whoever ships next" — and a guard that rejects a correct sentence is worse than one
@@ -138,7 +135,7 @@ const FIX_CLAIM_PATTERNS = [
  * fabricated by construction. Flagged unconditionally, with no evidence flag to unlock it (D6).
  *
  * This fires MORE here than at golden-beans, not less: our roadmap docs are full of *target-shaped*
- * language — "owed to Daniel", "pending", "held on a smoke" — which is exactly the vocabulary a
+ * language — "owed to the product owner", "pending", "held on a smoke" — which is exactly the vocabulary a
  * model completes into a deadline. That is the reason it stays unconditional rather than becoming a
  * flag someone can switch off when it gets noisy.
  */
@@ -190,7 +187,7 @@ const NO_IMPACT_PATTERNS = [
  * later, sometimes never (`promoter.partner_portfolio_enabled` was born OFF and is still OFF). A
  * report saying a capability "is live" when its flag is OFF is our single highest-risk falsehood:
  * it is confident, it is plausible, it reads as good news, and it is the exact sentence that would
- * stop Daniel from doing the flip the epic is waiting on.
+ * stop the product owner from doing the flip the epic is waiting on.
  *
  * `evidence.liveFlags` is the corroboration: the list of things the pack can actually prove are on.
  * Entries are usually flag keys (`promoter.activation_crm_enabled`), but any capability NAME works
@@ -379,7 +376,7 @@ export function checkProse(draft, evidence = {}) {
     });
   }
 
-  const tools = BANNED_TOOL_NAMES.filter((t) => new RegExp(`\\b${t}\\b`, 'i').test(lower));
+  const tools = [...BANNED_TOOL_NAMES, ...(evidence.extraBannedToolNames || [])].filter((t) => new RegExp(`\\b${t}\\b`, 'i').test(lower));
   if (tools.length) {
     findings.push({
       code: 'names-implementation',

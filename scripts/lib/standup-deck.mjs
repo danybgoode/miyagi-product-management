@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { formatTelegramHtmlLink, telegramHtmlVisibleLength, truncateForTelegram } from './telegram-format.mjs';
-import { buildSmallDocsUrl } from './pmo-templates.mjs';
+import { buildDocViewerUrl } from './pmo-templates.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -88,19 +88,22 @@ export function buildStandupDeckMarkdown(options) {
   return fillStandupTemplate(loadStandupDeckTemplate(), buildStandupDeckData(options));
 }
 
-export function buildStandupArtifacts(options) {
+// No viewer configured → no artifact. The Telegram text is the canonical read; the deck is an optional
+// extra, and an extra must never be faked with someone else's hosting.
+export function buildStandupArtifacts({ docViewerUrl, ...options } = {}) {
+  if (!docViewerUrl) return [];
   const markdown = buildStandupDeckMarkdown(options);
   return [{
     name: 'standup',
     markdown,
-    url: buildSmallDocsUrl(markdown, { present: true }),
+    url: buildDocViewerUrl(markdown, { baseUrl: docViewerUrl, present: true }),
   }];
 }
 
 export function appendStandupArtifactsToMessage(message, artifacts, maxChars = TELEGRAM_MAX_CHARS) {
   if (!artifacts.length) return truncateForTelegram(message, maxChars);
   const suffix = `\n\n${artifacts
-    .map((artifact) => `SmallDocs ${artifact.name}: ${formatTelegramHtmlLink('abrir daily story', artifact.url)}`)
+    .map((artifact) => `Deck ${artifact.name}: ${formatTelegramHtmlLink('open daily story', artifact.url)}`)
     .join('\n')}`;
   const suffixVisibleLength = telegramHtmlVisibleLength(suffix);
   if (suffixVisibleLength >= maxChars) return truncateForTelegram(message, maxChars);

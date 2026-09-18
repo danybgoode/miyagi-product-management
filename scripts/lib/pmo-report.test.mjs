@@ -9,6 +9,10 @@ import {
   shouldPersistWindow,
 } from '../pmo-report.mjs';
 
+
+// The project's doc viewer — in a real project, reporting.config.json → artifacts.docViewerUrl.
+const VIEWER = 'https://viewer.example.test';
+
 test('parseArgs reads dry-run and explicit window overrides', () => {
   assert.deepEqual(parseArgs(['--dry-run', '--weekly', '--open', '--since', '2026-07-01T00:00:00Z', '--until', '2026-07-08T00:00:00Z']), {
     dryRun: true,
@@ -50,12 +54,12 @@ test('buildReport uses injected data and does not perform script I/O when import
     },
     repoResults: [
       {
-        repo: 'danybgoode/miyagisanchezcommerce',
+        repo: 'acme/web',
         available: true,
         openPrs: [{ number: 10 }],
         prs: [{ number: 1, title: 'hotfix: restore', createdAt: '2026-07-01T00:00:00Z', mergedAt: '2026-07-02T00:00:00Z' }],
       },
-      { repo: 'danybgoode/medusa-bonsai-backend', available: true, openPrs: [], prs: [] },
+      { repo: 'acme/api', available: true, openPrs: [], prs: [] },
     ],
     roadmapRows: [{ grain: 'Sprint', sprint_progress: '2/3 stories' }],
     epicStatusFlips: [{ status: 'shipped', date: '2026-07-03T00:00:00Z' }],
@@ -91,6 +95,7 @@ test('gatherRepoResults populates open PRs from REST listPulls', () => {
       { repo, number: 2, title: 'feat: outside', mergedAt: '2026-07-09T00:00:00Z' },
     ]),
     listOpen: ({ repo }) => ([{ repo, number: 10, title: 'open work' }]),
+    repos: ['acme/product', 'acme/web', 'acme/api'],
   });
   assert.equal(results.length, 3);
   assert.ok(results.every((result) => result.available));
@@ -98,7 +103,7 @@ test('gatherRepoResults populates open PRs from REST listPulls', () => {
   assert.ok(results.every((result) => result.openPrs.length === 1));
 });
 
-test('buildReportArtifacts fills requested templates and emits smalldocs URLs', () => {
+test('buildReportArtifacts fills requested templates and emits doc-viewer URLs', () => {
   const metrics = {
     window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
     throughput: { shippedStories: 1, shippedEpics: 1, closedEpics: 1 },
@@ -108,14 +113,14 @@ test('buildReportArtifacts fills requested templates and emits smalldocs URLs', 
     changeFailProxy: { count: 0 },
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
-  const artifacts = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: true });
+  const artifacts = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: true }, { docViewerUrl: VIEWER });
   assert.deepEqual(artifacts.map((a) => a.name), ['weekly', 'sheet']);
-  assert.match(artifacts[0].markdown, /PMO semanal/);
-  assert.match(artifacts[0].markdown, /benchmark DORA\/Four Keys daily: \*\*3\*\*/);
+  assert.match(artifacts[0].markdown, /PMO weekly/);
+  assert.match(artifacts[0].markdown, /DORA\/Four Keys daily benchmark: \*\*3\*\*/);
   assert.match(artifacts[0].url, /present=0/);
   assert.match(artifacts[1].markdown, /```cells/);
   assert.match(artifacts[1].markdown, /Change-failure proxy %,0,15,lower is better/);
-  assert.match(artifacts[1].url, /^https:\/\/pmo-smalldocs-/);
+  assert.match(artifacts[1].url, /^https:\/\/viewer\.example\.test\/#md=/);
 });
 
 test('buildReportArtifacts treats monthly as packet plus sheet', () => {
@@ -128,7 +133,7 @@ test('buildReportArtifacts treats monthly as packet plus sheet', () => {
     changeFailProxy: { count: 0 },
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
-  const artifacts = buildReportArtifacts(metrics, parseArgs(['--monthly']));
+  const artifacts = buildReportArtifacts(metrics, parseArgs(['--monthly']), { docViewerUrl: VIEWER });
   assert.deepEqual(artifacts.map((a) => a.name), ['monthly', 'sheet']);
 });
 
@@ -147,7 +152,7 @@ test('buildReportArtifacts: the weekly artifact embeds at least one chart fenced
     changeFailProxy: { count: 0 },
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
-  const [weekly] = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: false });
+  const [weekly] = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: false }, { docViewerUrl: VIEWER });
   const blocks = [...weekly.markdown.matchAll(/```chart\n(.+?)\n/g)].map((m) => m[1]);
   assert.ok(blocks.length >= 1, 'weekly deck must embed at least one ```chart fenced block');
   for (const block of blocks) assert.ok(JSON.parse(block).type, 'each chart block must be valid, typed JSON');
@@ -169,7 +174,11 @@ test('buildReportArtifacts: the monthly artifact embeds a chart block, and shoul
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
   const args = parseArgs(['--monthly']);
-  const [monthly] = buildReportArtifacts(metrics, args);
+  const [monthly] = buildReportArtifacts(metrics, args, { docViewerUrl: VIEWER });
   assert.match(monthly.markdown, /```chart/);
   assert.equal(shouldPersistWindow(args), false, 'a chart-bearing monthly artifact must not advance the PMO window log');
+});
+
+test('buildReportArtifacts with no doc viewer configured builds no artifacts (never a borrowed host)', () => {
+  assert.deepEqual(buildReportArtifacts({}, { weekly: true, monthly: true, sheet: true }), []);
 });

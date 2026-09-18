@@ -1,4 +1,3 @@
-import { existsSync, readFileSync } from 'node:fs';
 import { formatTelegramHtmlLink, telegramHtmlVisibleLength, truncateForTelegram } from './telegram-format.mjs';
 
 export const TELEGRAM_MAX_CHARS = 4096;
@@ -9,43 +8,31 @@ function fmt(value, suffix = '') {
 }
 
 function windowLabel(metrics) {
-  return `${metrics.window.sinceISO.slice(0, 10)} a ${metrics.window.untilISO.slice(0, 10)}`;
+  return `${metrics.window.sinceISO.slice(0, 10)} to ${metrics.window.untilISO.slice(0, 10)}`;
 }
 
 function artifactLabel(name) {
   return {
     weekly: 'Story-deck',
-    monthly: 'Packet mensual',
-    sheet: 'Sheet de metricas',
+    monthly: 'Monthly packet',
+    sheet: 'Metrics sheet',
   }[name] || name;
 }
 
 function artifactLinkText(name) {
   return {
-    weekly: 'abrir deck semanal',
-    monthly: 'abrir packet mensual',
-    sheet: 'abrir sheet viva',
-  }[name] || 'abrir reporte';
-}
-
-export function loadTelegramChatId({ configPath, env = process.env } = {}) {
-  if (configPath && existsSync(configPath)) {
-    try {
-      const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
-      if (cfg.chat_id) return cfg.chat_id;
-    } catch {
-      /* fall through to the env var */
-    }
-  }
-  return env.TELEGRAM_CHAT_ID || null;
+    weekly: 'open weekly deck',
+    monthly: 'open monthly packet',
+    sheet: 'open live sheet',
+  }[name] || 'open report';
 }
 
 export function buildTelegramDeliveryMessage({ metrics, artifacts, maxChars = TELEGRAM_MAX_CHARS }) {
   const retro = metrics.docOps.retroCoverage;
   const body = [
-    `PMO semanal - ${windowLabel(metrics)}`,
-    `Historias shipped: ${metrics.throughput.shippedStories} | Epics shipped: ${metrics.throughput.shippedEpics}`,
-    `PR cycle mediano: ${fmt(metrics.prCycleTime.medianHours, 'h')} | p90: ${fmt(metrics.prCycleTime.p90Hours, 'h')}`,
+    `PMO weekly - ${windowLabel(metrics)}`,
+    `Stories shipped: ${metrics.throughput.shippedStories} | Epics shipped: ${metrics.throughput.shippedEpics}`,
+    `Median PR cycle: ${fmt(metrics.prCycleTime.medianHours, 'h')} | p90: ${fmt(metrics.prCycleTime.p90Hours, 'h')}`,
     `Deploys: ${metrics.deployFrequency.total} merges to main | Reverts/hotfix: ${metrics.changeFailProxy.count}`,
     `Doc-ops: LEARNINGS ${metrics.docOps.learningsPromotions} | Retros ${retro.covered}/${retro.total}`,
   ].join('\n');
@@ -69,7 +56,7 @@ export async function sendTelegramMessage({
   fetchImpl = fetch,
 }) {
   if (!token) throw new Error('TELEGRAM_BOT_TOKEN is not set — export it before running pmo-report.mjs.');
-  if (!chatId) throw new Error('No Telegram chat id configured — set TELEGRAM_CHAT_ID or .claude/config/pmo-report.json.');
+  if (!chatId) throw new Error('No Telegram chat id configured — set telegram.chatIds.pmo or telegram.chatId in reporting.config.json, or TELEGRAM_CHAT_ID.');
 
   const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',

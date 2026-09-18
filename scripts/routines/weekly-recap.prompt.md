@@ -40,9 +40,9 @@ your draft before it posts.** Same rail as the nightly standup, one altitude hig
 `prose-draft.mjs`** — none of them is authenticated here, and reaching for one produces no report at
 all rather than an obvious failure. This is the single most important line in this file.
 
-Config/secrets first, as before: chat id from `.claude/config/weekly-recap.json` if present, else the
-`TELEGRAM_CHAT_ID` env var (the env var is what actually works in this unattended session, since
-`config.json` is gitignored and can't survive between runs). If genuinely BOTH are unset, that's a
+Config/secrets first: `weekly-recap.mjs` reads the committed `reporting.config.json` (repos, deploy repos)
+and takes the chat id from the `TELEGRAM_CHAT_ID` env var — this repo is public, so the chat id is
+deliberately NOT committed; only a local machine has the gitignored `reporting.config.local.json`. If `TELEGRAM_CHAT_ID` is unset, that's a
 hard stop — use the failure ping below; never `AskUserQuestion`, no interactive human is present.
 `TELEGRAM_BOT_TOKEN` must be set.
 
@@ -92,7 +92,5 @@ best-effort POST a one-line alert:
 If either var is unset (or `api.telegram.org` isn't allow-listed), skip it silently — never block on it,
 and **never** ping after a run that completed successfully, even a fully quiet one.
 
-Note: `TELEGRAM_CHAT_ID` here (the failure-ping env var, matching the other routines' convention) and the
-`chat_id` in `.claude/config/weekly-recap.json` (what `weekly-recap.mjs` actually posts the recap to) are
-typically the **same** MiyagiDevopsTele bot/chat, just sourced differently for two different call sites —
-same pattern `ops-nightly.prompt.md` already documents for `standup-post`, not a new wrinkle.
+Note: `TELEGRAM_CHAT_ID` here is both the failure-ping target and what `weekly-recap.mjs` posts the recap
+to — one variable, both call sites.

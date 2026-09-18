@@ -5,7 +5,7 @@
 // the caller's already-computed URL-hash link (LEARNINGS soft-mode pattern: standup.mjs/weekly-recap.mjs
 // already do this for a missing/wiped delta-log baseline; this is the same discipline applied to a new
 // failure mode). Callers keep building the URL-hash link first (scripts/lib/pmo-templates.mjs's
-// buildSmallDocsUrl) — this module only ever *upgrades* that link, never replaces the guaranteed fallback.
+// buildDocViewerUrl) — this module only ever *upgrades* that link, never replaces the guaranteed fallback.
 //
 // Slug -> object path convention (matches infra/gcp/provision-report-registry.sh's lifecycle rule and
 // the fork's /r/<slug> resolver EXACTLY — a change here needs the same-wave change called out in
@@ -428,7 +428,7 @@ export async function buildReportLink({
 // Convenience for the report scripts: mutates each `{ name, markdown, url }` artifact's `url` in place
 // (keeping `url` as the fallback if the upgrade fails) and returns the same array, so a caller can do
 // `artifacts = await upgradeArtifactLinks(artifacts, { dryRun })` right after building them with the
-// existing URL-hash builder (scripts/lib/pmo-templates.mjs's buildSmallDocsUrl /
+// existing URL-hash builder (scripts/lib/pmo-templates.mjs's buildDocViewerUrl /
 // scripts/lib/standup-deck.mjs's buildStandupArtifacts) with no other call-site changes. `options` is
 // forwarded to buildReportLink as-is — pass `dryRun: true` to skip every write for this run (see
 // buildReportLink's `dryRun` param above).

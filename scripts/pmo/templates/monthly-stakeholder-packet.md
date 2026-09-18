@@ -1,5 +1,5 @@
 ---
-title: "PMO mensual - {{window.label}}"
+title: "PMO monthly - {{window.label}}"
 styles:
   fontFamily: "Inter"
   baseFontSize: 15
@@ -8,46 +8,46 @@ styles:
   h2: { fontSize: 1.25, fontWeight: 600 }
 ---
 
-# PMO mensual - {{window.label}}
+# PMO monthly - {{window.label}}
 
-## Resumen ejecutivo
+## Executive summary
 
-Este paquete comunica rendimiento operativo en lenguaje PMO: flujo, DORA, calidad y disciplina documental.
-La comparacion externa se presenta como diferencial, no como experimento controlado.
+This packet reports operational performance in PMO terms: flow, DORA, quality and documentation discipline.
+The external comparison is a differential, not a controlled experiment.
 
-## Indicadores
+## Indicators
 
-| Indicador | Valor |
+| Indicator | Value |
 |---|---:|
-| Historias shipped | {{throughput.shippedStories}} |
+| Stories shipped | {{throughput.shippedStories}} |
 | Epics shipped | {{throughput.shippedEpics}} |
-| Deploys por semana | {{deploys.perWeek}} |
-| Ciclo PR mediano | {{cycle.medianHours}}h |
-| Lead time epic mediano | {{epics.medianDays}} dias |
+| Deploys per week | {{deploys.perWeek}} |
+| Median PR cycle | {{cycle.medianHours}}h |
+| Median epic lead time | {{epics.medianDays}} days |
 | Change-failure proxy | {{quality.changeFailureRatePercent}}% |
-| Promociones a LEARNINGS | {{docOps.learningsPromotions}} |
+| LEARNINGS promotions | {{docOps.learningsPromotions}} |
 | Retro coverage | {{docOps.retroCovered}}/{{docOps.retroTotal}} |
 
-## Benchmarks externos
+## External benchmarks
 
-| Senal comparable | PMO | Benchmark | Lectura |
+| Comparable signal | PMO | Benchmark | Reading |
 |---|---:|---:|---|
-| Deploys por semana | {{deploys.perWeek}} | {{benchmarks.deploysPerWeek}} | Mayor es mejor |
-| PR cycle mediano | {{cycle.medianHours}}h | {{benchmarks.prCycleMedianHours}}h | Menor es mejor |
-| Epic lead mediano | {{epics.medianDays}} dias | {{benchmarks.epicLeadMedianDays}} dias | Menor es mejor |
-| Change-failure proxy | {{quality.changeFailureRatePercent}}% | {{benchmarks.changeFailureRatePercent}}% | Menor es mejor |
+| Deploys per week | {{deploys.perWeek}} | {{benchmarks.deploysPerWeek}} | Higher is better |
+| Median PR cycle | {{cycle.medianHours}}h | {{benchmarks.prCycleMedianHours}}h | Lower is better |
+| Median epic lead | {{epics.medianDays}} days | {{benchmarks.epicLeadMedianDays}} days | Lower is better |
+| Change-failure proxy | {{quality.changeFailureRatePercent}}% | {{benchmarks.changeFailureRatePercent}}% | Lower is better |
 
-Fuente: {{benchmarks.sourceLine}}. {{benchmarks.framing}}
+Source: {{benchmarks.sourceLine}}. {{benchmarks.framing}}
 
-## Evidencia visual
+## Visual evidence
 
 ```chart
-{"type":"bar","title":"PMO mensual","labels":["Historias","Epics","Deploys","Doc ops"],"values":[{{throughput.shippedStories}},{{throughput.shippedEpics}},{{deploys.total}},{{docOps.learningsPromotions}}],"color":"#2563eb"}
+{"type":"bar","title":"PMO monthly","labels":["Stories","Epics","Deploys","Doc ops"],"values":[{{throughput.shippedStories}},{{throughput.shippedEpics}},{{deploys.total}},{{docOps.learningsPromotions}}],"color":"#2563eb"}
 ```
 
-## Lectura
+## Reading
 
-- El throughput se infiere del historial real, no de story points.
-- Deploy frequency equivale a merges a `main`, como define WAYS-OF-WORKING.
-- Change-fail proxy cuenta reverts/hotfixes.
-- Doc-ops mide amplitud de Roadmap, LEARNINGS y retrospectivas.
+- Throughput is inferred from real history, not story points.
+- Deploy frequency equals merges to `main`, as WAYS-OF-WORKING defines it.
+- The change-fail proxy counts reverts/hotfixes.
+- Doc-ops measures the breadth of Roadmap, LEARNINGS and retrospective activity.

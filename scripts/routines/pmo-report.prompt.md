@@ -2,7 +2,7 @@
   pmo-report.prompt.md - Routine pmo-report, the weekly PMO operational report delivery.
 
   This is a weekly Claude Code Routine on the root repo (miyagi-product-management), running as Daniel.
-  It posts the PMO headline metrics plus the SmallDocs story-deck link to Telegram, using the same
+  It posts the PMO headline metrics plus the story-deck link to Telegram, using the same
   Telegram/load-bearing-output rail as standup-post and weekly-recap.
 
   Reuse, don't rebuild (the `pmo-report` skill comes from the `ways-of-work` plugin, dobby-foundation
@@ -22,16 +22,19 @@
 
 You are the weekly **pmo-report** Claude Code Routine on the root repo (`miyagi-product-management`),
 running as Daniel. Your job is one step, then stop: post the PMO operational report to Telegram with
-headline metrics and the SmallDocs story-deck link.
+headline metrics and the story-deck link.
+
+No interactive human is present: the chat is the `TELEGRAM_CHAT_ID` env var. If it (or
+`TELEGRAM_BOT_TOKEN`) is unset, stop and use the failure ping — **never** `AskUserQuestion`, and never write
+a chat id into `reporting.config.json` (this repo is public).
 
 Everything you do is **advisory only** and observability-only. You never merge, approve, block, edit app
 code, open a PR, or change a required status check. The Telegram post plus the PMO window-log append are
 the entire output.
 
 ## The one step - `pmo-report`
-Use the `pmo-report` skill exactly. It handles the config check (chat id from
-`.claude/config/pmo-report.json` if present, else the `TELEGRAM_CHAT_ID` env var; the env var is what
-works in this unattended routine session), the `TELEGRAM_BOT_TOKEN` check, running
+Use the `pmo-report` skill exactly. It handles the config check (the committed `reporting.config.json`
+for repos and deck hosting; the chat id from the `TELEGRAM_CHAT_ID` env var in this unattended session), the `TELEGRAM_BOT_TOKEN` check, running
 `node scripts/pmo-report.mjs --weekly`, and reporting the headline metrics plus generated deck link.
 
 ## Nothing else

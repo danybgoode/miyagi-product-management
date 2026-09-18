@@ -209,10 +209,10 @@ routine (cap-safe) — see the budget table below.
      **LOAD-BEARING** (step 4's actual output), not the optional failure-ping the other three routines
      use.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
-     unattended routine run.** `.claude/config/standup-post.json`'s `chat_id` (gitignored, per the
-     D-spike's user-specific-setup convention) is preferred when present, but a routine's cloud sandbox
-     is a fresh checkout every run, so a locally-written `config.json` never persists to the next run —
-     `standup.mjs` falls back to this env var, and it's the same one the optional failure-ping already
+     unattended routine run.** The committed `reporting.config.json` carries repos and signals but
+     deliberately NOT the chat id (this repo is public); a local run may put it in the gitignored
+     `reporting.config.local.json`, which never exists in a routine's fresh checkout — so
+     `standup.mjs` uses this env var, and it's the same one the optional failure-ping already
      needed, so one setting covers both.
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other three routines' optional ping — here it's required for step 4 to do anything at all).
@@ -264,7 +264,7 @@ routine (cap-safe) — see the budget table below.
      "unavailable" without it (confirmed live in S1), same fallback the standup has always had; this is
      purely so step 2's own dry-run report has real numbers to show, rather than an auth error.
 5. **Output:** one Telegram message per night (the standup) — either the delta lines or a one-line
-   "quiet night, no change" post, now with a `SmallDocs standup:` story-deck link appended for mobile
+   "quiet night, no change" post, now with a `Deck standup:` story-deck link appended for mobile
    reading/forwarding — **plus, only when there's something to act on:** a `claude/` docs PR from step 1
    (board was stale) and/or an advisory comment on a PR from step 3 (it had a conflict or a retryable
    failing check). **Never** an `--apply` run, **never** a merge, **never** a required check.
@@ -299,10 +299,9 @@ and a short retro digest per shipped epic — then posts one Telegram message.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — this routine's Telegram use is
      **LOAD-BEARING** (its one step's actual output), same as `ops-nightly`'s.
    - **`TELEGRAM_CHAT_ID`** in the routine's environment — **this is the one that actually works for an
-     unattended routine run** (same reasoning as `ops-nightly`'s: `.claude/config/weekly-recap.json`'s
-     `chat_id`, its own file separate from `standup-post.json` per the D-spike's per-skill
-     convention, is preferred when present, but can't persist across a routine's fresh-checkout-per-run
-     sandbox — `weekly-recap.mjs` falls back to this env var, the same one the optional failure-ping
+     unattended routine run** (same reasoning as `ops-nightly`'s: the chat id is not in the committed
+     `reporting.config.json`, and the gitignored local overlay never reaches a routine's fresh
+     checkout — `weekly-recap.mjs` uses this env var, the same one the optional failure-ping
      already needed).
    - **Network access → Custom**, with **`api.telegram.org`** allow-listed (same requirement as the
      other routines).
@@ -319,7 +318,7 @@ and a short retro digest per shipped epic — then posts one Telegram message.
 
 Shipped by [`pmo-operational-reports`](../../Roadmap/09-platform-infra/pmo-operational-reports/README.md)
 S3. One step: the `pmo-report` skill (`scripts/pmo-report.mjs --weekly`) gathers scrum/DORA/doc-ops
-metrics, renders a SmallDocs story-deck URL, posts headline numbers plus the deck link to Telegram, and
+metrics, renders a story-deck URL, posts headline numbers plus the deck link to Telegram, and
 then advances the PMO window log.
 
 1. **Install the Claude GitHub App** on `miyagi-product-management` if not already done for Routine C /
@@ -332,13 +331,12 @@ then advances the PMO window log.
      reads merged/open PRs across all 3 repos through the REST rail.
    - **`TELEGRAM_BOT_TOKEN`** in the routine's environment — load-bearing; the Telegram post is the
      routine's actual output.
-   - **`TELEGRAM_CHAT_ID`** in the routine's environment — the unattended path. A local
-     `.claude/config/pmo-report.json` is still supported for manual runs, but it is gitignored and will
-     not survive routine sessions.
+   - **`TELEGRAM_CHAT_ID`** in the routine's environment — the unattended path. A local run can put the
+     chat id in the gitignored `reporting.config.local.json`; it never reaches a routine session.
    - **Network access -> Custom**, with **`api.telegram.org`** allow-listed.
    - **No unrestricted branch push needed** — the PMO window log lives on `claude/pmo-reports-log`
      through `scripts/lib/log-branch.mjs`.
-5. **Output:** one Telegram message per week with headline PMO numbers plus a SmallDocs story-deck link.
+5. **Output:** one Telegram message per week with headline PMO numbers plus a story-deck link.
    **Never** a PR, **never** a merge, **never** a required check.
 
 ## Routine prod-smoke — Daily production watchdog  *(seventh routine — a REWRITE of the oldest one)*
