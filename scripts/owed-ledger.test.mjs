@@ -9,9 +9,9 @@ import { categorise, extractMarkers, buildLedger, renderMarkdown, listSpecFiles,
 test('extractMarkers: finds the real comment shapes used in the tree', () => {
   const src = [
     'import { test } from "@playwright/test"',
-    '// the authed promoter smoke is owed to Daniel per sprint-1.md',
-    ' * live-Shopify-domain pull is owed to Daniel. See the epic README.',
-    '// Owed (Daniel, one-time): the MS_TEST_* repo secrets',
+    '// the authed promoter smoke is owed to the product owner per sprint-1.md',
+    ' * live-Shopify-domain pull is owed to the product owner. See the epic README.',
+    '// Owed (the product owner, one-time): the test-identity repo secrets',
     'const x = 1 // nothing to see here',
   ].join('\n');
   const found = extractMarkers(src, 'e2e/x.spec.ts');
@@ -19,16 +19,16 @@ test('extractMarkers: finds the real comment shapes used in the tree', () => {
   assert.equal(found[0].line, 2);
   // Comment punctuation is stripped so the ledger reads as prose.
   assert.ok(!found[1].text.startsWith('*'));
-  assert.match(found[2].text, /^Owed \(Daniel/);
+  assert.match(found[2].text, /^Owed \(the product owner/);
 });
 
-test('extractMarkers: matching is case-insensitive and tolerates "owed (Daniel"', () => {
-  assert.equal(extractMarkers('// OWED TO DANIEL', 'f.spec.ts').length, 1);
-  assert.equal(extractMarkers('// owed (Daniel) — a manual check', 'f.spec.ts').length, 1);
+test('extractMarkers: matching is case-insensitive and tolerates "owed (the product owner"', () => {
+  assert.equal(extractMarkers('// OWED TO THE PRODUCT OWNER', 'f.spec.ts').length, 1);
+  assert.equal(extractMarkers('// owed (the product owner) — a manual check', 'f.spec.ts').length, 1);
 });
 
-test('extractMarkers: an unrelated mention of Daniel is not a marker', () => {
-  assert.equal(extractMarkers('// Daniel asked for this copy change', 'f.spec.ts').length, 0);
+test('extractMarkers: an unrelated mention of the product owner is not a marker', () => {
+  assert.equal(extractMarkers('// the product owner asked for this copy change', 'f.spec.ts').length, 0);
 });
 
 test('extractMarkers: empty/undefined input yields nothing rather than throwing', () => {
@@ -126,4 +126,37 @@ test('listSpecFiles: a fully readable tree returns sorted spec files', () => {
   const read = (d) => (d === '/r' ? ['b.spec.ts', 'a.spec.ts', 'notes.md'] : []);
   const stat = (p) => ({ isDirectory: () => !/\.(spec\.ts|md)$/.test(p) });
   assert.deepEqual(listSpecFiles('/r', { read, stat }), ['/r/a.spec.ts', '/r/b.spec.ts']);
+});
+
+// ── Configurable owners + derived spec dirs (plugin-audit-and-extraction S2.5) ────────────────────
+
+test('markerFor: a project can owe checks to a named person as well as the role', async () => {
+  const { markerFor } = await import('./owed-ledger.mjs');
+  const m = markerFor(['the product owner', 'Jordan']);
+  assert.equal(extractMarkers('// owed to Jordan: the live payout smoke', 'f.spec.ts', m).length, 1);
+  assert.equal(extractMarkers('// Owed (Jordan, one-time)', 'f.spec.ts', m).length, 1);
+  assert.equal(extractMarkers('// Jordan asked for this', 'f.spec.ts', m).length, 0);
+  // A name with regex metacharacters is matched literally, not as a pattern.
+  assert.equal(extractMarkers('// owed to J.R.', 'f.spec.ts', markerFor(['J.R.'])).length, 1);
+  assert.equal(extractMarkers('// owed to JxRx', 'f.spec.ts', markerFor(['J.R.'])).length, 0);
+});
+
+test('resolveOwedConfig: config wins; otherwise the role owner and every apps/*/e2e that exists', async () => {
+  const { resolveOwedConfig, DEFAULT_OWNERS } = await import('./owed-ledger.mjs');
+  const { ReportingConfigError } = await import('./lib/reporting-config.mjs');
+  const fsFake = (present) => ({ exists: (p) => present.some((x) => p.endsWith(x)), readdir: () => ['web', 'api'] });
+  const fromConfig = resolveOwedConfig({ root: '/r', load: () => ({ owed: { owners: ['Jordan'], specDirs: ['e2e'] } }), ...fsFake([]) });
+  assert.deepEqual(fromConfig, { owners: ['Jordan'], specDirs: ['e2e'] });
+  // A PRESENT but broken config must not silently fall back to the defaults.
+  assert.throws(() => resolveOwedConfig({
+    root: '/r',
+    load: () => { throw new ReportingConfigError('/r/reporting.config.json: "owed.owners" must be an array'); },
+    ...fsFake(['/r/reporting.config.json']),
+  }), /owed\.owners/);
+  const derived = resolveOwedConfig({
+    root: '/r',
+    load: () => { throw new ReportingConfigError('absent'); },
+    ...fsFake(['/r/apps', 'apps/web/e2e']),
+  });
+  assert.deepEqual(derived, { owners: DEFAULT_OWNERS, specDirs: ['apps/web/e2e'] });
 });

@@ -1,30 +1,34 @@
 #!/usr/bin/env node
 // session-resume.mjs — the expensive half of session continuity (README.md D1): derive the TRUE state,
-// live, across all 3 repos + the intent journal, and lead with what's surprising (D3). Never trust a
+// live, across the project's repos + the intent journal, and lead with what's surprising (D3). Never trust a
 // stale doc or a resumed agent's pre-kill memory — this opens with real git/gh/DB reads.
 //
 // Usage:
 //   node scripts/session-resume.mjs [--json] [--root <path>] [--journal-limit N] [--all-migrations]
 //
-// --root defaults to this script's own repo root (so apps/miyagisanchez + apps/backend resolve as
-// siblings) — pass --root explicitly when running from a worktree of the root repo, since apps/* are
-// gitignored, repo-local directories that a `git worktree add` of the ROOT repo does NOT populate (they
-// are each their OWN separate git repo, absent from the worktree's tree entirely). Running without --root
-// from inside such a worktree is not a bug: it correctly degrades those two repos to "path not found",
-// which is itself one of D4's named degradation classes.
+// WHICH repos: the project's one repo list — reporting.config.json's `repos` — plus its optional
+// `checkouts` map (`{ "owner/name": "apps/web" }`, relative to --root) naming where each is checked out
+// locally. A repo with a checkout gets the full git read; one without gets the gh read only, and the brief
+// says so. With no reporting.config.json at all this degrades (D4) to the repo it runs in. Ported into the
+// dobby-foundation template by plugin-audit-and-extraction S2 (story 2.3); the logic is the origin's.
+//
+// --root defaults to this script's own repo root, so checkouts nested inside it (e.g. apps/<name>, each
+// its OWN git repo) resolve as siblings. Pass --root explicitly when running from a worktree of the root
+// repo: a `git worktree add` does NOT populate gitignored nested checkouts, so without --root those repos
+// correctly degrade to "path not found" — itself one of D4's named degradation classes.
 //
 // Derives (D3's "full derived state"): current branch, ahead/behind origin/main, dirty/untracked files,
 // `git worktree list` + each worktree's own dirty state, open PRs with mergeability + CI rollup, recently
-// merged PRs — across the SAME 3 repos as standup.mjs, same reasoning (README.md). Plus migration drift
+// merged PRs — across the SAME repos standup.mjs reads (reporting.config.json). Plus migration drift
 // (D5): repo migration files vs the live `supabase_migrations.schema_migrations`, both directions, via
 // `supabase migration list --linked` (a read-only CLI call — this script NEVER applies a migration, never
 // `db push`). That check only runs against a repo that actually owns a non-empty `supabase/migrations`
-// directory — in this monorepo today that's `apps/miyagisanchez` only; apps/backend and the root repo are
-// skipped uneventfully (not flagged as 100% drift) rather than compared against migration files that
-// simply don't live there.
+// directory — a checkout with no migrations of its own is skipped uneventfully (not flagged as 100%
+// drift) rather than compared against migration files that simply don't live there. A project that does
+// not use supabase never triggers this check at all.
 //
-// Anomalies first (D3): a non-main branch with no open PR (the apps/backend / feat/order-payment-capture-
-// state case that motivated this epic), a dirty tree (main or any worktree), an open PR with red CI or a
+// Anomalies first (D3): a non-main branch with no open PR (in the origin project, a backend checkout
+// left on a feature branch nobody had opened — the case that motivated this script), a dirty tree (main or any worktree), an open PR with red CI or a
 // conflict, migration drift in EITHER direction. Then the last N journal lines
 // (scripts/lib/session-journal.mjs, read from claude/session-journal via scripts/lib/log-branch.mjs,
 // reused unchanged). Then the full derived state.
@@ -49,17 +53,45 @@ import { dirname, join, resolve } from 'node:path';
 import { listPulls, getPullMergeability, getStatusRollup } from './lib/gh-rest.mjs';
 import { readLogFromBranch } from './lib/log-branch.mjs';
 import { parseJournal, lastNEntries, formatEntry, JOURNAL_BRANCH, JOURNAL_PATH } from './lib/session-journal.mjs';
+import { loadReportingConfig, ReportingConfigError } from './lib/reporting-config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = join(__dirname, '..');
 
-// The SAME 3 repos + reasoning as standup.mjs (README.md: "standup.mjs's 3-repo constant — the same
-// three repos, same reasoning"). `dir` is relative to --root/DEFAULT_ROOT.
-export const REPOS = [
-  { repo: 'danybgoode/miyagi-product-management', dir: '.' },
-  { repo: 'danybgoode/miyagisanchezcommerce', dir: 'apps/miyagisanchez' },
-  { repo: 'danybgoode/medusa-bonsai-backend', dir: 'apps/backend' },
-];
+/**
+ * The repos to derive state for, as `{ repo, dir }` (`dir` relative to --root; null = no local checkout).
+ * From reporting.config.json — the same list the standup reads — and its optional `checkouts` map. The
+ * repo whose `origin` remote this checkout points at is `.` unless the map says otherwise. No config →
+ * just this repo (D4: degrade, never die), with the reason returned so the brief can name the gap.
+ */
+export function resolveRepos({ root = DEFAULT_ROOT, loadConfig = loadReportingConfig, spawn = spawnSync } = {}) {
+  const origin = originRepo({ root, spawn });
+  let config;
+  try {
+    config = loadConfig({ root });
+  } catch (e) {
+    if (!(e instanceof ReportingConfigError)) throw e;
+    return {
+      repos: origin ? [{ repo: origin, dir: '.' }] : [],
+      note: `no usable reporting.config.json (${e.message.split('\n')[0]}) — reading only this repo`,
+    };
+  }
+  const checkouts = config.checkouts || {};
+  return {
+    repos: config.repos.map((repo) => ({
+      repo,
+      dir: checkouts[repo] ?? (repo === origin ? '.' : null),
+    })),
+    note: null,
+  };
+}
+
+function originRepo({ root, spawn }) {
+  const r = spawn('git', ['remote', 'get-url', 'origin'], { cwd: root, encoding: 'utf8' });
+  if (r.error || r.status !== 0) return null;
+  const m = String(r.stdout).trim().match(/github\.com[:/]([^/]+\/[^/.\s]+?)(?:\.git)?$/);
+  return m ? m[1] : null;
+}
 
 const JOURNAL_LIMIT_DEFAULT = 10;
 const RECENT_MERGED_LIMIT = 8;
@@ -172,7 +204,7 @@ export function decideStrayBranch({ branch, detached, openPrs }) {
   if (hasPr) return null;
   return {
     type: 'stray-branch',
-    detail: `on branch \`${branch}\` with no open PR — leftover state from an earlier session (the case that motivated this epic).`,
+    detail: `on branch \`${branch}\` with no open PR — leftover state from an earlier session (the case that motivated this check).`,
   };
 }
 
@@ -345,7 +377,7 @@ export function decideMigrationAnomalies({ repo, unappliedLocal, appliedNoFile, 
  *
  * `~/.claude/projects/<slug>/memory/MEMORY.md` is loaded into every session, but only the
  * first ~24.4 KB of it. Past that the tail is TRUNCATED with no error anywhere — and the
- * tail is where the "Open items owed to Daniel" section and the epic lists live, so the
+ * tail is where the "Open items owed to the product owner" section and the epic lists live, so the
  * failure mode is an agent that cannot see what it owes and has no way to know. It reached
  * 29.7 KB on 2026-08-19 and had been truncating for an unknown number of sessions; the only
  * reason it surfaced was a warning appended to the file's own loaded prefix.
@@ -660,9 +692,10 @@ function gatherRepoGh({ repo, listPullsFn, mergeFn, rollupFn }) {
   return { available: true, open: openDetailed, recentMerged };
 }
 
-function gatherMigrationDrift({ root, existsSyncFn, readdirSyncFn, spawn }) {
+function gatherMigrationDrift({ repos, root, existsSyncFn, readdirSyncFn, spawn }) {
   const results = [];
-  for (const r of REPOS) {
+  for (const r of repos) {
+    if (r.dir == null) continue; // no local checkout — nothing to compare
     const migDir = join(root, r.dir, 'supabase', 'migrations');
     if (!existsSyncFn(migDir)) continue; // no migration files owned here — not this repo's concern
     let files;
@@ -727,7 +760,7 @@ function help() {
   return [
     'Usage: node scripts/session-resume.mjs [--json] [--root <path>] [--journal-limit N] [--all-migrations]',
     '',
-    'Derives live state across the 3 repos (git/gh/migrations) and the session journal; leads with',
+    'Derives live state across the project repos (git/gh/migrations) and the session journal; leads with',
     'anomalies (D3). Degrades, never dies (D4): an unauthenticated gh, a missing repo, an empty',
     'journal, or an unavailable DB read each produce a partial brief naming the gap, never a crash.',
   ].join('\n');
@@ -754,6 +787,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     statFn = statSync,
     homeDir = process.env.HOME,
     now,
+    resolveReposFn = resolveRepos,
   } = deps;
 
   let args;
@@ -769,14 +803,18 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
   }
 
   try {
-    const repoStates = REPOS.map((r) => ({
+    const { repos, note: reposNote } = resolveReposFn({ root: args.root, spawn });
+    if (reposNote) warn(`⚠ session-resume: ${reposNote}`);
+    const repoStates = repos.map((r) => ({
       repo: r.repo,
       dir: r.dir,
-      git: gatherRepoGit({ dir: r.dir, root: args.root, existsSyncFn, spawn }),
+      git: r.dir == null
+        ? { available: false, reason: 'no local checkout configured (reporting.config.json → checkouts)' }
+        : gatherRepoGit({ dir: r.dir, root: args.root, existsSyncFn, spawn }),
       gh: gatherRepoGh({ repo: r.repo, listPullsFn, mergeFn, rollupFn }),
     }));
 
-    const migrationResults = gatherMigrationDrift({ root: args.root, existsSyncFn, readdirSyncFn, spawn });
+    const migrationResults = gatherMigrationDrift({ repos, root: args.root, existsSyncFn, readdirSyncFn, spawn });
     const journal = gatherJournal({ root: args.root, readLogFromBranchFn });
 
     const report = buildReport({

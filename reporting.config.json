@@ -6,13 +6,29 @@
     "danybgoode/medusa-bonsai-backend"
   ],
   "deployRepos": [
-    { "label": "Frontend", "repo": "danybgoode/miyagisanchezcommerce" },
-    { "label": "Backend", "repo": "danybgoode/medusa-bonsai-backend" }
+    {
+      "label": "Frontend",
+      "repo": "danybgoode/miyagisanchezcommerce"
+    },
+    {
+      "label": "Backend",
+      "repo": "danybgoode/medusa-bonsai-backend"
+    }
   ],
-  "smoke": { "repo": "danybgoode/miyagisanchezcommerce", "workflow": "browser-smoke.yml" },
+  "smoke": {
+    "repo": "danybgoode/miyagisanchezcommerce",
+    "workflow": "browser-smoke.yml"
+  },
   "stalePreviewAgeDays": 7,
   "liveFlags": {
-    "command": ["supabase", "db", "query", "--linked", "--csv", "SELECT key FROM platform_flags WHERE enabled IS TRUE ORDER BY key"],
+    "command": [
+      "supabase",
+      "db",
+      "query",
+      "--linked",
+      "--csv",
+      "SELECT key FROM platform_flags WHERE enabled IS TRUE ORDER BY key"
+    ],
     "cwd": "apps/miyagisanchez"
   },
   "artifacts": {
@@ -23,6 +39,25 @@
     }
   },
   "prose": {
-    "extraBannedToolNames": ["medusa", "clerk", "cloud run", "mercado ?libre"]
+    "extraBannedToolNames": [
+      "medusa",
+      "clerk",
+      "cloud run",
+      "mercado ?libre"
+    ]
+  },
+  "checkouts": {
+    "danybgoode/miyagi-product-management": ".",
+    "danybgoode/miyagisanchezcommerce": "apps/miyagisanchez",
+    "danybgoode/medusa-bonsai-backend": "apps/backend"
+  },
+  "owed": {
+    "owners": [
+      "Daniel",
+      "the product owner"
+    ],
+    "specDirs": [
+      "apps/miyagisanchez/e2e"
+    ]
   }
 }
