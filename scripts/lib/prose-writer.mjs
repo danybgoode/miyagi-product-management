@@ -59,6 +59,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkProse, findingsToRevisionNote } from './prose-guard.mjs';
+import { loadReportingConfig, ReportingConfigError } from './reporting-config.mjs';
 import {
   runAntigravity,
   runDevin,
@@ -295,6 +296,21 @@ export function planWriters({ devinAvailable, agyAvailable, codexAvailable, pref
  * because a flawed draft a human can see and fix beats a hard failure that produces nothing (D3).
  * The caller is responsible for SURFACING `guard` rather than quietly publishing the text.
  */
+// The project's own stack names for the prose guard (reporting.config.json → prose.extraBannedToolNames),
+// applied HERE so every caller of writeProse gets them — not just the ones that remember to pass them.
+// Found in review of the origin project's migration: the names moved from the guard's built-in list to
+// config, only the standup and weekly recap passed them back in, and the merge report (which posts on
+// every merge) silently stopped blocking "Clerk"/"Cloud Run". A project with no reporting config has no
+// extra names — that is "none configured", not an error, since prose-draft runs without one.
+export function projectBannedToolNames({ load = loadReportingConfig } = {}) {
+  try {
+    return load().prose.extraBannedToolNames;
+  } catch (e) {
+    if (e instanceof ReportingConfigError) return [];
+    throw e;
+  }
+}
+
 export function writeProse({ prompt, evidence, preferred }, deps = {}) {
   const {
     devin = draftWithDevin,
@@ -303,7 +319,10 @@ export function writeProse({ prompt, evidence, preferred }, deps = {}) {
     has = hasCmd,
     guard = checkProse,
     warn = (m) => process.stderr.write(`${m}\n`),
+    extraBannedToolNames = projectBannedToolNames,
   } = deps;
+  // A caller-supplied list wins; otherwise the project's configured one. Resolved once per write.
+  evidence = { ...evidence, extraBannedToolNames: evidence?.extraBannedToolNames ?? extraBannedToolNames() };
 
   const writers = planWriters({
     devinAvailable: has('devin'),

@@ -42,7 +42,7 @@ all rather than an obvious failure. This is the single most important line in th
 
 Config/secrets first: `weekly-recap.mjs` reads the committed `reporting.config.json` (repos, deploy repos)
 and takes the chat id from the `TELEGRAM_CHAT_ID` env var — this repo is public, so the chat id is
-deliberately NOT committed; only a local machine has the gitignored `reporting.config.local.json`. If genuinely BOTH are unset, that's a
+deliberately NOT committed; only a local machine has the gitignored `reporting.config.local.json`. If `TELEGRAM_CHAT_ID` is unset, that's a
 hard stop — use the failure ping below; never `AskUserQuestion`, no interactive human is present.
 `TELEGRAM_BOT_TOKEN` must be set.
 

@@ -2,7 +2,7 @@
   pmo-report.prompt.md - Routine pmo-report, the weekly PMO operational report delivery.
 
   This is a weekly Claude Code Routine on the root repo (miyagi-product-management), running as Daniel.
-  It posts the PMO headline metrics plus the SmallDocs story-deck link to Telegram, using the same
+  It posts the PMO headline metrics plus the story-deck link to Telegram, using the same
   Telegram/load-bearing-output rail as standup-post and weekly-recap.
 
   Reuse, don't rebuild (the `pmo-report` skill comes from the `ways-of-work` plugin, dobby-foundation
@@ -22,7 +22,11 @@
 
 You are the weekly **pmo-report** Claude Code Routine on the root repo (`miyagi-product-management`),
 running as Daniel. Your job is one step, then stop: post the PMO operational report to Telegram with
-headline metrics and the SmallDocs story-deck link.
+headline metrics and the story-deck link.
+
+No interactive human is present: the chat is the `TELEGRAM_CHAT_ID` env var. If it (or
+`TELEGRAM_BOT_TOKEN`) is unset, stop and use the failure ping — **never** `AskUserQuestion`, and never write
+a chat id into `reporting.config.json` (this repo is public).
 
 Everything you do is **advisory only** and observability-only. You never merge, approve, block, edit app
 code, open a PR, or change a required status check. The Telegram post plus the PMO window-log append are

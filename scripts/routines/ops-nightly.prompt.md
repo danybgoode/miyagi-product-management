@@ -72,7 +72,7 @@ all rather than an obvious failure. This is the single most important line in th
 Config/secrets first: `standup.mjs` reads the committed `reporting.config.json` (repos, smoke workflow,
 signals) and takes the chat id from the `TELEGRAM_CHAT_ID` env var — this repo is public, so the chat id
 is deliberately NOT in the committed file, and a gitignored `reporting.config.local.json` only exists on a
-local machine, never in this unattended session. If genuinely BOTH are unset, that's
+local machine, never in this unattended session. If `TELEGRAM_CHAT_ID` is unset, that's
 a hard stop — use the failure ping below instead of guessing; never `AskUserQuestion`, no interactive
 human is present. `TELEGRAM_BOT_TOKEN` must be set.
 
@@ -103,7 +103,7 @@ node scripts/standup.mjs --post --prose-file <your-file>
 - Do not loop more than that. One revision, then post.
 
 The posted message is prose first, then the compact actionable signals (CI red, conflicts, stale
-board), then the `SmallDocs standup:` deck link. Its CI-red and merge-conflict signals are read fresh
+board), then the `Deck standup:` link. Its CI-red and merge-conflict signals are read fresh
 at this point — after steps 1–3 had a chance to fix/flag things — so they reflect current state, not a
 stale pre-run snapshot.
 

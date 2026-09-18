@@ -372,3 +372,50 @@ test('draftWithCodex: exit 0 with EMPTY text is a failure, not an empty success'
   assert.equal(r.text, '');
   assert.equal(r.retryable, true);
 });
+
+// ── The project's stack names reach EVERY writeProse caller (review of the origin's migration) ─────
+// The names left the guard's built-in list for reporting.config.json; only the standup and weekly
+// recap passed them back, so the merge report silently stopped blocking them. writeProse now applies
+// them itself — these pin that a caller who passes nothing still gets them.
+
+test('writeProse applies the project-configured stack names even when the caller passes none', () => {
+  const seen = [];
+  const r = writeProse(
+    { prompt: 'p', evidence: {} },
+    {
+      devin: okWriter('The Acmecart cart now survives a refresh.'),
+      has: (c) => c === 'devin',
+      warn: silent,
+      extraBannedToolNames: () => ['acmecart'],
+      guard: (draft, ev) => {
+        seen.push(ev.extraBannedToolNames);
+        return { ok: false, findings: [{ code: 'names-implementation', note: 'x' }] };
+      },
+    }
+  );
+  assert.deepEqual(seen[0], ['acmecart'], 'the guard never saw the configured names');
+  assert.equal(r.guard.ok, false);
+});
+
+test('a caller-supplied list wins over the configured one', () => {
+  let got;
+  writeProse(
+    { prompt: 'p', evidence: { extraBannedToolNames: ['explicit'] } },
+    {
+      devin: okWriter(CLEAN),
+      has: (c) => c === 'devin',
+      warn: silent,
+      extraBannedToolNames: () => ['configured'],
+      guard: (d, ev) => ((got = ev.extraBannedToolNames), { ok: true, findings: [] }),
+    }
+  );
+  assert.deepEqual(got, ['explicit']);
+});
+
+test('projectBannedToolNames: no reporting config means none configured, not a crash', async () => {
+  const { projectBannedToolNames } = await import('./prose-writer.mjs');
+  const { ReportingConfigError } = await import('./reporting-config.mjs');
+  assert.deepEqual(projectBannedToolNames({ load: () => { throw new ReportingConfigError('absent'); } }), []);
+  assert.deepEqual(projectBannedToolNames({ load: () => ({ prose: { extraBannedToolNames: ['x'] } }) }), ['x']);
+  assert.throws(() => projectBannedToolNames({ load: () => { throw new TypeError('real bug'); } }), /real bug/);
+});

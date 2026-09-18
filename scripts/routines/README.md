@@ -264,7 +264,7 @@ routine (cap-safe) — see the budget table below.
      "unavailable" without it (confirmed live in S1), same fallback the standup has always had; this is
      purely so step 2's own dry-run report has real numbers to show, rather than an auth error.
 5. **Output:** one Telegram message per night (the standup) — either the delta lines or a one-line
-   "quiet night, no change" post, now with a `SmallDocs standup:` story-deck link appended for mobile
+   "quiet night, no change" post, now with a `Deck standup:` story-deck link appended for mobile
    reading/forwarding — **plus, only when there's something to act on:** a `claude/` docs PR from step 1
    (board was stale) and/or an advisory comment on a PR from step 3 (it had a conflict or a retryable
    failing check). **Never** an `--apply` run, **never** a merge, **never** a required check.
@@ -318,7 +318,7 @@ and a short retro digest per shipped epic — then posts one Telegram message.
 
 Shipped by [`pmo-operational-reports`](../../Roadmap/09-platform-infra/pmo-operational-reports/README.md)
 S3. One step: the `pmo-report` skill (`scripts/pmo-report.mjs --weekly`) gathers scrum/DORA/doc-ops
-metrics, renders a SmallDocs story-deck URL, posts headline numbers plus the deck link to Telegram, and
+metrics, renders a story-deck URL, posts headline numbers plus the deck link to Telegram, and
 then advances the PMO window log.
 
 1. **Install the Claude GitHub App** on `miyagi-product-management` if not already done for Routine C /
@@ -336,7 +336,7 @@ then advances the PMO window log.
    - **Network access -> Custom**, with **`api.telegram.org`** allow-listed.
    - **No unrestricted branch push needed** — the PMO window log lives on `claude/pmo-reports-log`
      through `scripts/lib/log-branch.mjs`.
-5. **Output:** one Telegram message per week with headline PMO numbers plus a SmallDocs story-deck link.
+5. **Output:** one Telegram message per week with headline PMO numbers plus a story-deck link.
    **Never** a PR, **never** a merge, **never** a required check.
 
 ## Routine prod-smoke — Daily production watchdog  *(seventh routine — a REWRITE of the oldest one)*
