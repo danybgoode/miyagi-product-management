@@ -206,23 +206,36 @@ export const RETRO_SECTION_STEMS = [
   { canonical: '## Gaps / follow-ups', stems: ['## Gaps', '## Follow-ups', '## Remaining follow-up'] },
 ];
 
-// The close line: the date a reader (and weekly-recap's retro digest) looks for near the top. The same
-// triage found it written "**Shipped:** 2026-08-20", "_Shipped & LIVE …: 2026-07-23_", "_Written:
-// 2026-07-20…_" and "_Closed 2026-07-21._" — each carries the date the rule exists to find, so the rule is
-// "a close marker with a date in the first lines", not one exact spelling. The scaffold's own
-// "_Closed: <date>_" placeholder stays valid (an unbuilt epic has no date yet). A BOLD "**Closed" line is
-// still reported: it is the one legacy form `--fix` rewrites mechanically.
-const CLOSE_MARKER = /(?<![a-z])(closed|shipped|written|launched|close)(?![a-z])/i; // `_` is a word char, so no \b
-const ISO_DATE = /\d{4}-\d{2}-\d{2}/;
-
+// The close line stays STRICT — `_Closed: YYYY-MM-DD_` — on purpose. A relaxed "any close word with a
+// date" rule was tried after the golden-beans triage and reverted on review: it false-passed lines like
+// "Epic not closed yet — last touched 2026-07-20", and it disagreed with epic-dod.mjs's `retro-written`
+// item (byte-identical across projects), which requires the literal form. One rule, two rails agreeing.
+// A retro that records its close as "**Shipped:** <date>" gets the canonical line added, carrying the
+// same date — that is fixing drift, not relaxing the check.
 export function checkRetrospective(content) {
   const offenses = [];
-  const top = content.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 8);
-  const closedLine = top.find((l) => (CLOSE_MARKER.test(l) && ISO_DATE.test(l)) || l === '_Closed: <date>_');
+  const closedLine = content.split('\n').find((l) => /closed/i.test(l) && l.trim() !== '');
   if (!closedLine) {
-    offenses.push({ rule: 'retro-closed-missing', detail: 'no close line with a date (e.g. "_Closed: YYYY-MM-DD_") near the top' });
-  } else if (/^\*\*Closed/.test(closedLine)) {
-    offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
+    offenses.push({ rule: 'retro-closed-missing', detail: 'no "Closed" date line found near the top' });
+  } else {
+    const trimmed = closedLine.trim();
+    // Canonical is an italic line STARTING with "_Closed: YYYY-MM-DD" — trailing content after the
+    // date (sprint counts, PR refs, caveats) is genuinely the norm across real retros, not drift, as
+    // long as the italic markup actually closes somewhere (immediately after the date, or at the end
+    // of the line). Require: starts with the italic-open + "Closed:" + a real date, and a closing "_"
+    // appears somewhere after that.
+    // The canonical groom scaffold intentionally has no close date yet. Accept its literal sentinel:
+    // treating an unbuilt epic as closed would make roadmap-to-notion derive a false Shipped state.
+    const isScaffoldPlaceholder = trimmed === '_Closed: <date>_';
+    const startsWithDate = /^_Closed:\s*\d{4}-\d{2}-\d{2}/.test(trimmed);
+    const hasClosingItalic = trimmed.slice(1).includes('_');
+    if (!isScaffoldPlaceholder && (!startsWithDate || !hasClosingItalic)) {
+      if (/^\*\*Closed/.test(trimmed)) {
+        offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
+      } else {
+        offenses.push({ rule: 'retro-closed-format', detail: `"Closed" line doesn't match canonical "_Closed: YYYY-MM-DD_" — found: "${trimmed}"` });
+      }
+    }
   }
 
   const headings = content.split('\n').filter((l) => l.startsWith('## '));

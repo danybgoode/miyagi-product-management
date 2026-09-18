@@ -329,22 +329,13 @@ test('applyMechanicalFixes: a retrospective with a fixable Closed line and all s
 
 // ── Relaxed after triage against a second project (plugin-audit-and-extraction S2.4) ──────────────
 
-test('checkRetrospective: a close line with a date passes in the forms a second project really writes', () => {
+test('checkRetrospective: the close line stays strict — shared with epic-dod, and immune to "not closed yet"', () => {
   const body = '\n\n## What shipped\nX.\n\n## What went well\nY.\n\n## What we learned\nZ.\n\n## Gaps / follow-ups\nNone.\n';
-  for (const close of [
-    '**Shipped:** 2026-08-20 · **PR:** [#102](x)',
-    '**Shipped 2026-08-13.** PR [#95](x), merged.',
-    '_Shipped & LIVE in production: 2026-07-23 (PRs #19/#22)._',
-    '_Written: 2026-07-20. Epic status: **shipped**._',
-    '_Closed 2026-07-21. **Launched**: the gate is flipped._',
-  ]) {
-    assert.deepEqual(checkRetrospective(`# X — Retrospective\n\n${close}${body}`), [], close);
+  for (const close of ['> Epic not closed yet — last touched 2026-07-20', '**Shipped:** 2026-08-20']) {
+    const codes = checkRetrospective(`# X — Retrospective\n\n${close}${body}`).map((o) => o.rule);
+    assert.ok(codes.some((c) => c.startsWith('retro-closed')), `${close} must not pass as a close line`);
   }
-});
-
-test('checkRetrospective: a close word with NO date is still missing — the date is the point', () => {
-  const offenses = checkRetrospective('# X\n\n**Shipped.** Soon.\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n');
-  assert.ok(offenses.some((o) => o.rule === 'retro-closed-missing'));
+  assert.deepEqual(checkRetrospective(`# X — Retrospective\n\n_Closed: 2026-08-20_ · shipped${body}`), []);
 });
 
 test('checkRetrospective: canonical sections match by stem — a subtitle or a synonym is the same section', () => {

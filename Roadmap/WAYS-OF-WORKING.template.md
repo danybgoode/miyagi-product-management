@@ -71,7 +71,8 @@ outcome genuinely changes the next one's scope). Six things make it work, and th
    (the `groom` skill) reads the epic README and every sprint file and prints the orchestrator prompt.
    Hand-composing it is how the architecture lock gets summarised away and the review policy silently
    reverts to whatever the composing agent remembered.
-6. **Derive state, journal intent** — at session start run `node scripts/session-resume.mjs`: it
+6. **Derive state, journal intent** — at session start run `node scripts/session-resume.mjs` (it ships in
+   the template's `scripts/`; a project spawned from it has both scripts): it
    re-derives branches, worktrees, open PRs and migration drift live across the project's repos and leads
    with what is surprising. Journal each locked decision with `node scripts/session-note.mjs --kind
    decision "<text>"` — one intent line, nothing derived. A killed worker's agent is resumed with a

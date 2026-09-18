@@ -40,7 +40,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-import { loadReportingConfig, ReportingConfigError } from './lib/reporting-config.mjs';
+import { loadReportingConfig, ReportingConfigError, configPath } from './lib/reporting-config.mjs';
 const OUT_MD = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.md');
 const OUT_JSON = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json');
 
@@ -58,7 +58,10 @@ export function resolveOwedConfig({ root = ROOT, load = loadReportingConfig, exi
   try {
     owed = load({ root }).owed || {};
   } catch (e) {
-    if (!(e instanceof ReportingConfigError)) throw e;
+    // ABSENT config → the defaults. A PRESENT but invalid one is an error: silently dropping a configured
+    // owner would change the count with no signal — the "quietly loses items" failure this file exists
+    // to prevent. (Fresh-reviewer finding on PR #21.)
+    if (!(e instanceof ReportingConfigError) || exists(configPath({ root, env: {} }))) throw e;
   }
   const owners = owed.owners?.length ? owed.owners : DEFAULT_OWNERS;
   let specDirs = owed.specDirs;

@@ -147,6 +147,12 @@ test('resolveOwedConfig: config wins; otherwise the role owner and every apps/*/
   const fsFake = (present) => ({ exists: (p) => present.some((x) => p.endsWith(x)), readdir: () => ['web', 'api'] });
   const fromConfig = resolveOwedConfig({ root: '/r', load: () => ({ owed: { owners: ['Jordan'], specDirs: ['e2e'] } }), ...fsFake([]) });
   assert.deepEqual(fromConfig, { owners: ['Jordan'], specDirs: ['e2e'] });
+  // A PRESENT but broken config must not silently fall back to the defaults.
+  assert.throws(() => resolveOwedConfig({
+    root: '/r',
+    load: () => { throw new ReportingConfigError('/r/reporting.config.json: "owed.owners" must be an array'); },
+    ...fsFake(['/r/reporting.config.json']),
+  }), /owed\.owners/);
   const derived = resolveOwedConfig({
     root: '/r',
     load: () => { throw new ReportingConfigError('absent'); },
