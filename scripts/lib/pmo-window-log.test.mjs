@@ -9,11 +9,10 @@ import {
 } from './pmo-window-log.mjs';
 
 test('parsePmoLog skips malformed lines and returns JSONL entries', () => {
-  const entries = parsePmoLog('{"windowEnd":"2026-07-01T00:00:00Z"}\nnot-json\n{"windowEnd":"2026-07-02T00:00:00Z"}\n');
-  assert.deepEqual(entries, [
-    { windowEnd: '2026-07-01T00:00:00Z' },
-    { windowEnd: '2026-07-02T00:00:00Z' },
-  ]);
+  const entries = parsePmoLog(
+    '{"windowEnd":"2026-07-01T00:00:00Z"}\nnot-json\n{"windowEnd":"2026-07-02T00:00:00Z"}\n'
+  );
+  assert.deepEqual(entries, [{ windowEnd: '2026-07-01T00:00:00Z' }, { windowEnd: '2026-07-02T00:00:00Z' }]);
   assert.deepEqual(lastPmoLogEntry(JSON.stringify({ windowEnd: 'x' }) + '\n'), { windowEnd: 'x' });
 });
 
@@ -27,7 +26,10 @@ test('computePmoWindow: missing log creates a bounded seven-day baseline window,
 });
 
 test('computePmoWindow: prior log picks up exactly at the last window end', () => {
-  const window = computePmoWindow({ windowEnd: '2026-07-10T00:00:00.000Z' }, new Date('2026-07-13T12:34:56.789Z'));
+  const window = computePmoWindow(
+    { windowEnd: '2026-07-10T00:00:00.000Z' },
+    new Date('2026-07-13T12:34:56.789Z')
+  );
   assert.deepEqual(window, {
     sinceISO: '2026-07-10T00:00:00.000Z',
     untilISO: '2026-07-13T12:00:00.000Z',
@@ -72,10 +74,16 @@ test('pmoLogLine writes the compact window-tracking summary shape', () => {
 
 test('formatPmoReport renders the expected PMO headline sections', () => {
   const report = formatPmoReport({
-    baselineLine: 'PMO baseline established · 1 open PRs · 2 recently merged PRs · 3 Roadmap rows · 4 doc changes',
+    baselineLine:
+      'PMO baseline established · 1 open PRs · 2 recently merged PRs · 3 Roadmap rows · 4 doc changes',
     metrics: {
       window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
-      throughput: { shippedStories: 2, shippedEpics: 1, closedEpics: 1, currentStoryProgress: { done: 7, total: 9 } },
+      throughput: {
+        shippedStories: 2,
+        shippedEpics: 1,
+        closedEpics: 1,
+        currentStoryProgress: { done: 7, total: 9 },
+      },
       prCycleTime: { count: 3, medianHours: 4, averageHours: 5, p90Hours: 6 },
       deployFrequency: { total: 2, byRepo: { frontend: 1, backend: 1 } },
       changeFailProxy: { count: 1 },
@@ -98,7 +106,12 @@ test('formatPmoReport renders unavailable hour metrics as n/a, not n/ah', () => 
   const report = formatPmoReport({
     metrics: {
       window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
-      throughput: { shippedStories: 0, shippedEpics: 0, closedEpics: 0, currentStoryProgress: { done: 0, total: 0 } },
+      throughput: {
+        shippedStories: 0,
+        shippedEpics: 0,
+        closedEpics: 0,
+        currentStoryProgress: { done: 0, total: 0 },
+      },
       prCycleTime: { count: 0, medianHours: null, averageHours: null, p90Hours: null },
       deployFrequency: { total: 0, byRepo: {} },
       changeFailProxy: { count: 0 },
@@ -120,7 +133,12 @@ test('formatPmoReport caps a busy doc-ops epic list', () => {
   const report = formatPmoReport({
     metrics: {
       window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
-      throughput: { shippedStories: 0, shippedEpics: 0, closedEpics: 0, currentStoryProgress: { done: 0, total: 0 } },
+      throughput: {
+        shippedStories: 0,
+        shippedEpics: 0,
+        closedEpics: 0,
+        currentStoryProgress: { done: 0, total: 0 },
+      },
       prCycleTime: { count: 0, medianHours: null, averageHours: null, p90Hours: null },
       deployFrequency: { total: 0, byRepo: {} },
       changeFailProxy: { count: 0 },

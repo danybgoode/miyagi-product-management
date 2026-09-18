@@ -1,4 +1,8 @@
-import { formatTelegramHtmlLink, telegramHtmlVisibleLength, truncateForTelegram } from './telegram-format.mjs';
+import {
+  formatTelegramHtmlLink,
+  telegramHtmlVisibleLength,
+  truncateForTelegram,
+} from './telegram-format.mjs';
 
 export const TELEGRAM_MAX_CHARS = 4096;
 
@@ -12,19 +16,23 @@ function windowLabel(metrics) {
 }
 
 function artifactLabel(name) {
-  return {
-    weekly: 'Story-deck',
-    monthly: 'Monthly packet',
-    sheet: 'Metrics sheet',
-  }[name] || name;
+  return (
+    {
+      weekly: 'Story-deck',
+      monthly: 'Monthly packet',
+      sheet: 'Metrics sheet',
+    }[name] || name
+  );
 }
 
 function artifactLinkText(name) {
-  return {
-    weekly: 'open weekly deck',
-    monthly: 'open monthly packet',
-    sheet: 'open live sheet',
-  }[name] || 'open report';
+  return (
+    {
+      weekly: 'open weekly deck',
+      monthly: 'open monthly packet',
+      sheet: 'open live sheet',
+    }[name] || 'open report'
+  );
 }
 
 export function buildTelegramDeliveryMessage({ metrics, artifacts, maxChars = TELEGRAM_MAX_CHARS }) {
@@ -39,7 +47,10 @@ export function buildTelegramDeliveryMessage({ metrics, artifacts, maxChars = TE
 
   const links = artifacts
     .filter((artifact) => artifact.url)
-    .map((artifact) => `${artifactLabel(artifact.name)}: ${formatTelegramHtmlLink(artifactLinkText(artifact.name), artifact.url)}`);
+    .map(
+      (artifact) =>
+        `${artifactLabel(artifact.name)}: ${formatTelegramHtmlLink(artifactLinkText(artifact.name), artifact.url)}`
+    );
   const footer = links.length ? `\n\n${links.join('\n')}` : '';
   if (!footer) return truncateForTelegram(body, maxChars);
 
@@ -56,7 +67,10 @@ export async function sendTelegramMessage({
   fetchImpl = fetch,
 }) {
   if (!token) throw new Error('TELEGRAM_BOT_TOKEN is not set — export it before running pmo-report.mjs.');
-  if (!chatId) throw new Error('No Telegram chat id configured — set telegram.chatIds.pmo or telegram.chatId in reporting.config.json, or TELEGRAM_CHAT_ID.');
+  if (!chatId)
+    throw new Error(
+      'No Telegram chat id configured — set telegram.chatIds.pmo or telegram.chatId in reporting.config.json, or TELEGRAM_CHAT_ID.'
+    );
 
   const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',

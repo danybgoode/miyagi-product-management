@@ -71,7 +71,11 @@ test('parseStatusFlipsFromLog: archived flip is also captured', () => {
     '+status: archived',
   ].join('\n');
   assert.deepEqual(parseStatusFlipsFromLog(diff), [
-    { file: 'Roadmap/03-selling-and-shops/bar/README.md', status: 'archived', date: '2026-07-02T05:00:00+00:00' },
+    {
+      file: 'Roadmap/03-selling-and-shops/bar/README.md',
+      status: 'archived',
+      date: '2026-07-02T05:00:00+00:00',
+    },
   ]);
 });
 
@@ -98,7 +102,11 @@ test('parseStatusFlipsFromLog: two files in the same log → both captured indep
   ].join('\n');
   assert.deepEqual(parseStatusFlipsFromLog(diff), [
     { file: 'Roadmap/09-platform-infra/one/README.md', status: 'shipped', date: '2026-07-01T10:00:00+00:00' },
-    { file: 'Roadmap/07-agentic-and-federated-commerce/two/README.md', status: 'archived', date: '2026-07-02T11:00:00+00:00' },
+    {
+      file: 'Roadmap/07-agentic-and-federated-commerce/two/README.md',
+      status: 'archived',
+      date: '2026-07-02T11:00:00+00:00',
+    },
   ]);
 });
 
@@ -114,7 +122,11 @@ test('parseStatusFlipsFromLog: last chronological flip (and its date) wins when 
     '+status: shipped',
   ].join('\n');
   assert.deepEqual(parseStatusFlipsFromLog(diff), [
-    { file: 'Roadmap/09-platform-infra/flappy/README.md', status: 'shipped', date: '2026-07-02T09:00:00+00:00' },
+    {
+      file: 'Roadmap/09-platform-infra/flappy/README.md',
+      status: 'shipped',
+      date: '2026-07-02T09:00:00+00:00',
+    },
   ]);
 });
 
@@ -131,10 +143,7 @@ test('parseStatusFlipsFromLog: a bare "+++ b/..." diff header line never matches
 
 test('filterFlipsToWindow: a flip inside the window is kept', () => {
   const flips = [{ file: 'a/README.md', status: 'shipped', date: '2026-07-02T12:00:00+00:00' }];
-  assert.deepEqual(
-    filterFlipsToWindow(flips, '2026-07-01T00:00:00Z', '2026-07-09T00:00:00Z'),
-    flips
-  );
+  assert.deepEqual(filterFlipsToWindow(flips, '2026-07-01T00:00:00Z', '2026-07-09T00:00:00Z'), flips);
 });
 
 test('filterFlipsToWindow: a flip exactly ON the lower bound is INCLUDED (half-open, closed at the start)', () => {
@@ -154,18 +163,27 @@ test('filterFlipsToWindow: a flip before sinceISO or at/after untilISO is droppe
     { file: 'after/README.md', status: 'shipped', date: '2026-07-09T00:00:01Z' },
   ];
   const kept = filterFlipsToWindow(flips, '2026-07-01T00:00:00Z', '2026-07-09T00:00:00Z');
-  assert.deepEqual(kept.map((f) => f.file), ['inside/README.md']);
+  assert.deepEqual(
+    kept.map((f) => f.file),
+    ['inside/README.md']
+  );
 });
 
 // ---- epicNameFromReadme ----
 
 test('epicNameFromReadme: strips a leading "Epic:" prefix from the H1', () => {
   const md = '---\nstatus: shipped\n---\n\n# Epic: Ops routines & reporting — standup, weekly recap\n\nMore.';
-  assert.equal(epicNameFromReadme(md, 'Roadmap/09-platform-infra/ops-routines-reporting/README.md'), 'Ops routines & reporting — standup, weekly recap');
+  assert.equal(
+    epicNameFromReadme(md, 'Roadmap/09-platform-infra/ops-routines-reporting/README.md'),
+    'Ops routines & reporting — standup, weekly recap'
+  );
 });
 
 test('epicNameFromReadme: no H1 → falls back to the slug from the path', () => {
-  assert.equal(epicNameFromReadme('no heading here', 'Roadmap/09-platform-infra/some-slug/README.md'), 'some-slug');
+  assert.equal(
+    epicNameFromReadme('no heading here', 'Roadmap/09-platform-infra/some-slug/README.md'),
+    'some-slug'
+  );
 });
 
 // ---- extractRetroDigest ----
@@ -347,7 +365,10 @@ test('buildMessage: a 52-epic catch-up window caps the list and keeps the true c
 test('buildMessage: the epic COUNT survives even when the net cuts through the list itself', () => {
   const fatRepo = (repo) => ({
     available: true,
-    prs: Array.from({ length: 84 }, (_, i) => ({ number: 400 - i, title: `a realistically long merged pull request title ${i}` })),
+    prs: Array.from({ length: 84 }, (_, i) => ({
+      number: 400 - i,
+      title: `a realistically long merged pull request title ${i}`,
+    })),
     repo,
   });
   const msg = buildMessage({
@@ -358,7 +379,11 @@ test('buildMessage: the epic COUNT survives even when the net cuts through the l
     prose: 'P'.repeat(1200),
   });
   assert.ok(msg.length <= 4096, `message was ${msg.length} chars`);
-  assert.doesNotMatch(msg, /…and 42 more/, 'precondition: this window must be big enough that the tail IS cut');
+  assert.doesNotMatch(
+    msg,
+    /…and 42 more/,
+    'precondition: this window must be big enough that the tail IS cut'
+  );
   assert.match(msg, /Shipped \/ closed epics<\/b> \(52\)/, 'the header count must survive the cut');
 });
 

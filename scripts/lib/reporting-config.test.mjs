@@ -19,7 +19,8 @@ const MIN = { repos: ['acme/web'] };
 
 function tempRoot(config) {
   const root = mkdtempSync(join(tmpdir(), 'reporting-config-'));
-  if (config !== undefined) writeFileSync(join(root, CONFIG_FILENAME), typeof config === 'string' ? config : JSON.stringify(config));
+  if (config !== undefined)
+    writeFileSync(join(root, CONFIG_FILENAME), typeof config === 'string' ? config : JSON.stringify(config));
   return root;
 }
 
@@ -27,10 +28,11 @@ test('an ABSENT config fails with a readable message naming the file — never a
   const root = tempRoot();
   assert.throws(
     () => loadReportingConfig({ root, env: {} }),
-    (e) => e instanceof ReportingConfigError
-      && e.message.includes(join(root, CONFIG_FILENAME))
-      && /refuse to guess/.test(e.message)
-      && /reporting\.config\.example\.json/.test(e.message)
+    (e) =>
+      e instanceof ReportingConfigError &&
+      e.message.includes(join(root, CONFIG_FILENAME)) &&
+      /refuse to guess/.test(e.message) &&
+      /reporting\.config\.example\.json/.test(e.message)
   );
 });
 
@@ -76,23 +78,35 @@ test('shape errors name the offending key', () => {
     [{ ...MIN, liveFlags: { command: 'node flags.mjs' } }, /liveFlags\.command/],
     [{ ...MIN, stalePreviewAgeDays: 0 }, /stalePreviewAgeDays/],
     [{ ...MIN, artifacts: { docViewerUrl: 'viewer.example' } }, /artifacts\.docViewerUrl/],
-    [{ ...MIN, artifacts: { registry: { resolverBaseUrl: 'https://r.example' } } }, /artifacts\.registry\.bucket/],
+    [
+      { ...MIN, artifacts: { registry: { resolverBaseUrl: 'https://r.example' } } },
+      /artifacts\.registry\.bucket/,
+    ],
     [{ ...MIN, prose: { extraBannedToolNames: 'acmecart' } }, /prose\.extraBannedToolNames/],
     [{ ...MIN, prose: { extraBannedToolNames: ['acme(cart'] } }, /invalid regex fragment "acme\(cart"/],
     [{ ...MIN, telegram: { chatId: { id: 1 } } }, /telegram\.chatId" must be a string or number/],
-    [{ ...MIN, telegram: { chatIds: { weekly: { id: 1 } } } }, /telegram\.chatIds\.weekly" must be a string or number/],
+    [
+      { ...MIN, telegram: { chatIds: { weekly: { id: 1 } } } },
+      /telegram\.chatIds\.weekly" must be a string or number/,
+    ],
     [{ ...MIN, smoke: 'acme/web' }, /"smoke" must be an object/],
   ];
   for (const [raw, re] of cases) assert.throws(() => validateReportingConfig(raw), re);
 });
 
 test('REPORTING_CONFIG relocates the file', () => {
-  assert.equal(configPath({ root: '/r', env: { REPORTING_CONFIG: 'ops/reporting.json' } }), '/r/ops/reporting.json');
+  assert.equal(
+    configPath({ root: '/r', env: { REPORTING_CONFIG: 'ops/reporting.json' } }),
+    '/r/ops/reporting.json'
+  );
   assert.equal(configPath({ root: '/r', env: {} }), `/r/${CONFIG_FILENAME}`);
 });
 
 test('chatIdFor: surface id, then project id, then TELEGRAM_CHAT_ID, then null — never a guess', () => {
-  const both = validateReportingConfig({ ...MIN, telegram: { chatId: 'project', chatIds: { weekly: 'weekly-only' } } });
+  const both = validateReportingConfig({
+    ...MIN,
+    telegram: { chatId: 'project', chatIds: { weekly: 'weekly-only' } },
+  });
   assert.equal(chatIdFor(both, 'weekly', { TELEGRAM_CHAT_ID: 'env' }), 'weekly-only');
   assert.equal(chatIdFor(both, 'standup', { TELEGRAM_CHAT_ID: 'env' }), 'project');
   const none = validateReportingConfig(MIN);
@@ -114,12 +128,23 @@ test('weekly deploys line renders the CONFIGURED deploy repos, and is omitted wh
     sinceISO: '2026-07-01T00:00:00Z',
     untilISO: '2026-07-08T00:00:00Z',
     repoResults: [
-      { repo: 'acme/web', available: true, prs: [{ number: 1, title: 'a', mergedAt: '2026-07-02T00:00:00Z' }], capped: false },
+      {
+        repo: 'acme/web',
+        available: true,
+        prs: [{ number: 1, title: 'a', mergedAt: '2026-07-02T00:00:00Z' }],
+        capped: false,
+      },
       { repo: 'acme/api', available: false, prs: [], capped: false },
     ],
     shippedEpics: { available: true, epics: [] },
   };
-  const withDeploys = buildMessage({ ...base, deployRepos: [{ label: 'Frontend', repo: 'acme/web' }, { label: 'Backend', repo: 'acme/api' }] });
+  const withDeploys = buildMessage({
+    ...base,
+    deployRepos: [
+      { label: 'Frontend', repo: 'acme/web' },
+      { label: 'Backend', repo: 'acme/api' },
+    ],
+  });
   assert.match(withDeploys, /Deploys<\/b> \(merges to main\)\nFrontend: 1 · Backend: unavailable/);
   assert.doesNotMatch(buildMessage(base), /Deploys/);
 });
@@ -132,5 +157,8 @@ test('a gitignored reporting.config.local.json overlays the committed file — t
   assert.equal(chatIdFor(cfg, 'standup', {}), 'local-chat');
   assert.equal(chatIdFor(cfg, 'pmo', {}), 'committed-pmo', 'a committed per-surface id survives the overlay');
   writeFileSync(join(root, LOCAL_FILENAME), '{ nope');
-  assert.throws(() => loadReportingConfig({ root, env: {} }), /reporting\.config\.local\.json: is not valid JSON/);
+  assert.throws(
+    () => loadReportingConfig({ root, env: {} }),
+    /reporting\.config\.local\.json: is not valid JSON/
+  );
 });

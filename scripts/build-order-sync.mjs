@@ -27,7 +27,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const BOARD_PATH = 'Roadmap/00-ideas/BUILD-ORDER.md';
 const BANNER =
-  '> **Advisory — docs-only.** Auto-regenerated from the SSOT (each epic README\'s frontmatter ' +
+  "> **Advisory — docs-only.** Auto-regenerated from the SSOT (each epic README's frontmatter " +
   '`status:`). This PR only refreshes the derived board; it never touches the doc that caused the drift.';
 
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -87,7 +87,9 @@ function main() {
 
   regenerate();
   if (!boardActuallyChanged()) {
-    console.log('build-order.mjs --check reported drift, but regen produced no file diff — nothing to commit.');
+    console.log(
+      'build-order.mjs --check reported drift, but regen produced no file diff — nothing to commit.'
+    );
     return;
   }
 
@@ -99,7 +101,9 @@ function main() {
     // the working tree exactly as it found it (a real "would do this" preview, not a partial mutation).
     const restore = run('git', ['checkout', '--', BOARD_PATH]);
     if (restore.status !== 0) {
-      console.error(`build-order-sync: could not restore ${BOARD_PATH} after --dry-run (${(restore.stderr || '').trim()}) — the working tree is left with the regenerated file; revert it manually if needed.`);
+      console.error(
+        `build-order-sync: could not restore ${BOARD_PATH} after --dry-run (${(restore.stderr || '').trim()}) — the working tree is left with the regenerated file; revert it manually if needed.`
+      );
     }
     return;
   }

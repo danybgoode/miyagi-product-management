@@ -94,7 +94,10 @@ test('appendStandupArtifactsToMessage preserves artifact links when truncating t
     120
   );
   assert.ok(telegramHtmlVisibleLength(result) <= 120);
-  assert.match(result, /Deck standup: <a href="https:\/\/example\.test\/#md=abc&amp;present=0">open daily story<\/a>$/);
+  assert.match(
+    result,
+    /Deck standup: <a href="https:\/\/example\.test\/#md=abc&amp;present=0">open daily story<\/a>$/
+  );
   assert.match(result, /…/);
 });
 
@@ -110,5 +113,12 @@ test('appendStandupArtifactsToMessage keeps very long doc-viewer hrefs whole bec
 });
 
 test('buildStandupArtifacts with no doc viewer configured returns no artifact — the Telegram text stands alone', () => {
-  assert.deepEqual(buildStandupArtifacts({ snapshot: SNAPSHOT, deltaLines: [], generatedAt: new Date('2026-07-14T13:00:00Z') }), []);
+  assert.deepEqual(
+    buildStandupArtifacts({
+      snapshot: SNAPSHOT,
+      deltaLines: [],
+      generatedAt: new Date('2026-07-14T13:00:00Z'),
+    }),
+    []
+  );
 });

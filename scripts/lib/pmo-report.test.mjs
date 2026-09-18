@@ -9,20 +9,30 @@ import {
   shouldPersistWindow,
 } from '../pmo-report.mjs';
 
-
 // The project's doc viewer — in a real project, reporting.config.json → artifacts.docViewerUrl.
 const VIEWER = 'https://viewer.example.test';
 
 test('parseArgs reads dry-run and explicit window overrides', () => {
-  assert.deepEqual(parseArgs(['--dry-run', '--weekly', '--open', '--since', '2026-07-01T00:00:00Z', '--until', '2026-07-08T00:00:00Z']), {
-    dryRun: true,
-    weekly: true,
-    monthly: false,
-    sheet: false,
-    open: true,
-    sinceISO: '2026-07-01T00:00:00Z',
-    untilISO: '2026-07-08T00:00:00Z',
-  });
+  assert.deepEqual(
+    parseArgs([
+      '--dry-run',
+      '--weekly',
+      '--open',
+      '--since',
+      '2026-07-01T00:00:00Z',
+      '--until',
+      '2026-07-08T00:00:00Z',
+    ]),
+    {
+      dryRun: true,
+      weekly: true,
+      monthly: false,
+      sheet: false,
+      open: true,
+      sinceISO: '2026-07-01T00:00:00Z',
+      untilISO: '2026-07-08T00:00:00Z',
+    }
+  );
 });
 
 test('parseArgs makes monthly produce both packet and sheet', () => {
@@ -57,7 +67,14 @@ test('buildReport uses injected data and does not perform script I/O when import
         repo: 'acme/web',
         available: true,
         openPrs: [{ number: 10 }],
-        prs: [{ number: 1, title: 'hotfix: restore', createdAt: '2026-07-01T00:00:00Z', mergedAt: '2026-07-02T00:00:00Z' }],
+        prs: [
+          {
+            number: 1,
+            title: 'hotfix: restore',
+            createdAt: '2026-07-01T00:00:00Z',
+            mergedAt: '2026-07-02T00:00:00Z',
+          },
+        ],
       },
       { repo: 'acme/api', available: true, openPrs: [], prs: [] },
     ],
@@ -79,22 +96,25 @@ test('buildReport uses injected data and does not perform script I/O when import
 
 test('loadLogContent always reads the fetched remote log branch, including dry-run preflight', () => {
   let reads = 0;
-  assert.equal(loadLogContent({
-    readRemoteLog: () => {
-      reads += 1;
-      return '{"untilISO":"fresh"}\n';
-    },
-  }), '{"untilISO":"fresh"}\n');
+  assert.equal(
+    loadLogContent({
+      readRemoteLog: () => {
+        reads += 1;
+        return '{"untilISO":"fresh"}\n';
+      },
+    }),
+    '{"untilISO":"fresh"}\n'
+  );
   assert.equal(reads, 1);
 });
 
 test('gatherRepoResults populates open PRs from REST listPulls', () => {
   const results = gatherRepoResults('2026-07-01T00:00:00Z', '2026-07-08T00:00:00Z', {
-    searchMerged: ({ repo }) => ([
+    searchMerged: ({ repo }) => [
       { repo, number: 1, title: 'feat: inside', mergedAt: '2026-07-02T00:00:00Z' },
       { repo, number: 2, title: 'feat: outside', mergedAt: '2026-07-09T00:00:00Z' },
-    ]),
-    listOpen: ({ repo }) => ([{ repo, number: 10, title: 'open work' }]),
+    ],
+    listOpen: ({ repo }) => [{ repo, number: 10, title: 'open work' }],
     repos: ['acme/product', 'acme/web', 'acme/api'],
   });
   assert.equal(results.length, 3);
@@ -113,8 +133,15 @@ test('buildReportArtifacts fills requested templates and emits doc-viewer URLs',
     changeFailProxy: { count: 0 },
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
-  const artifacts = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: true }, { docViewerUrl: VIEWER });
-  assert.deepEqual(artifacts.map((a) => a.name), ['weekly', 'sheet']);
+  const artifacts = buildReportArtifacts(
+    metrics,
+    { weekly: true, monthly: false, sheet: true },
+    { docViewerUrl: VIEWER }
+  );
+  assert.deepEqual(
+    artifacts.map((a) => a.name),
+    ['weekly', 'sheet']
+  );
   assert.match(artifacts[0].markdown, /PMO weekly/);
   assert.match(artifacts[0].markdown, /DORA\/Four Keys daily benchmark: \*\*3\*\*/);
   assert.match(artifacts[0].url, /present=0/);
@@ -134,7 +161,10 @@ test('buildReportArtifacts treats monthly as packet plus sheet', () => {
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
   const artifacts = buildReportArtifacts(metrics, parseArgs(['--monthly']), { docViewerUrl: VIEWER });
-  assert.deepEqual(artifacts.map((a) => a.name), ['monthly', 'sheet']);
+  assert.deepEqual(
+    artifacts.map((a) => a.name),
+    ['monthly', 'sheet']
+  );
 });
 
 // reporthub-as-notion S2.2 acceptance: "weekly PMO Telegram message links a chart view." This is
@@ -152,7 +182,11 @@ test('buildReportArtifacts: the weekly artifact embeds at least one chart fenced
     changeFailProxy: { count: 0 },
     docOps: { learningsPromotions: 1, retroCoverage: { covered: 1, total: 1, percent: 100 } },
   };
-  const [weekly] = buildReportArtifacts(metrics, { weekly: true, monthly: false, sheet: false }, { docViewerUrl: VIEWER });
+  const [weekly] = buildReportArtifacts(
+    metrics,
+    { weekly: true, monthly: false, sheet: false },
+    { docViewerUrl: VIEWER }
+  );
   const blocks = [...weekly.markdown.matchAll(/```chart\n(.+?)\n/g)].map((m) => m[1]);
   assert.ok(blocks.length >= 1, 'weekly deck must embed at least one ```chart fenced block');
   for (const block of blocks) assert.ok(JSON.parse(block).type, 'each chart block must be valid, typed JSON');
@@ -176,7 +210,11 @@ test('buildReportArtifacts: the monthly artifact embeds a chart block, and shoul
   const args = parseArgs(['--monthly']);
   const [monthly] = buildReportArtifacts(metrics, args, { docViewerUrl: VIEWER });
   assert.match(monthly.markdown, /```chart/);
-  assert.equal(shouldPersistWindow(args), false, 'a chart-bearing monthly artifact must not advance the PMO window log');
+  assert.equal(
+    shouldPersistWindow(args),
+    false,
+    'a chart-bearing monthly artifact must not advance the PMO window log'
+  );
 });
 
 test('buildReportArtifacts with no doc viewer configured builds no artifacts (never a borrowed host)', () => {

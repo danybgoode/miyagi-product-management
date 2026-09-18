@@ -1,9 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  buildTelegramDeliveryMessage,
-  sendTelegramMessage,
-} from './pmo-delivery.mjs';
+import { buildTelegramDeliveryMessage, sendTelegramMessage } from './pmo-delivery.mjs';
 import { telegramHtmlVisibleLength, telegramHtmlVisibleText } from './telegram-format.mjs';
 
 const METRICS = {
@@ -25,7 +22,10 @@ test('buildTelegramDeliveryMessage includes headline metrics and preserves the d
   });
   assert.match(message, /PMO weekly - 2026-07-01 to 2026-07-08/);
   assert.match(message, /Stories shipped: 8 \| Epics shipped: 2/);
-  assert.match(message, /Story-deck: <a href="https:\/\/viewer\.example\.test\/#md=abc&amp;present=0">open weekly deck<\/a>/);
+  assert.match(
+    message,
+    /Story-deck: <a href="https:\/\/viewer\.example\.test\/#md=abc&amp;present=0">open weekly deck<\/a>/
+  );
   assert.doesNotMatch(telegramHtmlVisibleText(message), /https:\/\//);
   assert.ok(telegramHtmlVisibleLength(message) <= 4096);
 });
@@ -40,7 +40,10 @@ test('buildTelegramDeliveryMessage truncates headline text before chopping artif
     maxChars: 230,
   });
   assert.ok(telegramHtmlVisibleLength(message) <= 230);
-  assert.match(message, /Story-deck: <a href="https:\/\/viewer\.example\.test\/#md=abc">open weekly deck<\/a>$/);
+  assert.match(
+    message,
+    /Story-deck: <a href="https:\/\/viewer\.example\.test\/#md=abc">open weekly deck<\/a>$/
+  );
   assert.match(message, /…/);
 });
 

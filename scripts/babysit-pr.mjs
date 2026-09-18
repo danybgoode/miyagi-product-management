@@ -19,7 +19,7 @@ import { getPull, getStatusRollup, postIssueComment } from './lib/gh-rest.mjs';
 
 const BANNER =
   '🤖 **babysit-pr — advisory PR watch (Claude).** Never merges; never a required check — a plain ' +
-  'comment structurally can\'t become one.';
+  "comment structurally can't become one.";
 
 function parseArgs(argv) {
   const out = { pr: null, repo: null, dryRun: false };
@@ -32,7 +32,8 @@ function parseArgs(argv) {
     else die(`unknown argument '${a}'`);
   }
   if (out.pr === null) die('usage: node scripts/babysit-pr.mjs <PR#> --repo owner/repo [--dry-run]');
-  if (!out.repo) die('--repo owner/repo is required (babysit-pr watches PRs across 3 repos, none is a default).');
+  if (!out.repo)
+    die('--repo owner/repo is required (babysit-pr watches PRs across 3 repos, none is a default).');
   return out;
 }
 
@@ -50,7 +51,11 @@ export function decideBabysitActions({ mergeable, checks }) {
   const list = Array.isArray(checks) ? checks : [];
   const conflict = mergeable === 'CONFLICTING';
   const failingChecks = list.filter(
-    (c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.conclusion === 'TIMED_OUT' || c.state === 'FAILURE'
+    (c) =>
+      c.conclusion === 'FAILURE' ||
+      c.conclusion === 'ERROR' ||
+      c.conclusion === 'TIMED_OUT' ||
+      c.state === 'FAILURE'
   );
   const pendingChecks = list.filter(
     (c) => !c.conclusion && (c.status === 'IN_PROGRESS' || c.status === 'QUEUED' || c.status === 'PENDING')
@@ -83,7 +88,10 @@ function fetchPr(pr, repo) {
 
 function rerun(repo, runId) {
   const r = gh(['run', 'rerun', String(runId), '--failed', '--repo', repo]);
-  return { ok: r.status === 0, error: r.status === 0 ? null : (r.stderr || r.stdout || '').trim().split('\n')[0] };
+  return {
+    ok: r.status === 0,
+    error: r.status === 0 ? null : (r.stderr || r.stdout || '').trim().split('\n')[0],
+  };
 }
 
 // A failing-check run whose rerun attempt ITSELF errored (e.g. "already running", a permissions issue)
@@ -91,9 +99,20 @@ function rerun(repo, runId) {
 // needed a retry" line is actively misleading (confirmed live, 2026-07-02/03: PR #23's rerun attempt
 // errored, but the surfaced signal didn't distinguish that from "clean"). `retryFailures` is
 // `[{runId, error}]` for exactly this case.
-export function buildComment({ conflict, retried, retryFailures, dryRun, noAutoRetryNames, stillPendingNames }) {
+export function buildComment({
+  conflict,
+  retried,
+  retryFailures,
+  dryRun,
+  noAutoRetryNames,
+  stillPendingNames,
+}) {
   const lines = [BANNER, ''];
-  lines.push(conflict ? '⚠️ Merge conflict detected — needs a human rebase/resolve; not something this tool does.' : '✅ No merge conflict.');
+  lines.push(
+    conflict
+      ? '⚠️ Merge conflict detected — needs a human rebase/resolve; not something this tool does.'
+      : '✅ No merge conflict.'
+  );
   if (retried.length) {
     const verb = dryRun ? 'Would retry' : 'Retried';
     lines.push(`🔁 ${verb} failing Actions run(s): ${retried.map((id) => `#${id}`).join(', ')}.`);
@@ -101,8 +120,12 @@ export function buildComment({ conflict, retried, retryFailures, dryRun, noAutoR
     lines.push('🔁 No failing CI runs needed a retry.');
   }
   if (retryFailures.length) {
-    const detail = retryFailures.map(({ runId, error }) => `#${runId} (${error || 'unknown error'})`).join(', ');
-    lines.push(`❗ Retry attempt itself failed for: ${detail} — worth a manual look, this tool won't retry it again tonight.`);
+    const detail = retryFailures
+      .map(({ runId, error }) => `#${runId} (${error || 'unknown error'})`)
+      .join(', ');
+    lines.push(
+      `❗ Retry attempt itself failed for: ${detail} — worth a manual look, this tool won't retry it again tonight.`
+    );
   }
   if (noAutoRetryNames.length) {
     lines.push(`🛑 No automated retry available (not a GitHub Actions run): ${noAutoRetryNames.join(', ')}.`);
@@ -141,7 +164,9 @@ function main() {
   // Target ONLY the Actions runs backing the checks that are actually failing right now (parsed from
   // each check's own detailsUrl) — never a branch-wide "list the last 20 runs and retry whatever's red"
   // sweep, which can retry a stale, unrelated failed run and report a misleading "retried" comment.
-  const runIds = [...new Set(decision.failingChecks.map((c) => actionsRunIdFromDetailsUrl(c.detailsUrl)).filter(Boolean))];
+  const runIds = [
+    ...new Set(decision.failingChecks.map((c) => actionsRunIdFromDetailsUrl(c.detailsUrl)).filter(Boolean)),
+  ];
   const noAutoRetryNames = decision.failingChecks
     .filter((c) => !actionsRunIdFromDetailsUrl(c.detailsUrl))
     .map((c) => c.name)
@@ -165,7 +190,14 @@ function main() {
   }
 
   const stillPendingNames = decision.pendingChecks.map((c) => c.name).filter(Boolean);
-  const body = buildComment({ conflict: decision.conflict, retried, retryFailures, dryRun, noAutoRetryNames, stillPendingNames });
+  const body = buildComment({
+    conflict: decision.conflict,
+    retried,
+    retryFailures,
+    dryRun,
+    noAutoRetryNames,
+    stillPendingNames,
+  });
 
   if (dryRun) {
     console.log('DRY-RUN — would post this advisory comment:\n');

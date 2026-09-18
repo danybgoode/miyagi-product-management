@@ -82,7 +82,10 @@ test('buildEvidencePack: a known-empty flag set says none are on', () => {
 });
 
 test('buildEvidencePack: known-on flags are listed by key', () => {
-  const pack = buildEvidencePack({ windowLabel: 'w', liveFlags: { available: true, flags: ['promoter.activation_crm_enabled'] } });
+  const pack = buildEvidencePack({
+    windowLabel: 'w',
+    liveFlags: { available: true, flags: ['promoter.activation_crm_enabled'] },
+  });
   assert.match(pack, /promoter\.activation_crm_enabled/);
 });
 
@@ -105,13 +108,20 @@ test('buildQuietBrief: instructs the routine NOT to write prose', () => {
 // ---- evidence flags are DERIVED, never assumed ----
 
 test('deriveEvidenceFlags: both permissions default CLOSED on an ordinary window', () => {
-  const ev = deriveEvidenceFlags({ subjects: ['feat: add a thing'], areas: ['internal tooling'], maxWords: 90 });
+  const ev = deriveEvidenceFlags({
+    subjects: ['feat: add a thing'],
+    areas: ['internal tooling'],
+    maxWords: 90,
+  });
   assert.equal(ev.allowsFixClaim, false);
   assert.equal(ev.allowsBeneficiary, false);
 });
 
 test('deriveEvidenceFlags: a real fix: subject unlocks fix language', () => {
-  assert.equal(deriveEvidenceFlags({ subjects: ['fix(checkout): stop double charge'], maxWords: 90 }).allowsFixClaim, true);
+  assert.equal(
+    deriveEvidenceFlags({ subjects: ['fix(checkout): stop double charge'], maxWords: 90 }).allowsFixClaim,
+    true
+  );
 });
 
 test('deriveEvidenceFlags: a customer-observable area unlocks naming customers', () => {

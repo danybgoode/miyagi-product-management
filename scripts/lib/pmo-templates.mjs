@@ -123,7 +123,8 @@ function toBase64Url(buffer) {
 // deployment (reporting.config.json → artifacts.docViewerUrl) and is REQUIRED — there is no default,
 // because a default points every project's reports at one project's hosting.
 export function buildDocViewerUrl(markdown, { baseUrl, present = false } = {}) {
-  if (!baseUrl) throw new Error('buildDocViewerUrl: no baseUrl — set artifacts.docViewerUrl in reporting.config.json');
+  if (!baseUrl)
+    throw new Error('buildDocViewerUrl: no baseUrl — set artifacts.docViewerUrl in reporting.config.json');
   const compressed = brotliCompressSync(Buffer.from(markdown, 'utf8'), {
     params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 },
   });

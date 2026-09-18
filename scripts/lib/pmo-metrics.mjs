@@ -47,7 +47,8 @@ export function summarizePrCycleTimes(prs, { sinceISO, untilISO } = {}) {
     if (!pr.mergedAt || !pr.createdAt) return false;
     return sinceISO && untilISO ? inWindow(pr.mergedAt, sinceISO, untilISO) : true;
   });
-  const hours = merged.map((pr) => (toMs(pr.mergedAt) - toMs(pr.createdAt)) / HOUR_MS)
+  const hours = merged
+    .map((pr) => (toMs(pr.mergedAt) - toMs(pr.createdAt)) / HOUR_MS)
     .filter((v) => Number.isFinite(v) && v >= 0);
   const total = hours.reduce((sum, v) => sum + v, 0);
   return {
@@ -63,7 +64,8 @@ export function summarizeEpicLeadTime(epics, { sinceISO, untilISO } = {}) {
     if (!epic.scaffoldedAt || !epic.shippedAt) return false;
     return sinceISO && untilISO ? inWindow(epic.shippedAt, sinceISO, untilISO) : true;
   });
-  const days = shipped.map((epic) => (toMs(epic.shippedAt) - toMs(epic.scaffoldedAt)) / DAY_MS)
+  const days = shipped
+    .map((epic) => (toMs(epic.shippedAt) - toMs(epic.scaffoldedAt)) / DAY_MS)
     .filter((v) => Number.isFinite(v) && v >= 0);
   const total = days.reduce((sum, v) => sum + v, 0);
   return {
@@ -105,21 +107,32 @@ export function summarizeChangeFailProxy(items, { sinceISO, untilISO } = {}) {
   return { count: matches.length, items: matches };
 }
 
-export function summarizeThroughput({ roadmapRows = [], epicStatusFlips = [], storyShipEvents = [], sinceISO, untilISO }) {
-  const shippedEpicFlips = epicStatusFlips.filter((flip) => (
-    flip.status === 'shipped' && inWindow(flip.date, sinceISO, untilISO)
-  ));
-  const closedEpicFlips = epicStatusFlips.filter((flip) => (
-    ['shipped', 'archived'].includes(flip.status) && inWindow(flip.date, sinceISO, untilISO)
-  ));
-  const shippedStories = storyShipEvents.filter((event) => inWindow(event.shippedAt || event.date, sinceISO, untilISO));
+export function summarizeThroughput({
+  roadmapRows = [],
+  epicStatusFlips = [],
+  storyShipEvents = [],
+  sinceISO,
+  untilISO,
+}) {
+  const shippedEpicFlips = epicStatusFlips.filter(
+    (flip) => flip.status === 'shipped' && inWindow(flip.date, sinceISO, untilISO)
+  );
+  const closedEpicFlips = epicStatusFlips.filter(
+    (flip) => ['shipped', 'archived'].includes(flip.status) && inWindow(flip.date, sinceISO, untilISO)
+  );
+  const shippedStories = storyShipEvents.filter((event) =>
+    inWindow(event.shippedAt || event.date, sinceISO, untilISO)
+  );
   const currentStoryProgress = roadmapRows
     .filter((row) => row.grain === 'Sprint' || row.grain === 'Epic')
     .map((row) => parseStoryProgress(row.sprint_progress))
-    .reduce((acc, progress) => ({
-      done: acc.done + progress.done,
-      total: acc.total + progress.total,
-    }), { done: 0, total: 0 });
+    .reduce(
+      (acc, progress) => ({
+        done: acc.done + progress.done,
+        total: acc.total + progress.total,
+      }),
+      { done: 0, total: 0 }
+    );
 
   return {
     shippedStories: shippedStories.length,

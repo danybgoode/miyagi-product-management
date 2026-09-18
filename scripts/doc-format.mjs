@@ -59,11 +59,15 @@ export function isEnforced(relPath, entries) {
 }
 
 const ENFORCED = loadEnforced();
-export const ENFORCED_SWEPT_PATHS = { has: (p) => isEnforced(p, ENFORCED.entries), get size() { return ENFORCED.entries.length; } };
+export const ENFORCED_SWEPT_PATHS = {
+  has: (p) => isEnforced(p, ENFORCED.entries),
+  get size() {
+    return ENFORCED.entries.length;
+  },
+};
 
 const VALID_EPIC_STATUSES = ['scaffolded', 'in-progress', 'shipped', 'archived'];
 const CANONICAL_DOD_HEADING = '## Definition of Done (epic)';
-const CANONICAL_RETRO_SECTIONS = ['## What shipped', '## What went well', '## What we learned', '## Gaps / follow-ups'];
 const VALID_CLASSES = ['Feature', 'Spike', 'Bug', 'Chore'];
 
 export function extractEpics() {
@@ -107,14 +111,19 @@ export function checkEpicReadme(content, { slug, exists = existsRelative } = {})
     offenses.push({ rule: 'frontmatter-missing', detail: 'no --- frontmatter block at the top of the file' });
   } else {
     const fm = fmMatch[1];
-    if (!/^status:\s*\S/m.test(fm)) offenses.push({ rule: 'frontmatter-status-missing', detail: 'no `status:` key in frontmatter' });
+    if (!/^status:\s*\S/m.test(fm))
+      offenses.push({ rule: 'frontmatter-status-missing', detail: 'no `status:` key in frontmatter' });
     else {
       const statusVal = fm.match(/^status:\s*(\S+)/m)[1];
       if (!VALID_EPIC_STATUSES.includes(statusVal)) {
-        offenses.push({ rule: 'frontmatter-status-invalid', detail: `status: "${statusVal}" is not one of ${VALID_EPIC_STATUSES.join('|')}` });
+        offenses.push({
+          rule: 'frontmatter-status-invalid',
+          detail: `status: "${statusVal}" is not one of ${VALID_EPIC_STATUSES.join('|')}`,
+        });
       }
     }
-    if (!/^slug:\s*\S/m.test(fm)) offenses.push({ rule: 'frontmatter-slug-missing', detail: 'no `slug:` key in frontmatter' });
+    if (!/^slug:\s*\S/m.test(fm))
+      offenses.push({ rule: 'frontmatter-slug-missing', detail: 'no `slug:` key in frontmatter' });
   }
 
   // Catch any header-shaped blockquote line, not just an already-canonical one — a line starting
@@ -127,42 +136,69 @@ export function checkEpicReadme(content, { slug, exists = existsRelative } = {})
   if (!headerLine) {
     offenses.push({ rule: 'header-missing', detail: 'no `> **Area:** ...` header blockquote line found' });
   } else {
-    if (!headerLine.includes('**Risk:**')) offenses.push({ rule: 'header-missing-risk', detail: 'header line has Area but no **Risk:** field' });
+    if (!headerLine.includes('**Risk:**'))
+      offenses.push({ rule: 'header-missing-risk', detail: 'header line has Area but no **Risk:** field' });
     if (!headerLine.includes('**Class:**')) {
-      offenses.push({ rule: 'header-missing-class', detail: 'header line has no **Class:** field (should be one of Feature|Spike|Bug|Chore, between Risk and Scope seed)' });
+      offenses.push({
+        rule: 'header-missing-class',
+        detail:
+          'header line has no **Class:** field (should be one of Feature|Spike|Bug|Chore, between Risk and Scope seed)',
+      });
     } else {
       const classMatch = headerLine.match(/\*\*Class:\*\*\s*([^·]+)/);
       const classVal = classMatch ? classMatch[1].trim() : '';
       if (!VALID_CLASSES.includes(classVal)) {
-        offenses.push({ rule: 'header-class-invalid', detail: `**Class:** "${classVal}" is not one of ${VALID_CLASSES.join('|')} (free-text descriptions belong in ## Why, not the header)` });
+        offenses.push({
+          rule: 'header-class-invalid',
+          detail: `**Class:** "${classVal}" is not one of ${VALID_CLASSES.join('|')} (free-text descriptions belong in ## Why, not the header)`,
+        });
       }
     }
     if (!headerLine.includes('**Scope seed:**')) {
       if (headerLine.includes('**Scope doc:**')) {
-        offenses.push({ rule: 'header-scope-doc-legacy', detail: 'header uses **Scope doc:** — canonical is **Scope seed:** pointing at 00-ideas/seeds/ (2. readyforscope/ is documented legacy per 00-ideas/README.md)' });
+        offenses.push({
+          rule: 'header-scope-doc-legacy',
+          detail:
+            'header uses **Scope doc:** — canonical is **Scope seed:** pointing at 00-ideas/seeds/ (2. readyforscope/ is documented legacy per 00-ideas/README.md)',
+        });
       } else if (hasRealSeed) {
-        offenses.push({ rule: 'header-missing-scope-seed', detail: 'header line has no **Scope seed:** field' });
+        offenses.push({
+          rule: 'header-missing-scope-seed',
+          detail: 'header line has no **Scope seed:** field',
+        });
       }
     } else if (headerLine.includes('00-ideas/seeds/')) {
       const linkMatch = headerLine.match(/\(([^)]*00-ideas\/seeds\/[^)]+)\)/);
       if (linkMatch) {
         const linkTarget = linkMatch[1].replace(/^\.\.\/\.\.\//, '');
         if (!exists(join('Roadmap', linkTarget))) {
-          offenses.push({ rule: 'header-scope-seed-broken-link', detail: `**Scope seed:** links to ${linkTarget}, which doesn't exist` });
+          offenses.push({
+            rule: 'header-scope-seed-broken-link',
+            detail: `**Scope seed:** links to ${linkTarget}, which doesn't exist`,
+          });
         }
       }
     }
     if (headerLine.includes('**Macro-section:**')) {
-      offenses.push({ rule: 'header-macro-section-legacy', detail: 'header uses **Macro-section:**/**BUILD-ORDER:** — canonical is **Area:**' });
+      offenses.push({
+        rule: 'header-macro-section-legacy',
+        detail: 'header uses **Macro-section:**/**BUILD-ORDER:** — canonical is **Area:**',
+      });
     }
   }
 
   if (!content.includes(CANONICAL_DOD_HEADING)) {
     if (/^##\s+Epic Definition of Done/m.test(content)) {
-      offenses.push({ rule: 'dod-heading-legacy', detail: `heading is "## Epic Definition of Done" — canonical is "${CANONICAL_DOD_HEADING}"` });
+      offenses.push({
+        rule: 'dod-heading-legacy',
+        detail: `heading is "## Epic Definition of Done" — canonical is "${CANONICAL_DOD_HEADING}"`,
+      });
     } else if (/^##\s+Definition of Done/m.test(content)) {
       const actual = content.match(/^##\s+.*Definition of Done.*$/m)[0];
-      offenses.push({ rule: 'dod-heading-mismatch', detail: `heading is "${actual}" — canonical is "${CANONICAL_DOD_HEADING}"` });
+      offenses.push({
+        rule: 'dod-heading-mismatch',
+        detail: `heading is "${actual}" — canonical is "${CANONICAL_DOD_HEADING}"`,
+      });
     } else {
       offenses.push({ rule: 'dod-heading-missing', detail: `no "${CANONICAL_DOD_HEADING}" section found` });
     }
@@ -184,11 +220,21 @@ export function checkSprintDoc(content) {
     // a "starts with **Status:**" branch or the most common combined shape never matches.
     const combinesOtherFields = /\*\*(Risk|Epic):/i.test(trimmed);
     if (trimmed.startsWith('>')) {
-      offenses.push({ rule: 'sprint-status-blockquote', detail: 'Status line is a blockquote (`> ...`) — canonical is a plain `**Status:** ...` line, no backlink/Risk on the same line' });
+      offenses.push({
+        rule: 'sprint-status-blockquote',
+        detail:
+          'Status line is a blockquote (`> ...`) — canonical is a plain `**Status:** ...` line, no backlink/Risk on the same line',
+      });
     } else if (combinesOtherFields) {
-      offenses.push({ rule: 'sprint-status-combined', detail: 'Status line combines Epic/Risk on the same line — canonical is Status alone' });
+      offenses.push({
+        rule: 'sprint-status-combined',
+        detail: 'Status line combines Epic/Risk on the same line — canonical is Status alone',
+      });
     } else if (!trimmed.startsWith('**Status:**')) {
-      offenses.push({ rule: 'sprint-status-format', detail: `Status line doesn't start with "**Status:**" — found: "${trimmed.slice(0, 60)}"` });
+      offenses.push({
+        rule: 'sprint-status-format',
+        detail: `Status line doesn't start with "**Status:**" — found: "${trimmed.slice(0, 60)}"`,
+      });
     }
   }
   return offenses;
@@ -202,7 +248,10 @@ export function checkSprintDoc(content) {
 export const RETRO_SECTION_STEMS = [
   { canonical: '## What shipped', stems: ['## What shipped'] },
   { canonical: '## What went well', stems: ['## What went well', '## What worked'] },
-  { canonical: '## What we learned', stems: ['## What we learned', '## What was learned', '## Durable learning'] },
+  {
+    canonical: '## What we learned',
+    stems: ['## What we learned', '## What was learned', '## Durable learning'],
+  },
   { canonical: '## Gaps / follow-ups', stems: ['## Gaps', '## Follow-ups', '## Remaining follow-up'] },
 ];
 
@@ -231,9 +280,15 @@ export function checkRetrospective(content) {
     const hasClosingItalic = trimmed.slice(1).includes('_');
     if (!isScaffoldPlaceholder && (!startsWithDate || !hasClosingItalic)) {
       if (/^\*\*Closed/.test(trimmed)) {
-        offenses.push({ rule: 'retro-closed-bold', detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"` });
+        offenses.push({
+          rule: 'retro-closed-bold',
+          detail: `"Closed" line is bold (**Closed ...**) — canonical is italic: "_Closed: YYYY-MM-DD_"`,
+        });
       } else {
-        offenses.push({ rule: 'retro-closed-format', detail: `"Closed" line doesn't match canonical "_Closed: YYYY-MM-DD_" — found: "${trimmed}"` });
+        offenses.push({
+          rule: 'retro-closed-format',
+          detail: `"Closed" line doesn't match canonical "_Closed: YYYY-MM-DD_" — found: "${trimmed}"`,
+        });
       }
     }
   }
@@ -361,7 +416,8 @@ export function fixRetroClosedLine(content) {
   // continuation lines as an orphaned fragment. Only touch a Closed line that is its own complete
   // paragraph — i.e. the next line is blank, a heading, or EOF.
   const nextLine = lines[idx + 1];
-  const isStandaloneParagraph = nextLine === undefined || nextLine.trim() === '' || /^#{1,6}\s/.test(nextLine.trim());
+  const isStandaloneParagraph =
+    nextLine === undefined || nextLine.trim() === '' || /^#{1,6}\s/.test(nextLine.trim());
   if (!isStandaloneParagraph) return content;
 
   const trimmed = lines[idx].trim();
@@ -369,9 +425,7 @@ export function fixRetroClosedLine(content) {
   if (!dateMatch) return content;
   // Strip the bold markers, keep whatever trailing content follows the date (sprint counts, PR
   // refs) as-is, re-wrap the whole thing in italics starting with "_Closed: ".
-  const rest = trimmed
-    .slice(trimmed.indexOf(dateMatch[0]) + dateMatch[0].length)
-    .replace(/\*+\s*$/, '');
+  const rest = trimmed.slice(trimmed.indexOf(dateMatch[0]) + dateMatch[0].length).replace(/\*+\s*$/, '');
   lines[idx] = `_Closed: ${dateMatch[0]}${rest}_`;
   return lines.join('\n');
 }
@@ -410,16 +464,19 @@ export function findAllOffenses({ activeOnly = false } = {}) {
     const readmePath = epic.doc_link;
     if (!existsRelative(readmePath)) continue; // extractor can lag a just-renamed/moved doc
     const readmeOffenses = checkEpicReadme(readRelative(readmePath), { slug: epic.slug });
-    if (readmeOffenses.length) results.push({ path: readmePath, docType: 'epic-README', offenses: readmeOffenses });
+    if (readmeOffenses.length)
+      results.push({ path: readmePath, docType: 'epic-README', offenses: readmeOffenses });
 
     const { sprints, retro } = siblingDocs(readmePath);
     for (const sprintPath of sprints) {
       const sprintOffenses = checkSprintDoc(readRelative(sprintPath));
-      if (sprintOffenses.length) results.push({ path: sprintPath, docType: 'sprint', offenses: sprintOffenses });
+      if (sprintOffenses.length)
+        results.push({ path: sprintPath, docType: 'sprint', offenses: sprintOffenses });
     }
     if (retro) {
       const retroOffenses = checkRetrospective(readRelative(retro));
-      if (retroOffenses.length) results.push({ path: retro, docType: 'retrospective', offenses: retroOffenses });
+      if (retroOffenses.length)
+        results.push({ path: retro, docType: 'retrospective', offenses: retroOffenses });
     }
   }
 
@@ -465,7 +522,9 @@ function runCheck() {
     }
     process.exit(1);
   }
-  console.log(`doc-format --check: clean (${ENFORCED_SWEPT_PATHS.size} path(s) enforced, ${results.length} advisory finding(s) elsewhere).`);
+  console.log(
+    `doc-format --check: clean (${ENFORCED_SWEPT_PATHS.size} path(s) enforced, ${results.length} advisory finding(s) elsewhere).`
+  );
 }
 
 const MECHANICAL_RULES = new Set([
@@ -514,7 +573,9 @@ function runFix() {
     }
   }
 
-  console.log(`\ndoc-format --fix: ${filesFixed} file(s) mechanically rewritten.`);
+  console.log(
+    `\ndoc-format --fix: ${filesFixed} file(s) mechanically rewritten, ${filesUntouched} left as they were.`
+  );
   if (stillNeedsHandFix.length) {
     console.log(`${stillNeedsHandFix.length} file(s) still need hand-fixing (real content judgment):\n`);
     for (const r of stillNeedsHandFix) {
@@ -592,7 +653,9 @@ function runCheckFiles(paths) {
 
 function runHook() {
   let input = '';
-  process.stdin.on('data', (chunk) => { input += chunk; });
+  process.stdin.on('data', (chunk) => {
+    input += chunk;
+  });
   process.stdin.on('end', () => {
     let filePath;
     try {

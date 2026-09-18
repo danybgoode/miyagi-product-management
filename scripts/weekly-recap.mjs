@@ -82,7 +82,6 @@ function argValue(flag) {
 const SINCE_OVERRIDE = argValue('--since');
 const UNTIL_OVERRIDE = argValue('--until');
 
-
 const RETRO_DIGEST_MAX_CHARS = 320;
 const DEFAULT_WINDOW_DAYS = 7;
 const MAX_PRS_SHOWN_PER_REPO = 12; // caps a busy-week PR listing before it dominates the message
@@ -94,7 +93,10 @@ const MAX_EPICS_SHOWN = 10;
 const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a safety net, not the primary control
 
 function esc(s) {
-  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 // ---- window / memory log (JSONL, one line per run — lives on a dedicated branch, see above) ----
@@ -123,7 +125,6 @@ export function computeWindow(lastLogLine, now, overrideSinceISO, overrideUntilI
   const fallback = new Date(now.getTime() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   return { sinceISO: fallback.toISOString(), untilISO };
 }
-
 
 // ---- gather: merged PRs per repo (REST-only — scripts/lib/gh-rest.mjs) ----
 //
@@ -217,7 +218,18 @@ function gatherShippedEpics(sinceISO, untilISO) {
   // chronologically last, not textually last in output.
   const r = spawnSync(
     'git',
-    ['log', '--since', sinceISO, '--until', untilISO, '--date=iso-strict', '-p', '--reverse', '--', 'Roadmap/*/*/README.md'],
+    [
+      'log',
+      '--since',
+      sinceISO,
+      '--until',
+      untilISO,
+      '--date=iso-strict',
+      '-p',
+      '--reverse',
+      '--',
+      'Roadmap/*/*/README.md',
+    ],
     { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }
   );
   if (r.status !== 0) return { available: false, epics: [] };
@@ -244,7 +256,10 @@ function gatherShippedEpics(sinceISO, untilISO) {
 export function extractRetroDigest(markdown, maxChars) {
   const m = /^##\s+What shipped\s*\n+([\s\S]+?)(?=\n##\s|\n*$)/m.exec(markdown);
   if (!m) return null;
-  const firstBlock = m[1].split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim();
+  const firstBlock = m[1]
+    .split(/\n\s*\n/)[0]
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!firstBlock) return null;
   return firstBlock.length > maxChars ? `${firstBlock.slice(0, maxChars).trim()}…` : firstBlock;
 }
@@ -256,7 +271,14 @@ export function extractRetroDigest(markdown, maxChars) {
 // Pure — builds the Telegram message from already-gathered data. No I/O.
 // `shippedEpics` is `{ available, epics }` — `available: false` (a git-log read failure) must render as
 // "unavailable", never fold into "none this week"/the quiet-week collapse (that's a different fact).
-export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, deployRepos = [], prose = null }) {
+export function buildMessage({
+  sinceISO,
+  untilISO,
+  repoResults,
+  shippedEpics,
+  deployRepos = [],
+  prose = null,
+}) {
   const since = sinceISO.slice(0, 10);
   const until = untilISO.slice(0, 10);
   const lines = [`<b>Weekly recap · ${since} – ${until}</b>`];
@@ -284,10 +306,14 @@ export function buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, de
   if (deployRepos.length) {
     lines.push('');
     lines.push('<b>📦 Deploys</b> (merges to main)');
-    lines.push(deployRepos.map(({ label, repo }) => {
-      const r = repoResults.find((x) => x.repo === repo);
-      return `${esc(label)}: ${r?.available ? r.prs.length : 'unavailable'}`;
-    }).join(' · '));
+    lines.push(
+      deployRepos
+        .map(({ label, repo }) => {
+          const r = repoResults.find((x) => x.repo === repo);
+          return `${esc(label)}: ${r?.available ? r.prs.length : 'unavailable'}`;
+        })
+        .join(' · ')
+    );
   }
 
   lines.push('');
@@ -407,15 +433,18 @@ async function main() {
 
     // Shipped/closed epics lead — the highest-altitude product input we own, written in product
     // language by the people who did the work, with their retro digests attached.
-    const roadmapDeltas = epics.map((e) =>
-      `Epic "${e.name}" moved to ${e.status}${e.retroDigest ? ` — from its retrospective: ${e.retroDigest}` : ''}`
+    const roadmapDeltas = epics.map(
+      (e) =>
+        `Epic "${e.name}" moved to ${e.status}${e.retroDigest ? ` — from its retrospective: ${e.retroDigest}` : ''}`
     );
 
     const pack = buildEvidencePack({
       windowLabel,
       roadmapDeltas,
       owed: loadOwedLedger(join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json')),
-      repoSignals: [`${prCount} pull request(s) merged across ${config.repos.length} repositor${config.repos.length === 1 ? 'y' : 'ies'} this week.`],
+      repoSignals: [
+        `${prCount} pull request(s) merged across ${config.repos.length} repositor${config.repos.length === 1 ? 'y' : 'ies'} this week.`,
+      ],
       liveFlags: { available: false, flags: [] },
     });
     writeSync(1, `${buildBrief({ scriptsDir: __dirname, surface: 'weekly', pack })}\n`);
@@ -440,15 +469,27 @@ async function main() {
     const subjects = repoResults.flatMap((r) => (r.available ? r.prs.map((p) => p.title || '') : []));
     const areas = shippedEpics.available && shippedEpics.epics.length ? ['customer-facing pages'] : [];
     const evidence = deriveEvidenceFlags({ subjects, areas, liveFlags: [], maxWords: WEEKLY_MAX_WORDS });
-    const verdict = checkProse(draft, { ...evidence, extraBannedToolNames: config.prose.extraBannedToolNames });
+    const verdict = checkProse(draft, {
+      ...evidence,
+      extraBannedToolNames: config.prose.extraBannedToolNames,
+    });
     if (!verdict.ok && !FORCE_POST) {
       process.stderr.write(`${findingsToRevisionNote(verdict.findings)}\n`);
       process.exit(2);
     }
-    prose = verdict.ok ? draft : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
+    prose = verdict.ok
+      ? draft
+      : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
   }
 
-  const message = buildMessage({ sinceISO, untilISO, repoResults, shippedEpics, deployRepos: config.deployRepos, prose });
+  const message = buildMessage({
+    sinceISO,
+    untilISO,
+    repoResults,
+    shippedEpics,
+    deployRepos: config.deployRepos,
+    prose,
+  });
   console.log(message.replace(/<\/?[^>]+>/g, ''));
 
   if (!DRY_RUN) {

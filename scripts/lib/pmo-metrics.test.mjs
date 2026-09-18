@@ -65,16 +65,19 @@ test('summarizeDeployFrequency treats merges to main as deploys and labels unava
     { repo: 'acme/api', available: true, prs: [{ number: 3 }] },
     { repo: 'acme/product', available: false, prs: [] },
   ];
-  assert.deepEqual(summarizeDeployFrequency(repoResults, {
-    deployRepos: ['acme/web', 'acme/api'],
-  }), {
-    total: 3,
-    byRepo: {
-      'acme/web': 2,
-      'acme/api': 1,
-    },
-    unavailable: 0,
-  });
+  assert.deepEqual(
+    summarizeDeployFrequency(repoResults, {
+      deployRepos: ['acme/web', 'acme/api'],
+    }),
+    {
+      total: 3,
+      byRepo: {
+        'acme/web': 2,
+        'acme/api': 1,
+      },
+      unavailable: 0,
+    }
+  );
 });
 
 test('summarizeChangeFailProxy counts only reverts and hotfixes in the report window', () => {
@@ -86,10 +89,10 @@ test('summarizeChangeFailProxy counts only reverts and hotfixes in the report wi
   ];
   const result = summarizeChangeFailProxy(items, WINDOW);
   assert.equal(result.count, 2);
-  assert.deepEqual(result.items.map((item) => item.title), [
-    'Revert "feat: bad deploy"',
-    'hotfix: restore checkout',
-  ]);
+  assert.deepEqual(
+    result.items.map((item) => item.title),
+    ['Revert "feat: bad deploy"', 'hotfix: restore checkout']
+  );
 });
 
 test('summarizeThroughput combines dated epic flips, injected story ship events, and current Roadmap progress', () => {
@@ -143,7 +146,11 @@ test('summarizeDocOps counts unique Roadmap docs by epic, LEARNINGS promotions, 
 test('baseline summary is bounded and never enumerates a large PR history', () => {
   const summary = baselineSummary({
     repoResults: [
-      { repo: 'a', openPrs: Array.from({ length: 12 }, (_, i) => ({ number: i + 1 })), prs: Array.from({ length: 120 }, (_, i) => ({ number: i + 1 })) },
+      {
+        repo: 'a',
+        openPrs: Array.from({ length: 12 }, (_, i) => ({ number: i + 1 })),
+        prs: Array.from({ length: 120 }, (_, i) => ({ number: i + 1 })),
+      },
       { repo: 'b', openPrs: [{ number: 200 }], prs: [{ number: 201 }] },
     ],
     roadmapRows: Array.from({ length: 42 }, (_, i) => ({ slug: `row-${i}` })),
@@ -174,9 +181,7 @@ test('summarizePmoMetrics returns the full report shape from injected fixtures',
       { title: 'feat: a', createdAt: '2026-07-01T00:00:00Z', mergedAt: '2026-07-01T12:00:00Z' },
       { title: 'hotfix: b', createdAt: '2026-07-02T00:00:00Z', mergedAt: '2026-07-03T00:00:00Z' },
     ],
-    epics: [
-      { scaffoldedAt: '2026-06-30T00:00:00Z', shippedAt: '2026-07-02T00:00:00Z' },
-    ],
+    epics: [{ scaffoldedAt: '2026-06-30T00:00:00Z', shippedAt: '2026-07-02T00:00:00Z' }],
     roadmapRows: [{ grain: 'Sprint', sprint_progress: '1/2 stories' }],
     epicStatusFlips: [{ status: 'shipped', date: '2026-07-02T00:00:00Z' }],
     storyShipEvents: [{ shippedAt: '2026-07-02T00:00:00Z' }],

@@ -40,55 +40,65 @@ Reason.
 });
 
 test('checkEpicReadme: missing frontmatter block', () => {
-  const offenses = checkEpicReadme('# Epic: No frontmatter\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope seed:** [x](y)\n');
+  const offenses = checkEpicReadme(
+    '# Epic: No frontmatter\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope seed:** [x](y)\n'
+  );
   assert.ok(offenses.some((o) => o.rule === 'frontmatter-missing'));
 });
 
 test('checkEpicReadme: invalid status value', () => {
-  const content = '---\nstatus: done\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope seed:** [x](y)\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: done\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope seed:** [x](y)\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content);
   assert.ok(offenses.some((o) => o.rule === 'frontmatter-status-invalid'));
 });
 
 test('checkEpicReadme: missing Class field', () => {
-  const content = '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Scope seed:** [x](y)\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Scope seed:** [x](y)\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content);
   assert.ok(offenses.some((o) => o.rule === 'header-missing-class'));
 });
 
 test('checkEpicReadme: invalid Class value (a free-text description, not the 4-value enum)', () => {
-  const content = '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Remediation / hardening · **Scope seed:** [x](y)\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Remediation / hardening · **Scope seed:** [x](y)\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content);
   assert.ok(offenses.some((o) => o.rule === 'header-class-invalid'));
 });
 
 test('checkEpicReadme: Scope doc (legacy readyforscope/) flagged distinctly from a missing Scope seed', () => {
-  const content = '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope doc:** [x](../../00-ideas/2.%20readyforscope/x.md)\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope doc:** [x](../../00-ideas/2.%20readyforscope/x.md)\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content);
   assert.ok(offenses.some((o) => o.rule === 'header-scope-doc-legacy'));
   assert.ok(!offenses.some((o) => o.rule === 'header-missing-scope-seed'));
 });
 
 test('checkEpicReadme: no Scope-seed field is NOT flagged when the epic genuinely has no seed file (pre-seeds/-convention epic) — an accepted state, not drift', () => {
-  const content = '---\nstatus: shipped\nslug: some-epic-with-no-seed-file\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: shipped\nslug: some-epic-with-no-seed-file\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content, { slug: 'some-epic-with-no-seed-file' });
   assert.ok(!offenses.some((o) => o.rule === 'header-missing-scope-seed'));
 });
 
 test('checkEpicReadme: no Scope-seed field IS flagged when a real seed file exists for this slug and just is not linked', () => {
-  const content = '---\nstatus: shipped\nslug: doc-format-consistency\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: shipped\nslug: doc-format-consistency\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content, { slug: 'doc-format-consistency', exists: () => true });
   assert.ok(offenses.some((o) => o.rule === 'header-missing-scope-seed'));
 });
 
 test('checkEpicReadme: legacy Macro-section header flagged', () => {
-  const content = '---\nstatus: shipped\nslug: x\n---\n\n> **Macro-section:** [09](../README.md) · **BUILD-ORDER:** #1\n\n## Definition of Done (epic)\n';
+  const content =
+    '---\nstatus: shipped\nslug: x\n---\n\n> **Macro-section:** [09](../README.md) · **BUILD-ORDER:** #1\n\n## Definition of Done (epic)\n';
   const offenses = checkEpicReadme(content);
   assert.ok(offenses.some((o) => o.rule === 'header-macro-section-legacy'));
 });
 
 test('checkEpicReadme: "## Epic Definition of Done" flagged as the legacy heading wording', () => {
-  const content = '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope seed:** [x](../../00-ideas/seeds/x.md)\n\n## Epic Definition of Done\n';
+  const content =
+    '---\nstatus: shipped\nslug: x\n---\n\n> **Area:** 09 · **Risk:** Low · **Class:** Chore · **Scope seed:** [x](../../00-ideas/seeds/x.md)\n\n## Epic Definition of Done\n';
   const offenses = checkEpicReadme(content);
   assert.ok(offenses.some((o) => o.rule === 'dod-heading-legacy'));
 });
@@ -100,12 +110,16 @@ test('checkSprintDoc: a canonical plain Status line has zero offenses', () => {
 });
 
 test('checkSprintDoc: a blockquote Status line (with Epic backlink) is flagged', () => {
-  const offenses = checkSprintDoc('# Sprint 1\n\n> Epic: [X](README.md) · **Risk: LOW**\n> **Status: ✅ SHIPPED**\n');
+  const offenses = checkSprintDoc(
+    '# Sprint 1\n\n> Epic: [X](README.md) · **Risk: LOW**\n> **Status: ✅ SHIPPED**\n'
+  );
   assert.ok(offenses.some((o) => o.rule === 'sprint-status-blockquote'));
 });
 
 test('checkSprintDoc: Status combined with Risk on one line is flagged', () => {
-  const offenses = checkSprintDoc('# Sprint 1\n\n**Epic:** [X](README.md) · **Risk: HIGH** · **Status: shipped**\n');
+  const offenses = checkSprintDoc(
+    '# Sprint 1\n\n**Epic:** [X](README.md) · **Risk: HIGH** · **Status: shipped**\n'
+  );
   assert.ok(offenses.some((o) => o.rule === 'sprint-status-combined'));
 });
 
@@ -176,7 +190,8 @@ _Closed: 2026-06-09 · 3 sprints, all shipped to prod._
 });
 
 test('checkRetrospective: bold "**Closed ...**" flagged as the legacy format', () => {
-  const content = '# X — Retrospective\n\n**Closed 2026-06-07.**\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n';
+  const content =
+    '# X — Retrospective\n\n**Closed 2026-06-07.**\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n';
   const offenses = checkRetrospective(content);
   assert.ok(offenses.some((o) => o.rule === 'retro-closed-bold'));
 });
@@ -226,7 +241,8 @@ test('fixDodHeading: content already canonical is left untouched', () => {
 });
 
 test('fixSprintStatusLine: blockquote Status (with Epic backlink on a preceding line) collapses to a plain Status line', () => {
-  const content = '# Sprint 1\n\n> Epic: [X](README.md) · **Risk: LOW**\n> **Status: ✅ SHIPPED**\n\n## Stories\n';
+  const content =
+    '# Sprint 1\n\n> Epic: [X](README.md) · **Risk: LOW**\n> **Status: ✅ SHIPPED**\n\n## Stories\n';
   const fixed = fixSprintStatusLine(content);
   assert.ok(fixed.includes('**Status:** ✅ SHIPPED'));
   assert.ok(!fixed.includes('> Epic:'));
@@ -247,7 +263,8 @@ test('fixSprintStatusLine: already-canonical plain Status line is left untouched
 });
 
 test('fixSprintStatusLine: a bold Status span that wraps onto the NEXT physical line is left untouched (real bug found sweeping deploy-pipeline-tuning — collapsing just line 1 left a dangling ** on line 2)', () => {
-  const content = '# Sprint 4\n\n**Epic:** [X](README.md) · **Risk: LOW** · **Status: ✅ DONE 2026-07-13 — S4.1\nbuilt, S4.2 explicitly skipped (data doesn\'t support it).**\n\nBody.\n';
+  const content =
+    "# Sprint 4\n\n**Epic:** [X](README.md) · **Risk: LOW** · **Status: ✅ DONE 2026-07-13 — S4.1\nbuilt, S4.2 explicitly skipped (data doesn't support it).**\n\nBody.\n";
   assert.equal(fixSprintStatusLine(content), content);
 });
 
@@ -266,19 +283,22 @@ test('fixSprintStatusLine: a blockquote Status block with substantial multi-line
 });
 
 test('fixSprintStatusLine: a short blockquote block with a non-Epic/Risk continuation line (e.g. "Surfaces: ...") is left untouched — a short line is not proof it is disposable (real bug found sweeping promoter-funnel-v2/sprint-5.md, where the Surfaces line was silently discarded)', () => {
-  const content = "# Sprint 5\n\n> Epic: [X](README.md) · Risk: MED (no new money paths) · Status: ✅ merged 2026-07-03, PR [#168](https://github.com/x/y/pull/168)\n> Surfaces: `/promotor/cerrar`, merchant panel, email.\n\nBody.\n";
+  const content =
+    '# Sprint 5\n\n> Epic: [X](README.md) · Risk: MED (no new money paths) · Status: ✅ merged 2026-07-03, PR [#168](https://github.com/x/y/pull/168)\n> Surfaces: `/promotor/cerrar`, merchant panel, email.\n\nBody.\n';
   assert.equal(fixSprintStatusLine(content), content);
 });
 
 test('fixSprintStatusLine: a short blockquote block that IS purely Epic/Risk backlink noise still collapses cleanly', () => {
-  const content = '# Sprint 0\n\n> Epic: [X](README.md) · Risk: **HIGH** (entitlement) — **the product owner merges**\n> Status: ✅ closed 2026-07-02 — **not reproducible**\n\nBody.\n';
+  const content =
+    '# Sprint 0\n\n> Epic: [X](README.md) · Risk: **HIGH** (entitlement) — **the product owner merges**\n> Status: ✅ closed 2026-07-02 — **not reproducible**\n\nBody.\n';
   const fixed = fixSprintStatusLine(content);
   assert.ok(fixed.includes('**Status:** ✅ closed 2026-07-02 — **not reproducible**'));
   assert.ok(!fixed.includes('Epic:'));
 });
 
 test('fixSprintStatusLine: Status leading with Risk trailing on the same line is left untouched — extracting "everything after Status:" would silently fold the Risk field into the kept value instead of dropping it (real bug found sweeping homepage-polish-b/sprint-1.md)', () => {
-  const content = '# Sprint 1\n\n**Status:** ✅ COMPLETE — merged to `main` 2026-06-12, PR [#84](https://x/pull/84) squash `14fd880` · **Risk:** LOW *(touched shared `lib/types.ts` + renderers — announced in the PR per LEARNINGS)*\n';
+  const content =
+    '# Sprint 1\n\n**Status:** ✅ COMPLETE — merged to `main` 2026-06-12, PR [#84](https://x/pull/84) squash `14fd880` · **Risk:** LOW *(touched shared `lib/types.ts` + renderers — announced in the PR per LEARNINGS)*\n';
   assert.equal(fixSprintStatusLine(content), content);
 });
 
@@ -290,7 +310,8 @@ test('fixSprintStatusLine: "**Status:** value" (label bold closes right at the c
 });
 
 test('fixSprintStatusLine: a single-line combined Status whose bold span closes mid-sentence (not at value end) is left untouched, not left with a dangling ** (real bug found sweeping feature-flags-inhouse/sprint-3.md)', () => {
-  const content = '### S3.1 — Something\n> **Status: ✅ MERGED+DEPLOYED 2026-07-01.** FE [x](y) squash `d9eddd1`. **Owed to the product owner:** the live smoke.\n';
+  const content =
+    '### S3.1 — Something\n> **Status: ✅ MERGED+DEPLOYED 2026-07-01.** FE [x](y) squash `d9eddd1`. **Owed to the product owner:** the live smoke.\n';
   const fixed = fixSprintStatusLine(content);
   assert.equal(fixed, content);
 });
@@ -299,7 +320,12 @@ test('fixRetroClosedLine: bold "**Closed 2026-06-07.**" converts to italic, pres
   const content = '# X — Retrospective\n\n**Closed 2026-06-07.**\n\n## What shipped\n';
   const fixed = fixRetroClosedLine(content);
   assert.ok(fixed.includes('_Closed: 2026-06-07.'));
-  assert.ok(fixed.split('\n').find((l) => l.startsWith('_Closed:')).endsWith('_'));
+  assert.ok(
+    fixed
+      .split('\n')
+      .find((l) => l.startsWith('_Closed:'))
+      .endsWith('_')
+  );
   assert.ok(!fixed.includes('**Closed'));
 });
 
@@ -309,7 +335,8 @@ test('fixRetroClosedLine: already-italic content is left untouched (nothing bold
 });
 
 test('fixRetroClosedLine: a "**Closed <date>.**" line that is really the FIRST line of a soft-wrapped multi-line paragraph is left untouched — rewriting just line 1 would strand the continuation lines as an orphaned fragment (real bug found sweeping delivery-money-polish/RETROSPECTIVE.md)', () => {
-  const content = '# X — Retrospective\n\n**Closed 2026-06-09.** Three sprints, all shipped to prod. HIGH-risk (refunds / payments / fulfillment /\norder state) — the product owner merged every PR.\n\n## What shipped\n';
+  const content =
+    '# X — Retrospective\n\n**Closed 2026-06-09.** Three sprints, all shipped to prod. HIGH-risk (refunds / payments / fulfillment /\norder state) — the product owner merged every PR.\n\n## What shipped\n';
   assert.equal(fixRetroClosedLine(content), content);
 });
 
@@ -321,7 +348,8 @@ test('applyMechanicalFixes: a sprint doc with a fixable Status line reports the 
 });
 
 test('applyMechanicalFixes: a retrospective with a fixable Closed line and all sections present ends up fully clean', () => {
-  const content = '# X — Retrospective\n\n**Closed 2026-06-07.**\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n';
+  const content =
+    '# X — Retrospective\n\n**Closed 2026-06-07.**\n\n## What shipped\n## What went well\n## What we learned\n## Gaps / follow-ups\n';
   const { content: fixed, fixedRules } = applyMechanicalFixes(content, 'retrospective');
   assert.ok(fixedRules.includes('retro-closed-bold'));
   assert.deepEqual(checkRetrospective(fixed), []);
@@ -330,16 +358,21 @@ test('applyMechanicalFixes: a retrospective with a fixable Closed line and all s
 // ── Relaxed after triage against a second project (plugin-audit-and-extraction S2.4) ──────────────
 
 test('checkRetrospective: the close line stays strict — shared with epic-dod, and immune to "not closed yet"', () => {
-  const body = '\n\n## What shipped\nX.\n\n## What went well\nY.\n\n## What we learned\nZ.\n\n## Gaps / follow-ups\nNone.\n';
+  const body =
+    '\n\n## What shipped\nX.\n\n## What went well\nY.\n\n## What we learned\nZ.\n\n## Gaps / follow-ups\nNone.\n';
   for (const close of ['> Epic not closed yet — last touched 2026-07-20', '**Shipped:** 2026-08-20']) {
     const codes = checkRetrospective(`# X — Retrospective\n\n${close}${body}`).map((o) => o.rule);
-    assert.ok(codes.some((c) => c.startsWith('retro-closed')), `${close} must not pass as a close line`);
+    assert.ok(
+      codes.some((c) => c.startsWith('retro-closed')),
+      `${close} must not pass as a close line`
+    );
   }
   assert.deepEqual(checkRetrospective(`# X — Retrospective\n\n_Closed: 2026-08-20_ · shipped${body}`), []);
 });
 
 test('checkRetrospective: canonical sections match by stem — a subtitle or a synonym is the same section', () => {
-  const content = '# X\n\n_Closed: 2026-07-16_\n\n## What shipped\n## What worked\n## What we learned the hard way\n## Gaps, stated rather than implied\n';
+  const content =
+    '# X\n\n_Closed: 2026-07-16_\n\n## What shipped\n## What worked\n## What we learned the hard way\n## Gaps, stated rather than implied\n';
   assert.deepEqual(checkRetrospective(content), []);
   const missing = checkRetrospective('# X\n\n_Closed: 2026-07-16_\n\n## What shipped\n## Notes\n');
   assert.deepEqual(missing.map((o) => o.detail).sort(), [
