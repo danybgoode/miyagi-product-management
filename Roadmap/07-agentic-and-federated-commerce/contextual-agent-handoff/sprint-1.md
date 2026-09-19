@@ -1,3 +1,33 @@
+---
+epic: contextual-agent-handoff
+sprint: 1
+title: Icon split + Spanish + URL-only contextual
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Distinct icon for the theme feature
+    as_a: a user
+    i_want: the seasonal/designer theme feature and the AI feature to use different icons
+    so_that: I can tell them apart at a glance
+    risk: low
+    status: done
+  - id: S1.2
+    title: Spanish-only prompt + extract a pure builder
+    as_a: a Spanish-speaking shopper
+    i_want: the agent prompt fully in Spanish
+    so_that: it reads naturally and matches the es-MX app
+    risk: low
+    status: done
+  - id: S1.3
+    title: Route-aware contextual prompt (URL-only)
+    as_a: a shopper
+    i_want: "the prompt to match the page I'm on"
+    so_that: I can always copy something specific to hand my agent
+    risk: low
+    status: done
+---
 # Contextual agent handoff — Sprint 1: Icon split + Spanish + URL-only contextual
 
 **Status:** ✅ SHIPPED 2026-06-25 — [PR #128](https://github.com/danybgoode/miyagisanchezcommerce/pull/128) squash-merged `33ae0b3` (risk LOW; Daniel's preview smoke green; Codex cross-review applied `9bb3c10`).

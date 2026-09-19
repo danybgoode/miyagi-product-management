@@ -1,3 +1,26 @@
+---
+epic: design-token-foundation
+sprint: 1
+title: "Token contract (the substrate #6 consumes)"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Documented semantic-token contract
+    as_a: "the #6 redesign builder"
+    i_want: a documented semantic-token contract
+    so_that: "I style by intent (`--accent`, `--fg-muted`) without re-deriving the system from `globals.css`"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Locked-vs-unlockable matrix in Roadmap
+    as_a: a designer/PM
+    i_want: the theme-override boundary in the product source-of-truth
+    so_that: "what a theme can and cannot change isn't buried in an unwired reference bundle"
+    risk: low
+    status: done
+---
 # Sprint 1 — Token contract (the substrate #6 consumes)
 
 Goal: put the semantic-token contract and the theme-override boundary into the product

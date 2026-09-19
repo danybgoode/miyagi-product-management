@@ -1,3 +1,33 @@
+---
+epic: subdomains
+sprint: 1
+title: Automatic subdomains
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Subdomain routing + white-label + channel
+    as_a: a seller
+    i_want: "my shop to live at `my-slug.miyagisanchez.com`"
+    so_that: it feels like an independent business
+    risk: high
+    status: done
+  - id: S1.2
+    title: Platform hop for auth/checkout
+    as_a: a buyer on a subdomain
+    i_want: sign-in and checkout to work
+    so_that: I can complete the purchase without errors
+    risk: high
+    status: done
+  - id: S1.3
+    title: Discovery in settings
+    as_a: a seller
+    i_want: to see and copy my subdomain
+    so_that: I can share it
+    risk: high
+    status: done
+---
 # Sprint 1 — Automatic subdomains
 
 Frontend only. Build → verify → commit per story.

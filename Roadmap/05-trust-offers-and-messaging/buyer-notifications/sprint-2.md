@@ -1,3 +1,33 @@
+---
+epic: buyer-notifications
+sprint: 2
+title: Buyer Telegram channel (linking + delivery + polish)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Buyer links Telegram (reuse #5's deep-link + webhook)"
+    as_a: a buyer
+    i_want: to connect my Telegram in one tap
+    so_that: the platform can message me there
+    risk: high
+    status: done
+  - id: S2.2
+    title: Send buyer notifications to Telegram (+ Push)
+    as_a: the system
+    i_want: "to deliver a buyer's enabled groups to their chat"
+    so_that: the buyer dispatcher can reach Telegram
+    risk: high
+    status: done
+  - id: S2.3
+    title: Unlink + test + grid go-live (dual-audience safe)
+    as_a: a buyer
+    i_want: to disconnect Telegram, send myself a test, and have it read cleanly in both languages
+    so_that: "I trust what's wired and can revoke it"
+    risk: high
+    status: done
+---
 # Sprint 2 — Buyer Telegram channel (linking + delivery + polish)
 
 > Epic: [Buyer Telegram channel + Buyer preference center](README.md) · **Risk: HIGH — Daniel merges.**

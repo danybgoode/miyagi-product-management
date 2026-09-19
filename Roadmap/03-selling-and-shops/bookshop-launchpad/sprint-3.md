@@ -1,3 +1,33 @@
+---
+epic: bookshop-launchpad
+sprint: 3
+title: "Voting campaigns + the 50% unlock"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Campaign builder
+    as_a: a bookshop
+    i_want: "to create a campaign: pick published works, set a vote threshold, end date, and the reward (coupon % + the linked CPP print product)"
+    so_that: launches are self-serve
+    risk: high
+    status: done
+  - id: S3.2
+    title: Public campaign page
+    as_a: a reader
+    i_want: "`/v/[slug]` (+ QR): the candidate works with excerpts, one email-verified vote per email per work, live progress toward the threshold"
+    so_that: rallying votes is shareable and legible
+    risk: high
+    status: done
+  - id: S3.3
+    title: Threshold + close automation
+    as_a: a voter
+    i_want: "the promised unlock to actually happen — threshold met → the product-scoped 50% coupon auto-mints and lands in my inbox (+ writer + seller notified); threshold unmet at end date → an honest \"no se alcanzó\" close (optional consolation coupon)"
+    so_that: "the campaign's promise is mechanical, not manual"
+    risk: high
+    status: done
+---
 # Bookshop launchpad — Sprint 3: Voting campaigns + the 50% unlock
 
 **Status:** ✅ MERGED 2026-07-08 — BE [#68](https://github.com/danybgoode/medusa-bonsai-backend/pull/68) squash `3c0b8c7` (merged + deployed first, Cloud Run us-east4), then FE [#189](https://github.com/danybgoode/miyagisanchezcommerce/pull/189) squash `02e12db`. Behind `launchpad.enabled` (**OFF**); public `/v/[slug]` additionally dark. Owed: Daniel's real-device money smoke (below) + flag flip. Codex cross-review ran on both PRs pre-merge and caught real hardening gaps (fail-open internal mint route, code-burn-before-dedup, cron null-`ends_at` recovery gap) — all fixed before merge.

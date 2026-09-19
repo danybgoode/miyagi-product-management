@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: ui-refresh-launch
+title: UI refresh before launch
+area: 09-platform-infra
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic: UI refresh before launch

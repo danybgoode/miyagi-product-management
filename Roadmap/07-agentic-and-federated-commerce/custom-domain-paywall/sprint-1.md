@@ -1,3 +1,33 @@
+---
+epic: custom-domain-paywall
+sprint: 1
+title: Gate + entitlement (grandfather + flag)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Derive entitlement + gate every domain mutation
+    as_a: a seller without entitlement
+    i_want: to be told a custom domain is a paid feature (and see an upsell)
+    so_that: "the connect flow is honest — and as Daniel, the feature is actually gated"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Grandfather existing custom-domain shops (indefinitely)
+    as_a: an existing seller who already connected a domain
+    i_want: to keep it free forever
+    so_that: nothing is taken away
+    risk: high
+    status: done
+  - id: S1.3
+    title: Fail-open rollout flag
+    as_a: Daniel
+    i_want: to switch the paywall on/off safely
+    so_that: a Flagsmith outage or a bad rollout can never trap sellers
+    risk: low
+    status: done
+---
 # Custom-domain paywall + campaign coupon — Sprint 1: Gate + entitlement (grandfather + flag)
 
 **Status:** ✅ SHIPPED 2026-06-11 — [PR #79](https://github.com/danybgoode/miyagisanchezcommerce/pull/79) squash-merged to `main` (`f0b524a`, bundled with S2). Grandfather backfill ran against prod (**no-op — 0 custom-domain shops**); `domain.paywall_enabled` **created in Flagsmith + flipped ON in Production** — the paywall is LIVE. Auth boundary + prod health re-confirmed post-flip (homepage 200, anon domain POST 401).

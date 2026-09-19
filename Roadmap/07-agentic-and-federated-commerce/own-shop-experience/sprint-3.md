@@ -1,3 +1,26 @@
+---
+epic: own-shop-experience
+sprint: 3
+title: Checkout return to the domain + communications
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: "Checkout return continuity 📋"
+    as_a: a buyer who started on a custom domain
+    i_want: to return to that domain after paying
+    so_that: "I don't end up confused on another site"
+    risk: low
+    status: done
+  - id: S3.2
+    title: "Emails reference the tenant domain 📋"
+    as_a: a buyer on a custom domain
+    i_want: the confirmation email to link to the shop on its domain
+    so_that: I keep trusting the brand
+    risk: low
+    status: done
+---
 # Sprint 3 — Checkout return to the domain + communications
 
 Goal (pragmatic scope): even though sign-in/payment use the platform's secure flow, the buyer **returns**

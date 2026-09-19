@@ -1,3 +1,33 @@
+---
+epic: promoter-program
+sprint: 4
+title: In-person close (cash collection + claim handoff + resources)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: Paid-by-promoter / cash-collection checkout
+    as_a: a promoter
+    i_want: to check out for the seller with my own card after taking cash
+    so_that: cash-only merchants can still buy
+    risk: high
+    status: done
+  - id: S4.2
+    title: WhatsApp claim handoff
+    as_a: a promoter
+    i_want: to set the shop up as unclaimed and hand the seller a WhatsApp claim link
+    so_that: the handoff is one tap
+    risk: high
+    status: done
+  - id: S4.3
+    title: Promoter resources mini-site + sell-sheet (es-MX)
+    as_a: a promoter
+    i_want: a resources mini-site + printable sell-sheet
+    so_that: I can explain and sell in the shop
+    risk: low
+    status: done
+---
 # Promoter Program — Sprint 4: In-person close (cash collection + claim handoff + resources)
 
 **Status:** ✅ MERGED 2026-06-30 — **PR [#143](https://github.com/danybgoode/miyagisanchezcommerce/pull/143)

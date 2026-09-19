@@ -1,3 +1,33 @@
+---
+epic: mercadolibre-sync
+sprint: 1
+title: Connect + linkage foundation (the spine)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Connect/disconnect ML (OAuth) as a Medusa module
+    as_a: a seller
+    i_want: to connect (and disconnect) my Mercado Libre account
+    so_that: Miyagi can act on my ML catalog
+    risk: high
+    status: done
+  - id: S1.2
+    title: "Product ↔ ML-item linkage model"
+    as_a: the system
+    i_want: a durable mapping between a Medusa product (and variant) and its ML item id
+    so_that: import, publish, and stock sync all share one join
+    risk: low
+    status: done
+  - id: S1.3
+    title: Connection status + health in /shop/manage
+    as_a: a seller
+    i_want: to see whether my ML account is connected and healthy
+    so_that: I trust the integration
+    risk: low
+    status: done
+---
 # Mercado Libre sync — Sprint 1: Connect + linkage foundation (the spine)
 
 **Status:** ✅ MERGED + LIVE (2026-06-30) — backend [#44](https://github.com/danybgoode/medusa-bonsai-backend/pull/44)

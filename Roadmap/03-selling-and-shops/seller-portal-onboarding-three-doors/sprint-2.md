@@ -1,3 +1,33 @@
+---
+epic: seller-portal-onboarding-three-doors
+sprint: 2
+title: Staging preview + shared SuccessCard
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: S4 Revisa y aprueba (staging preview over SetupClient)
+    as_a: a merchant who handed over my info
+    i_want: to see my whole store as a draft I can edit before anything is created
+    so_that: I approve reality instead of hoping the import got it right
+    risk: low
+    status: done
+  - id: S2.2
+    title: "S5 <SuccessCard> (R9) + F12 convergence"
+    as_a: a merchant finishing any setup path
+    i_want: "one consistent \"done\" screen"
+    so_that: I always know what happened, can see it live, and know the next step
+    risk: low
+    status: done
+  - id: S2.3
+    title: "S6 personalization over lib/setup-guide.ts (P0·B seam)"
+    as_a: a merchant landing on Resumen after setup
+    i_want: the guide ordered to my case
+    so_that: the next step is the one that matters for me
+    risk: low
+    status: done
+---
 # Onboarding three-doors — Sprint 2: Staging preview + shared SuccessCard
 
 **Status:** ✅ merged — [PR #227](https://github.com/danybgoode/miyagisanchezcommerce/pull/227)

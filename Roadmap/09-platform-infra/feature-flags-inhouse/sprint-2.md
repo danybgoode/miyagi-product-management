@@ -1,3 +1,33 @@
+---
+epic: feature-flags-inhouse
+sprint: 2
+title: Admin control surface
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.0
+    title: "(FE) pure flag-admin validator seam"
+    as_a: the platform
+    i_want: "the write route's key/body validation in a next-free module"
+    so_that: "the \"reject unknown key / non-boolean\" logic is unit-tested in the api gate (the authed 200/400 path can't run anonymously — see Sprint QA)"
+    risk: high
+    status: done
+  - id: S2.1
+    title: "(FE) /admin/flags page in AdminShell"
+    as_a: the admin
+    i_want: a page listing every flag with its live state
+    so_that: I can see and reach the switches in one place
+    risk: high
+    status: done
+  - id: S2.2
+    title: "(FE) POST /api/admin/flags write + wire the toggles"
+    as_a: the admin
+    i_want: to flip a flag from the page
+    so_that: the change takes effect within one cache TTL with no deploy and is recorded
+    risk: high
+    status: done
+---
 # Sprint 2 — Admin control surface
 
 **Status:** ✅ MERGED + DEPLOYED (Vercel prod) 2026-07-01 — PR **#151** squash `03f5770`, risk **LOW**.

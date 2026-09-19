@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: feature-flags-inhouse
+title: In-house feature flags (replace Flagsmith)
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic — In-house feature flags (replace Flagsmith)

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: custom-domain-checkout
+title: Checkout on the custom domain (custom-domain-checkout)
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 4
 ---
 
 # Epic — Checkout on the custom domain (custom-domain-checkout)

@@ -1,3 +1,33 @@
+---
+epic: subdomain-pricing
+sprint: 1
+title: Gate + entitlement + grandfather (behind flag)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Gate the middleware subdomain branch on derived entitlement
+    as_a: a new shop without entitlement
+    i_want: "`slug.miyagisanchez.com` to redirect to the free `/s/slug`"
+    so_that: "the white-label subdomain is honestly the paid upgrade — and as Daniel, the subdomain is actually gated"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Grandfather existing shops free at cutover
+    as_a: an existing shop
+    i_want: my subdomain to stay free forever
+    so_that: nothing is taken away
+    risk: high
+    status: done
+  - id: S1.3
+    title: Fail-open rollout flag
+    as_a: Daniel
+    i_want: to flip the paywall safely
+    so_that: a Flagsmith outage or bad rollout can never break live subdomains
+    risk: low
+    status: done
+---
 # Subdomain pricing — Sprint 1: Gate + entitlement + grandfather (behind flag)
 
 **Status:** ✅ MERGED — PR [#145](https://github.com/danybgoode/miyagisanchezcommerce/pull/145)

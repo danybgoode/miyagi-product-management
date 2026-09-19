@@ -1,3 +1,33 @@
+---
+epic: custom-domain-paywall
+sprint: 3
+title: Campaign coupon + agent surface
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Coupon miyagisan comps year 1 (cap 100), then standard
+    as_a: a seller
+    i_want: "to apply `miyagisan` at domain checkout"
+    so_that: "my first year is free — then it auto-renews at $499/yr (D5)"
+    risk: high
+    status: done
+  - id: S3.2
+    title: Coupon redeemer with no payment method lapses gracefully
+    as_a: a coupon redeemer who never added a card
+    i_want: my domain to lapse to free addressing at year-end (not a surprise charge or a broken shop)
+    so_that: the free year was a real gift (D7)
+    risk: high
+    status: done
+  - id: S3.3
+    title: Agent (UCP/MCP) access to the domain subscription + coupon
+    as_a: "a seller's AI agent"
+    i_want: to check domain entitlement, start the subscription, and apply a coupon over MCP
+    so_that: "the premium SKU is agent-native (AGENTS rule #3)"
+    risk: high
+    status: done
+---
 # Custom-domain paywall + campaign coupon — Sprint 3: Campaign coupon + agent surface
 
 **Status:** ✅ SHIPPED 2026-06-11 — [PR #82](https://github.com/danybgoode/miyagisanchezcommerce/pull/82)

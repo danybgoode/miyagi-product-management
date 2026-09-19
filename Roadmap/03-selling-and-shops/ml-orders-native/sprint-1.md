@@ -1,3 +1,40 @@
+---
+epic: ml-orders-native
+sprint: 1
+title: "The spine: idempotency + ML order materialization + state mapping"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Durable idempotency table
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.2
+    title: Materialize a paid ML order as a Medusa order
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.3
+    title: "ML → Medusa state mapping"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.4
+    title: Source badge + ML metadata in the order UI
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 1 — The spine: idempotency + ML order materialization + state mapping
 
 > Epic: [ml-orders-native](README.md) · Risk: **HIGH** (Daniel merges) · Backend-first; dark behind

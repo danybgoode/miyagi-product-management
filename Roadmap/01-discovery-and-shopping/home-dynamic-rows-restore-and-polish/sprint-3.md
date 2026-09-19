@@ -1,3 +1,40 @@
+---
+epic: home-dynamic-rows-restore-and-polish
+sprint: 3
+title: "Signed-out first-visit iteration — hero, Recién llegado, Pasillos, seller block"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: Hero + trust badges (signed-out)
+    as_a: a first-time visitor
+    i_want: "an instant read on what this place is (\"Lo que tu barrio vende, compra y recomienda\") with trust badges (Compra protegida · Haz tu oferta · 0% comisiones)"
+    so_that: I trust it enough to browse
+    risk: low
+    status: done
+  - id: S3.2
+    title: "\"Recién llegado al barrio\" row"
+    as_a: a visitor
+    i_want: "the newest neighborhood listings with \"Nuevo hoy\" badges"
+    so_that: the marketplace feels alive
+    risk: low
+    status: done
+  - id: S3.3
+    title: "\"Pasillos\" chips with live counts"
+    as_a: a visitor
+    i_want: "category chips with counts (Electrónica 14 · Hogar y jardín 9 …)"
+    so_that: I can dive into an aisle in one tap
+    risk: low
+    status: done
+  - id: S3.4
+    title: Seller block + terminal CTA restyle
+    as_a: a would-be seller
+    i_want: "\"Pon tu puesto en el barrio\" with the three reassurances (gratis y sin comisiones · tu propio dominio · pagos protegidos) and \"Abre tu tienda gratis\""
+    so_that: browsing converts into selling
+    risk: low
+    status: done
+---
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 3: Signed-out first-visit iteration — hero, Recién llegado, Pasillos, seller block
 
 **Status:** ✅ merged `f77dda0` (PR #255, squash-merged to `main` 2026-07-15) — Daniel's

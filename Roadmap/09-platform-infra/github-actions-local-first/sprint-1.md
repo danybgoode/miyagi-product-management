@@ -1,3 +1,19 @@
+---
+epic: github-actions-local-first
+sprint: 1
+title: stop the bleed + wire local hooks
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: "Remove notion-sync's push trigger, wire local pre-commit/pre-push hooks"
+    as_a: Daniel
+    i_want: "the repo's CI to stop burning GitHub Actions minutes on every push"
+    so_that: "the account doesn't hit its monthly quota before reset"
+    risk: low
+    status: done
+---
 # GitHub Actions local-first — Sprint 1: stop the bleed + wire local hooks
 
 **Status:** ✅ shipped — 2026-07-16.

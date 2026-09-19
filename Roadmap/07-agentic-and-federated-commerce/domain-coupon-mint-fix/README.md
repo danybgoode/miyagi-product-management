@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: domain-coupon-mint-fix
+title: "Domain-coupon mint fix — `miyagisan` won't create on prod"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 2
 ---
 
 # Epic: Domain-coupon mint fix — `miyagisan` won't create on prod

@@ -1,3 +1,47 @@
+---
+epic: promoter-funnel-v2
+sprint: 1
+title: Sprint 1
+risk: low
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S1.1
+    title: ".1 — Hero copiable prompt = the promoter agent prompt"
+    as_a: a prospective promoter
+    i_want: "the landing's copy-paste prompt to be the promoter ask (\"Quiero ser promotor de Miyagi Sánchez y ganar comisión montando tiendas en persona…\")"
+    so_that: my agent evaluates the job, not a generic seller pitch
+    risk: low
+    status: done
+  - id: S1.2
+    title: ".2 — Context-aware agent-sheet preamble"
+    as_a: a visitor on a recruiting page (promoter/seller)
+    i_want: "the sheet's prompt preamble to frame the agent for that job instead of \"Eres mi asistente de compras\""
+    so_that: "the handoff makes sense — while keeping the two sources (ficha `/agent` + https://ucp.dev) in every variant (the value prop stays)"
+    risk: low
+    status: done
+  - id: S1.3
+    title: ".3 — CTA + wording sweep"
+    as_a: a visitor
+    i_want: "a clear path in (\"Aplica para ser promotor\") and copy that reads like money (\"empieza a ganar hoy\")"
+    so_that: I know what I get and how to start
+    risk: low
+    status: done
+  - id: S1.4
+    title: ".4 — Real earnings + per-SKU price comparison from admin config"
+    as_a: a prospective promoter
+    i_want: "real numbers — my commission per product and what the merchant pays regular vs with my code, plus an \"if you close X shops/month\" earnings example —"
+    so_that: "the empty `%` becomes a reason to apply"
+    risk: low
+    status: done
+  - id: S1.5
+    title: ".5 — Handbook: sell-sheet → \"Manual del promotor\""
+    as_a: an active promoter
+    i_want: "a day-to-day cheatsheet — the offer table, 30-second scripts per product, the close checklist (montar → cobrar → diseñar anuncio → entregar por WhatsApp → recibo), and how payments work (transfer what's owed, keep your commission) —"
+    so_that: I can run a close start-to-finish without asking Daniel
+    risk: low
+    status: done
+---
 # Sprint 1 · Landing v2 — say the true offer
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: LOW (frontend copy + pure lib) · Status: ✅ **MERGED**

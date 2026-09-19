@@ -1,3 +1,26 @@
+---
+epic: support-widget
+sprint: 1
+title: Seller Support Setup
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Seller support configuration
+    as_a: a seller
+    i_want: to enable a support widget with preset/custom amounts
+    so_that: visitors can support me without buying a listing
+    risk: high
+    status: done
+  - id: S1.2
+    title: Medusa support primitive
+    as_a: the platform
+    i_want: support represented through Medusa commerce primitives
+    so_that: money, orders, receipts, and seller attribution stay in the commerce backend
+    risk: high
+    status: done
+---
 # Sprint 1 - Seller Support Setup
 
 Goal: let a seller enable support and make that support purchasable through a Medusa-owned commerce primitive,

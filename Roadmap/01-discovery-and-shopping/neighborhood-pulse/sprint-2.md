@@ -1,3 +1,33 @@
+---
+epic: neighborhood-pulse
+sprint: 2
+title: Richer pulse + agents
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Merchant-spotlight strip
+    as_a: a buyer
+    i_want: to see merchants worth knowing
+    so_that: I build familiarity and confidence in local sellers before I transact
+    risk: low
+    status: done
+  - id: S2.2
+    title: Colonia/zona presentational grouping
+    as_a: a buyer
+    i_want: "the feed to read as \"my neighborhood\""
+    so_that: community items feel local and organized rather than a flat stream
+    risk: low
+    status: done
+  - id: S2.3
+    title: Read-only UCP/MCP pulse view (agent surface)
+    as_a: an AI shopping agent
+    i_want: to read the neighborhood pulse
+    so_that: "agents see trending + the community signal the same way buyers do (AGENTS rule #3)"
+    risk: low
+    status: done
+---
 # Neighborhood Pulse — online community feed — Sprint 2: Richer pulse + agents
 
 **Status:** ✅ shipped — merged via [PR #56](https://github.com/danybgoode/miyagisanchezcommerce/pull/56),

@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: pmo-operational-reports
+title: "PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs"
+area: 09-platform-infra
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic: PMO operational reports — scrum/DORA metrics + AI-differential via smalldocs

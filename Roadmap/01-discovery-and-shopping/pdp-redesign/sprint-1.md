@@ -1,3 +1,40 @@
+---
+epic: pdp-redesign
+sprint: 1
+title: "Base PDP: fix the bug, reorder by intent, one primary action"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: "Bar/padding overlap fix (#4)"
+    as_a: a buyer
+    i_want: the bottom bar to never cover the page content
+    so_that: I can read the description and tags
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Right-column reorder by intent (#3)"
+    as_a: a buyer
+    i_want: to see what the item is and trust the seller before being asked to buy
+    so_that: I can decide with confidence
+    risk: low
+    status: done
+  - id: S1.3
+    title: "Two-action bar, one primary (#5)"
+    as_a: a buyer
+    i_want: one obvious primary action
+    so_that: "I'm not stuck choosing between three equal buttons"
+    risk: low
+    status: done
+  - id: S1.4
+    title: "\"Pago protegido\" cue beside the price (#2)"
+    as_a: a buyer
+    i_want: the protection signal next to the price
+    so_that: my doubt is resolved at the moment I see the cost
+    risk: low
+    status: done
+---
 # Sprint 1 — Base PDP: fix the bug, reorder by intent, one primary action
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW** (frontend reorder/polish; **touches the shared buy bar** —

@@ -1,3 +1,26 @@
+---
+epic: seller-portal-depth-pass
+sprint: 3
+title: Order preview contract
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: One read-only order transition plan
+    as_a: a seller preparing a batch of orders
+    i_want: the platform to evaluate each proposed status before anything changes
+    so_that: unsafe or stale rows are explained rather than silently advanced
+    risk: high
+    status: done
+  - id: S3.2
+    title: "OrdersInbox preview → approve → report"
+    as_a: a seller processing a batch of orders
+    i_want: to see what will change before I approve
+    so_that: one bulk click cannot silently advance the wrong fulfillment state
+    risk: high
+    status: done
+---
 # Seller-portal depth pass — Sprint 3: Order preview contract
 
 **Status:** ✅ shipped — backend `d7b142b` (PR #161), frontend `5b11a60` (PR #388); backend merged first

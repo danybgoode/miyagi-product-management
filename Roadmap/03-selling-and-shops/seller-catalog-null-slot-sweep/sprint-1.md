@@ -1,3 +1,33 @@
+---
+epic: seller-catalog-null-slot-sweep
+sprint: 1
+title: "money-path + public shop · remaining sites · anti-recurrence guard"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Money-path orders family + public shop page
+    as_a: a seller
+    i_want: my order actions (view, confirm payment, release escrow, ship, return, proof, pickup appointment, tags, bulk status) and my public shop page to keep working after I delete any listing
+    so_that: deleting a product never strands my in-flight orders or takes my shop offline
+    risk: high
+    status: done
+  - id: S1.2
+    title: Remaining-sites sweep
+    as_a: a buyer or admin
+    i_want: "browse, listing detail, support resolution, shipping quotes, profit apply-price, admin seller list, ML publish, and ticket redeem to tolerate a seller's deleted products"
+    so_that: no surface silently misattributes, duplicates, or drops data after a delete
+    risk: low
+    status: done
+  - id: S1.3
+    title: Anti-recurrence static guard
+    as_a: a future builder
+    i_want: "a backend unit test that fails on any bare `(…?.products ?? []).map(` shape under `src/api` outside an explicit allow-list"
+    so_that: "the 21st call site can't silently reintroduce the crash"
+    risk: low
+    status: done
+---
 # Seller-catalog null-slot sweep — Sprint 1: money-path + public shop · remaining sites · anti-recurrence guard
 
 **Status:** ✅ complete — backend PR [#104](https://github.com/danybgoode/medusa-bonsai-backend/pull/104), squash `f813206`; Cloud Run `medusa-web-00003-jgv`

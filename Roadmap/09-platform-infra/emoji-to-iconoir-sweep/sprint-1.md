@@ -1,3 +1,26 @@
+---
+epic: emoji-to-iconoir-sweep
+sprint: 1
+title: The sweep + the guard
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Mapping table + mechanical sweep
+    as_a: a user on any surface
+    i_want: UI chrome icons to be Iconoir, not emojis
+    so_that: the product reads as one designed system on every platform
+    risk: low
+    status: done
+  - id: S1.2
+    title: CI guard
+    as_a: the team
+    i_want: an emoji-in-JSX CI check with a voice allowlist
+    so_that: "the sweep can't silently regress (the raw-color-guard lesson: only CI catches new client islands)"
+    risk: low
+    status: done
+---
 # Emoji → Iconoir sweep — Sprint 1: The sweep + the guard
 
 **Status:** ✅ shipped — merged, Daniel's visual eyeball done 2026-07-15, 4 fast-follow broken-icon PRs merged (#239, #240, #260)

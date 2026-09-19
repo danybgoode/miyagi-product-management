@@ -1,3 +1,26 @@
+---
+epic: mcp-parity-core
+sprint: 3
+title: Money-adjacent listing/pricing tools
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: delete_listing over MCP
+    as_a: a shop agent
+    i_want: to delete a listing
+    so_that: catalog cleanup is agent-operable
+    risk: high
+    status: done
+  - id: S3.2
+    title: apply_price over MCP
+    as_a: a shop agent
+    i_want: to apply a computed margin-target price to a live variant
+    so_that: repricing (e.g
+    risk: high
+    status: done
+---
 # MCP parity core — Sprint 3: Money-adjacent listing/pricing tools
 
 **Status:** ✅ MERGED — frontend PR [#266](https://github.com/danybgoode/miyagisanchezcommerce/pull/266)

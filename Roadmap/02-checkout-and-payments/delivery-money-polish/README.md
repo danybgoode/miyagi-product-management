@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: delivery-money-polish
+title: Delivery & Manual-Money Polish
+area: 02-checkout-and-payments
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic — Delivery & Manual-Money Polish

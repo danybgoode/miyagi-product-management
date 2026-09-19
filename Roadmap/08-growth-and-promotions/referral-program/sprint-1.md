@@ -1,3 +1,47 @@
+---
+epic: referral-program
+sprint: 1
+title: Referral Program
+risk: low
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S1.1
+    title: Platform / admin coupons
+    as_a: an admin
+    i_want: to create marketplace promo codes
+    so_that: I can run platform promos and issue referral rewards
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Referral code, link & \"Mis referidos\""
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.3
+    title: Attribution
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.4
+    title: Reward on first transaction + admin config
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.5
+    title: Redeem at print-ad checkout
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Sprint 1 — Referral Program
 
 Goal: a complete referral loop — share, sign up, qualify, reward, redeem — funded by print-ad credit.

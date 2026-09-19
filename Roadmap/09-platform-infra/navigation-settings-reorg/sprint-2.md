@@ -1,3 +1,33 @@
+---
+epic: navigation-settings-reorg
+sprint: 2
+title: Persistent search + Cuenta hub
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Persistent header search
+    as_a: a buyer
+    i_want: search always visible on mobile and desktop
+    so_that: I can search from anywhere without hunting for a control
+    risk: low
+    status: done
+  - id: S2.2
+    title: Cuenta hub (CuentaMenu.tsx)
+    as_a: a signed-in buyer
+    i_want: one Cuenta menu
+    so_that: my account actions live in a single place instead of scattered across the header
+    risk: low
+    status: done
+  - id: S2.3
+    title: One agent entry point
+    as_a: any user
+    i_want: a single agent entry point
+    so_that: "the UI isn't littered with bare ✨ icons"
+    risk: low
+    status: done
+---
 # Navigation & Settings Reorg — Sprint 2: Persistent search + Cuenta hub
 
 **Status:** ✅ SHIPPED 2026-06-11 — [PR #77](https://github.com/danybgoode/miyagisanchezcommerce/pull/77)

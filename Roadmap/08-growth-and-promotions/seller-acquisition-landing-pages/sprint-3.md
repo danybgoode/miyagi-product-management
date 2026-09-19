@@ -1,3 +1,33 @@
+---
+epic: seller-acquisition-landing-pages
+sprint: 3
+title: "Track B: Anchor + Creator system · status: ✅ shipped 2026-06-07 (PR #44, merge `ea1ae07`)"
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Reusable landing-section system
+    as_a: a maintainer
+    i_want: a shared section system
+    so_that: new persona pages are config + copy, not new layout
+    risk: low
+    status: done
+  - id: S3.2
+    title: Anchor page + persona router
+    as_a: supply-side traffic
+    i_want: an anchor page that routes me to my persona
+    so_that: I get a pitch that fits me
+    risk: low
+    status: done
+  - id: S3.3
+    title: Local Creator & Designer page
+    as_a: a local creator/designer
+    i_want: "a page that pitches \"deja Shopify y los DMs,\""
+    so_that: I migrate my shop
+    risk: low
+    status: done
+---
 # Sprint 3 — Track B: Anchor + Creator system  ·  status: ✅ shipped 2026-06-07 (PR #44, merge `ea1ae07`)
 
 > The **durable** track. Builds on the **#4 design-token contract** (wait for #4 to merge — avoid

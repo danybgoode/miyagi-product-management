@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: pdp-image-gallery
+title: "PDP interactive image gallery ✅ COMPLETE"
+area: 01-discovery-and-shopping
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: PDP interactive image gallery ✅ COMPLETE

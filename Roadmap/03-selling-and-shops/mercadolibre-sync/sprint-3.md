@@ -1,3 +1,33 @@
+---
+epic: mercadolibre-sync
+sprint: 3
+title: "Publish Miyagi → ML"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "Publish a Miyagi product → ML (create)"
+    as_a: a seller
+    i_want: to publish a Miyagi product to Mercado Libre
+    so_that: I reach ML buyers without re-keying
+    risk: high
+    status: done
+  - id: S3.2
+    title: Update / relist / close parity
+    as_a: a seller
+    i_want: my Miyagi edits (title, price, images, status) to propagate to the linked ML item
+    so_that: the two never drift
+    risk: high
+    status: done
+  - id: S3.3
+    title: ML category predictor + manual override
+    as_a: a seller
+    i_want: publish to pick a valid ML category automatically
+    so_that: "it doesn't fail ML validation; and I can override it"
+    risk: high
+    status: done
+---
 # Mercado Libre sync — Sprint 3: Publish Miyagi → ML
 
 **Status:** ✅ MERGED (2026-06-30) — backend

@@ -1,3 +1,40 @@
+---
+epic: homepage-polish-b
+sprint: 4
+title: Signed-in modules
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S4.1
+    title: "\"Retoma donde te quedaste\" rail (no badge)"
+    as_a: a signed-in buyer
+    i_want: my recent favorites surfaced first
+    so_that: I can pick up where I left off
+    risk: low
+    status: done
+  - id: S4.2
+    title: Pending-offer alert (conditional)
+    as_a: a signed-in buyer (or seller)
+    i_want: a reminder of an offer that still needs action
+    so_that: "I don't lose a live negotiation"
+    risk: low
+    status: done
+  - id: S4.3
+    title: Seller snapshot (when the user has a shop)
+    as_a: a signed-in seller
+    i_want: a quick pulse of my shop
+    so_that: the homepage is useful to me too
+    risk: low
+    status: done
+  - id: S4.4
+    title: price_cents_at_save column + backfill (data only)
+    as_a: a future buyer
+    i_want: the price at the moment I favorited stored
+    so_that: a price-drop badge can light up later without a backfill scramble
+    risk: high
+    status: done
+---
 # Homepage Polish — Dirección B — Sprint 4: Signed-in modules
 
 **Status:** ✅ **MERGED — PR [#87](https://github.com/danybgoode/miyagisanchezcommerce/pull/87) squash `009204b`**

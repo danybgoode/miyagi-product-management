@@ -1,3 +1,33 @@
+---
+epic: printed-edition-builder
+sprint: 2
+title: Live content, one-click PDF & sending to print
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Pull in live listings & shops as courtesy ads
+    as_a: the editor
+    i_want: to search the live marketplace and drop a listing or shop straight onto a page
+    so_that: I can fill the magazine with editorial/house ads beyond the paid ones
+    risk: high
+    status: done
+  - id: S2.2
+    title: One-click print-ready PDF
+    as_a: the editor
+    i_want: to download a press-ready PDF without fiddling with browser print settings
+    so_that: I can hand the file straight to the printer
+    risk: high
+    status: done
+  - id: S2.3
+    title: Send to print (lock the issue)
+    as_a: the editor
+    i_want: to lock a finished issue
+    so_that: "it can't be changed by accident once it's at the press"
+    risk: high
+    status: done
+---
 # Sprint 2 — Live content, one-click PDF & sending to print
 
 **Goal:** let Miyagi enrich the issue with live marketplace content, get a press-ready PDF in one click, and lock a finished issue. Shipped & live.

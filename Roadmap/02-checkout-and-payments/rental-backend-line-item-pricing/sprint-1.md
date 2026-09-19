@@ -1,3 +1,33 @@
+---
+epic: rental-backend-line-item-pricing
+sprint: 1
+title: the backend charge rail
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Backend pure pricing seam + unit specs
+    as_a: a developer (and every later story)
+    i_want: "the rental math to exist in the backend as one pure, unit-tested module — ported from `apps/miyagisanchez/lib/rental-pricing.ts`, including the pesos→cents normalization for `metadata.attrs.deposit` —"
+    so_that: the charged total is computed from a single spec-proven source, never re-derived inline
+    risk: low
+    status: done
+  - id: S1.2
+    title: "start-checkout rental branch: dates in, server-computed total charged"
+    as_a: a buyer of a rental
+    i_want: "the checkout charge to be exactly nights × rate + deposit for my chosen dates"
+    so_that: "what the PDP showed is what I pay — on Stripe, MercadoPago, or Pago directo alike"
+    risk: high
+    status: done
+  - id: S1.3
+    title: "Order surfaces: expose rental_booking on the order read (backend half)"
+    as_a: a rental seller (and buyer)
+    i_want: "the order to show the booked dates and the breakdown (noches × tarifa · depósito reembolsable · total)"
+    so_that: "confirming — or refunding — needs no arithmetic in chat"
+    risk: low
+    status: done
+---
 # Rental line-item pricing — Sprint 1: the backend charge rail
 
 **Status:** ✅ MERGED to `main` 2026-07-07 — squash `8e41d18` (PR #67, HIGH-risk, Daniel-authorized

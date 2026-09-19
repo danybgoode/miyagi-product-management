@@ -1,3 +1,40 @@
+---
+epic: cms-contenido-restore-and-polish
+sprint: 3
+title: "the redesign — page-first IA, batched save, tokens (from Daniel's prototype)"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: Page-first sub-navigation (the IA fix)
+    as_a: Daniel
+    i_want: "to pick a page/section (e.g. \"Acerca · /acerca\") and edit only its fields in context"
+    so_that: I stop paging through 57 pages of a flat key list
+    risk: low
+    status: done
+  - id: S3.2
+    title: "Batched save: dirty-state + floating \"Guardar cambios\" bar"
+    as_a: Daniel
+    i_want: "one save action for everything I've edited on screen"
+    so_that: I stop clicking 1,121 per-field Guardar buttons
+    risk: low
+    status: done
+  - id: S3.3
+    title: "Token/Iconoir re-skin + AdminShell grouping & overflow fix (shared surface — ANNOUNCE)"
+    as_a: an admin user
+    i_want: the CMS and admin nav to look and behave like the rest of the product
+    so_that: the admin stops being the un-designed corner
+    risk: low
+    status: done
+  - id: S3.4
+    title: Extend the design-token guard to the touched admin files
+    as_a: the team
+    i_want: the re-skinned admin files under the raw-hex/token CI guard
+    so_that: "the redesign can't silently regress (Daniel, 2026-07-12: incremental extension approved)"
+    risk: low
+    status: done
+---
 # CMS restore & polish — Sprint 3: the redesign — page-first IA, batched save, tokens (from Daniel's prototype)
 
 **Status:** ✅ merged 2026-07-12 (PR #242, squash commit `32bcf7a`) — deterministic gate green

@@ -1,3 +1,33 @@
+---
+epic: catalog-management
+sprint: 2
+title: Inventory truths + channel publish
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Inventory modes: tracked / sin límite / sobre pedido"
+    as_a: a seller of made-to-order or always-available goods
+    i_want: "explicit inventory modes per variant — tracked (qty, available vs reservado), sin límite (`manage_inventory:false`), sobre pedido (`allow_backorder:true` + estimated dispatch note) —"
+    so_that: "I never fake availability with qty 999 (and qty 0 stops meaning \"vanished\")"
+    risk: high
+    status: done
+  - id: S2.2
+    title: Per-channel publish toggles
+    as_a: a multi-channel seller
+    i_want: per-product toggles for Miyagi marketplace and Mercado Libre
+    so_that: I choose where each product sells
+    risk: high
+    status: done
+  - id: S2.3
+    title: ML price override
+    as_a: a seller
+    i_want: an optional ML-specific price per product
+    so_that: "ML's fees don't force my Miyagi price up"
+    risk: high
+    status: done
+---
 # Catalog management — Sprint 2: Inventory truths + channel publish
 
 **Status:** ✅ MERGED + deployed 2026-07-08 — BE PR [#71](https://github.com/danybgoode/medusa-bonsai-backend/pull/71) squash `77d121e`, FE PR [#196](https://github.com/danybgoode/miyagisanchezcommerce/pull/196) squash `8aa3266`. Both repos' deterministic gates green (backend 278/278 unit tests; frontend tsc+build+32 Playwright `api` tests) before merge. Cross-agent (codex) review ran on both PRs — real findings fixed pre-merge (see below); the fresh `pr-reviewer` subagent hit an account session-limit mid-run on both PRs (same as Sprint 1) and didn't complete — merge proceeded on the cross-agent pass + builder verification, per Daniel's explicit go-ahead. All 3 stories behind the new kill-switch `catalog.inventory_channels_enabled` (default OFF) — **still OFF in prod**, flip only after Daniel's money-path + ML-toggle smoke. Feature branches deleted in both repos after merge.

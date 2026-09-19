@@ -1,3 +1,26 @@
+---
+epic: panfleto-premium-shop
+sprint: 3
+title: The horror convocatoria
+risk: high
+phase: Building
+stories_total: 2
+stories:
+  - id: S3.1
+    title: The call + the reward product + proof-of-pipe
+    as_a: an author
+    i_want: "a clear open call at panfleto's convocatoria page — what we're looking for, how to submit, what happens after —"
+    so_that: I can send my story in minutes without an account
+    risk: high
+    status: planned
+  - id: S3.2
+    title: Launch surfaces + the voting/print plan (the smoke)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: planned
+---
 # Panfleto — the first premium shop — Sprint 3: The horror convocatoria
 
 **Status:** 🟡 in progress, live pieces landed. Copy approved by Daniel. Branched fresh:

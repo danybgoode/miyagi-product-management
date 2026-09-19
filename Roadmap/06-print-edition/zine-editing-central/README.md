@@ -1,6 +1,13 @@
 ---
 status: shipped  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped (PR #161 merged 5583bf9). Sprint 2 shipped — 2.1/2.2/2.3 committed in apps/zine; 2.3's backend PR #164 merged (squash 55bdce9) after 7 rounds of cross-review fixes. Sprint 3 shipped — S3.2 committed to apps/zine's local main (f43967e); S3.1 merged via apps/miyagisanchez PR #169 (squash ede0d70) 2026-07-03, branch deleted.
 slug: zine-editing-central
+title: "Zine = the editing central — integrate the zine studio with the marketplace print pipeline"
+area: 06-print-edition
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 9
 ---
 
 # Epic · Zine = the editing central — integrate the zine studio with the marketplace print pipeline

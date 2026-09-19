@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: design-token-foundation
+title: Design-Token / Design-System Foundation
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 5
 ---
 
 # Epic — Design-Token / Design-System Foundation

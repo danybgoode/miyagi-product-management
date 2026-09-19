@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: prose-rail-headless
+title: A third prose writer, and the worktree bug that swallowed reports
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: A third prose writer, and the worktree bug that swallowed reports

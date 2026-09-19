@@ -1,3 +1,47 @@
+---
+epic: bulk-import-migration
+sprint: 1
+title: "Catálogo por archivo UCP (external agent)"
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S1.1
+    title: "\"AI Catalog Copilot\": copyable prompt + UCP template"
+    as_a: a migrating seller
+    i_want: a one-click prompt I can paste into my own AI agent
+    so_that: "it produces a file in exactly the format Miyagi expects — with zero guessing"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Upload & validate with plain-language errors
+    as_a: a seller
+    i_want: "to upload the file my agent made and instantly see if anything's wrong in words I understand"
+    so_that: I can fix it without engineering help
+    risk: high
+    status: done
+  - id: S1.3
+    title: Staging preview before commit
+    as_a: a seller
+    i_want: to see what will be published before I commit
+    so_that: I trust the import
+    risk: high
+    status: done
+  - id: S1.4
+    title: Idempotent upsert + async processing
+    as_a: a seller with a big catalog
+    i_want: the import to run reliably and be safe to re-run
+    so_that: a re-upload updates my items instead of duplicating them
+    risk: high
+    status: done
+  - id: S1.5
+    title: Async image-URL ingestion
+    as_a: a seller
+    i_want: the photos my agent found to just appear on my listings
+    so_that: "I don't re-upload images by hand"
+    risk: high
+    status: done
+---
 # Sprint 1 — Catálogo por archivo UCP (external agent)
 
 Goal: a seller's own AI agent maps their messy catalog into a clean UCP file; they upload it once and

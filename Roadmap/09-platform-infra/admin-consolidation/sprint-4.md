@@ -1,3 +1,26 @@
+---
+epic: admin-consolidation
+sprint: 4
+title: "Tenant action: entitlement grant/revoke"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.0
+    title: "Pre-flight: confirm the entitlement ownership · investigation (no code)"
+    as_a: the builder
+    i_want: to confirm where seller entitlement should live
+    so_that: "I don't make Supabase metadata the authority for a commerce capability (cross-panel purist concern, rules 1/2)"
+    risk: high
+    status: done
+  - id: S4.1
+    title: Grant / revoke entitlement from the inspector
+    as_a: a platform admin
+    i_want: "to grant or revoke a shop's custom-domain comp from the UI"
+    so_that: I stop hand-editing metadata and the action is attributed + audited
+    risk: high
+    status: done
+---
 # Sprint 4 — Tenant action: entitlement grant/revoke
 
 **Epic:** [Admin consolidation + tenant management](README.md) · **Repo:** `apps/miyagisanchez` (+ a backend

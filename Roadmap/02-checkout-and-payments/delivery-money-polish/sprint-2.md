@@ -1,3 +1,26 @@
+---
+epic: delivery-money-polish
+sprint: 2
+title: Pickup propose-and-confirm appointment
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Buyer proposes a pickup appointment
+    as_a: a buyer choosing local pickup
+    i_want: to propose a date + time window
+    so_that: "I'm not bounced to an external link to \"coordinate\""
+    risk: high
+    status: done
+  - id: S2.2
+    title: Seller confirms or reschedules
+    as_a: a seller
+    i_want: to confirm or propose a new pickup window
+    so_that: the appointment is a real agreement, not a one-sided guess
+    risk: high
+    status: done
+---
 # Sprint 2 — Pickup propose-and-confirm appointment
 
 > Epic: [Delivery & Manual-Money Polish](README.md) · **Risk: HIGH — Daniel merges** (fulfillment /

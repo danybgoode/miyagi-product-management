@@ -1,3 +1,19 @@
+---
+epic: homepage-polish-b
+sprint: 1
+title: Icon language migration
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: "Emoji → Iconoir across categories + buyer surfaces"
+    as_a: a buyer
+    i_want: one consistent icon language on the homepage and category surfaces
+    so_that: the marketplace feels coherent and modern instead of an emoji grab-bag
+    risk: low
+    status: done
+---
 # Homepage Polish — Dirección B — Sprint 1: Icon language migration
 
 **Status:** ✅ COMPLETE — merged to `main` 2026-06-12, PR [#84](https://github.com/danybgoode/miyagisanchezcommerce/pull/84) squash `14fd880` · **Risk:** LOW *(touched shared `lib/types.ts` + renderers — announced in the PR per LEARNINGS)*

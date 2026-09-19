@@ -1,3 +1,26 @@
+---
+epic: ops-routines-reporting
+sprint: 3
+title: the weekly exec recap/retro
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: "weekly-recap skill + scripts/weekly-recap.mjs → Telegram"
+    as_a: a product owner
+    i_want: a weekly recap/retro in Telegram
+    so_that: "I get an executive view of what shipped and what's next without assembling it"
+    risk: low
+    status: done
+  - id: S3.2
+    title: Weekly trigger for the recap
+    as_a: a product owner
+    i_want: the recap to arrive weekly on its own
+    so_that: "it's a standing ritual"
+    risk: low
+    status: done
+---
 # Ops routines & reporting — Sprint 3: the weekly exec recap/retro
 
 **Status:** ✅ Built + merged — the deterministic gate is green; the first live scheduled fire is

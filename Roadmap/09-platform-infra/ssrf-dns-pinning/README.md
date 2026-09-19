@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: ssrf-dns-pinning
+title: "SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: SSRF hardening — DNS-pin the resolved IP instead of resolve-then-fetch

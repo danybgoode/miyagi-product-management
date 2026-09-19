@@ -1,3 +1,33 @@
+---
+epic: rental-backend-line-item-pricing
+sprint: 2
+title: web checkout + the PDP flip
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "/checkout rental mode"
+    as_a: a buyer who picked dates on a rental PDP
+    i_want: "the checkout page to show the identical breakdown (noches × tarifa + depósito) and charge exactly that"
+    so_that: the pay-button total always equals the summary (house rule) and both equal what the backend charges
+    risk: high
+    status: done
+  - id: S2.2
+    title: "PDP flip: \"Reservar estas fechas\" goes to checkout (flag ON)"
+    as_a: a buyer on a rental PDP
+    i_want: the reserve button to take me straight to checkout with my dates
+    so_that: "booking is one step — while the platform can revert to coordination with one flag flip"
+    risk: low
+    status: done
+  - id: S2.3
+    title: "Order-surface rendering: rental dates + deposit on 5 surfaces"
+    as_a: a buyer or seller with a booked rental order
+    i_want: to see the dates and itemized deposit on my order, in my email, and in the chat ledger
+    so_that: the charge is legible everywhere the order appears
+    risk: low
+    status: done
+---
 # Rental line-item pricing — Sprint 2: web checkout + the PDP flip
 
 **Status:** ✅ MERGED 2026-07-08 — squash `c5c25a3`, PR #190 (danybgoode/miyagisanchezcommerce),

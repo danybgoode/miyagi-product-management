@@ -1,3 +1,33 @@
+---
+epic: trust-messaging-polish
+sprint: 1
+title: In-chat transaction ledger + haggling polish
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Transaction-ledger projection seam + conversation→order read"
+    as_a: a buyer or seller
+    i_want: the system to resolve the one order/payment(/refund) state behind a conversation
+    so_that: the chat can show a single durable truth instead of inferring it from scattered events
+    risk: high
+    status: done
+  - id: S1.2
+    title: Render the durable transaction card in chat
+    as_a: a buyer or seller
+    i_want: a durable transaction card in the conversation showing the current shared state
+    so_that: "I always know where the deal stands without re-reading the thread — and I tap through to the order page to act"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Haggling turn-owner + deadline + copy fix
+    as_a: a buyer or seller in a negotiation
+    i_want: to see explicitly whose turn it is and a live countdown to the real deadline
+    so_that: "I'm not guessing from which buttons show"
+    risk: high
+    status: done
+---
 # Sprint 1 — In-chat transaction ledger + haggling polish
 
 > **Epic:** [Trust & Messaging Polish](README.md) · **BUILD-ORDER:** #3c · Epic C ·

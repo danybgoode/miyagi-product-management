@@ -1,3 +1,19 @@
+---
+epic: platform-migrations
+sprint: 0
+title: "Bug: ML re-auth churn"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S0.1
+    title: Reproduce, root-cause, and fix the ML re-auth churn
+    as_a: a connected Mercado Libre seller
+    i_want: my connection to survive without daily reconnects
+    so_that: sync keeps working unattended
+    risk: high
+    status: done
+---
 # Platform migrations — Sprint 0: Bug: ML re-auth churn
 
 **Status:** ✅ fix merged + deployed 2026-07-11 (backend PR [#82](https://github.com/danybgoode/medusa-bonsai-backend/pull/82),

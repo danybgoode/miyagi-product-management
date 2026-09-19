@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: routines-enablement
+title: "Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 0
 ---
 
 # Epic — Claude Routines enablement (A review-on-PR · C roadmap hygiene · B smoke triage)

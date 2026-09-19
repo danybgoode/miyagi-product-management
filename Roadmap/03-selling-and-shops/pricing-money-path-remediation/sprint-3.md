@@ -1,3 +1,12 @@
+---
+epic: pricing-money-path-remediation
+sprint: 3
+title: convocatoria UX fast-follows (DEFERRED)
+risk: low
+phase: Shipped
+stories_total: 0
+stories: []
+---
 # Pricing & money-path remediation — Sprint 3: convocatoria UX fast-follows (DEFERRED)
 
 **Status:** ⬜ deferred — not part of this hardening pass.

@@ -1,3 +1,33 @@
+---
+epic: promoter-program
+sprint: 1
+title: Promoter spine (code + discount + attribution)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Promoter code + shareable link
+    as_a: a promoter
+    i_want: a unique code + shareable link
+    so_that: every shop I enroll attributes to me
+    risk: low
+    status: done
+  - id: S1.2
+    title: Code unlocks seller discount at SKU checkout
+    as_a: an enrolling seller
+    i_want: "the promoter's code to apply a discount on the paid SKU at checkout"
+    so_that: "the in-person pitch (\"get this discount through me\") is real"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Enrollment + sale attribution to promoter
+    as_a: admin
+    i_want: each enrollment + sale recorded against the promoter (who, which shop, which SKU, amount)
+    so_that: Sprint 3 can compute commission
+    risk: low
+    status: done
+---
 # Promoter Program — Sprint 1: Promoter spine (code + discount + attribution)
 
 **Status:** ✅ MERGED `1cea2cb` (#138, squash of the story commits below) on 2026-06-30 — full gate

@@ -4,6 +4,13 @@ slug: hyper-performant-runtime
 build_order: null    # integer position in the ONE global build sequence — the SSOT once the epic
                      # exists (the seed's value is only a fallback). Fill it in at the betting
                      # table; plain integers, no "#2a" suffixes. See 00-ideas/README.md → Ordering.
+title: Hyper-performant runtime
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 10
 ---
 
 # Epic: Hyper-performant runtime

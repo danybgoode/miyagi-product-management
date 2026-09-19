@@ -1,3 +1,26 @@
+---
+epic: reporthub-as-notion
+sprint: 3
+title: Parallel-run gate + Notion decommission
+risk: high
+phase: Shaping
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Parallel-run checkpoint (the gate)
+    as_a: Daniel
+    i_want: "a short written comparison of hub vs Notion over the parallel-run window — what was consulted where, anything the hub can't answer"
+    so_that: the decommission decision is evidence, not vibes
+    risk: low
+    status: planned
+  - id: S3.2
+    title: Notion decommission
+    as_a: the team
+    i_want: the Notion sync fully retired
+    so_that: one derived view (the hub) remains and no CI minutes/PAT scope serve a dead board
+    risk: low
+    status: planned
+---
 # ReportHub as the Notion replacement — Sprint 3: Parallel-run gate + Notion decommission
 
 **Status:** ⬜ not started

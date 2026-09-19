@@ -1,3 +1,40 @@
+---
+epic: market-architecture-foundation
+sprint: 1
+title: Market contract and Medusa region/channel foundation
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Pure market registry and invariants
+    as_a: the platform
+    i_want: one versioned registry for supported markets
+    so_that: country, locale, Region, Sales Channel, and marketplace status cannot drift across routes
+    risk: high
+    status: done
+  - id: S1.2
+    title: Seller operating-market contract and MX backfill
+    as_a: a merchant
+    i_want: "my shop's operating market recorded independently from marketplace publication"
+    so_that: my owned shop can exist before admission to a market
+    risk: high
+    status: done
+  - id: S1.3
+    title: Sales Channel is marketplace-publication truth
+    as_a: a shop owner
+    i_want: marketplace discovery to use explicit Sales Channel membership without changing my owned-shop read boundary
+    so_that: operating a shop and joining Miyagi Markets remain separate concepts while every product this epic creates stays buyable
+    risk: high
+    status: done
+  - id: S1.4
+    title: Region resolver and single-market assumption removal
+    as_a: the checkout system
+    i_want: market to resolve the Medusa Region and currency
+    so_that: later US commerce cannot accidentally use Mexico rails
+    risk: high
+    status: done
+---
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 1: Market contract and Medusa region/channel foundation
 
 **Status:** ✅ shipped — backend [#124](https://github.com/danybgoode/medusa-bonsai-backend/pull/124) merged 2026-07-30, frontend [#324](https://github.com/danybgoode/miyagisanchezcommerce/pull/324) merged. Live in production (backend image `99ac78b`).

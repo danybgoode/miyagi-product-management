@@ -1,3 +1,33 @@
+---
+epic: tenant-lifecycle-admin
+sprint: 1
+title: the status primitive
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: status on the Medusa seller
+    as_a: a platform
+    i_want: "a shop's lifecycle state to live on the commerce primitive every read already resolves through"
+    so_that: "\"paused\" is one fact instead of a flag some consumers honour"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Internal status-transition route
+    as_a: an admin surface
+    i_want: "one authenticated route that changes a shop's status"
+    so_that: the mutation happens in Medusa and the mirror follows
+    risk: high
+    status: done
+  - id: S1.3
+    title: The pause/unpause channel-link ledger
+    as_a: a platform owner
+    i_want: unpausing to restore exactly what pausing removed
+    so_that: resuming an owned-shop-only merchant does not publish its private catalog to the marketplace
+    risk: high
+    status: done
+---
 # Tenant lifecycle — Sprint 1: the status primitive
 
 **Status:** ✅ shipped — `bc77852` (#152)

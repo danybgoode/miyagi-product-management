@@ -1,3 +1,26 @@
+---
+epic: mcp-parity-core
+sprint: 4
+title: Risky config blocks (support, checkout)
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: support block in patch_store_configuration
+    as_a: a shop agent
+    i_want: to configure the support widget via config
+    so_that: enabling guest contributions is agent-operable
+    risk: high
+    status: done
+  - id: S4.2
+    title: checkout block in patch_store_configuration
+    as_a: a shop agent
+    i_want: to set escrow mode and checkout CTAs via config
+    so_that: checkout presentation is agent-operable
+    risk: high
+    status: done
+---
 # MCP parity core — Sprint 4: Risky config blocks (support, checkout)
 
 **Status:** ✅ MERGED — frontend PR [#267](https://github.com/danybgoode/miyagisanchezcommerce/pull/267)

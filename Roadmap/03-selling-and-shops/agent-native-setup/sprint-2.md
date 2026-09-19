@@ -1,3 +1,26 @@
+---
+epic: agent-native-setup
+sprint: 2
+title: First-run onboarding apply
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "First-run apply orchestration (create-shop-if-missing → config → catalog)"
+    as_a: a freshly signed-up user
+    i_want: my pasted setup JSON applied in one pass
+    so_that: my shop exists with dressing + catalog without extra steps
+    risk: high
+    status: done
+  - id: S2.2
+    title: First-run entry + land-in-shop UX
+    as_a: a new user
+    i_want: to be routed to this step right after signup
+    so_that: the loop is the default path, not a hidden page
+    risk: low
+    status: done
+---
 # Agent-native setup (Onboarding 0) — Sprint 2: First-run onboarding apply
 
 **Status:** 🟦 built — awaiting PR/review/merge · **Risk:** HIGH (creates a shop + bulk-creates products → **Daniel merges**)

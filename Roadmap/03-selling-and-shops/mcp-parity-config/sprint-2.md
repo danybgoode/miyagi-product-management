@@ -1,3 +1,40 @@
+---
+epic: mcp-parity-config
+sprint: 2
+title: Shop-identity & content config tools
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: set_shop_slug over MCP
+    as_a: a shop agent
+    i_want: "to change my shop's public URL slug"
+    so_that: "rebranding (mirroring what happened by hand in `panfleto-premium-shop` Sprint 2) is agent-doable next time"
+    risk: low
+    status: done
+  - id: S2.2
+    title: Notification preferences over MCP
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.3
+    title: Shop CMS content CRUD over MCP
+    as_a: a shop agent
+    i_want: to create/edit/delete shop content pages
+    so_that: managing custom pages beyond Acerca/FAQ is agent-doable
+    risk: low
+    status: done
+  - id: S2.4
+    title: Telegram link/unlink/test over MCP
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # MCP parity config — Sprint 2: Shop-identity & content config tools
 
 **Status:** ✅ shipped + live 2026-07-16 — same PR pair as Sprint 1 (FE [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271) + BE [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100)). 2.2 decision: granular grid ≠ notifications config block → dedicated tool. Owed: first real-token smoke (walkthrough below).

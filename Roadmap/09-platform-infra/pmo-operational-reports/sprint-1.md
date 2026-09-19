@@ -1,3 +1,26 @@
+---
+epic: pmo-operational-reports
+sprint: 1
+title: Metrics lib + window log
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Pure metrics lib (scripts/lib/pmo-metrics.mjs)
+    as_a: Daniel
+    i_want: collectors for throughput, cycle time, deploy frequency, change-fail proxy and doc-ops breadth
+    so_that: every report draws from one tested source of numbers
+    risk: low
+    status: done
+  - id: S1.2
+    title: Window log + baseline guard
+    as_a: the reporting routine
+    i_want: to know where the last report window ended
+    so_that: "back-to-back runs never double-count or gap (weekly-recap's window-tracking shape, NOT the standup delta shape — LEARNINGS distinguishes them)"
+    risk: low
+    status: done
+---
 # PMO operational reports — Sprint 1: Metrics lib + window log
 
 **Status:** ✅ built + merged — PR #82 (squash `f8ec0e0`, merged 2026-07-14)

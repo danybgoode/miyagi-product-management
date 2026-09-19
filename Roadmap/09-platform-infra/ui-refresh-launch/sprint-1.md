@@ -1,3 +1,33 @@
+---
+epic: ui-refresh-launch
+sprint: 1
+title: Token spec + site-wide token layer
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Research + token spec (written decision, no code)
+    as_a: Daniel
+    i_want: "a one-page token spec derived from current Material heuristics (web-search the present-day guidance — don't plan on training memory) mapped onto our existing token taxonomy"
+    so_that: the re-skin has a named target before any value changes
+    risk: low
+    status: done
+  - id: S1.2
+    title: Site-wide token layer update
+    as_a: every visitor
+    i_want: the approved token values live across all tokenized surfaces
+    so_that: the whole site inherits the new feel in one move
+    risk: low
+    status: done
+  - id: S1.3
+    title: Token spec (written decision, PENDING DANIEL APPROVAL)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # UI refresh before launch — Sprint 1: Token spec + site-wide token layer
 
 **Status:** 🟨 in progress — S1.1 approved + merged; S1.2 built, PR open, **Daniel's preview

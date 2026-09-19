@@ -1,3 +1,40 @@
+---
+epic: interaction-feedback-and-admin-repair
+sprint: 1
+title: Press + pending feedback foundation
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: every clickable thing acknowledges the click
+    as_a: a buyer on a phone
+    i_want: the thing I tap to visibly react
+    so_that: I know my tap landed and do not tap again
+    risk: high
+    status: done
+  - id: S1.2
+    title: the thing I clicked shows it is loading
+    as_a: "a merchant clicking a `/shop/manage` nav item"
+    i_want: that item to change state and show a subtle loader
+    so_that: I know which of the fifteen entries is the one that is working
+    risk: high
+    status: done
+  - id: S1.3
+    title: "the app tells me it is going somewhere <a id=\"s2\"></a>"
+    as_a: anyone
+    i_want: a global signal that a navigation is underway
+    so_that: a slow route does not read as a dead click
+    risk: high
+    status: done
+  - id: S1.4
+    title: a button I pressed does not just go inert
+    as_a: anyone submitting a form
+    i_want: the button to show it is working
+    so_that: I do not press it twice
+    risk: high
+    status: done
+---
 # Sprint 1 — Press + pending feedback foundation
 
 **Status:** 🟦 In review · PR [#374](https://github.com/danybgoode/miyagisanchezcommerce/pull/374), [#375](https://github.com/danybgoode/miyagisanchezcommerce/pull/375)

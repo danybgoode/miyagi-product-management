@@ -1,3 +1,40 @@
+---
+epic: market-architecture-foundation
+sprint: 3
+title: US invitation shell and eligibility boundary
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: "/us private-pilot invitation"
+    as_a: a US agency/operator
+    i_want: a truthful entry point for the private pilot
+    so_that: I can express interest without being sold an unproven public marketplace
+    risk: low
+    status: done
+  - id: S3.2
+    title: US marketplace and cross-market leakage fail closed
+    as_a: the platform
+    i_want: every US marketplace/catalog path unavailable until approval
+    so_that: adding a country route cannot accidentally launch a mixed marketplace
+    risk: high
+    status: done
+  - id: S3.3
+    title: Operator/admin/agent market visibility
+    as_a: an operator or admin
+    i_want: "to see a shop's operating market and marketplace publication state"
+    so_that: I do not confuse an owned US pilot shop with a US marketplace seller
+    risk: high
+    status: done
+  - id: S3.4
+    title: Stable market lifecycle events
+    as_a: the growth system
+    i_want: "a stable `market_code` on approved lifecycle events"
+    so_that: partner and self-service activation can be measured without duplicating commerce state
+    risk: high
+    status: done
+---
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 3: US invitation shell and eligibility boundary
 
 **Status:** ✅ shipped — [#328](https://github.com/danybgoode/miyagisanchezcommerce/pull/328) merged 2026-07-31 (`0439c69`)

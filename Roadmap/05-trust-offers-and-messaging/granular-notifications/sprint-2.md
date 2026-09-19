@@ -1,3 +1,33 @@
+---
+epic: granular-notifications
+sprint: 2
+title: Telegram as a seller channel (linking + delivery)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Seller links Telegram (deep-link + webhook)
+    as_a: a seller
+    i_want: to connect my Telegram in one tap
+    so_that: the platform can message me there
+    risk: high
+    status: done
+  - id: S2.2
+    title: Send to a linked seller
+    as_a: the system
+    i_want: "to send a message to a specific seller's chat"
+    so_that: the dispatcher can deliver Telegram for linked sellers
+    risk: high
+    status: done
+  - id: S2.3
+    title: Unlink + test
+    as_a: a seller
+    i_want: to disconnect Telegram and send myself a test
+    so_that: "I trust what's wired and can revoke it"
+    risk: high
+    status: done
+---
 # Sprint 2 — Telegram as a seller channel (linking + delivery)
 
 > Epic: [Granular Multi-Channel Notifications](README.md) · **Risk: HIGH — Daniel merges.**

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seller-agent-connect-mcp-url
+title: "Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps"
+area: 03-selling-and-shops
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 4
 ---
 
 # Epic: Seller agent connect — always-on personal MCP URL + Claude one-click, and a setup prompt that helps

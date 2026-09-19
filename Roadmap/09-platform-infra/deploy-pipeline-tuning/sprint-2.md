@@ -1,3 +1,19 @@
+---
+epic: deploy-pipeline-tuning
+sprint: 2
+title: Docker build layer caching
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Add remote layer caching to both cloudbuild.yamls (LOW-MED risk)
+    as_a: the platform
+    i_want: Cloud Build to reuse dependency-install layers across builds
+    so_that: "a build that only changed application code doesn't re-run a full `npm ci` from scratch every time"
+    risk: low
+    status: done
+---
 # Sprint 2 — Docker build layer caching
 
 **Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW-MED, but touches the deploy rail — Daniel merges

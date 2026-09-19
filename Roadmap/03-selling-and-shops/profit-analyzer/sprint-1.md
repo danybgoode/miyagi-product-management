@@ -1,3 +1,33 @@
+---
+epic: profit-analyzer
+sprint: 1
+title: "Data foundation: COGS + append-only ledger + margin dashboard (dark)"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: COGS per variant
+    as_a: a seller
+    i_want: "to record my unit cost on each variant — one at a time or in bulk"
+    so_that: margin math has my side of the equation
+    risk: high
+    status: done
+  - id: S1.2
+    title: Financial-events ledger (append-only)
+    as_a: a seller
+    i_want: "every sale's financials frozen at sale time (revenue, fee, shipping, COGS snapshot)"
+    so_that: historical margins stay true when fees or my costs change later
+    risk: high
+    status: done
+  - id: S1.3
+    title: Profit dashboard v1
+    as_a: a seller
+    i_want: "a per-order and per-SKU margin table in my Analíticas section"
+    so_that: I see what I actually earn
+    risk: high
+    status: done
+---
 # Sprint 1 — Data foundation: COGS + append-only ledger + margin dashboard (dark)
 
 > Epic: [profit-analyzer](README.md) · Risk: **HIGH** (US-2 migration; Daniel merges) · Backend-first;

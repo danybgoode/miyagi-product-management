@@ -1,3 +1,40 @@
+---
+epic: bulk-import-migration
+sprint: 4
+title: "Configuración por agente vía MCP"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S4.1
+    title: Expose get_store_configuration
+    as_a: "a seller's agent"
+    i_want: to read the current store configuration
+    so_that: I can reason about what to change
+    risk: high
+    status: done
+  - id: S4.2
+    title: Expose patch_store_configuration (granular)
+    as_a: "a seller's agent"
+    i_want: to update specific config blocks
+    so_that: I can adjust rules without resending the whole manifest
+    risk: high
+    status: done
+  - id: S4.3
+    title: Scoped authorization
+    as_a: the platform
+    i_want: only an authenticated, permissioned agent to patch a shop
+    so_that: "no one can edit a store they don't represent"
+    risk: high
+    status: done
+  - id: S4.4
+    title: Audit log + security notifications
+    as_a: a seller
+    i_want: a record of what my agent changed and an alert on sensitive edits
+    so_that: automation never surprises me
+    risk: high
+    status: done
+---
 # Sprint 4 — Configuración por agente vía MCP
 
 Goal: the seller's **own AI agent** reads and adjusts their storefront configuration programmatically

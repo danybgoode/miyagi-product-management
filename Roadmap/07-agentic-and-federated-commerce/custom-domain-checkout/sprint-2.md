@@ -1,3 +1,26 @@
+---
+epic: custom-domain-checkout
+sprint: 2
+title: Return to the domain after payment + channel attribution
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Return to the domain after purchase
+    as_a: a buyer who started on a custom domain
+    i_want: to return to that domain after paying
+    so_that: "I don't end up confused on the platform"
+    risk: high
+    status: done
+  - id: S2.2
+    title: "Channel tagged end-to-end 🚧 (data"
+    as_a: a seller
+    i_want: to see where each sale came from
+    so_that: I can measure the custom-domain channel
+    risk: high
+    status: done
+---
 # Sprint 2 — Return to the domain after payment + channel attribution
 
 Goal: a purchase started on a custom domain **returns** to the domain on completion, and the sale is tagged

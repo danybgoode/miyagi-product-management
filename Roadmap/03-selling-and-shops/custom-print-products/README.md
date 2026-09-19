@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: custom-print-products
+title: "Custom print products — the sticker-shop buy experience"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 13
 ---
 
 # Epic: Custom print products — the sticker-shop buy experience

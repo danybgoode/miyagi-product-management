@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: merchant-partner-lifecycle
+title: Merchant Partner lifecycle
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 18
 ---
 
 # Epic: Merchant Partner lifecycle

@@ -1,3 +1,19 @@
+---
+epic: model-split-sonnet5-execution
+sprint: 1
+title: name the models + the escalation guardrail
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: "Name Sonnet 5 / Opus 4.8 + add the escalate-don't-guess rule"
+    as_a: a builder (and the agents that execute stories)
+    i_want: the process docs and every build kickoff to say plan-on-Opus / build-on-Sonnet-5 and to escalate rather than guess
+    so_that: execution runs on the faster model without silently making judgment or money-path calls it should hand back
+    risk: low
+    status: done
+---
 # Model split — Sprint 1: name the models + the escalation guardrail
 
 **Status:** ✅ merged — PR [#47](https://github.com/danybgoode/miyagi-product-management/pull/47) (squash `3544073`); live escalation smoke (step 3 below) owed to Daniel

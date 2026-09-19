@@ -1,3 +1,19 @@
+---
+epic: custom-domain-checkout
+sprint: 3
+title: Transactional emails with the tenant domain
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Buyer emails branded to the domain
+    as_a: a buyer on a custom domain
+    i_want: "the confirmation email to carry the shop's brand and link on its domain"
+    so_that: I keep trusting it
+    risk: high
+    status: done
+---
 # Sprint 3 — Transactional emails with the tenant domain
 
 Goal: when an order originates on the `custom_domain` channel, the buyer's emails carry the brand and the

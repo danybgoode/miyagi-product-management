@@ -1,3 +1,33 @@
+---
+epic: cars-vertical-tratocar-parity
+sprint: 1
+title: Facet browse for autos
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Facet deriver + namespace reconciliation + model filter
+    as_a: a buyer
+    i_want: "the autos category to filter by marca, modelo, año (range), precio (range), km (range) using real listing data"
+    so_that: "I shop cars the way every car site works — including cars posted by real sellers, not just seeded ones"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Browse UI + SEO URLs
+    as_a: a buyer
+    i_want: "a facet rail (desktop) and the existing apply-gated mobile sheet with a live \"Ver X resultados\""
+    so_that: filtering feels native on both
+    risk: high
+    status: done
+  - id: S1.3
+    title: UCP facet parity
+    as_a: an AI agent
+    i_want: "the same facet params on `GET /api/ucp/catalog` + the MCP `search_listings` tool"
+    so_that: "\"busca un seminuevo Volkswagen 2020+ bajo $300k con menos de 60,000 km\" works agent-side"
+    risk: high
+    status: done
+---
 # Cars vertical — Sprint 1: Facet browse for autos
 
 **Status:** ✅ MERGED 2026-07-07 — backend-first; both PRs had clean gating pr-reviews + codex advisories addressed. Mobile-sheet real-phone smoke owed to Daniel; BE prod smoke owed post-deploy.

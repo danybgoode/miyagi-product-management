@@ -1,3 +1,40 @@
+---
+epic: pricing-money-path-remediation
+sprint: 0
+title: resolve the charge-semantics unknown (THE GATE)
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S0.1
+    title: Trace what value actually reaches the payment provider (primary method)
+    as_a: the platform owner
+    i_want: certainty about whether a Medusa-cart checkout charges the buyer the amount they saw
+    so_that: no real buyer is ever over/undercharged when traffic starts
+    risk: high
+    status: done
+  - id: S0.2
+    title: Corroborate with a controlled Stripe TEST-MODE probe (secondary, only if source-trace is ambiguous)
+    as_a: the investigator
+    i_want: "an empirical check against Stripe's own dashboard"
+    so_that: "the verdict isn't resting on source-reading alone"
+    risk: high
+    status: done
+  - id: S0.3
+    title: "Scope the fix, don't apply it"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S0.4
+    title: "alt (CONDITIONAL) — Document the \"safe\" verdict and de-escalate"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Pricing & money-path remediation — Sprint 0: resolve the charge-semantics unknown (THE GATE)
 
 **Status:** ✅ CLOSED — Finding A REFUTED, no fix needed (full verdict below).

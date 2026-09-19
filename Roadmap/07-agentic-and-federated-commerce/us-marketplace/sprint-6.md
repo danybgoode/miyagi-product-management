@@ -1,3 +1,19 @@
+---
+epic: us-marketplace
+sprint: 6
+title: A US carrier
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S6.1
+    title: Integrate one US carrier for live rates and labels
+    as_a: a US seller
+    i_want: real shipping rates at checkout and a printable label
+    so_that: I can fulfill an order without leaving Miyagi
+    risk: high
+    status: done
+---
 # US marketplace — Sprint 6: A US carrier
 
 **Status:** ⏸️ **not started — deferred at D18's evidence gate** (Daniel's decision, 2026-08-12)

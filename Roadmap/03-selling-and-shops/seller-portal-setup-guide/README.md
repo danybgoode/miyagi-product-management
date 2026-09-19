@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: seller-portal-setup-guide
+title: Setup guide on dashboard
+area: 03-selling-and-shops
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 4
 ---
 
 # Epic: Setup guide on dashboard

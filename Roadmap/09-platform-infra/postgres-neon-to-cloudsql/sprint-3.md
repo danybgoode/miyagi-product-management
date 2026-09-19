@@ -1,3 +1,33 @@
+---
+epic: postgres-neon-to-cloudsql
+sprint: 3
+title: Decommission + reconcile
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Retire the superseded egress-symptom work
+    as_a: a future reader
+    i_want: "the abandoned `minScale:0` direction closed"
+    so_that: no one merges it later and breaks the warm-backend assumption
+    risk: low
+    status: done
+  - id: S3.2
+    title: Reconcile backups to Cloud SQL-native
+    as_a: the platform
+    i_want: one backup story
+    so_that: "the custom Neon-dump machinery doesn't rot"
+    risk: low
+    status: done
+  - id: S3.3
+    title: Demote Neon + epic close
+    as_a: the platform
+    i_want: Neon off the commerce path
+    so_that: the cross-cloud tax is gone for good
+    risk: low
+    status: done
+---
 # Postgres → Cloud SQL — Sprint 3: Decommission + reconcile
 
 **Status:** ✅ **Built 2026-06-22** (docs + PR hygiene + backup reconcile; no app code). Risk: **LOW–MED**.

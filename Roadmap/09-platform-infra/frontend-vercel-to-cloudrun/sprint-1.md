@@ -1,3 +1,40 @@
+---
+epic: frontend-vercel-to-cloudrun
+sprint: 1
+title: Containerize + shadow rail
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Convert the two edge-runtime routes to Node
+    as_a: a platform operator
+    i_want: "`/api/splash` and `/api/icon` off `runtime = 'edge'`"
+    so_that: no route depends on a Vercel-only runtime before the container ships
+    risk: low
+    status: done
+  - id: S1.2
+    title: Standalone build + Dockerfile
+    as_a: a platform operator
+    i_want: "`output: 'standalone'` + a multi-stage Dockerfile (deps/builder/runner; `sharp` installed in the runner stage, arch-matched; `public/` + `.next/static` copied explicitly)"
+    so_that: the frontend runs as a self-contained container
+    risk: low
+    status: done
+  - id: S1.3
+    title: "Cloud Build → Artifact Registry → Cloud Run miyagi-web"
+    as_a: a platform operator
+    i_want: "a `cloudbuild.yaml` in `apps/miyagisanchez` (cloned from the backend trigger shape) deploying to a Cloud Run service `miyagi-web` in us-east4, with env/secrets provisioned by an idempotent script + a `node:test` drift guard (the `deploy-invariants` pattern)"
+    so_that: "every merge to `main` deploys both rails"
+    risk: high
+    status: done
+  - id: S1.4
+    title: "Shadow soak: the suite against the dark URL"
+    as_a: a platform operator
+    i_want: "the existing Playwright/API suite run against the dark URL with canonical host headers, plus `/api/ucp/manifest` + `/api/ucp/mcp` probes"
+    so_that: "the panel's checkable claim (\"canonical app, subdomains, checkout, UCP and crons can run from Cloud Run\") is proven before any DNS work"
+    risk: low
+    status: done
+---
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 1: Containerize + shadow rail
 
 **Status:** ✅ **SHIPPED 2026-07-09.** All 4 stories merged (PR #201, `d2266db`, cross-review clean —

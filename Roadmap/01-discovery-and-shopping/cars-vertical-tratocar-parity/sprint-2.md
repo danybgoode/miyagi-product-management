@@ -1,3 +1,33 @@
+---
+epic: cars-vertical-tratocar-parity
+sprint: 2
+title: "PDP trust + $/mes"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Seller fields: financing hint · inspection report · warranty"
+    as_a: a car seller
+    i_want: "per-listing fields for a financing hint (enganche %/meses → derived $/mes), an inspection report (PDF upload or URL), and warranty (text + months)"
+    so_that: "my listing carries the trust tratocar's site carries"
+    risk: low
+    status: done
+  - id: S2.2
+    title: PDP + card rendering
+    as_a: a buyer
+    i_want: "\"$X/mes\" beside the price (with the disclaimer), \"Inspeccionado — ver reporte\" (viewer/download), and a warranty chip on the autos PDP block — and the $/mes chip on listing cards"
+    so_that: I can decide like on tratocar
+    risk: low
+    status: done
+  - id: S2.3
+    title: Import + agent mapping
+    as_a: "a car seller's agent"
+    i_want: bulk import and agent-native setup to accept the new fields with marca/modelo normalization
+    so_that: a 60-car catalog lands complete in one pass
+    risk: low
+    status: done
+---
 # Cars vertical — Sprint 2: PDP trust + $/mes
 
 **Status:** ✅ MERGED 2026-07-08 — [miyagisanchezcommerce#188](https://github.com/danybgoode/miyagisanchezcommerce/pull/188)

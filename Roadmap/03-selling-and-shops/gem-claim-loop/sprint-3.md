@@ -1,3 +1,33 @@
+---
+epic: gem-claim-loop
+sprint: 3
+title: docs, cleanup, the real gem
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: docs match reality
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.2
+    title: orphan cleanup + Las Duelistas
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.3
+    title: verification + harness
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 3 — docs, cleanup, the real gem
 
 Goal: the next import "just works" from the docs alone; the orphaned 2026-06-09 prod rows are gone;

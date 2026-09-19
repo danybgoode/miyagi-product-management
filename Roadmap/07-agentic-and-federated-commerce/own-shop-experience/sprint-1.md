@@ -1,3 +1,33 @@
+---
+epic: own-shop-experience
+sprint: 1
+title: Full white-label shop routing
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Native PDP on the custom domain
+    as_a: "a buyer on a shop's custom domain"
+    i_want: tapping a product to open the product page on that same domain
+    so_that: I keep shopping without leaving the brand
+    risk: high
+    status: done
+  - id: S1.2
+    title: White-label on every page + mobile
+    as_a: a buyer
+    i_want: "to see only the shop's brand on every page (homepage, product, cart, account)"
+    so_that: "I trust I'm in a real shop and not a marketplace"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Per-shop isolation
+    as_a: the shop owner
+    i_want: my domain to show only my shop
+    so_that: "no buyer accidentally sees another seller's products under my brand"
+    risk: high
+    status: done
+---
 # Sprint 1 — Full white-label shop routing
 
 Goal: a buyer on the seller's custom domain can browse the full shop — homepage, product page (PDP), cart —

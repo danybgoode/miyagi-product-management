@@ -1,3 +1,33 @@
+---
+epic: founding-merchant-consent-previews
+sprint: 4
+title: Merchant-verified approval (OTP)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: Issue a merchant-bound approval code
+    as_a: the system
+    i_want: "to send a one-time code to the merchant's own contact when they begin to approve"
+    so_that: approval can be tied to someone holding that contact
+    risk: high
+    status: done
+  - id: S4.2
+    title: Approval requires a verified code
+    as_a: a merchant
+    i_want: "my approval to only count once I've entered the code sent to me"
+    so_that: no one can approve as me
+    risk: high
+    status: done
+  - id: S4.3
+    title: "Merchant review UI: request → enter code → approve"
+    as_a: a merchant on the private preview
+    i_want: "a clear two-step approve (get code → enter code)"
+    so_that: the extra factor is obvious, not friction I fail silently
+    risk: high
+    status: done
+---
 # Founding merchant consent-safe previews — Sprint 4: Merchant-verified approval (OTP)
 
 **Status:** ✅ Shipped — FE #302 (`7b15d1b`); flag OFF, real-merchant code smoke owed to Daniel

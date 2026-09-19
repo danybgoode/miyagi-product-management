@@ -1,3 +1,26 @@
+---
+epic: seller-acquisition-landing-content-overhaul
+sprint: 3
+title: "Benchmark + AI-channel sections · status: ✅ shipped 2026-06-25 (PR #127 squash `8119527`)"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Anchor price/feature benchmark table
+    as_a: a cost-sensitive seller
+    i_want: "a clear Miyagi vs Mercado Libre vs Shopify comparison on `/vende`"
+    so_that: I see the savings without doing the math
+    risk: low
+    status: done
+  - id: S3.2
+    title: AI-channel value-prop section
+    as_a: a merchant
+    i_want: to understand selling through AI agents as a new channel
+    so_that: "I see Miyagi opens a sales surface other platforms don't"
+    risk: low
+    status: done
+---
 # Sprint 3 — Benchmark + AI-channel sections  ·  status: ✅ shipped 2026-06-25 (PR #127 squash `8119527`)
 
 > Two small new sections on the **anchor** (`/vende`), built from `globals.css` primitives and wired

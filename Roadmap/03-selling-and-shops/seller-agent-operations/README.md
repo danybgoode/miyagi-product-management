@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seller-agent-operations
+title: Seller Agent Operations
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 6
 ---
 
 # Epic · Seller Agent Operations

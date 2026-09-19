@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: process-ux-rails-and-red-green
+title: "Process iteration — UX rails at grooming + observed-red DoD ✅"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: Process iteration — UX rails at grooming + observed-red DoD ✅

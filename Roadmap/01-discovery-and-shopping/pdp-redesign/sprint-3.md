@@ -1,3 +1,33 @@
+---
+epic: pdp-redesign
+sprint: 3
+title: Structured attributes primitive + scannable specs table
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Per-category attribute schema + Store API + UCP read
+    as_a: the platform
+    i_want: listings to carry structured per-category attributes
+    so_that: the PDP (and agents) can present specs consistently
+    risk: high
+    status: done
+  - id: S3.2
+    title: Seller capture of structured attributes
+    as_a: a seller
+    i_want: "to fill in my listing's specs by category"
+    so_that: buyers see accurate details
+    risk: high
+    status: done
+  - id: S3.3
+    title: Scannable specs table on the PDP
+    as_a: a buyer
+    i_want: a quick scannable specs table
+    so_that: "I can confirm the item's details at a glance"
+    risk: low
+    status: done
+---
 # Sprint 3 — Structured attributes primitive + scannable specs table
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW–MED (re-scoped to FRONTEND-ONLY).** Goal: give listings a

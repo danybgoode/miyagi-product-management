@@ -2,6 +2,13 @@
 status: shipped  # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: us-marketplace
 build_order: 1
+title: "US marketplace — open `/us` as the finished product"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 6
+stories_total: 16
 ---
 
 # Epic: US marketplace — open `/us` as the finished product

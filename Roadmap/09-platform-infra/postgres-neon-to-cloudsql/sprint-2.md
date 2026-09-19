@@ -1,3 +1,26 @@
+---
+epic: postgres-neon-to-cloudsql
+sprint: 2
+title: Production cutover
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Production cutover runbook (kill-switch gated)
+    as_a: the platform
+    i_want: "prod commerce moved onto Cloud SQL with no lost/Сorrupted money data"
+    so_that: the egress bill goes to zero and the backend can stay warm
+    risk: high
+    status: done
+  - id: S2.2
+    title: Keep the infra guards honest
+    as_a: the platform
+    i_want: "`deploy.sh` + the drift guard to reflect the Cloud SQL `DATABASE_URL` home"
+    so_that: "a future full deploy doesn't repoint the DB back to Neon"
+    risk: high
+    status: done
+---
 # Postgres → Cloud SQL — Sprint 2: Production cutover
 
 **Status:** ✅ **CUTOVER EXECUTED LIVE 2026-06-22** (Daniel authorized + present; agent drove). Prod commerce now

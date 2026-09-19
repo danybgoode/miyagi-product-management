@@ -1,3 +1,26 @@
+---
+epic: gcp-account-migration
+sprint: 3
+title: the cutover
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Final DB sync + origin flip
+    as_a: a buyer
+    i_want: the site to keep working across the move
+    so_that: I never know it happened
+    risk: high
+    status: done
+  - id: S3.2
+    title: "Repoint the integrations; flip the automation"
+    as_a: the team
+    i_want: every external caller and every cron pointing at exactly one project
+    so_that: nothing double-fires and no webhook lands nowhere
+    risk: high
+    status: done
+---
 # GCP account migration — Sprint 3: the cutover
 
 **Status:** ✅ executed 2026-07-19 (~18:20 UTC) — Daniel opened the window and approved across the

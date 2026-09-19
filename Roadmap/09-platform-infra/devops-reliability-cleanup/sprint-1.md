@@ -1,3 +1,26 @@
+---
+epic: devops-reliability-cleanup
+sprint: 1
+title: app-repo fixes (smoke + tenant ping)
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "Fix the daily browser smoke · LOW (reproduce first)"
+    as_a: Daniel
+    i_want: the nightly Browser smoke green again
+    so_that: a red run is a real signal, not noise
+    risk: low
+    status: done
+  - id: S1.2
+    title: Restore the new-tenant-signup Telegram ping
+    as_a: Daniel
+    i_want: a Telegram ping when a new shop is created
+    so_that: I see signups in the same ops chat as everything else
+    risk: low
+    status: done
+---
 # Sprint 1 — app-repo fixes (smoke + tenant ping)
 
 **Epic:** [DevOps reliability cleanup](README.md) · **Risk:** all LOW · **Repo:** `apps/miyagisanchez` (`danybgoode/miyagisanchezcommerce`)

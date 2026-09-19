@@ -1,3 +1,26 @@
+---
+epic: qa-guardrail-hardening
+sprint: 4
+title: a security lens on the mandatory review rail
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: "--lens security ⬜"
+    as_a: a builder
+    i_want: a security-specific pass over the diff
+    so_that: an injected vulnerability has a chance of being caught automatically rather than only by whoever thought to look
+    risk: low
+    status: done
+  - id: S4.2
+    title: "record the model that actually reviewed ⬜"
+    as_a: a reviewer of the process
+    i_want: each cross-review comment to name the model that ran
+    so_that: review strength is auditable instead of inherited from invisible machine-local config
+    risk: low
+    status: done
+---
 # QA guardrail hardening — Sprint 4: a security lens on the mandatory review rail
 
 **Status:** ⬜ not started

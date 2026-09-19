@@ -2,6 +2,13 @@
 status: shipped
 slug: promoter-funnel-v2
 archetype: Grower
+title: "Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅"
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 6
+stories_total: 19
 ---
 
 # Epic · Promoter Funnel v2 — the offer packet, self-serve application, and the street-money close ✅

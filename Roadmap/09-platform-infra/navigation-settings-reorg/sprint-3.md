@@ -1,3 +1,26 @@
+---
+epic: navigation-settings-reorg
+sprint: 3
+title: Seller-mode shell
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Suppress buyer chrome under /shop/manage
+    as_a: a seller
+    i_want: "`/shop/manage` to drop the buyer chrome and feel like a distinct space"
+    so_that: "managing my shop isn't visually tangled with shopping"
+    risk: high
+    status: done
+  - id: S3.2
+    title: Seller nav (SellerNav.tsx)
+    as_a: a seller
+    i_want: a nav built for shop operations
+    so_that: I can move between manage areas quickly
+    risk: low
+    status: done
+---
 # Navigation & Settings Reorg — Sprint 3: Seller-mode shell
 
 **Status:** ✅ SHIPPED 2026-06-10 — PR [#80](https://github.com/danybgoode/miyagisanchezcommerce/pull/80)

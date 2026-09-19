@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: dev-tooling-reliability
+title: Dev-tooling reliability (backend CI + cross-agent review hardening)
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic — Dev-tooling reliability (backend CI + cross-agent review hardening)

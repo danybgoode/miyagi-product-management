@@ -1,3 +1,19 @@
+---
+epic: cicd-telegram-notifications
+sprint: 3
+title: "Vercel production deploy-finished (✅/❌)"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Vercel prod deploy-finished ping
+    as_a: Daniel
+    i_want: a Telegram ping when a production frontend deploy finishes (or errors)
+    so_that: the Vercel half matches the backend half
+    risk: low
+    status: done
+---
 # Sprint 3 — Vercel production deploy-finished (✅/❌)
 
 Mirrors S2 for the frontend. On Vercel **Hobby/free**, configurable webhooks are Pro-only (D5), so we

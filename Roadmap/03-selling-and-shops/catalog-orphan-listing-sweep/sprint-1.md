@@ -1,3 +1,33 @@
+---
+epic: catalog-orphan-listing-sweep
+sprint: 1
+title: report, unpublish, make it unrepeatable
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Validate the apparent orphans bidirectionally (read-only)
+    as_a: Daniel
+    i_want: to see exactly which published listings have no seller link
+    so_that: I can confirm unpublishing them is safe before anything mutates
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Unpublish confirmed orphans (cancelled: none found)"
+    as_a: a buyer or AI agent
+    i_want: every catalog result to belong to a real shop
+    so_that: everything I can see is something I can actually buy
+    risk: high
+    status: done
+  - id: S1.3
+    title: The invariant + the CI hole
+    as_a: the team
+    i_want: "an empty `shop.slug` to fail the gate"
+    so_that: an orphan can never again reach production and be caught days later by a human reading an email
+    risk: low
+    status: done
+---
 # Catalog orphan-listing sweep — Sprint 1: report, unpublish, make it unrepeatable
 
 **Status:** ✅ complete — validation folded the runtime fix into backend PR [#104](https://github.com/danybgoode/medusa-bonsai-backend/pull/104) (`f813206`); frontend invariant PR [#286](https://github.com/danybgoode/miyagisanchezcommerce/pull/286) (`b1a8311`)

@@ -1,3 +1,33 @@
+---
+epic: promoter-program
+sprint: 2
+title: One-time payment cadence (the core money change)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: One-time cadence for the custom domain (+ graceful lapse)
+    as_a: a cash-paying merchant
+    i_want: to pay one year up front with no recurring mandate
+    so_that: "I'm not forced into a card subscription"
+    risk: high
+    status: done
+  - id: S2.2
+    title: One-time cadence for the printed ad
+    as_a: a merchant
+    i_want: to pay one-time for a printed-ad placement through the same cadence UX
+    so_that: the promoter can sell the ad on the same terms
+    risk: high
+    status: done
+  - id: S2.3
+    title: Cadence selectable over UCP/MCP
+    as_a: an agent
+    i_want: to see and select the one-time cadence at checkout
+    so_that: "the SKUs stay agent-accessible (rule #3)"
+    risk: high
+    status: done
+---
 # Promoter Program — Sprint 2: One-time payment cadence (the core money change)
 
 **Status:** ✅ **MERGED `7d47222` (#140, squash)** on 2026-06-30 — full CI gate green (tsc + build +

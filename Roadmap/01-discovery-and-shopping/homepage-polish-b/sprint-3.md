@@ -1,3 +1,40 @@
+---
+epic: homepage-polish-b
+sprint: 3
+title: Chrome & community
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: Value-prop ribbon (signed-out only)
+    as_a: a signed-out buyer
+    i_want: a one-line orientation bar
+    so_that: I understand what this place is without a heavy hero
+    risk: low
+    status: done
+  - id: S3.2
+    title: "Header: \"Vende\" pill + in-search agent sparks"
+    as_a: a visitor
+    i_want: an obvious labeled way to sell and to ask the AI from the mobile search bar
+    so_that: "the affordances aren't a bare cryptic icon"
+    risk: low
+    status: done
+  - id: S3.3
+    title: Terminal CTA + mobile footer + empty-marketplace CTAs
+    as_a: a buyer at the bottom of the page (incl. mobile browser)
+    i_want: a clear next action and the footer links
+    so_that: "I'm not dead-ended"
+    risk: low
+    status: done
+  - id: S3.4
+    title: Vecindario live strip (enhance the existing entry)
+    as_a: a buyer
+    i_want: the Vecindario section to show real local pulse
+    so_that: the marketplace feels alive and worth returning to
+    risk: low
+    status: done
+---
 # Homepage Polish — Dirección B — Sprint 3: Chrome & community
 
 **Status:** ✅ **MERGED — PR [#86](https://github.com/danybgoode/miyagisanchezcommerce/pull/86) squash `b472cfb`** (2026-06-13). CI green (tsc + build + Playwright `api` vs preview); cross-agent (codex) review caught a blocking `type="button"` bug on the in-form search sparks → fixed (`4998201`) before merge. Branch deleted; worktree pruned. · **Risk:** LOW *(S3.2 + the footer touched shared `layout.tsx` — announced per LEARNINGS)*

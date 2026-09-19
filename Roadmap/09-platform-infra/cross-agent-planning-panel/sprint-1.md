@@ -1,3 +1,40 @@
+---
+epic: cross-agent-planning-panel
+sprint: 1
+title: Thin advisory panel command (architecture lenses)
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: "Skateboard: one lens to stdout"
+    as_a: a product owner grooming a plan
+    i_want: "`node scripts/cross-panel.mjs <scope-doc> --agent codex --lens architect-purist` to feed the plan into a different-family model and print a single-pass critique"
+    so_that: I get a second opinion on an architecture call before slicing it into an epic
+    risk: low
+    status: done
+  - id: S1.2
+    title: Pragmatist lens + the lens-prompt library
+    as_a: a product owner
+    i_want: "a second `architect-pragmatist` lens and both lenses factored into a shared prompt doc"
+    so_that: "I can get the \"does this belong in a Medusa module?\" purist view and the \"ship the thinnest thing that works\" pragmatist view from one source of truth"
+    risk: low
+    status: done
+  - id: S1.3
+    title: "Run the pair → one combined advisory block"
+    as_a: a product owner
+    i_want: to run both lenses (across the two model families) and get one labeled advisory block
+    so_that: "I see the panel's combined read and any real disagreement in one place"
+    risk: low
+    status: done
+  - id: S1.4
+    title: Wiring (skill + kickoff, docs-only)
+    as_a: a future groom session or Daniel
+    i_want: the panel surfaced at the right grooming moments and runnable via a verb
+    so_that: "it's used consistently on the expensive forks and never mistaken for a gate"
+    risk: low
+    status: done
+---
 # Cross-agent planning panel — Sprint 1: Thin advisory panel command (architecture lenses)
 
 **Status:** ✅ Shipped 2026-06-13 — PR #15 (LOW). All 4 stories ✅ (S1.1 `ef29869` · S1.2 `75c821b` ·

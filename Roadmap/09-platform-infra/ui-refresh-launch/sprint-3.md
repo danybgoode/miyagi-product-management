@@ -1,3 +1,26 @@
+---
+epic: ui-refresh-launch
+sprint: 3
+title: "Polish passes — seller portal + checkout"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: "Polish pass: seller portal"
+    as_a: a seller
+    i_want: the portal to carry the new feel on the rails foundation
+    so_that: the operating experience matches the buyer-facing polish
+    risk: low
+    status: done
+  - id: S3.2
+    title: "Polish pass: checkout flow"
+    as_a: a buyer paying
+    i_want: the checkout to feel as trustworthy as the rest
+    so_that: "the money moment doesn't look like a different product"
+    risk: high
+    status: done
+---
 # UI refresh before launch — Sprint 3: Polish passes — seller portal + checkout
 
 **Status:** 🟨 in progress — both stories built, PR open (`feat/ui-refresh-s3` against

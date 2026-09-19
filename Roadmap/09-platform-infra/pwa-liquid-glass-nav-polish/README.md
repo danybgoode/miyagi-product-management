@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: pwa-liquid-glass-nav-polish
+title: PWA Liquid-Glass Nav Polish
+area: 09-platform-infra
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 6
 ---
 
 # Epic — PWA Liquid-Glass Nav Polish

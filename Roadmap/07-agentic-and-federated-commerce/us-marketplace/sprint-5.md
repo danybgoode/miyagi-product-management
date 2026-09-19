@@ -1,3 +1,26 @@
+---
+epic: us-marketplace
+sprint: 5
+title: The seller side, in English
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S5.1
+    title: Translate the seller portal to en-US
+    as_a: a US merchant
+    i_want: my dashboard in English
+    so_that: I can operate my shop without translating it in my head
+    risk: low
+    status: done
+  - id: S5.2
+    title: Open US seller signup and onboarding
+    as_a: a US merchant
+    i_want: "to open a shop from `/us`"
+    so_that: I can start selling without an invitation
+    risk: low
+    status: done
+---
 # US marketplace — Sprint 5: The seller side, in English
 
 **Status:** ✅ shipped — 2026-08-12 · **portal body copy still owed**

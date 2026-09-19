@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. (✅ ALL 3 SPRINTS SHIPPED 2026-06-23: S1 #112 `1a4c4a4` · S2 #113 `4a59644`/BE #37 `815994f` · S3 #114 `a5b23ca`)
 slug: homepage-seleccion-curation
+title: "Homepage Selección: bug sweep + admin curation + dynamic rotation"
+area: 01-discovery-and-shopping
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic — Homepage Selección: bug sweep + admin curation + dynamic rotation

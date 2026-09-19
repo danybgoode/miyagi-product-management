@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: build-order-ci-self-heal
+title: Build-order CI self-heal
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 1
 ---
 
 # Epic: Build-order CI self-heal

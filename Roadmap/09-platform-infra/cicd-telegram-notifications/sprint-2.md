@@ -1,3 +1,19 @@
+---
+epic: cicd-telegram-notifications
+sprint: 2
+title: "Backend Cloud Run deploy-finished (✅/❌)"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Cloud Run deploy-finished ping
+    as_a: Daniel
+    i_want: a Telegram ping when the backend finishes deploying (or fails)
+    so_that: "I know the outcome of the ~12-min Cloud Run cycle without watching GCP"
+    risk: low
+    status: done
+---
 # Sprint 2 — Backend Cloud Run deploy-finished (✅/❌)
 
 The backend's ~12-min Cloud Build → Cloud Run cycle has no preview; this gives Daniel its terminal

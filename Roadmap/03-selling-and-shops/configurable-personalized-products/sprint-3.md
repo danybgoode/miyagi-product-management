@@ -1,3 +1,33 @@
+---
+epic: configurable-personalized-products
+sprint: 3
+title: Fulfillment, emails & agents
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Personalization visible on the order
+    as_a: a seller
+    i_want: "the buyer's custom input shown next to the product on my order screen"
+    so_that: I fulfill it correctly
+    risk: high
+    status: done
+  - id: S3.2
+    title: Personalization in the confirmation emails
+    as_a: a buyer
+    i_want: my custom input echoed in the confirmation email
+    so_that: "I have immediate peace of mind; as a seller, the same, so I have the spec in writing"
+    risk: high
+    status: done
+  - id: S3.3
+    title: Agent-accessible (UCP/MCP)
+    as_a: an AI agent
+    i_want: "to read a product's custom fields and submit the buyer's answers"
+    so_that: "agentic purchases personalize too — and the payload is clean enough to route to external inboxes (AC 4.3)"
+    risk: high
+    status: done
+---
 # Sprint 3 — Fulfillment, emails & agents
 
 Goal: the personalization the buyer entered is prominently visible to the seller on the order, is

@@ -1,3 +1,33 @@
+---
+epic: events-quantity-selector
+sprint: 1
+title: Quantity purchase, made real (per-unit issuance + stepper + agent)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "(BE) Mint one ticket per unit, idempotent per unit (deploy first)"
+    as_a: a buyer who paid for N admissions
+    i_want: N unique scannable tickets issued
+    so_that: "each guest gets their own QR that's redeemed once at the door"
+    risk: high
+    status: done
+  - id: S1.2
+    title: "(FE) Quantity stepper on the event buy CTA + thread quantity through checkout"
+    as_a: a buyer on an event PDP
+    i_want: a quantity control capped by remaining seats
+    so_that: I pick how many admissions before I pay
+    risk: high
+    status: done
+  - id: S1.3
+    title: "(Agent) UCP checkout-session accepts quantity"
+    as_a: an AI agent buying admission
+    i_want: to request N tickets over UCP
+    so_that: "agent purchases match the storefront (AGENTS rule #3)"
+    risk: high
+    status: done
+---
 # Sprint 1 — Quantity purchase, made real (per-unit issuance + stepper + agent)
 
 > Epic: [Events: quantity selector](README.md) · **Risk: HIGH** (money + fulfillment + checkout; backend-first;

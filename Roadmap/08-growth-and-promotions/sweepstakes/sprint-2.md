@@ -1,3 +1,33 @@
+---
+epic: sweepstakes
+sprint: 2
+title: Public Verified Entry & Purchase Bonus
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Public email-verified entry
+    as_a: a supporter
+    i_want: to enter with my name and verified email
+    so_that: I can join without creating a marketplace account
+    risk: low
+    status: done
+  - id: S2.2
+    title: Purchase incentive display
+    as_a: a supporter
+    i_want: to see how purchases improve my chances
+    so_that: I understand the value exchange
+    risk: low
+    status: done
+  - id: S2.3
+    title: Purchase bonus tickets
+    as_a: the system
+    i_want: completed purchases to award bonus tickets exactly once
+    so_that: purchase incentives are fair and do not double-count
+    risk: low
+    status: done
+---
 # Sprint 2 — Public Verified Entry & Purchase Bonus
 
 Goal: supporters can enter with verified email, and completed purchases can

@@ -1,3 +1,40 @@
+---
+epic: configurable-personalized-products
+sprint: 2
+title: Buyer capture + cart/checkout parity
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Fields render in the buy box
+    as_a: a buyer
+    i_want: the custom fields right where I buy
+    so_that: I can personalize before adding to cart
+    risk: high
+    status: done
+  - id: S2.2
+    title: Graceful required-field validation
+    as_a: a buyer
+    i_want: a gentle nudge if I skip a required field
+    so_that: "I'm not punished with abrupt errors"
+    risk: high
+    status: done
+  - id: S2.3
+    title: Payload echoes through cart + checkout
+    as_a: a buyer
+    i_want: to see my exact input at every step
+    so_that: I trust it saved
+    risk: high
+    status: done
+  - id: S2.4
+    title: Payload lands on the order line item
+    as_a: a buyer
+    i_want: my personalization attached to the actual purchase
+    so_that: the seller receives it
+    risk: high
+    status: done
+---
 # Sprint 2 — Buyer capture + cart/checkout parity
 
 Goal: the buyer fills the custom fields in the product buy box, the exact text echoes through the

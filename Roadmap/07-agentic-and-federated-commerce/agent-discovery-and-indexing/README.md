@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: agent-discovery-and-indexing
+title: "Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Agent discovery & indexing — why nothing is indexed, `/agent` in es-MX, `/vende` as the agent target

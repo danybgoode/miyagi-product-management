@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: mercadolibre-sync
+title: "Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 6
+stories_total: 15
 ---
 
 # Epic · Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)

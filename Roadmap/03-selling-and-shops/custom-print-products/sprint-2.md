@@ -1,3 +1,40 @@
+---
+epic: custom-print-products
+sprint: 2
+title: Priced options + quantity tiers (commerce core)
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: "Seller defines priced option dimensions → real Medusa variants"
+    as_a: a print-shop seller
+    i_want: "to add option dimensions (Tamaño / Material / Acabado, up to ~3) with per-combination pricing to a listing (create + edit)"
+    so_that: "a 7.5cm holográfico costs what it should without chat back-and-forth"
+    risk: high
+    status: done
+  - id: S2.2
+    title: Quantity price breaks per variant
+    as_a: a seller
+    i_want: quantity tiers (e.g. 10 / 25 / 50 / 100+) per variant
+    so_that: "bulk pricing works like Sticker Mule's automatic discounts"
+    risk: high
+    status: done
+  - id: S2.3
+    title: "Correct variant × quantity pricing through PDP → cart → checkout"
+    as_a: a buyer
+    i_want: the price I see at every step to match the variant + quantity I chose
+    so_that: "the pay button never lies (house rule: pay-button total always equals the summary)"
+    risk: high
+    status: done
+  - id: S2.4
+    title: "Seller-facing \"Opciones\" UI (NEW — added 2026-07-06, not yet built)"
+    as_a: a print-shop seller
+    i_want: a settings screen to add dimensions, per-combination prices, and quantity tiers to my listing
+    so_that: "I don't need a direct API call or my agent to configure a configurator product"
+    risk: high
+    status: done
+---
 # Custom print products — Sprint 2: Priced options + quantity tiers (commerce core)
 
 **Status:** ✅ merged — backend [#60](https://github.com/danybgoode/medusa-bonsai-backend/pull/60) (`d22fb29`), frontend [#175](https://github.com/danybgoode/miyagisanchezcommerce/pull/175) (`7009895`) on 2026-07-06, both cross-reviewed (8 rounds) + Daniel-authorized merge; **Story 2.4 (seller "Opciones" UI) merged 2026-07-05** — frontend [#176](https://github.com/danybgoode/miyagisanchezcommerce/pull/176) (`d6d457b`), 2 more Antigravity rounds, Daniel-authorized merge-on-green. Owed: Daniel's UI + money-path browser smoke (walkthrough below, now against prod).

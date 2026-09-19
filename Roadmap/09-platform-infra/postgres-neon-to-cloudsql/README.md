@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Shipped at epic close 2026-06-22.
 slug: postgres-neon-to-cloudsql
+title: "Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic: Postgres migration — Neon (AWS) → Cloud SQL (GCP co-location) ✅

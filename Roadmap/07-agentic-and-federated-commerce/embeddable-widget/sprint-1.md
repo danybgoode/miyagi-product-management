@@ -1,3 +1,26 @@
+---
+epic: embeddable-widget
+sprint: 1
+title: "Foundations: embed key + `embed` channel + cross-origin hardening"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Per-shop embed key
+    as_a: a seller
+    i_want: a publishable embed key for my shop
+    so_that: "my widget's traffic is attributable to me and can be rate-limited without exposing anything secret"
+    risk: high
+    status: done
+  - id: S1.2
+    title: embed channel + cross-origin hardening
+    as_a: the platform
+    i_want: "embed requests recognized as the `embed` channel and safe to serve to any website"
+    so_that: "sellers' sales are tagged correctly and the open endpoints aren't abused"
+    risk: high
+    status: done
+---
 # Sprint 1 — Foundations: embed key + `embed` channel + cross-origin hardening
 
 Goal: lay the plumbing the three surfaces will share — a per-shop embed key, requests that identify

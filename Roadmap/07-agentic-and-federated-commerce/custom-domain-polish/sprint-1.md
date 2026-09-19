@@ -1,3 +1,61 @@
+---
+epic: custom-domain-polish
+sprint: 1
+title: Own-channel flow polish
+risk: low
+phase: Shipped
+stories_total: 7
+stories:
+  - id: S1.1
+    title: Four explicit states with a fix suggestion
+    as_a: a seller setting up my domain
+    i_want: "to clearly see what state it's in and what to do if something fails"
+    so_that: "I don't need tech support"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Show the SSL certificate status
+    as_a: a seller
+    i_want: to know when the SSL certificate is being issued
+    so_that: "I don't think something failed while Vercel issues it"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Change domain without deleting it
+    as_a: a seller
+    i_want: to change my domain without losing the current one at once
+    so_that: "I'm not left without a shop during the change"
+    risk: low
+    status: done
+  - id: S1.4
+    title: Clear message when the domain is already in use
+    as_a: a seller
+    i_want: a clear message if the domain is already taken
+    so_that: I know what to do instead of seeing a generic error
+    risk: low
+    status: done
+  - id: S1.5
+    title: Proper subdomains + apex robustness
+    as_a: "a seller with a subdomain (`shop.mydomain.com`) or an apex on GoDaddy/Namecheap"
+    i_want: correct instructions
+    so_that: my shop actually goes live
+    risk: low
+    status: done
+  - id: S1.6
+    title: Mobile pass
+    as_a: a seller on a phone
+    i_want: to complete the whole flow without friction
+    so_that: "I don't need a computer"
+    risk: low
+    status: done
+  - id: S1.7
+    title: Confirmation on delete
+    as_a: a seller
+    i_want: a confirmation when I delete my domain
+    so_that: I know it was removed and my shop is still available
+    risk: low
+    status: done
+---
 # Sprint 1 — Own-channel flow polish
 
 Goal: every seller (apex domain or subdomain, any registrar) gets an unambiguous, well-labeled status with

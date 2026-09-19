@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: groom-archetype-lens
+title: "Groom archetype-lens wiring — optional Stage-2 archetype tag"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: Groom archetype-lens wiring — optional Stage-2 archetype tag

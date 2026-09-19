@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (backend charge rail) MERGED 2026-07-07: PR #67 squash 8e41d18, HIGH-risk Daniel-authorized merge-on-green, ships dark behind checkout.rental_pricing_enabled (default false). Clean gating pr-review + codex advisory addressed pre-merge (ad90a71). Flag-OFF prod smoke PASSED 2026-07-08. Sprint 2 (web checkout rental mode + PDP flag flip + order-surface rendering, 3 stories incl. Story 2.3 added at kickoff) MERGED 2026-07-08: PR #190 squash c5c25a3 (danybgoode/miyagisanchezcommerce), HIGH-risk Daniel-authorized merge-on-green. Codex cross-review caught + fixed a real MX-timezone past-date bug + a URL-encoding nit pre-merge (267143e); fresh pr-reviewer approved with no further changes. Sprint 3 (agent parity — checkout-session + MCP get_checkout_options accept check_in/check_out → rental_quote + dated checkout URLs; date-less calls labeled per-period) MERGED 2026-07-08: PR #191 squash a2a2cf5 (danybgoode/miyagisanchezcommerce), LOW-risk Daniel-authorized merge-on-green, quoting-only (no charge code touched). Codex cross-review caught + fixed 2 real gaps pre-merge (94f1691): a rejected dated request still exposing a date-blind MP/Stripe mischarge path, and create_checkout callable on a rental despite its doc warning. **EPIC SHIPPED 2026-07-08 — all 3 sprints merged.** Kill-switch `checkout.rental_pricing_enabled` verified: enablement flag, default `false`, created disabled — confirmed on current main. Owed (Daniel): flag-ON money smoke — needs a disposable test rental listing first (none in prod); S3's own MCP round-trip smoke + fixture-gated specs share this same gap.
 slug: rental-backend-line-item-pricing
+title: "Rental line-item pricing — charge nights × rate + deposit online"
+area: 02-checkout-and-payments
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic: Rental line-item pricing — charge nights × rate + deposit online

@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: repo-readmes-branding
+title: "Repo cleanup + per-repo READMEs — value prop, engineering practice, product story"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: Repo cleanup + per-repo READMEs — value prop, engineering practice, product story

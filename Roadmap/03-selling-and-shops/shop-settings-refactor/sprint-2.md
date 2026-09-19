@@ -1,3 +1,75 @@
+---
+epic: shop-settings-refactor
+sprint: 2
+title: Extract low-risk sections
+risk: low
+phase: Shipped
+stories_total: 9
+stories:
+  - id: S2.1
+    title: Perfil de tienda
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Apariencia / Diseño y marca"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.3
+    title: Tipo de tienda
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.4
+    title: "Ofertas / Negociación"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.5
+    title: "Comunicación"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.6
+    title: "Envíos y entrega"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.7
+    title: Citas y reservas
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.8
+    title: "Gestión de pedidos"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.9
+    title: Notificaciones
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Shop Settings refactor — Sprint 2: Extract low-risk sections
 
 **Status:** ✅ SHIPPED 2026-06-10 — [PR #69](https://github.com/danybgoode/miyagisanchezcommerce/pull/69)

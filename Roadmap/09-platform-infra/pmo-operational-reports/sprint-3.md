@@ -1,3 +1,26 @@
+---
+epic: pmo-operational-reports
+sprint: 3
+title: Delivery + smoke
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Weekly Telegram delivery + on-demand monthly packet
+    as_a: Daniel
+    i_want: the weekly headline numbers + deck link in Telegram, and a monthly packet on demand
+    so_that: reporting happens without me remembering it
+    risk: low
+    status: done
+  - id: S3.2
+    title: Live smoke + close-out
+    as_a: Daniel
+    i_want: to verify the whole loop on my phone
+    so_that: the epic closes on evidence, not narration
+    risk: low
+    status: done
+---
 # PMO operational reports — Sprint 3: Delivery + smoke
 
 **Status:** ✅ shipped — PR #84, Daniel phone/Excel smoke confirmed 2026-07-14

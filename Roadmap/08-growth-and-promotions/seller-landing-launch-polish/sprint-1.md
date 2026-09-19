@@ -1,3 +1,19 @@
+---
+epic: seller-landing-launch-polish
+sprint: 1
+title: "Voice & copy precision · status: ✅ shipped — PR #133 (`d4d6bde`)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Land the launch-polish copy
+    as_a: supply traffic about to be sent here at launch
+    i_want: precise, on-brand copy
+    so_that: the page reads trustworthy and easy to act on
+    risk: low
+    status: done
+---
 # Sprint 1 — Voice & copy precision  ·  status: ✅ shipped — PR #133 (`d4d6bde`)
 
 > **Shipped 2026-06-26** — squash-merged to app `main` as `d4d6bde` (PR

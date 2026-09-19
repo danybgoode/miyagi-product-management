@@ -1,3 +1,26 @@
+---
+epic: navigation-settings-reorg
+sprint: 1
+title: PWA bottom bar
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Trim to 4 tabs + publish FAB
+    as_a: a buyer on the PWA
+    i_want: "a focused bottom bar — Inicio · Explorar · [⊕ Vender FAB] · Mensajes · Cuenta —"
+    so_that: the destinations I actually use are one tap away
+    risk: low
+    status: done
+  - id: S1.2
+    title: Contextual hide
+    as_a: a buyer
+    i_want: the bar to get out of the way
+    so_that: it never covers content or the keyboard
+    risk: low
+    status: done
+---
 # Navigation & Settings Reorg — Sprint 1: PWA bottom bar
 
 **Status:** ✅ SHIPPED — [PR #75](https://github.com/danybgoode/miyagisanchezcommerce/pull/75)

@@ -1,3 +1,40 @@
+---
+epic: promotions
+sprint: 1
+title: Seller Coupon Codes
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Create & manage coupon codes (foundation)
+    as_a: a seller
+    i_want: to create and manage discount codes
+    so_that: I can run promotions
+    risk: high
+    status: done
+  - id: S1.2
+    title: Manage coupons from my dashboard
+    as_a: a seller
+    i_want: "a \"Cupones\" section in my shop dashboard"
+    so_that: I can manage codes without help
+    risk: high
+    status: done
+  - id: S1.3
+    title: Redeem a coupon at checkout
+    as_a: a buyer
+    i_want: to enter a coupon code at checkout
+    so_that: I get the discount
+    risk: high
+    status: done
+  - id: S1.4
+    title: See how my codes are performing
+    as_a: a seller
+    i_want: to see usage per code
+    so_that: I know which promos work
+    risk: high
+    status: done
+---
 # Sprint 1 — Seller Coupon Codes
 
 Goal: a seller can create and manage discount codes, and buyers can redeem them at checkout.

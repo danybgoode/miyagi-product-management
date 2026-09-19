@@ -1,3 +1,61 @@
+---
+epic: living-shop-social-storefront
+sprint: 8
+title: the shop looks like the concept
+risk: low
+phase: Shipped
+stories_total: 7
+stories:
+  - id: S8.1
+    title: "Shop header: identity, navigation, bag"
+    as_a: a buyer
+    i_want: "the shop's name and avatar to sit with its navigation"
+    so_that: I always know whose shop I am in and can move around it
+    risk: low
+    status: done
+  - id: S8.2
+    title: Living hero
+    as_a: a buyer
+    i_want: the top of the shop to say what this place is
+    so_that: I understand it before I scroll
+    risk: low
+    status: done
+  - id: S8.3
+    title: Wall post anatomy
+    as_a: a buyer
+    i_want: each Wall entry to read like something a person posted
+    so_that: the shop feels inhabited
+    risk: low
+    status: done
+  - id: S8.4
+    title: The supporting rail
+    as_a: a buyer
+    i_want: "the shop's identity, collections and status beside the Wall"
+    so_that: I can act without leaving the story
+    risk: low
+    status: done
+  - id: S8.5
+    title: Retro Social matches the concept
+    as_a: a seller
+    i_want: Retro Social to look like the reference
+    so_that: choosing it feels like a real decision rather than a tint
+    risk: low
+    status: done
+  - id: S8.6
+    title: Shop footer
+    as_a: a buyer
+    i_want: "the shop's own links at the end"
+    so_that: the page closes rather than stops
+    risk: low
+    status: done
+  - id: S8.7
+    title: Dogfood on two real shops
+    as_a: the product owner
+    i_want: "`champions-not` and `panfleto` dressed with placeholder content"
+    so_that: I can judge the result against the concept
+    risk: low
+    status: done
+---
 # Living Shop — Sprint 8: the shop looks like the concept
 
 **Status:** ✅ shipped — `241b2f2` (PR #393)

@@ -1,3 +1,26 @@
+---
+epic: homepage-polish-b
+sprint: 2
+title: Signed-out merchandising core
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Curated \"Selección de la semana\" + card hierarchy"
+    as_a: a signed-out buyer
+    i_want: a curated featured pick + a clean grid where the price stands out
+    so_that: I immediately see something worth buying instead of a raw recency dump
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Categorías with life (counts, only live categories)"
+    as_a: a signed-out buyer
+    i_want: category rows that show only categories with listings and how many
+    so_that: "I don't click into empty categories"
+    risk: low
+    status: done
+---
 # Homepage Polish — Dirección B — Sprint 2: Signed-out merchandising core
 
 **Status:** ✅ MERGED to `main` — PR [#85](https://github.com/danybgoode/miyagisanchezcommerce/pull/85) squash `6774203` (2026-06-12). Cross-agent review (codex) clean — one should-fix applied (`ad09f83`, shared `now`), nit a no-op. CI green (tsc+build + Playwright api vs preview). · **Risk:** LOW (read-only Medusa reads; frontend-only)

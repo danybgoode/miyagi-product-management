@@ -1,3 +1,33 @@
+---
+epic: pwa-liquid-glass-nav-polish
+sprint: 2
+title: Bottom-sheet search + dedup
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Bottom-sheet search
+    as_a: a buyer
+    i_want: tapping search to raise an in-app glass sheet with the field already focused and my recent searches
+    so_that: I can search instantly without a page jump (recognition over recall)
+    risk: low
+    status: done
+  - id: S2.2
+    title: Demote the mobile header search (one primary search)
+    as_a: a buyer on the PWA
+    i_want: a single obvious place to search
+    so_that: "I'm not faced with two competing search controls (aesthetic & minimalist)"
+    risk: low
+    status: done
+  - id: S2.3
+    title: "(optional) Top-bar glass-parity touch — ⏭️ SKIPPED (deferred)"
+    as_a: a buyer
+    i_want: the top bar to feel consistent with the polished bottom bar
+    so_that: the chrome reads as one system
+    risk: low
+    status: done
+---
 # PWA Liquid-Glass Nav Polish — Sprint 2: Bottom-sheet search + dedup
 
 **Status:** ✅ BUILT — draft PR [#99](https://github.com/danybgoode/miyagisanchezcommerce/pull/99)

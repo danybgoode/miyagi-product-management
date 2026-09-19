@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: events-and-ticketing
+title: Events & Ticketing
+area: 10-events-and-ticketing
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic — Events & Ticketing

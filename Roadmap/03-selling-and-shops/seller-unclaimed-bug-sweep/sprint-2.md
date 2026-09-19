@@ -1,3 +1,26 @@
+---
+epic: seller-unclaimed-bug-sweep
+sprint: 2
+title: Delete actually deletes
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Native Medusa soft-delete (BE) ·"
+    as_a: a seller
+    i_want: deleting a listing to soft-delete the Medusa product
+    so_that: "it disappears everywhere, so that \"deleted\" actually means gone — while past orders keep their product reference"
+    risk: high
+    status: done
+  - id: S2.2
+    title: "Manage + mirror + edit all agree \"gone\" (FE) ·"
+    as_a: a seller
+    i_want: a deleted listing to leave my dashboard and never 404 me on edit
+    so_that: the delete is clean and consistent
+    risk: high
+    status: done
+---
 # Seller & unclaimed-shop bug sweep — Sprint 2: Delete actually deletes
 
 **Status:** ✅ SHIPPED 2026-06-10 — backend-first, both merged (Daniel green-light) · **Repos:** backend first, then frontend

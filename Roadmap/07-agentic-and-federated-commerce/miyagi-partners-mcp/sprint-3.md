@@ -1,3 +1,26 @@
+---
+epic: miyagi-partners-mcp
+sprint: 3
+title: Feedback loop (send_feedback + admin list)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: send_feedback MCP tool + platform_feedback table
+    as_a: an agent (or the seller/partner driving it)
+    i_want: "a `send_feedback` tool (author kind: seller/partner/agent · category: feature/mcp-tool/bug · free text · optional tool name)"
+    so_that: structured, tech-level product signal is filed the moment a gap is hit
+    risk: low
+    status: done
+  - id: S3.2
+    title: "/admin/feedback list"
+    as_a: the platform admin
+    i_want: "a minimal `/admin/feedback` list (filter by category/author kind, newest first)"
+    so_that: the signal is readable where the other admin sections already live
+    risk: low
+    status: done
+---
 # Miyagi Partners — multi-tenant MCP credential + roles — Sprint 3: Feedback loop (send_feedback + admin list)
 
 **Status:** ✅ merged 2026-07-17 — PR [#273](https://github.com/danybgoode/miyagisanchezcommerce/pull/273) (`6c53435`). send_feedback viewer-callable; author identity server-derived. ⚠ OWED: Daniel applies `20260717100000_platform_feedback.sql` by hand (until then the tool returns a clean error) + the Telegram-delivery check below.

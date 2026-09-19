@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: deploy-pipeline-tuning
+title: Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 5
+stories_total: 7
 ---
 
 # Epic — Deploy pipeline tuning (build speed, edge cache, Cloud Run scaling, observability)

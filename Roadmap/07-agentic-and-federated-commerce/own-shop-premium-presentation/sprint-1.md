@@ -1,3 +1,40 @@
+---
+epic: own-shop-premium-presentation
+sprint: 1
+title: Announcement bar + hero + theme presets
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Announcement bar
+    as_a: a seller
+    i_want: "a short announcement bar (text + optional link) configured in Diseño"
+    so_that: "my shop leads with my message (\"Envío gratis desde $500 · Entrega urgente disponible\") like StickerJunkie's top strip"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Hero / featured section
+    as_a: a seller
+    i_want: "to pin up to ~4 listings (or set a promo image + CTA) as a hero above the grid"
+    so_that: my best work greets visitors instead of an unordered wall
+    risk: low
+    status: done
+  - id: S1.3
+    title: Curated theme presets
+    as_a: a seller
+    i_want: "to pick one of ~4–6 designed presets (font pairing + surface tones) on top of my accent + banner"
+    so_that: my shop stops looking like every other shop
+    risk: low
+    status: done
+  - id: S1.4
+    title: Config parity (Storefront-as-Code + MCP)
+    as_a: "a seller's agent"
+    i_want: "`announcement`, `hero`, and `theme_preset` keys accepted by the settings importer and `patch_store_configuration`"
+    so_that: the premium look is one MCP call away
+    risk: low
+    status: done
+---
 # Own-shop premium presentation — Sprint 1: Announcement bar + hero + theme presets
 
 **Status:** ✅ shipped — PR [#173](https://github.com/danybgoode/miyagisanchezcommerce/pull/173) merged to `main` (squash `8b1abb1`), 2026-07-04. Built as `0c135cb` (Stories 1.1–1.3) + `885c843` (Story 1.4); `f02403d` fixed cross-agent-review findings before merge (below). Branch deleted.

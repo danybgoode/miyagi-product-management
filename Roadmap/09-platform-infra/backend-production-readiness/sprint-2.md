@@ -1,3 +1,19 @@
+---
+epic: backend-production-readiness
+sprint: 2
+title: Backups verified + restore drill
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Tested restore path
+    as_a: the owner
+    i_want: "a rehearsed restore for the data stores (Neon primary; Supabase, R2, and Secret Manager posture documented)"
+    so_that: a data-loss event is recoverable in practice, not in theory
+    risk: high
+    status: done
+---
 # Backend Production Readiness — Sprint 2: Backups verified + restore drill
 
 **Status:** ✅ **COMPLETE — PIPELINE LIVE 2026-06-12, both restore drills executed.** Built 2026-06-11

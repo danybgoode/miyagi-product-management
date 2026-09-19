@@ -1,3 +1,33 @@
+---
+epic: admin-consolidation
+sprint: 2
+title: "Migrate sections to Clerk + audit; complete the gaps"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Audit log + write it from withAdmin
+    as_a: a platform admin
+    i_want: every admin action recorded with who/what/when
+    so_that: platform-wide mutations are accountable
+    risk: high
+    status: done
+  - id: S2.2
+    title: Re-home /supply, extract Vecindario, add Referrals UI
+    as_a: a platform admin
+    i_want: the scattered sections in one consistent place
+    so_that: "there's no top-level `/supply`, no moderation buried in Print, and no UI-less referrals config"
+    risk: high
+    status: done
+  - id: S2.3
+    title: "Migrate all admin routes/pages to Clerk; kill secret-in-URL; audit viewer"
+    as_a: a platform admin
+    i_want: the shared URL secret retired for humans
+    so_that: "access can't leak via history/referer/logs and is revocable per-user"
+    risk: high
+    status: done
+---
 # Sprint 2 — Migrate sections to Clerk + audit; complete the gaps
 
 **Epic:** [Admin consolidation + tenant management](README.md) · **Repo:** `apps/miyagisanchez`

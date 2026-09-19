@@ -1,3 +1,54 @@
+---
+epic: merchant-partner-lifecycle
+sprint: 3
+title: Retention and agent parity
+risk: high
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S3.1
+    title: Thirty-day retention work and outcomes
+    as_a: a Merchant Partner
+    i_want: a defined post-sale retention task
+    so_that: activation does not end at the first transaction
+    risk: high
+    status: done
+  - id: S3.2
+    title: Partner-agent read and propose/confirm parity
+    as_a: an authorized Merchant Partner using an agent
+    i_want: my portfolio and task actions available safely
+    so_that: assistance respects the same grants and human decisions as the UI
+    risk: high
+    status: done
+  - id: S3.3
+    title: PII-free SLA and retention events
+    as_a: an operator
+    i_want: reusable stewardship facts in Golden Beans
+    so_that: scorecards and future CRM destinations measure service without receiving merchant contact data
+    risk: high
+    status: done
+  - id: S3.4
+    title: 30-day retention work
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.5
+    title: partner-agent parity
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.6
+    title: PII-free SLA and retention events
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Merchant Partner lifecycle — Sprint 3: Retention and agent parity
 
 **Status:** ✅ Shipped — [PR #311](https://github.com/danybgoode/miyagisanchezcommerce/pull/311) merged (squash `5e8501c`); migration `20260725120000` applied + verified live 2026-07-25

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: agy-drift-doctor
+title: "agy drift doctor — self-healing for the Antigravity CLI pin"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic · agy drift doctor — self-healing for the Antigravity CLI pin

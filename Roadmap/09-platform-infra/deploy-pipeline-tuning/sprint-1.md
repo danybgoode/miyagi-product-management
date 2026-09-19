@@ -1,3 +1,19 @@
+---
+epic: deploy-pipeline-tuning
+sprint: 1
+title: "Per-app lockfiles + `npm ci`"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Commit per-app lockfiles, switch Dockerfiles to npm ci (LOW risk)
+    as_a: the platform
+    i_want: deterministic, reproducible Docker builds for both apps
+    so_that: a rebuild of the same commit always installs the exact same dependency tree, and any future caching scheme has a stable key to hang on
+    risk: low
+    status: done
+---
 # Sprint 1 — Per-app lockfiles + `npm ci`
 
 **Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW, but touches the deploy rail — Daniel merges

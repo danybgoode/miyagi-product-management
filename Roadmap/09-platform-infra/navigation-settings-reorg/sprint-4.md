@@ -1,3 +1,26 @@
+---
+epic: navigation-settings-reorg
+sprint: 4
+title: Naming + one-agent-entry cleanup
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: "/sell (publish) vs /vende (landing) entry-point wiring"
+    as_a: a signed-out visitor
+    i_want: "the \"Vende\"/\"Publicar\" story to lead to the `/vende` landing while the publish action stays `/sell`"
+    so_that: the pitch and the action are distinct
+    risk: low
+    status: done
+  - id: S4.2
+    title: Vecindario reachable after leaving the bar
+    as_a: a buyer
+    i_want: Vecindario reachable from the Inicio feed (and header/footer)
+    so_that: "moving it off the tab bar doesn't orphan it"
+    risk: low
+    status: done
+---
 # Navigation & Settings Reorg — Sprint 4: Naming + one-agent-entry cleanup
 
 **Status:** ✅ SHIPPED 2026-06-11 — [PR #81](https://github.com/danybgoode/miyagisanchezcommerce/pull/81)

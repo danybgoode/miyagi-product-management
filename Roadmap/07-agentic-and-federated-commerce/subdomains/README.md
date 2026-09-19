@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: subdomains
+title: "Multi-tenant subdomains (`yourshop.miyagisanchez.com`)"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic — Multi-tenant subdomains (`yourshop.miyagisanchez.com`)

@@ -2,6 +2,13 @@
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: admin-consolidation
 build_order: 1       # numeric build-order sequence (SSOT for the Notion build-order views)
+title: Admin consolidation + tenant management
+area: 09-platform-infra
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 9
 ---
 
 # Epic — Admin consolidation + tenant management

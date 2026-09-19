@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: interaction-feedback-and-admin-repair
+title: Interaction feedback + the admin surfaces that were lying
+area: 09-platform-infra
+risk: high
+type: bug
+phase: Shipped
+sprints_total: 4
+stories_total: 11
 ---
 
 # Epic: Interaction feedback + the admin surfaces that were lying

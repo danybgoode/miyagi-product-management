@@ -1,3 +1,33 @@
+---
+epic: cms-contenido-restore-and-polish
+sprint: 4
+title: nav clarity + destination accuracy (Daniel fast-follow, requested 2026-07-13)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: "Fix the routing map: real per-section destinations + honest \"no page\" labels"
+    as_a: Daniel
+    i_want: the CMS to tell me the TRUE destination of an edit
+    so_that: I never mistake a seller-portal change or an email-template change for a public-page change
+    risk: low
+    status: done
+  - id: S4.2
+    title: "Nav: distinct section names + real destinations shown inline"
+    as_a: Daniel
+    i_want: each item in the page-nav to look and read differently from its siblings
+    so_that: I can tell at a glance which section does what, without opening it
+    risk: low
+    status: done
+  - id: S4.3
+    title: Per-field destination context + a sticky page header
+    as_a: Daniel
+    i_want: to see exactly where an edit will land right next to the before/after preview, and never lose that context scrolling a long field list
+    so_that: "I always know what I'm about to change and where"
+    risk: low
+    status: done
+---
 # CMS restore & polish — Sprint 4: nav clarity + destination accuracy (Daniel fast-follow, requested 2026-07-13)
 
 **Status:** ✅ merged 2026-07-13 (PR #246, squash commit `764007f`) — deterministic gate green,

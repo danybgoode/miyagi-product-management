@@ -1,3 +1,33 @@
+---
+epic: home-dynamic-rows-restore-and-polish
+sprint: 2
+title: "Signed-in polish to spec — ribbon gating, price-drop badge, recently-viewed"
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Hide the value-prop ribbon for signed-in users
+    as_a: a returning signed-in buyer
+    i_want: the orientation ribbon gone
+    so_that: "my personalized rows sit at the top — the ribbon's job is done"
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Price-drop badge on rail cards (\"↓ Bajó $300\")"
+    as_a: a buyer
+    i_want: to see when a favorited item got cheaper
+    so_that: I come back and buy
+    risk: low
+    status: done
+  - id: S2.3
+    title: "Recently-viewed in the rail (\"Visto ayer\")"
+    as_a: a buyer
+    i_want: items I looked at yesterday back in front of me
+    so_that: I resume browsing, not restart it
+    risk: low
+    status: done
+---
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 2: Signed-in polish to spec — ribbon gating, price-drop badge, recently-viewed
 
 **Status:** ✅ merged `5ac54d5` (PR #251, squash-merged to `main` 2026-07-15) — Daniel's signed-in prod smoke remains owed

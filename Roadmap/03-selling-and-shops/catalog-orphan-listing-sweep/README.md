@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: catalog-orphan-listing-sweep
+title: "Catalog shop-slug invariant — the “orphan” was a null-slot read failure"
+area: 03-selling-and-shops
+risk: high
+type: bug
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Catalog shop-slug invariant — the “orphan” was a null-slot read failure

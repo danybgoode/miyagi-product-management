@@ -1,3 +1,19 @@
+---
+epic: doc-format-consistency
+sprint: 2
+title: The sweep
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Sweep active epics to canonical shape, per macro-section
+    as_a: a reader of any Roadmap doc
+    i_want: "every active epic's README/sprint/retro files in the canonical shape"
+    so_that: "the docs are actually easy to scan and the checker's report goes to zero"
+    risk: low
+    status: done
+---
 # Roadmap doc-format consistency — Sprint 2: The sweep
 
 **Status:** ✅ shipped (descoped) — `09-platform-infra` pilot section swept + enforced, 2026-07-15. Full-tree sweep intentionally NOT pursued — see scope note below.

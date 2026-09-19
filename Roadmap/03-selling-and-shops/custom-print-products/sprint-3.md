@@ -1,3 +1,40 @@
+---
+epic: custom-print-products
+sprint: 3
+title: Artwork upload + the configurator buy box
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: New file CustomFieldType
+    as_a: a seller
+    i_want: "an \"Arte / archivo\" custom field on a listing (required flag, format allowlist PNG/JPG/PDF/AI/SVG, max size)"
+    so_that: buyers must attach their artwork to order
+    risk: low
+    status: done
+  - id: S3.2
+    title: Buyer artwork upload, echoed end-to-end
+    as_a: a buyer (including guest)
+    i_want: to upload my artwork in the buy box and see it at every step
+    so_that: I trust the shop prints what I sent (radical-transparency heuristic from the personalization epic)
+    risk: high
+    status: done
+  - id: S3.3
+    title: Low-res preflight warning
+    as_a: a buyer
+    i_want: a warning when my image is too low-res for the chosen physical size
+    so_that: "I'm not surprised by a blurry print"
+    risk: low
+    status: done
+  - id: S3.4
+    title: The configurator buy box
+    as_a: a buyer
+    i_want: "one coherent flow — options → upload → live price grid → total"
+    so_that: ordering feels StickerJunkie-grade on mobile
+    risk: low
+    status: done
+---
 # Custom print products — Sprint 3: Artwork upload + the configurator buy box
 
 **Status:** ✅ built (`feat/custom-print-products`, commits `4f6b859` + `bf769c3` + `8e348cc` + `c416183`) — draft [PR #177](https://github.com/danybgoode/miyagisanchezcommerce/pull/177), Codex cross-review run + all 4 findings fixed, gate green, Daniel's real-file money-path smoke owed

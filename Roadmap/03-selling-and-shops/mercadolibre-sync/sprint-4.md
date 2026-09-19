@@ -1,3 +1,33 @@
+---
+epic: mercadolibre-sync
+sprint: 4
+title: Two-way stock sync (the oversell-safe core)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: "Medusa inventory subscriber → push stock to ML"
+    as_a: the system
+    i_want: "a Medusa stock change on a linked item to update its ML `available_quantity`"
+    so_that: ML reflects Miyagi sales
+    risk: high
+    status: done
+  - id: S4.2
+    title: "ML webhook → adjust Medusa inventory"
+    as_a: the system
+    i_want: an ML sale (or stock change) to adjust Medusa inventory for the linked item
+    so_that: Miyagi reflects ML sales
+    risk: high
+    status: done
+  - id: S4.3
+    title: Oversell-safe source-of-truth + reconciliation
+    as_a: a seller
+    i_want: stock to never oversell and drift to self-heal
+    so_that: I trust the sync
+    risk: high
+    status: done
+---
 # Mercado Libre sync — Sprint 4: Two-way stock sync (the oversell-safe core)
 
 **Status:** ✅ MERGED + DEPLOYED (dark) 2026-07-01, **HIGH**. Backend

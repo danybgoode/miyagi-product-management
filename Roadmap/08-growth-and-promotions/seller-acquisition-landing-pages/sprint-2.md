@@ -1,3 +1,19 @@
+---
+epic: seller-acquisition-landing-pages
+sprint: 2
+title: "Track A: World Cup wedge page · status: ✅ shipped"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: The WC Experience/Service wedge page
+    as_a: a local experience/service provider
+    i_want: a page that pitches me on capturing World Cup demand
+    so_that: I list my tour / food spot / rental fast
+    risk: low
+    status: done
+---
 # Sprint 2 — Track A: World Cup wedge page  ·  status: ✅ shipped
 
 > **Builds first** (Daniel's call). Lean, time-boxed, on the **existing `globals.css` tokens** (does

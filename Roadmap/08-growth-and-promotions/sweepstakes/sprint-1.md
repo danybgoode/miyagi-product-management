@@ -1,3 +1,33 @@
+---
+epic: sweepstakes
+sprint: 1
+title: Campaign Setup & Legal Gate
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Campaign draft creation
+    as_a: a tenant
+    i_want: to create a sweepstakes draft with prize and timing
+    so_that: I can prepare a campaign before making it public
+    risk: low
+    status: done
+  - id: S1.2
+    title: Publish compliance gate
+    as_a: the platform
+    i_want: publication blocked until legal/compliance fields are present
+    so_that: a tenant cannot accidentally run an unreviewed public sweepstakes
+    risk: low
+    status: done
+  - id: S1.3
+    title: Share URL and QR
+    as_a: a tenant
+    i_want: a dedicated link and QR code after saving
+    so_that: I can share the campaign on social channels and print materials
+    risk: low
+    status: done
+---
 # Sprint 1 — Campaign Setup & Legal Gate
 
 Goal: tenants can create a sweepstakes campaign, pass the compliance gate, and

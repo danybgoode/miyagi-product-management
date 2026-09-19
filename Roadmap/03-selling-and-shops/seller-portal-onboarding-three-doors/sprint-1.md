@@ -1,3 +1,40 @@
+---
+epic: seller-portal-onboarding-three-doors
+sprint: 1
+title: Intake store + three-doors entry
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: tenant_intake store + S1 Bienvenida intake
+    as_a: a new merchant (post-signup)
+    i_want: a short optional welcome that asks what I sell and where I sell today
+    so_that: the rest of setup is prepared to my case instead of a blank form
+    risk: low
+    status: done
+  - id: S1.2
+    title: S2 Tres puertas (agent door first)
+    as_a: a new merchant
+    i_want: three clear, ranked ways to build my store with the agent door first and a trust line
+    so_that: I pick a path confidently and know nothing publishes without my approval
+    risk: low
+    status: done
+  - id: S1.3
+    title: ".2b — Door 2 shop-less gate fix"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.4
+    title: "S3 drop-anything intake (CSV/JSON; photos descoped)"
+    as_a: a merchant on the agent door
+    i_want: to hand over my info however I have it
+    so_that: "I don't have to start from a blank paste box"
+    risk: low
+    status: done
+---
 # Onboarding three-doors — Sprint 1: Intake store + three-doors entry
 
 **Status:** ✅ merged — [PR #221](https://github.com/danybgoode/miyagisanchezcommerce/pull/221)

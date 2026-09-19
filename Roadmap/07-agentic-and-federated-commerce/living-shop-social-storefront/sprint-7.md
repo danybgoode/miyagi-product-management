@@ -1,3 +1,54 @@
+---
+epic: living-shop-social-storefront
+sprint: 7
+title: Cross-channel finish + dogfood
+risk: high
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S7.1
+    title: Cross-channel parity and isolation
+    as_a: a buyer
+    i_want: the living shop to behave identically on marketplace, free subdomain and custom domain
+    so_that: "the merchant's channel choice does not change the experience"
+    risk: high
+    status: done
+  - id: S7.2
+    title: SEO / metadata / sitemap continuity
+    as_a: a merchant
+    i_want: my living shop content to remain crawlable and canonical on my preferred domain
+    so_that: customization does not fragment search identity
+    risk: high
+    status: done
+  - id: S7.3
+    title: Accessibility hardening across themes
+    as_a: a buyer using keyboard, screen reader, zoom or reduced motion
+    i_want: every theme to preserve the same interaction quality
+    so_that: merchant expression does not trade away access
+    risk: high
+    status: done
+  - id: S7.4
+    title: Wall performance + cache behavior
+    as_a: a buyer
+    i_want: a media-rich Wall to remain fast
+    so_that: social expression does not make the storefront sluggish
+    risk: high
+    status: done
+  - id: S7.5
+    title: Edge states and lifecycle behavior
+    as_a: a seller/buyer
+    i_want: deleted products, cancelled events, empty sections and renamed shops to fail gracefully
+    so_that: Wall history does not become broken chrome
+    risk: high
+    status: done
+  - id: S7.6
+    title: Flagship dogfood + visual acceptance
+    as_a: the product owner
+    i_want: three fully configured shops/states exercising Default, Retro Social and Custom
+    so_that: the capability is judged as a coherent product rather than isolated controls
+    risk: high
+    status: done
+---
 # Living Shop — Sprint 7: Cross-channel finish + dogfood
 
 **Status:** ✅ shipped — `39fec08` (PR #391)

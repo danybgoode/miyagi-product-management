@@ -1,3 +1,33 @@
+---
+epic: hyper-performant-runtime
+sprint: 1
+title: "Origin — kill the cold start and the origin image encode"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Frontend Cloud Run runs warm (min-instances=1)"
+    as_a: a buyer arriving after a quiet hour
+    i_want: the first page to render as fast as the tenth
+    so_that: the site never feels dead on the first click of the day
+    risk: high
+    status: done
+  - id: S1.2
+    title: Free-tier image variants cost less at the origin
+    as_a: a buyer scrolling a shop
+    i_want: product photos to appear immediately
+    so_that: the catalog feels instant instead of loading in
+    risk: low
+    status: done
+  - id: S1.3
+    title: scripts/perf-probe.mjs, the measurement this epic reports against
+    as_a: the product owner
+    i_want: one command that prints what each page actually costs
+    so_that: every later claim in this epic is a number and not an impression
+    risk: low
+    status: done
+---
 # Hyper-performant runtime — Sprint 1: Origin — kill the cold start and the origin image encode
 
 **Status:** 🟩 shipped — frontend PR [#416](https://github.com/danybgoode/miyagisanchezcommerce/pull/416)

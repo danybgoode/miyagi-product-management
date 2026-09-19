@@ -1,3 +1,47 @@
+---
+epic: living-shop-social-storefront
+sprint: 3
+title: Controlled shop information architecture
+risk: low
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S3.1
+    title: Typed section configuration
+    as_a: a seller
+    i_want: to decide which approved shop sections appear and in what order
+    so_that: my storefront reflects my business without becoming an open-ended CMS
+    risk: low
+    status: done
+  - id: S3.2
+    title: One coherent shop nav across channels
+    as_a: a buyer
+    i_want: the same merchant-defined section navigation on marketplace, subdomain and custom domain
+    so_that: the shop behaves like one site everywhere
+    risk: low
+    status: done
+  - id: S3.3
+    title: Complete Shop index
+    as_a: a buyer
+    i_want: a dedicated Shop destination separate from the Wall
+    so_that: I can intentionally browse the full catalog even when the homepage is story-led
+    risk: low
+    status: done
+  - id: S3.4
+    title: Public Events index
+    as_a: a buyer
+    i_want: an Events section for merchants who run events
+    so_that: I can browse upcoming activity without hunting through Wall history
+    risk: low
+    status: done
+  - id: S3.5
+    title: Existing About / FAQ / Policies under the controlled IA
+    as_a: a buyer
+    i_want: supporting information to feel like part of the same shop site
+    so_that: trust/content pages are not orphan footer links
+    risk: low
+    status: done
+---
 # Living Shop — Sprint 3: Controlled shop information architecture
 
 **Status:** ✅ shipped — `abec4c9` (PR #391)

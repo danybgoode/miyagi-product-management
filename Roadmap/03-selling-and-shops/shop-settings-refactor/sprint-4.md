@@ -1,3 +1,33 @@
+---
+epic: shop-settings-refactor
+sprint: 4
+title: Decommission + finalize
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: Delete the monolith
+    as_a: a developer
+    i_want: "`ShopSettings.tsx` and the monolith fallback removed once every section has moved"
+    so_that: the 4,200-line file is gone for good
+    risk: low
+    status: done
+  - id: S4.2
+    title: Finalize the unified taxonomy
+    as_a: a developer
+    i_want: the legacy dual-key map removed
+    so_that: "index + route + nav all use the one canonical set, so that there's a single section vocabulary"
+    risk: low
+    status: done
+  - id: S4.3
+    title: Anti-monolith guard spec
+    as_a: a developer
+    i_want: "a pure-logic spec that fails CI if any single settings component exceeds a line threshold (or if `ShopSettings.tsx` reappears)"
+    so_that: "the foundation can't silently erode back into a monolith — the way the raw-color guard keeps the token surface tokenized"
+    risk: low
+    status: done
+---
 # Shop Settings refactor — Sprint 4: Decommission + finalize
 
 **Status:** ✅ SHIPPED — [PR #74](https://github.com/danybgoode/miyagisanchezcommerce/pull/74) squash-merged `19f2831` (fresh-reviewer APPROVE, auto-merged on green CI; branch deleted). Built on `2e7d293`. CI was green (Type-check + build · Playwright-vs-preview `api` 4m29s · Vercel). Authed money-section smoke owed to Daniel. · **Risk: LOW (shared routing — announced; branched fresh off latest `main`)**

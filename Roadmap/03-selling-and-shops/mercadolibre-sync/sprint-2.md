@@ -1,3 +1,33 @@
+---
+epic: mercadolibre-sync
+sprint: 2
+title: "Import ML catalog → Miyagi"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Import ML listings → Medusa products"
+    as_a: a seller
+    i_want: to import my existing ML listings into Miyagi
+    so_that: onboarding is one-click
+    risk: high
+    status: done
+  - id: S2.2
+    title: Category / attribute / image mapping on import
+    as_a: a seller
+    i_want: imported listings to keep their category, key attributes, images & description
+    so_that: "they're sellable on Miyagi immediately"
+    risk: high
+    status: done
+  - id: S2.3
+    title: Import review + confirm + dedupe UI
+    as_a: a seller
+    i_want: to review what will import and skip duplicates
+    so_that: "I don't double up"
+    risk: low
+    status: done
+---
 # Mercado Libre sync — Sprint 2: Import ML catalog → Miyagi
 
 **Status:** ✅ MERGED (2026-06-30) — backend

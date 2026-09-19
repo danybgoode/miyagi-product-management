@@ -2,6 +2,13 @@
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: cost-comparator-homepage
 archetype: Grower
+title: "Comparador de costos — the stacking-costs sales tool on the homepage"
+area: 08-growth-and-promotions
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic: Comparador de costos — the stacking-costs sales tool on the homepage

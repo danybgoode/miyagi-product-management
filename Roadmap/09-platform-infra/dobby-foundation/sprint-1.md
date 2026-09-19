@@ -1,3 +1,40 @@
+---
+epic: dobby-foundation
+sprint: 1
+title: "Extract: marketplace + ways-of-work plugin + template + spawn golden-beans"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: "dobby-foundation repo: marketplace + ways-of-work plugin"
+    as_a: Daniel
+    i_want: "a `~/dobby/dobby-foundation` git repo (pushed to GitHub) containing `.claude-plugin/marketplace.json` and a `ways-of-work` plugin carrying the repo-original skills (`groom` incl. `scaffold-epic.mjs` + `templates/`, `doc-hygiene`, `standup-post`, `weekly-recap`, `babysit-pr`, `build-order-sync`, `vercel-prune`, `live-smoke` — re-inventory `skills/` at build time; the list grew once already since grooming)"
+    so_that: every project installs and updates the same skills from one versioned place
+    risk: low
+    status: done
+  - id: S1.2
+    title: medusa-bonsai consumes the plugin
+    as_a: Daniel
+    i_want: this repo switched to the marketplace-installed skills with the in-repo copies retired (one revert-able commit)
+    so_that: a groom improvement lands once and reaches every project, with no fork drift
+    risk: low
+    status: done
+  - id: S1.3
+    title: the project template
+    as_a: Daniel
+    i_want: "`dobby-foundation/template/` holding the copy-once skeleton — `Roadmap/` (poster skeleton, generalized `WAYS-OF-WORKING.md`, `LEARNINGS.md` seeded with the transferable subset, `00-ideas` funnel), `AGENTS.md` skeleton with a per-project rules slot, CI workflows (deterministic gate + build-order guard), `scripts/` (build-order, cross-review, cross-panel, routines, `.githooks`), and the Playwright `api` harness shape —"
+    so_that: a new project starts with the operating system on day one
+    risk: low
+    status: done
+  - id: S1.4
+    title: spawn golden-beans from the template
+    as_a: Daniel
+    i_want: "`~/dobby/golden-beans` created from the template (own git repo, marketplace added, plugin installed)"
+    so_that: "the Growth Engine builds inside the extracted system — the dogfood proof"
+    risk: low
+    status: done
+---
 # dobby-foundation — portable ways-of-work — Sprint 1: Extract: marketplace + ways-of-work plugin + template + spawn golden-beans
 
 **Status:** ✅ all 4 stories merged — 2026-07-13. Fresh-session plugin-install smoke (walkthrough

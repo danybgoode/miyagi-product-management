@@ -1,3 +1,33 @@
+---
+epic: tenant-lifecycle-admin
+sprint: 3
+title: the admin surface
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: The registration email, read from Clerk
+    as_a: a platform owner
+    i_want: to see the email each merchant signed up with
+    so_that: "I can reach a shop's actual owner without leaving the admin"
+    risk: low
+    status: done
+  - id: S3.2
+    title: "Filter and sort by the platform's own heuristics"
+    as_a: a platform owner
+    i_want: to slice the directory the way I actually think about shops
+    so_that: I can find the ones that need attention
+    risk: low
+    status: done
+  - id: S3.3
+    title: Edit, pause, unpause, delete
+    as_a: a platform owner
+    i_want: to act on a shop from the directory
+    so_that: managing tenants does not require a database client
+    risk: high
+    status: done
+---
 # Tenant lifecycle — Sprint 3: the admin surface
 
 **Status:** ✅ shipped — `9193100` (#368)

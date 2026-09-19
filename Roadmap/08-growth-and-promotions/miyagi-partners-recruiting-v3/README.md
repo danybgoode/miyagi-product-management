@@ -1,6 +1,13 @@
 ---
 status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: miyagi-partners-recruiting-v3
+title: Miyagi Partners proposition and recruiting portal v3
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Building
+sprints_total: 2
+stories_total: 8
 ---
 
 # Epic: Miyagi Partners proposition and recruiting portal v3

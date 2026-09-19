@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: mschz-full-coverage
+title: "mschz.org full coverage — short links for every shareable surface"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: mschz.org full coverage — short links for every shareable surface

@@ -1,3 +1,40 @@
+---
+epic: living-shop-social-storefront
+sprint: 1
+title: Wall foundation
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Shop-scoped Wall persistence
+    as_a: a seller
+    i_want: my shop to have a durable Wall publication model
+    so_that: posts and referenced commerce objects have one safe source of truth
+    risk: high
+    status: done
+  - id: S1.2
+    title: Seller Wall CRUD API + pure validation seam
+    as_a: a seller
+    i_want: to create, edit, publish, unpublish, schedule and delete my own Wall entries
+    so_that: I control what visitors see
+    risk: high
+    status: done
+  - id: S1.3
+    title: Canonical object resolver
+    as_a: a buyer
+    i_want: a Wall commerce/event card to reflect the current canonical object
+    so_that: I never see stale price, availability or event information copied into a post
+    risk: high
+    status: done
+  - id: S1.4
+    title: Wall composer shell + contextual object picker
+    as_a: a seller
+    i_want: to start a Wall entry from one composer and attach one supported object
+    so_that: publishing commerce content feels like posting rather than configuring a CMS
+    risk: high
+    status: done
+---
 # Living Shop — Sprint 1: Wall foundation
 
 **Status:** ✅ shipped — `44233c2 + 0212519` (PR #391)

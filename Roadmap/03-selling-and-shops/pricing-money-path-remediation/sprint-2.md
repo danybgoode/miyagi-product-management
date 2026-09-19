@@ -1,3 +1,40 @@
+---
+epic: pricing-money-path-remediation
+sprint: 2
+title: hygiene (Europe region + migrations sweep)
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: "Finding F: remove the leftover \"Europe\" region"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.2
+    title: Migrations-vs-applied sweep (Finding B precedent)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.3
+    title: "Finding F, done — live execution confirmed 2026-07-15"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.4
+    title: migrations sweep, done
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Pricing & money-path remediation — Sprint 2: hygiene (Europe region + migrations sweep)
 
 **Status:** ✅ CLOSED — Finding F deleted + verified live, migrations sweep done (3 gaps found +

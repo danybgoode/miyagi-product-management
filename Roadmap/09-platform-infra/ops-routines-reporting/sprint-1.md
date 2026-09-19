@@ -1,3 +1,26 @@
+---
+epic: ops-routines-reporting
+sprint: 1
+title: the standup skateboard
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "standup-post skill + scripts/standup.mjs → Telegram"
+    as_a: a product owner
+    i_want: a daily standup posted to Telegram each morning
+    so_that: I wake up to an accurate picture of overnight repo state instead of assembling it myself
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Nightly \"ops\" routine that triggers the standup"
+    as_a: a product owner
+    i_want: one nightly routine to run the standup automatically
+    so_that: it arrives without me triggering it, and we stay well under the Pro scheduled-run cap
+    risk: low
+    status: done
+---
 # Ops routines & reporting — Sprint 1: the standup skateboard
 
 **Status:** 🟦 In review — merged + routine created (2026-07-02); first live scheduled run + Telegram

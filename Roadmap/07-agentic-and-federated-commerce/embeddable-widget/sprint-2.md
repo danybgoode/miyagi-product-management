@@ -1,3 +1,33 @@
+---
+epic: embeddable-widget
+sprint: 2
+title: The three surfaces (render + checkout hand-off)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Buy-button + hosted-popup checkout
+    as_a: a seller
+    i_want: "a `<miyagi-buy-button>` I can drop on any page that lets a visitor buy my item"
+    so_that: I can sell from my existing site without rebuilding checkout
+    risk: high
+    status: done
+  - id: S2.2
+    title: Product card
+    as_a: a seller
+    i_want: "a `<miyagi-product>` card (image, price, condition, CTA)"
+    so_that: I can show a rich item, not just a button
+    risk: high
+    status: done
+  - id: S2.3
+    title: Full-shop iframe
+    as_a: a seller
+    i_want: to drop my whole storefront onto a page
+    so_that: my existing site can host my entire shop
+    risk: high
+    status: done
+---
 # Sprint 2 — The three surfaces (render + checkout hand-off)
 
 Goal: ship the visible widget — a loader script plus the three embeddable surfaces — with the buy action

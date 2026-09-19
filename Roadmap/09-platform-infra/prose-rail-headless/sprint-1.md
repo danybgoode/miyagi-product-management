@@ -1,3 +1,33 @@
+---
+epic: prose-rail-headless
+sprint: 1
+title: codex as the third writer, and the worktree bug
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: draftWithCodex
+    as_a: Daniel
+    i_want: a third writer behind devin and agy
+    so_that: a refusal from one and a cap on the other still produces a report
+    risk: low
+    status: done
+  - id: S1.2
+    title: Router placement
+    as_a: a builder
+    i_want: codex tried last
+    so_that: "the review layer's quota stays free"
+    risk: low
+    status: done
+  - id: S1.3
+    title: The .git-is-a-file bug
+    as_a: an agent working in a worktree
+    i_want: the hook to actually run
+    so_that: reports stop vanishing without a trace
+    risk: low
+    status: done
+---
 # Prose rail — Sprint 1: codex as the third writer, and the worktree bug
 
 **Status:** ✅ Built — branch `feat/prose-rail-headless-backend`; owed: the same hook fix in the two app repos

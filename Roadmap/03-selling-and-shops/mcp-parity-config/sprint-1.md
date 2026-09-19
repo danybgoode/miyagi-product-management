@@ -1,3 +1,33 @@
+---
+epic: mcp-parity-config
+sprint: 1
+title: Catalog config tools
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: update_collection / delete_collection over MCP
+    as_a: a shop agent
+    i_want: to rename/describe or remove one of my collections
+    so_that: "collection management is fully agent-doable (today only `create_collection` exists)"
+    risk: low
+    status: done
+  - id: S1.2
+    title: reorder_collections over MCP
+    as_a: a shop agent
+    i_want: to set the display order of my collections
+    so_that: storefront nav ordering is agent-settable
+    risk: low
+    status: done
+  - id: S1.3
+    title: set_listing_repuve over MCP (optional, low priority)
+    as_a: a shop agent selling a vehicle
+    i_want: to set REPUVE (vehicle registry) verification data via MCP
+    so_that: autos-category listings can be fully configured by an agent
+    risk: low
+    status: done
+---
 # MCP parity config — Sprint 1: Catalog config tools
 
 **Status:** ✅ shipped + live 2026-07-16 — FE PR [#271](https://github.com/danybgoode/miyagisanchezcommerce/pull/271) (`800538f`), BE PR [#100](https://github.com/danybgoode/medusa-bonsai-backend/pull/100) (`2b6e0d0`). All 3 tools (incl. optional 1.3) in prod tools/list.

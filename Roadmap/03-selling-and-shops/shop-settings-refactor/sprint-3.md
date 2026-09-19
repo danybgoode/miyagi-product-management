@@ -1,3 +1,54 @@
+---
+epic: shop-settings-refactor
+sprint: 3
+title: Extract money/domain/agent sections
+risk: high
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S3.1
+    title: Stripe
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.2
+    title: MercadoPago
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.3
+    title: SPEI
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.4
+    title: Compra Protegida
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.5
+    title: Canal propio (custom domain)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.6
+    title: Agentes / Conectar sistema (webhook + MCP)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Shop Settings refactor — Sprint 3: Extract money/domain/agent sections
 
 **Status:** ✅ SHIPPED 2026-06-10 — [PR #71](https://github.com/danybgoode/miyagisanchezcommerce/pull/71) squash-merged `973f69d` (Daniel-authorized; fresh-reviewer APPROVE, green CI). Branch deleted.

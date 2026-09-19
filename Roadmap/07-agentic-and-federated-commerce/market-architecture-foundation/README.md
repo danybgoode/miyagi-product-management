@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: market-architecture-foundation
+title: "Market architecture foundation — owned shops, country marketplaces, and locale"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 12
 ---
 
 # Epic: Market architecture foundation — owned shops, country marketplaces, and locale

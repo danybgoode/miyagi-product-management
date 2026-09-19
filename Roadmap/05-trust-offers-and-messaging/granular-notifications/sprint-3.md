@@ -1,3 +1,12 @@
+---
+epic: granular-notifications
+sprint: 3
+title: The money-path event + completeness
+risk: high
+phase: Shipped
+stories_total: 0
+stories: []
+---
 # Sprint 3 — The money-path event + completeness
 
 > Epic: [Granular Multi-Channel Notifications](README.md) · **Risk: HIGH — Daniel merges.**

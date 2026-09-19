@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: pdp-redesign
+title: "PDP redesign: \"decide, then act\""
+area: 01-discovery-and-shopping
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 5
+stories_total: 18
 ---
 
 # Epic — PDP redesign: "decide, then act"

@@ -1,3 +1,26 @@
+---
+epic: seller-portal-rails-foundation
+sprint: 2
+title: Adoption sweep + CI token-lint
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Adoption sweep across the seller portal
+    as_a: a merchant
+    i_want: every screen to use the same status colors, buttons, cards, and toasts
+    so_that: nothing looks improvised and dark/calm mode works everywhere
+    risk: low
+    status: done
+  - id: S2.2
+    title: CI token-lint (make the one-language rule enforceable)
+    as_a: a maintainer
+    i_want: CI to reject a re-introduced dialect
+    so_that: the portal stays one language without manual review
+    risk: low
+    status: done
+---
 # Seller-portal rails foundation — Sprint 2: Adoption sweep + CI token-lint
 
 **Status:** ✅ merged 2026-07-10 — PR #211 squash `37182fa` (branch `feat/seller-portal-rails-foundation-s2`,

@@ -1,3 +1,33 @@
+---
+epic: custom-print-products
+sprint: 4
+title: Lightweight proof, agent parity + reorder
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: Lightweight proof via messaging
+    as_a: a seller
+    i_want: "to send a proof from the order screen into the existing buyer–seller conversation"
+    so_that: "the buyer approves before I print — without touching the money path"
+    risk: high
+    status: done
+  - id: S4.2
+    title: Agent parity (UCP/MCP)
+    as_a: an AI agent
+    i_want: the configurator products fully machine-readable
+    so_that: "\"pide 100 stickers de 7.5cm con este arte\" works end-to-end (AGENTS rule #3)"
+    risk: high
+    status: done
+  - id: S4.3
+    title: "\"Volver a pedir\""
+    as_a: a buyer
+    i_want: one tap to reorder a fulfilled configurator order
+    so_that: repeat sticker runs (the core print-shop revenue pattern) are trivial
+    risk: low
+    status: done
+---
 # Custom print products — Sprint 4: Lightweight proof, agent parity + reorder
 
 **Status:** ✅ merged — all 3 stories live in production.

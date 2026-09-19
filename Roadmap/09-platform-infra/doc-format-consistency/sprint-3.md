@@ -1,3 +1,19 @@
+---
+epic: doc-format-consistency
+sprint: 3
+title: Wire the automatic hook + flip required
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: PostToolUse hook + flip doc-format-guard.yml to required
+    as_a: anyone editing a Roadmap doc (human or agent)
+    i_want: drift flagged the moment I introduce it
+    so_that: "the tree can't silently re-drift the way it did before this epic"
+    risk: low
+    status: done
+---
 # Roadmap doc-format consistency — Sprint 3: Wire the automatic hook + flip required
 
 **Status:** ✅ shipped — hook wired + guard flipped required, 2026-07-15.

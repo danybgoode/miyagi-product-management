@@ -1,3 +1,33 @@
+---
+epic: admin-consolidation
+sprint: 1
+title: Admin shell + Clerk-gated hub (the chassis)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Clerk admin identity + dual-accept guard
+    as_a: a platform admin
+    i_want: to reach the admin as my signed-in Clerk self
+    so_that: "access isn't a shared URL secret and every action can be attributed to a person"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Admin shell + section registry + real hub
+    as_a: a platform admin
+    i_want: one admin home with a nav of every section
+    so_that: I stop chasing an external redirect and disconnected URLs
+    risk: high
+    status: done
+  - id: S1.3
+    title: Register existing sections + delete the orphan
+    as_a: a platform admin
+    i_want: the sections that already exist wired into the new nav
+    so_that: the shell is real on day one
+    risk: high
+    status: done
+---
 # Sprint 1 — Admin shell + Clerk-gated hub (the chassis)
 
 **Epic:** [Admin consolidation + tenant management](README.md) · **Repo:** `apps/miyagisanchez`

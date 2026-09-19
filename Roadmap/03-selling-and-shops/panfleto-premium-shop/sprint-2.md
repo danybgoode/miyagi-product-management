@@ -1,3 +1,33 @@
+---
+epic: panfleto-premium-shop
+sprint: 2
+title: "Rename + dress-up miyagiprints → panfleto"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Rename with 301 + subdomain grant
+    as_a: the shop owner
+    i_want: "the miyagiprints shop renamed to `panfleto` with the old slug aliased and the subdomain granted"
+    so_that: every existing link keeps working while the new identity takes over
+    risk: low
+    status: done
+  - id: S2.2
+    title: create_collection MCP tool
+    as_a: a seller agent
+    i_want: to create a shop collection through the MCP tool surface (not just list them)
+    so_that: "the full storefront dress-up — including collections — is genuinely agent-doable"
+    risk: low
+    status: done
+  - id: S2.3
+    title: Full brand dress-up (dogfooding the agent path)
+    as_a: a visitor
+    i_want: panfleto to read as an editorial publishing house
+    so_that: the first premium shop demonstrates what the tier means
+    risk: low
+    status: done
+---
 # Panfleto — the first premium shop — Sprint 2: Rename + dress-up miyagiprints → panfleto
 
 **Status:** ✅ ALL 3 STORIES SHIPPED + LIVE. **Sprint 1 confirmed merged** (frontend `#217`/`6c42c43`,

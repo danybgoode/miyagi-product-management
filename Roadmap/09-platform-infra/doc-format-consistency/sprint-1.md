@@ -1,3 +1,26 @@
+---
+epic: doc-format-consistency
+sprint: 1
+title: Define + build the checker (advisory, zero doc edits)
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: scripts/doc-format.mjs + the WAYS-OF-WORKING conventions section
+    as_a: an agent working on any Roadmap doc
+    i_want: a written, checkable spec for epic-README / sprint / retrospective format
+    so_that: "\"correct shape\" isn't tribal knowledge and a script can verify it"
+    risk: low
+    status: done
+  - id: S1.2
+    title: doc-format-guard.yml, advisory
+    as_a: the team
+    i_want: "the checker running in CI on every `Roadmap/` change"
+    so_that: the drift-report stays current without anyone remembering to run it by hand
+    risk: low
+    status: done
+---
 # Roadmap doc-format consistency — Sprint 1: Define + build the checker (advisory, zero doc edits)
 
 **Status:** ⬜ not started

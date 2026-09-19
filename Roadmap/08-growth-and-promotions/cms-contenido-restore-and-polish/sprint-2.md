@@ -1,3 +1,26 @@
+---
+epic: cms-contenido-restore-and-polish
+sprint: 2
+title: findability polish (fast-follow, requested 2026-07-12)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Search/filter/sort/pagination + page/URL labeling
+    as_a: Daniel
+    i_want: the key list to behave like our other admin lists (search, filter, sort, paginate) and to show which page/URL each key renders on
+    so_that: I can find a section fast and know exactly where an edit will show up
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Bulk export/import: dropdowns with a default + plain-language summary"
+    as_a: Daniel
+    i_want: the export scope fields to be dropdowns with sensible defaults instead of free-text, and a plain sentence telling me what the combination will produce
+    so_that: "I don't have to guess a valid namespace/section spelling"
+    risk: low
+    status: done
+---
 # CMS restore & polish — Sprint 2: findability polish (fast-follow, requested 2026-07-12)
 
 **Status:** ✅ merged 2026-07-12 (PR #238, squash commit `09f5421`) — CI green, `pr-reviewer`

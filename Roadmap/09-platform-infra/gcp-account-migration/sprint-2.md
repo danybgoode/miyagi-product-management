@@ -1,3 +1,26 @@
+---
+epic: gcp-account-migration
+sprint: 2
+title: "CI/CD, schedulers, monitoring — all switched off"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Cloud Build triggers on both repos (left disabled)
+    as_a: the team
+    i_want: push-to-main auto-deploy wired on the new project
+    so_that: after cutover the normal cadence just works
+    risk: low
+    status: done
+  - id: S2.2
+    title: Schedulers, monitoring, ALB (schedulers paused)
+    as_a: Daniel
+    i_want: the periodic jobs and alerting standing by on the new project
+    so_that: "cutover doesn't silently drop a cron or leave us blind"
+    risk: low
+    status: done
+---
 # GCP account migration — Sprint 2: CI/CD, schedulers, monitoring — all switched off
 
 **Status:** ✅ done 2026-07-19 — everything provisioned and verified OFF/dark

@@ -1,3 +1,33 @@
+---
+epic: promoter-funnel-fixes
+sprint: 1
+title: "`{url}` fix, no-404 CTA, promoter-aware sheet"
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Real URL in the /vende/promotor copy-paste prompt
+    as_a: a promoter recruit
+    i_want: "the \"ask your AI\" prompt to contain a real URL"
+    so_that: my agent can actually open and evaluate the offer
+    risk: low
+    status: done
+  - id: S1.2
+    title: The public promoter CTA never 404s
+    as_a: a promoter recruit
+    i_want: "\"Abrir mi panel para cerrar\" to always reach a useful next step"
+    so_that: I never hit a dead 404
+    risk: low
+    status: done
+  - id: S1.3
+    title: "Promoter/seller-aware \"Agente IA\" sheet"
+    as_a: a prospective seller/promoter
+    i_want: the navbar agent sheet to pitch selling/recruiting on seller/promoter pages
+    so_that: "the hand-off matches what I'm reading"
+    risk: low
+    status: done
+---
 # Promoter funnel fixes — Sprint 1: `{url}` fix, no-404 CTA, promoter-aware sheet
 
 **Status:** ✅ shipped 2026-07-02 — PR [#157](https://github.com/danybgoode/miyagisanchezcommerce/pull/157)

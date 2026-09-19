@@ -1,3 +1,40 @@
+---
+epic: bulk-import-migration
+sprint: 2
+title: Pega y publica (on-site AI parse)
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: "The \"Magic Input\" with capacity guardrails"
+    as_a: a seller
+    i_want: a single text box where I can dump anything about my products
+    so_that: "I don't have to format a file"
+    risk: high
+    status: done
+  - id: S2.2
+    title: In-app structured extraction
+    as_a: a seller
+    i_want: the platform to turn my text into structured products
+    so_that: I get a real catalog from a paragraph
+    risk: high
+    status: done
+  - id: S2.3
+    title: Defensive handling (cost + safety)
+    as_a: the platform
+    i_want: extraction to be cheap and safe
+    so_that: "onboarding can't be abused or run up a bill"
+    risk: high
+    status: done
+  - id: S2.4
+    title: Review, correct, import
+    as_a: a seller
+    i_want: to fix small mistakes before publishing
+    so_that: I trust what goes live
+    risk: high
+    status: done
+---
 # Sprint 2 — Pega y publica (on-site AI parse)
 
 Goal: the "wow" onboarding moment. A non-technical seller pastes a block of messy text — a Notes

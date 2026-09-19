@@ -1,3 +1,33 @@
+---
+epic: discovery-polish
+sprint: 1
+title: Listing-type taxonomy (filterable)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Forward listing_type through search
+    as_a: a buyer
+    i_want: "the search to accept a `listing_type` filter"
+    so_that: I can narrow to products, services, rentals, digital goods, or subscriptions
+    risk: low
+    status: done
+  - id: S1.2
+    title: Type selector in the search UI
+    as_a: a buyer
+    i_want: a visible type filter
+    so_that: "I can pick \"servicios\" without editing the URL"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Cards show listing type
+    as_a: a buyer
+    i_want: each listing card to show its type
+    so_that: "a service doesn't look like a product at a glance"
+    risk: low
+    status: done
+---
 # Sprint 1 — Listing-type taxonomy (filterable)
 
 > Epic: [Discovery Polish](README.md) · **Risk: LOW** (read-only discovery; no shared layout).

@@ -1,3 +1,26 @@
+---
+epic: marketplace-static-shell
+sprint: 3
+title: Personalization endpoint on Cloud Run (Phase 2)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Decide the endpoint home (plan-mode gate)
+    as_a: the builder
+    i_want: the endpoint placed without muddying the data-domain boundary
+    so_that: "it's clean to own"
+    risk: low
+    status: done
+  - id: S3.2
+    title: Clerk-JWT-gated personalization read endpoint
+    as_a: a signed-in visitor
+    i_want: my home personalization served from GCP
+    so_that: the homepage can stay static while still greeting me
+    risk: high
+    status: done
+---
 # Static marketplace shell — Sprint 3: Personalization endpoint on Cloud Run (Phase 2)
 
 **Status:** 🏗️ **BUILT — pre-merge** (branch `feat/static-shell-personalization-endpoint` in `apps/backend` +

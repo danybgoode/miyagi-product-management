@@ -1,3 +1,12 @@
+---
+epic: mercadolibre-sync
+sprint: 6
+title: Sprint 6
+risk: high
+phase: Shipped
+stories_total: 0
+stories: []
+---
 # Mercado Libre sync — Sprint 6 (fast-follow): make ML sync obtainable + discoverable
 
 **Status:** ✅ **MERGED + DEPLOYED (LIVE) 2026-07-01.** The S5 ML-sync entitlement gate is now usable: a seller

@@ -1,3 +1,40 @@
+---
+epic: cost-comparator-homepage
+sprint: 1
+title: Calculator + dataset + teaser
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Pure cost model
+    as_a: a merchant
+    i_want: my stacked platform costs computed correctly from my volume, AOV, plan tier, commission band, and paid apps
+    so_that: the comparison is arithmetic, not marketing
+    risk: low
+    status: done
+  - id: S1.2
+    title: Sourced, editable dataset
+    as_a: an admin
+    i_want: every competitor figure sourced + dated and editable without a deploy
+    so_that: the tool stays honest as prices change
+    risk: low
+    status: done
+  - id: S1.3
+    title: "/comparador calculator UI"
+    as_a: a merchant (or consultant on a phone)
+    i_want: an anonymous, mobile-first calculator with stacked cost bars
+    so_that: "I see my real numbers next to Miyagi's in under a minute"
+    risk: low
+    status: done
+  - id: S1.4
+    title: Homepage teaser + attribution
+    as_a: a visitor
+    i_want: to discover the comparator from the homepage
+    so_that: the sales tool actually gets traffic
+    risk: low
+    status: done
+---
 # Comparador de costos — Sprint 1: Calculator + dataset + teaser
 
 **Status:** ✅ built, PR open — merge + Daniel's browser smoke owed (see below)

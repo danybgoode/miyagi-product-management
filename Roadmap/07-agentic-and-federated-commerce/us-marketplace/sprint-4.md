@@ -1,3 +1,33 @@
+---
+epic: us-marketplace
+sprint: 4
+title: USD checkout
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S4.1
+    title: Charge USD through Stripe Connect direct charges
+    as_a: a US seller
+    i_want: card payments to land in my own Stripe account
+    so_that: I am the merchant of record and keep the full amount
+    risk: high
+    status: done
+  - id: S4.2
+    title: Fulfill a US order on arranged and manual-carrier delivery
+    as_a: a US seller
+    i_want: to ship the order with my own carrier
+    so_that: I can fulfill without waiting on a platform shipping integration
+    risk: high
+    status: done
+  - id: S4.3
+    title: Make US orders, receipts, emails and refunds correct in USD
+    as_a: a US buyer
+    i_want: my order, receipt and refund to be right
+    so_that: I trust what I paid
+    risk: high
+    status: done
+---
 # US marketplace — Sprint 4: USD checkout
 
 **Status:** ✅ shipped — 2026-08-12 · **one real-money step still owed to Daniel**

@@ -1,3 +1,33 @@
+---
+epic: frontend-vercel-to-cloudrun
+sprint: 2
+title: Cloudflare edge + GCP origin
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Cloudflare zone staged from the real Vercel zone export → NS flip"
+    as_a: a platform operator
+    i_want: "the `miyagisanchez.com` zone staged in Cloudflare from the real Vercel zone export — Clerk + all 3 email systems verified record-by-record — then the NS flipped with every record still targeting Vercel (apex/wildcard DNS-only, not proxied)"
+    so_that: DNS moves without touching traffic
+    risk: high
+    status: done
+  - id: S2.2
+    title: External ALB + serverless NEG + origin certs + header passthrough
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.3
+    title: WAF/bot parity with Vercel Bot Protection
+    as_a: a platform operator
+    i_want: "Cloudflare WAF/bot rules matching what Vercel's firewall mitigates today (probe paths like `/l/wp-admin` → 403 at the edge)"
+    so_that: "cutover doesn't newly expose the app to bot traffic Vercel was absorbing"
+    risk: low
+    status: done
+---
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 2: Cloudflare edge + GCP origin
 
 **Status:** ✅ **All 3 stories done 2026-07-10.** Traffic still 100% on Vercel — Sprint 2 proved the

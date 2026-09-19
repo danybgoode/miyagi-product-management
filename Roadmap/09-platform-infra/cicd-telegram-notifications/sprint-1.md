@@ -1,3 +1,19 @@
+---
+epic: cicd-telegram-notifications
+sprint: 1
+title: "Push-to-main notifications (both repos) · the skateboard"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Push-to-main ping, both repos
+    as_a: Daniel
+    i_want: "a Telegram ping the moment code lands on `main` of either repo"
+    so_that: I see movement instantly without watching GitHub
+    risk: low
+    status: done
+---
 # Sprint 1 — Push-to-main notifications (both repos) · the skateboard
 
 Establishes the dedicated CI/CD channel, the shared HTML message style, and the secret wiring — the

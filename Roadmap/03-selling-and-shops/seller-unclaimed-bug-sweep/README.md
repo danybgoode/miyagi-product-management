@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seller-unclaimed-bug-sweep
+title: "Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic: Seller & unclaimed-shop bug sweep — ✅ COMPLETE 2026-06-10

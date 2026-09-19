@@ -1,3 +1,26 @@
+---
+epic: dev-tooling-reliability
+sprint: 1
+title: Backend CI gate
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Backend ci.yml on pull_request
+    as_a: a developer opening a backend PR
+    i_want: GitHub Actions to type-check, build, and unit-test the backend automatically
+    so_that: "a broken backend can't reach `main` (and thus Cloud Run) unnoticed"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Make it the merge gate + correct the docs
+    as_a: a reviewer
+    i_want: the CI check to actually block a red backend merge and the docs to say so
+    so_that: WAYS reflects reality (it currently implies the backend already has a tsc+build gate)
+    risk: low
+    status: done
+---
 # Dev-tooling reliability — Sprint 1: Backend CI gate
 
 **Status:** ✅ **MERGED** — backend **PR #29** squash-merged to `main` (`21b1e16`), gate **green on first CI run** (2m2s). The `Type-check + build + unit` check is now a **required status check** on the backend repo's `main` (branch protection configured 2026-06-14), so a red run blocks merge. Advisory cross-agent review (Antigravity — codex token revoked) returned two false positives, both declined with rationale on the PR. Owed: only the destructive red-path smoke (steps 2–4) on a throwaway branch, if you want it exercised live.

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: checkout-state-hardening
+title: Checkout & Manual-Payment State Hardening
+area: 02-checkout-and-payments
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 9
 ---
 
 # Epic — Checkout & Manual-Payment State Hardening

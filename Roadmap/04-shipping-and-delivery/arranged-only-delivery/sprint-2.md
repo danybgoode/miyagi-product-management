@@ -1,3 +1,26 @@
+---
+epic: arranged-only-delivery
+sprint: 2
+title: Agent parity + consistency hardening (the car)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Agent/UCP arranged-only surface (MED — reviewer may merge on green CI)"
+    as_a: "a buyer's AI agent"
+    i_want: the checkout session to tell me a listing is delivered by coordination
+    so_that: "I present \"coordina la entrega con el vendedor\" instead of implying shipping or offering a card"
+    risk: high
+    status: done
+  - id: S2.2
+    title: "Close the service/rental card-payment hole (HIGH — Daniel merges)"
+    as_a: the platform
+    i_want: service and rental listings to enforce manual payment like any coordinated delivery
+    so_that: "a buyer can't pay by card for something that fulfills by in-person coordination"
+    risk: high
+    status: done
+---
 # Sprint 2 — Agent parity + consistency hardening (the car)
 
 **Epic:** [Arranged-only delivery](README.md) · **Risk: MIXED (MED + HIGH)** · **Status: ✅ MERGED to

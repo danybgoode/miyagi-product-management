@@ -1,3 +1,33 @@
+---
+epic: hyper-performant-runtime
+sprint: 2
+title: "Edge — make the public shell cacheable"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: The public read subtree stops being dynamic
+    as_a: a buyer on a product page
+    i_want: "opening the merchant's shop to be instant"
+    so_that: "browsing a seller's catalog doesn't feel like waiting for a server"
+    risk: high
+    status: done
+  - id: S2.2
+    title: "Cloudflare caches the public read paths, proven MISS→HIT"
+    as_a: a returning visitor
+    i_want: the second person to open a shop today to get it from the edge
+    so_that: "popular shops don't re-render per visitor"
+    risk: high
+    status: done
+  - id: S2.3
+    title: A guard so revalidate can never silently lie again
+    as_a: a future builder
+    i_want: the build to fail when a route declares a caching policy it cannot honour
+    so_that: nobody spends another month trusting a no-op
+    risk: low
+    status: done
+---
 # Hyper-performant runtime — Sprint 2: Edge — make the public shell cacheable
 
 **Status:** 🟩 shipped — frontend revision `miyagi-web-00134-qtq`; Cloudflare invariant EXACT

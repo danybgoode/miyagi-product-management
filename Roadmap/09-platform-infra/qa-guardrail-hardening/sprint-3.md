@@ -1,3 +1,26 @@
+---
+epic: qa-guardrail-hardening
+sprint: 3
+title: the owed ledger, generated
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: "scripts/owed-ledger.mjs ⬜"
+    as_a: a product owner
+    i_want: one command that tells me how much manual QA debt is outstanding
+    so_that: I have a real number instead of a spec-count proxy
+    risk: low
+    status: done
+  - id: S3.2
+    title: "commit the report, wire the count where it is read ⬜"
+    as_a: a product owner
+    i_want: the number where I already look
+    so_that: it stops being something I have to ask for
+    risk: low
+    status: done
+---
 # QA guardrail hardening — Sprint 3: the owed ledger, generated
 
 **Status:** ⬜ not started

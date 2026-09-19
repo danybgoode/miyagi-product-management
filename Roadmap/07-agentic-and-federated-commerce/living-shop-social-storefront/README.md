@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: living-shop-social-storefront
+title: "Living Shop — social storefront + expressive customization"
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 8
+stories_total: 41
 ---
 
 # Epic: Living Shop — social storefront + expressive customization

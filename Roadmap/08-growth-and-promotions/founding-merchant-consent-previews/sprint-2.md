@@ -1,3 +1,33 @@
+---
+epic: founding-merchant-consent-previews
+sprint: 2
+title: Approval and activation
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Merchant-readable versioned approval
+    as_a: a merchant
+    i_want: to review exactly what Miyagi will publish and approve or request changes
+    so_that: activation is informed and explicit
+    risk: high
+    status: done
+  - id: S2.2
+    title: Material-edit invalidation
+    as_a: the system
+    i_want: material changes after approval to invalidate it
+    so_that: stale consent cannot publish new claims, products or prices
+    risk: high
+    status: done
+  - id: S2.3
+    title: Idempotent public activation
+    as_a: a Founding Merchant Partner
+    i_want: one deliberate activation action after approval
+    so_that: the exact approved snapshot becomes public once
+    risk: high
+    status: done
+---
 # Founding merchant consent-safe previews — Sprint 2: Approval and activation
 
 **Status:** ✅ Merged — FE #294 (`626f0b1`); flag OFF, S2 migration NOT yet applied, smoke owed to Daniel

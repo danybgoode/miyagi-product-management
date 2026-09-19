@@ -1,3 +1,26 @@
+---
+epic: groom-archetype-lens
+sprint: 1
+title: wire the optional Stage-2 tag
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Optional archetype tag + cues in groom Stage 2
+    as_a: a groomer (Cowork planning session)
+    i_want: an optional archetype tag with per-archetype cues at Stage 2
+    so_that: "an ask's mode (Sweeper/Grower/etc"
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Optional archetype: line in the epic README template"
+    as_a: a groomer
+    i_want: "an optional `archetype:` field in the epic README house format"
+    so_that: a tagged epic records its archetype
+    risk: low
+    status: done
+---
 # Groom archetype-lens — Sprint 1: wire the optional Stage-2 tag
 
 **Status:** ✅ done — `00b7e50` (Story 1.1), `1fa7b1c` (Story 1.2)

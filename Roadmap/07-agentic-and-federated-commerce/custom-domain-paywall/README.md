@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: custom-domain-paywall
+title: Custom-domain paywall + campaign coupon
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 9
 ---
 
 # Epic: Custom-domain paywall + campaign coupon

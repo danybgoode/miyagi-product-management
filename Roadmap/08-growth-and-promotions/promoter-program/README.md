@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: promoter-program
+title: "Promoter Program — in-person seller acquisition force (commission-paid)"
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 12
 ---
 
 # Epic · Promoter Program — in-person seller acquisition force (commission-paid)

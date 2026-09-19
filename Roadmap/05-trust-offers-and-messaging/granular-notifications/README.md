@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: granular-notifications
+title: Granular Multi-Channel Notifications (Email + Telegram)
+area: 05-trust-offers-and-messaging
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic — Granular Multi-Channel Notifications (Email + Telegram)

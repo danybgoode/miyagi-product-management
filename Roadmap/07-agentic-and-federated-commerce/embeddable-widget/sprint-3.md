@@ -1,3 +1,26 @@
+---
+epic: embeddable-widget
+sprint: 3
+title: Seller snippet generator + theming/bilingual
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: "\"Pon tu tienda en cualquier web\" settings section"
+    as_a: a seller
+    i_want: a copy-paste snippet with a live preview
+    so_that: I can add my widget to my site without reading docs
+    risk: high
+    status: done
+  - id: S3.2
+    title: Theming + bilingual tokens
+    as_a: a seller
+    i_want: "the widget to match my brand color and my visitors' language"
+    so_that: "it doesn't look bolted-on"
+    risk: high
+    status: done
+---
 # Sprint 3 — Seller snippet generator + theming/bilingual
 
 Goal: close the loop so a seller can actually *get* their widget — a copy-paste snippet from their settings,

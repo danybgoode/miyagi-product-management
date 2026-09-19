@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: hyper-performant-website
+title: Hyper-performant website
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 2
+stories_total: 6
 ---
 
 # Epic: Hyper-performant website

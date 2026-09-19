@@ -1,3 +1,26 @@
+---
+epic: domain-coupon-mint-fix
+sprint: 1
+title: Diagnose, unmask, harden + test-mode rehearsal
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: diagnostic findings (so far)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.2
+    title: ROOT CAUSE CONFIRMED (prod retry, 2026-06-23)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Domain-coupon mint fix — Sprint 1: Diagnose, unmask, harden + test-mode rehearsal
 
 **Status:** ✅ MERGED to prod — PR [#118](https://github.com/danybgoode/miyagisanchezcommerce/pull/118) squashed `cc73a26` (CI green, codex cross-review clean, low-risk). S1.3 mode/scope read + the live card-4242 smoke remain owed to Daniel.

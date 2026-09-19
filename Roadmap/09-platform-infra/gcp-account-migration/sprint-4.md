@@ -1,3 +1,19 @@
+---
+epic: gcp-account-migration
+sprint: 4
+title: decommission the old project
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S4.1
+    title: Tear down the old project
+    as_a: Daniel
+    i_want: to stop paying for the old stack
+    so_that: the migration is actually finished
+    risk: low
+    status: done
+---
 # GCP account migration — Sprint 4: decommission the old project
 
 **Status:** ✅ COMPLETE 2026-07-28 (9-day soak) — every step executed and verified, including the

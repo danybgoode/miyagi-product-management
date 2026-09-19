@@ -1,3 +1,33 @@
+---
+epic: configurable-personalized-products
+sprint: 1
+title: Merchant configuration
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Define the data model + shared helpers
+    as_a: a platform
+    i_want: one shared definition of what a custom field is
+    so_that: every stage (config, buy box, cart, order, email) reads and validates it the same way
+    risk: high
+    status: done
+  - id: S1.2
+    title: Seller adds custom fields to a listing
+    as_a: a seller
+    i_want: to add custom input fields to a product (a label, a type, optional/ required, a max length)
+    so_that: buyers can personalize it
+    risk: high
+    status: done
+  - id: S1.3
+    title: Persist to the product
+    as_a: a seller
+    i_want: my custom fields saved with the listing
+    so_that: "they're there when I come back"
+    risk: high
+    status: done
+---
 # Sprint 1 — Merchant configuration
 
 Goal: a seller can attach custom input fields to a listing and they persist — the data foundation

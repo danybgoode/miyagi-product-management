@@ -1,3 +1,26 @@
+---
+epic: support-widget
+sprint: 2
+title: Embedded Lightbox UX
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Support widget shell
+    as_a: a supporter
+    i_want: a compact widget that opens a lightbox on the current page
+    so_that: I do not lose my reading context
+    risk: high
+    status: done
+  - id: S2.2
+    title: Supporter inputs
+    as_a: a supporter
+    i_want: preset/custom amount, optional name/email/message, and public/private controls
+    so_that: the contribution feels fast and personal
+    risk: high
+    status: done
+---
 # Sprint 2 - Embedded Lightbox UX
 
 Goal: ship the external-site support surface: a lightweight custom element that opens a host-page lightbox and

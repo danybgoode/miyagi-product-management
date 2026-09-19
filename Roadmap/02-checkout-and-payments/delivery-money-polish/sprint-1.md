@@ -1,3 +1,33 @@
+---
+epic: delivery-money-polish
+sprint: 1
+title: Two-sided refund state machine (off-platform-aware)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Persist a durable derived refund_state
+    as_a: the system
+    i_want: "the refund lifecycle persisted as one durable derived state (`solicitado → aceptado → transferencia_pendiente → confirmado`, + `rechazado`; card rail auto-confirms)"
+    so_that: "buyer, seller, and agents read one source of truth instead of an overstated \"refunded\""
+    risk: high
+    status: done
+  - id: S1.2
+    title: Seller records an off-platform (SPEI/cash) transfer
+    as_a: a seller
+    i_want: "accepting a SPEI/cash refund to set \"transferencia pendiente\" (not \"emitido\")"
+    so_that: "the buyer isn't told money arrived before I actually sent it"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Buyer confirms receipt
+    as_a: a buyer
+    i_want: to confirm I received the refund
+    so_that: "\"Reembolso confirmado\" reflects reality, not just the seller's say-so"
+    risk: high
+    status: done
+---
 # Sprint 1 — Two-sided refund state machine (off-platform-aware)
 
 > Epic: [Delivery & Manual-Money Polish](README.md) · **Risk: HIGH — Daniel merges every story**

@@ -1,3 +1,33 @@
+---
+epic: zine-editing-central
+sprint: 1
+title: the bridge (a real paid ad lands in zine)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Move zine into the monorepo as apps/zine
+    as_a: Daniel (editor)
+    i_want: "the zine studio living at `apps/zine` with identical behavior"
+    so_that: "it can share the repo's print templates and integrate without copy-paste drift"
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Print-studio API: token-gated reads + placed write-back"
+    as_a: the zine studio (a headless machine client with no Clerk session)
+    i_want: "a `withPrintStudio` guard (Clerk admin OR `PRINT_STUDIO_TOKEN` Bearer) over: list open editions, list an edition's paid/approved ad submissions, list approved social submissions, catalog search, and a write endpoint flipping a submission `approved ⇄ placed`"
+    so_that: zine can read real marketplace data and keep advertiser status truthful
+    risk: high
+    status: done
+  - id: S1.3
+    title: "\"Anuncios pagados\" drawer in zine"
+    as_a: Daniel (editor)
+    i_want: "to browse the current edition's paid ads inside zine and place one into a booklet ad slot, rendered with the merchant's template + content verbatim (photos from their R2 URLs)"
+    so_that: sold ads land in the real magazine without retyping
+    risk: low
+    status: done
+---
 # Zine editing central — Sprint 1: the bridge (a real paid ad lands in zine)
 
 **Status:** ✅ Sprint 1 complete — all 3 stories merged

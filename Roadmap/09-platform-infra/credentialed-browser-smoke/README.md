@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: credentialed-browser-smoke
+title: "Credentialed browser smoke — wire the switch, and count what still skips"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Credentialed browser smoke — wire the switch, and count what still skips

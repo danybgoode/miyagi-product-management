@@ -1,3 +1,33 @@
+---
+epic: catalog-management
+sprint: 5
+title: "Nav SSOT layer (flag-safe nav · mobile bar · one import door)"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S5.1
+    title: Flag-safe nav parity (R13)
+    as_a: a seller
+    i_want: nav entries to appear only when their page actually exists
+    so_that: I never tap a rail/sheet item into a 404
+    risk: low
+    status: done
+  - id: S5.2
+    title: Mobile bar redesign (F5)
+    as_a: a seller on a phone
+    i_want: "a Publicar action and a sanely-grouped \"Más\""
+    so_that: "every dashboard action is reachable in ≤2 taps"
+    risk: low
+    status: done
+  - id: S5.3
+    title: "One import door + mobile restore (F7, change #3)"
+    as_a: a seller
+    i_want: the catalog importer reachable on mobile
+    so_that: "import isn't desktop-only"
+    risk: low
+    status: done
+---
 # Catalog management — Sprint 5: Nav SSOT layer (flag-safe nav · mobile bar · one import door)
 
 **Status:** ✅ MERGED 2026-07-11 — FE PR [#216](https://github.com/danybgoode/miyagisanchezcommerce/pull/216) squash `4b5b831`. **Sequence gate: build after S3 merges** (nav/shell work must not collide with S3's open PRs) — satisfied, S3 merged 2026-07-09. Independent of S4's table columns.

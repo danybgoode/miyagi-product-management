@@ -1,3 +1,33 @@
+---
+epic: agent-connection
+sprint: 1
+title: Accurate agent docs + drift-proof source of truth
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Single source of truth for capabilities
+    as_a: the platform
+    i_want: endpoint + tool metadata defined once
+    so_that: "agent docs can't drift from the real API"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Correct the public /agent briefing
+    as_a: an AI agent
+    i_want: the briefing to list real endpoints
+    so_that: "I don't 404"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Manifest full capability set + .well-known discovery
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 1 — Accurate agent docs + drift-proof source of truth
 
 Goal: an AI agent that discovers Miyagi hits only real endpoints and sees the full current toolset

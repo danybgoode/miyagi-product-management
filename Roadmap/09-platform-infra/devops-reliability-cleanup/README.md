@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: devops-reliability-cleanup
+title: "DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)"
+area: 09-platform-infra
+risk: low
+type: bug
+phase: Shipped
+sprints_total: 2
+stories_total: 4
 ---
 
 # Epic — DevOps reliability cleanup (smoke · backup alert · tenant ping · agy reviewer)

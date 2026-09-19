@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: cicd-telegram-notifications
+title: Unified CI/CD + Git event notifications via Telegram
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 3
 ---
 
 # Epic — Unified CI/CD + Git event notifications via Telegram

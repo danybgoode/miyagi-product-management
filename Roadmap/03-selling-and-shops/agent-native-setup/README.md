@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: agent-native-setup
+title: "Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic: Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)

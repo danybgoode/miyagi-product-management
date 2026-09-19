@@ -1,3 +1,26 @@
+---
+epic: subdomain-pricing
+sprint: 2
+title: Paid yearly checkout + lapse + pricing/SKU/UCP surface
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Paid yearly checkout + graceful lapse
+    as_a: a seller (or a promoter on their behalf)
+    i_want: to buy the subdomain for a year and have it go white-label
+    so_that: my shop feels independent without buying a domain
+    risk: high
+    status: done
+  - id: S2.2
+    title: Pricing copy + promoter SKU + agent surface
+    as_a: anyone comparing tiers
+    i_want: "the subdomain price on `/acerca` (es + en)"
+    so_that: "it's clear; as a promoter, the subdomain is a sellable SKU (code discount + commission %); as an agent, the subdomain SKU + cadence are reachable over UCP/MCP"
+    risk: high
+    status: done
+---
 # Subdomain pricing — Sprint 2: Paid yearly checkout + lapse + pricing/SKU/UCP surface
 
 **Status:** ✅ MERGED 2026-06-30 — be #47 (squash, deployed rev `medusa-web-00120-vrk`) · fe #146.

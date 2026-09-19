@@ -1,3 +1,40 @@
+---
+epic: homepage-seleccion-curation
+sprint: 2
+title: Admin curation (pin/unpin + reorder)
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.0
+    title: "Pre-flight (investigation, no feature code) ·"
+    as_a: the builder
+    i_want: to confirm the Medusa-first write path before building the admin write
+    so_that: "we don't invent a Supabase pin or a redundant route"
+    risk: high
+    status: done
+  - id: S2.1
+    title: "Admin write path: toggle + rank a product's featured state"
+    as_a: an admin
+    i_want: "to set/unset a product's featured pin and its order"
+    so_that: "I control the Selección"
+    risk: high
+    status: done
+  - id: S2.2
+    title: "/admin/seleccion UI (pin/unpin + reorder), in the admin nav"
+    as_a: an admin
+    i_want: a screen listing candidate products with pin toggles and drag-reorder
+    so_that: I curate without touching Medusa admin directly
+    risk: high
+    status: done
+  - id: S2.3
+    title: Curation reads honor admin order
+    as_a: a buyer
+    i_want: "the featured pick + grid to reflect the admin's chosen order"
+    so_that: merchandising is intentional
+    risk: high
+    status: done
+---
 # Sprint 2 — Admin curation (pin/unpin + reorder)
 
 **Epic:** [Homepage Selección: bug sweep + admin curation + dynamic rotation](README.md) · **Repo:** `apps/miyagisanchez` (+ possible tiny `apps/backend`)

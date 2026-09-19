@@ -1,3 +1,33 @@
+---
+epic: cms-contenido-restore-and-polish
+sprint: 1
+title: Restore the save path + editor polish
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Apply the platform_copy_overrides migration to prod
+    as_a: Daniel (admin)
+    i_want: the overrides table to actually exist in prod
+    so_that: "my `/admin/contenido` edits persist instead of erroring"
+    risk: high
+    status: done
+  - id: S1.2
+    title: "Regression spec + actionable \"store unavailable\" error"
+    as_a: an admin
+    i_want: a clear message when the override store is unreachable/missing
+    so_that: an inert store can never again hide behind a generic error for two days
+    risk: low
+    status: done
+  - id: S1.3
+    title: Editor polish + live before/after preview
+    as_a: Daniel
+    i_want: to see the copy as it will render before saving
+    so_that: editing feels like a real CMS, not a key-value form
+    risk: low
+    status: done
+---
 # CMS restore & polish — Sprint 1: Restore the save path + editor polish
 
 **Status:** ✅ merged 2026-07-12 (PR #236, squash commit `9a1b9a4`) — deterministic gate green

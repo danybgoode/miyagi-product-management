@@ -1,3 +1,26 @@
+---
+epic: vercel-function-cost-reduction
+sprint: 2
+title: "/_not-found cost — Bot Protection + cheap 404"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Enable Vercel Bot Protection 🔲 owed to Daniel (dashboard toggle, no code)"
+    as_a: the platform
+    i_want: "Vercel's managed Bot Protection turned on (it's currently Inactive*)"
+    so_that: known bad-bot/scanner traffic is challenged before it invokes functions on dead URLs
+    risk: low
+    status: done
+  - id: S2.2
+    title: Short-circuit notFound() before the data fetch + cache the 404
+    as_a: the platform
+    i_want: the dynamic listing/shop routes to 404 without an upstream Medusa fetch when the id/slug is obviously invalid, and to serve the 404 with a cache header
+    so_that: "repeat scanner hits don't burn Fluid Active CPU on a doomed fetch"
+    risk: low
+    status: done
+---
 # Vercel function & Fluid-CPU cost reduction — Sprint 2: /_not-found cost — Bot Protection + cheap 404
 
 **Status:** ✅ Story 2.2 (cheap cached 404) **MERGED to `main`** via [frontend PR #92](https://github.com/danybgoode/miyagisanchezcommerce/pull/92) (squash `db3c0a3`) → live on Vercel prod; CI green (incl. Playwright-vs-preview HTTP assertions) + antigravity cross-review clean. Story 2.1 (Bot Protection dashboard toggle) is **owed to Daniel** — flagged in the PR, no code.

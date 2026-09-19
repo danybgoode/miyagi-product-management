@@ -1,3 +1,26 @@
+---
+epic: agent-readable-about-surface
+sprint: 1
+title: Content source + /acerca human page
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Structured bilingual content source
+    as_a: a maintainer
+    i_want: the supply-side/about story in one structured bilingual source
+    so_that: every surface (human + agent) renders from one place without drift
+    risk: low
+    status: done
+  - id: S1.2
+    title: "/acerca human page (es/en)"
+    as_a: a prospective seller (or their agent)
+    i_want: "one page that explains what Miyagi is, why sell here, how to start, what it costs, and who's behind it"
+    so_that: I can decide and begin
+    risk: low
+    status: done
+---
 # Agent-readable why-sell / about surface — Sprint 1: Content source + /acerca human page
 
 **Status:** ✅ SHIPPED 2026-06-09 — [PR #57](https://github.com/danybgoode/miyagisanchezcommerce/pull/57)

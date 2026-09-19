@@ -1,3 +1,54 @@
+---
+epic: mcp-parity-core
+sprint: 1
+title: Unblock the launchpad + cheap hygiene wins
+risk: low
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S1.1
+    title: Campaign CRUD over MCP
+    as_a: a shop agent
+    i_want: to create, edit, activate, and cancel launchpad campaigns via MCP
+    so_that: I can run an open call end-to-end without the seller portal
+    risk: low
+    status: done
+  - id: S1.2
+    title: Manuscript review + publish over MCP
+    as_a: a shop agent
+    i_want: to move a manuscript through review and publish an approved one
+    so_that: editorial review is agent-operable
+    risk: low
+    status: done
+  - id: S1.3
+    title: launchpad block in patch_store_configuration
+    as_a: a shop agent
+    i_want: "to toggle \"acepta manuscritos\" and set submission guidelines via config"
+    so_that: a shop can opt into the launchpad without a portal visit
+    risk: low
+    status: done
+  - id: S1.4
+    title: Manifest sync (permanent drift guard)
+    as_a: an agent discovering capabilities
+    i_want: the manifest to list every dispatched tool
+    so_that: "I don't under-call a surface that actually exists"
+    risk: low
+    status: done
+  - id: S1.5
+    title: "Fix update_listing's title-validation drift"
+    as_a: a shop agent
+    i_want: an oversized or empty title rejected with a clear error
+    so_that: "it isn't silently truncated behind my back"
+    risk: low
+    status: done
+  - id: S1.6
+    title: e2e coverage for the two untested read tools
+    as_a: a maintainer
+    i_want: "behavioral specs for `list_launchpad_campaigns` and `list_manuscript_submissions`"
+    so_that: the launchpad read surface has a regression net
+    risk: low
+    status: done
+---
 # MCP parity core — Sprint 1: Unblock the launchpad + cheap hygiene wins
 
 **Status:** ✅ MERGED + LIVE — PR [#237](https://github.com/danybgoode/miyagisanchezcommerce/pull/237)

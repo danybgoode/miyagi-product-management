@@ -1,3 +1,33 @@
+---
+epic: promoter-program
+sprint: 3
+title: "Commission ledger (% per item, first-payment only)"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "Per-SKU commission % config (admin)"
+    as_a: admin
+    i_want: "to set a commission % per SKU"
+    so_that: I can tune the economics without a deploy (mirrors the referral-settings admin pattern)
+    risk: low
+    status: done
+  - id: S3.2
+    title: Commission accrual + promoter dashboard
+    as_a: a promoter
+    i_want: to see commission earned/pending on my paid, attributed sales
+    so_that: "I know what I'm owed"
+    risk: high
+    status: done
+  - id: S3.3
+    title: Admin settlement view (mark paid, offline)
+    as_a: admin
+    i_want: to mark commissions paid after settling in cash/transfer
+    so_that: the ledger reflects reality
+    risk: low
+    status: done
+---
 # Promoter Program — Sprint 3: Commission ledger (% per item, first-payment only)
 
 **Status:** ✅ MERGED 2026-06-30 — PR [#141](https://github.com/danybgoode/miyagisanchezcommerce/pull/141) squash `fff04ca` (HIGH: DB migration; Daniel-authorized merge). Additive on S1–S2. **Settlement is offline (no in-app payout).** Migration applied to prod Supabase; `promoter.enabled` flipped **on**.

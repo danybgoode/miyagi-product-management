@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: embeddable-widget
+title: Embeddable Widget
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic · Embeddable Widget

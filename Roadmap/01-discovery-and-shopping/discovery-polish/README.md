@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: discovery-polish
+title: Discovery Polish
+area: 01-discovery-and-shopping
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic — Discovery Polish

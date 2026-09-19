@@ -1,3 +1,26 @@
+---
+epic: ui-refresh-launch
+sprint: 2
+title: "Polish passes — buyer core + marketing"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Polish pass: buyer core (home, /l, PDP)"
+    as_a: a buyer
+    i_want: "the launch-visible surfaces to carry the new feel beyond what tokens alone express — spacing rhythm, card hierarchy, motion on interactions, calm content-first reading on PDP"
+    so_that: the first impression is top-shelf
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Polish pass: marketing pages (/vende, /acerca, /agent)"
+    as_a: a seller prospect (or their AI)
+    i_want: the campaign pages polished to the same standard
+    so_that: the ad-driven first touch matches the product
+    risk: low
+    status: done
+---
 # UI refresh before launch — Sprint 2: Polish passes — buyer core + marketing
 
 **Status:** 🟨 in progress — both stories built, PR open (`feat/ui-refresh-s2`, PR #282 against

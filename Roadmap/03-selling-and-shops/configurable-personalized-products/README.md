@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: configurable-personalized-products
+title: Configurable & Personalized Products
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 10
 ---
 
 # Epic — Configurable & Personalized Products

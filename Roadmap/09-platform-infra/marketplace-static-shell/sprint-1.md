@@ -1,3 +1,33 @@
+---
+epic: marketplace-static-shell
+sprint: 1
+title: "Route-group split (static `(site)` vs dynamic `(channel)`)"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Carve the (site) (marketplace) and (channel) (white-label) trees
+    as_a: the platform
+    i_want: the marketplace shell decoupled from request-header channel detection
+    so_that: marketplace pages can render statically while channels stay dynamic
+    risk: high
+    status: done
+  - id: S1.2
+    title: Middleware rewrites channel/embed requests into the channel tree
+    as_a: the platform
+    i_want: custom-domain / subdomain / embed / seller-mode requests routed to the dynamic white-label tree
+    so_that: only those requests pay the dynamic render and the marketplace host stays static
+    risk: high
+    status: done
+  - id: S1.3
+    title: Prove channels unbroken
+    as_a: the platform
+    i_want: the existing channel guarantees intact
+    so_that: the split is invisible to users
+    risk: high
+    status: done
+---
 # Static marketplace shell — Sprint 1: Route-group split (static `(site)` vs dynamic `(channel)`)
 
 **Status:** ✅ **SHIPPED 2026-06-22** — [PR #101](https://github.com/danybgoode/miyagisanchezcommerce/pull/101)

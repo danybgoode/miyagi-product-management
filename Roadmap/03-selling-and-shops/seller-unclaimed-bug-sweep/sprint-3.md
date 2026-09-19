@@ -1,3 +1,26 @@
+---
+epic: seller-unclaimed-bug-sweep
+sprint: 3
+title: shop/manage UI polish
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Legible accent buttons (the 5 occurrences)
+    as_a: a seller
+    i_want: "the \"+ Nuevo anuncio\" button (and its siblings) to show its white label on green"
+    so_that: I can actually read the primary action
+    risk: low
+    status: done
+  - id: S3.2
+    title: Responsive manage sub-nav
+    as_a: a seller on a phone
+    i_want: the manage sub-nav not to clip
+    so_that: every section is reachable
+    risk: low
+    status: done
+---
 # Seller & unclaimed-shop bug sweep — Sprint 3: shop/manage UI polish
 
 **Status:** ✅ SHIPPED 2026-06-10 — [PR #76](https://github.com/danybgoode/miyagisanchezcommerce/pull/76) merged `af002c4` → Vercel prod (reviewer auto-merge on green CI) · **Risk:** LOW (frontend CSS/tokens) · **Repos:** frontend only

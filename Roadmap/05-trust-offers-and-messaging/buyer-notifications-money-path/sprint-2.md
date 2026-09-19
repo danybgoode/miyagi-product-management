@@ -1,3 +1,40 @@
+---
+epic: buyer-notifications-money-path
+sprint: 2
+title: Compras on the money path + grid unlock
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Stripe webhook routes Compras through dispatchToBuyer
+    as_a: a signed-in buyer
+    i_want: my order/payment confirmations on the channels I chose
+    so_that: the receipt reaches me in real time, not only by email
+    risk: high
+    status: done
+  - id: S2.2
+    title: MP webhook + finalize-manual route Compras the same way
+    as_a: a buyer paying via Mercado Pago or pago directo
+    i_want: the same channel choices to apply
+    so_that: Compras behaves identically across payment rails
+    risk: high
+    status: done
+  - id: S2.3
+    title: "Grid: Compras × Push/Telegram cells go live"
+    as_a: a buyer
+    i_want: the Compras Push/Telegram toggles to actually work
+    so_that: "the grid stops promising \"pronto\""
+    risk: low
+    status: done
+  - id: S2.4
+    title: "Pref centers consume { rowDeleted } on disconnect"
+    as_a: a buyer/seller disconnecting Telegram for one audience
+    i_want: the center to say whether the link was removed or kept for my other role
+    so_that: the UI reflects reality instead of optimistically showing disconnected
+    risk: low
+    status: done
+---
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 2: Compras on the money path + grid unlock
 
 **Status:** ✅ MERGED + LIVE 2026-07-08 — [PR #195](https://github.com/danybgoode/miyagisanchezcommerce/pull/195)

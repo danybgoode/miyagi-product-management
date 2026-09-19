@@ -1,3 +1,19 @@
+---
+epic: design-token-foundation
+sprint: 2
+title: Tokenization hardening (customer-facing surfaces)
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Tokenize customer-facing components
+    as_a: a maintainer
+    i_want: customer-facing components to reference semantic tokens, not raw hex
+    so_that: "a future theme or the #6 redesign re-skins by changing tokens, not chasing literals"
+    risk: low
+    status: done
+---
 # Sprint 2 — Tokenization hardening (customer-facing surfaces)
 
 Goal: make customer-facing components reference semantic tokens instead of raw hex, so re-skinning

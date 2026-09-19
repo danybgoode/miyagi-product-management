@@ -1,3 +1,33 @@
+---
+epic: marketplace-positioning-meta
+sprint: 1
+title: Rewrite public metadata, OG card & add meta spec
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Rewrite public metadata in app/layout.tsx
+    as_a: a first-time visitor / search engine / someone who receives a shared link
+    i_want: the page title and description to say Miyagi is a marketplace to buy, sell and open your own shop
+    so_that: "I instantly understand what it is instead of reading \"Infraestructura de comercio\""
+    risk: low
+    status: done
+  - id: S1.2
+    title: Rewrite the OG share card in app/opengraph-image.tsx
+    as_a: a person who shares a Miyagi link on WhatsApp/Twitter
+    i_want: the preview image to read as a marketplace
+    so_that: the recipient sees what it is at a glance
+    risk: low
+    status: done
+  - id: S1.3
+    title: Add the metadata api spec + sweep the suite
+    as_a: a future agent changing this surface
+    i_want: a spec that pins the new copy
+    so_that: a regression (or a reverted byte) fails CI
+    risk: low
+    status: done
+---
 # Marketplace positioning — Sprint 1: Rewrite public metadata, OG card & add meta spec
 
 **Status:** ✅ shipped to `main` 2026-06-11 via frontend PR [#83](https://github.com/danybgoode/miyagisanchezcommerce/pull/83) (squash `cf0fa8a`)

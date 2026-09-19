@@ -1,3 +1,19 @@
+---
+epic: agent-connection
+sprint: 2
+title: "\"Conecta tu agente\" seller helper"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Connection helper in the Agentes settings section
+    as_a: a seller
+    i_want: a ready MCP config
+    so_that: I can connect my own agent without reading API docs
+    risk: high
+    status: done
+---
 # Sprint 2 — "Conecta tu agente" seller helper
 
 Goal: close the Sprint-4 loop — a seller can connect their own AI agent to read and adjust their shop in

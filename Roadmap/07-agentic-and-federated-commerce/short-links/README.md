@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: short-links
+title: "Short links (`mschz.org/shop` and `mschz.org/product`)"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 4
 ---
 
 # Epic — Short links (`mschz.org/shop` and `mschz.org/product`)

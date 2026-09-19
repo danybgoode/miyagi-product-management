@@ -1,3 +1,26 @@
+---
+epic: discovery-polish
+sprint: 3
+title: PDP hierarchy
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Type-specific decision frame
+    as_a: a buyer
+    i_want: the PDP to open with the decision frame that matches the listing type
+    so_that: "a service, rental, or digital good isn't presented like a boxed product"
+    risk: low
+    status: done
+  - id: S3.2
+    title: Seller trust above the fold on mobile
+    as_a: a buyer on mobile
+    i_want: "the seller's trust signals near the top"
+    so_that: "I can judge who I'm buying from before scrolling through payment/fulfillment detail"
+    risk: low
+    status: done
+---
 # Sprint 3 — PDP hierarchy
 
 > Epic: [Discovery Polish](README.md) · **Risk: LOW–MED** (frontend-only; presentational reorder of an

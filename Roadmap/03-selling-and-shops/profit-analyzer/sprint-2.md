@@ -1,3 +1,33 @@
+---
+epic: profit-analyzer
+sprint: 2
+title: "Intelligence: fee estimator, solve-for-price suggester, one-click apply, insights"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Fee estimator + suggester math
+    as_a: a seller
+    i_want: "a recommended price for a target margin that accounts for ML's fee on that very price"
+    so_that: the suggestion is actually achievable
+    risk: high
+    status: done
+  - id: S2.2
+    title: Target-margin control + one-click Apply
+    as_a: a seller
+    i_want: "to set my target margin, see the suggested price, and apply it with one confirmed click — updating Miyagi and my linked ML listing"
+    so_that: repricing takes seconds
+    risk: high
+    status: done
+  - id: S2.3
+    title: Margin insights
+    as_a: a seller
+    i_want: "my \"margin killers\" and underpriced high-margin SKUs flagged"
+    so_that: I know where to act first
+    risk: high
+    status: done
+---
 # Sprint 2 — Intelligence: fee estimator, solve-for-price suggester, one-click apply, insights
 
 > Epic: [profit-analyzer](README.md) · Risk: **HIGH** (US-5 live price writes; Daniel merges) ·

@@ -1,3 +1,26 @@
+---
+epic: pdp-image-gallery
+sprint: 1
+title: Working, light PDP gallery
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Click / swipe through the photos
+    as_a: a buyer on a listing with multiple photos
+    i_want: "to move between them — swipe on mobile, click thumbnails / arrows / use ←→ on desktop —"
+    so_that: I can actually see every photo, not just the first
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Tap main image → fullscreen lightbox"
+    as_a: a buyer
+    i_want: to tap the main image to view it fullscreen and move through the photos there
+    so_that: I can inspect the item closely
+    risk: low
+    status: done
+---
 # PDP interactive image gallery — Sprint 1: Working, light PDP gallery
 
 **Status:** ✅ SHIPPED 2026-06-10 — PR #70 squash `597b66e` (Daniel-authorized merge) · **Risk:** LOW · **Repos:** frontend only

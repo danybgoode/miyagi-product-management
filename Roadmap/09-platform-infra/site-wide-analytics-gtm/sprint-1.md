@@ -1,3 +1,33 @@
+---
+epic: site-wide-analytics-gtm
+sprint: 1
+title: GTM container, site-wide & static-safe
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Pure gating lib + unit spec
+    as_a: a maintainer
+    i_want: a pure, testable rule for where analytics loads
+    so_that: gating is correct and free of network/headers
+    risk: low
+    status: done
+  - id: S1.2
+    title: "<SiteAnalytics> GTM loader in app/layout.tsx"
+    as_a: Daniel
+    i_want: GTM loading site-wide
+    so_that: GA4 + Clarity (its tags) start recording
+    risk: low
+    status: done
+  - id: S1.3
+    title: api spec + stale-comment fix
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Sprint 1 — GTM container, site-wide & static-safe
 
 **Epic:** [Site-wide analytics: GTM (GA4 + Clarity)](README.md) · **Risk:** all LOW · **Repo:** `apps/miyagisanchez`

@@ -1,3 +1,47 @@
+---
+epic: living-shop-social-storefront
+sprint: 5
+title: Seller studio
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S5.1
+    title: Dedicated Appearance & Content studio IA
+    as_a: a seller
+    i_want: one coherent place to manage what my shop says and how it looks
+    so_that: I do not have to understand internal settings taxonomy
+    risk: high
+    status: done
+  - id: S5.2
+    title: Wall management experience
+    as_a: a seller
+    i_want: to see draft/scheduled/published entries and act on them quickly
+    so_that: maintaining the storefront feels like running a social page
+    risk: high
+    status: done
+  - id: S5.3
+    title: Section manager
+    as_a: a seller
+    i_want: to reorder and toggle only supported shop destinations
+    so_that: I can emphasize what matters without breaking navigation
+    risk: high
+    status: done
+  - id: S5.4
+    title: Theme mode picker + Custom controls
+    as_a: a seller
+    i_want: to select a finished theme or tune Custom with plain-language controls
+    so_that: personalization feels creative rather than technical
+    risk: high
+    status: done
+  - id: S5.5
+    title: Responsive live preview
+    as_a: a seller
+    i_want: to preview unsaved appearance/content changes at desktop and mobile sizes
+    so_that: I can judge the shop before publishing changes
+    risk: high
+    status: done
+---
 # Living Shop — Sprint 5: Seller studio
 
 **Status:** ✅ shipped — `ea108ac` (PR #391)

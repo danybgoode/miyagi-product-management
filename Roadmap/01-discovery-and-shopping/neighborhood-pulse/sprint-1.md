@@ -1,3 +1,40 @@
+---
+epic: neighborhood-pulse
+sprint: 1
+title: Feed exists, opt-in-gated, and feels alive
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Moderator web opt-in flag (web_visible, default OFF)
+    as_a: a moderator
+    i_want: to deliberately opt an approved contribution into the online feed
+    so_that: approving an item for print never auto-publishes it to the web and I control what neighbors see online
+    risk: high
+    status: done
+  - id: S1.2
+    title: Public /vecindario feed of opted-in approved items
+    as_a: a buyer
+    i_want: to open a public neighborhood feed and see what my community is sharing
+    so_that: "the marketplace feels alive and local even when I'm not actively shopping"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Trending-listings strip
+    as_a: a buyer
+    i_want: "to see what's trending locally without searching"
+    so_that: I discover worth-buying items through neighborhood signal, not just search
+    risk: low
+    status: done
+  - id: S1.4
+    title: Entry points + contribute loop
+    as_a: a buyer/contributor
+    i_want: to find the feed and add to it
+    so_that: the community surface is discoverable and the contribute loop is obvious
+    risk: low
+    status: done
+---
 # Neighborhood Pulse — online community feed — Sprint 1: Feed exists, opt-in-gated, and feels alive
 
 **Status:** ✅ merged to `main` + live on prod · S1.1 MED migration applied (live Supabase has `web_visible`) · feed live-but-empty pending an operational opt-in seed

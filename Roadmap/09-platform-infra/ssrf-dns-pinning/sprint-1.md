@@ -1,3 +1,26 @@
+---
+epic: ssrf-dns-pinning
+sprint: 1
+title: the shared pinned-fetch seam + both call sites
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: The shared pinned-fetch helper
+    as_a: a builder
+    i_want: one primitive that resolves a hostname once and then physically dials that exact address
+    so_that: "a second independent resolve can't substitute a different IP"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Adopt at both call sites + correct the overclaim
+    as_a: a reader of this code
+    i_want: the doc comments to describe what the code actually guarantees
+    so_that: nobody builds on a mitigation they think is a closure
+    risk: low
+    status: done
+---
 # SSRF DNS-pinning — Sprint 1: the shared pinned-fetch seam + both call sites
 
 **Status:** 🟦 In review — [PR #290](https://github.com/danybgoode/miyagisanchezcommerce/pull/290) (LOW)

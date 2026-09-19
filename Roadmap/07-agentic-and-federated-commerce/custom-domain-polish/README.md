@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: custom-domain-polish
+title: "Own channel: custom-domain polish (custom-domain-polish)"
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 7
 ---
 
 # Epic — Own channel: custom-domain polish (custom-domain-polish)
