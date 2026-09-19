@@ -32,10 +32,10 @@ const REPO_ROOT = resolve(__dirname, '..');
 
 // The model/router lives in scripts/lib/prose-writer.mjs now — deliberately NOT here.
 //
-// This file used to default to `gemini-3.5-flash-high`. That is the exact constant golden-beans
-// identified as having silently destroyed the register of every report it wrote: the accepted drafts
-// had come from GPT-OSS on the occasions Gemini's quota was exhausted, so the "fallback" was actually
-// the good writer. The rail now pins a single non-Gemini model and routes devin first. Do not
+// This file used to default to `gemini-3.5-flash-high`. That is the exact constant a consuming
+// project identified as having silently destroyed the register of every report it wrote: the accepted
+// drafts had come from GPT-OSS on the occasions Gemini's quota was exhausted, so the "fallback" was
+// actually the good writer. The rail now pins a single non-Gemini model and routes devin first. Do not
 // reintroduce a model constant here.
 
 export const KINDS = ['retro', 'poster', 'sprint-wrap'];
@@ -95,7 +95,10 @@ export function gatherEpicSources(epicDir, { readFile = read, listDir = readdirS
   return `## Source material — epic directory ${epicDir}${parts.join('')}\n\n### GIT LOG (epic paths)\n${log([epicDir])}`;
 }
 
-export function gatherSprintSources(sprintPath, { readFile = read, log = gitLogFor, exists = existsSync } = {}) {
+export function gatherSprintSources(
+  sprintPath,
+  { readFile = read, log = gitLogFor, exists = existsSync } = {}
+) {
   const epicDir = dirname(sprintPath);
   const readme = join(epicDir, 'README.md');
   let out = `## Source material — sprint doc ${sprintPath}\n\n### FILE: ${sprintPath}\n\n${readFile(sprintPath)}`;
@@ -155,14 +158,25 @@ function main() {
   // The size cap is gone with the argv path — devin takes the prompt in a file.
   const result = writeProse({
     prompt,
-    evidence: { allowsFixClaim: true, allowsBeneficiary: true, allowsMarkdown: true, maxWords: 4000, minWords: 40 },
+    evidence: {
+      allowsFixClaim: true,
+      allowsBeneficiary: true,
+      allowsMarkdown: true,
+      maxWords: 4000,
+      minWords: 40,
+    },
   });
   if (!result.text) die(result.error || 'no prose writer produced a draft.');
 
   // Advisory banner: names the writer AND the model that actually ran, plus whether the guard passed
   // clean — so a paste-without-reading stays self-identifying in review.
-  const verdict = result.ok ? 'guard: clean' : `guard: FLAGGED (${result.guard.findings.map((f) => f.code).join(', ')})`;
-  writeSync(1, `<!-- draft: prose-draft.mjs --kind ${kind} · writer ${result.writer}/${result.model} · ${verdict} · EDIT BEFORE COMMITTING -->\n${result.text}\n`);
+  const verdict = result.ok
+    ? 'guard: clean'
+    : `guard: FLAGGED (${result.guard.findings.map((f) => f.code).join(', ')})`;
+  writeSync(
+    1,
+    `<!-- draft: prose-draft.mjs --kind ${kind} · writer ${result.writer}/${result.model} · ${verdict} · EDIT BEFORE COMMITTING -->\n${result.text}\n`
+  );
 
   if (!result.ok) {
     process.stderr.write(

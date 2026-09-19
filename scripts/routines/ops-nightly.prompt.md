@@ -26,7 +26,7 @@
     - `standup-post` skill → scripts/standup.mjs (the aggregation, diffing, and actual Telegram
       send — including its own independent CI-red / merge-conflict read, taken AFTER steps 1–3 have run)
     - gh CLI (all 3 repos), scripts/build-order.mjs --check, scripts/vercel-prune-previews.mjs
-      (dry-run, --age 7), .github/workflows/browser-smoke.yml (frontend repo only).
+      (dry-run, --project miyagisanchez --age 7), .github/workflows/browser-smoke.yml (frontend repo only).
 
   Stand-up + guardrails: scripts/routines/README.md. Decision: 00-ideas/2. readyforscope/
   spike-skills-library-audit.md (skill conventions) and ops-routines-reporting.md (this epic's scope).
