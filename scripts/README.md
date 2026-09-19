@@ -93,8 +93,8 @@ Beyond the reporting family above, these are **byte-identical to `dobby-foundati
 (change them there, copy back): `build-order.mjs` + `lib/roadmap-status-buckets.mjs`, `prose-draft.mjs`,
 `doc-format.mjs`, `doc-hygiene.mjs`, `owed-ledger.mjs`, `session-{note,resume}.mjs`, `prod-smoke.mjs`,
 `smoke-triage-scope.mjs`, `merge-report.mjs`, `perf-probe.mjs`, `vercel-env.mjs`,
-`vercel-prune-previews.mjs`, `babysit-pr.mjs`, `build-order-sync.mjs`, `lib/report-registry.mjs`, and
-their tests. This repo's values live in config, not code: `reporting.config.json`,
+`vercel-prune-previews.mjs`, `babysit-pr.mjs`, `build-order-sync.mjs`, `lib/report-registry.mjs`,
+`preflight.mjs` + `lib/golden-onboarding.mjs`, and their tests. This repo's values live in config, not code: `reporting.config.json`,
 `prod-smoke.checks.mjs`, `smoke-triage.config.json`, `perf-probe.config.json`, `doc-format.enforced.json`.
 
 Deliberately divergent, with the reason to re-check before "unifying":
@@ -109,6 +109,26 @@ Deliberately divergent, with the reason to re-check before "unifying":
   prompts: this copy and the template's evolved separately (their agy version pins differ, among
   others), and unifying them is the review-stack work's job, not the plugin-audit epic's. `publish-live-views.mjs` is this project's own
   (the report hub); it reads the registry from `reporting.config.json` → `artifacts.registry`.
+
+## preflight.mjs — is this project wired to Golden Frijoles?
+
+The ways-of-work mandate, as a check rather than a sentence: a project is linked, its `flag_read`
+key resolves a snapshot, the `gf` CLI is installed and current, and `@golden-frijoles/sdk` is
+installed. `groom` declares it, so `check-skill-scripts.mjs` keeps it here.
+
+**It fails here today, and the failure is the point** — this repo still reads flags through
+`lib/flags.ts` / the Flagsmith-era rail below. Getting it to green is
+[`Roadmap/09-platform-infra/flag-provider-mandate/`](../Roadmap/09-platform-infra/flag-provider-mandate/README.md),
+this project's own cutover epic (the sibling of dobby-foundation's `golden-flags-by-default`, which
+made the *template* carry the provider). Until that epic ships, treat a red preflight here as an
+accurate status report.
+
+Two rules it follows, both worth knowing before you wire it into anything:
+
+- **Absent configuration fails; an unreachable deployment WARNS and exits 0.** A Golden Frijoles
+  outage must never break a build, a test run or a deploy. There is deliberately no `--strict`.
+- **It is not a CI gate.** `.env.local` is gitignored, so a checkout has no credential. It reads the
+  process environment as a fallback if you ever do want it in CI from secrets.
 
 ## build-order.mjs — generate the in-repo status board
 

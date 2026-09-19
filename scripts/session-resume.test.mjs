@@ -128,7 +128,7 @@ test('parseMigrationListTable: header and separator rows are not treated as data
 // 20260711120000 (the connector-flag and seller-shell-flag seeds), so the CLI prints the pair as a
 // matched row PLUS a local-only row. Reading that second row as "unapplied" was a false positive on the
 // one signal that must be trustworthy — verified against the live DB: the version IS in
-// schema_migrations and both seeded flags exist in platform_flags.
+// schema_migrations and both seeded rows exist in the project's own tables.
 const DUPLICATE_VERSION_FIXTURE = [
   '   Local          | Remote         | Time (UTC)          ',
   '  ----------------|----------------|---------------------',
