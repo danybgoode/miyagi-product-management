@@ -355,7 +355,8 @@ could update them, and two failures followed on 2026-08-05:
   returning 200 and stayed green **while testing a different page**; `/mx` lost coverage entirely
   with no signal at all. A green check that changed meaning is worse than a red one.
 
-The checks now live in [`scripts/prod-smoke.mjs`](../prod-smoke.mjs) with `node:test` coverage, so a
+The checks now live in [`scripts/prod-smoke.checks.mjs`](../prod-smoke.checks.mjs) (the shared engine is
+[`scripts/prod-smoke.mjs`](../prod-smoke.mjs), with `node:test` coverage), so a
 route change is a reviewable diff and the epic that moves a route updates the smoke in the same PR.
 Because a 200 proves only that *something* answered, every check guarding a rendered page also
 asserts a structural body marker — status alone could not tell the selector and the marketplace apart.

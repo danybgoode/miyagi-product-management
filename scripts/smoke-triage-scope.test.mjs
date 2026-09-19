@@ -67,10 +67,14 @@ test('isTestSurface admits the smoke scaffolding and nothing else', () => {
 
 test('a test-only diff that changes real behaviour is allowed', () => {
   const decision = decide([
-    file('e2e/_helpers/gallery-fixture.ts',
-      '@@ -75,7 +75,7 @@\n-  if (envOverride) return { listingId: envOverride, source: \'env\' }\n+  const pinned = await resolvePinnedListing(request, photos, envOverride)\n'),
-    file('e2e/gallery-fixture.spec.ts',
-      '@@ -1,1 +1,3 @@\n+  test(\'a live pin is used as-is\', async () => {\n+    expect(fixture).toEqual({ listingId: \'pinned_1\' })\n+  })\n'),
+    file(
+      'e2e/_helpers/gallery-fixture.ts',
+      "@@ -75,7 +75,7 @@\n-  if (envOverride) return { listingId: envOverride, source: 'env' }\n+  const pinned = await resolvePinnedListing(request, photos, envOverride)\n"
+    ),
+    file(
+      'e2e/gallery-fixture.spec.ts',
+      "@@ -1,1 +1,3 @@\n+  test('a live pin is used as-is', async () => {\n+    expect(fixture).toEqual({ listingId: 'pinned_1' })\n+  })\n"
+    ),
   ]);
   assert.equal(decision.verdict, 'allow');
   assert.equal(decision.exitCode, 0);
@@ -79,7 +83,10 @@ test('a test-only diff that changes real behaviour is allowed', () => {
 });
 
 test('one app-code file blocks the whole PR, however green it is', () => {
-  const decision = decide([clean('e2e/pdp-gallery.browser.spec.ts'), clean('app/(shell)/l/[id]/Gallery.tsx')]);
+  const decision = decide([
+    clean('e2e/pdp-gallery.browser.spec.ts'),
+    clean('app/(shell)/l/[id]/Gallery.tsx'),
+  ]);
   assert.equal(decision.verdict, 'block');
   assert.equal(decision.exitCode, 1);
   assert.deepEqual(decision.appCode, ['app/(shell)/l/[id]/Gallery.tsx']);
@@ -96,7 +103,7 @@ test('a traversal path is app code, not test surface', () => {
 
 test('adding test.skip() blocks, even inside the test surface', () => {
   const decision = decide([
-    file('e2e/pdp-gallery.browser.spec.ts', '@@ -1 +1,2 @@\n+  test.skip(true, \'flaky\')\n'),
+    file('e2e/pdp-gallery.browser.spec.ts', "@@ -1 +1,2 @@\n+  test.skip(true, 'flaky')\n"),
   ]);
   assert.equal(decision.verdict, 'block');
   assert.ok(decision.blockers.some((b) => b.id === 'skip-added'));
@@ -104,20 +111,25 @@ test('adding test.skip() blocks, even inside the test surface', () => {
 
 test('test.fixme, test.only and serial mode each block', () => {
   for (const [line, id] of [
-    ['+  test.fixme(\'broken\', async () => {})', 'fixme-added'],
-    ['+  test.only(\'just this one\', async () => {})', 'only-added'],
-    ['+  test.describe.configure({ mode: \'serial\' })', 'serial-added'],
+    ["+  test.fixme('broken', async () => {})", 'fixme-added'],
+    ["+  test.only('just this one', async () => {})", 'only-added'],
+    ["+  test.describe.configure({ mode: 'serial' })", 'serial-added'],
   ]) {
     const decision = decide([file('e2e/x.spec.ts', `@@ -1 +1,2 @@\n${line}\n`)]);
     assert.equal(decision.verdict, 'block', `${id} should block`);
-    assert.ok(decision.blockers.some((b) => b.id === id), `${id} not detected in: ${line}`);
+    assert.ok(
+      decision.blockers.some((b) => b.id === id),
+      `${id} not detected in: ${line}`
+    );
   }
 });
 
 test('deleting an assertion blocks — the spec would test less than it did', () => {
   const decision = decide([
-    file('e2e/pdp-gallery.browser.spec.ts',
-      '@@ -1,3 +1,2 @@\n   await page.goto(url)\n-  await expect(page.getByTestId(\'gallery-counter\')).toBeVisible()\n'),
+    file(
+      'e2e/pdp-gallery.browser.spec.ts',
+      "@@ -1,3 +1,2 @@\n   await page.goto(url)\n-  await expect(page.getByTestId('gallery-counter')).toBeVisible()\n"
+    ),
   ]);
   assert.equal(decision.verdict, 'block');
   assert.ok(decision.blockers.some((b) => b.id === 'assertion-deleted'));
@@ -125,21 +137,23 @@ test('deleting an assertion blocks — the spec would test less than it did', ()
 
 test('deleting a spec FILE blocks', () => {
   const decision = decide([
-    file('e2e/pdp-gallery.browser.spec.ts', '@@ -1,2 +0,0 @@\n-test(\'x\', () => {})\n', { status: 'removed' }),
+    file('e2e/pdp-gallery.browser.spec.ts', "@@ -1,2 +0,0 @@\n-test('x', () => {})\n", { status: 'removed' }),
   ]);
   assert.equal(decision.verdict, 'block');
   assert.ok(decision.blockers.some((b) => b.id === 'file-deleted'));
 });
 
-test('retiring the zero-photo spec blocks — correct, but the product owner\'s call, not the routine\'s', () => {
+test("retiring the zero-photo spec blocks — correct, but the product owner's call, not the routine's", () => {
   // The real 2026-08-17 change. It was right, and it still must not auto-merge: the reason it was
   // right is that the product owner said so after it was surfaced to him twice.
   const decision = decide([
-    file('e2e/pdp-gallery.browser.spec.ts',
-      '@@ -169,10 +169,1 @@\n-test.describe(\'pdp · zero-image placeholder parity (browser)\', () => {\n'
-      + '-    await expect(page.getByTestId(\'gallery-back\')).toBeVisible()\n'
-      + '-    await expect(page.getByTestId(\'gallery-share\')).toBeVisible()\n'
-      + '+ * RETIRED 2026-08-17: no public zero-photo listing exists.\n'),
+    file(
+      'e2e/pdp-gallery.browser.spec.ts',
+      "@@ -169,10 +169,1 @@\n-test.describe('pdp · zero-image placeholder parity (browser)', () => {\n" +
+        "-    await expect(page.getByTestId('gallery-back')).toBeVisible()\n" +
+        "-    await expect(page.getByTestId('gallery-share')).toBeVisible()\n" +
+        '+ * RETIRED 2026-08-17: no public zero-photo listing exists.\n'
+    ),
   ]);
   assert.equal(decision.verdict, 'block');
   assert.ok(decision.blockers.some((b) => b.id === 'assertion-deleted'));
@@ -148,15 +162,16 @@ test('retiring the zero-photo spec blocks — correct, but the product owner\'s 
 test('test.slow() is NOT a weakening — raising a timeout budget is a legitimate shipped fix', () => {
   // PR #349 did exactly this. A guard that rejects correct output is worse than one that misses a
   // rare fault: block this and the routine is useless for the commonest real failure it sees.
-  const decision = decide([
-    file('e2e/agent-prompt.browser.spec.ts', '@@ -1 +1,2 @@\n+  test.slow()\n'),
-  ]);
+  const decision = decide([file('e2e/agent-prompt.browser.spec.ts', '@@ -1 +1,2 @@\n+  test.slow()\n')]);
   assert.equal(decision.verdict, 'allow');
 });
 
 test('a word ending in the pattern name is not the pattern', () => {
   const decision = decide([
-    file('e2e/x.spec.ts', '@@ -1 +1,2 @@\n+  const shouldNotTest = maybeTest.skipped\n+  // mytest.skip is a comment about test.skip\n'),
+    file(
+      'e2e/x.spec.ts',
+      '@@ -1 +1,2 @@\n+  const shouldNotTest = maybeTest.skipped\n+  // mytest.skip is a comment about test.skip\n'
+    ),
   ]);
   // `mytest.skip(` never appears with a paren, and `maybeTest.skipped` is not a call.
   assert.equal(decision.verdict, 'allow');
@@ -164,7 +179,10 @@ test('a word ending in the pattern name is not the pattern', () => {
 
 test('diff headers are not scanned as content', () => {
   const decision = decide([
-    file('e2e/x.spec.ts', '--- a/e2e/x.spec.ts\n+++ b/e2e/x.spec.ts\n@@ -1 +1 @@\n-const a = 1\n+const a = 2\n'),
+    file(
+      'e2e/x.spec.ts',
+      '--- a/e2e/x.spec.ts\n+++ b/e2e/x.spec.ts\n@@ -1 +1 @@\n-const a = 1\n+const a = 2\n'
+    ),
   ]);
   assert.equal(decision.verdict, 'allow');
 });
@@ -196,17 +214,14 @@ test('undecidable outranks block — a partly-unread diff must not report as mer
 });
 
 test('a pure rename carries no patch and is not undecidable', () => {
-  const decision = decide([
-    { filename: 'e2e/renamed.spec.ts', status: 'renamed', changes: 0 },
-  ]);
+  const decision = decide([{ filename: 'e2e/renamed.spec.ts', status: 'renamed', changes: 0 }]);
   assert.equal(decision.verdict, 'allow');
 });
 
 test('formatReport names the verdict, the files and every blocker', () => {
-  const report = formatReport(decide([
-    clean('app/page.tsx'),
-    file('e2e/x.spec.ts', '@@ -1 +1,2 @@\n+  test.skip(true)\n'),
-  ]));
+  const report = formatReport(
+    decide([clean('app/page.tsx'), file('e2e/x.spec.ts', '@@ -1 +1,2 @@\n+  test.skip(true)\n')])
+  );
   assert.match(report, /^smoke-triage scope: BLOCK/);
   assert.match(report, /app code \(1\): app\/page\.tsx/);
   assert.match(report, /outside-test-surface/);
@@ -220,7 +235,13 @@ test('formatReport names the verdict, the files and every blocker', () => {
 test('D4: NO policy → UNDECIDABLE for a diff that would otherwise be allowed — never allow', () => {
   const onlyTests = [clean('e2e/pdp-gallery.browser.spec.ts')];
   assert.equal(decideAutoMerge(onlyTests, POLICY).verdict, 'allow', 'precondition: allowed WITH the policy');
-  for (const missing of [undefined, null, {}, { testSurface: POLICY.testSurface }, { assertionCalls: ['expect'] }]) {
+  for (const missing of [
+    undefined,
+    null,
+    {},
+    { testSurface: POLICY.testSurface },
+    { assertionCalls: ['expect'] },
+  ]) {
     const d = decideAutoMerge(onlyTests, missing);
     assert.equal(d.verdict, 'undecidable');
     assert.equal(d.exitCode, 2);
@@ -262,11 +283,49 @@ test('D4: loadPolicy names the missing file; main() refuses before any network c
   try {
     code = await main(['--repo', 'acme/web', '--pr', '1'], {
       loadPolicy: () => r,
-      execFileSync: () => { throw new Error('must not reach GitHub without a policy'); },
+      execFileSync: () => {
+        throw new Error('must not reach GitHub without a policy');
+      },
     });
   } finally {
     process.stdout.write = write;
   }
   assert.equal(code, 2);
   assert.match(out, /UNDECIDABLE — .*not found/);
+});
+
+// ── The gate cannot authorize a change to itself ──────────────────────────────────────────────
+
+test('a PR that edits the gate policy is blocked even when the policy itself names that file as test surface', () => {
+  const widened = {
+    ...POLICY,
+    testSurface: [
+      ...POLICY.testSurface,
+      { exact: 'smoke-triage.config.json', why: 'a PR widening its own gate' },
+    ],
+  };
+  const decision = decideAutoMerge([clean('smoke-triage.config.json')], widened);
+  assert.equal(decision.verdict, 'block');
+  assert.deepEqual(
+    decision.blockers.map((b) => b.id),
+    ['gate-self-modification']
+  );
+});
+
+test('a PR that edits the gate script is blocked', () => {
+  const decision = decide([clean('scripts/smoke-triage-scope.mjs')]);
+  assert.equal(decision.verdict, 'block');
+  assert.ok(decision.blockers.some((b) => b.id === 'gate-self-modification'));
+});
+
+test('validatePolicy: a rule with a valid exact beside a non-string prefix is malformed, not a throw', () => {
+  const r = validatePolicy({ ...POLICY, testSurface: [{ exact: 'a.ts', prefix: 5, why: 'x' }] });
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /exactly one of "prefix" \/ "exact"/);
+  const d = decideAutoMerge([clean('e2e/a.spec.ts')], {
+    ...POLICY,
+    testSurface: [{ exact: 'a.ts', prefix: 5, why: 'x' }],
+  });
+  assert.equal(d.verdict, 'undecidable');
+  assert.equal(d.exitCode, 2);
 });

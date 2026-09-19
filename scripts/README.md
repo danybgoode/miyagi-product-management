@@ -78,10 +78,9 @@ on adoption: prod-smoke 8/8 pass against production either way; the merge gate g
 blockers) on a real app-repo PR; perf-probe's fixture URLs identical.
 
 **Deliberate divergences, with reasons:**
-- **`lib/report-registry.mjs` stays this repo's own.** The template's copy has no default bucket or
-  resolver (a default is one project's storage). The reporthub here — `publish-live-views.mjs`,
-  `lib/pmo-report-hub-data.mjs` and `infra/gcp/test/report-registry-invariants.test.js` — relies on those
-  defaults, and the template's callers pass `baseUrl`/`bucket` explicitly, so this copy serves both.
+- ~~`lib/report-registry.mjs` stays this repo's own~~ — **no longer**: it is now the template's copy
+  (no default bucket or resolver). `publish-live-views.mjs` reads both from `reporting.config.json` →
+  `artifacts.registry`, and exits 1 naming the file when that is absent.
 - **`prose/*.md` and `prose-lessons.md` stay this repo's own** — they are the project's persona and
   lessons (data, not code), which the template ships only as a fill-in.
 - **`roadmap-extract.mjs` delegates to `roadmap-to-notion.mjs --extract`** rather than being the template's
@@ -100,8 +99,8 @@ their tests. This repo's values live in config, not code: `reporting.config.json
 
 Deliberately divergent, with the reason to re-check before "unifying":
 
-- **Project fill-ins** — `prose/cpo-persona.md`, `prose/{merge,standup}.task.md`, `prose-draft.prompt.md`,
-  `prose-lessons.md`: this project's voice and lessons. The template ships neutral placeholders.
+- **Project fill-ins** — `prose/cpo-persona.md`, `prose/{merge,standup}.task.md`, `prose-lessons.md`:
+  this project's voice and lessons. The template ships neutral placeholders.
 - **`roadmap-extract.mjs`, `live-smoke.mjs`** — thin delegates: the extractor is
   `roadmap-to-notion.mjs --extract` (it drives the live Notion board), and live-smoke runs
   `apps/miyagisanchez/scripts/live-smoke.mjs` against that app's own Playwright project.

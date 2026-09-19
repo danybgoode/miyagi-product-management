@@ -66,6 +66,12 @@ export const POLICY_PATH = join(__dirname, '..', 'smoke-triage.config.json');
 // default, which is the safe direction to be wrong in for a gate that ends in a production deploy.
 // The shape of each rule: `{ prefix, why }` or `{ exact, why }`. Supplied by the project's policy.
 
+// The gate's own files. A PR that edits either is judging itself: in a single-repo project the
+// routine may read the policy from the very checkout the PR changed, so a PR could widen
+// `testSurface` and then be allowed by the widened rule. Whatever the policy says, a change to the
+// gate is a human's call — it is checked before the policy is even consulted for these paths.
+export const GATE_FILES = ['smoke-triage.config.json', 'scripts/smoke-triage-scope.mjs'];
+
 /**
  * Pure — validate a policy object. Returns `{ ok: true, policy }` or `{ ok: false, reason }`. Never
  * throws and never fills a gap with a default: a policy that is not fully specified is not a policy.
@@ -77,22 +83,42 @@ export function validatePolicy(raw) {
     return { ok: false, reason: '"testSurface" must list at least one { prefix | exact, why } rule' };
   }
   for (const [i, r] of testSurface.entries()) {
-    const kinds = ['prefix', 'exact'].filter((k) => typeof r?.[k] === 'string' && r[k]);
-    if (kinds.length !== 1) return { ok: false, reason: `"testSurface[${i}]" needs exactly one of "prefix" / "exact"` };
-    if (typeof r.why !== 'string' || !r.why.trim()) return { ok: false, reason: `"testSurface[${i}]" needs a "why"` };
-    if (normalizeRepoPath(r.prefix ?? r.exact) === null && !(r.prefix ?? '').endsWith('/')) {
+    // Exactly one key PRESENT, and it a non-empty string — `{ exact, prefix: 5 }` is malformed, not an
+    // exact rule with some noise beside it (it used to throw further down, which exits 1, not 2).
+    const kinds = ['prefix', 'exact'].filter((k) => r?.[k] !== undefined);
+    if (kinds.length !== 1 || typeof r[kinds[0]] !== 'string' || !r[kinds[0]]) {
+      return {
+        ok: false,
+        reason: `"testSurface[${i}]" needs exactly one of "prefix" / "exact", a non-empty string`,
+      };
+    }
+    if (typeof r.why !== 'string' || !r.why.trim())
+      return { ok: false, reason: `"testSurface[${i}]" needs a "why"` };
+    const value = r[kinds[0]];
+    if (normalizeRepoPath(value) === null && !(kinds[0] === 'prefix' && value.endsWith('/'))) {
       return { ok: false, reason: `"testSurface[${i}]" is not a plain repo-relative path` };
     }
   }
-  if (!Array.isArray(assertionCalls) || assertionCalls.length === 0 || assertionCalls.some((c) => !/^[A-Za-z_$][\w$]*$/.test(c))) {
-    return { ok: false, reason: '"assertionCalls" must list the assertion function names (at least "expect")' };
+  if (
+    !Array.isArray(assertionCalls) ||
+    assertionCalls.length === 0 ||
+    assertionCalls.some((c) => !/^[A-Za-z_$][\w$]*$/.test(c))
+  ) {
+    return {
+      ok: false,
+      reason: '"assertionCalls" must list the assertion function names (at least "expect")',
+    };
   }
   return { ok: true, policy: { testSurface, assertionCalls } };
 }
 
 /** Read the committed policy. Missing or malformed → `{ ok: false, reason }` naming the file. */
 export function loadPolicy({ path = POLICY_PATH, exists = existsSync, read = readFileSync } = {}) {
-  if (!exists(path)) return { ok: false, reason: `${path} not found — the merge gate has no policy, so it cannot allow anything` };
+  if (!exists(path))
+    return {
+      ok: false,
+      reason: `${path} not found — the merge gate has no policy, so it cannot allow anything`,
+    };
   let raw;
   try {
     raw = JSON.parse(read(path, 'utf8'));
@@ -116,7 +142,7 @@ export function normalizeRepoPath(raw) {
   const out = [];
   for (const segment of path.split('/')) {
     if (segment === '' || segment === '.') return null; // `a//b` and `./a` are not shapes git emits
-    if (segment === '..') return null;                   // never resolve — just refuse
+    if (segment === '..') return null; // never resolve — just refuse
     out.push(segment);
   }
   return out.join('/');
@@ -125,8 +151,7 @@ export function normalizeRepoPath(raw) {
 export function isTestSurface(rawPath, testSurface) {
   const path = normalizeRepoPath(rawPath);
   if (path === null || !Array.isArray(testSurface)) return false;
-  return testSurface.some((rule) =>
-    rule.exact ? path === rule.exact : path.startsWith(rule.prefix));
+  return testSurface.some((rule) => (rule.exact ? path === rule.exact : path.startsWith(rule.prefix)));
 }
 
 // ── Gate 2: weakening detection ───────────────────────────────────────────────────────────────
@@ -141,10 +166,26 @@ export function isTestSurface(rawPath, testSurface) {
 // genuinely broken. Skips and deletions are not — they stop asking the question entirely.
 export const WEAKENING_PATTERNS = [
   { id: 'skip-added', re: /(^|[^\w.])test\.skip\s*\(/, why: 'test.skip() added — the spec stops running' },
-  { id: 'describe-skip-added', re: /(^|[^\w.])(test|describe)\.describe\.skip\s*\(|(^|[^\w.])describe\.skip\s*\(/, why: 'a whole describe block skipped' },
-  { id: 'fixme-added', re: /(^|[^\w.])test\.fixme\s*\(/, why: 'test.fixme() added — the spec is marked as expected-to-fail' },
-  { id: 'only-added', re: /(^|[^\w.])(test|describe)\.only\s*\(/, why: 'test.only() added — every OTHER spec in the file stops running' },
-  { id: 'serial-added', re: /mode:\s*['"`]serial['"`]/, why: 'serial mode added — a failure there logs as "did not run", which reads as green-by-skip' },
+  {
+    id: 'describe-skip-added',
+    re: /(^|[^\w.])(test|describe)\.describe\.skip\s*\(|(^|[^\w.])describe\.skip\s*\(/,
+    why: 'a whole describe block skipped',
+  },
+  {
+    id: 'fixme-added',
+    re: /(^|[^\w.])test\.fixme\s*\(/,
+    why: 'test.fixme() added — the spec is marked as expected-to-fail',
+  },
+  {
+    id: 'only-added',
+    re: /(^|[^\w.])(test|describe)\.only\s*\(/,
+    why: 'test.only() added — every OTHER spec in the file stops running',
+  },
+  {
+    id: 'serial-added',
+    re: /mode:\s*['"`]serial['"`]/,
+    why: 'serial mode added — a failure there logs as "did not run", which reads as green-by-skip',
+  },
 ];
 
 /** An assertion that ran yesterday and does not run today — built from the policy's assertion names. */
@@ -187,7 +228,12 @@ export function inspectPatch(file, deletedAssertion) {
       }
     } else if (line.startsWith('-')) {
       if (deletedAssertion.re.test(body)) {
-        findings.push({ id: deletedAssertion.id, path: file.filename, why: deletedAssertion.why, line: body.trim() });
+        findings.push({
+          id: deletedAssertion.id,
+          path: file.filename,
+          why: deletedAssertion.why,
+          line: body.trim(),
+        });
       }
     }
   }
@@ -206,8 +252,16 @@ export function decideAutoMerge(files, policy) {
   const checked = validatePolicy(policy);
   if (!checked.ok) {
     return {
-      verdict: 'undecidable', exitCode: 2, surface: [], appCode: [],
-      blockers: [{ id: 'no-policy', why: `${checked.reason} — refusing to authorize any merge without the project's own policy` }],
+      verdict: 'undecidable',
+      exitCode: 2,
+      surface: [],
+      appCode: [],
+      blockers: [
+        {
+          id: 'no-policy',
+          why: `${checked.reason} — refusing to authorize any merge without the project's own policy`,
+        },
+      ],
     };
   }
   const { testSurface, assertionCalls } = checked.policy;
@@ -218,8 +272,16 @@ export function decideAutoMerge(files, policy) {
   // is the exact failure this repo deletes scripts for.
   if (!Array.isArray(files) || files.length === 0) {
     return {
-      verdict: 'undecidable', exitCode: 2, surface: [], appCode: [],
-      blockers: [{ id: 'no-files', why: 'the PR reported zero changed files — the diff was not read, so nothing was checked' }],
+      verdict: 'undecidable',
+      exitCode: 2,
+      surface: [],
+      appCode: [],
+      blockers: [
+        {
+          id: 'no-files',
+          why: 'the PR reported zero changed files — the diff was not read, so nothing was checked',
+        },
+      ],
     };
   }
 
@@ -230,11 +292,19 @@ export function decideAutoMerge(files, policy) {
 
   for (const file of files) {
     const path = file?.filename;
+    if (GATE_FILES.includes(normalizeRepoPath(path))) {
+      blockers.push({
+        id: 'gate-self-modification',
+        path,
+        why: 'this PR changes the merge gate itself (its policy or its script) — a gate cannot authorize its own change',
+      });
+    }
     if (isTestSurface(path, testSurface)) surface.push(path);
     else {
       appCode.push(path ?? String(path));
       blockers.push({
-        id: 'outside-test-surface', path: path ?? String(path),
+        id: 'outside-test-surface',
+        path: path ?? String(path),
         why: 'not test scaffolding — a change here reaches production, so a human reads it',
       });
     }
@@ -242,7 +312,11 @@ export function decideAutoMerge(files, policy) {
     const { readable, findings } = inspectPatch(file, deletedAssertion);
     if (!readable) {
       undecidable = true;
-      blockers.push({ id: 'patch-unreadable', path, why: 'GitHub returned no patch for this file (binary or too large) — it could not be checked' });
+      blockers.push({
+        id: 'patch-unreadable',
+        path,
+        why: 'GitHub returned no patch for this file (binary or too large) — it could not be checked',
+      });
     }
     blockers.push(...findings);
   }
@@ -260,8 +334,10 @@ export function formatReport(decision) {
     undecidable: 'UNDECIDABLE — the diff could not be fully read; treat as BLOCK and say so',
   }[decision.verdict];
   lines.push(`smoke-triage scope: ${headline}`);
-  if (decision.surface.length) lines.push(`  test surface (${decision.surface.length}): ${decision.surface.join(', ')}`);
-  if (decision.appCode.length) lines.push(`  app code (${decision.appCode.length}): ${decision.appCode.join(', ')}`);
+  if (decision.surface.length)
+    lines.push(`  test surface (${decision.surface.length}): ${decision.surface.join(', ')}`);
+  if (decision.appCode.length)
+    lines.push(`  app code (${decision.appCode.length}): ${decision.appCode.join(', ')}`);
   for (const b of decision.blockers) {
     lines.push(`  ✗ [${b.id}]${b.path ? ` ${b.path}` : ''} — ${b.why}${b.line ? `\n      ${b.line}` : ''}`);
   }
@@ -276,10 +352,16 @@ export function formatReport(decision) {
 async function fetchFiles(repo, pr, deps) {
   const { execFileSync } = deps;
   const out = execFileSync('gh', ['api', '--paginate', `repos/${repo}/pulls/${pr}/files`], {
-    encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
   });
   // --paginate concatenates JSON arrays; stitch them back into one.
-  return JSON.parse(`[${out.trim().replace(/\]\s*\[/g, ',').replace(/^\[|\]$/g, '')}]`);
+  return JSON.parse(
+    `[${out
+      .trim()
+      .replace(/\]\s*\[/g, ',')
+      .replace(/^\[|\]$/g, '')}]`
+  );
 }
 
 export async function main(argv, deps = {}) {
@@ -296,7 +378,9 @@ export async function main(argv, deps = {}) {
   const policy = (deps.loadPolicy ?? loadPolicy)();
   if (!policy.ok) {
     const message = `UNDECIDABLE — ${policy.reason}`;
-    process.stdout.write(values.json ? `${JSON.stringify({ verdict: 'undecidable', error: message })}\n` : `${message}\n`);
+    process.stdout.write(
+      values.json ? `${JSON.stringify({ verdict: 'undecidable', error: message })}\n` : `${message}\n`
+    );
     return 2;
   }
 
@@ -307,12 +391,16 @@ export async function main(argv, deps = {}) {
   } catch (error) {
     // Could not ask. That is state 2 — not "nothing to worry about".
     const message = `UNDECIDABLE — could not read PR ${values.repo}#${values.pr}: ${error.message}`;
-    process.stdout.write(values.json ? `${JSON.stringify({ verdict: 'undecidable', error: message })}\n` : `${message}\n`);
+    process.stdout.write(
+      values.json ? `${JSON.stringify({ verdict: 'undecidable', error: message })}\n` : `${message}\n`
+    );
     return 2;
   }
 
   const decision = decideAutoMerge(files, policy.policy);
-  process.stdout.write(values.json ? `${JSON.stringify(decision, null, 2)}\n` : `${formatReport(decision)}\n`);
+  process.stdout.write(
+    values.json ? `${JSON.stringify(decision, null, 2)}\n` : `${formatReport(decision)}\n`
+  );
   return decision.exitCode;
 }
 
@@ -323,5 +411,7 @@ try {
   isMain = false;
 }
 if (isMain) {
-  main(process.argv.slice(2)).then((code) => { process.exitCode = code; });
+  main(process.argv.slice(2)).then((code) => {
+    process.exitCode = code;
+  });
 }

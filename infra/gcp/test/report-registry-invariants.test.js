@@ -5,9 +5,9 @@
 // prefix change, IAM role swap) reds `node --test infra/gcp/test/` instead of
 // silently breaking short links.
 //
-// The RESOLVER side (danybgoode/smalldocs fork) and the report scripts
-// (scripts/lib/report-registry.mjs) hardcode the same bucket names by
-// convention — if a name here changes, those must change in the same wave.
+// The RESOLVER side (danybgoode/smalldocs fork) hardcodes the same bucket names
+// by convention, and the report scripts read them from reporting.config.json →
+// artifacts.registry — if a name here changes, both must change in the same wave.
 
 const test = require('node:test')
 const assert = require('node:assert/strict')

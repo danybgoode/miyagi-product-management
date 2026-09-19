@@ -14,14 +14,14 @@
 //      kept returning 200 and stayed green while silently testing a different page, and the real
 //      marketplace lost smoke coverage entirely with no signal at all.
 //
-// (2) is the reason the checks below assert IDENTITY, not just a status code. A 200 tells you
+// (2) is the reason the checks in prod-smoke.checks.mjs assert IDENTITY, not just a status code. A 200 tells you
 // something answered; it does not tell you the right thing answered. Every check that guards a
 // rendered page therefore carries a structural body marker.
 //
 // This watchdog earned its keep there — it caught a data defect CI reported green on. That is exactly
 // why its assertions belong under review rather than in a text box.
 //
-// THE RULE THAT CONSTRAINS EVERY EDIT HERE: never make a red smoke pass by weakening it
+// THE RULE THAT CONSTRAINS EVERY EDIT TO THE CHECKS: never make a red smoke pass by weakening it
 // (scripts/routines/smoke-triage.prompt.md). When a route moves, re-point the check at the new
 // contract and, where the move itself is a contract worth keeping, assert the move too. Do not
 // relax an assertion to silence a red run — the origin's precedent was a strict assertion deliberately
@@ -78,7 +78,6 @@ export const JS_MEDIA_TYPES = [
   'application/ecmascript',
 ];
 
-
 /**
  * Pure: does this Content-Security-Policy permit an arbitrary third-party site to frame the page?
  *
@@ -100,7 +99,7 @@ export function framesAllowedFromAnywhere(csp) {
       policy
         .split(';')
         .map((d) => d.trim())
-        .find((d) => /^frame-ancestors\b/i.test(d)),
+        .find((d) => /^frame-ancestors\b/i.test(d))
     )
     .filter(Boolean);
 
@@ -108,8 +107,6 @@ export function framesAllowedFromAnywhere(csp) {
   if (directives.length === 0) return false;
   return directives.every((d) => d.split(/\s+/).slice(1).includes('*'));
 }
-
-
 
 /**
  * Pure: work out the path a check should hit, given the results of the checks before it.
@@ -204,12 +201,12 @@ export function parseMediaType(contentType) {
 export function wantsBody(want) {
   return Boolean(
     want.bodyIsJson ||
-      want.bodyIncludes?.length ||
-      want.bodyExcludes?.length ||
-      want.bodyJsonMatches ||
-      want.bodyJsonIncludes ||
-      want.bodyJsonRequires ||
-      want.bodyJsonPaths,
+    want.bodyIncludes?.length ||
+    want.bodyExcludes?.length ||
+    want.bodyJsonMatches ||
+    want.bodyJsonIncludes ||
+    want.bodyJsonRequires ||
+    want.bodyJsonPaths
   );
 }
 
@@ -238,7 +235,9 @@ export function evaluateCheck(check, observation, base) {
   if (want.location !== undefined) {
     const got = normalizeLocation(location, base);
     if (got !== want.location) {
-      problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
+      problems.push(
+        `expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`
+      );
     }
   }
   // Body-dependent assertions are evaluated ONLY when the body was actually read. An unread body
@@ -268,7 +267,7 @@ export function evaluateCheck(check, observation, base) {
       for (const [field, expected] of Object.entries(want.bodyJsonMatches ?? {})) {
         if (doc?.[field] !== expected) {
           problems.push(
-            `JSON field "${field}" is ${JSON.stringify(doc?.[field])}, expected ${JSON.stringify(expected)}`,
+            `JSON field "${field}" is ${JSON.stringify(doc?.[field])}, expected ${JSON.stringify(expected)}`
           );
         }
       }
@@ -300,7 +299,7 @@ export function evaluateCheck(check, observation, base) {
     problems.push(
       actual
         ? `media type is ${JSON.stringify(actual)}, which is not a JSON media type`
-        : 'no content-type header, so the media type could not be checked',
+        : 'no content-type header, so the media type could not be checked'
     );
   }
   if (want.mediaTypeIn) {
@@ -308,7 +307,9 @@ export function evaluateCheck(check, observation, base) {
     if (!actual) {
       problems.push('no content-type header, so the media type could not be checked');
     } else if (!want.mediaTypeIn.includes(actual)) {
-      problems.push(`media type is ${JSON.stringify(actual)}, expected one of ${JSON.stringify(want.mediaTypeIn)}`);
+      problems.push(
+        `media type is ${JSON.stringify(actual)}, expected one of ${JSON.stringify(want.mediaTypeIn)}`
+      );
     }
   }
   if (want.framesFromAnywhere && !framesAllowedFromAnywhere(headers?.['content-security-policy'])) {
@@ -316,7 +317,7 @@ export function evaluateCheck(check, observation, base) {
     problems.push(
       csp
         ? `content-security-policy is ${JSON.stringify(csp)}, which does not permit third-party framing`
-        : 'no content-security-policy header, so third-party framing is not proven',
+        : 'no content-security-policy header, so third-party framing is not proven'
     );
   }
   for (const [name, needle] of Object.entries(want.headerIncludes ?? {})) {
@@ -330,15 +331,17 @@ export function evaluateCheck(check, observation, base) {
     if (value === undefined || value === null) {
       problems.push(`missing the ${name} header (expected it to contain ${JSON.stringify(needle)})`);
     } else if (!accepted.some((n) => String(value).toLowerCase().includes(String(n).toLowerCase()))) {
-      problems.push(`${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`);
+      problems.push(
+        `${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`
+      );
     }
   }
-  for (const needle of bodyWasRead ? want.bodyIncludes ?? [] : []) {
+  for (const needle of bodyWasRead ? (want.bodyIncludes ?? []) : []) {
     if (!(body ?? '').includes(needle)) {
       problems.push(`body is missing the marker ${JSON.stringify(needle)}`);
     }
   }
-  for (const needle of bodyWasRead ? want.bodyExcludes ?? [] : []) {
+  for (const needle of bodyWasRead ? (want.bodyExcludes ?? []) : []) {
     if ((body ?? '').includes(needle)) {
       problems.push(`body unexpectedly contains ${JSON.stringify(needle)}`);
     }
@@ -409,7 +412,9 @@ export function formatReport(results, summary, base) {
 
   if (summary.unavailable > 0) {
     lines.push('');
-    lines.push('An UNAVAILABLE check was not observed at all — it is not evidence that the thing is healthy.');
+    lines.push(
+      'An UNAVAILABLE check was not observed at all — it is not evidence that the thing is healthy.'
+    );
   }
   return lines.join('\n');
 }
@@ -437,7 +442,9 @@ async function observe(url, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
       return { ...observed, body: null, bodyError: String(bodyErr?.message ?? bodyErr) };
     }
   } catch (err) {
-    return { error: err?.name === 'AbortError' ? `timed out after ${timeoutMs}ms` : String(err?.message ?? err) };
+    return {
+      error: err?.name === 'AbortError' ? `timed out after ${timeoutMs}ms` : String(err?.message ?? err),
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -466,12 +473,41 @@ export async function runChecks(base, deps = {}) {
     }
     const observation = await observe(`${origin}${resolved.path}`, deps);
     // Derived expectations (the embed check's per-shop identity marker) merge over the static ones.
-    const effective = resolved.expect
-      ? { ...check, expect: { ...check.expect, ...resolved.expect } }
-      : check;
+    const effective = resolved.expect ? { ...check, expect: { ...check.expect, ...resolved.expect } } : check;
     results.push(evaluateCheck(effective, observation, origin));
   }
   return results;
+}
+
+/**
+ * Load the project's checks module. Every way it can fail — absent, a syntax error, no `CHECKS`, an
+ * empty `CHECKS` — is "could not look" (state 2), NEVER state 1: exit 1 means an assertion was
+ * OBSERVED false, and the triage routine treats it as a production regression. A typo in the checks
+ * file must not page anyone about production.
+ * Returns `{ ok: true, BASE, CHECKS }` or `{ ok: false, error }`. `importer` is injectable for tests.
+ */
+export async function loadChecks(
+  path = CHECKS_PATH,
+  { exists = existsSync, importer = (p) => import(pathToFileURL(p).href) } = {}
+) {
+  if (!exists(path)) {
+    return {
+      ok: false,
+      error:
+        `${path} not found — no assertions to run.\n` +
+        '  Copy scripts/prod-smoke.checks.example.mjs to scripts/prod-smoke.checks.mjs and fill in your checks.',
+    };
+  }
+  let mod;
+  try {
+    mod = await importer(path);
+  } catch (e) {
+    return { ok: false, error: `${path} failed to load (${e.message}) — no assertions ran.` };
+  }
+  if (!Array.isArray(mod.CHECKS) || mod.CHECKS.length === 0) {
+    return { ok: false, error: `${path} exports no CHECKS (or an empty array) — no assertions to run.` };
+  }
+  return { ok: true, BASE: mod.BASE, CHECKS: mod.CHECKS };
 }
 
 async function main() {
@@ -479,14 +515,14 @@ async function main() {
     options: { json: { type: 'boolean' }, base: { type: 'string' } },
     allowPositionals: false,
   });
-  if (!existsSync(CHECKS_PATH)) {
-    // No checks is "could not look", which is state 2 — never a green run over nothing.
-    console.error(`prod-smoke: ${CHECKS_PATH} not found — no assertions to run.\n` +
-      '  Copy scripts/prod-smoke.checks.example.mjs to scripts/prod-smoke.checks.mjs and fill in your checks.');
+  // No usable checks is "could not look", which is state 2 — never a green run over nothing.
+  const loaded = await loadChecks();
+  if (!loaded.ok) {
+    console.error(`prod-smoke: ${loaded.error}`);
     process.exitCode = 2;
     return;
   }
-  const { BASE, CHECKS } = await import(pathToFileURL(CHECKS_PATH).href);
+  const { BASE, CHECKS } = loaded;
   if (!values.base && !BASE) {
     console.error('prod-smoke: prod-smoke.checks.mjs exports no BASE and no --base was given.');
     process.exitCode = 2;
@@ -522,6 +558,11 @@ try {
 // NOT a top-level await: main() imports the project's prod-smoke.checks.mjs, which imports helpers
 // (JS_MEDIA_TYPES) from THIS module. Awaiting here would leave this module mid-evaluation while that
 // import waits on it — a deadlock that exits 13 with an "unsettled top-level await" warning.
+// Anything main() throws past that is also "could not look": an unhandled rejection would exit 1,
+// which the triage routine would read as a production regression.
 if (isMain) {
-  main();
+  main().catch((e) => {
+    console.error(`prod-smoke: could not run the checks — ${e.stack || e.message}`);
+    process.exitCode = 2;
+  });
 }
