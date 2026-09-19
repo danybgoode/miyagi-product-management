@@ -52,7 +52,7 @@ test('isTestSurface admits the smoke scaffolding and nothing else', () => {
   assert.equal(isTestSurface('scripts/browser-smoke-summary.mjs'), true);
 
   assert.equal(isTestSurface('app/(shell)/l/[id]/Gallery.tsx'), false);
-  assert.equal(isTestSurface('lib/flags.ts'), false);
+  assert.equal(isTestSurface('lib/pricing.ts'), false);
   assert.equal(isTestSurface('components/feedback/Toast.tsx'), false);
   assert.equal(isTestSurface('supabase/migrations/20260101_x.sql'), false);
 

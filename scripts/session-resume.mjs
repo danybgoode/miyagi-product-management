@@ -154,7 +154,7 @@ export function parseMigrationListTable(text) {
   // prints the pair as two rows: `local|remote` for the recorded one and `local|<blank>` for the other.
   //
   // Reading that blank row naively as "unapplied" is FALSE — verified live 2026-07-26: the version is in
-  // schema_migrations and both flag rows exist in platform_flags. Worse, it is false on the one signal
+  // schema_migrations and both flag rows exist in the project's own tables. Worse, it is false on the one signal
   // that has to be trustworthy: it would send someone to re-apply an already-applied migration. So a
   // version present anywhere in the remote column is applied, and the duplicate is reported as what it
   // actually is — a version collision, which is a real (if minor) repo defect worth naming once.
