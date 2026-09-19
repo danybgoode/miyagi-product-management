@@ -1,3 +1,26 @@
+---
+epic: pipeline-throughput
+sprint: 1
+title: shard the frontend gate
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "prep job resolves the preview once ⬜"
+    as_a: a builder
+    i_want: the preview resolved a single time per PR
+    so_that: sharding adds parallelism instead of multiplying a ten-minute wait
+    risk: low
+    status: done
+  - id: S1.2
+    title: "shard the api project across a matrix ⬜"
+    as_a: a builder
+    i_want: the gate to run in parallel
+    so_that: the long pole on every PR shrinks
+    risk: low
+    status: done
+---
 # Pipeline throughput — Sprint 1: shard the frontend gate
 
 **Status:** ⬜ not started

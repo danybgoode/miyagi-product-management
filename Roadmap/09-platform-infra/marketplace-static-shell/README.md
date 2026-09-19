@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: marketplace-static-shell
+title: "Static marketplace shell — kill the per-request homepage function ✅"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 4
+stories_total: 9
 ---
 
 # Epic: Static marketplace shell — kill the per-request homepage function ✅

@@ -1,3 +1,33 @@
+---
+epic: imported-shop-homepage-integrity
+sprint: 1
+title: Catalog repair and admin parity
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Repair the six imported shop image sets
+    as_a: a marketplace visitor
+    i_want: each newly imported claimable shop to have representative photos
+    so_that: the homepage and listing page communicate what the shop is before it is claimed
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Make the Selección admin pool authoritative"
+    as_a: a product owner
+    i_want: "`/admin/seleccion` to expose every pinned listing regardless of freshness"
+    so_that: the admin and homepage cannot disagree through invisible old pins
+    risk: low
+    status: done
+  - id: S1.3
+    title: Apply and verify the approved pin cleanup
+    as_a: a product owner
+    i_want: the approved five visible pins to be the complete ranked set
+    so_that: "the public Selección reflects what the admin shows"
+    risk: low
+    status: done
+---
 # Imported-shop homepage integrity — Sprint 1: Catalog repair and admin parity
 
 **Status:** ✅ complete

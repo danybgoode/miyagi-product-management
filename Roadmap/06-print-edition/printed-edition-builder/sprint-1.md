@@ -1,3 +1,47 @@
+---
+epic: printed-edition-builder
+sprint: 1
+title: The builder foundation
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S1.1
+    title: A layout workspace that saves itself
+    as_a: the editor
+    i_want: a per-issue workspace where my approved ads appear in a tray and I can place them onto magazine pages
+    so_that: I can start composing without setup or fear of losing work
+    risk: high
+    status: done
+  - id: S1.2
+    title: Auto-fill pages on a classic grid
+    as_a: the editor
+    i_want: the magazine to use tidy classified-style grids (quarter / half / full page) and to auto-arrange all approved ads with one click
+    so_that: I skip manual typesetting
+    risk: high
+    status: done
+  - id: S1.3
+    title: Rearrange, merge & add editorial pages
+    as_a: the editor
+    i_want: to drag ads between slots and pages, merge two small ads into a bigger feature, and drop in editorial pieces
+    so_that: the magazine reads like a publication, not a database dump
+    risk: high
+    status: done
+  - id: S1.4
+    title: Style each ad to the retro look
+    as_a: the editor
+    i_want: quick per-ad styling
+    so_that: "I can hit the México-86 aesthetic fast"
+    risk: high
+    status: done
+  - id: S1.5
+    title: Preview & print from the browser
+    as_a: the editor
+    i_want: a true-to-print preview at the right paper size
+    so_that: I can save a PDF straight from my browser
+    risk: high
+    status: done
+---
 # Sprint 1 — The builder foundation
 
 **Goal:** give Miyagi a working canvas to lay out an issue from the approved paid ads, and preview it at real print size. Shipped & live.

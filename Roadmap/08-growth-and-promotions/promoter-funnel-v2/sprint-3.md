@@ -1,3 +1,33 @@
+---
+epic: promoter-funnel-v2
+sprint: 3
+title: Sprint 3
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: ".1 — Bundle + per-SKU promoter pricing config + display"
+    as_a: Daniel
+    i_want: admin-configurable per-SKU promoter prices and a bundle price (discount biggest on the full bundle, shrinking as items drop)
+    so_that: "the landing, handbook, and close workspace all show \"todo esto cuesta $X — con tu promotor $Y\" plus the per-item regular-vs-code comparison, from one config"
+    risk: high
+    status: done
+  - id: S3.2
+    title: ".2 — Subdomain first-year-free via promoter attribution"
+    as_a: a merchant enrolled through a promoter
+    i_want: "the subdomain free for my first year (100% off, then the normal $199/yr with a graceful lapse)"
+    so_that: signing with a promoter has an unmistakable perk
+    risk: high
+    status: done
+  - id: S3.3
+    title: ".3 — 2x1 printed ad: pay 1 edition, get 2 (MED/HIGH)"
+    as_a: a merchant buying a printed ad at close
+    i_want: to pay one edition and appear in two consecutive ones
+    so_that: trying the zine is easy
+    risk: high
+    status: done
+---
 # Sprint 3 · The offer — bundle pricing, free-first-year subdomain, 2x1 print ad
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: MED/**HIGH** (entitlements + comped money) —

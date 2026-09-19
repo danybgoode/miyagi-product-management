@@ -1,3 +1,26 @@
+---
+epic: seleccion-pins-authoritative
+sprint: 1
+title: Pins authoritative over price + grid grows to all pins
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Pins authoritative over price
+    as_a: an admin
+    i_want: "a pinned product to appear in the Selección even when it has no price"
+    so_that: "my rank-1 pin is always the Destacado — not skipped because it's a \"Sin precio\" event/agenda/art listing"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Grid grows to all qualifying pins
+    as_a: an admin
+    i_want: every product I pin to show under the Destacado in my order
+    so_that: "the Selección reflects my full curation instead of capping at 5"
+    risk: low
+    status: done
+---
 # Sprint 1 — Pins authoritative over price + grid grows to all pins
 
 **Epic:** [Selección — make admin pins authoritative](README.md) · **Risk:** LOW (frontend pure-logic) · **Repo:** `apps/miyagisanchez`.

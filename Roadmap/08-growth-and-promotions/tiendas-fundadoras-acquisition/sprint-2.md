@@ -1,3 +1,33 @@
+---
+epic: tiendas-fundadoras-acquisition
+sprint: 2
+title: Attributed application
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Attributed and deduplicated public application
+    as_a: a prospective founding merchant
+    i_want: a short, trustworthy application
+    so_that: Miyagi can follow up without asking me to create a shop first
+    risk: high
+    status: done
+  - id: S2.2
+    title: Separate contact and preview permissions
+    as_a: an applicant
+    i_want: to understand each permission I grant
+    so_that: applying never silently authorizes a public shop or promotional use
+    risk: high
+    status: done
+  - id: S2.3
+    title: PII-free funnel events and launch controls
+    as_a: a growth operator
+    i_want: the campaign funnel measured without contact data
+    so_that: we can improve conversion while the Miyagi relationship remains the PII source of truth
+    risk: high
+    status: done
+---
 # Tiendas Fundadoras acquisition — Sprint 2: Attributed application
 
 **Status:** ✅ Shipped + LIVE — PR #306 merged 2026-07-24 (squash 4f40cb3); migration applied, flag ON, prod smoke passed

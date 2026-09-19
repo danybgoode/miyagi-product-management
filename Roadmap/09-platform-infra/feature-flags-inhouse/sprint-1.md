@@ -1,3 +1,33 @@
+---
+epic: feature-flags-inhouse
+sprint: 1
+title: The store + read swap
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "(DB) platform_flags table + behavior-preserving seed"
+    as_a: the platform
+    i_want: a Supabase table holding the flag values
+    so_that: "there's one owned source of truth both apps can read"
+    risk: high
+    status: done
+  - id: S1.2
+    title: "(FE) swap lib/flags.ts internals to the Supabase in-process cache"
+    as_a: the admin
+    i_want: "the FE to read flag values from `platform_flags`"
+    so_that: a row flip changes app behavior with no deploy
+    risk: high
+    status: done
+  - id: S1.3
+    title: "(BE) swap apps/backend/src/lib/flags.ts internals to supabaseRead"
+    as_a: the admin
+    i_want: "the Medusa backend to read the same `platform_flags` rows"
+    so_that: "the checkout-rail kill is enforced for agents/UCP + `start-checkout`, not just hidden in the FE"
+    risk: high
+    status: done
+---
 # Sprint 1 — The store + read swap
 
 **Epic:** [In-house feature flags](README.md) · **Goal:** in-house flags actually serving in both apps, behind the

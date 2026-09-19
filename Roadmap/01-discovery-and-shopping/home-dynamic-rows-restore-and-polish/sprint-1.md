@@ -1,3 +1,33 @@
+---
+epic: home-dynamic-rows-restore-and-polish
+sprint: 1
+title: "Restore rows on prod — observed red, root cause, fix + breadcrumb"
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Observe the red + write the root cause (no code)
+    as_a: a signed-in buyer
+    i_want: my homepage to show my favorites rail and pending-offer ribbon
+    so_that: "I resume where I left off — today it silently shows nothing"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Fix the failing layer
+    as_a: a signed-in buyer
+    i_want: the rows to render on prod
+    so_that: the homepage is mine again
+    risk: low
+    status: done
+  - id: S1.3
+    title: Make island failure observable (breadcrumb)
+    as_a: a maintainer
+    i_want: a visible breadcrumb when the personalization fetch fails
+    so_that: "\"fail-open by design\" can never mask a prod outage again (this bug survived a platform migration unnoticed)"
+    risk: low
+    status: done
+---
 # Homepage dynamic rows — restore on prod + polish to spec — Sprint 1: Restore rows on prod — observed red, root cause, fix + breadcrumb
 
 **Status:** ✅ merged to main (PR #243, `a2061e9`) — Daniel's live prod smoke owed before epic close

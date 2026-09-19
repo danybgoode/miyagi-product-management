@@ -1,3 +1,26 @@
+---
+epic: founding-merchant-consent-previews
+sprint: 3
+title: Checklist, migration posture, and telemetry
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Preview-readiness checklist and lifecycle events
+    as_a: a Merchant Partner
+    i_want: one readiness checklist and visible audit trail
+    so_that: every activation follows the same quality and consent standard
+    risk: high
+    status: done
+  - id: S3.2
+    title: Historical public/unclaimed inventory
+    as_a: Daniel
+    i_want: a read-only inventory of existing promoter-created public/unclaimed shops
+    so_that: I can decide their disposition without silently changing merchants under a new consent rule
+    risk: low
+    status: done
+---
 # Founding merchant consent-safe previews — Sprint 3: Checklist, migration posture, and telemetry
 
 **Status:** ✅ Merged — FE #295; flag OFF, smoke owed to Daniel

@@ -1,3 +1,33 @@
+---
+epic: zine-editing-central
+sprint: 3
+title: consolidation
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Deprecate the Maqueta layout builder
+    as_a: Daniel (editor)
+    i_want: "the layout builder removed/hidden from `/admin/print` (editions, tiers, providers, submissions queue, social review, and export all stay), with a pointer to zine"
+    so_that: "there's one builder and no drift between two layout tools"
+    risk: low
+    status: done
+  - id: S3.2
+    title: Fine-tune guardrails on merchant-ad blocks
+    as_a: Daniel (editor)
+    i_want: "merchant-ad blocks in zine to expose style overrides only (background, border, text size, hide-fields — the `PrintBlockStyle` vocabulary) with content fields visibly locked (\"diseño del anunciante\")"
+    so_that: I can fine-tune fit without ever interfering with what the merchant designed
+    risk: low
+    status: done
+  - id: S3.3
+    title: Epic close
+    as_a: the team
+    i_want: "the poster's 06 section updated (Maqueta line → zine central), the retro written, durable learnings promoted, and `node scripts/build-order.mjs` regenerated in the same PR as the `status: shipped` flip"
+    so_that: the docs stay truthful and CI stays green
+    risk: low
+    status: done
+---
 # Zine editing central — Sprint 3: consolidation
 
 **Status:** ✅ Sprint 3 complete — all 3 stories shipped. Story 3.1 merged via PR #169 (squash

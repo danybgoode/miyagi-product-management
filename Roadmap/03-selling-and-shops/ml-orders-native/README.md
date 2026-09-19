@@ -2,6 +2,13 @@
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. All 3 sprints merged: S1 (BE 28f4e15/FE c77a63c), S2 (BE 6b4e8dc/FE 5623f97), S3 merged 2026-07-06 (BE 0611d73/FE bef747d). ml.orders_enabled flipped ON 2026-07-06. EPIC SHIPPED 2026-07-08 — RETROSPECTIVE.md + poster + memory done; DoD closed with the live ML-sandbox smokes stated as owed (S1 steps 7-12, S3 steps 10-12 batch-day + agent round-trip), not blocking, per the epic-close convention this codebase otherwise uses everywhere else.
 slug: ml-orders-native
 archetype: Builder
+title: "ML orders, native — Mercado Libre sales land as real Medusa orders"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 10
 ---
 
 # Epic · ML orders, native — Mercado Libre sales land as real Medusa orders

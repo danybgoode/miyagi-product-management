@@ -1,3 +1,26 @@
+---
+epic: catalog-management
+sprint: 4
+title: Profit columns (gated on profit-analyzer)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: Margin columns + killer flags
+    as_a: a seller
+    i_want: estimated margin per product per channel in the catalog table (Miyagi vs ML, after fees/shipping/COGS), with margin-killer flags
+    so_that: "the table tells me where I'm silently losing money"
+    risk: high
+    status: done
+  - id: S4.2
+    title: Bulk apply suggested prices
+    as_a: a seller
+    i_want: to select underpriced products and bulk-apply the suggested price through the staged pipeline
+    so_that: repricing is one reviewed action
+    risk: high
+    status: done
+---
 # Catalog management — Sprint 4: Profit columns (gated on profit-analyzer)
 
 **Status:** ✅ MERGED 2026-07-10 — backend PR [#77](https://github.com/danybgoode/medusa-bonsai-backend/pull/77)

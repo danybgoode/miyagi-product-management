@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: merchant-activation-scorecard
+title: Merchant activation scorecard
+area: 08-growth-and-promotions
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 6
 ---
 
 # Epic: Merchant activation scorecard

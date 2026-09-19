@@ -1,3 +1,26 @@
+---
+epic: deploy-pipeline-tuning
+sprint: 3
+title: "Edge cache: origin probe + a scoped Cloudflare Cache Rule"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Origin Cache-Control probe (data-gathering, no code change)
+    as_a: the platform
+    i_want: "to know exactly which routes' origin responses are genuinely cacheable"
+    so_that: "a Cloudflare Cache Rule only ever caches content that's actually safe to cache — never something dynamically rendered per-request or per-tenant"
+    risk: high
+    status: done
+  - id: S3.2
+    title: "Cloudflare Cache Rule for the confirmed-static set (MED — Daniel sign-off required)"
+    as_a: the platform
+    i_want: "genuinely static pages served straight from Cloudflare's edge"
+    so_that: they never round-trip to Cloud Run and load faster globally
+    risk: high
+    status: done
+---
 # Sprint 3 — Edge cache: origin probe + a scoped Cloudflare Cache Rule
 
 **Epic:** [Deploy pipeline tuning](README.md) · **Risk:** MED — Daniel sign-off before the Cache Rule goes live

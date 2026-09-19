@@ -1,3 +1,40 @@
+---
+epic: market-architecture-foundation
+sprint: 2
+title: Country routes, selector, and Mexico continuity
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Master-brand root selector and canonical /mx
+    as_a: a visitor
+    i_want: to choose the market I am entering
+    so_that: Miyagi never mixes country commerce contexts
+    risk: high
+    status: done
+  - id: S2.2
+    title: Market-prefixed Mexico discovery and permanent redirects
+    as_a: a Mexico buyer
+    i_want: every marketplace route to retain one market context
+    so_that: search, categories, shops, products, cart creation, and canonical URLs agree
+    risk: high
+    status: done
+  - id: S2.3
+    title: Market-aware reads and agent contract
+    as_a: a buyer or agent
+    i_want: catalog tools scoped to a market
+    so_that: results, currency, and checkout URLs cannot cross country boundaries
+    risk: high
+    status: done
+  - id: S2.4
+    title: Locale and international SEO are separate
+    as_a: a search engine or multilingual visitor
+    i_want: stable market and language signals
+    so_that: market routing is indexable without confusing language with commerce
+    risk: high
+    status: done
+---
 # Market architecture foundation — owned shops, country marketplaces, and locale — Sprint 2: Country routes, selector, and Mexico continuity
 
 **Status:** ✅ shipped — [#327](https://github.com/danybgoode/miyagisanchezcommerce/pull/327) merged; live in production and smoke-verified 2026-07-31

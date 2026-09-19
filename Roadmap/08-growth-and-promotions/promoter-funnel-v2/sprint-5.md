@@ -1,3 +1,54 @@
+---
+epic: promoter-funnel-v2
+sprint: 5
+title: Sprint 5
+risk: high
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S5.1
+    title: ".1 — Photos + real listings in the close workspace"
+    as_a: a promoter standing up a shop
+    i_want: to add photos and at least one real listing (title, price, category, photo) during setup
+    so_that: "the merchant's shop looks real before I leave"
+    risk: high
+    status: done
+  - id: S5.2
+    title: ".2 — Predefined location lists"
+    as_a: a promoter
+    i_want: "estado/municipio selects (the marketplace's canonical lists) instead of the free-text \"Ubicación (opcional)\""
+    so_that: "the shop's location is real data"
+    risk: high
+    status: done
+  - id: S5.3
+    title: ".3 — Zine coverage honesty"
+    as_a: a promoter selling a printed ad
+    i_want: "the close flow to compare the shop's location against the active edition's `coverage_zones` and tell me — before the sale — when the zine doesn't circulate there (\"sirve como branding; cubrimos puntos estratégicos\")"
+    so_that: merchants are never surprised
+    risk: high
+    status: done
+  - id: S5.4
+    title: ".4 — Ad design in the close flow"
+    as_a: a promoter
+    i_want: "to design the merchant's ad right there (reuse the self-serve ad builder) or hand it off (\"el comerciante lo diseña después\")"
+    so_that: "the printed ad's value is delivered, not promised — and as the merchant, I want to review/edit my ad later from my own panel"
+    risk: high
+    status: done
+  - id: S5.5
+    title: ".5 — Merchant receipt after a promoter close"
+    as_a: a merchant
+    i_want: "OUR branded receipt email after the close (beyond Stripe's): what I bought, what I paid, what happens next — especially the printed ad (edition dates, design status, coverage note) — plus the claim-link recap"
+    so_that: I have something in writing from the platform itself
+    risk: high
+    status: done
+  - id: S5.6
+    title: ".6 — Downloadable zine ad-rate template (LOW/MED)"
+    as_a: a promoter
+    i_want: a print-ready PDF of the zine with ad-slot placeholders and live tier pricing (rate card)
+    so_that: "I can show merchants exactly what they're buying and where"
+    risk: high
+    status: done
+---
 # Sprint 5 · Close-flow completeness — listings, locations, coverage, ad design, receipt, rate card
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: MED (no new money paths) · Status: ✅ merged 2026-07-03, PR [#168](https://github.com/danybgoode/miyagisanchezcommerce/pull/168) → `26f4506`

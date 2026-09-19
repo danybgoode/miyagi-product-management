@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: agent-readable-about-surface
+title: Agent-readable why-sell / about surface
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 6
 ---
 
 # Epic: Agent-readable why-sell / about surface

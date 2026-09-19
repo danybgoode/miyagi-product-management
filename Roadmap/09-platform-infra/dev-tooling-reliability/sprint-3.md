@@ -1,3 +1,33 @@
+---
+epic: dev-tooling-reliability
+sprint: 3
+title: Wrong-branch tax (auto-resolve PR + HEAD assertion)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "PR# optional, resolved from the current branch"
+    as_a: a developer on a feature branch
+    i_want: "`cross-review.mjs` to figure out the PR itself"
+    so_that: "I don't pass the wrong number and review the wrong PR"
+    risk: low
+    status: done
+  - id: S3.2
+    title: Stale / wrong-branch guard
+    as_a: a developer
+    i_want: the command to refuse a stale diff
+    so_that: "I never review code that isn't what's actually on the branch HEAD"
+    risk: low
+    status: done
+  - id: S3.3
+    title: Share the resolver with cross-panel.mjs
+    as_a: a maintainer
+    i_want: one resolver, not two
+    so_that: "the planning panel gets the same branch-safety for free (reuse, don't fork — per LEARNINGS)"
+    risk: low
+    status: done
+---
 # Dev-tooling reliability — Sprint 3: Wrong-branch tax (auto-resolve PR + HEAD assertion)
 
 **Status:** ✅ **SHIPPED** — PR **#17** squash-merged to `main` (`2534aeb`), CI green (`build-order-fresh` + `inflight`).

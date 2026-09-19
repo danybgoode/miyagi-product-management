@@ -3,6 +3,13 @@ status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progres
 slug: ways-of-work-lean-pass
 sprints_in: https://github.com/danybgoode/dobby-foundation/tree/main/Roadmap/09-platform-infra/ways-of-work-lean-pass  # sprint docs + retro live in the foundation repo (S1.1)
 build_order: 3
+title: "Ways-of-work lean pass — remove the training wheels, close the adoption gap"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 0
+stories_total: 0
 ---
 
 # Epic: Ways-of-work lean pass — remove the training wheels, close the adoption gap

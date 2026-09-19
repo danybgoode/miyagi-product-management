@@ -1,3 +1,33 @@
+---
+epic: cost-comparator-homepage
+sprint: 2
+title: Report + consultant mode + agent surface
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Report export via smalldocs
+    as_a: a consultant (or the merchant themself)
+    i_want: the comparison exported as a clean, styled report
+    so_that: the pitch survives the conversation
+    risk: low
+    status: done
+  - id: S2.2
+    title: Consultant prefill link + promoter leave-behind
+    as_a: a promoter/consultant
+    i_want: "a prefillable `/comparador` link"
+    so_that: I can hand the merchant a comparison already loaded with their numbers
+    risk: low
+    status: done
+  - id: S2.3
+    title: "Agent surface: /agent data + MCP compare_costs"
+    as_a: "a merchant's own AI agent"
+    i_want: to run the same comparison over UCP/MCP
+    so_that: "the answer a merchant gets from their assistant matches the page (AGENTS rule #3)"
+    risk: low
+    status: done
+---
 # Comparador de costos — Sprint 2: Report + consultant mode + agent surface
 
 **Status:** 🟡 built, PR open — [PR #278](https://github.com/danybgoode/miyagisanchezcommerce/pull/278)

@@ -1,3 +1,33 @@
+---
+epic: agent-discovery-and-indexing
+sprint: 1
+title: "es-MX `/agent`, prompt-target consistency, OG re-verify"
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Translate /agent to es-MX
+    as_a: a Spanish-speaking visitor/agent
+    i_want: "`/agent` in es-MX"
+    so_that: "it isn't jarringly English"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Promoted prompt consistently targets /vende
+    as_a: a seller/agent
+    i_want: "the promoted \"ask your agent\" prompt to open `/vende` everywhere"
+    so_that: the richest page (cost comparison + personas) is what gets evaluated
+    risk: low
+    status: done
+  - id: S1.3
+    title: Re-verify the /vende link unfurl
+    as_a: a person sharing a Miyagi link
+    i_want: "`/vende` to unfurl correctly"
+    so_that: shared links look right
+    risk: low
+    status: done
+---
 # Agent discovery & indexing — Sprint 1: es-MX `/agent`, prompt-target consistency, OG re-verify
 
 **Status:** ✅ SHIPPED 2026-07-02 — frontend **PR #156** (`c922e38`). All three stories merged; deterministic

@@ -1,3 +1,33 @@
+---
+epic: pdp-lightbox-close-button-occluded
+sprint: 1
+title: portal the lightbox, close the class
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Portal the lightbox out of the trapped subtree
+    as_a: "a buyer viewing a listing's photos"
+    i_want: the close button to be visible and tappable
+    so_that: I can leave the fullscreen gallery the obvious way instead of guessing at a gesture
+    risk: low
+    status: done
+  - id: S1.2
+    title: Document the constraint + audit the sibling overlays
+    as_a: a builder adding any future full-screen overlay
+    i_want: the stacking constraint stated where the constraint lives
+    so_that: "I don't spend an afternoon raising a z-index that can never work"
+    risk: low
+    status: done
+  - id: S1.3
+    title: "Anti-recurrence guard (optional — drop it if it isn't cheap)"
+    as_a: the team
+    i_want: CI to catch an unportalled full-screen overlay
+    so_that: "this class can't come back the way the raw-color and emoji classes did"
+    risk: low
+    status: done
+---
 # Fixed overlays trapped under the platform chrome — Sprint 1: portal the lightbox, close the class
 
 **Status:** ✅ complete — frontend PR [#285](https://github.com/danybgoode/miyagisanchezcommerce/pull/285), squash `ca702d3`

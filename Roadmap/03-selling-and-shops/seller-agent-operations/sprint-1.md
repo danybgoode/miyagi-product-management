@@ -1,3 +1,26 @@
+---
+epic: seller-agent-operations
+sprint: 1
+title: Respond to offers via MCP
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: list_offers MCP tool
+    as_a: "a seller's agent"
+    i_want: "to see the shop's open offers"
+    so_that: I can decide how to respond
+    risk: high
+    status: done
+  - id: S1.2
+    title: respond_to_offer MCP tool (accept / counter / decline)
+    as_a: "a seller's agent"
+    i_want: to respond to an offer
+    so_that: I can close negotiations conversationally
+    risk: high
+    status: done
+---
 # Sprint 1 — Respond to offers via MCP
 
 Goal: a seller's agent can see open price offers and respond — accept, counter, or decline — without the

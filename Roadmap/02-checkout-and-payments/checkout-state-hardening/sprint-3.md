@@ -1,3 +1,40 @@
+---
+epic: checkout-state-hardening
+sprint: 3
+title: One total + trust polish
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: "One coupon-aware total, summary = CTA"
+    as_a: a buyer
+    i_want: the pay-button total to equal the summary total
+    so_that: the price never appears to change at the moment I commit
+    risk: high
+    status: done
+  - id: S3.2
+    title: Manual-payment instructions preview before placement
+    as_a: a buyer paying manually
+    i_want: to see which methods are available (and a preview of the instructions) before I place the order
+    so_that: "I'm not committing blind"
+    risk: high
+    status: done
+  - id: S3.3
+    title: Async-success recovery, not false success
+    as_a: a buyer whose online payment is still settling
+    i_want: "a recovery state instead of a premature \"success,\""
+    so_that: "I'm never told an order succeeded when it didn't"
+    risk: high
+    status: done
+  - id: S3.4
+    title: Honest refund language (copy-only)
+    as_a: a seller
+    i_want: SPEI/cash refund status to say what actually happened
+    so_that: "\"issued\" never implies an off-platform transfer already left my account"
+    risk: high
+    status: done
+---
 # Sprint 3 — One total + trust polish
 
 > Epic: [Checkout & Manual-Payment State Hardening](README.md) · **Risk: HIGH — Daniel merges.**

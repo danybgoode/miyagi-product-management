@@ -1,3 +1,40 @@
+---
+epic: process-token-diet
+sprint: 1
+title: Script the boilerplate, flip the review policy
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Kickoff-prompt generator
+    as_a: Daniel
+    i_want: "`node skills/groom/emit-kickoff.mjs --epic <slug> --sprint N` to print the finished Stage-8 Claude Code kickoff (invariant preamble from a template + the sprint delta read from the epic/sprint docs)"
+    so_that: no model tokens are spent re-typing boilerplate per sprint
+    risk: low
+    status: done
+  - id: S1.2
+    title: Smoke-walkthrough skeleton in the scaffolder
+    as_a: "that delta (three concrete stems: marketplace page, seller-portal `manage` stem, Stripe-4242 money-path shape). Not rebuilt, and not written up as new work. As a building agent"
+    i_want: "`scaffold-epic.mjs` to emit the Stage-8b numbered-steps skeleton into each `sprint-N.md` with real URL stems pre-filled"
+    so_that: builders fill only actions and observable results
+    risk: low
+    status: done
+  - id: S1.3
+    title: Review-policy flip
+    as_a: the team
+    i_want: "cross-agent review mandatory on every PR and the fresh-reviewer pass optional after cross-review findings are addressed — except HIGH tier, where it stays mandatory"
+    so_that: "review cost matches risk (LEARNINGS: the independent pass repeatedly caught real money-path issues on HIGH PRs — catalog-management S6, arranged-only-delivery S2)"
+    risk: low
+    status: done
+  - id: S1.4
+    title: "Doc drift: deploy rail"
+    as_a: a fresh agent
+    i_want: "WAYS-OF-WORKING cadence step 7 to say frontend → Cloud Run (not Vercel prod — stale since 2026-07-10)"
+    so_that: orientation docs match reality
+    risk: low
+    status: done
+---
 # Process token-diet — Sprint 1: Script the boilerplate, flip the review policy
 
 **Status:** 🟦 In review

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: shop-settings-refactor
+title: Shop Settings refactor
+area: 03-selling-and-shops
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 4
+stories_total: 21
 ---
 
 # Epic: Shop Settings refactor

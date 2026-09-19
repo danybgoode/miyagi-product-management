@@ -1,3 +1,33 @@
+---
+epic: merchant-activation-scorecard
+sprint: 2
+title: Operating surface
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Funnel, aging and drill-through operating view
+    as_a: an activation lead
+    i_want: a weekly scorecard I can act from
+    so_that: the team addresses the largest bottleneck and oldest commitments first
+    risk: low
+    status: done
+  - id: S2.2
+    title: Resolver-identical CSV export
+    as_a: an activation lead
+    i_want: the filtered scorecard as a CSV
+    so_that: I can review or share the same weekly facts without hand-copying values
+    risk: low
+    status: done
+  - id: S2.3
+    title: Read-only agent parity
+    as_a: an authorized operator using an agent
+    i_want: the same scorecard facts and definitions
+    so_that: weekly analysis does not depend on scraping the UI
+    risk: low
+    status: done
+---
 # Merchant activation scorecard — Sprint 2: Operating surface
 
 **Status:** ✅ Shipped — merged to `main`, PR 307 (squash `f608869`; `d4722c6` S2.1 · `62781fe` S2.2 · `16a5cab` S2.3 + review rounds `53db72c`/`dfc3072`); read-only, no migration, no flag. Admin-session browser smoke owed to Daniel (pre-launch).

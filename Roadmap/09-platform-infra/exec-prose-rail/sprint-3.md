@@ -1,3 +1,33 @@
+---
+epic: exec-prose-rail
+sprint: 3
+title: the weekly recap at exec altitude, and the lessons loop
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "--brief / --post --prose-file on weekly-recap.mjs"
+    as_a: a product owner
+    i_want: the weekly recap to read like a CPO wrote it
+    so_that: "I get the week's through-line instead of a merge tally"
+    risk: low
+    status: done
+  - id: S3.2
+    title: weekly-recap.prompt.md teaches the same loop
+    as_a: the weekly routine
+    i_want: "the identical write→guard→revise loop"
+    so_that: both scheduled surfaces behave the same way
+    risk: low
+    status: done
+  - id: S3.3
+    title: the lessons loop, wired and documented
+    as_a: the team
+    i_want: each caught mistake to protect every future report
+    so_that: the rail improves instead of repeating itself
+    risk: low
+    status: done
+---
 # Executive prose rail — Sprint 3: the weekly recap at exec altitude, and the lessons loop
 
 **Status:** ✅ Built — branch `feat/exec-prose-rail`

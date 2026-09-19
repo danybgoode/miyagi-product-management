@@ -1,3 +1,47 @@
+---
+epic: living-shop-social-storefront
+sprint: 4
+title: Theme engine v2
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S4.1
+    title: Three-mode theme schema + resolver
+    as_a: a seller
+    i_want: a simple choice between Default, Retro Social and Custom
+    so_that: I understand the level of control without choosing among implementation-oriented presets
+    risk: high
+    status: done
+  - id: S4.2
+    title: Legacy preset compatibility
+    as_a: an existing shop owner
+    i_want: my current Papel/Pizarra/Lienzo/Terracota look to survive the new model
+    so_that: an upgrade does not silently reset my storefront
+    risk: high
+    status: done
+  - id: S4.3
+    title: Finished Retro Social theme
+    as_a: a seller
+    i_want: a nostalgic social-profile storefront that still behaves like modern commerce
+    so_that: my shop can feel playful and personal rather than SaaS-templated
+    risk: high
+    status: done
+  - id: S4.4
+    title: Custom recipe vocabulary
+    as_a: a seller
+    i_want: substantial visual freedom through understandable controls
+    so_that: I can create a distinct shop without writing code
+    risk: high
+    status: done
+  - id: S4.5
+    title: Theme application across all shop surfaces
+    as_a: a buyer
+    i_want: "the merchant's visual identity to persist beyond the homepage"
+    so_that: PDPs, collections, events and content pages feel like one site
+    risk: high
+    status: done
+---
 # Living Shop — Sprint 4: Theme engine v2
 
 **Status:** ✅ shipped — `c578cba` (PR #391)

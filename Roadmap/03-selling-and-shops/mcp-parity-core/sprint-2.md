@@ -1,3 +1,19 @@
+---
+epic: mcp-parity-core
+sprint: 2
+title: "CPP \"Opciones\" / price_grid configurator"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: configure_listing_options over MCP
+    as_a: a shop agent
+    i_want: to add dimensioned options and per-combo prices (and quantity tiers) to a listing
+    so_that: I can build a CPP-configurable product (e.g
+    risk: high
+    status: done
+---
 # MCP parity core — Sprint 2: CPP "Opciones" / price_grid configurator
 
 **Status:** ✅ MERGED — PR [#265](https://github.com/danybgoode/miyagisanchezcommerce/pull/265)

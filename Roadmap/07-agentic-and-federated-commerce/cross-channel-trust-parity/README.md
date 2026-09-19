@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: cross-channel-trust-parity
+title: Cross-channel Storefront Trust Parity
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic — Cross-channel Storefront Trust Parity

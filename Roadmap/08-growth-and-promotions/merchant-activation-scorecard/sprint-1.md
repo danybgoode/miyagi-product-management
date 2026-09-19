@@ -1,3 +1,33 @@
+---
+epic: merchant-activation-scorecard
+sprint: 1
+title: Metric contract and data adapter
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Versioned metric dictionary and fixtures
+    as_a: an activation lead
+    i_want: each metric to have one testable definition
+    so_that: weekly decisions do not change with the reader or dashboard query
+    risk: low
+    status: done
+  - id: S1.2
+    title: Golden Beans journey and Medusa fact adapter
+    as_a: a scorecard consumer
+    i_want: journey and commerce facts joined predictably
+    so_that: stage and outcome measures share one merchant identity without copied data
+    risk: low
+    status: done
+  - id: S1.3
+    title: Authenticated scorecard read model and degraded states
+    as_a: an admin
+    i_want: a filterable scorecard response with data health
+    so_that: I can distinguish zero performance from missing telemetry
+    risk: low
+    status: done
+---
 # Merchant activation scorecard — Sprint 1: Metric contract and data adapter
 
 **Status:** ✅ Shipped — merged to `main`, PR 307 (squash `f608869`; `9a4b66d` S1.1 · `7b13407` S1.2 · `86d2119` S1.3 + review rounds `53db72c`/`dfc3072`); read-only, no migration, no flag

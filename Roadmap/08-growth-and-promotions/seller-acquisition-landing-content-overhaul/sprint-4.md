@@ -1,3 +1,19 @@
+---
+epic: seller-acquisition-landing-content-overhaul
+sprint: 4
+title: "Mobile-responsive sweep · status: ✅ shipped 2026-06-26 (PR #129 squash `1e95f4e`)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S4.1
+    title: No mobile overflow across all /vende pages
+    as_a: a visitor on a phone
+    i_want: "every `/vende*` page to fit my screen with no horizontal overflow"
+    so_that: the page feels trustworthy
+    risk: low
+    status: done
+---
 # Sprint 4 — Mobile-responsive sweep  ·  status: ✅ shipped 2026-06-26 (PR #129 squash `1e95f4e`)
 
 > Fix the overflow Daniel flagged across all `/vende*` pages. Mostly the shared renderer

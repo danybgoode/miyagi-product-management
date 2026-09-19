@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. S1+S2 merged 2026-06-30; S3 (monthly cadence) merged 2026-07-01.
 slug: subdomain-pricing
+title: "Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 6
 ---
 
 # Epic · Subdomain pricing — turn the free subdomain into a competitively-priced paid SKU

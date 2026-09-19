@@ -1,3 +1,54 @@
+---
+epic: merchant-partner-lifecycle
+sprint: 2
+title: Signed-human follow-up
+risk: high
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S2.1
+    title: Fact-bounded editable follow-up drafts
+    as_a: a Merchant Partner
+    i_want: help drafting a relevant follow-up
+    so_that: I can respond quickly while remaining responsible for what the merchant receives
+    risk: high
+    status: done
+  - id: S2.2
+    title: Idempotent steward reminders
+    as_a: a Merchant Partner
+    i_want: reminders for overdue merchant work
+    so_that: I keep service promises without repeatedly checking the queue
+    risk: high
+    status: done
+  - id: S2.3
+    title: Explicit human send and provenance boundary
+    as_a: a merchant
+    i_want: outreach to come from an accountable person
+    so_that: assistance never becomes unreviewed automated messaging
+    risk: high
+    status: done
+  - id: S2.4
+    title: fact-bounded drafts
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.5
+    title: idempotent steward reminders
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.6
+    title: the no-auto-send boundary
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Merchant Partner lifecycle — Sprint 2: Signed-human follow-up
 
 **Status:** ✅ Shipped — [PR #310](https://github.com/danybgoode/miyagisanchezcommerce/pull/310) merged (squash `946aa98`); migration `20260725110000` applied + verified live 2026-07-25

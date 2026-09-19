@@ -1,6 +1,13 @@
 ---
 status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: panfleto-premium-shop
+title: "Panfleto — the first premium shop"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Building
+sprints_total: 4
+stories_total: 8
 ---
 
 # Epic: Panfleto — the first premium shop

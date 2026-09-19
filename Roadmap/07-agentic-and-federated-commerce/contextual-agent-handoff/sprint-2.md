@@ -1,3 +1,40 @@
+---
+epic: contextual-agent-handoff
+sprint: 2
+title: Rich human-readable context
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: AgentContext provider + per-page setter
+    as_a: a shopper
+    i_want: the prompt to reflect the real page content
+    so_that: "it's readable and specific"
+    risk: low
+    status: done
+  - id: S2.2
+    title: PDP + shop embed human-readable details
+    as_a: a shopper on a PDP or shop
+    i_want: the product title/price (or shop name) inside the prompt
+    so_that: the copied text is self-explanatory
+    risk: low
+    status: done
+  - id: S2.3
+    title: Account/orders contextual handoff in the navbar card
+    as_a: a buyer on my orders/account
+    i_want: the navbar AI card to offer order-specific help
+    so_that: I can track or resolve an order fast
+    risk: low
+    status: done
+  - id: S2.4
+    title: Lock the builder + smoke walkthrough
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Contextual agent handoff — Sprint 2: Rich human-readable context
 
 **Status:** ✅ SHIPPED 2026-06-26 — **PR [#130](https://github.com/danybgoode/miyagisanchezcommerce/pull/130)

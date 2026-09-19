@@ -1,3 +1,33 @@
+---
+epic: pwa-liquid-glass-nav-polish
+sprint: 1
+title: Bar restructure + glass polish (light)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Re-order the bar + icons-only
+    as_a: a buyer on the PWA
+    i_want: "a bar ordered `Inicio · Mensajes · ⊕ Vender · Favoritos · Perfil`, icons only"
+    so_that: my core destinations are one thumb-tap away in a clean, native-feeling bar
+    risk: low
+    status: done
+  - id: S1.2
+    title: Detached liquid-glass search control
+    as_a: a buyer
+    i_want: a distinct glass search button beside the bar
+    so_that: search is always one tap away without crowding the tabs
+    risk: low
+    status: done
+  - id: S1.3
+    title: Liquid-glass visual polish (light)
+    as_a: a buyer
+    i_want: the bar to look like polished iOS-26 liquid glass
+    so_that: the installed app feels premium
+    risk: low
+    status: done
+---
 # PWA Liquid-Glass Nav Polish — Sprint 1: Bar restructure + glass polish (light)
 
 **Status:** ✅ **MERGED to prod** — squash `071246d` ([PR #98](https://github.com/danybgoode/miyagisanchezcommerce/pull/98)),

@@ -1,3 +1,33 @@
+---
+epic: founding-merchant-activation-ops
+sprint: 1
+title: Field record and consent-safe intake
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Canonical relationship schema and dark-launch flag
+    as_a: an activation operator
+    i_want: one durable merchant relationship record
+    so_that: intake does not depend on a spreadsheet or prematurely created shop
+    risk: high
+    status: done
+  - id: S1.2
+    title: Authorized mobile intake, resume and dedupe
+    as_a: a Founding Merchant Partner
+    i_want: to save and resume a partial merchant record on my phone
+    so_that: an in-person conversation produces a usable next step without duplicate data entry
+    risk: high
+    status: done
+  - id: S1.3
+    title: Consent evidence and acquisition attribution
+    as_a: an operator
+    i_want: permission and acquisition provenance attached to the relationship
+    so_that: we know what the merchant allowed and who originated the work
+    risk: high
+    status: done
+---
 # Founding merchant activation operations — Sprint 1: Field record and consent-safe intake
 
 **Status:** ✅ Shipped — merged to `main`, PR 303 (`4df3d87` S1.1 · `3fb1961` S1.2 · `b18ae84` S1.3); migrations applied + flag `promoter.activation_crm_enabled` verified ON live 2026-07-24

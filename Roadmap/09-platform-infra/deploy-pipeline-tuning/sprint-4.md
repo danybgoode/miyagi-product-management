@@ -1,3 +1,26 @@
+---
+epic: deploy-pipeline-tuning
+sprint: 4
+title: "Cloud Run scaling: measure before touching"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: Pull real Cloud Run metrics (data-gathering, no code change)
+    as_a: the platform
+    i_want: real concurrency/latency data for both services
+    so_that: any scaling change is justified by evidence, not a generic default
+    risk: low
+    status: done
+  - id: S4.2
+    title: "Tune --concurrency (conditional on S4.1's data)"
+    as_a: the platform
+    i_want: "Cloud Run to spin up a new instance before an existing one's event loop lags"
+    so_that: request latency stays consistent under load
+    risk: low
+    status: done
+---
 # Sprint 4 — Cloud Run scaling: measure before touching
 
 **Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW

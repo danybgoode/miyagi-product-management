@@ -1,3 +1,26 @@
+---
+epic: seller-agent-operations
+sprint: 2
+title: Manage listings via MCP
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Backend internal seller-product route
+    as_a: the platform
+    i_want: a service-to-service write path for listings
+    so_that: "the agent (which has no Clerk JWT) can manage a seller's catalog safely"
+    risk: high
+    status: done
+  - id: S2.2
+    title: Listing MCP tools
+    as_a: "a seller's agent"
+    i_want: to manage my listings
+    so_that: I can keep the catalog fresh
+    risk: high
+    status: done
+---
 # Sprint 2 — Manage listings via MCP
 
 Goal: a seller's agent can manage the shop's existing listings — pause/activate and edit price, title,

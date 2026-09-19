@@ -1,3 +1,40 @@
+---
+epic: interaction-feedback-and-admin-repair
+sprint: 3
+title: contact address, emoji round 2, the checklist
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: there is a way to reach a human
+    as_a: anyone with a question
+    i_want: to find an email address
+    so_that: I can ask it
+    risk: high
+    status: done
+  - id: S3.2
+    title: the emoji guard can see its own files
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.3
+    title: the market selector drops its flag emoji
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.4
+    title: every checklist step is actionable
+    as_a: a new merchant
+    i_want: to act on any unfinished step
+    so_that: the checklist is a tool rather than a status display
+    risk: high
+    status: done
+---
 # Sprint 3 — contact address, emoji round 2, the checklist
 
 **Status:** 🟦 In review · PR [#377](https://github.com/danybgoode/miyagisanchezcommerce/pull/377)

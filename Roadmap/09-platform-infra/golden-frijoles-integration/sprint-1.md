@@ -1,3 +1,40 @@
+---
+epic: golden-frijoles-integration
+sprint: 1
+title: one SDK, one name
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Cut sdk-v0.4.0 from golden-beans
+    as_a: a platform owner
+    i_want: the renamed SDK published as a real release
+    so_that: the apps have something to depend on instead of a version that exists only on my laptop
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Migrate the storefront to @golden-frijoles/sdk"
+    as_a: a builder
+    i_want: the storefront importing the renamed package
+    so_that: the flag provider, the mirror, the definition catalog and the scenario provider all speak one brand
+    risk: low
+    status: done
+  - id: S1.3
+    title: "Migrate the backend to @golden-frijoles/sdk"
+    as_a: a builder
+    i_want: Medusa importing the renamed package
+    so_that: both repos resolve the same flag snapshot through the same client
+    risk: low
+    status: done
+  - id: S1.4
+    title: Pin the seven wire-protocol strings (D3)
+    as_a: a future agent
+    i_want: a spec that fails if anyone renames the scenario handshake
+    so_that: a well-meaning find-and-replace cannot silently break signature verification
+    risk: low
+    status: done
+---
 # Golden Frijoles integration — Sprint 1: one SDK, one name
 
 **Status:** ✅ shipped — storefront #366, backend #153

@@ -1,3 +1,19 @@
+---
+epic: homepage-seleccion-curation
+sprint: 3
+title: Dynamic rotation (shuffle per ISR window)
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Deterministic per-window shuffle of the unpinned remainder
+    as_a: a returning buyer
+    i_want: "the Selección to change over time"
+    so_that: the homepage feels alive
+    risk: high
+    status: done
+---
 # Sprint 3 — Dynamic rotation (shuffle per ISR window)
 
 **Epic:** [Homepage Selección: bug sweep + admin curation + dynamic rotation](README.md) · **Repo:** `apps/miyagisanchez`

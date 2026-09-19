@@ -1,3 +1,26 @@
+---
+epic: qa-guardrail-hardening
+sprint: 1
+title: lint actually runs, in both repos
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "frontend: scope the ignores honestly, fix our own code, gate it ⬜"
+    as_a: a builder
+    i_want: CI to enforce the lint rule our DoD already claims
+    so_that: compliance stops depending on memory
+    risk: low
+    status: done
+  - id: S1.2
+    title: "backend: a lint config from zero, and the same gate ⬜"
+    as_a: a builder
+    i_want: the backend to have any static analysis at all
+    so_that: it stops being the one repo with none
+    risk: low
+    status: done
+---
 # QA guardrail hardening — Sprint 1: lint actually runs, in both repos
 
 **Status:** ⬜ not started

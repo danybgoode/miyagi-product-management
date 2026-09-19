@@ -1,3 +1,40 @@
+---
+epic: pdp-redesign
+sprint: 5
+title: "Per-type blocks B: autos · inmuebles · events · unclaimed"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S5.1
+    title: "Autos · primary \"Agendar prueba de manejo\""
+    as_a: a buyer of a car
+    i_want: the REPUVE verification and vehicle specs up front
+    so_that: my fraud anxiety is resolved before anything else
+    risk: low
+    status: done
+  - id: S5.2
+    title: "Inmuebles · primary \"Agendar visita\""
+    as_a: a buyer of a property
+    i_want: distribution + location first
+    so_that: I can judge fit before contacting
+    risk: low
+    status: done
+  - id: S5.3
+    title: "Events / boletos · primary \"Comprar boleto\""
+    as_a: a buyer of a ticket
+    i_want: date/venue first and a clear way to buy + reach my ticket
+    so_that: I can buy and get in
+    risk: high
+    status: done
+  - id: S5.4
+    title: "Unclaimed · primary \"Contactar\""
+    as_a: a buyer on an unclaimed (imported) listing
+    i_want: an honest notice and a direct way to contact
+    so_that: I know the status and can still reach the seller
+    risk: low
+    status: done
+---
 # Sprint 5 — Per-type blocks B: autos · inmuebles · events · unclaimed
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW–MED** (frontend reorder on existing primitives; the events ticket

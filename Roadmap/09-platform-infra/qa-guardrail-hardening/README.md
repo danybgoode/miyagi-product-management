@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: qa-guardrail-hardening
+title: "QA guardrail hardening — close the gaps between the documented DoD and what CI enforces"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 4
+stories_total: 8
 ---
 
 # Epic: QA guardrail hardening — close the gaps between the documented DoD and what CI enforces

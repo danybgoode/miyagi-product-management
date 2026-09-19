@@ -1,3 +1,26 @@
+---
+epic: qa-guardrail-hardening
+sprint: 2
+title: delete the false gates, measure what we have
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "remove the two false-green integration scripts ⬜"
+    as_a: a builder
+    i_want: "`npm run` to contain no script that passes by doing nothing"
+    so_that: a green result means something
+    risk: low
+    status: done
+  - id: S2.2
+    title: "a coverage number in CI output, both repos ⬜"
+    as_a: a builder
+    i_want: to know what fraction of the code the suites touch
+    so_that: we argue about coverage from data instead of file counts
+    risk: low
+    status: done
+---
 # QA guardrail hardening — Sprint 2: delete the false gates, measure what we have
 
 **Status:** ⬜ not started

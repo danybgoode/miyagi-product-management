@@ -1,3 +1,33 @@
+---
+epic: miyagi-partners-mcp
+sprint: 2
+title: Funnel auto-grant + partner dashboard + seller revoke
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Promoter-close auto-grant
+    as_a: "a partner closing a shop through `/promotor/cerrar`"
+    i_want: "the closed shop granted to my partner scope automatically (role `manager`)"
+    so_that: the shop I just set up appears in my MCP and dashboard without an admin touch
+    risk: high
+    status: done
+  - id: S2.2
+    title: "/partner dashboard (read-only v1)"
+    as_a: a partner
+    i_want: "a `/partner` page listing my granted shops with role + granted-at and per-shop deep links into `/shop/manage`"
+    so_that: I can see and reach my portfolio in one place
+    risk: low
+    status: done
+  - id: S2.3
+    title: Seller-side revoke
+    as_a: a seller
+    i_want: to see and revoke any partner grant on my shop from shop settings
+    so_that: partner access is always under my control
+    risk: high
+    status: done
+---
 # Miyagi Partners — multi-tenant MCP credential + roles — Sprint 2: Funnel auto-grant + partner dashboard + seller revoke
 
 **Status:** ✅ merged dark 2026-07-17 — PR [#274](https://github.com/danybgoode/miyagisanchezcommerce/pull/274) (`85c8820`). Semantics decision (fresh-review, reversible): deliberate human decisions WIN over the funnel — no viewer→manager upgrade, no auto-re-grant after a seller revoke (ops note instead). ⚠ OWED: Daniel confirms that semantics + the smoke walkthrough below (flag ON window).

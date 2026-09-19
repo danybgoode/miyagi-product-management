@@ -1,3 +1,26 @@
+---
+epic: vercel-function-cost-reduction
+sprint: 1
+title: Backend cron cadence
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Sweepstakes draw every 15 min, not every minute
+    as_a: the platform
+    i_want: the sweepstakes-draw scheduled job to run every 15 min instead of every minute
+    so_that: "we stop spending ~43K Vercel function invocations/month (+ Fluid Active CPU) on an idempotent no-op draw that only acts when a sweepstakes has actually ended"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Reconcile-checkouts every 30 min
+    as_a: the platform
+    i_want: "the reconcile-checkouts job at `*/30` instead of `*/15`"
+    so_that: the incomplete-cart reconcile (not time-critical) halves its Vercel invocations
+    risk: low
+    status: done
+---
 # Vercel function & Fluid-CPU cost reduction — Sprint 1: Backend cron cadence
 
 **Status:** ✅ Shipped — both stories merged to backend `main` via [PR #28](https://github.com/danybgoode/medusa-bonsai-backend/pull/28) (squash `2fa1773`); antigravity cross-review clean. Owed to Daniel: post-deploy live draw smoke (step 3).

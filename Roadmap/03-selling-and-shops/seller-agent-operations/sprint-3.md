@@ -1,3 +1,26 @@
+---
+epic: seller-agent-operations
+sprint: 3
+title: Create listings via MCP
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Backend internal seller-product create route
+    as_a: the platform
+    i_want: a service-to-service create path for listings
+    so_that: "the agent (no Clerk JWT) can add to a seller's catalog through the same audited door used for updates"
+    risk: high
+    status: done
+  - id: S3.2
+    title: create_listing MCP tool
+    as_a: "a seller's agent"
+    i_want: to create a new listing
+    so_that: I can grow the catalog end-to-end without a human in the portal
+    risk: high
+    status: done
+---
 # Sprint 3 — Create listings via MCP
 
 Goal: a seller's agent can **create a brand-new listing** through MCP — completing the listing lifecycle it

@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: pdp-lightbox-close-button-occluded
+title: "Fixed overlays trapped under the platform chrome — the PDP lightbox close button"
+area: 01-discovery-and-shopping
+risk: low
+type: bug
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Fixed overlays trapped under the platform chrome — the PDP lightbox close button

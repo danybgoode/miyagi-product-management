@@ -1,3 +1,26 @@
+---
+epic: backend-production-readiness
+sprint: 1
+title: Backend staging environment
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Stand up medusa-web-staging
+    as_a: a builder
+    i_want: "a `medusa-web-staging` Cloud Run service on its own Neon DB branch, deployed by a staging-branch Cloud Build trigger"
+    so_that: "I can exercise backend changes against a prod-parity environment before merging to `main`"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Rotate prod JWT_SECRET / COOKIE_SECRET + document the procedure
+    as_a: the owner
+    i_want: "the prod session/cookie secrets rotated (they've been single-version since the 2026-05-28 migration) and a rotation procedure written"
+    so_that: "long-lived secrets aren't indefinite"
+    risk: high
+    status: done
+---
 # Backend Production Readiness — Sprint 1: Backend staging environment
 
 **Status:** ✅ **BOTH STORIES LIVE 2026-06-11** — Story 1.1 (staging stood up + auto-deploy proven) · Story 1.2

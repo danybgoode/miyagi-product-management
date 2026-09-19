@@ -1,3 +1,19 @@
+---
+epic: seller-acquisition-landing-pages
+sprint: 1
+title: "Strategy & Creative lock · status: ✅ creative locked 2026-06-07 (Daniel can still tweak copy)"
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Creative brief (locked)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Sprint 1 — Strategy & Creative lock  ·  status: ✅ creative locked 2026-06-07 (Daniel can still tweak copy)
 
 > **Planning/creative, NO code. Owned in Cowork; Daniel signs off.** The gate the build sprints

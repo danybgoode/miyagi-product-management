@@ -1,3 +1,26 @@
+---
+epic: interaction-feedback-and-admin-repair
+sprint: 2
+title: the admin surfaces
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "/admin/contenido stops accusing itself"
+    as_a: Daniel
+    i_want: "the copy editor's nav to name real pages"
+    so_that: I can find the string I want to change
+    risk: high
+    status: done
+  - id: S2.2
+    title: "the long admin lists paginate <a id=\"s5\"></a>"
+    as_a: Daniel
+    i_want: "`/admin/tenants` and `/admin/comunicaciones` to page"
+    so_that: they are not one unbroken scroll
+    risk: high
+    status: done
+---
 # Sprint 2 — the admin surfaces
 
 **Status:** 🟦 In review · PR [#376](https://github.com/danybgoode/miyagisanchezcommerce/pull/376), [#378](https://github.com/danybgoode/miyagisanchezcommerce/pull/378)

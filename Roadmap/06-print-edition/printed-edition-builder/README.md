@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: printed-edition-builder
+title: "Printed-Edition Builder (\"Maqueta\")"
+area: 06-print-edition
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 8
 ---
 
 # Epic · Printed-Edition Builder ("Maqueta")

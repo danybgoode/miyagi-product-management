@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seasonal-theme-engine
+title: Seasonal Theme Engine
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 9
 ---
 
 # Epic - Seasonal Theme Engine

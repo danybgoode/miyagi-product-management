@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: custom-slugs
+title: "Pretty URL: customizable shop slug (custom-slugs)"
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 5
 ---
 
 # Epic — Pretty URL: customizable shop slug (custom-slugs)

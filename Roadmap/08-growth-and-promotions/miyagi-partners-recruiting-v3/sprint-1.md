@@ -1,3 +1,40 @@
+---
+epic: miyagi-partners-recruiting-v3
+sprint: 1
+title: Apply
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Miyagi Partners US proposition and track router
+    as_a: a prospective operator
+    i_want: to understand the founding proof and distinguish it from the Promotor program
+    so_that: I choose the correct path without interpreting a platform feature list
+    risk: low
+    status: done
+  - id: S1.2
+    title: Structured three-shop operator application
+    as_a: a qualified operator
+    i_want: to submit my operating profile and three candidate shops
+    so_that: Miyagi can assess a real pilot without asking for secrets or a cutover commitment
+    risk: high
+    status: done
+  - id: S1.3
+    title: Track-aware admin review and notification
+    as_a: an operator-program reviewer
+    i_want: one queue showing track, qualification, candidate shops and consent status
+    so_that: I can approve, reject or request a conversation without confusing the founding offer with Promotor economics
+    risk: high
+    status: done
+  - id: S1.4
+    title: Privacy-safe recruitment measurement
+    as_a: the product owner
+    i_want: to distinguish visits, track choices, starts, valid three-shop submissions and disqualification reasons
+    so_that: we improve qualified commitment rather than vanity traffic
+    risk: low
+    status: done
+---
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 1: Apply
 
 **Status:** ✅ shipped

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: bookshop-launchpad
+title: "Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic: Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock

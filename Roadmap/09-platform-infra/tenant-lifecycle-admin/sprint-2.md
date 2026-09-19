@@ -1,3 +1,33 @@
+---
+epic: tenant-lifecycle-admin
+sprint: 2
+title: paused means dark, everywhere
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Catalog visibility follows status
+    as_a: a buyer
+    i_want: "a paused shop's products to be absent"
+    so_that: I never open a product page for a shop that cannot sell to me
+    risk: high
+    status: done
+  - id: S2.2
+    title: Checkout admission refuses a non-active seller
+    as_a: a platform owner
+    i_want: the money path to refuse independently of catalog visibility
+    so_that: a lingering channel link can never become a sale
+    risk: high
+    status: done
+  - id: S2.3
+    title: The seller portal explains itself
+    as_a: a paused merchant
+    i_want: to be told my account is paused
+    so_that: I do not think the product is broken
+    risk: high
+    status: done
+---
 # Tenant lifecycle — Sprint 2: paused means dark, everywhere
 
 **Status:** ✅ shipped — `8a9a2f1` (#154), fixed live by #156

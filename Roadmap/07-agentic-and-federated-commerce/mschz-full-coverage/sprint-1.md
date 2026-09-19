@@ -1,3 +1,33 @@
+---
+epic: mschz-full-coverage
+sprint: 1
+title: Prefix passthrough + reserved words + share-UI surfacing
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Known-prefix passthrough in the short-link middleware branch
+    as_a: a merchant (or promoter) sharing a Miyagi page
+    i_want: "`mschz.org/<prefix>/…` to open the identical path on `miyagisanchez.com` for the public prefixes `/g /e /v /s /l`"
+    so_that: one short branded domain covers sweepstakes, events, voting campaigns, shops (and their subpages), and listings
+    risk: high
+    status: done
+  - id: S1.2
+    title: Reserve g, e, v in both slug lists (defense-in-depth)
+    as_a: the platform
+    i_want: "`g`, `e`, `v` added to `RESERVED_SLUGS` in `lib/slug.ts` and the backend mirror (`apps/backend/src/api/store/sellers/me/route.ts`)"
+    so_that: "no shop or product can ever claim a passthrough prefix as a flat segment, even if the ≥3-char format rule is later relaxed"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Share UIs surface the mschz form
+    as_a: a seller sharing a sweepstake, event, or voting campaign
+    i_want: "the copy-link/QR surfaces to use `mschz.org/<prefix>/<slug>`"
+    so_that: printed QRs and social posts carry the short domain
+    risk: low
+    status: done
+---
 # mschz.org full coverage — short links for every shareable surface — Sprint 1: Prefix passthrough + reserved words + share-UI surfacing
 
 **Status:** ✅ shipped + live 2026-07-16 — FE PR [#269](https://github.com/danybgoode/miyagisanchezcommerce/pull/269) (`32bca66`), BE PR [#99](https://github.com/danybgoode/medusa-bonsai-backend/pull/99) (`4a6eb9d`). Passthrough live-verified (all 5 prefixes, query+case preserved, 404 fallthrough). Owed: Daniel QR camera-scan smoke.

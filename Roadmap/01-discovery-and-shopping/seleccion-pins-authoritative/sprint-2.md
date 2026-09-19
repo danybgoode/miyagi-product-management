@@ -1,3 +1,33 @@
+---
+epic: seleccion-pins-authoritative
+sprint: 2
+title: Pins render regardless of freshness
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.0
+    title: "Pre-flight · (no risk, investigation)"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.1
+    title: "Backend /store/listings?featured=true read-filter"
+    as_a: the homepage
+    i_want: to fetch only pinned products from Medusa
+    so_that: a pin renders no matter how old it is
+    risk: high
+    status: done
+  - id: S2.2
+    title: Frontend unions pins into the pool
+    as_a: an admin
+    i_want: my pin shown even if the product is older than the freshest listings
+    so_that: my hand-curation always wins
+    risk: high
+    status: done
+---
 # Sprint 2 — Pins render regardless of freshness
 
 **Epic:** [Selección — make admin pins authoritative](README.md) · **Risk:** MED (backend read-filter) · **Repos:** `apps/backend` + `apps/miyagisanchez`.

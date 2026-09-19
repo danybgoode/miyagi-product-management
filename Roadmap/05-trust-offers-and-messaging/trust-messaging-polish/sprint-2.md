@@ -1,3 +1,26 @@
+---
+epic: trust-messaging-polish
+sprint: 2
+title: Shared channel-aware trust component
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Extract the shared <TrustSignals> component (channel-aware)"
+    as_a: a buyer
+    i_want: "the seller's trust signals (verification, payment-protection, return window, pickup/contact) shown as one consistent block"
+    so_that: "trust doesn't depend on which page I'm on"
+    risk: low
+    status: done
+  - id: S2.2
+    title: Trust capsule at the negotiation entry
+    as_a: a buyer about to negotiate
+    i_want: the key trust/eligibility signals visible at the chat header / offer entry
+    so_that: I learn eligibility before I submit, not after
+    risk: low
+    status: done
+---
 # Sprint 2 — Shared channel-aware trust component
 
 > **Epic:** [Trust & Messaging Polish](README.md) · **BUILD-ORDER:** #3c · Epic C ·

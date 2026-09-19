@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: promoter-funnel-fixes
+title: "Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware \"Agente IA\" sheet"
+area: 08-growth-and-promotions
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Promoter funnel fixes — `{url}` prompt, `/promotor/cerrar` 404, promoter-aware "Agente IA" sheet

@@ -1,3 +1,40 @@
+---
+epic: short-links
+sprint: 1
+title: mschz.org short links
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Short-link routing for shops
+    as_a: a seller
+    i_want: "`mschz.org/my-shop`"
+    so_that: I can share a short, branded link
+    risk: high
+    status: done
+  - id: S1.2
+    title: Per-listing short codes
+    as_a: a seller
+    i_want: "`mschz.org/<code>` for a product"
+    so_that: I can share a single listing
+    risk: high
+    status: done
+  - id: S1.3
+    title: Discovery UI (copy)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.4
+    title: Customizable product slug (phaseable / can defer)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 1 — mschz.org short links
 
 Frontend only. Build → verify → commit per story.

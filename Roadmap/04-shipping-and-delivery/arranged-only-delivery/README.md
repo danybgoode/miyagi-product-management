@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: arranged-only-delivery
+title: Arranged-only delivery
+area: 04-shipping-and-delivery
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 5
 ---
 
 # Epic — Arranged-only delivery

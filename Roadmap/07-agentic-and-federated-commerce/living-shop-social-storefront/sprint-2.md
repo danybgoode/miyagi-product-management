@@ -1,3 +1,47 @@
+---
+epic: living-shop-social-storefront
+sprint: 2
+title: Living homepage
+risk: low
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S2.1
+    title: Wall becomes the homepage narrative
+    as_a: a buyer
+    i_want: "a seller's homepage to show what is happening now"
+    so_that: the shop feels current and inhabited rather than like a static product grid
+    risk: low
+    status: done
+  - id: S2.2
+    title: Native Post card
+    as_a: a buyer
+    i_want: merchant notes and images to read like authored shop content
+    so_that: I can understand the person/brand behind the catalog
+    risk: low
+    status: done
+  - id: S2.3
+    title: Native Product + Collection Wall cards
+    as_a: a buyer
+    i_want: "products and collections to appear inside the seller's story with real commerce actions"
+    so_that: discovery and shopping are one flow
+    risk: low
+    status: done
+  - id: S2.4
+    title: Native Event Wall card
+    as_a: a buyer
+    i_want: upcoming shop events to appear in the Wall with the real event action
+    so_that: "a merchant's physical/community activity is part of the storefront"
+    risk: low
+    status: done
+  - id: S2.5
+    title: Default Living Shop theme
+    as_a: a buyer
+    i_want: "the evolved default storefront to remain unmistakably Miyagi Sánchez and easy to shop"
+    so_that: social content does not reduce commerce clarity
+    risk: low
+    status: done
+---
 # Living Shop — Sprint 2: Living homepage
 
 **Status:** ✅ shipped — `58fb637` (PR #391)

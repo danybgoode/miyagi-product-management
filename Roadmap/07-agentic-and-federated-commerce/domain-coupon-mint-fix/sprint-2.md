@@ -1,3 +1,12 @@
+---
+epic: domain-coupon-mint-fix
+sprint: 2
+title: Prod live mint + live verify
+risk: high
+phase: Shipped
+stories_total: 0
+stories: []
+---
 # Domain-coupon mint fix — Sprint 2: Prod live mint + live verify
 
 **Status:** ✅ COMPLETE — fix merged (PR [#120](https://github.com/danybgoode/miyagisanchezcommerce/pull/120) `68af03f`) + Daniel minted the live coupon (2026-06-23): reads **0/100 · activo**, present in the Stripe live dashboard as *"Dominio propio — primer año gratis"*.

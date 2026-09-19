@@ -1,3 +1,33 @@
+---
+epic: tiendas-fundadoras-acquisition
+sprint: 1
+title: Campaign surface
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Focused founding-shop campaign page
+    as_a: a local merchant
+    i_want: a clear invitation in plain Spanish
+    so_that: I can decide whether a hands-on Miyagi setup and private preview is relevant to my business
+    risk: low
+    status: done
+  - id: S1.2
+    title: Editable content, metadata and agent parity
+    as_a: an admin
+    i_want: campaign copy and discoverability managed through existing content primitives
+    so_that: launch changes do not require rebuilding a page
+    risk: low
+    status: done
+  - id: S1.3
+    title: Capacity-aware closed state and dark-launch flag
+    as_a: an operator
+    i_want: the campaign safely closed before launch and when capacity is reached
+    so_that: Miyagi never promises onboarding it cannot deliver
+    risk: high
+    status: done
+---
 # Tiendas Fundadoras acquisition — Sprint 1: Campaign surface
 
 **Status:** ✅ Shipped + LIVE — PR #306 merged 2026-07-24 (squash 4f40cb3); migration applied, flag ON, prod smoke passed

@@ -1,3 +1,26 @@
+---
+epic: platform-migrations
+sprint: 1
+title: "Shopify connector → staging + parity score"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "Shopify connector: shop domain → staged supply batch"
+    as_a: a merchant (or consultant beside one)
+    i_want: "to point at my Shopify shop domain and have my catalog + policies pulled into Miyagi's import staging"
+    so_that: nothing is re-typed by hand
+    risk: high
+    status: done
+  - id: S1.2
+    title: Parity score + merchant-shareable report
+    as_a: a migrating merchant
+    i_want: "an honest report of what maps onto Miyagi and what doesn't"
+    so_that: "I know exactly what I'm getting before any money changes hands"
+    risk: high
+    status: done
+---
 # Platform migrations — Sprint 1: Shopify connector → staging + parity score
 
 **Status:** ✅ both stories built (PR pending). Commits: `b088b58` (Story 1.1), `65396d4` (Story 1.2)

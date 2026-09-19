@@ -1,3 +1,26 @@
+---
+epic: cross-channel-trust-parity
+sprint: 1
+title: "Wire `<TrustSignals>` across the white-label channels"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Embed shop-grid trust parity
+    as_a: a buyer browsing a shop embedded on a third-party site
+    i_want: "to see the shop's verification badge and payment / returns / pickup signals"
+    so_that: the embedded storefront feels as trustworthy as the marketplace listing
+    risk: low
+    status: done
+  - id: S1.2
+    title: White-label shell trust + subtle platform-assurance strip
+    as_a: "a buyer on a seller's own domain or subdomain"
+    i_want: "to see the shop's trust signals plus a discreet \"pago seguro · compra protegida\" assurance"
+    so_that: "I trust the purchase even though I'm off the marketplace and may not know Miyagi"
+    risk: low
+    status: done
+---
 # Sprint 1 — Wire `<TrustSignals>` across the white-label channels
 
 > **Epic:** [Cross-channel Storefront Trust Parity](README.md) · **BUILD-ORDER:** #3c · Epic D ·

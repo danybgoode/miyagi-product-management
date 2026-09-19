@@ -1,3 +1,40 @@
+---
+epic: granular-notifications
+sprint: 1
+title: "Preference model + dispatch seam + settings UI (email/push; Telegram stub)"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: One notification-dispatch seam
+    as_a: the system
+    i_want: "a single `dispatchToSeller(clerkUserId, event)` seam that resolves the seller's preferences and fans out to enabled channels"
+    so_that: every in-scope event goes through one place that respects preferences instead of calling email directly
+    risk: high
+    status: done
+  - id: S1.2
+    title: Per-user preference + Telegram-link store
+    as_a: the system
+    i_want: preferences and the (future) Telegram link persisted per user
+    so_that: "a seller's choices survive across sessions and the dispatcher can resolve them"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Seller preference center in settings
+    as_a: a seller
+    i_want: "a clear grid of channels × event-groups in my settings"
+    so_that: I control what reaches me where, in one glance
+    risk: high
+    status: done
+  - id: S1.4
+    title: Route in-scope already-durable events through the seam
+    as_a: the platform
+    i_want: "the v1 already-durable seller events to flow through `dispatchToSeller` instead of the direct email call"
+    so_that: preferences take effect with no regression to the default experience
+    risk: high
+    status: done
+---
 # Sprint 1 — Preference model + dispatch seam + settings UI (email/push; Telegram stub)
 
 > Epic: [Granular Multi-Channel Notifications](README.md) · **Risk: HIGH — Daniel merges.**

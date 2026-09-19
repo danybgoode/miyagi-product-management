@@ -1,6 +1,13 @@
 ---
 status: in-progress
 slug: reporthub-as-notion
+title: ReportHub as the Notion replacement
+area: 09-platform-infra
+risk: high
+type: feature
+phase: Building
+sprints_total: 3
+stories_total: 7
 ---
 
 # Epic: ReportHub as the Notion replacement

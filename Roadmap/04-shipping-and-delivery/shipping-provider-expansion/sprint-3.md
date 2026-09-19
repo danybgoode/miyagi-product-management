@@ -1,3 +1,47 @@
+---
+epic: shipping-provider-expansion
+sprint: 3
+title: "Correos de México — manual economy provider (Impresos v1)"
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S3.1
+    title: Pure Impresos tariff lib
+    as_a: the platform
+    i_want: "a versioned tariff table (weight bands → IVA-inclusive MXN totals, with `vigencia` date) + a pure `quoteCorreos(weightGrams)` calculator"
+    so_that: the rate is deterministic, spec-locked against the published PDF, and a tariff republication is a one-constant PR
+    risk: low
+    status: done
+  - id: S3.2
+    title: Seller opt-in + rate preview
+    as_a: a seller
+    i_want: "a toggle «Ofrecer Correos de México (económico)» in my shipping settings with a live rate preview from my package defaults and a plain explainer (drop-off at the post office, franqueo on me, printed-matter class, sin rastreo)"
+    so_that: "I control whether the slow-cheap option exists on my shop and know exactly what I'm signing up for"
+    risk: low
+    status: done
+  - id: S3.3
+    title: Correos option at checkout
+    as_a: a buyer
+    i_want: "«Correos de México — Económico · 4–10 días · sin rastreo» as a selectable shipping option, priced from item weight — shown only when `shipping.correos_enabled` is ON and the seller opted in and total weight ≤ table max —"
+    so_that: I can choose the no-hurry option for light, low-value items
+    risk: high
+    status: done
+  - id: S3.4
+    title: Manual fulfillment + honest emails
+    as_a: a seller
+    i_want: "Correos orders to ship through the existing manual-carrier flow — carrier pre-set to «Correos de México», tracking number optional (registered mail) — with buyer emails that set the sin-rastreo, 4–10 días expectation"
+    so_that: "fulfillment stays familiar and nobody is promised tracking that doesn't exist"
+    risk: high
+    status: done
+  - id: S3.5
+    title: Agent parity + specs
+    as_a: an AI shopping agent
+    i_want: the Correos method in UCP checkout-options/checkout-session exactly as the web sees it
+    so_that: "agent checkout stays at parity (AGENTS rule #3)"
+    risk: low
+    status: done
+---
 # Shipping provider expansion — Sprint 3: Correos de México — manual economy provider (Impresos v1)
 
 **Status:** ✅ MERGED — backend PR [#80](https://github.com/danybgoode/medusa-bonsai-backend/pull/80)

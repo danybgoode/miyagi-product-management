@@ -1,3 +1,33 @@
+---
+epic: pdp-redesign
+sprint: 2
+title: Confidence, liveness & gallery growth
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Confidence capsule + seller rating (#7)"
+    as_a: a buyer
+    i_want: "to see verification, response time, returns, and the seller's track record up front"
+    so_that: I trust the seller before I act
+    risk: low
+    status: done
+  - id: S2.2
+    title: Liveness / FOMO
+    as_a: a buyer
+    i_want: subtle signals that the item is in demand and fresh
+    so_that: I feel the nudge to act
+    risk: low
+    status: done
+  - id: S2.3
+    title: "Gallery back + share + counter (#1)"
+    as_a: a buyer
+    i_want: to leave the immersive gallery, share the listing, and see how many photos there are
+    so_that: I stay in control and can send it to someone
+    risk: low
+    status: done
+---
 # Sprint 2 — Confidence, liveness & gallery growth
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW** (frontend; reuses existing components + `marketplace_favorites`).

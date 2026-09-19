@@ -1,3 +1,40 @@
+---
+epic: agent-readable-about-surface
+sprint: 2
+title: "Expose to agents — manifest · /agent · llms.txt · MCP"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Manifest seller-onboarding/about block
+    as_a: an AI agent reading the manifest
+    i_want: a seller-onboarding/about block
+    so_that: I learn what Miyagi is + why/how to sell, not just how to buy
+    risk: low
+    status: done
+  - id: S2.2
+    title: "/agent supply-side section"
+    as_a: an agent on the briefing page
+    i_want: "a \"Para vender / why sell\" section"
+    so_that: I can advise a prospective seller
+    risk: low
+    status: done
+  - id: S2.3
+    title: "/llms.txt (+ robots pointer)"
+    as_a: "Claude / Perplexity answering \"ask Claude about miyagisanchez.com\""
+    i_want: "an `llms.txt`"
+    so_that: I prioritise the right pages + a clean brand summary
+    risk: low
+    status: done
+  - id: S2.4
+    title: MCP about_miyagi resource
+    as_a: an MCP client (Claude Desktop, etc.)
+    i_want: an about/why-sell resource
+    so_that: I get the structured story natively
+    risk: low
+    status: done
+---
 # Agent-readable why-sell / about surface — Sprint 2: Expose to agents — manifest · /agent · llms.txt · MCP
 
 **Status:** ✅ SHIPPED 2026-06-09 — [PR #59](https://github.com/danybgoode/miyagisanchezcommerce/pull/59) (`c12c969`) merged to `main`. All 4 stories; gate green (tsc + build + `api` spec + #4 guard).

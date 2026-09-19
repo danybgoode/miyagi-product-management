@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: promotions
+title: Seller Coupon Codes
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 4
 ---
 
 # Epic · Seller Coupon Codes

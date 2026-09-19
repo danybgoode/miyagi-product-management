@@ -1,3 +1,33 @@
+---
+epic: platform-migrations
+sprint: 2
+title: "Money path — `migration` SKU + quoted estimate"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: migration promoter SKU
+    as_a: a consultant (promoter)
+    i_want: to sell a white-glove migration on the spot at a platform-set price
+    so_that: a cash-first merchant can say yes in one visit
+    risk: high
+    status: done
+  - id: S2.2
+    title: Estimate generator + quoted-estimate record
+    as_a: a merchant with a big catalog
+    i_want: a platform-computed price I can see myself
+    so_that: "the consultant can't improvise a number"
+    risk: high
+    status: done
+  - id: S2.3
+    title: "\"Very custom\" → route to Daniel"
+    as_a: a platform owner
+    i_want: genuinely custom shops routed to me with evidence
+    so_that: "no one is silently quoted for work we can't do"
+    risk: high
+    status: done
+---
 # Platform migrations — Sprint 2: Money path — `migration` SKU + quoted estimate
 
 **Status:** ✅ MERGED + LIVE 2026-07-11. PR [#224](https://github.com/danybgoode/miyagisanchezcommerce/pull/224),

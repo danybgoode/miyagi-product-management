@@ -1,3 +1,33 @@
+---
+epic: gcp-account-migration
+sprint: 0
+title: stand up the empty twin
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S0.1
+    title: Provision the empty twin
+    as_a: Daniel
+    i_want: a fully provisioned, empty project under the new account
+    so_that: the risky sprints have somewhere validated to land
+    risk: low
+    status: done
+  - id: S0.2
+    title: Verify the inventory against reality
+    as_a: a builder about to migrate money data
+    i_want: the script defaults confirmed against the live old project
+    so_that: nothing gets silently left behind
+    risk: low
+    status: done
+  - id: S0.3
+    title: "Inventory record (run 2026-07-19, read-only, as leroytramafat@gmail.com)"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # GCP account migration — Sprint 0: stand up the empty twin
 
 **Status:** ✅ done 2026-07-19 — Story 0.2 (inventory) + Story 0.1 (twin provisioned)

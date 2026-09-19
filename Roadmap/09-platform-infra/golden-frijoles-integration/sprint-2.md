@@ -1,3 +1,33 @@
+---
+epic: golden-frijoles-integration
+sprint: 2
+title: "everything on except Envía"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Derive the live-vs-target flag diff
+    as_a: a platform owner
+    i_want: to see exactly which flags differ from the target state
+    so_that: the flip is a reviewed list rather than a blind sweep
+    risk: low
+    status: done
+  - id: S2.2
+    title: Bulk activation in /admin/flags
+    as_a: a platform owner
+    i_want: one action that brings every flag to target
+    so_that: I do not click 38 toggles and miss one
+    risk: high
+    status: done
+  - id: S2.3
+    title: "Assert rules: [] across the live snapshot"
+    as_a: a platform owner
+    i_want: "proof that \"on\" means on for everyone"
+    so_that: a targeting rule cannot quietly reduce a flag to a subset of tenants
+    risk: low
+    status: done
+---
 # Golden Frijoles integration — Sprint 2: everything on except Envía
 
 **Status:** ✅ no change required — production was already at target (verified live 2026-08-14)

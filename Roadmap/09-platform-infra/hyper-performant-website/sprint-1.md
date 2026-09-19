@@ -1,3 +1,33 @@
+---
+epic: hyper-performant-website
+sprint: 1
+title: Images (the 2.6 MB whale)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: R2 image delivery through the zone + Cache-Control + responsive sizes
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.2
+    title: LCP priority on the first row
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.3
+    title: Supply-import ingests hotlinked external images into R2
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Hyper-performant website — Sprint 1: Images (the 2.6 MB whale)
 
 **Status:** 🟦 built — draft [PR #276](https://github.com/danybgoode/miyagisanchezcommerce/pull/276), awaiting review/merge

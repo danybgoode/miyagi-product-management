@@ -1,3 +1,33 @@
+---
+epic: checkout-state-hardening
+sprint: 1
+title: Durable manual-payment state machine (the spine)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Persist the manual-payment state on the order
+    as_a: the system
+    i_want: "the manual-payment lifecycle persisted as a durable state on the order (`pending_payment → buyer_reported_paid → payment_confirmed → processing`)"
+    so_that: every surface reads one source of truth instead of inferring state from local button clicks
+    risk: high
+    status: done
+  - id: S1.2
+    title: "\"Ya hice el pago\" durably sets buyer_reported_paid"
+    as_a: a buyer
+    i_want: "my \"ya hice el pago\" to durably record `buyer_reported_paid` (with a timestamp) and still ping the seller"
+    so_that: "after a reload both of us still see \"pago reportado — en verificación,\" not a reset to \"pending\""
+    risk: high
+    status: done
+  - id: S1.3
+    title: "\"Who acts next\" copy keyed to state + inbox fix"
+    as_a: a buyer or seller
+    i_want: each state to tell me whose move it is
+    so_that: "I never mistake an unpaid order for one that's ready to ship"
+    risk: high
+    status: done
+---
 # Sprint 1 — Durable manual-payment state machine (the spine)
 
 > Epic: [Checkout & Manual-Payment State Hardening](README.md) · **Risk: HIGH — Daniel merges.**

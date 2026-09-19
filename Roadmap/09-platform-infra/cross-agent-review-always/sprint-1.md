@@ -1,3 +1,33 @@
+---
+epic: cross-agent-review-always
+sprint: 1
+title: CI auto-run (the skateboard)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Validate headless reviewer auth in CI · LOW (load-bearing, do first)"
+    as_a: a maintainer
+    i_want: "to know whether `codex` (or `agy`) can authenticate non-interactively in a GitHub runner"
+    so_that: I build the CI auto-run on a real mechanism, not an assumption
+    risk: low
+    status: done
+  - id: S1.2
+    title: cross-review.yml non-blocking workflow
+    as_a: a reviewer
+    i_want: a CI job that runs cross-review on every PR and posts the advisory comment
+    so_that: the second opinion happens without anyone remembering to run it
+    risk: low
+    status: done
+  - id: S1.3
+    title: Cost guard (skip trivial diffs)
+    as_a: a maintainer
+    i_want: trivial PRs to skip the run
+    so_that: "\"every PR\" doesn't mean paying for a review on a typo fix"
+    risk: low
+    status: done
+---
 # Sprint 1 — CI auto-run (the skateboard)
 
 **Epic:** [Cross-agent review on every PR](README.md) · **Risk:** all LOW · **Repo:** app repos' `.github/workflows/`

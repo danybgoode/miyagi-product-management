@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: bulk-import-migration
+title: Bulk Import & Express Migration
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 17
 ---
 
 # Epic · Bulk Import & Express Migration

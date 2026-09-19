@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Shipped at epic close 2026-06-22.
 slug: events-quantity-selector
+title: "Events: quantity selector (buy N admissions in one order)"
+area: 10-events-and-ticketing
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic — Events: quantity selector (buy N admissions in one order)

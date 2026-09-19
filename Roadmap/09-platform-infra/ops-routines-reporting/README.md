@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: ops-routines-reporting
+title: "Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic: Ops routines & reporting — standup, weekly recap, build-order, prune, PR babysit (Telegram)

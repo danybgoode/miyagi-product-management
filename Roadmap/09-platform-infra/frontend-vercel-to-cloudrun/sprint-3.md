@@ -1,3 +1,47 @@
+---
+epic: frontend-vercel-to-cloudrun
+sprint: 3
+title: Canonical cutover (crons, UCP checklist, apex/wildcard)
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S3.1
+    title: "Cron swap: Cloud Scheduler, rehearsed, exactly-once"
+    as_a: a platform operator
+    i_want: "the 4 vercel.json crons (`order-autoconfirm`, `print-pending`, `domain-lapse-sweep`, `launchpad-campaigns`) as Cloud Scheduler jobs invoking the same `/api/cron/*` routes directly against the dark Cloud Run URL (outside the public edge path), created paused, each manually triggered + idempotency re-checked against the dark URL, then swapped in one change (vercel.json cron block removed + jobs enabled)"
+    so_that: "every cron — especially the money-path `order-autoconfirm` — fires exactly once throughout"
+    risk: high
+    status: done
+  - id: S3.2
+    title: Webhook/CORS allow-lists + full-path staging smoke
+    as_a: a platform operator
+    i_want: "Clerk, Stripe and MercadoPago webhook/CORS settings allow-listing the new infrastructure, proven by a full-path staging smoke on `gcp.miyagisanchez.com` including a Stripe test-card checkout"
+    so_that: money and auth flows are verified on the new path before any real traffic rides it
+    risk: high
+    status: done
+  - id: S3.3
+    title: "UCP/MCP cutover checklist (named, asserted — not smoke luck)"
+    as_a: an AI agent shopping the marketplace
+    i_want: "the UCP surface fully correct on the new rail — capability manifest accurate, advertised base/origin URLs, checkout-session links, CORS, canonical-domain behavior —"
+    so_that: Rule 3 (agents are first-class) survives the migration
+    risk: high
+    status: done
+  - id: S3.4
+    title: "Cutover: apex + wildcard + mschz.org → the new rail"
+    as_a: a platform operator
+    i_want: "`miyagisanchez.com`, `.miyagisanchez.com` and the `mschz.org` redirector flipped to proxied records targeting the ALB"
+    so_that: canonical traffic serves from Cloud Run through Cloudflare
+    risk: high
+    status: done
+  - id: S3.5
+    title: Monitoring + deploy-finish Telegram on the new rail
+    as_a: a platform operator
+    i_want: uptime checks + alert policies on the canonical path (extending the idempotent provisioning script) and the frontend deploy-finish Telegram ping moved onto the Cloud Build Pub/Sub rail the backend already uses
+    so_that: the new rail is observable before the soak starts
+    risk: low
+    status: done
+---
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 3: Canonical cutover (crons, UCP checklist, apex/wildcard)
 
 **Status:** ✅ **All 5 stories shipped 2026-07-10.** Cutover is live: `miyagisanchez.com`,

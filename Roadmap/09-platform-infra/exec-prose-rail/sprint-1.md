@@ -1,3 +1,40 @@
+---
+epic: exec-prose-rail
+sprint: 1
+title: the shared guard, the CPO persona, the local writer rail
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: "scripts/lib/prose-guard.mjs: the pure mechanical check"
+    as_a: a product owner
+    i_want: every machine-drafted report checked before I read it
+    so_that: a confident falsehood never reaches me as status
+    risk: low
+    status: done
+  - id: S1.2
+    title: "scripts/lib/prose-writer.mjs: devin → agy, guard-and-retry"
+    as_a: an agent drafting internal prose
+    i_want: one rail with a fallback and a retry
+    so_that: "a capped writer or a flawed draft doesn't cost the artifact"
+    risk: low
+    status: done
+  - id: S1.3
+    title: the CPO persona + task files + lessons file
+    as_a: a reader
+    i_want: the reports written in one deliberate voice
+    so_that: quality is consistent instead of per-run luck
+    risk: low
+    status: done
+  - id: S1.4
+    title: prose-draft.mjs rides the shared rail
+    as_a: the coordinating agent
+    i_want: retro/poster/sprint-wrap drafts guarded too
+    so_that: the rail is proven on a real surface before the routines depend on it
+    risk: low
+    status: done
+---
 # Executive prose rail — Sprint 1: the shared guard, the CPO persona, the local writer rail
 
 **Status:** ✅ Built — branch `feat/exec-prose-rail`; all 4 stories (a5c72b4, 4495533, b25c433, a571d7c)

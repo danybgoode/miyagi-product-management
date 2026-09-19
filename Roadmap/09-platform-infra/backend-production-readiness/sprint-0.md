@@ -1,3 +1,12 @@
+---
+epic: backend-production-readiness
+sprint: 0
+title: Audit (SPIKE)
+risk: low
+phase: Shipped
+stories_total: 0
+stories: []
+---
 # Backend Production Readiness — Sprint 0: Audit (SPIKE)
 
 **Status:** ✅ **DONE — findings approved by Daniel 2026-06-11 (gate passed; staging call confirmed).** S1–S4

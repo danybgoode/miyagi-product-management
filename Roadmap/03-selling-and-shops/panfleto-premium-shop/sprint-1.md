@@ -1,3 +1,26 @@
+---
+epic: panfleto-premium-shop
+sprint: 1
+title: Rehome the printed edition to admin
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Placements sell through a platform-owned seller
+    as_a: a platform admin
+    i_want: print-ad placements minted and sold under a platform-owned seller (resolved from config, not a merchant-shop constant)
+    so_that: "the printed edition is an admin feature that survives any merchant shop's rename, migration, or closure"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Old constant unreachable, history intact
+    as_a: a developer
+    i_want: "`getMiyagiprintsSellerId()` gone and every call site on the new config-addressable resolver"
+    so_that: two placement-owner paths can never coexist
+    risk: high
+    status: done
+---
 # Panfleto — the first premium shop — Sprint 1: Rehome the printed edition to admin
 
 **Status:** ✅ shipped — both PRs merged + live in prod; cutover complete; placement checkout now

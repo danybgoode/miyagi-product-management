@@ -1,3 +1,26 @@
+---
+epic: support-widget
+sprint: 3
+title: Guest Support Checkout
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Guest support checkout
+    as_a: a supporter
+    i_want: to pay without a Miyagi account
+    so_that: casual support stays frictionless
+    risk: high
+    status: done
+  - id: S3.2
+    title: Seller payment routing
+    as_a: a seller
+    i_want: support payments routed to my connected Stripe or Mercado Pago account
+    so_that: support settles like the rest of my sales
+    risk: high
+    status: done
+---
 # Sprint 3 - Guest Support Checkout
 
 Goal: turn the support form into a guest-first payment handoff using the seller's existing Stripe Connect or

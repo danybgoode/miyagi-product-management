@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: homepage-polish-b
+title: "Homepage Polish — Dirección B «Catálogo limpio»"
+area: 01-discovery-and-shopping
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 11
 ---
 
 # Epic: Homepage Polish — Dirección B «Catálogo limpio»

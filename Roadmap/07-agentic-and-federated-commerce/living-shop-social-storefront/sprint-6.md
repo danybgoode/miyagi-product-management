@@ -1,3 +1,40 @@
+---
+epic: living-shop-social-storefront
+sprint: 6
+title: Agent and configuration parity
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S6.1
+    title: Storefront-as-Code parity for presentation + sections
+    as_a: a seller
+    i_want: my theme mode/recipe and controlled sections to import/export through the existing shop settings contract
+    so_that: my storefront is reproducible and portable
+    risk: low
+    status: done
+  - id: S6.2
+    title: MCP presentation parity
+    as_a: "a seller's agent"
+    i_want: to read and change the same Theme/Sections configuration the seller UI can
+    so_that: "“make my shop more retro and put Events before Collections” is one safe agent operation"
+    risk: low
+    status: done
+  - id: S6.3
+    title: MCP Wall tools
+    as_a: "a seller's agent"
+    i_want: "to create, list, edit, publish, schedule, pin and delete my shop's Wall entries"
+    so_that: agents can operate the living storefront end to end
+    risk: low
+    status: done
+  - id: S6.4
+    title: Public agent-readable shop narrative
+    as_a: a shopping agent
+    i_want: the public shop representation to expose recent Wall entries and enabled sections structurally
+    so_that: the social storefront is legible beyond pixels
+    risk: low
+    status: done
+---
 # Living Shop — Sprint 6: Agent and configuration parity
 
 **Status:** ✅ shipped — `00facf5` (PR #391)

@@ -1,3 +1,33 @@
+---
+epic: credentialed-browser-smoke
+sprint: 1
+title: wire the switch, count the skips, enumerate the secrets
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "wire MS_TEST_BROWSER_AUTH against the preview ⬜"
+    as_a: a builder
+    i_want: authed browser smokes to actually run where they can run
+    so_that: the credentialed layer stops being wired-but-dark
+    risk: high
+    status: done
+  - id: S1.2
+    title: "make the skip visible and countable ⬜"
+    as_a: a product owner
+    i_want: to see how much verification silently skipped
+    so_that: "a green tick stops meaning \"nothing ran\""
+    risk: high
+    status: done
+  - id: S1.3
+    title: "the enumerated secret list, derived from the spec tree ⬜"
+    as_a: Daniel
+    i_want: an exact list of what to provision and what each unlocks
+    so_that: I can close this in one sitting
+    risk: high
+    status: done
+---
 # Credentialed browser smoke — Sprint 1: wire the switch, count the skips, enumerate the secrets
 
 **Status:** ⬜ not started

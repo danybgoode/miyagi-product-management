@@ -1,3 +1,33 @@
+---
+epic: sweepstakes
+sprint: 3
+title: Automated Draw & Notifications
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Idempotent automated draw
+    as_a: the system
+    i_want: to freeze entries and draw one winning ticket after the campaign ends
+    so_that: tenants cannot bias the result
+    risk: low
+    status: done
+  - id: S3.2
+    title: Winner dashboard and email
+    as_a: a tenant
+    i_want: to see the winner and notify them automatically
+    so_that: prize fulfillment can begin without exposing full participant data
+    risk: low
+    status: done
+  - id: S3.3
+    title: Consolation broadcast
+    as_a: a tenant
+    i_want: to message non-winners with an optional discount code
+    so_that: the captured audience can still convert
+    risk: low
+    status: done
+---
 # Sprint 3 — Automated Draw & Notifications
 
 Goal: campaigns close automatically, draw one winning ticket fairly, and let the

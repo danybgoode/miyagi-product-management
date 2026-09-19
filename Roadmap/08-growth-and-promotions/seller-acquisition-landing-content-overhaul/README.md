@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seller-acquisition-landing-content-overhaul
+title: "Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)"
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 5
 ---
 
 # Seller-Acquisition Landing Pages — Content Strategy + es-MX + Mobile Overhaul (v2)

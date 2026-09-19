@@ -1,3 +1,19 @@
+---
+epic: build-order-ci-self-heal
+sprint: 1
+title: Guard heals instead of failing
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Self-heal the derived board at both layers
+    as_a: Daniel
+    i_want: "a stale `BUILD-ORDER.md` to be regenerated automatically (staged into the commit locally; bot-committed onto the PR branch in CI)"
+    so_that: forgotten regens stop redding unrelated PRs
+    risk: low
+    status: done
+---
 # Build-order CI self-heal — Sprint 1: Guard heals instead of failing
 
 **Status:** ✅ shipped — PR #93 (`29796c2`), 2026-07-17; both heal paths observed live on the PR itself

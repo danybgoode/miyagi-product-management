@@ -1,3 +1,33 @@
+---
+epic: ml-orders-native
+sprint: 2
+title: "Full lifecycle: cancel/refund, notifications, entitlement + kill-switch"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Cancellation / refund mapping
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.2
+    title: Seller notifications for ML orders
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.3
+    title: Entitlement + kill-switch wiring
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 2 — Full lifecycle: cancel/refund, notifications, entitlement + kill-switch
 
 > Epic: [ml-orders-native](README.md) · Risk: **HIGH** (US-4) · Backend-first; still dark behind

@@ -1,3 +1,26 @@
+---
+epic: promoter-funnel-v2
+sprint: 2
+title: Sprint 2
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: ".1 — Public application form + admin notification"
+    as_a: someone who wants to be a promoter
+    i_want: "to apply from `/vende/promotor` (name, email, WhatsApp, ciudad/zona, breve motivación) without an account"
+    so_that: "I don't need to know Daniel personally"
+    risk: low
+    status: done
+  - id: S2.2
+    title: ".2 — Admin approve/reject → code minted + sent"
+    as_a: Daniel
+    i_want: "pending applications in `/admin/promoter` with approve/reject, where approve mints the applicant's PRM- code (existing mint) and sends it to them (email + a wa.me link I can tap) with finish-signup steps"
+    so_that: the pipeline runs itself
+    risk: low
+    status: done
+---
 # Sprint 2 · Become a promoter — self-serve application flow
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: LOW/MED · Status: ✅ merged 2026-07-03

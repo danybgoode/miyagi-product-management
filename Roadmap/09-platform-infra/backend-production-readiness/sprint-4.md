@@ -1,3 +1,26 @@
+---
+epic: backend-production-readiness
+sprint: 4
+title: Monitoring & alerting
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: Know when prod is down, erroring, or saturated
+    as_a: the owner
+    i_want: alerts when prod is unreachable, throwing errors, or running hot
+    so_that: I find out before users do
+    risk: low
+    status: done
+  - id: S4.2
+    title: "Static drift guard for the hardening invariants (fast-follow, added 2026-06-12 per Daniel's S3 follow-up)"
+    as_a: the owner
+    i_want: a cheap automated check that fails when a future change erodes the infra hardening
+    so_that: "the S3 probe/CORS gains can't silently regress (infra isn't Playwright-gated, so a static guard is the deterministic safety net)"
+    risk: low
+    status: done
+---
 # Backend Production Readiness — Sprint 4: Monitoring & alerting
 
 **Status:** ✅ **SHIPPED 2026-06-12** — squash-merged: root `miyagi-product-management` **#13 `d50d0b4`**

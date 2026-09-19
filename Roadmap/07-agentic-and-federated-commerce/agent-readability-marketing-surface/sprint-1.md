@@ -1,3 +1,33 @@
+---
+epic: agent-readability-marketing-surface
+sprint: 1
+title: Fix, unify, guard
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Fix /acerca empty body to fetch agents (P0)
+    as_a: an AI agent following llms.txt
+    i_want: "bare `/acerca` to return full HTML"
+    so_that: "\"what is miyagisanchez?\" gets answered instead of an empty page"
+    risk: low
+    status: done
+  - id: S1.2
+    title: "OG sweep: shared template, per-page headline"
+    as_a: Daniel posting marketing URLs
+    i_want: "`/` and `/vende` to share one branded OG visual frame with page-appropriate headlines"
+    so_that: previews are recognizably ours wherever either URL lands
+    risk: low
+    status: done
+  - id: S1.3
+    title: Agent-readability CI spec
+    as_a: the team
+    i_want: "a Playwright `api` spec fetching `/`, `/vende`, `/acerca`, `/agent`, `/llms.txt`, `/robots.txt`, `/api/ucp/manifest` without JS and asserting substantive content + expected OG/canonical tags"
+    so_that: "the campaign surface can't silently regress again"
+    risk: low
+    status: done
+---
 # Agent-readability & marketing-surface hardening — Sprint 1: Fix, unify, guard
 
 **Status:** ✅ shipped + live 2026-07-16 — PR [#270](https://github.com/danybgoode/miyagisanchezcommerce/pull/270) (`5a120bd`). 1.1 premise not reproducible (root cause in PR); 1.2+1.3 live, guard spec 16/16 vs prod. Owed: Daniel WhatsApp/Telegram preview smoke.

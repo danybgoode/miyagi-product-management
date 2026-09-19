@@ -2,6 +2,13 @@
 status: shipped
 slug: profit-analyzer
 archetype: Builder
+title: "Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 6
 ---
 
 # Epic · Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices

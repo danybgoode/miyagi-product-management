@@ -1,3 +1,26 @@
+---
+epic: repo-readmes-branding
+sprint: 1
+title: Per-repo READMEs (flagship root + frontend/backend/zine) + stale-reference sweep
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Root README (flagship) + repo map
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S1.2
+    title: Frontend/backend/zine READMEs + stale-reference sweep
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Repo cleanup + per-repo READMEs — Sprint 1: Per-repo READMEs (flagship root + frontend/backend/zine) + stale-reference sweep
 
 **Status:** ✅ shipped 2026-07-10

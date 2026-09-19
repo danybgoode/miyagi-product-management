@@ -1,3 +1,33 @@
+---
+epic: us-marketplace
+sprint: 2
+title: The shell speaks two languages
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Make the shell read its copy from a dictionary, not the source
+    as_a: a developer
+    i_want: "buyer-path copy to come from `locales/.json`"
+    so_that: a second language is data rather than a second component tree
+    risk: low
+    status: done
+  - id: S2.2
+    title: Translate the buyer path to en-US
+    as_a: a US buyer
+    i_want: the marketplace in English
+    so_that: I can actually read it
+    risk: low
+    status: done
+  - id: S2.3
+    title: Resolve locale from market at every entry point
+    as_a: a buyer
+    i_want: the page language to follow the market I am in
+    so_that: "`/us` is English and `/mx` is Spanish, consistently and without a language switcher deciding commerce"
+    risk: low
+    status: done
+---
 # US marketplace — Sprint 2: The shell speaks two languages
 
 **Status:** ✅ shipped — 2026-08-11

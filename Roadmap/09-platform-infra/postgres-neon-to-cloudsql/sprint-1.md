@@ -1,3 +1,33 @@
+---
+epic: postgres-neon-to-cloudsql
+sprint: 1
+title: Provision Cloud SQL + rehearse on staging
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Provision Cloud SQL (PG17, private IP, single-zone + PITR)
+    as_a: the platform
+    i_want: a managed Postgres on GCP co-located with the backend
+    so_that: commerce DB traffic stays inside the VPC (no cross-cloud egress) and the DB is reachable like Redis already is
+    risk: high
+    status: done
+  - id: S1.2
+    title: Verify version + extension parity (blocker check)
+    as_a: the migrator
+    i_want: "to confirm Cloud SQL supports everything Neon's schema uses"
+    so_that: "the restore can't fail mid-cutover on an unsupported extension"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Rehearse the full migration on staging
+    as_a: the platform
+    i_want: "the dump→restore→repoint→verify loop proven on `medusa-web-staging`"
+    so_that: the prod cutover runbook is known-good
+    risk: high
+    status: done
+---
 # Postgres → Cloud SQL — Sprint 1: Provision Cloud SQL + rehearse on staging
 
 **Status:** ✅ **Merged (PR #20).** Code complete; instance provisioned + validated live; Story 1.2 parity

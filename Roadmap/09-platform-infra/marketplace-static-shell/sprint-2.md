@@ -1,3 +1,26 @@
+---
+epic: marketplace-static-shell
+sprint: 2
+title: Make the homepage a static CDN asset
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: De-personalize the homepage to the curated shell
+    as_a: any visitor
+    i_want: the homepage to be the same fast curated page
+    so_that: it serves instantly from the CDN
+    risk: high
+    status: done
+  - id: S2.2
+    title: Heart-states client-side (no server seeding)
+    as_a: a signed-in visitor
+    i_want: my favorites still reflected on the curated grid
+    so_that: "de-personalizing the render doesn't lose the heart state"
+    risk: low
+    status: done
+---
 # Static marketplace shell — Sprint 2: Make the homepage a static CDN asset
 
 **Status:** ✅ **SHIPPED 2026-06-22** — [PR #102](https://github.com/danybgoode/miyagisanchezcommerce/pull/102)

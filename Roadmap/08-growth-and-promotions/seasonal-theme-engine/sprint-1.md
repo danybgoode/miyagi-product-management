@@ -1,3 +1,33 @@
+---
+epic: seasonal-theme-engine
+sprint: 1
+title: Theme Engine Foundation
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Manifest schema and per-field fallback
+    as_a: the platform
+    i_want: a standardized seasonal theme manifest
+    so_that: collaborations can be configured without fragile code changes
+    risk: high
+    status: done
+  - id: S1.2
+    title: Contrast and asset guardrails
+    as_a: a visitor
+    i_want: themed accents and assets to remain readable and light
+    so_that: designer freedom never harms usability
+    risk: high
+    status: done
+  - id: S1.3
+    title: First-paint bootstrap
+    as_a: a returning visitor
+    i_want: my saved theme to apply before the page visibly paints
+    so_that: page transitions do not flash the wrong theme
+    risk: high
+    status: done
+---
 # Sprint 1 - Theme Engine Foundation
 
 Goal: create the safe theme foundation before any visible toggle ships.

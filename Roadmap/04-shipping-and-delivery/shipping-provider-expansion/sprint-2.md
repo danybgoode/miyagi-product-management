@@ -1,3 +1,40 @@
+---
+epic: shipping-provider-expansion
+sprint: 2
+title: "Envía comp-grant (admin-granted platform Envía)"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Grant honored at the quote seam
+    as_a: the platform admin
+    i_want: "`metadata.envia_grant` honored where shipping rates are quoted — the pure gate widened from `enviaEnabled` to `enviaEnabled || sellerGranted` (backend `lib/envia-killswitch.ts` + FE mirror, unit-specced) and threaded through `POST /store/envia/rates` —"
+    so_that: "a granted tenant's buyers see live Envía rates while everyone else keeps the arranged-delivery fallback"
+    risk: high
+    status: done
+  - id: S2.2
+    title: Grant honored at every label seam
+    as_a: a granted seller
+    i_want: "label generation to work for my orders — the grant checked on the backend ship route, the `fulfillment-envia` provider, and the FE legacy `app/api/orders/[id]/ship` (trace every importer of the Envía client first — that route was a live bypass in the kill-switch epic, LEARNINGS ~L737) —"
+    so_that: "I can print real labels while ungranted sellers still get the 422 → manual-carrier steer"
+    risk: high
+    status: done
+  - id: S2.3
+    title: Admin grant/revoke toggle
+    as_a: the platform admin
+    i_want: "a grant/revoke toggle per tenant on `/admin/tenants` (writes `metadata.envia_grant`)"
+    so_that: "I can comp Envía to selected shops — and pull it — with no deploy"
+    risk: high
+    status: done
+  - id: S2.4
+    title: Seller settings reflect granted state
+    as_a: a granted seller
+    i_want: "my shipping settings (`Envios.tsx`) to say «Envía habilitado por Miyagi» instead of the platform-off banner"
+    so_that: the state I see matches what my buyers get
+    risk: low
+    status: done
+---
 # Shipping provider expansion — Sprint 2: Envía comp-grant (admin-granted platform Envía)
 
 **Status:** ✅ MERGED 2026-07-11 — backend [#78](https://github.com/danybgoode/medusa-bonsai-backend/pull/78)

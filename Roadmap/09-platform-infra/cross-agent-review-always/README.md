@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: cross-agent-review-always
+title: Cross-agent review on every PR (CI auto-run + policy)
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 2
+stories_total: 5
 ---
 
 > **✅ SHIPPED 2026-06-22 (local-only, by decision).** The CI auto-run (S1.2) was **descoped**: a GitHub

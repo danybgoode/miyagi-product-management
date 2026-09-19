@@ -1,3 +1,33 @@
+---
+epic: homepage-seleccion-curation
+sprint: 1
+title: Homepage bug sweep (ship first)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Categorías per-row hover"
+    as_a: a buyer on the homepage
+    i_want: "each Categorías row to highlight on hover (and look individually clickable)"
+    so_that: "I can tell I'm selecting one category, not the whole list"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Gate signed-out CTAs on the homepage
+    as_a: a signed-in user on the homepage
+    i_want: "the \"Únete a la comunidad / Crear cuenta\" terminal CTA and any \"Abre tu tienda\"-type signed-out prompt to not show"
+    so_that: "the page reflects that I'm logged in"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Full signed-out/in leakage audit + fixes
+    as_a: a signed-in user
+    i_want: no public surface to show me signed-out-only prompts (and vice-versa)
+    so_that: the app is consistent after the static-shell migration
+    risk: high
+    status: done
+---
 # Sprint 1 — Homepage bug sweep (ship first)
 
 **Epic:** [Homepage Selección: bug sweep + admin curation + dynamic rotation](README.md) · **Repo:** `apps/miyagisanchez`

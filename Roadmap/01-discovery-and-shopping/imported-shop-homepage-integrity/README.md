@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: imported-shop-homepage-integrity
+title: Imported-shop homepage integrity
+area: 01-discovery-and-shopping
+risk: low
+type: bug
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Imported-shop homepage integrity

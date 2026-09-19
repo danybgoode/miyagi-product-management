@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: process-token-diet
+title: Process token-diet
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 4
 ---
 
 # Epic: Process token-diet

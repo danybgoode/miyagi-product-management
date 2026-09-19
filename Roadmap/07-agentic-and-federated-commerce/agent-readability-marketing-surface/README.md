@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: agent-readability-marketing-surface
+title: Agent-readability & marketing-surface hardening
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Agent-readability & marketing-surface hardening

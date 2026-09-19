@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: support-widget
+title: Support Widget
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 9
 ---
 
 # Epic - Support Widget

@@ -1,3 +1,19 @@
+---
+epic: promoter-funnel-v2
+sprint: 0
+title: Sprint 0
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S0.1
+    title: ".1 — Reproduce → root-cause → fix + regression spec"
+    as_a: Daniel
+    i_want: "a fresh no-promoter seller signup to get the free `/s/slug` only, with the subdomain offered as a paid upsell"
+    so_that: "the subdomain SKU is real (and \"GRATIS con promotor\" in this epic means something)"
+    risk: high
+    status: done
+---
 # Sprint 0 · Bug — subdomain paywall not gating new sellers
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: **HIGH** (entitlement) — **Daniel merges**

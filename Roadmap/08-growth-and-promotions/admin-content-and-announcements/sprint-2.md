@@ -1,3 +1,26 @@
+---
+epic: admin-content-and-announcements
+sprint: 2
+title: Key the uncovered surfaces (homepage + acerca)
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Coverage audit + keying map (doc-first)
+    as_a: the platform admin
+    i_want: "a written audit of the v1 scope (homepage, `/vende` family, `/acerca`) listing every hardcoded editorial string and the proposed key for each (`home.*`, `acerca.*`), with functional/commerce strings explicitly excluded"
+    so_that: "we key exactly what should be marketing-editable and nothing that shouldn't — confirmed by Daniel before any code"
+    risk: low
+    status: done
+  - id: S2.2
+    title: Key homepage + /acerca editorial strings
+    as_a: the platform admin
+    i_want: "the approved map applied — homepage editorial strings (value-prop ribbon, section titles «Selección de la semana» / «Categorías» / empty-state / terminal CTA) under a new `home.*` namespace, and `/acerca` migrated into a new `acerca` namespace (both `es`/`en`) — all flowing through `getOverriddenDictionary()` + the Sprint-1 merge seam"
+    so_that: "the highest-traffic marketing surfaces are editable from `/admin/contenido`"
+    risk: low
+    status: done
+---
 # Admin content & announcements — Sprint 2: Key the uncovered surfaces (homepage + acerca)
 
 **Status:** ✅ done 2026-07-08 — both stories merged. Story 2.1: audit doc + Daniel's approval.

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: cross-agent-planning-panel
+title: Cross-agent planning panel (single-pass advisory second opinions on plans)
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 4
 ---
 
 # Epic — Cross-agent planning panel (single-pass advisory second opinions on plans)

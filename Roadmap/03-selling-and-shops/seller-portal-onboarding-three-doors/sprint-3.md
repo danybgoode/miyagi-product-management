@@ -1,3 +1,33 @@
+---
+epic: seller-portal-onboarding-three-doors
+sprint: 3
+title: Cobros wizard + share + metrics
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: S7 Cobros mini-wizard (R12) over the existing OAuth
+    as_a: a merchant activating payments
+    i_want: a short guided wizard that tells me what will happen and brings me back where I left off
+    so_that: "connecting a payout account isn't a scary manual detour"
+    risk: low
+    status: done
+  - id: S3.2
+    title: S8 Comparte + agent loop-close
+    as_a: "a merchant who's ready to sell"
+    i_want: a share moment and a way to hand the shop to my agent
+    so_that: I can get seen and keep it running
+    risk: low
+    status: done
+  - id: S3.3
+    title: Metrics, day one
+    as_a: a product owner
+    i_want: the onboarding funnel instrumented from launch
+    so_that: we can see where merchants drop and whether they reach payable
+    risk: low
+    status: done
+---
 # Onboarding three-doors — Sprint 3: Cobros wizard + share + metrics
 
 **Status:** ✅ merged — PR [#229](https://github.com/danybgoode/miyagisanchezcommerce/pull/229), squash

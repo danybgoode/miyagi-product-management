@@ -1,3 +1,33 @@
+---
+epic: seller-nav-consolidation
+sprint: 1
+title: One nav, one name per destination
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Descriptor: add 3 entries + apply renames"
+    as_a: a seller
+    i_want: every section reachable from the left rail with one consistent name
+    so_that: "I don't hunt across two bars with conflicting labels"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Remove the redundant horizontal row
+    as_a: a seller
+    i_want: a single nav
+    so_that: "the dashboard isn't cluttered with a second conflicting link row"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Canonical labels on section page titles
+    as_a: a seller
+    i_want: "each section's own title to match its nav label"
+    so_that: "naming is consistent end-to-end (no \"Promociones\" page reached from a \"Cupones\" link)"
+    risk: low
+    status: done
+---
 # Sprint 1 — One nav, one name per destination
 
 **Epic:** [Seller nav consolidation](README.md) · **Risk:** all LOW · **Repo:** `apps/miyagisanchez`

@@ -1,3 +1,33 @@
+---
+epic: buyer-notifications-money-path
+sprint: 1
+title: "Medusa-order buyer identity — gating bites"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Backend: normalizeMedusaOrder returns the buyer's Clerk id"
+    as_a: a buyer with a Medusa order
+    i_want: the platform to know the order is mine
+    so_that: my notification preferences can apply to it
+    risk: high
+    status: done
+  - id: S1.2
+    title: "Resolve the buyer id at dispatch time so Envíos/Devoluciones gating bites on Medusa orders"
+    as_a: "a buyer who toggled Envíos or Devoluciones"
+    i_want: those choices to apply to my Medusa orders
+    so_that: the toggles I already have stop being inert for the majority order type
+    risk: high
+    status: done
+  - id: S1.3
+    title: Kill-switch flag notifications.buyer_moneypath_enabled
+    as_a: the product owner
+    i_want: "one flag that instantly reverts both new paths to today's behavior"
+    so_that: a money-path regression is a flag flip, not a deploy
+    risk: high
+    status: done
+---
 # Buyer notifications — money path (Compras dispatch + Medusa-order gating) — Sprint 1: Medusa-order buyer identity — gating bites
 
 **Status:** ✅ MERGED + LIVE 2026-07-08 — [backend #70](https://github.com/danybgoode/medusa-bonsai-backend/pull/70)

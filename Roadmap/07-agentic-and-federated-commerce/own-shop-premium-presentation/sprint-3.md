@@ -1,3 +1,33 @@
+---
+epic: own-shop-premium-presentation
+sprint: 3
+title: Content pages + flagship dogfood
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "Content pages: Acerca / FAQ / Políticas"
+    as_a: a seller
+    i_want: "to author an Acerca page, an FAQ (question/answer pairs), and a Políticas page"
+    so_that: "buyers can read who I am and how I work — on my own domain, like a real store"
+    risk: high
+    status: done
+  - id: S3.2
+    title: Config + agent parity
+    as_a: "a seller's agent"
+    i_want: "content pages in Storefront-as-Code + `patch_store_configuration`, and an about-shop exposure on UCP"
+    so_that: "an agent can answer \"¿quién es esta tienda y cuáles son sus políticas?\" grounded"
+    risk: low
+    status: done
+  - id: S3.3
+    title: "Dogfood: miyagiprints fully dressed"
+    as_a: Daniel
+    i_want: "miyagiprints wearing everything this epic shipped (bar, hero, preset, collections, Acerca/FAQ/Políticas)"
+    so_that: the before/after pair proves the premium feel and becomes the poster/marketing artifact
+    risk: low
+    status: done
+---
 # Own-shop premium presentation — Sprint 3: Content pages + flagship dogfood
 
 **Status:** ✅ merged 2026-07-07 (frontend-only, no backend touch) — PR #183, squash `a72bde8`. Cross-agent (codex) review + a fresh pr-reviewer pass both clean (3 codex findings fixed pre-merge: hardcoded "FAQ" English copy, a defensive gap in FAQ authored-state checks, one unused import). Owed: Daniel's live smoke + the miyagiprints dress-up (Story 3.3 checklist above).

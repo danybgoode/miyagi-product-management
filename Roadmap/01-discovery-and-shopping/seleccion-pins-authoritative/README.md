@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: seleccion-pins-authoritative
+title: "Selección: make admin pins authoritative"
+area: 01-discovery-and-shopping
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 5
 ---
 
 # Epic — Selección: make admin pins authoritative

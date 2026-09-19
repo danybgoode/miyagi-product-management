@@ -1,3 +1,33 @@
+---
+epic: dev-tooling-reliability
+sprint: 2
+title: Codex endurance (auto-fallback + clear message)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Codex→Antigravity auto-fallback in the shared rail"
+    as_a: a developer running a cross-agent review
+    i_want: the command to fall back to Antigravity when the Codex token is dead
+    so_that: I still get a second opinion instead of an error
+    risk: low
+    status: done
+  - id: S2.2
+    title: Label + message the fallback
+    as_a: a reviewer reading the PR
+    i_want: the comment and terminal to make the fallback obvious
+    so_that: nobody mistakes an Antigravity review for a Codex one, and I know how to restore Codex
+    risk: low
+    status: done
+  - id: S2.3
+    title: Re-auth runbook
+    as_a: a future agent or Daniel
+    i_want: a short documented procedure for a lapsed Codex token
+    so_that: "restoring it doesn't require rediscovery"
+    risk: low
+    status: done
+---
 # Dev-tooling reliability — Sprint 2: Codex endurance (auto-fallback + clear message)
 
 **Status:** ✅ **BUILT** — branch `chore/dev-tooling-reliability` (monorepo-root). S2.1 `01ca80b` · S2.2

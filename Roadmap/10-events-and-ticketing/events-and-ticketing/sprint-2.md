@@ -1,3 +1,26 @@
+---
+epic: events-and-ticketing
+sprint: 2
+title: Free RSVP surface
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Seller creates a free event + RSVP page
+    as_a: a seller
+    i_want: to create a free event with a public RSVP page
+    so_that: people can register without buying anything
+    risk: low
+    status: done
+  - id: S2.2
+    title: Attendee registers with email-code verification
+    as_a: an attendee
+    i_want: to register for a free event with just an email code (no account)
+    so_that: signing up is frictionless
+    risk: low
+    status: done
+---
 # Sprint 2 — Free RSVP surface
 
 > Epic: [Events & Ticketing](README.md) · **Risk: LOW** (Supabase non-commerce; no money path).

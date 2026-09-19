@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: vercel-function-cost-reduction
+title: "Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 5
 ---
 
 # Epic: Vercel function & Fluid-CPU cost reduction ✅ COMPLETE (2026-06-13)

@@ -1,3 +1,26 @@
+---
+epic: pipeline-throughput
+sprint: 2
+title: "BuildKit cache mount on the backend's uncached install"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "syntax directive, proven harmless ⬜"
+    as_a: a builder
+    i_want: BuildKit syntax available
+    so_that: a cache mount is even expressible
+    risk: low
+    status: done
+  - id: S2.2
+    title: "the cache mount, measured ⬜"
+    as_a: a builder
+    i_want: to know whether a cache mount helps the uncacheable install
+    so_that: we stop guessing about a known-uncached step
+    risk: low
+    status: done
+---
 # Pipeline throughput — Sprint 2: BuildKit cache mount on the backend's uncached install
 
 **Status:** ⬜ not started

@@ -1,3 +1,40 @@
+---
+epic: envia-killswitch
+sprint: 1
+title: "Envía Flagsmith kill-switch"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: "(BE) Add shipping.envia_enabled + gate the quote seam (spine — deploy first)"
+    as_a: the admin
+    i_want: "live-rate quoting to stop calling Envía when the flag is off"
+    so_that: checkout falls back to arranged delivery without hitting an unfunded carrier
+    risk: high
+    status: done
+  - id: S1.2
+    title: "(BE) Gate label generation / shipping → manual-carrier fallback"
+    as_a: "a seller fulfilling while Envía is off"
+    i_want: "the Envía label path disabled and manual carrier offered"
+    so_that: I can still ship without an automatic label
+    risk: high
+    status: done
+  - id: S1.3
+    title: "(FE) Seller-settings platform-off banner"
+    as_a: a seller
+    i_want: "to see that automatic Envía shipping is paused platform-wide"
+    so_that: "I'm not confused when my per-shop toggle has no effect"
+    risk: low
+    status: done
+  - id: S1.4
+    title: "(FE) Close the FE bypass (legacy ship + re-quote)"
+    as_a: the platform admin
+    i_want: "the kill to also cover the in-app seller order routes that call the Envía client directly"
+    so_that: "the DoD's \"agents / stale pages can't bypass\" actually holds"
+    risk: high
+    status: done
+---
 # Sprint 1 — Envía Flagsmith kill-switch
 
 Epic: [Envía — platform Flagsmith kill-switch](README.md) · Scope:

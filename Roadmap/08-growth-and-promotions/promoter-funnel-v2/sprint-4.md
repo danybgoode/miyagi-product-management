@@ -1,3 +1,26 @@
+---
+epic: promoter-funnel-v2
+sprint: 4
+title: Sprint 4
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: ".1 — Transfer option at the promoter close checkout"
+    as_a: a promoter who collected cash
+    i_want: "a \"Transferir a Miyagi (SPEI/DiMo/CoDi)\" option at close showing exactly what I owe — the sale total minus my commission — with the transfer details, and a \"Ya transferí\" button"
+    so_that: every sale is cash in my pocket the same day
+    risk: high
+    status: done
+  - id: S4.2
+    title: ".2 — Admin approval → activation + notification"
+    as_a: Daniel
+    i_want: "pending transfers in `/admin/promoter` where I approve after checking my bank app — approval activates what was bought and auto-notifies the promoter —"
+    so_that: "the day-to-day is: promoter wires → I approve → done (my personal WhatsApp ping stays manual, by design)"
+    risk: high
+    status: done
+---
 # Sprint 4 · Street money — net remittance + admin approval
 
 > Epic: [Promoter Funnel v2](README.md) · Risk: **HIGH** (money path) — **Daniel merges** · Status: ✅ merged

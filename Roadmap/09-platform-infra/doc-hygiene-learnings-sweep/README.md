@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived.
 slug: doc-hygiene-learnings-sweep
+title: "Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: Doc hygiene — LEARNINGS/README de-noise sweep + a rolling doc-hygiene skill

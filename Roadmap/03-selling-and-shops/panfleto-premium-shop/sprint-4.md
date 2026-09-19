@@ -1,3 +1,19 @@
+---
+epic: panfleto-premium-shop
+sprint: 4
+title: Premium theme presets
+risk: high
+phase: Shaping
+stories_total: 1
+stories:
+  - id: S4.1
+    title: Two-to-three new premium presets
+    as_a: a premium-shop owner
+    i_want: "a wider set of curated theme presets — including a dark/editorial look built for panfleto —"
+    so_that: a premium shop can pick a distinct identity and then customize, instead of every shop wearing the same defaults
+    risk: low
+    status: planned
+---
 # Panfleto — the first premium shop — Sprint 4: Premium theme presets
 
 **Status:** ⬜ not started · Independent after Sprint 2 (can run parallel to Sprint 3)

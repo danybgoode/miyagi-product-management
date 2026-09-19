@@ -1,3 +1,26 @@
+---
+epic: doc-hygiene-learnings-sweep
+sprint: 1
+title: the sweep + the rolling skill
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: One-time de-noise sweep of LEARNINGS.md + the README poster
+    as_a: a builder starting a fresh session
+    i_want: the always-read docs de-noised
+    so_that: each session costs less context without losing any durable learning
+    risk: low
+    status: done
+  - id: S1.2
+    title: The doc-hygiene skill (rolling maintenance)
+    as_a: a product owner
+    i_want: a repeatable skill that keeps the always-read docs from re-bloating
+    so_that: hygiene is a standing, low-effort process not a one-off
+    risk: low
+    status: done
+---
 # Doc hygiene — Sprint 1: the sweep + the rolling skill
 
 **Status:** ✅ SHIPPED 2026-07-02 (both stories; `chore/doc-hygiene-learnings-sweep` — commits `2fe5f9c`

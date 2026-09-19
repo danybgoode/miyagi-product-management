@@ -1,3 +1,19 @@
+---
+epic: seller-acquisition-landing-content-overhaul
+sprint: 1
+title: "Copy & content brief (lock the words) · status: ✅ done 2026-06-25 (COPY-BRIEF.md approved)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Per-persona es-MX copy deck + prompt + benchmark + AI-channel copy
+    as_a: Daniel
+    i_want: the full per-persona es-MX copy + prompt + benchmark + AI-channel copy locked in writing
+    so_that: the build sprint is paste-not-author
+    risk: low
+    status: done
+---
 # Sprint 1 — Copy & content brief (lock the words)  ·  status: ✅ done 2026-06-25 (COPY-BRIEF.md approved)
 
 > **Planning/docs only — NO code.** Lock every word before any implementation so S2 is paste-not-author.

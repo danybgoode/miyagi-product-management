@@ -1,3 +1,33 @@
+---
+epic: notion-board-hygiene
+sprint: 2
+title: Notion board config (operational)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "DB properties: \"In progress\" + \"Board status\" formula"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Regroup the boards by Board status · LOW — ⚠️ manual UI step owed to Daniel"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.3
+    title: Build-order views
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Sprint 2 — Notion board config (operational)
 
 **Epic:** [Notion roadmap board hygiene](README.md) · **Risk:** all LOW · **Surface:** the `Marketplace Roadmap` Notion DB (`eb68a1fd…`)

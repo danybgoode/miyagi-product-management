@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seller-landing-launch-polish
+title: "Seller landing — launch polish (hero redesign + marketplace voice + benchmark example)"
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 2
 ---
 
 # Seller landing — launch polish (hero redesign + marketplace voice + benchmark example)

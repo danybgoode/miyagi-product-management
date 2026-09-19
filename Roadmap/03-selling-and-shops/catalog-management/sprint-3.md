@@ -1,3 +1,33 @@
+---
+epic: catalog-management
+sprint: 3
+title: Staged bulk actions
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "Select-across-filter → staged diff → apply"
+    as_a: a seller
+    i_want: "to select all products matching my filter, build a bulk change, and see a preview diff (old → new per row, validation errors inline) before anything applies"
+    so_that: a bulk edit can never silently wreck my live catalog (the eBay failure mode)
+    risk: high
+    status: done
+  - id: S3.2
+    title: Action set v1
+    as_a: a seller
+    i_want: "bulk: price set / ±% , publish/unpublish per channel, category change, collection assign, inventory mode, pause/activate, delete (soft)"
+    so_that: the daily catalog chores are minutes, not afternoons
+    risk: high
+    status: done
+  - id: S3.3
+    title: "MCP parity: agent bulk ops"
+    as_a: "a seller's agent"
+    i_want: "the same propose → confirm → apply flow over MCP"
+    so_that: "\"sube 10% los precios de la colección Zines solo en ML\" is one instruction with a human-visible confirmation"
+    risk: high
+    status: done
+---
 # Catalog management — Sprint 3: Staged bulk actions
 
 **Status:** ✅ MERGED + deployed + **smoked (all 11 steps pass)** — backend PR

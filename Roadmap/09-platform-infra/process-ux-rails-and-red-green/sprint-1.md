@@ -1,3 +1,26 @@
+---
+epic: process-ux-rails-and-red-green
+sprint: 1
+title: Sprint 1
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: UX rails named at grooming
+    as_a: Daniel
+    i_want: every scope seed to name which UX rails cover its surface
+    so_that: UX quality is checked at planning, not discovered at review
+    risk: low
+    status: done
+  - id: S1.2
+    title: Observed-red DoD line
+    as_a: the team
+    i_want: proof every new spec can fail
+    so_that: "agent-written tests can't pass by accident (the article's mutation sanity check — the one piece we adopted)"
+    risk: low
+    status: done
+---
 # Process iteration — UX rails + observed-red — Sprint 1
 
 **Status:** ✅ done — commits `d7bd19b` (S1.1), `a4ca168` (S1.2)

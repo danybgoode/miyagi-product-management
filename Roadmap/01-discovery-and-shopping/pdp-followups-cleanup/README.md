@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: pdp-followups-cleanup
+title: PDP follow-ups cleanup
+area: 01-discovery-and-shopping
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic — PDP follow-ups cleanup

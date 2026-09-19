@@ -1,3 +1,33 @@
+---
+epic: seller-unclaimed-bug-sweep
+sprint: 1
+title: Unclaimed shops are contact-only
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Unclaimed PDP is contact-only ·"
+    as_a: "a buyer viewing a listing from an unclaimed (\"Sin reclamar\") shop"
+    i_want: "to see direct-contact options and a \"Reclama esta tienda\" prompt instead of Buy / Make-offer / Add-to-cart / Bundle"
+    so_that: "I don't start a transaction the shop can't receive"
+    risk: high
+    status: done
+  - id: S1.2
+    title: "Offers API rejects unclaimed shops (no silent email) ·"
+    as_a: an agent or buyer
+    i_want: an offer to an unclaimed shop to be rejected with a clear message
+    so_that: "no misleading \"offer sent\" email goes out and nothing dies silently"
+    risk: high
+    status: done
+  - id: S1.3
+    title: "Cart-add / bundle server-gate ·"
+    as_a: a buyer
+    i_want: add-to-cart and bundle against an unclaimed shop blocked server-side too
+    so_that: "the browser isn't the only thing stopping it (agents/UCP included)"
+    risk: high
+    status: done
+---
 # Seller & unclaimed-shop bug sweep — Sprint 1: Unclaimed shops are contact-only
 
 **Status:** ✅ SHIPPED 2026-06-10 — [PR #73](https://github.com/danybgoode/miyagisanchezcommerce/pull/73) squash-merged `daf6300` → Vercel prod (Daniel green-light) · **Risk:** HIGH (money-path; Daniel merged) · **Repos:** frontend only

@@ -1,3 +1,40 @@
+---
+epic: pdp-redesign
+sprint: 4
+title: "Per-type blocks A: services · rentals · digital · subscriptions"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S4.1
+    title: "Services · primary \"Agendar cita\""
+    as_a: a buyer of a service
+    i_want: "to see what's included and the next available times"
+    so_that: I can book without opening a separate calendar
+    risk: low
+    status: done
+  - id: S4.2
+    title: "Rentals · primary \"Reservar estas fechas\""
+    as_a: a buyer of a rental
+    i_want: to pick dates and see the full total incl. deposit
+    so_that: there are no surprises at checkout
+    risk: low
+    status: done
+  - id: S4.3
+    title: "Digital · primary \"Comprar al instante\""
+    as_a: a buyer of a digital good
+    i_want: the instant-delivery promise up front
+    so_that: I know I get it now
+    risk: low
+    status: done
+  - id: S4.4
+    title: "Subscriptions · primary \"Suscribirse\""
+    as_a: a buyer choosing a plan
+    i_want: comparable tiers and a mensual/anual toggle
+    so_that: I can pick the right plan
+    risk: low
+    status: done
+---
 # Sprint 4 — Per-type blocks A: services · rentals · digital · subscriptions
 
 > Epic: [PDP redesign](README.md) · **Risk: LOW–MED** (frontend reorder on existing per-type primitives; rental

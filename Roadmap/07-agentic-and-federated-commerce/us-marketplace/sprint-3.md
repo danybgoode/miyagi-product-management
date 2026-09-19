@@ -1,3 +1,40 @@
+---
+epic: us-marketplace
+sprint: 3
+title: "`/us` becomes a marketplace"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: Open the US market and serve its catalog
+    as_a: a US buyer
+    i_want: "`/us` to be a real market"
+    so_that: US shops and listings are discoverable
+    risk: low
+    status: done
+  - id: S3.2
+    title: Parameterize the listing, product and shop routes by market
+    as_a: a buyer in either country
+    i_want: "`/us/l`, `/us/l/<id>` and `/us/s/<slug>` to work exactly as their Mexico equivalents do"
+    so_that: there is one marketplace, not two codebases
+    risk: low
+    status: done
+  - id: S3.3
+    title: Turn /us into the US marketplace home
+    as_a: a US buyer
+    i_want: a marketplace home page
+    so_that: I can start browsing
+    risk: low
+    status: done
+  - id: S3.4
+    title: "Give agents full market=us parity"
+    as_a: an AI agent
+    i_want: the US catalog through the same contracts I already use
+    so_that: the web and agent channels cannot disagree
+    risk: low
+    status: done
+---
 # US marketplace — Sprint 3: `/us` becomes a marketplace
 
 **Status:** ✅ shipped — 2026-08-12

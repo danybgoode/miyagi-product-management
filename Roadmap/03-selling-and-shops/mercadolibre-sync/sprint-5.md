@@ -1,3 +1,33 @@
+---
+epic: mercadolibre-sync
+sprint: 5
+title: Resilience, observability & paid-SKU gating
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S5.1
+    title: Token-refresh recovery + re-auth surfaces + activity log
+    as_a: a seller
+    i_want: to be told when my ML connection needs attention and to see what synced
+    so_that: I trust and can debug the integration
+    risk: high
+    status: done
+  - id: S5.2
+    title: Paid/promoter-SKU entitlement gate (wiring)
+    as_a: Daniel
+    i_want: ML sync to be gateable as a paid/promoter SKU
+    so_that: it can be monetized
+    risk: high
+    status: done
+  - id: S5.3
+    title: Durable sync-state table (crash-safe, clobber-proof idempotency)
+    as_a: the system
+    i_want: the ML sale-application idempotency + mirror state to live in a real table, not the linkage JSON metadata
+    so_that: "the two bounded concurrency residuals S4 documented can't ever double-decrement or drop state"
+    risk: high
+    status: done
+---
 # Mercado Libre sync — Sprint 5: Resilience, observability & paid-SKU gating
 
 **Status:** ✅ **MERGED + DEPLOYED (dark) 2026-07-01** (US-13 + US-14). CI green, codex cross-review clean

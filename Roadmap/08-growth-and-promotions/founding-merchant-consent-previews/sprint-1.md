@@ -1,3 +1,26 @@
+---
+epic: founding-merchant-consent-previews
+sprint: 1
+title: Private means private
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Private promoter-created publication state
+    as_a: a Founding Merchant Partner
+    i_want: a new promoter-created shop and its products to remain private
+    so_that: I can prepare proof without announcing the merchant
+    risk: high
+    status: done
+  - id: S1.2
+    title: Opaque revocable preview access
+    as_a: a Founding Merchant Partner
+    i_want: a private revocable link that renders the proposed real shop
+    so_that: only the merchant can review it before approval
+    risk: high
+    status: done
+---
 # Founding merchant consent-safe previews — Sprint 1: Private means private
 
 **Status:** ✅ Merged — FE #292 (`afcfc22`) + hardening FE #293 (`2bb91a0`) / BE #108 (`3d7751b`); flag OFF, smoke owed to Daniel

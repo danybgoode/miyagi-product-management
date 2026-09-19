@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: founding-merchant-consent-previews
+title: Founding merchant consent-safe previews
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 10
 ---
 
 # Epic: Founding merchant consent-safe previews

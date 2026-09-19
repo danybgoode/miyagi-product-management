@@ -1,3 +1,33 @@
+---
+epic: gem-claim-loop
+sprint: 2
+title: claim actually transfers the shop
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: claim seam
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.2
+    title: claim completion endpoint
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S2.3
+    title: "(despachobonsai repo — small PR)"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 2 — claim actually transfers the shop
 
 Goal: the existing claim UX (QR → `/s/[slug]` → Reclamar → email → sign in) ends with the Medusa

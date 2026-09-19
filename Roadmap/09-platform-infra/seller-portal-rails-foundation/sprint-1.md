@@ -1,3 +1,26 @@
+---
+epic: seller-portal-rails-foundation
+sprint: 1
+title: Shared primitives + feedback contract
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "Shared look primitives (<StatusBadge> · <Button> · <Card>)"
+    as_a: a merchant
+    i_want: every status, button, and card in the portal to speak one visual language
+    so_that: "the portal reads as one product and doesn't break in dark/calm mode"
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Shared feedback primitives (one <Toast> + one <Banner>)"
+    as_a: a merchant
+    i_want: "every action to tell me what will happen, that it's happening, and what happened — with a way to undo —"
+    so_that: I trust the portal and never lose work to a silent failure
+    risk: low
+    status: done
+---
 # Seller-portal rails foundation — Sprint 1: Shared primitives + feedback contract
 
 **Status:** ✅ built 2026-07-10 — PR #208 (`feat/seller-portal-rails-foundation`), commits `c7c7b29` (S1.1)

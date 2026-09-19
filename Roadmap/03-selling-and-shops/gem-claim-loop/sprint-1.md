@@ -1,3 +1,33 @@
+---
+epic: gem-claim-loop
+sprint: 1
+title: an imported gem renders live
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: unclaimed sellers can exist
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.2
+    title: supply import writes Medusa + mirror
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.3
+    title: image path with no Clerk login
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 1 — an imported gem renders live
 
 Goal: a curated gem imported through `/supply` becomes a real, unclaimed, Medusa-backed shop at

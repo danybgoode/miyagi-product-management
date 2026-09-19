@@ -1,3 +1,26 @@
+---
+epic: discovery-polish
+sprint: 2
+title: Mobile filter rebuild
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Bottom-sheet filter layer behind a sticky trigger
+    as_a: a buyer on mobile
+    i_want: filters in a dedicated layer behind a sticky trigger
+    so_that: "browsing isn't buried under a wall of form controls"
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Deliberate apply + live \"Ver X resultados\" + Limpiar"
+    as_a: a buyer
+    i_want: "to set several filters then apply once and see how many results I'll get"
+    so_that: "I'm not reloading on every change and I know the filter isn't a dead end"
+    risk: low
+    status: done
+---
 # Sprint 2 — Mobile filter rebuild
 
 > Epic: [Discovery Polish](README.md) · **Risk: LOW–MED** (frontend-only; presentational). Watch for

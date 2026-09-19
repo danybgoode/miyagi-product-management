@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: navigation-settings-reorg
+title: Navigation & Settings Reorg
+area: 09-platform-infra
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 9
 ---
 
 # Epic — Navigation & Settings Reorg

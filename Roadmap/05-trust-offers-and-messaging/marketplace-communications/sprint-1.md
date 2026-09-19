@@ -1,3 +1,40 @@
+---
+epic: marketplace-communications
+sprint: 1
+title: the catalog
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: The communications catalog
+    as_a: a platform owner
+    i_want: every message the platform can send declared in one typed place
+    so_that: the map of who tells whom what is a fact in the code rather than an afternoon of reading
+    risk: low
+    status: done
+  - id: S1.2
+    title: Population guard
+    as_a: a future agent
+    i_want: the catalog checked against the real senders
+    so_that: it cannot quietly fall behind the code it describes
+    risk: low
+    status: done
+  - id: S1.3
+    title: Resolve the two unwired senders
+    as_a: a seller
+    i_want: to be told when a buyer walks away
+    so_that: "I stop holding a dead offer open — and as a platform, I want no half-built templates left lying around"
+    risk: low
+    status: done
+  - id: S1.4
+    title: send() reports three states
+    as_a: a platform owner
+    i_want: "to distinguish \"not configured\" from \"rejected\" from \"sent\""
+    so_that: a silent non-delivery cannot look like a delivery
+    risk: high
+    status: done
+---
 # Marketplace communications — Sprint 1: the catalog
 
 **Status:** ✅ shipped — `385cb3f` (#365)

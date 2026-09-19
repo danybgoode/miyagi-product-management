@@ -1,3 +1,33 @@
+---
+epic: custom-domain-paywall
+sprint: 2
+title: Paid checkout + lapse (Stripe)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Buy the custom-domain subscription with a card (Stripe)
+    as_a: a seller
+    i_want: "to pay $499 MXN/yr by card to unlock my own domain"
+    so_that: I can connect it
+    risk: high
+    status: done
+  - id: S2.2
+    title: "Graceful lapse → revert to free addressing"
+    as_a: a seller whose subscription ends (cancel / past_due / free-year-end with no payment method)
+    i_want: my shop to keep working on its free subdomain + slug
+    so_that: "nothing breaks and there's no surprise charge"
+    risk: high
+    status: done
+  - id: S2.3
+    title: "Publish pricing ($499/yr + monthly equivalent)"
+    as_a: a prospective seller
+    i_want: to see what the domain costs
+    so_that: I can decide
+    risk: low
+    status: done
+---
 # Custom-domain paywall + campaign coupon — Sprint 2: Paid checkout + lapse (Stripe)
 
 **Status:** ✅ SHIPPED 2026-06-11 — FE in [PR #79](https://github.com/danybgoode/miyagisanchezcommerce/pull/79) (`f0b524a`); BE [PR #20](https://github.com/danybgoode/medusa-bonsai-backend/pull/20) squash-merged (`0f68fbe` → Cloud Run `medusa-web-00099-vv7`). **Cutover ran:** `seed-custom-domain-plan.mjs` against prod (live Stripe) created product `prod_UgMibWnIXFSHwE` + annual price `price_1TgzzPL2vn3I7zOLn2SvBbIx` ($499 MXN/yr) → Medusa plan `subplan_01KTTE4MXNSSC9THBNZ1R079FY`; then `domain.paywall_enabled` flipped ON. The paid path is LIVE. Fresh-agent review: APPROVE-WITH-NITS (carryovers recorded in sprint-3).

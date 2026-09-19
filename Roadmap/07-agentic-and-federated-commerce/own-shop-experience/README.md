@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: own-shop-experience
+title: "Own channel: full shop experience (own-shop-experience)"
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic — Own channel: full shop experience (own-shop-experience)

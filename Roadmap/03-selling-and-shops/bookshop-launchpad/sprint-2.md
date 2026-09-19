@@ -1,3 +1,26 @@
+---
+epic: bookshop-launchpad
+sprint: 2
+title: The excerpt + the shelf
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Excerpt on digital PDPs
+    as_a: a reader
+    i_want: "a free \"Lee un adelanto\" sample inline on the listing page"
+    so_that: I can taste the work before buying or voting
+    risk: high
+    status: done
+  - id: S2.2
+    title: The launchpad shelf
+    as_a: a bookshop
+    i_want: "published submissions auto-suggested into a \"Convocatoria\" collection (OSPP), hero-able on my storefront"
+    so_that: the launchpad has a visible home
+    risk: low
+    status: done
+---
 # Bookshop launchpad — Sprint 2: The excerpt + the shelf
 
 **Status:** ✅ MERGED to `main` 2026-07-07 (squash `a398d98`, PR #187, frontend-only, LOW).

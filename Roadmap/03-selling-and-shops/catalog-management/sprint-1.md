@@ -1,3 +1,33 @@
+---
+epic: catalog-management
+sprint: 1
+title: "The Catálogo home (nav group + table)"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Seller-nav restructure: the Catálogo group"
+    as_a: a seller
+    i_want: "the rail to read Operar / Catálogo (Anuncios · Colecciones · Canales · Precios · Importar) / Crecer / Configuración"
+    so_that: everything about my products lives in one place
+    risk: low
+    status: done
+  - id: S1.2
+    title: The catalog table
+    as_a: a seller with hundreds of products
+    i_want: "`/shop/manage/catalogo`: a server-filtered, paginated table (search, status, channel, stock state, category/collection) with saved views and sort"
+    so_that: finding and inspecting any slice of my catalog takes seconds
+    risk: high
+    status: done
+  - id: S1.3
+    title: First-class status filters
+    as_a: a seller
+    i_want: activo / borrador / pausado / agotado as filterable states
+    so_that: "\"what's sellable right now\" is one click"
+    risk: low
+    status: done
+---
 # Catalog management — Sprint 1: The Catálogo home (nav group + table)
 
 **Status:** ✅ MERGED 2026-07-08 — BE PR [#69](https://github.com/danybgoode/medusa-bonsai-backend/pull/69) squash `84ee9bd`, FE PR [#193](https://github.com/danybgoode/miyagisanchezcommerce/pull/193) squash `eada2a0`. Both deployed and confirmed live (Cloud Run revision `medusa-web-00144-h5s`; Vercel prod `dpl_F9DG2tYCt5MzXDvRMNhbXFrvRWZ2`). Real-phone table smoke still owed to Daniel.

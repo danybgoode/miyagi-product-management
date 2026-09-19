@@ -1,3 +1,47 @@
+---
+epic: frontend-vercel-to-cloudrun
+sprint: 4
+title: Tenant domain rewrite + migration + Vercel sunset
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S4.1
+    title: "lib/cloudflare-domains.ts: the provider swap behind the same seam"
+    as_a: a seller with a custom domain
+    i_want: "domain provisioning to run on Cloudflare custom hostnames (create → poll validation → delete, against the fallback origin)"
+    so_that: my domain keeps working with automatic SSL after Vercel is gone
+    risk: high
+    status: done
+  - id: S4.2
+    title: Retarget CNAME_TARGET + the one-click route + seller copy
+    as_a: a seller adding a domain
+    i_want: "`dnsRecordFor`/`CNAME_TARGET`, the one-click Cloudflare DNS route, and all seller-facing instructions pointing at the new target"
+    so_that: new domain setups succeed first try
+    risk: high
+    status: done
+  - id: S4.3
+    title: Migrate every live tenant custom domain
+    as_a: a platform operator
+    i_want: "a dry-run-by-default migration script (the `vercel-prune` pattern): enumerate live domains from the Vercel project → pre-provision as Cloudflare custom hostnames → per-domain validation report → flip per domain"
+    so_that: "no seller's domain drops"
+    risk: high
+    status: done
+  - id: S4.4
+    title: Lapse-sweep + tenant-directory domain health read Cloudflare status
+    as_a: a platform operator
+    i_want: "`lib/domain-lapse-server.ts` and the DNS-doctor checks reading the Cloudflare custom-hostname status API instead of Vercel's `/v6/domains/*/config`"
+    so_that: entitlement lapse + domain health keep working
+    risk: low
+    status: done
+  - id: S4.5
+    title: Vercel sunset (previews kept)
+    as_a: a platform operator
+    i_want: "— after Daniel calls the soak — Vercel prod deploys disabled (`git.deploymentEnabled.main: false`), production domains removed from the Vercel project, `VERCEL_API_TOKEN` de-scoped to preview needs, and the docs updated (AGENTS.md workflow §, WAYS-OF-WORKING deploy/merge/preview sections, team-memory deploy-topology note)"
+    so_that: Vercel is preview-only and no doc claims otherwise
+    risk: low
+    status: done
+---
 # Frontend off Vercel — Cloud Run behind a Cloudflare edge — Sprint 4: Tenant domain rewrite + migration + Vercel sunset
 
 **Status:** ✅ Stories 4.1–4.4 built AND live-provisioned 2026-07-10 (code merged — PR #206 — and the

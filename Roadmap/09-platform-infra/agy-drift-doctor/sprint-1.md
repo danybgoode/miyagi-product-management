@@ -1,3 +1,26 @@
+---
+epic: agy-drift-doctor
+sprint: 1
+title: the doctor script + agent authorization
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "the doctor: executable re-verification of the agy contract"
+    as_a: an agent whose cross-review died on the agy version pin
+    i_want: "a script that re-verifies the live print contract and bumps the pin only when it's green"
+    so_that: I can clear the drift myself instead of stalling on a human
+    risk: low
+    status: done
+  - id: S1.2
+    title: "distribution: the failure site names the fix, and the docs authorize it"
+    as_a: "any future agent hitting `agy X != pinned Y`"
+    i_want: "the error itself to tell me I'm authorized to run the doctor"
+    so_that: the fix needs no tribal knowledge
+    risk: low
+    status: done
+---
 # agy drift doctor — Sprint 1: the doctor script + agent authorization
 
 Epic: [agy drift doctor](README.md) · **Risk: LOW** (advisory dev-tooling, never gates) ·

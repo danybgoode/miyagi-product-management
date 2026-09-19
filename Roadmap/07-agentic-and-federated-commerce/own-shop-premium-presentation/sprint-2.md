@@ -1,3 +1,40 @@
+---
+epic: own-shop-premium-presentation
+sprint: 2
+title: Collections + in-shop navigation
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: ".1a — Fix the category positional-read bug (preliminary, LOW risk, ships first)"
+    as_a: a platform
+    i_want: "\"the\" product category derived explicitly (not positionally)"
+    so_that: attaching seller collections to the same product can never silently break the main category filter
+    risk: low
+    status: done
+  - id: S2.2
+    title: ".1b — Seller-defined collections (was Story 2.1)"
+    as_a: a print-shop seller
+    i_want: "to create, rename, reorder, and delete collections (Die-cut, Kiss-cut, Zines, Flyers…) and assign my listings to them"
+    so_that: my catalog reads like a store, not a pile
+    risk: high
+    status: done
+  - id: S2.3
+    title: Shop nav strip + collection pages, white-label everywhere
+    as_a: a buyer
+    i_want: "a nav strip on the shop (Todos · Die-cut · Zines…) and `/s/[slug]/c/[collection]` pages"
+    so_that: I browse the shop by its own sections on the marketplace, the subdomain, and the custom domain
+    risk: high
+    status: done
+  - id: S2.4
+    title: SEO + agent surface
+    as_a: a search engine or AI agent
+    i_want: collection pages in the per-host sitemap with correct canonicals/OG, and collections exposed in the UCP catalog
+    so_that: "a shop's sections are discoverable by machines too"
+    risk: high
+    status: done
+---
 # Own-shop premium presentation — Sprint 2: Collections + in-shop navigation
 
 **Status:** ✅ MERGED 2026-07-07. Backend PR [#65](https://github.com/danybgoode/medusa-bonsai-backend/pull/65)

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: marketplace-positioning-meta
+title: "Marketplace positioning — title, OG & social card"
+area: 08-growth-and-promotions
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Marketplace positioning — title, OG & social card

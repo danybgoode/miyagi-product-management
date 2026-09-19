@@ -1,3 +1,33 @@
+---
+epic: marketplace-communications
+sprint: 3
+title: see every email, first-hand
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: A fixture render for every template
+    as_a: a platform owner
+    i_want: each message rendered with realistic sample data
+    so_that: "a sample email looks like the real thing instead of `{{undefined}}`"
+    risk: low
+    status: done
+  - id: S3.2
+    title: Allow-listed sample send
+    as_a: a platform owner
+    i_want: to send myself any message on demand
+    so_that: I can see exactly what a merchant or a buyer receives
+    risk: high
+    status: done
+  - id: S3.3
+    title: "Deliver all of them, and see them ⬜ OWED TO DANIEL"
+    as_a: a platform owner
+    i_want: proof that every template actually arrives
+    so_that: email is a foundation I can trust rather than one that compiles
+    risk: low
+    status: done
+---
 # Marketplace communications — Sprint 3: see every email, first-hand
 
 **Status:** 🟨 code shipped `1ed0b44` (#367) — inbox verification owed to Daniel

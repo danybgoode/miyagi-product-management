@@ -1,3 +1,33 @@
+---
+epic: exec-prose-rail
+sprint: 2
+title: the daily standup, written by the routine
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "--brief: the deterministic evidence pack"
+    as_a: the nightly routine
+    i_want: one command that hands me everything I need to write
+    so_that: I never guess at repo state
+    risk: low
+    status: done
+  - id: S2.2
+    title: "--post --prose-file: guard, then post"
+    as_a: the nightly routine
+    i_want: my draft mechanically checked before it posts
+    so_that: "a falsehood doesn't reach the channel as status"
+    risk: low
+    status: done
+  - id: S2.3
+    title: ops-nightly.prompt.md teaches the loop
+    as_a: the routine
+    i_want: "the write→guard→revise loop written down"
+    so_that: it runs the same way every night
+    risk: low
+    status: done
+---
 # Executive prose rail — Sprint 2: the daily standup, written by the routine
 
 **Status:** ✅ Built — branch `feat/exec-prose-rail` (c0e3d29)

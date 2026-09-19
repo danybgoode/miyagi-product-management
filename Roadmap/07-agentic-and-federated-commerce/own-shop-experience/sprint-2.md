@@ -1,3 +1,33 @@
+---
+epic: own-shop-experience
+sprint: 2
+title: SEO continuity, legacy redirects, fail-safe
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Legacy 301 redirects
+    as_a: the shop owner
+    i_want: old marketplace links to lead to my domain
+    so_that: "I don't lose traffic or ranking when migrating"
+    risk: low
+    status: done
+  - id: S2.2
+    title: Canonical/OG + robots/sitemap per host
+    as_a: a search engine
+    i_want: each shop to declare its own domain as canonical
+    so_that: I index the independent brand and avoid duplicate content
+    risk: low
+    status: done
+  - id: S2.3
+    title: Fail-safe on disconnect
+    as_a: the shop owner
+    i_want: removing my domain to keep the shop live on the platform route
+    so_that: "I'm not left with a broken shop"
+    risk: low
+    status: done
+---
 # Sprint 2 — SEO continuity, legacy redirects, fail-safe
 
 Goal: traffic and search engines migrate cleanly to the custom domain — old marketplace links redirect to

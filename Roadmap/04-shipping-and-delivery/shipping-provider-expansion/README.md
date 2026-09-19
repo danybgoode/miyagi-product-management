@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: shipping-provider-expansion
+title: "Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México"
+area: 04-shipping-and-delivery
+risk: high
+type: spike
+phase: Shipped
+sprints_total: 3
+stories_total: 10
 ---
 
 # Epic: Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México

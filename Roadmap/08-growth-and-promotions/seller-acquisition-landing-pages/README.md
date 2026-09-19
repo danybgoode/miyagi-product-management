@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: seller-acquisition-landing-pages
+title: "Seller-Acquisition Landing Pages (BUILD-ORDER #6)"
+area: 08-growth-and-promotions
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 9
 ---
 
 # Seller-Acquisition Landing Pages (BUILD-ORDER #6)

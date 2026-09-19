@@ -1,3 +1,19 @@
+---
+epic: shipping-provider-expansion
+sprint: 1
+title: "Spike — shipping funding model (written decision, NO code)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Funding-model written decision
+    as_a: the platform owner
+    i_want: "a researched, written recommendation on how seller shipping gets funded — BYO (sellers fund + connect their own carrier account) vs platform-funded with markup vs hybrid (platform default + optional BYO) —"
+    so_that: the shipping-funding burden lands deliberately and the next build slice is known before anyone writes code
+    risk: low
+    status: done
+---
 # Shipping provider expansion — Sprint 1: Spike — shipping funding model (written decision, NO code)
 
 **Status:** ✅ **DONE 2026-07-08** — decision written (all seven sections + aggregator comparison in the seed file; summary in the scope doc, commit `24c073e`) and **Daniel approved** the HYBRID recommendation in-session. Story 1.1 ✅.

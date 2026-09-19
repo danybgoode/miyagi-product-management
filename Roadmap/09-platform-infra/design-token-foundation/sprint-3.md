@@ -1,3 +1,26 @@
+---
+epic: design-token-foundation
+sprint: 3
+title: Contrast verification + no-regression guard
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: WCAG AA contrast verification
+    as_a: a visitor
+    i_want: every semantic fg/bg pair to hold WCAG AA
+    so_that: text stays readable regardless of the active theme
+    risk: low
+    status: done
+  - id: S3.2
+    title: No-regression guard
+    as_a: a maintainer
+    i_want: new raw-hex in customer-facing components caught automatically
+    so_that: "the tokenized foundation doesn't silently erode"
+    risk: low
+    status: done
+---
 # Sprint 3 — Contrast verification + no-regression guard
 
 Goal: prove every semantic foreground/background pair holds WCAG AA, and stop new raw-hex from

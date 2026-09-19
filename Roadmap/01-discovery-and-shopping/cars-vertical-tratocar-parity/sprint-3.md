@@ -1,3 +1,26 @@
+---
+epic: cars-vertical-tratocar-parity
+sprint: 3
+title: Outreach readiness (ops-heavy)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: "Dry-run: the demo car shop"
+    as_a: Daniel
+    i_want: a 10-car demo catalog imported via the agent path into a dressed demo shop
+    so_that: the tratocar pitch (and any car-seller pitch) shows a finished thing, not a promise
+    risk: high
+    status: done
+  - id: S3.2
+    title: "/vende/autos: sell your cars on Miyagi"
+    as_a: any car seller (dealer lot, agency, or private seller)
+    i_want: "a real `/vende/autos` page"
+    so_that: "I can see what selling cars on Miyagi looks like and get a copyable \"ask your agent\" prompt — the same substance a tratocar outreach email would need, generalized to anyone"
+    risk: high
+    status: done
+---
 # Cars vertical — Sprint 3: Outreach readiness (ops-heavy)
 
 **Status:** ✅ done — both stories complete. Code: PR

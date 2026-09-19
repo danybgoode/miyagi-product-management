@@ -1,3 +1,33 @@
+---
+epic: bookshop-launchpad
+sprint: 1
+title: Submissions in, works published
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Public submission portal
+    as_a: a writer
+    i_want: "to submit my work to a bookshop at `/s/[slug]/convocatoria` (title, synopsis, genre, manuscript file, author info) with just an email code — no account"
+    so_that: submitting feels like Wattpad, not paperwork
+    risk: high
+    status: done
+  - id: S1.2
+    title: Review queue
+    as_a: a bookshop
+    i_want: a Convocatoria queue in the seller shell (read the manuscript, approve / reject / request changes)
+    so_that: curation is mine
+    risk: high
+    status: done
+  - id: S1.3
+    title: Publish as digital product
+    as_a: a bookshop
+    i_want: "one click to mint an approved submission as a draft digital listing (manuscript → private digital bucket, synopsis → description, genre → category)"
+    so_that: publishing takes minutes
+    risk: high
+    status: done
+---
 # Bookshop launchpad — Sprint 1: Submissions in, works published
 
 **Status:** ✅ merged to `main` 2026-07-07 — squash `b6eca090` (PR #184). Owed: Daniel's money smoke + `launchpad.enabled` flip.

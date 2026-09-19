@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: merchant-lifecycle-projection
+title: "Merchant lifecycle projection — the Miyagi half of Golden Beans' event router"
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 0
+stories_total: 0
 ---
 
 # Merchant lifecycle projection — the Miyagi half of Golden Beans' event router

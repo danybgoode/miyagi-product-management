@@ -1,3 +1,26 @@
+---
+epic: seller-portal-depth-pass
+sprint: 2
+title: Reversible and honest
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Listing deletes have a real 10-second escape
+    as_a: a seller cleaning my catalog
+    i_want: a short undo window after choosing delete
+    so_that: a mis-tap does not remove a live listing
+    risk: low
+    status: done
+  - id: S2.2
+    title: Guidance is factual and es-MX
+    as_a: a seller setting up and operating my shop
+    i_want: guidance based on my own state instead of threats or made-up benchmarks
+    so_that: "I can trust the portal's advice"
+    risk: low
+    status: done
+---
 # Seller-portal depth pass — Sprint 2: Reversible and honest
 
 **Status:** ✅ shipped — frontend commit `03edbcb` (included in PR #388)

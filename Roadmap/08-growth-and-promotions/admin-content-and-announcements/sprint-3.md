@@ -1,3 +1,33 @@
+---
+epic: admin-content-and-announcements
+sprint: 3
+title: "Announcements — seller strip + homepage card"
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Announcement CRUD in admin
+    as_a: the platform admin
+    i_want: "to create/edit announcements in `/admin/contenido` — audience (vendedores/compradores), text + optional CTA label/link, schedule (starts/ends), active toggle, with one-active-per-audience enforced —"
+    so_that: I can run platform comms (feature launches, flash sales, promoted stores) without a deploy
+    risk: low
+    status: done
+  - id: S3.2
+    title: Seller strip
+    as_a: a seller
+    i_want: "a slim, quiet, dismissable strip at the top of the seller shell (`/shop/manage`) while a seller campaign is active"
+    so_that: "platform news reaches me in context without nagging — dismissed stays dismissed for that campaign"
+    risk: low
+    status: done
+  - id: S3.3
+    title: Buyer homepage card
+    as_a: a buyer
+    i_want: "an understated, dismissable announcement card inside the homepage flow while a buyer campaign is active — beautiful, non-intrusive, matching the «catálogo limpio» direction —"
+    so_that: the platform can speak to me without cheapening the storefront
+    risk: low
+    status: done
+---
 # Admin content & announcements — Sprint 3: Announcements — seller strip + homepage card
 
 **Status:** ✅ merged + live 2026-07-09 — PR #200 (`78b1430`)

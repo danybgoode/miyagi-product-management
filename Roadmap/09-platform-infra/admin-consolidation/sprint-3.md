@@ -1,3 +1,19 @@
+---
+epic: admin-consolidation
+sprint: 3
+title: Tenant directory (read-only)
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: "/admin/tenants directory + inspector · LOW (read-only)"
+    as_a: a platform admin
+    i_want: to find and inspect any shop
+    so_that: "I can see its state at a glance before any action (and as the foundation S4's entitlement action plugs into)"
+    risk: high
+    status: done
+---
 # Sprint 3 — Tenant directory (read-only)
 
 **Epic:** [Admin consolidation + tenant management](README.md) · **Repo:** `apps/miyagisanchez`

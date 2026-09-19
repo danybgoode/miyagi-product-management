@@ -1,3 +1,33 @@
+---
+epic: admin-content-and-announcements
+sprint: 1
+title: Copy override layer + admin editor + bulk round-trip
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Override store + pure merge seam
+    as_a: the platform admin
+    i_want: "a `platform_copy_overrides` Supabase table (namespace, key, locale, value, updated_at/by) and a pure, flag-gated, fail-open merge seam `applyCopyOverrides(dict, overrides)` layered onto `getDictionary()`"
+    so_that: "any keyed surface can render edited copy with no deploy — and a Supabase outage can never break a page"
+    risk: low
+    status: done
+  - id: S1.2
+    title: "/admin/contenido per-key editor"
+    as_a: the platform admin
+    i_want: "an admin section listing pages → sections → keys (grouped by namespace path) with inline editing — the compile-time default always visible, «restaurar» per key (deletes the override), `en` fields shown ONLY on bilingual-allow-listed namespaces — and save triggering on-demand revalidation"
+    so_that: "I can hand-edit any keyed string and see it live in ≤1 min"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Bulk export/import with diff preview
+    as_a: the platform admin
+    i_want: to export a page/section/namespace as CSV/XLSX (flattened key paths) or JSON (structure-true), work the copy externally, and import either format back through a diff preview (added/changed/skipped-unknown) before a scoped apply
+    so_that: "I can do copywriting in bulk and apply it in one pass — bulk or scoped"
+    risk: low
+    status: done
+---
 # Admin content & announcements — Sprint 1: Copy override layer + admin editor + bulk round-trip
 
 **Status:** ✅ merged + live — PR #197 squash `c7e32d2` on `main`. **Owed before this sprint's stories

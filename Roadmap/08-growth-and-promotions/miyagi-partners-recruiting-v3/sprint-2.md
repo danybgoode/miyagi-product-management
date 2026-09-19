@@ -1,3 +1,40 @@
+---
+epic: miyagi-partners-recruiting-v3
+sprint: 2
+title: Activate
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Track-aware approval on the existing partner identity
+    as_a: an approved founding operator
+    i_want: my program track preserved when my partner identity is created
+    so_that: I enter the correct offer without changing authorization semantics
+    risk: high
+    status: done
+  - id: S2.2
+    title: Neutral partner activation and Clerk binding
+    as_a: an approved operator
+    i_want: a neutral sign-in and binding path
+    so_that: I can enter Miyagi Partners without using a Promotor close workflow that misrepresents my role
+    risk: high
+    status: done
+  - id: S2.3
+    title: Track-aware /partner orientation
+    as_a: an activated partner
+    i_want: to see my program, current permissions and next pilot step
+    so_that: an empty workspace does not imply broken access or an available US shop
+    risk: low
+    status: done
+  - id: S2.4
+    title: Existing-Promotor continuity contract
+    as_a: an existing Promotor
+    i_want: my application, code, earnings, close and partner workspace to behave as before
+    so_that: the umbrella transition does not interrupt live operations
+    risk: low
+    status: done
+---
 # Miyagi Partners proposition and recruiting portal v3 — Sprint 2: Activate
 
 **Status:** ✅ shipped

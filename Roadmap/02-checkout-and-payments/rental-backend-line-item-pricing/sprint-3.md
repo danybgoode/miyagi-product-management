@@ -1,3 +1,19 @@
+---
+epic: rental-backend-line-item-pricing
+sprint: 3
+title: agent parity (UCP/MCP)
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: checkout-session quotes + links the computed rental total
+    as_a: an AI shopping agent
+    i_want: "`POST /api/ucp/checkout-session` (and MCP `get_checkout_options`) to accept `check_in`/`check_out` for a rental listing and return the exact computed breakdown with checkout URLs that charge it"
+    so_that: an agent books a rental end-to-end and never quotes the per-period rate as the full price
+    risk: low
+    status: done
+---
 # Rental line-item pricing — Sprint 3: agent parity (UCP/MCP)
 
 **Status:** ✅ MERGED 2026-07-08 — PR [#191](https://github.com/danybgoode/miyagisanchezcommerce/pull/191) squash `a2a2cf5`, LOW-risk Daniel-authorized merge-on-green (CI green: `tsc`+build, Playwright vs preview both passed)

@@ -1,3 +1,33 @@
+---
+epic: hyper-performant-website
+sprint: 2
+title: CSS/JS + the guard
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Iconoir subset (kill the 204 KiB render-blocking CSS)
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.2
+    title: Clerk UI lazy-mount + legacy-polyfill purge
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.3
+    title: Perf-budget guard in the deterministic gate
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+---
 # Hyper-performant website — Sprint 2: CSS/JS + the guard
 
 **Status:** 🟦 built — draft PR "hyper-performant-website S2: iconoir subset + Clerk lazy-mount + perf guard [LOW]", awaiting review/merge. Branch `feat/hyper-perf-s2` (fresh off `main` post-S1-squash-merge, per S1's own dead-end-branch note).

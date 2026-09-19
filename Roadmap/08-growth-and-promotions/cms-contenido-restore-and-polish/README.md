@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: cms-contenido-restore-and-polish
+title: "CMS restore & polish — /admin/contenido saves again, then gets previews"
+area: 08-growth-and-promotions
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 4
+stories_total: 12
 ---
 
 # Epic: CMS restore & polish — /admin/contenido saves again, then gets previews

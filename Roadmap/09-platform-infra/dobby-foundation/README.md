@@ -1,6 +1,13 @@
 ---
 status: shipped   # ✅ CLOSED 2026-07-20 — both sprints and all cross-repo PRs merged; plugin exercised from this Codex session.
 slug: dobby-foundation
+title: "dobby-foundation — portable ways-of-work (plugin marketplace + project template)"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 2
+stories_total: 8
 ---
 
 # Epic: dobby-foundation — portable ways-of-work (plugin marketplace + project template)

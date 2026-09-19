@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: doc-format-consistency
+title: "Roadmap doc-format consistency — rules, sweep, and an automatic checker"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 4
 ---
 
 # Epic: Roadmap doc-format consistency — rules, sweep, and an automatic checker

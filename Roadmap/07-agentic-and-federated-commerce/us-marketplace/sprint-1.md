@@ -1,3 +1,33 @@
+---
+epic: us-marketplace
+sprint: 1
+title: US commerce rails
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Provision and verify the US commerce resource pack
+    as_a: the platform owner
+    i_want: one idempotent script that creates and verifies every Medusa resource the US market needs
+    so_that: US commerce rests on native primitives rather than shadow tables
+    risk: low
+    status: done
+  - id: S1.2
+    title: Resolve US Region and channel through the existing seam
+    as_a: a developer
+    i_want: "`market-medusa.ts` to answer with real US identifiers"
+    so_that: every existing caller becomes US-capable without a single new branch
+    risk: low
+    status: done
+  - id: S1.3
+    title: Let a merchant open a shop that operates in the US
+    as_a: a merchant
+    i_want: my shop to operate in the United States
+    so_that: my prices, cart and checkout use USD
+    risk: low
+    status: done
+---
 # US marketplace — Sprint 1: US commerce rails
 
 **Status:** ✅ shipped — 2026-08-11

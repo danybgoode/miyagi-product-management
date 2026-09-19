@@ -1,3 +1,26 @@
+---
+epic: ucp-buyer-shipping-exposure
+sprint: 2
+title: Select fulfillment and charge through the Medusa cart
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "Resolve an agent's fulfillment selection server-side"
+    as_a: an AI-assisted buyer
+    i_want: to select one returned shipping option or pickup destination
+    so_that: the checkout uses my choice without trusting money fields I could have invented
+    risk: high
+    status: done
+  - id: S2.2
+    title: Start a delivery-aware checkout on the Medusa cart rail
+    as_a: an AI-assisted buyer
+    i_want: the hosted-payment total and resulting order to carry my validated delivery choice
+    so_that: I approve and the seller fulfills one identical contract
+    risk: high
+    status: done
+---
 # UCP buyer-side shipping/delivery-method exposure — Sprint 2: Select fulfillment and charge through the Medusa cart
 
 **Status:** ✅ shipped — frontend [#385](https://github.com/danybgoode/miyagisanchezcommerce/pull/385), production commit `936b42d`

@@ -1,3 +1,19 @@
+---
+epic: seller-acquisition-landing-content-overhaul
+sprint: 2
+title: "Copy + es-MX implementation · status: ✅ shipped 2026-06-25 (PR #125 squash `af690ad`)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Replace placeholder copy with approved es-MX strings
+    as_a: supply traffic
+    i_want: "every `/vende*` page to read as intentional, accented es-MX copy written for my persona"
+    so_that: it persuades instead of reading like placeholder
+    risk: low
+    status: done
+---
 # Sprint 2 — Copy + es-MX implementation  ·  status: ✅ shipped 2026-06-25 (PR #125 squash `af690ad`)
 
 > Land the approved S1 copy. Almost entirely edits to **one file**: `apps/miyagisanchez/locales/es.json

@@ -1,3 +1,26 @@
+---
+epic: custom-print-products
+sprint: 1
+title: Storefront honesty + flagship ops
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Hide print placements from every shop-storefront surface
+    as_a: "a buyer on any shop storefront (marketplace `/s/[slug]`, subdomain, custom domain, embed, UCP shop catalog)"
+    i_want: "to never see `is_print_placement` products"
+    so_that: miyagiprints (and any future print provider) shows only real, buyable offerings
+    risk: low
+    status: done
+  - id: S1.2
+    title: "miyagiprints ops checklist (grants · email · real catalog)"
+    as_a: Daniel (admin)
+    i_want: miyagiprints fully outfitted
+    so_that: "it's the flagship configurator shop"
+    risk: low
+    status: done
+---
 # Custom print products — Sprint 1: Storefront honesty + flagship ops
 
 **Status:** ✅ done — both stories shipped + smoke-confirmed by Daniel (2026-07-04). Fuller catalog seeding continues as a separate backlog item (not a Sprint 1 blocker).

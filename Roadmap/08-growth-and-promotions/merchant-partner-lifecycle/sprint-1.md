@@ -1,3 +1,54 @@
+---
+epic: merchant-partner-lifecycle
+sprint: 1
+title: Portfolio and ownership SLA
+risk: high
+phase: Shipped
+stories_total: 6
+stories:
+  - id: S1.1
+    title: Portfolio ownership and SLA contract
+    as_a: an activation lead
+    i_want: explicit stewardship commitments
+    so_that: every active merchant has an accountable owner and response deadline
+    risk: high
+    status: done
+  - id: S1.2
+    title: Grant-scoped partner work queue
+    as_a: a Merchant Partner
+    i_want: my prioritized merchant portfolio
+    so_that: "I know who needs attention and why without seeing another partner's contacts"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Audited reassignment preserving attribution
+    as_a: an admin
+    i_want: to reassign stewardship without rewriting acquisition history
+    so_that: capacity can change while credit and accountability remain trustworthy
+    risk: high
+    status: done
+  - id: S1.4
+    title: the SLA contract
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.5
+    title: the work queue
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S1.6
+    title: audited reassignment
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Merchant Partner lifecycle — Sprint 1: Portfolio and ownership SLA
 
 **Status:** ✅ Shipped — [PR #308](https://github.com/danybgoode/miyagisanchezcommerce/pull/308) merged (squash `33facbf`); migration `20260725100000` applied + verified live 2026-07-25

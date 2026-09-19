@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: backend-production-readiness
+title: "Backend Production Readiness — audit + hardening"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 5
+stories_total: 6
 ---
 
 # Epic: Backend Production Readiness — audit + hardening

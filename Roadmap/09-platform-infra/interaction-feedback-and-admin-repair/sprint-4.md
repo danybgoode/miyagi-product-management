@@ -1,3 +1,19 @@
+---
+epic: interaction-feedback-and-admin-repair
+sprint: 4
+title: browser-smoke fixtures stop rotting
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S4.1
+    title: the fixture is discovered, not pinned
+    as_a: the team
+    i_want: browser-smoke fixtures to survive routine data changes
+    so_that: "a deleted test shop does not read as a product regression at 09:23 UTC"
+    risk: high
+    status: done
+---
 # Sprint 4 — browser-smoke fixtures stop rotting
 
 **Status:** 🟦 In review · PR [#370](https://github.com/danybgoode/miyagisanchezcommerce/pull/370)

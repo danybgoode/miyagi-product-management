@@ -1,3 +1,19 @@
+---
+epic: custom-domain-checkout
+sprint: 1
+title: "The checkout \"hop\" (buying from a custom domain becomes functional)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Buy from a custom domain
+    as_a: "a buyer on a shop's custom domain"
+    i_want: to be able to buy a product
+    so_that: "I don't hit a broken checkout"
+    risk: high
+    status: done
+---
 # Sprint 1 — The checkout "hop" (buying from a custom domain becomes functional)
 
 Goal: a buyer on the seller's custom domain can **start and complete a purchase**. Since auth is

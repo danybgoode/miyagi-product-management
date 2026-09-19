@@ -1,3 +1,33 @@
+---
+epic: seller-nav-consolidation
+sprint: 2
+title: One breadcrumb everywhere
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "Shared <SellerBreadcrumb> deriving from the nav SSOT"
+    as_a: a seller
+    i_want: a single, predictable breadcrumb
+    so_that: I always know where I am and how to go back
+    risk: low
+    status: done
+  - id: S2.2
+    title: Replace every bespoke breadcrumb with it
+    as_a: a seller
+    i_want: consistency
+    so_that: no section uses a different back affordance
+    risk: low
+    status: done
+  - id: S2.3
+    title: Reconcile the bilingual eventos/sweepstakes breadcrumbs
+    as_a: a seller
+    i_want: events/sweepstakes to match
+    so_that: "the standard is truly universal — without breaking bilingual"
+    risk: low
+    status: done
+---
 # Sprint 2 — One breadcrumb everywhere
 
 **Epic:** [Seller nav consolidation](README.md) · **Risk:** all LOW · **Repo:** `apps/miyagisanchez`

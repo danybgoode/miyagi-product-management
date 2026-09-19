@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: exec-prose-rail
+title: "Executive prose rail — a CPO voice for the scheduled reports"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 3
+stories_total: 10
 ---
 
 # Epic: Executive prose rail — a CPO voice for the scheduled reports

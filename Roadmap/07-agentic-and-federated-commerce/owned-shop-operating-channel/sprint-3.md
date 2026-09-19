@@ -1,3 +1,33 @@
+---
+epic: owned-shop-operating-channel
+sprint: 3
+title: The seller can actually choose
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Re-enable owned-shop-only publication end to end
+    as_a: a merchant
+    i_want: to create a product for my own shop without listing it in the Mexico marketplace
+    so_that: my shop is my own channel and the marketplace is a choice
+    risk: high
+    status: done
+  - id: S3.2
+    title: Publish and unpublish an existing product
+    as_a: a merchant
+    i_want: "to list an existing own-shop product in the marketplace later — or pull it back out —"
+    so_that: the decision is reversible and not frozen at creation
+    risk: high
+    status: done
+  - id: S3.3
+    title: Seller, admin and agent surfaces for operating-vs-published
+    as_a: a merchant or operator
+    i_want: to see whether a product is buyable, published, or both
+    so_that: "\"it is on my shop\" and \"it is in the marketplace\" stop being the same word"
+    risk: high
+    status: done
+---
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 3: The seller can actually choose
 
 **Status:** ✅ complete and live — backend PR 131 (`64730e3`) + frontend PR 331 (`93e510e`), merged and

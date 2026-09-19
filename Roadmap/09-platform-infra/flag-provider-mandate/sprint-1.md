@@ -1,3 +1,40 @@
+---
+epic: flag-provider-mandate
+sprint: 1
+title: Measure, repair the write path, activate
+risk: high
+phase: Shaping
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Measure the live cutover config in both runtimes
+    as_a: the product owner
+    i_want: the actual serving configuration written down
+    so_that: "\"where are flags managed\" has a measured answer instead of an inferred one"
+    risk: low
+    status: planned
+  - id: S1.2
+    title: Prove (or repair) the Golden admin write credential
+    as_a: an operator
+    i_want: "the toggle in `/admin/flags` to actually work"
+    so_that: "a control surface isn't decorative"
+    risk: high
+    status: planned
+  - id: S1.3
+    title: Activate every flag in Golden, in every environment
+    as_a: the product owner
+    i_want: every flag to have a real activation in Golden
+    so_that: "\"Never turned on here\" stops being the answer for 39 of 42 flags and the console tells the truth"
+    risk: high
+    status: planned
+  - id: S1.4
+    title: Prove the runtime reads the Golden activation, not the fallback
+    as_a: the product owner
+    i_want: evidence that Golden is deciding
+    so_that: Sprint 2 can delete the fallback without changing behaviour
+    risk: high
+    status: planned
+---
 # Golden Frijoles is the only flag surface — Sprint 1: Measure, repair the write path, activate
 
 **Status:** ⬜ not started

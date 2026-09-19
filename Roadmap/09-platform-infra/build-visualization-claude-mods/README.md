@@ -3,6 +3,13 @@ status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-prog
 slug: build-visualization-claude-mods
 sprints_in: https://github.com/danybgoode/dobby-foundation/tree/main/Roadmap/09-platform-infra/build-visualization-claude-mods  # sprint docs + retro live in the foundation repo
 build_order: 6
+title: "The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod"
+area: 09-platform-infra
+risk: low
+type: feature
+phase: Shaping
+sprints_total: 0
+stories_total: 0
 ---
 
 # Epic: The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod

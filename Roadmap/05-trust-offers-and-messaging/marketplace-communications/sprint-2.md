@@ -1,3 +1,26 @@
+---
+epic: marketplace-communications
+sprint: 2
+title: the matrix as a surface
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "/admin/comunicaciones"
+    as_a: a platform owner
+    i_want: to read the communications map in the admin
+    so_that: "I can answer \"what does this action send, to whom, on which channel\" without opening an editor"
+    risk: low
+    status: done
+  - id: S2.2
+    title: Filter by actor, channel and trigger
+    as_a: a platform owner
+    i_want: to narrow the map
+    so_that: I can see just what a buyer receives, or just what goes out over Telegram
+    risk: low
+    status: done
+---
 # Marketplace communications — Sprint 2: the matrix as a surface
 
 **Status:** ✅ shipped — `1ed0b44` (#367)

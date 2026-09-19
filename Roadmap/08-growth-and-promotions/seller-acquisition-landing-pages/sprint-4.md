@@ -1,3 +1,40 @@
+---
+epic: seller-acquisition-landing-pages
+sprint: 4
+title: "More personas + SEO/OG + A/B hooks · status: ✅ shipped to prod 2026-06-07 (PR #45 · merge `cfe04ef`)"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S4.1
+    title: Local / brick-and-mortar merchant page
+    as_a: "a local business owner (\"changarro\" / boutique)"
+    i_want: a page that pitches going online without complexity or margin loss
+    so_that: I open a shop
+    risk: low
+    status: done
+  - id: S4.2
+    title: Services professional page
+    as_a: "a services pro (tutor, belleza, oficios, reparación)"
+    i_want: a page that pitches easy booking + payments
+    so_that: I list my service
+    risk: low
+    status: done
+  - id: S4.3
+    title: Per-persona SEO + OpenGraph
+    as_a: organic/social traffic
+    i_want: "each `/vende/*` page to present well in search + shares"
+    so_that: the pages actually pull traffic
+    risk: low
+    status: done
+  - id: S4.4
+    title: Lightweight A/B hooks
+    as_a: a maintainer
+    i_want: to test headline/CTA variants
+    so_that: we tune conversion with evidence
+    risk: low
+    status: done
+---
 # Sprint 4 — More personas + SEO/OG + A/B hooks  ·  status: ✅ shipped to prod 2026-06-07 (PR #45 · merge `cfe04ef`)
 
 > **Track B, low-hanging fruit after Sprint 3.** Once S3 ships the reusable section system, new

@@ -1,3 +1,47 @@
+---
+epic: miyagi-partners-mcp
+sprint: 1
+title: Credential + grants + resolver + audit (flag dark-launch)
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S1.1
+    title: partners.mcp_enabled flag slice (dark-launch)
+    as_a: the platform
+    i_want: "every partner-credential code path gated behind `partners.mcp_enabled` (default `false`, created DISABLED in every env)"
+    so_that: the whole epic merges dark and activates deliberately
+    risk: high
+    status: done
+  - id: S1.2
+    title: ms_partner credential + partner_grants + grant-set resolver
+    as_a: a partner
+    i_want: "one `ms_partner_<hex>` credential whose resolution returns my full grant set (shop + role per grant)"
+    so_that: "a single token reaches every client shop I'm granted"
+    risk: high
+    status: done
+  - id: S1.3
+    title: Partner connector-URL variant for claude.ai
+    as_a: "a partner using claude.ai (which can't send custom bearer headers)"
+    i_want: "`/api/ucp/mcp/p/<slug>` mirroring the seller connector route"
+    so_that: the credential works as a claude.ai custom connector, not just Desktop/CLI
+    risk: high
+    status: done
+  - id: S1.4
+    title: shop_slug tool routing across the dispatcher
+    as_a: a partner agent
+    i_want: "every existing seller tool to accept an optional `shop_slug` argument when my credential is partner-shaped (defaulting when I hold exactly one grant)"
+    so_that: "the ~38 existing tools work multi-shop with zero new tools"
+    risk: high
+    status: done
+  - id: S1.5
+    title: Per-call partner audit trail
+    as_a: the platform
+    i_want: every partner tool call logged (partner, shop, tool, role, at, outcome) in a real table
+    so_that: partner activity is reviewable per shop and per partner
+    risk: low
+    status: done
+---
 # Miyagi Partners — multi-tenant MCP credential + roles — Sprint 1: Credential + grants + resolver + audit (flag dark-launch)
 
 **Status:** ✅ merged dark 2026-07-17 — PR [#272](https://github.com/danybgoode/miyagisanchezcommerce/pull/272) (`237eb20`). resolveToolShop swapped at 42 call sites (doc said ~19 — drift from the two mcp-parity epics). ⚠ OWED: Daniel applies `20260717090000_miyagi_partners_s1.sql` by hand (classifier-blocked agent-side; flag row absent ⇒ fail-open OFF, fully dark) + the full smoke walkthrough below before any flag flip.

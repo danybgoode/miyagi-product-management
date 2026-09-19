@@ -1,3 +1,33 @@
+---
+epic: delivery-money-polish
+sprint: 3
+title: CP-first reorder + quote recovery/timeout
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: CP-first address order
+    as_a: a buyer on mobile
+    i_want: the address form to start with my CP
+    so_that: "estado / alcaldía / colonia auto-fill before I type anything else"
+    risk: high
+    status: done
+  - id: S3.2
+    title: Coordinated fallback on quote failure
+    as_a: a buyer
+    i_want: "a selectable coordinated option when shipping can't be quoted"
+    so_that: "a quote failure isn't a dead end"
+    risk: high
+    status: done
+  - id: S3.3
+    title: Quote timeout
+    as_a: a buyer
+    i_want: shipping quotes to resolve even if a carrier hangs
+    so_that: "\"Cotizando…\" never spins forever"
+    risk: high
+    status: done
+---
 # Sprint 3 — CP-first reorder + quote recovery/timeout
 
 > Epic: [Delivery & Manual-Money Polish](README.md) · **Risk: HIGH — Daniel merges** (S3.2/S3.3 touch

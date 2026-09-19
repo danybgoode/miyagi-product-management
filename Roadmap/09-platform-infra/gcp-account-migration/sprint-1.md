@@ -1,3 +1,26 @@
+---
+epic: gcp-account-migration
+sprint: 1
+title: secrets + the data rehearsal
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Copy the secret values
+    as_a: the new stack
+    i_want: every secret the old one has, with identical values
+    so_that: sessions, webhooks, and integrations keep working across the cutover
+    risk: high
+    status: done
+  - id: S1.2
+    title: Restore a backup and boot against it
+    as_a: Daniel
+    i_want: proof the new stack runs on our real data shape before any cutover
+    so_that: Sprint 3 is a flip, not an experiment
+    risk: high
+    status: done
+---
 # GCP account migration — Sprint 1: secrets + the data rehearsal
 
 **Status:** ✅ done 2026-07-19 — both stories; awaiting Daniel's read of the measured window + row counts (Sprint QA "owed" item)

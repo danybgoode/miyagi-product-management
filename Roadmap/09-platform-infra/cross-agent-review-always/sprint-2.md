@@ -1,3 +1,26 @@
+---
+epic: cross-agent-review-always
+sprint: 2
+title: "Policy & docs (\"always\", advisory)"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: "WAYS §Review & merge → \"every PR\""
+    as_a: a contributor
+    i_want: the ways-of-working to say cross-review runs on every PR
+    so_that: the new default is authoritative, not folklore
+    risk: low
+    status: done
+  - id: S2.2
+    title: PR template + kickoffs
+    as_a: a fresh agent
+    i_want: the PR template and kickoffs to reflect the new default
+    so_that: I run / expect cross-review on every PR without being told
+    risk: low
+    status: done
+---
 # Sprint 2 — Policy & docs ("always", advisory)
 
 **Epic:** [Cross-agent review on every PR](README.md) · **Risk:** all LOW · **Repo:** monorepo-root (`Roadmap/`, PR template)

@@ -1,3 +1,33 @@
+---
+epic: events-and-ticketing
+sprint: 3
+title: Attendee-ticket primitive + check-in (the shared spine)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "Mint a unique per-attendee ticket token; QR encodes the token"
+    as_a: the platform
+    i_want: to mint a unique token per attendee at purchase (paid) and at registration (free)
+    so_that: "every attendee has a unique credential — not the same file for everyone"
+    risk: high
+    status: done
+  - id: S3.2
+    title: "Seller scans a ticket at the door; marked used exactly once"
+    as_a: a seller
+    i_want: to scan a ticket at the door and have it marked used exactly once
+    so_that: no ticket is reused
+    risk: high
+    status: done
+  - id: S3.3
+    title: Attendance roster / check-in view
+    as_a: a seller
+    i_want: "a roster showing who's registered and who's checked in"
+    so_that: I can manage the door
+    risk: high
+    status: done
+---
 # Sprint 3 — Attendee-ticket primitive + check-in (the shared spine)
 
 > Epic: [Events & Ticketing](README.md) · **Risk: S3.1 / S3.2 HIGH (Daniel merges) · S3.3 MED.**

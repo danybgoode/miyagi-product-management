@@ -1,3 +1,40 @@
+---
+epic: cross-agent-code-review
+sprint: 1
+title: Thin second-opinion command (Codex + Antigravity)
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: "Skateboard: Codex review to stdout"
+    as_a: a developer reviewing a PR
+    i_want: "`node scripts/cross-review.mjs <PR#> --agent codex` to pipe the PR diff into Codex and print its findings to my terminal"
+    so_that: I get a different-model second opinion in one command before deciding anything
+    risk: low
+    status: done
+  - id: S1.2
+    title: Advisory PR comment
+    as_a: a developer
+    i_want: the findings posted as a PR comment clearly marked non-authoritative
+    so_that: the second opinion is visible on the PR without anyone mistaking it for a gate
+    risk: low
+    status: done
+  - id: S1.3
+    title: Antigravity behind the flag
+    as_a: a developer
+    i_want: "`--agent antigravity` to do the same via Antigravity's headless mode"
+    so_that: "I can A/B which model's review I trust on the same diff"
+    risk: low
+    status: done
+  - id: S1.4
+    title: Docs wiring (docs-only)
+    as_a: a future agent or Daniel
+    i_want: the cross-agent pass documented as a suggested-on-HIGH / optional-on-any, advisory step
+    so_that: "it's used consistently and never mistaken for a gate"
+    risk: low
+    status: done
+---
 # Cross-agent code review — Sprint 1: Thin second-opinion command (Codex + Antigravity)
 
 **Status:** ✅ shipped 2026-06-10 — PR [#7](https://github.com/danybgoode/miyagi-product-management/pull/7)

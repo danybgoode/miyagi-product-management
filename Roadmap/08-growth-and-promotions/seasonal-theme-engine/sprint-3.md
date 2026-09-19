@@ -1,3 +1,33 @@
+---
+epic: seasonal-theme-engine
+sprint: 3
+title: Collaboration Visual Layer
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Logo, tagline, and accent treatment
+    as_a: a visitor
+    i_want: the collaboration identity to appear in the platform chrome
+    so_that: the seasonal moment is immediately recognizable
+    risk: high
+    status: done
+  - id: S3.2
+    title: Background pattern and spot art
+    as_a: a visitor
+    i_want: subtle seasonal art in safe places
+    so_that: the experience feels curated without hiding content
+    risk: high
+    status: done
+  - id: S3.3
+    title: Final QA and documentation
+    as_a: the product owner
+    i_want: the shipped epic documented and smoke-tested
+    so_that: the roadmap stays trustworthy
+    risk: high
+    status: done
+---
 # Sprint 3 - Collaboration Visual Layer
 
 Goal: make the collaboration feel intentional without layout shifts, heavy assets, or behavior changes.

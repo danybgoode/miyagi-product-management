@@ -1,3 +1,26 @@
+---
+epic: platform-migrations
+sprint: 3
+title: "Packaging — landings + consultant runbook"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Per-platform migration landing/how-to pages
+    as_a: a merchant on Shopify/Tiendanube/WooCommerce/BigCartel
+    i_want: a page that shows me exactly how to move to Miyagi
+    so_that: I can judge the switch in five minutes
+    risk: low
+    status: done
+  - id: S3.2
+    title: Consultant runbook + /vende + sell-sheet integration
+    as_a: a promoter
+    i_want: "a photograph-the-shop → interview → agent-sets-it-up runbook"
+    so_that: I can close a migration in one visit without improvising
+    risk: low
+    status: done
+---
 # Platform migrations — Sprint 3: Packaging — landings + consultant runbook
 
 **Status:** ✅ MERGED + LIVE 2026-07-11. PR [#230](https://github.com/danybgoode/miyagisanchezcommerce/pull/230),

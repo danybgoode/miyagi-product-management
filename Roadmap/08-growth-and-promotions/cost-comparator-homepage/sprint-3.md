@@ -1,3 +1,19 @@
+---
+epic: cost-comparator-homepage
+sprint: 3
+title: URL analyzer (CONDITIONAL)
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: "Shop-URL analyzer → prefilled comparison + migration effort"
+    as_a: a merchant
+    i_want: "to paste my current shop's URL and get a prefilled comparison plus an estimated migration effort"
+    so_that: the pitch starts from my actual store, not manual data entry
+    risk: high
+    status: done
+---
 # Comparador de costos — Sprint 3: URL analyzer (CONDITIONAL)
 
 **Status:** 🟡 built, PR open — condition confirmed MET (`lib/migration-parity.ts` on `origin/main`

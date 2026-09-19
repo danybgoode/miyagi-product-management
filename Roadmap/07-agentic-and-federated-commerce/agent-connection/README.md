@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: agent-connection
+title: Agent Connection & Discoverability
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 6
 ---
 
 # Epic · Agent Connection & Discoverability

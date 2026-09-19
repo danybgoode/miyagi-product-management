@@ -1,3 +1,33 @@
+---
+epic: agent-native-setup
+sprint: 1
+title: Published versioned setup spec
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Compose the one versioned setup spec
+    as_a: "a prospective seller's agent"
+    i_want: a single versioned setup schema that composes the existing catalog + config schemas
+    so_that: I can emit one file instead of two
+    risk: low
+    status: done
+  - id: S1.2
+    title: "Unified emit prompt that mirrors the seller's language"
+    as_a: "a seller's agent"
+    i_want: one canonical prompt
+    so_that: "I produce a valid combined file with copy in the seller's own language"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Publish the spec agent-fetchably
+    as_a: an agent inspecting the site pre-signup
+    i_want: to discover the setup spec + prompt
+    so_that: I can act without a human handing me anything
+    risk: low
+    status: done
+---
 # Agent-native setup (Onboarding 0) — Sprint 1: Published versioned setup spec
 
 **Status:** 🟦 built — draft [PR #60](https://github.com/danybgoode/miyagisanchezcommerce/pull/60), awaiting review/merge · **Risk:** low

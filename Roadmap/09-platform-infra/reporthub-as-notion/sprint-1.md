@@ -1,3 +1,33 @@
+---
+epic: reporthub-as-notion
+sprint: 1
+title: True short links (the registry)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: GCS report registry
+    as_a: the routines
+    i_want: "a Cloud Storage bucket mapping `slug → immutable markdown payload`"
+    so_that: reports have durable, short addresses
+    risk: high
+    status: done
+  - id: S1.2
+    title: "/r/<slug> resolver in the fork"
+    as_a: a stakeholder clicking a Telegram link
+    i_want: "`https://<hub>/r/pmo-weekly-2026-07-14` to open the report"
+    so_that: links are short, readable, and survive big payloads
+    risk: high
+    status: done
+  - id: S1.3
+    title: Report scripts emit short links
+    as_a: Daniel reading Telegram
+    i_want: standup/weekly/PMO messages to carry real short URLs
+    so_that: links stop being HTML labels hiding URL-hash monsters
+    risk: low
+    status: done
+---
 # ReportHub as the Notion replacement — Sprint 1: True short links (the registry)
 
 **Status:** 🟡 built + tested, PRs open — Daniel merges + deploys (both stories high/prod-facing risk)

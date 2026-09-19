@@ -1,3 +1,40 @@
+---
+epic: seller-portal-setup-guide
+sprint: 1
+title: "Setup guide card on Resumen (lib seam · card · dismiss/restore · metrics)"
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: lib/setup-guide.ts seam + settings refactor
+    as_a: a developer
+    i_want: "the value-based completion logic extracted from `settings/page.tsx` into a pure `lib/setup-guide.ts`"
+    so_that: the settings page and the new dashboard card share one source of truth (and I get free unit coverage on a pure seam)
+    risk: low
+    status: done
+  - id: S1.2
+    title: "\"Pon tu tienda en marcha\" card on Resumen"
+    as_a: a new merchant
+    i_want: a persistent setup guide on my dashboard
+    so_that: "I know exactly what's left to start selling — with payments named up front, not sprung on me later"
+    risk: low
+    status: done
+  - id: S1.3
+    title: Dismiss + restore + share-complete
+    as_a: "a merchant who's done"
+    i_want: to hide the guide (and get it back if I need it)
+    so_that: "my dashboard isn't cluttered once I'm set up"
+    risk: low
+    status: done
+  - id: S1.4
+    title: Instrument guide step events (Grower signal)
+    as_a: a product owner
+    i_want: guide interaction events
+    so_that: "I can see whether the guide moves merchants toward payable — not just that it renders"
+    risk: low
+    status: done
+---
 # Setup guide on dashboard — Sprint 1: Setup guide card on Resumen (lib seam · card · dismiss/restore · metrics)
 
 **Status:** ✅ shipped — [PR #215](https://github.com/danybgoode/miyagisanchezcommerce/pull/215) merged to

@@ -1,3 +1,19 @@
+---
+epic: feature-flags-killswitches
+sprint: 1
+title: The kill-switch foundation + first flag
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Kill the Stripe rail from a dashboard, no deploy
+    as_a: the platform admin
+    i_want: to disable the Stripe card-payment option across checkout from the Flagsmith dashboard
+    so_that: "if Stripe is broken or compromised I can hide it in seconds without waiting on a deploy — and if Flagsmith itself is down, Stripe stays on (fail-open)"
+    risk: high
+    status: done
+---
 # Sprint 1 — The kill-switch foundation + first flag
 
 **Status:** ✅ Merged to `main` 2026-06-06 (PR #34)

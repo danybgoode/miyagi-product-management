@@ -1,3 +1,19 @@
+---
+epic: seller-landing-launch-polish
+sprint: 2
+title: "Hero & section redesign · status: ✅ shipped — PR #134 (`98a09f9`)"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: Build the redesigned hero + sections
+    as_a: a visitor about to be acquired
+    i_want: a clean hero where I can see and copy the evaluation prompt instantly
+    so_that: "I act (copy → evaluate, or empieza gratis) without friction"
+    risk: low
+    status: done
+---
 # Sprint 2 — Hero & section redesign  ·  status: ✅ shipped — PR #134 (`98a09f9`)
 
 > **Shipped 2026-06-26** — squash-merged to app `main` as `98a09f9` (PR

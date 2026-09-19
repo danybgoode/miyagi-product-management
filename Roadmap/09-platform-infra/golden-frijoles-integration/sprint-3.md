@@ -1,3 +1,33 @@
+---
+epic: golden-frijoles-integration
+sprint: 3
+title: paywalls on, nobody cut off
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Grandfather backfill for the three paywall SKUs
+    as_a: a merchant already using a custom domain, a subdomain or ML sync for free
+    i_want: to keep using it
+    so_that: switching the paywalls on does not take away what I already have
+    risk: high
+    status: done
+  - id: S3.2
+    title: Flip the paywalls, and prove nobody lost access
+    as_a: a platform owner
+    i_want: the three paywall gates enforced
+    so_that: the paid SKUs are actually paid for by new shops
+    risk: high
+    status: done
+  - id: S3.3
+    title: Flip partners.recruiting_v3_enabled alone
+    as_a: a platform owner
+    i_want: the Partners v3 surface enabled in its own step
+    so_that: "if `/us` misbehaves the cause is unambiguous"
+    risk: high
+    status: done
+---
 # Golden Frijoles integration — Sprint 3: paywalls on, nobody cut off
 
 **Status:** 🟨 subdomain applied `2dbd58c` (#364) — custom_domain + ml_sync deliberately NOT applied; partners flag owed

@@ -1,3 +1,26 @@
+---
+epic: marketplace-static-shell
+sprint: 4
+title: Personalization client islands (Phase 2)
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S4.1
+    title: Retoma rail + offer alerts + seller snapshot as client islands
+    as_a: a signed-in visitor
+    i_want: my recent favorites, offer alerts, and seller snapshot back on the homepage
+    so_that: the static page still recognizes me
+    risk: high
+    status: done
+  - id: S4.2
+    title: Visibility-friendly, no-regression hydration
+    as_a: the platform
+    i_want: the islands cheap
+    so_that: "they don't reintroduce the cost we removed"
+    risk: low
+    status: done
+---
 # Static marketplace shell — Sprint 4: Personalization client islands (Phase 2)
 
 **Status:** ✅ **SHIPPED 2026-06-22** — [PR #104](https://github.com/danybgoode/miyagisanchezcommerce/pull/104)

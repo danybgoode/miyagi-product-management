@@ -1,3 +1,26 @@
+---
+epic: ucp-buyer-shipping-exposure
+sprint: 1
+title: Discover delivery choices and authoritative rates
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Project checkout-options into UCP fulfillment
+    as_a: an AI shopping agent
+    i_want: "a shippable listing's checkout session to expose the seller's real shipping and pickup methods"
+    so_that: I can ask the buyer only for delivery inputs the seller actually supports
+    risk: high
+    status: done
+  - id: S1.2
+    title: Quote and present authoritative shipping options
+    as_a: an AI shopping agent
+    i_want: "current carrier options for the buyer's MX address"
+    so_that: I can present the same prices and delivery context as web checkout
+    risk: high
+    status: done
+---
 # UCP buyer-side shipping/delivery-method exposure — Sprint 1: Discover delivery choices and authoritative rates
 
 **Status:** ✅ shipped — frontend [#385](https://github.com/danybgoode/miyagisanchezcommerce/pull/385), production commit `936b42d`

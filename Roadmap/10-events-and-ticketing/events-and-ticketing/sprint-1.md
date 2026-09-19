@@ -1,3 +1,26 @@
+---
+epic: events-and-ticketing
+sprint: 1
+title: Paid admission, made real
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Event date/time/venue/aforo on a listing
+    as_a: a seller
+    i_want: "to set an event's date, time, venue and seat cap on the listing"
+    so_that: "buyers see when & where it is and the listing stops selling once it's full"
+    risk: low
+    status: done
+  - id: S1.2
+    title: Buyer can re-download their ticket/confirmation
+    as_a: a buyer
+    i_want: to re-fetch my ticket/confirmation after purchase
+    so_that: "I don't lose it"
+    risk: high
+    status: done
+---
 # Sprint 1 — Paid admission, made real
 
 > Epic: [Events & Ticketing](README.md) · **Risk: S1.1 LOW · S1.2 HIGH (Daniel merges).**

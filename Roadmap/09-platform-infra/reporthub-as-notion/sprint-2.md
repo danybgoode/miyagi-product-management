@@ -1,3 +1,26 @@
+---
+epic: reporthub-as-notion
+sprint: 2
+title: Live views (the Notion parity layer)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Live roadmap/sprint status views
+    as_a: Daniel (and any stakeholder)
+    i_want: "the hub's `/reports` library to show current epic + sprint status — building now / ready / shipped / funnel, per-sprint story ticks — refreshed automatically"
+    so_that: the hub answers what the Notion board answers today
+    risk: low
+    status: done
+  - id: S2.2
+    title: PMO metrics graphs
+    as_a: Daniel
+    i_want: weekly/monthly PMO metrics (throughput, DORA-ish, AI-differential) as charts in the hub
+    so_that: "the numbers `pmo-report.mjs` already computes become visual artifacts beyond what the Notion free tier could show"
+    risk: low
+    status: done
+---
 # ReportHub as the Notion replacement — Sprint 2: Live views (the Notion parity layer)
 
 **Status:** ✅ shipped — root #98 + fork #4 merged, revision pmo-smalldocs-00005-pg7 deployed 2026-07-18; first publish live (446 items, /api/live/roadmap-status 200, /r/pmo-live-metrics 200)

@@ -1,3 +1,26 @@
+---
+epic: pricing-money-path-remediation
+sprint: 1
+title: live pricing write-path bugs
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "Finding D: set a price on a variant that has never had one"
+    as_a: a seller/agent
+    i_want: "`update_listing` with `price_mxn` to succeed on a brand-new zero-price listing"
+    so_that: "I'm not forced into Admin for the first price"
+    risk: high
+    status: done
+  - id: S1.2
+    title: "Finding E: two Admin-created MXN rows misread as quantity tiers"
+    as_a: a seller/agent
+    i_want: "`update_listing` with `price_cents` to keep working on a product whose price was last edited in Admin"
+    so_that: "filling both of Admin's price columns doesn't permanently strand the listing on Admin-only edits"
+    risk: high
+    status: done
+---
 # Pricing & money-path remediation — Sprint 1: live pricing write-path bugs
 
 **Status:** ✅ MERGED + LIVE — backend PR [#89](https://github.com/danybgoode/medusa-bonsai-backend/pull/89)

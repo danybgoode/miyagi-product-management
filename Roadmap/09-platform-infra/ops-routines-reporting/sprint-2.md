@@ -1,3 +1,40 @@
+---
+epic: ops-routines-reporting
+sprint: 2
+title: the nightly fixers + feed the standup
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: "build-order-sync skill (nightly regen → docs PR on drift)"
+    as_a: a product owner
+    i_want: the build-order board regenerated overnight
+    so_that: its CI guard stops going red because someone forgot to run the generator
+    risk: low
+    status: done
+  - id: S2.2
+    title: "vercel-prune skill (scheduled dry-run report; apply gated)"
+    as_a: a product owner
+    i_want: stale preview deployments reported nightly
+    so_that: "dead previews don't pile up — without ever deleting something I still need"
+    risk: high
+    status: done
+  - id: S2.3
+    title: babysit-pr skill (advisory PR watch)
+    as_a: a product owner
+    i_want: open PRs babysat overnight
+    so_that: flaky CI and merge conflicts are retried/surfaced instead of silently stalling a PR
+    risk: high
+    status: done
+  - id: S2.4
+    title: Fold the fixers into the standup + the one nightly ops routine
+    as_a: a product owner
+    i_want: all overnight work in one routine and one standup
+    so_that: I get a single morning message and stay under the scheduled-run cap
+    risk: low
+    status: done
+---
 # Ops routines & reporting — Sprint 2: the nightly fixers + feed the standup
 
 **Status:** ✅ Built + merged (#52); both risk-tier first-live-actions confirmed by Daniel —

@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 (facet browse) MERGED 2026-07-07: BE #66 squash bf923ad, FE #185 squash d5e41f9, backend-first; both had clean gating pr-reviews + codex advisories addressed. Sprint 2 (PDP trust + $/mes) MERGED 2026-07-08: FE #188 squash b522511, frontend-only (no BE change), clean gating pr-review + codex advisory addressed. Sprint 3 (outreach readiness) MERGED 2026-07-08: FE #192 squash 90897e47 — /vende/autos seller page (generalized beyond tratocar per Daniel's steer) + a real create_listing MCP bug fix found during the demo-catalog dry-run (autos attrs were silently dropped). 10-car demo catalog + OSPP dressing applied live to /s/autos-demo-miyagi-sanchez via the seller MCP tools. Owed (all sprints): real-device smoke + $/mes disclaimer copy sign-off (S2); Daniel connects a payment method to flip the demo catalog publicly visible (S3).
 slug: cars-vertical-tratocar-parity
+title: "Cars vertical — tratocar-grade browse & trust"
+area: 01-discovery-and-shopping
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 8
 ---
 
 # Epic: Cars vertical — tratocar-grade browse & trust

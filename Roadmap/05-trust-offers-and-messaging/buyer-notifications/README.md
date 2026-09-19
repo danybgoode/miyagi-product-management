@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: buyer-notifications
+title: Buyer Telegram channel + Buyer preference center
+area: 05-trust-offers-and-messaging
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 7
 ---
 
 # Epic — Buyer Telegram channel + Buyer preference center

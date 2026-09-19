@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Sprint 1 shipped — PR #173 merged to main (squash 8b1abb1), 2026-07-04; cross-agent review findings fixed pre-merge (f02403d). Sprint 2 shipped — backend PR #65 (squash 667c607) + frontend PR #182 (squash ed905d7), 2026-07-07; 6 real bugs found (cross-review + fresh reviewer) and fixed pre-merge, both PRs independently re-verified safe-to-merge. Sprint 3 shipped — frontend PR #183 (squash a72bde8), 2026-07-07, frontend-only (no backend touch); 3 findings from cross-agent review fixed pre-merge (hardcoded English copy, a FAQ authored-state defensive gap, one unused import), fresh pr-reviewer pass clean. EPIC SHIPPED 2026-07-08 — RETROSPECTIVE.md + poster + memory done; DoD closed with Daniel's live smokes stated as owed (S1 click-through/contrast eyeball, S2 real-domain hostname smoke + Cloud Run confirmation, S3 miyagiprints dress-up + before/after screenshots), not blocking — no flag gates any of this feature (additive-by-construction), so these are visual confirmations, not activation gates.
 slug: own-shop-premium-presentation
+title: "Own-shop premium presentation — \"stepping into StickerJunkie\""
+area: 07-agentic-and-federated-commerce
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 11
 ---
 
 # Epic: Own-shop premium presentation — "stepping into StickerJunkie"

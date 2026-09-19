@@ -1,3 +1,33 @@
+---
+epic: notion-board-hygiene
+sprint: 1
+title: Projection & overlay fixes (repo)
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Archived-epic sprint floor fix
+    as_a: Daniel
+    i_want: "an archived epic's sprints to read Archived"
+    so_that: "the Sprints board doesn't show an archived epic full of \"Planned\" sprints"
+    risk: low
+    status: done
+  - id: S1.2
+    title: build_order SSOT + projection + populate
+    as_a: Daniel
+    i_want: a real build-order number per epic
+    so_that: the Notion build-order views sort meaningfully
+    risk: low
+    status: done
+  - id: S1.3
+    title: "\"In progress\" lifecycle overlay"
+    as_a: Daniel
+    i_want: a draft PR to show In progress and a ready PR In review
+    so_that: the board reflects live work
+    risk: low
+    status: done
+---
 # Sprint 1 — Projection & overlay fixes (repo)
 
 **Epic:** [Notion roadmap board hygiene](README.md) · **Risk:** all LOW · **Repo:** monorepo-root (`scripts/`, `.github/`, `Roadmap/`)

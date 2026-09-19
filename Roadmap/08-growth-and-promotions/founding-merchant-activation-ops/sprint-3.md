@@ -1,3 +1,33 @@
+---
+epic: founding-merchant-activation-ops
+sprint: 3
+title: Commerce facts and event rail
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: Medusa commerce-fact adapter and replay repair
+    as_a: an operator
+    i_want: activation milestones derived from marketplace truth
+    so_that: the CRM never lies about claim, payments, products or sales
+    risk: high
+    status: done
+  - id: S3.2
+    title: PII-free Golden Beans lifecycle events
+    as_a: a product operator
+    i_want: each lifecycle transition on the shared event rail
+    so_that: CRM and analytics destinations can consume one reusable contract
+    risk: high
+    status: done
+  - id: S3.3
+    title: Milestone mismatch and reconciliation view
+    as_a: an admin
+    i_want: to see stale or mismatched commerce milestones
+    so_that: I can replay projection without manually changing commerce facts
+    risk: high
+    status: done
+---
 # Founding merchant activation operations — Sprint 3: Commerce facts and event rail
 
 **Status:** ✅ Shipped — merged to `main`, PR 305 (`c83c51e` S3.1 · `1c95abf` S3.2 · `7a9651e` S3.3 · `4011de8` E1/E2); Golden Beans emission rail live (flag ON)

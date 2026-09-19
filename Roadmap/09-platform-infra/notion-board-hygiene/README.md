@@ -2,6 +2,13 @@
 status: shipped      # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. (S1 repo fixes merged #32; S2 Notion config applied via MCP; board-grouping UI flip owed to Daniel.)
 slug: notion-board-hygiene
 build_order: 2       # numeric build-order sequence (SSOT for the Notion build-order views)
+title: Notion roadmap board hygiene
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 2
+stories_total: 6
 ---
 
 # Epic — Notion roadmap board hygiene

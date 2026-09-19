@@ -1,3 +1,19 @@
+---
+epic: feature-flags-inhouse
+sprint: 3
+title: Decommission Flagsmith
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Remove flagsmith-nodejs + Flagsmith env/secrets + doc scrub
+    as_a: the platform
+    i_want: no trace of Flagsmith in the running apps
+    so_that: "we're off the SaaS entirely and no one is confused about where flags live"
+    risk: high
+    status: done
+---
 # Sprint 3 — Decommission Flagsmith
 
 **Epic:** [In-house feature flags](README.md) · **Goal:** remove the Flagsmith dependency entirely, now that the

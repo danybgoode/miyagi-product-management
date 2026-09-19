@@ -1,3 +1,19 @@
+---
+epic: backend-production-readiness
+sprint: 3
+title: Graceful recovery & health
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Rollback runbook + health checks + migration posture
+    as_a: the owner
+    i_want: "a documented, rehearsed rollback (Cloud Run revision + `git revert`), startup/liveness health checks on the service, and a written migration-rollback posture"
+    so_that: a bad deploy is reversible in minutes and a sick instance is recycled automatically
+    risk: high
+    status: done
+---
 # Backend Production Readiness — Sprint 3: Graceful recovery & health
 
 **Status:** ✅ **LIVE ON PROD 2026-06-12** (`feat/backend-prod-readiness-s3`, PR #12) — recovery runbook +

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: session-continuity
+title: "Session continuity — surviving an orchestrator that dies mid-flight"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 3
 ---
 
 # Epic: Session continuity — surviving an orchestrator that dies mid-flight

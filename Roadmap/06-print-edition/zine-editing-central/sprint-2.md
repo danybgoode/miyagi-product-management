@@ -1,3 +1,33 @@
+---
+epic: zine-editing-central
+sprint: 2
+title: variable sheets + the other two sources
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Variable booklet sheets
+    as_a: Daniel (editor)
+    i_want: "the booklet to grow/shrink in pliegos (multiples of 4 pages — one folded oficio sheet = 4 pages) instead of the hardcoded 12, with the editorial sections staying fixed/pinned"
+    so_that: an issue with more or fewer sold ads still imposes and prints correctly
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Catalog pull: live listings as house-ads"
+    as_a: Daniel (editor)
+    i_want: "to search live marketplace listings from zine and drop one in as a courtesy/house ad with auto-generated QR + `mschz.org` short link"
+    so_that: "I can fill unsold space with real catalog the way Maqueta's curation drawer did"
+    risk: low
+    status: done
+  - id: S2.3
+    title: "Social pull: community submissions into the social section"
+    as_a: Daniel (editor)
+    i_want: "approved community submissions (recomendaciones, eventos, saludos…) pulled into the zine's community/social editorial section"
+    so_that: the reader-facing section fills from real submissions instead of hand-typing
+    risk: low
+    status: done
+---
 # Zine editing central — Sprint 2: variable sheets + the other two sources
 
 **Status:** ✅ Sprint 2 complete — all 3 stories built and verified

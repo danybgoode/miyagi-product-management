@@ -1,3 +1,40 @@
+---
+epic: buyer-notifications
+sprint: 1
+title: "Buyer preference center + buyer dispatch (email/push; Telegram stub)"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: dispatchToBuyer(clerkUserId, event) seam
+    as_a: the system
+    i_want: "a single buyer dispatch seam that resolves the buyer's prefs and fans out to enabled channels"
+    so_that: "every in-scope buyer event respects preferences in one place — while the purchase receipt can never be silenced"
+    risk: high
+    status: done
+  - id: S1.2
+    title: Buyer prefs in the existing tables (reuse, namespaced)
+    as_a: the system
+    i_want: "buyer preferences persisted in #5's tables without colliding with seller prefs"
+    so_that: a person who is both keeps independent buyer/seller choices
+    risk: high
+    status: done
+  - id: S1.3
+    title: Buyer preference center in the account area
+    as_a: a buyer
+    i_want: "a clear grid of channels × event-groups in my account"
+    so_that: "I control what reaches me where, in one glance — and can see my receipt is guaranteed"
+    risk: high
+    status: done
+  - id: S1.4
+    title: Route in-scope buyer events through the seam (guest-safe)
+    as_a: the platform
+    i_want: "the in-scope buyer events to flow through `dispatchToBuyer` instead of the direct email call"
+    so_that: preferences take effect for signed-in buyers with no regression and guests are never dropped
+    risk: high
+    status: done
+---
 # Sprint 1 — Buyer preference center + buyer dispatch (email/push; Telegram stub)
 
 > Epic: [Buyer Telegram channel + Buyer preference center](README.md) · **Risk: HIGH — Daniel merges.**

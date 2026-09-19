@@ -1,3 +1,40 @@
+---
+epic: dobby-foundation
+sprint: 2
+title: process distribution (from the AI-adoption split)
+risk: low
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S2.1
+    title: Port prose-draft into the ways-of-work plugin
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.2
+    title: Port prose-draft into the ways-of-work plugin
+    as_a: "any `~/dobby/` project"
+    i_want: "`prose-draft` available as an installed skill rather than a script checked into one repo"
+    so_that: epic close-out prose (retro, poster, learnings promotion) is a cheap delegated draft everywhere, not orchestrator manual labour in medusa-bonsai only
+    risk: low
+    status: done
+  - id: S2.3
+    title: Wakeup-resilient orchestration, codified
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: low
+    status: done
+  - id: S2.4
+    title: Wakeup-resilient orchestration, codified
+    as_a: an orchestrator starting a multi-agent batch
+    i_want: "the survival pattern written into the plugin's own docs"
+    so_that: worker death is a designed-for normal case instead of a per-session rediscovery
+    risk: low
+    status: done
+---
 # dobby-foundation — Sprint 2: process distribution (from the AI-adoption split)
 
 **Status:** ✅ both stories shipped — all 4 PRs merged (medusa-bonsai #106, dobby-foundation #5 + #6,

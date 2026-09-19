@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: envia-killswitch
+title: "Envía — platform Flagsmith kill-switch"
+area: 04-shipping-and-delivery
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 1
+stories_total: 4
 ---
 
 # Envía — platform Flagsmith kill-switch

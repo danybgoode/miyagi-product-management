@@ -1,3 +1,26 @@
+---
+epic: seller-portal-depth-pass
+sprint: 1
+title: Visible and thumb-safe
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: Every seller route has a truthful loading state
+    as_a: a seller moving through my workspace
+    i_want: the next page to acknowledge my click with a layout-shaped placeholder
+    so_that: I know the portal is working and what kind of page is coming
+    risk: low
+    status: done
+  - id: S1.2
+    title: Named mobile controls meet the thumb floor
+    as_a: a seller working from my phone
+    i_want: selection and row actions I can hit reliably without opening the wrong order/listing
+    so_that: routine catalog and fulfillment work is safe on mobile
+    risk: low
+    status: done
+---
 # Seller-portal depth pass — Sprint 1: Visible and thumb-safe
 
 **Status:** ✅ shipped — frontend commit `3504ae3` (included in PR #388)

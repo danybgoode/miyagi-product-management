@@ -1,3 +1,19 @@
+---
+epic: deploy-pipeline-tuning
+sprint: 5
+title: Structured JSON logging (phased)
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S5.1
+    title: Shared structured-logger helper + first migration batch (LOW risk)
+    as_a: the platform
+    i_want: payment-adjacent log lines to land in Cloud Logging as structured, filterable fields
+    so_that: "debugging a money-path incident doesn't mean grepping raw string logs"
+    risk: low
+    status: done
+---
 # Sprint 5 — Structured JSON logging (phased)
 
 **Epic:** [Deploy pipeline tuning](README.md) · **Risk:** LOW

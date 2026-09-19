@@ -1,3 +1,33 @@
+---
+epic: session-continuity
+sprint: 1
+title: derive the state, journal the intent
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "scripts/session-note.mjs: the intent journal"
+    as_a: an orchestrating agent
+    i_want: to record a decision in one cheap call
+    so_that: my intent survives a session that ends without warning
+    risk: low
+    status: done
+  - id: S1.2
+    title: "scripts/session-resume.mjs: derive live, lead with the surprising"
+    as_a: the next agent
+    i_want: one command that tells me the true state
+    so_that: I never trust stale memory or a stale doc
+    risk: low
+    status: done
+  - id: S1.3
+    title: wire it into how sessions actually start
+    as_a: the team
+    i_want: resume to be the default opening move
+    so_that: "continuity doesn't depend on remembering"
+    risk: low
+    status: done
+---
 # Session continuity — Sprint 1: derive the state, journal the intent
 
 **Status:** 🟦 In review — all 3 stories built; branch `feat/session-continuity`

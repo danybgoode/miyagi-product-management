@@ -1,3 +1,26 @@
+---
+epic: catalog-management
+sprint: 6
+title: "Structural refactor (seller shell over `/sell` · Canal split)"
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S6.1
+    title: Seller shell over /sell + /sell/setup (F6)
+    as_a: a shop owner
+    i_want: publishing to happen inside the seller frame
+    so_that: "I'm not flipped into buyer chrome (search/cart) at the moment of max concentration"
+    risk: high
+    status: done
+  - id: S6.2
+    title: "Split Canal.tsx (F7, change #7)"
+    as_a: a seller
+    i_want: channels and support to be separate homes
+    so_that: "a 62KB mega-section isn't one wall"
+    risk: high
+    status: done
+---
 # Catalog management — Sprint 6: Structural refactor (seller shell over `/sell` · Canal split)
 
 **Status:** ✅ MERGED 2026-07-11 — [FE PR #219](https://github.com/danybgoode/miyagisanchezcommerce/pull/219) squash `1b9a769`, branch `feat/catalog-management-s6` (deleted post-merge). Cross-agent (codex) review clean (both should-fix items confirmed false positives against this diff — the Supabase orders-mirror pattern is pre-existing S5 code, the env var name matches the actual 71-file codebase convention over a stale AGENTS.md doc — see the PR comment thread). Independent `pr-reviewer` pass: **Approve**, two real non-blocking findings fixed pre-merge (below). Daniel authorized "merge on green" and owns the live prod smoke + flag flip post-merge.

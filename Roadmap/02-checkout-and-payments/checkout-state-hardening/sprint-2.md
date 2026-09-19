@@ -1,3 +1,26 @@
+---
+epic: checkout-state-hardening
+sprint: 2
+title: Block ship before paid (UI + server)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Seller ship affordance gated on payment
+    as_a: a seller
+    i_want: "the shipping controls to be unavailable until I've confirmed payment on a manual order"
+    so_that: "I can't accidentally ship before the funds land"
+    risk: high
+    status: done
+  - id: S2.2
+    title: Server-side ship gate (both backend mutations + frontend courtesy)
+    as_a: the platform
+    i_want: "the ship APIs to reject manual orders that aren't paid"
+    so_that: the guarantee holds even if the UI is bypassed (the UI alone is not foolproof)
+    risk: high
+    status: done
+---
 # Sprint 2 — Block ship before paid (UI + server)
 
 > Epic: [Checkout & Manual-Payment State Hardening](README.md) · **Risk: HIGH — Daniel merges.**

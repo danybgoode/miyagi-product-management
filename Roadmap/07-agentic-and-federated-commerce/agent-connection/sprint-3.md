@@ -1,3 +1,26 @@
+---
+epic: agent-connection
+sprint: 3
+title: Playwright smoke harness (QA kickoff)
+risk: high
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Minimal Playwright harness
+    as_a: the team
+    i_want: repeatable smoke tests
+    so_that: we stop hand-driving them and burning tokens
+    risk: high
+    status: done
+  - id: S3.2
+    title: "Seed specs for this epic's acceptance"
+    as_a: the team
+    i_want: the agent surface guarded
+    so_that: "the bugs this epic fixed can't return"
+    risk: high
+    status: done
+---
 # Sprint 3 — Playwright smoke harness (QA kickoff)
 
 Goal: stop hand-driving smoke tests. Stand up the platform's first automated test harness, seeded with the

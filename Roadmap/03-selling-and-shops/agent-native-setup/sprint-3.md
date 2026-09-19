@@ -1,3 +1,26 @@
+---
+epic: agent-native-setup
+sprint: 3
+title: "Close the loop — shop-clerk handoff"
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S3.1
+    title: Canonical shop-clerk handoff prompt (language-mirroring)
+    as_a: a new seller
+    i_want: a copyable prompt that turns my agent into my shop clerk
+    so_that: the agent keeps running my shop after setup
+    risk: low
+    status: done
+  - id: S3.2
+    title: Post-setup loop-close UX (success screen)
+    as_a: a new seller
+    i_want: "a clear \"your shop is live — here's your clerk + what's next\" moment"
+    so_that: I actually close the loop instead of dropping off
+    risk: low
+    status: done
+---
 # Agent-native setup (Onboarding 0) — Sprint 3: Close the loop — shop-clerk handoff
 
 **Status:** ✅ built (both stories) · **Risk:** low · branch `feat/agent-native-setup`

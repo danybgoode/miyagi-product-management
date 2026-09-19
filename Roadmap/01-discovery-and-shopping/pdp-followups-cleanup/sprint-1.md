@@ -1,3 +1,26 @@
+---
+epic: pdp-followups-cleanup
+sprint: 1
+title: booking_url normalize + personalized-event label
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S1.1
+    title: "(C) Normalize protocol-less seller booking_urls (do first — shared surface)"
+    as_a: "a buyer (or an AI agent) on a listing whose seller typed `cal.com/foo` (no scheme)"
+    i_want: "the \"Agendar\" / \"Ver disponibilidad\" CTA to open the seller's real calendar"
+    so_that: the booking action never resolves to a broken same-origin relative URL
+    risk: low
+    status: done
+  - id: S1.2
+    title: "(B) Personalized-event buy label"
+    as_a: a buyer of an event listing that also has personalization fields
+    i_want: "the buy button to read \"Comprar boleto — $precio\" like every other event"
+    so_that: "the CTA doesn't contradict the event framing above it"
+    risk: low
+    status: done
+---
 # Sprint 1 — booking_url normalize + personalized-event label
 
 > Epic: [PDP follow-ups cleanup](README.md) · **Risk: LOW** (frontend-only; two shared-surface touches → announced

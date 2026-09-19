@@ -1,3 +1,19 @@
+---
+epic: subdomain-pricing
+sprint: 3
+title: Monthly recurring cadence
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Monthly recurring cadence + lapse
+    as_a: a seller
+    i_want: "to pay $25/mo for the subdomain"
+    so_that: I can start without an annual commitment
+    risk: high
+    status: done
+---
 # Subdomain pricing — Sprint 3: Monthly recurring cadence
 
 **Status:** ✅ MERGED 2026-07-01 — be #48 (squash `5353c00`, deployed rev `medusa-web-00121-fq8`) · fe #147

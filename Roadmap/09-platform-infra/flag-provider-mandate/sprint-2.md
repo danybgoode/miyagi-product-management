@@ -1,3 +1,33 @@
+---
+epic: flag-provider-mandate
+sprint: 2
+title: Retire the second lane
+risk: high
+phase: Shaping
+stories_total: 3
+stories:
+  - id: S2.1
+    title: "/admin/flags becomes a labelled read-only mirror"
+    as_a: the product owner
+    i_want: exactly one place that can change a flag
+    so_that: I am never again unsure where to manage anything
+    risk: low
+    status: planned
+  - id: S2.2
+    title: Delete local, shadow, and the machinery that chose between them
+    as_a: the maintainer
+    i_want: one code path
+    so_that: no env var can silently move the commerce path back to a second store
+    risk: high
+    status: planned
+  - id: S2.3
+    title: Park platform_flags, delete the Flagsmith wrapper
+    as_a: the maintainer
+    i_want: the dead store and the dead tooling gone
+    so_that: nobody rediscovers a second flag surface in six months
+    risk: high
+    status: planned
+---
 # Golden Frijoles is the only flag surface — Sprint 2: Retire the second lane
 
 **Status:** ⬜ not started

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: feature-flags-killswitches
+title: Feature flags & kill-switches (Flagsmith)
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 2
+stories_total: 2
 ---
 
 # Epic — Feature flags & kill-switches (Flagsmith)

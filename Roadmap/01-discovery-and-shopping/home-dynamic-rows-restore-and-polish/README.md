@@ -1,6 +1,13 @@
 ---
 status: shipped   # ✅ CLOSED 2026-07-20 — all 3 PRs merged; anonymous prod Chromium green. Signed-in identity-specific smoke remains stated in the retro.
 slug: home-dynamic-rows-restore-and-polish
+title: "Homepage dynamic rows — restore on prod + polish to spec"
+area: 01-discovery-and-shopping
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 10
 ---
 
 # Epic: Homepage dynamic rows — restore on prod + polish to spec

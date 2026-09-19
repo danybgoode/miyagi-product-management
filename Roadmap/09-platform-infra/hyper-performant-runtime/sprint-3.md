@@ -1,3 +1,40 @@
+---
+epic: hyper-performant-runtime
+sprint: 3
+title: "Client — the JavaScript diet"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: Sentry stops recording session replays
+    as_a: a visitor
+    i_want: the page not to download and run a session recorder
+    so_that: "I'm not paying for telemetry aimed at an audience that doesn't exist yet"
+    risk: low
+    status: done
+  - id: S3.2
+    title: The existing vendor boundary becomes enforceable
+    as_a: a buyer browsing a shop
+    i_want: not to download a spreadsheet parser
+    so_that: the page is about the shop
+    risk: low
+    status: done
+  - id: S3.3
+    title: HTML does the work JavaScript was doing
+    as_a: a buyer
+    i_want: expanding, dropdown and dialog interactions to be instant and keyboard-friendly
+    so_that: the page responds before any script has to
+    risk: low
+    status: done
+  - id: S3.4
+    title: The diet is enforced, not remembered
+    as_a: a future builder
+    i_want: the gate to fail when a route gets fat again
+    so_that: "this sprint isn't repeated in six months"
+    risk: low
+    status: done
+---
 # Hyper-performant runtime — Sprint 3: Client — the JavaScript diet
 
 **Status:** 🟩 shipped — frontend PR [#418](https://github.com/danybgoode/miyagisanchezcommerce/pull/418),

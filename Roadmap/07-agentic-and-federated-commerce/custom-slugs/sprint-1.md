@@ -1,3 +1,47 @@
+---
+epic: custom-slugs
+sprint: 1
+title: Customizable slug
+risk: high
+phase: Shipped
+stories_total: 5
+stories:
+  - id: S1.1
+    title: Shared slug helper + availability API
+    as_a: a seller
+    i_want: to know instantly whether a slug is valid and free
+    so_that: I can choose with confidence
+    risk: high
+    status: done
+  - id: S1.2
+    title: Pick the slug at shop creation
+    as_a: a new seller
+    i_want: to pick my slug when I create the shop
+    so_that: I launch with a clean URL
+    risk: high
+    status: done
+  - id: S1.3
+    title: Edit the slug in settings
+    as_a: a seller
+    i_want: to change my slug later
+    so_that: I can fix or improve my link
+    risk: high
+    status: done
+  - id: S1.4
+    title: 301 redirect from the old slug (90 days)
+    as_a: a buyer with an old link
+    i_want: to still reach the shop
+    so_that: "I don't hit a 404"
+    risk: high
+    status: done
+  - id: S1.5
+    title: URL in settings + copy + upsell
+    as_a: a seller
+    i_want: to see and copy my URL
+    so_that: "I can share it easily — and learn about the custom domain"
+    risk: high
+    status: done
+---
 # Sprint 1 — Customizable slug
 
 One backend change + 5 frontend stories. Build → verify → commit per story.

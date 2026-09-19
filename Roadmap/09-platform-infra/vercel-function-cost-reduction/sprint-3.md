@@ -1,3 +1,19 @@
+---
+epic: vercel-function-cost-reduction
+sprint: 3
+title: conversations/unread poll
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S3.1
+    title: Visibility-gate + lengthen the unread-badge poll
+    as_a: a signed-in user
+    i_want: the unread-count poll to pause when the tab is hidden and run less often when visible
+    so_that: an idle/backgrounded tab stops generating a function invocation every minute
+    risk: low
+    status: done
+---
 # Vercel function & Fluid-CPU cost reduction — Sprint 3: conversations/unread poll
 
 **Status:** ✅ **MERGED to `main`** — Story 3.1 via [frontend PR #94](https://github.com/danybgoode/miyagisanchezcommerce/pull/94) (squash `507ee9c`) → live on Vercel prod; CI green (Type-check+build + Playwright-vs-preview) + antigravity cross-review clean (one negligible self-healing nit, declined with rationale). Owed Daniel: authed DevTools eyeball (walkthrough below).

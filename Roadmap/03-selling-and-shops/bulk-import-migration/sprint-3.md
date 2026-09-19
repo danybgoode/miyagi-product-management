@@ -1,3 +1,40 @@
+---
+epic: bulk-import-migration
+sprint: 3
+title: "Tienda como código (declarative settings)"
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S3.1
+    title: Canonical config schema + copyable prompt
+    as_a: a migrating seller
+    i_want: a documented config schema and a prompt for my agent
+    so_that: "my agent can scrape my old store's settings and generate a complete manifest"
+    risk: high
+    status: done
+  - id: S3.2
+    title: Upload & atomic block apply
+    as_a: a seller
+    i_want: to upload one config file and have my shop dressed instantly
+    so_that: migration is one step, not a wizard
+    risk: high
+    status: done
+  - id: S3.3
+    title: Async asset ingestion (logo, banner)
+    as_a: a seller
+    i_want: my logo and banner to come across automatically
+    so_that: my brand is in place without re-uploading
+    risk: high
+    status: done
+  - id: S3.4
+    title: Settings checkmarks reflect the import
+    as_a: a seller
+    i_want: "the settings menu to show what's now configured"
+    so_that: "I can see at a glance what's done and what still needs me"
+    risk: high
+    status: done
+---
 # Sprint 3 — Tienda como código (declarative settings)
 
 Goal: a migrating seller dresses and configures their **entire shop** from a single declarative file,

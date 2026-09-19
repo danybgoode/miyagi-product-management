@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: emoji-to-iconoir-sweep
+title: "Emoji → Iconoir sweep — one icon language, finally"
+area: 09-platform-infra
+risk: low
+type: chore
+phase: Shipped
+sprints_total: 1
+stories_total: 2
 ---
 
 # Epic: Emoji → Iconoir sweep — one icon language, finally

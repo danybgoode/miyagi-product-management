@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: contextual-agent-handoff
+title: "Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation"
+area: 07-agentic-and-federated-commerce
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 7
 ---
 
 # Epic: Navigation polish — contextual AI-agent handoff + AI/theme icon disambiguation

@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: ucp-buyer-shipping-exposure
+title: UCP buyer-side shipping/delivery-method exposure
+area: 04-shipping-and-delivery
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 4
 ---
 
 # Epic: UCP buyer-side shipping/delivery-method exposure

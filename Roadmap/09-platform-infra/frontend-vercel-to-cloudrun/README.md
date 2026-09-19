@@ -1,6 +1,13 @@
 ---
 status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: frontend-vercel-to-cloudrun
+title: "Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shipped
+sprints_total: 4
+stories_total: 17
 ---
 
 # Epic: Frontend off Vercel — Cloud Run behind a Cloudflare edge ✅ SHIPPED 2026-07-10

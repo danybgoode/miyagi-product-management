@@ -1,3 +1,26 @@
+---
+epic: devops-reliability-cleanup
+sprint: 2
+title: infra/tooling fixes (backup alert + agy)
+risk: low
+phase: Shipped
+stories_total: 2
+stories:
+  - id: S2.1
+    title: Retire the Neon target + Cloud SQL backup-failure alert
+    as_a: Daniel
+    i_want: the stale Neon alert gone and a real Telegram alert if the Cloud SQL backup fails
+    so_that: backup health stays observable on the new stack without nightly false alarms
+    risk: low
+    status: done
+  - id: S2.2
+    title: "Upgrade-and-adapt agy + fail-loud version check · LOW (reproduce first)"
+    as_a: Daniel
+    i_want: "`cross-review.mjs --agent antigravity` to print agy's findings again"
+    so_that: the second-opinion reviewer is usable
+    risk: low
+    status: done
+---
 # Sprint 2 — infra/tooling fixes (backup alert + agy)
 
 **Epic:** [DevOps reliability cleanup](README.md) · **Risk:** all LOW · **Repo:** monorepo-root (`danybgoode/miyagi-product-management` — `infra/gcp/`, `scripts/`)

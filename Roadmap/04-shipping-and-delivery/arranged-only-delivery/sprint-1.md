@@ -1,3 +1,33 @@
+---
+epic: arranged-only-delivery
+sprint: 1
+title: "The web path (seller declares → buyer checks out arranged-only)"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: "Backend emits arranged-only (HIGH — Daniel merges)"
+    as_a: a buyer on an arranged-only listing
+    i_want: checkout-options to offer only the coordinated delivery + manual payment
+    so_that: "I'm not asked for a shipping address or a card that the seller can't honor"
+    risk: high
+    status: done
+  - id: S1.2
+    title: "Seller declares delivery_mode per listing (HIGH — Daniel merges)"
+    as_a: a seller
+    i_want: to mark a listing as delivered only by coordination
+    so_that: I can publish a service / rental / local-only item without faking a carrier or a pickup spot
+    risk: high
+    status: done
+  - id: S1.3
+    title: "Web checkout honors arranged-only (HIGH — Daniel merges)"
+    as_a: a buyer
+    i_want: the checkout page to show the arranged delivery + pago directo cleanly
+    so_that: I can complete the purchase without a dead-end
+    risk: high
+    status: done
+---
 # Sprint 1 — The web path (seller declares → buyer checks out arranged-only)
 
 **Epic:** [Arranged-only delivery](README.md) · **Risk: HIGH — Daniel merges** ·

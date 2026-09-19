@@ -1,3 +1,19 @@
+---
+epic: seller-agent-connect-mcp-url
+sprint: 1
+title: a setup prompt that actually helps (skateboard, ships alone)
+risk: low
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S1.1
+    title: Rewrite buildSetupPrompt to read context + interview
+    as_a: a prospective seller
+    i_want: the setup prompt to give my agent Miyagi context and interview me when I share little
+    so_that: "it produces a real shop instead of an empty `{\"miyagi_setup_version\":\"1\"}`"
+    risk: low
+    status: done
+---
 # Seller agent connect — Sprint 1: a setup prompt that actually helps (skateboard, ships alone)
 
 **Status:** ✅ shipped 2026-07-02 · [PR #158](https://github.com/danybgoode/miyagisanchezcommerce/pull/158)

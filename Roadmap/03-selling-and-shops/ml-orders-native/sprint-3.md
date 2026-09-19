@@ -1,3 +1,33 @@
+---
+epic: ml-orders-native
+sprint: 3
+title: "Workflow: tags, bulk actions, agent parity"
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S3.1
+    title: "Order tags: manual CRUD + automatic source tag"
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.2
+    title: Bulk select + bulk fulfillment-status actions
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+  - id: S3.3
+    title: Agent-surface parity
+    as_a: null
+    i_want: null
+    so_that: null
+    risk: high
+    status: done
+---
 # Sprint 3 — Workflow: tags, bulk actions, agent parity
 
 > Epic: [ml-orders-native](README.md) · Risk: **HIGH** for merge purposes (US-8's extraction touches a

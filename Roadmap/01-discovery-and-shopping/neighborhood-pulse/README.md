@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: neighborhood-pulse
+title: "Neighborhood Pulse — online community feed"
+area: 01-discovery-and-shopping
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 7
 ---
 
 # Epic: Neighborhood Pulse — online community feed

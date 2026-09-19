@@ -1,3 +1,33 @@
+---
+epic: owned-shop-operating-channel
+sprint: 2
+title: Membership becomes load-bearing
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Move the publishable key to the operating channel, and prove buyability
+    as_a: a buyer
+    i_want: an owned-shop product to resolve at checkout
+    so_that: a shop can sell something it never listed in the country marketplace
+    risk: high
+    status: done
+  - id: S2.2
+    title: Product create and update join the operating channel alongside publication
+    as_a: a seller
+    i_want: every product I create to be buyable on my own shop
+    so_that: buyability is automatic and publication is the deliberate, separate choice
+    risk: high
+    status: done
+  - id: S2.3
+    title: Checkout admission proves buyability, not marketplace publication
+    as_a: a buyer
+    i_want: the checkout to accept a product that is sold on its own shop
+    so_that: "the operating channel actually reaches the money path instead of stopping at the storefront's front door"
+    risk: high
+    status: done
+---
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 2: Membership becomes load-bearing
 
 **Status:** ✅ complete — backend PR 130 (`f38c703`) + frontend PR 330 (`a02795d`), merged and deployed.

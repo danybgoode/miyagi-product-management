@@ -1,3 +1,33 @@
+---
+epic: founding-merchant-activation-ops
+sprint: 2
+title: Lifecycle and stewardship
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Deterministic lifecycle resolver and immutable history
+    as_a: an operator
+    i_want: one explainable 13-stage journey
+    so_that: stage and age are trustworthy
+    risk: high
+    status: done
+  - id: S2.2
+    title: Interactions, ownership and next action
+    as_a: a merchant steward
+    i_want: the relationship history, owner and next action together
+    so_that: no active merchant disappears between contacts
+    risk: high
+    status: done
+  - id: S2.3
+    title: Promoter and admin operating views
+    as_a: a promoter or admin
+    i_want: the appropriate merchant pipeline
+    so_that: "I can act on blockers and aging without seeing another partner's contacts"
+    risk: high
+    status: done
+---
 # Founding merchant activation operations — Sprint 2: Lifecycle and stewardship
 
 **Status:** ✅ Shipped — merged to `main`, PR 304 (`ff98cc5` S2.1 · `fca9112` S2.2 · `1581627` S2.3 · `e2c8102` review fixes)

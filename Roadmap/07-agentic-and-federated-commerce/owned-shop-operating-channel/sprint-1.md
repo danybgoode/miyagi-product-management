@@ -1,3 +1,40 @@
+---
+epic: owned-shop-operating-channel
+sprint: 1
+title: The channel exists, and nothing depends on it yet
+risk: high
+phase: Shipped
+stories_total: 4
+stories:
+  - id: S1.1
+    title: Re-derive the live channel and publishable-key graph, and lock the plan
+    as_a: the architect
+    i_want: the live Sales Channel, publishable-key and product graph re-derived before anything is created
+    so_that: the plan rests on measured facts rather than on this document
+    risk: high
+    status: done
+  - id: S1.2
+    title: Operating-channel seam in the market registry env layer
+    as_a: the platform
+    i_want: "a market's operating channel resolved through the same env seam as its marketplace channel"
+    so_that: the two are separate, testable concepts and neither is hard-coded
+    risk: high
+    status: done
+  - id: S1.3
+    title: Provision the MX operating channel and protect it from the destructive scripts
+    as_a: the platform
+    i_want: the operating channel created and added to the protected allow-list
+    so_that: the two destructive setup scripts cannot delete the channel every product depends on
+    risk: high
+    status: done
+  - id: S1.4
+    title: Idempotent operating-channel backfill, dry-run reported first
+    as_a: the operator
+    i_want: every existing product moved into the operating channel by one reviewed, idempotent backfill
+    so_that: membership is complete before anything reads it
+    risk: high
+    status: done
+---
 # Owned-shop operating channel — make a shop sellable without marketplace admission — Sprint 1: The channel exists, and nothing depends on it yet
 
 **Status:** ✅ complete — merged (PR 128 `5bc83c0`, PR 129 `b494446`), deployed, provisioned and

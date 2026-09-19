@@ -1,3 +1,12 @@
+---
+epic: routines-enablement
+sprint: 1
+title: Routines enablement (prompts + runbook)
+risk: low
+phase: Shipped
+stories_total: 0
+stories: []
+---
 # Sprint 1 — Routines enablement (prompts + runbook)
 
 **Epic:** [Claude Routines enablement](README.md) · **Risk:** all LOW · **Repo:** monorepo-root (`scripts/routines/`)

@@ -1,3 +1,19 @@
+---
+epic: feature-flags-killswitches
+sprint: 2
+title: "Backend enforcement: make the kill-switch a true kill"
+risk: high
+phase: Shipped
+stories_total: 1
+stories:
+  - id: S2.1
+    title: A killed rail is rejected everywhere, not just hidden
+    as_a: the platform admin
+    i_want: "`checkout.stripe_enabled = OFF` to actually block Stripe at the backend (catalog + checkout)"
+    so_that: "agents, the UCP API, and stale in-flight pages can't slip a Stripe payment through while the rail is killed — and if Flagsmith is down, Stripe still works (fail-open)"
+    risk: high
+    status: done
+---
 # Sprint 2 — Backend enforcement: make the kill-switch a *true* kill
 
 **Status:** ✅ Merged to `main` 2026-06-06 (PR #9; Cloud Run deploy in flight)

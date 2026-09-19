@@ -1,3 +1,33 @@
+---
+epic: seller-agent-connect-mcp-url
+sprint: 2
+title: always-on personal MCP URL + Claude one-click (the car)
+risk: high
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S2.1
+    title: Personal MCP URL that always exists and resolves to the shop scope
+    as_a: a seller
+    i_want: "a per-shop MCP connector URL that's always present"
+    so_that: I never hunt for a token
+    risk: high
+    status: done
+  - id: S2.2
+    title: "Always-shown copyable URL + \"Agregar a Claude\" one-click"
+    as_a: a seller
+    i_want: to copy my URL and add it to Claude in one click
+    so_that: connecting is trivial
+    risk: high
+    status: done
+  - id: S2.3
+    title: Kill-switch + auth specs + smoke walkthrough
+    as_a: a builder
+    i_want: Part B behind a flag with the auth path locked by specs
+    so_that: "it merges dark and can't regress"
+    risk: high
+    status: done
+---
 # Seller agent connect — Sprint 2: always-on personal MCP URL + Claude one-click (the car)
 
 **Status:** ✅ MERGED 2026-07-02 — [#159](https://github.com/danybgoode/miyagisanchezcommerce/pull/159) squash-merged `4be2b86`, Daniel merged on green CI

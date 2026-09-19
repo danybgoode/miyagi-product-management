@@ -2,6 +2,13 @@
 status: scaffolded   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: flag-provider-mandate
 build_order: 5
+title: "Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror"
+area: 09-platform-infra
+risk: high
+type: chore
+phase: Shaping
+sprints_total: 2
+stories_total: 7
 ---
 
 # Epic: Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror

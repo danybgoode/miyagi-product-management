@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: trust-messaging-polish
+title: Trust & Messaging Polish
+area: 05-trust-offers-and-messaging
+risk: low
+type: feature
+phase: Shipped
+sprints_total: 2
+stories_total: 5
 ---
 
 # Epic — Trust & Messaging Polish

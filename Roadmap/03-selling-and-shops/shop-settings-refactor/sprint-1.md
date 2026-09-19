@@ -1,3 +1,33 @@
+---
+epic: shop-settings-refactor
+sprint: 1
+title: Foundation seam + first extraction
+risk: low
+phase: Shipped
+stories_total: 3
+stories:
+  - id: S1.1
+    title: Shared lib/shop-settings/ foundation
+    as_a: a developer
+    i_want: "the settings-tree types, one canonical section taxonomy, and the pure helpers in a next-free `lib/shop-settings/`"
+    so_that: every section reads one source of truth instead of redefining shape and keys inline
+    risk: low
+    status: done
+  - id: S1.2
+    title: useSettingsSave() hook
+    as_a: a developer
+    i_want: "one hook wrapping `PATCH /api/sell/shop` + the Toast"
+    so_that: every section saves identically without re-touching persistence
+    risk: low
+    status: done
+  - id: S1.3
+    title: Extract Devoluciones + the dynamic-import registry (monolith fallback)
+    as_a: a seller
+    i_want: the Devoluciones (returns policy) settings to look and behave exactly as before
+    so_that: nothing regresses while the surface is being restructured
+    risk: low
+    status: done
+---
 # Shop Settings refactor — Sprint 1: Foundation seam + first extraction
 
 **Status:** ✅ SHIPPED 2026-06-10 — [PR #68](https://github.com/danybgoode/miyagisanchezcommerce/pull/68)

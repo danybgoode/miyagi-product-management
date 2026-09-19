@@ -1,6 +1,13 @@
 ---
 status: shipped
 slug: gem-claim-loop
+title: "Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)"
+area: 03-selling-and-shops
+risk: high
+type: feature
+phase: Shipped
+sprints_total: 3
+stories_total: 9
 ---
 
 # Epic · Gem → Claimable Shop Loop (Ask-Claude / Mexico 26)
