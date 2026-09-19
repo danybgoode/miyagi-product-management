@@ -70,6 +70,13 @@ byte-identical (87 owed), `doc-format --check` the same 165 enforced paths clean
 203: the template relaxed two retro rules after a second project's triage), `session-resume` the same repos,
 anomalies and gaps.
 
+**The Roadmap frontmatter contract (dobby-foundation `build-visualization-claude-mods`, 2026-09-19)** —
+`lib/roadmap-contract.mjs` (the one definition of the epic/sprint/story frontmatter and the `phase:`
+ladder), `doc-format.mjs` enforcing it, and `roadmap-backfill.mjs`, which brought all 154 non-archived epics
+onto it (findings: `Roadmap/00-ideas/audits/frontmatter-backfill-2026-09-19.md`), each with tests. Byte-
+identical to the template. Note the pre-commit hook's `doc-format --files` applies the contract to every
+staged epic doc, enforced list or not — every non-archived epic carries it, so that is the point.
+
 **And since its Sprint 3** — `prod-smoke.mjs` (engine; this project's checks + UCP helpers now live in
 `prod-smoke.checks.mjs`), `smoke-triage-scope.mjs` (its policy in `smoke-triage.config.json` — required, the
 gate fails closed without it), `merge-report.mjs` (chat via `reporting.config.json` → `telegram`, the `merge`
