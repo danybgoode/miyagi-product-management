@@ -5,10 +5,12 @@ import {
   loadRoadmapRows,
   parseArgs,
   publishPmoMetrics,
+  loadRegistry,
   publishRoadmapStatus,
   withPmoMetricsView,
 } from './publish-live-views.mjs';
-import { RESOLVER_BASE_URL } from './lib/report-registry.mjs';
+
+const REGISTRY = { baseUrl: 'https://viewer.example.test', bucket: 'example-reports' };
 
 test('parseArgs: --dry-run flag only, defaults to false', () => {
   assert.deepEqual(parseArgs([]), { dryRun: false });
@@ -29,11 +31,33 @@ test('loadRoadmapRows degrades to an empty array on a non-zero exit or invalid J
 
 test('withPmoMetricsView appends a stable pmo-metrics card without mutating the input', () => {
   const data = { views: [{ id: 'roadmap-board' }] };
-  const result = withPmoMetricsView(data);
+  const result = withPmoMetricsView(data, { baseUrl: REGISTRY.baseUrl });
   assert.equal(data.views.length, 1, 'input must not be mutated');
   assert.equal(result.views.length, 2);
   assert.equal(result.views[1].id, 'pmo-metrics');
-  assert.equal(result.views[1].href, `${RESOLVER_BASE_URL}/r/${PMO_METRICS_SLUG}`);
+  assert.equal(result.views[1].href, `${REGISTRY.baseUrl}/r/${PMO_METRICS_SLUG}`);
+});
+
+test('withPmoMetricsView refuses to build a link with no resolver base URL', () => {
+  assert.throws(() => withPmoMetricsView({ views: [] }), /baseUrl is required/);
+});
+
+test('loadRegistry: the project config supplies the resolver + bucket; REPORT_REGISTRY_BUCKET overrides the bucket', () => {
+  const load = () => ({ artifacts: { registry: { resolverBaseUrl: 'https://r.example.test', bucket: 'cfg-bucket' } } });
+  assert.deepEqual(loadRegistry({ load, env: {} }), { baseUrl: 'https://r.example.test', bucket: 'cfg-bucket' });
+  assert.equal(loadRegistry({ load, env: { REPORT_REGISTRY_BUCKET: 'env-bucket' } }).bucket, 'env-bucket');
+  assert.equal(loadRegistry({ load: () => ({ artifacts: { registry: null } }), env: {} }), null);
+});
+
+test('publishPmoMetrics uploads to the configured bucket', async () => {
+  let seenArgs;
+  await publishPmoMetrics({
+    registry: REGISTRY,
+    loadLog: () => null,
+    uploader: async (args) => { seenArgs = args; return { ok: true }; },
+    logInfo: () => {},
+  });
+  assert.equal(seenArgs.bucket, 'example-reports');
 });
 
 test('withPmoMetricsView honors a custom slug/baseUrl (used by tests/staging)', () => {
@@ -53,6 +77,7 @@ const SAMPLE_ROWS = [
 test('publishRoadmapStatus skips the publish (no throw) when the extractor returns no rows', async () => {
   const errors = [];
   const result = await publishRoadmapStatus({
+    registry: REGISTRY,
     loadRows: () => [],
     logError: (m) => errors.push(m),
     logInfo: () => {},
@@ -67,6 +92,7 @@ test('publishRoadmapStatus dry-run never calls the publisher', async () => {
   let called = false;
   const infos = [];
   const result = await publishRoadmapStatus({
+    registry: REGISTRY,
     dryRun: true,
     loadRows: () => SAMPLE_ROWS,
     readDoc: () => '# Sample epic\n\nSome useful paragraph long enough to be picked as a summary line here.',
@@ -82,6 +108,7 @@ test('publishRoadmapStatus dry-run never calls the publisher', async () => {
 test('publishRoadmapStatus calls publisher with the full JSON payload including the pmo-metrics view', async () => {
   let seenArgs;
   const result = await publishRoadmapStatus({
+    registry: REGISTRY,
     loadRows: () => SAMPLE_ROWS,
     readDoc: () => '# Sample epic\n\nSome useful paragraph long enough to be picked as a summary line here.',
     generatedAt: new Date('2026-07-17T00:00:00Z'),
@@ -99,6 +126,7 @@ test('publishRoadmapStatus calls publisher with the full JSON payload including 
 test('publishRoadmapStatus reports the failure reason without throwing when the publisher fails', async () => {
   const errors = [];
   const result = await publishRoadmapStatus({
+    registry: REGISTRY,
     loadRows: () => SAMPLE_ROWS,
     readDoc: () => '# Sample epic\n\nSome useful paragraph long enough to be picked as a summary line here.',
     publisher: async () => ({ ok: false, reason: 'no-credentials' }),
@@ -116,6 +144,7 @@ test('publishPmoMetrics dry-run never calls the uploader', async () => {
   let called = false;
   const infos = [];
   const result = await publishPmoMetrics({
+    registry: REGISTRY,
     dryRun: true,
     loadLog: () => null,
     uploader: async () => { called = true; return { ok: true }; },
@@ -129,6 +158,7 @@ test('publishPmoMetrics dry-run never calls the uploader', async () => {
 test('publishPmoMetrics passes the stable slug + allowOverwrite:true to the uploader', async () => {
   let seenArgs;
   const result = await publishPmoMetrics({
+    registry: REGISTRY,
     loadLog: () => '{"windowEnd":"2026-07-14T00:00:00Z","summary":{"shippedStories":2,"shippedEpics":1,"deploys":3,"changeFailProxy":0,"learningsPromotions":1}}\n',
     uploader: async (args) => { seenArgs = args; return { ok: true }; },
     logInfo: () => {},
@@ -142,6 +172,7 @@ test('publishPmoMetrics passes the stable slug + allowOverwrite:true to the uplo
 test('publishPmoMetrics tolerates a missing/unreadable log (empty history, no throw)', async () => {
   let seenArgs;
   const result = await publishPmoMetrics({
+    registry: REGISTRY,
     loadLog: () => null,
     uploader: async (args) => { seenArgs = args; return { ok: true }; },
     logInfo: () => {},
@@ -153,6 +184,7 @@ test('publishPmoMetrics tolerates a missing/unreadable log (empty history, no th
 test('publishPmoMetrics reports the failure reason without throwing when the uploader fails', async () => {
   const errors = [];
   const result = await publishPmoMetrics({
+    registry: REGISTRY,
     loadLog: () => null,
     uploader: async () => ({ ok: false, reason: 'no-credentials' }),
     logError: (m) => errors.push(m),

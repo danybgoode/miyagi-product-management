@@ -6,11 +6,14 @@
 // them. It NEVER touches production deployments (your rollback history) — only `target !== production`.
 //
 // Usage:
-//   node scripts/vercel-prune-previews.mjs                 # DRY-RUN, project miyagisanchez, all previews
-//   node scripts/vercel-prune-previews.mjs --age 7         # only previews older than 7 days
-//   node scripts/vercel-prune-previews.mjs --apply         # actually delete (dry-run is the default)
-//   node scripts/vercel-prune-previews.mjs --keep-branch feat/x,feat/y   # protect live/open-PR branches
-//   node scripts/vercel-prune-previews.mjs --project despachobonsai-vercel --apply
+//   node scripts/vercel-prune-previews.mjs --project <name>            # DRY-RUN, all previews
+//   node scripts/vercel-prune-previews.mjs --project <name> --age 7    # only previews older than 7 days
+//   node scripts/vercel-prune-previews.mjs --project <name> --apply    # actually delete (dry-run is the default)
+//   node scripts/vercel-prune-previews.mjs --project <name> --keep-branch feat/x,feat/y  # protect open-PR branches
+//
+// `--project` is REQUIRED and has no default. An earlier version defaulted to the origin project's
+// name, which meant a fresh checkout ran confidently against SOMEONE ELSE'S Vercel project — a
+// wrong-target delete is exactly the failure a default should never be able to cause.
 //
 // ALWAYS pass --keep-branch for any branch that still has an OPEN PR (its preview is the live review
 // target) — or just run after that PR merges. Production deployments are never touched.
@@ -30,21 +33,42 @@ function arg(name, def = undefined) {
   const next = process.argv[i + 1];
   return next && !next.startsWith('--') ? next : true;
 }
-const PROJECT = String(arg('project', 'miyagisanchez'));
-const AGE_DAYS = Number(arg('age', 0));           // delete previews strictly older than this many days
-const APPLY = !!arg('apply', false);              // dry-run unless --apply
-const KEEP = new Set(String(arg('keep-branch', '') || '').split(',').map((s) => s.trim()).filter(Boolean));
+const PROJECT_ARG = arg('project');
+if (!PROJECT_ARG || PROJECT_ARG === true) {
+  console.error('vercel-prune-previews: --project <name> is required (no default, by design).');
+  console.error('  Pass the Vercel project this repo deploys to. There is deliberately no fallback:');
+  console.error('  a defaulted project name means pruning whatever project the default happens to');
+  console.error('  point at, which is a destructive no-op at best and the wrong target at worst.');
+  process.exit(2);
+}
+const PROJECT = String(PROJECT_ARG);
+const AGE_DAYS = Number(arg('age', 0)); // delete previews strictly older than this many days
+const APPLY = !!arg('apply', false); // dry-run unless --apply
+const KEEP = new Set(
+  String(arg('keep-branch', '') || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
 
 function resolveToken() {
   if (process.env.VERCEL_API_TOKEN) return process.env.VERCEL_API_TOKEN;
   if (process.env.VERCEL_TOKEN) return process.env.VERCEL_TOKEN;
   const candidates = [
     join(process.env.HOME || '', 'Library/Application Support/com.vercel.cli/auth.json'),
-    join(process.env.XDG_DATA_HOME || join(process.env.HOME || '', '.local/share'), 'com.vercel.cli/auth.json'),
+    join(
+      process.env.XDG_DATA_HOME || join(process.env.HOME || '', '.local/share'),
+      'com.vercel.cli/auth.json'
+    ),
     join(process.env.HOME || '', '.vercel/auth.json'),
   ];
   for (const p of candidates) {
-    try { if (existsSync(p)) { const t = JSON.parse(readFileSync(p, 'utf8')).token; if (t) return t; } } catch {}
+    try {
+      if (existsSync(p)) {
+        const t = JSON.parse(readFileSync(p, 'utf8')).token;
+        if (t) return t;
+      }
+    } catch {}
   }
   console.error('No Vercel token: set VERCEL_API_TOKEN or run `vercel login`.');
   process.exit(1);
@@ -73,16 +97,20 @@ async function resolveTeamId() {
 
   // Page all deployments; keep only previews (target !== 'production').
   const now = Date.now();
-  let until, previews = [], total = 0;
+  let until,
+    previews = [],
+    total = 0;
   for (let i = 0; i < 100; i++) {
-    const j = await api(`/v6/deployments?projectId=${projectId}&${tq}&limit=100${until ? `&until=${until}` : ''}`);
+    const j = await api(
+      `/v6/deployments?projectId=${projectId}&${tq}&limit=100${until ? `&until=${until}` : ''}`
+    );
     if (!j.deployments || !j.deployments.length) break;
     total += j.deployments.length;
     for (const d of j.deployments) {
-      if (d.target === 'production') continue;                 // never touch production
+      if (d.target === 'production') continue; // never touch production
       if (['BUILDING', 'QUEUED', 'INITIALIZING'].includes(d.state)) continue; // skip in-flight
       const branch = (d.meta && (d.meta.githubCommitRef || d.meta.gitBranch)) || '(unknown)';
-      if (KEEP.has(branch)) continue;                          // protect live / open-PR branches
+      if (KEEP.has(branch)) continue; // protect live / open-PR branches
       const ageDays = (now - d.created) / 86400000;
       if (ageDays >= AGE_DAYS) previews.push({ id: d.uid, age: ageDays, branch });
     }
@@ -91,17 +119,29 @@ async function resolveTeamId() {
   }
 
   console.log(`Project ${PROJECT} (${projectId}) — scanned ${total} deployments.`);
-  console.log(`Preview deployments to remove (target!=production${AGE_DAYS ? `, older than ${AGE_DAYS}d` : ''}): ${previews.length}`);
+  console.log(
+    `Preview deployments to remove (target!=production${AGE_DAYS ? `, older than ${AGE_DAYS}d` : ''}): ${previews.length}`
+  );
   const byBranch = {};
   for (const p of previews) byBranch[p.branch] = (byBranch[p.branch] || 0) + 1;
-  Object.entries(byBranch).sort((a, b) => b[1] - a[1]).slice(0, 40)
+  Object.entries(byBranch)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 40)
     .forEach(([b, n]) => console.log(`  ${String(n).padStart(3)}  ${b}`));
 
-  if (!previews.length) { console.log('Nothing to prune.'); return; }
-  if (!APPLY) { console.log('\nDRY-RUN — re-run with --apply to delete the above.'); return; }
+  if (!previews.length) {
+    console.log('Nothing to prune.');
+    return;
+  }
+  if (!APPLY) {
+    console.log('\nDRY-RUN — re-run with --apply to delete the above.');
+    return;
+  }
 
   console.log(`\nDeleting ${previews.length} preview deployments…`);
-  let ok = 0, fail = 0, idx = 0;
+  let ok = 0,
+    fail = 0,
+    idx = 0;
   const worker = async () => {
     while (idx < previews.length) {
       const p = previews[idx++];
@@ -109,10 +149,16 @@ async function resolveTeamId() {
         const r = await fetch(`${API}/v13/deployments/${p.id}?${tq}`, { method: 'DELETE', headers: H });
         if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 120)}`);
         ok++;
-      } catch (e) { fail++; console.error(`  ! ${p.id} (${p.branch}): ${e.message}`); }
+      } catch (e) {
+        fail++;
+        console.error(`  ! ${p.id} (${p.branch}): ${e.message}`);
+      }
     }
   };
-  await Promise.all(Array.from({ length: 8 }, worker));   // small concurrency pool
+  await Promise.all(Array.from({ length: 8 }, worker)); // small concurrency pool
   console.log(`Done — deleted ${ok}, failed ${fail}.`);
   if (fail) process.exit(1);
-})().catch((e) => { console.error(e.message || e); process.exit(1); });
+})().catch((e) => {
+  console.error(e.message || e);
+  process.exit(1);
+});

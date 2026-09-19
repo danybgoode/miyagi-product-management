@@ -27,15 +27,15 @@ test('PR_TITLE is a stable, descriptive chore(...) title', () => {
 });
 
 test('repoSlugFromRemoteUrl: parses an HTTPS remote URL', () => {
-  assert.equal(repoSlugFromRemoteUrl('https://github.com/danybgoode/miyagi-product-management.git'), 'danybgoode/miyagi-product-management');
+  assert.equal(repoSlugFromRemoteUrl('https://github.com/acme/example-project.git'), 'acme/example-project');
 });
 
 test('repoSlugFromRemoteUrl: parses an SSH remote URL', () => {
-  assert.equal(repoSlugFromRemoteUrl('git@github.com:danybgoode/miyagi-product-management.git'), 'danybgoode/miyagi-product-management');
+  assert.equal(repoSlugFromRemoteUrl('git@github.com:acme/example-project.git'), 'acme/example-project');
 });
 
 test('repoSlugFromRemoteUrl: works without a trailing .git too', () => {
-  assert.equal(repoSlugFromRemoteUrl('https://github.com/danybgoode/miyagi-product-management'), 'danybgoode/miyagi-product-management');
+  assert.equal(repoSlugFromRemoteUrl('https://github.com/acme/example-project'), 'acme/example-project');
 });
 
 test('repoSlugFromRemoteUrl: a non-GitHub or empty URL returns null, not a throw', () => {

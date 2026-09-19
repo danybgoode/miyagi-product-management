@@ -1,15 +1,19 @@
 // report-registry.mjs — the report scripts' half of reporthub-as-notion Sprint 1: uploads a report
-// payload to the GCS registry provisioned by infra/gcp/provision-report-registry.sh (Story 1.1) and
-// returns a short `/r/<slug>` link served by the danybgoode/smalldocs fork's resolver (Story 1.2). On
+// payload to the GCS registry provisioned by the project's bucket-provisioning script (Story 1.1) and
+// returns a short `/r/<slug>` link served by the project's doc-viewer resolver (Story 1.2). On
 // ANY failure — no credentials, no `gcloud`, a rejected upload, an unreachable bucket — this degrades to
 // the caller's already-computed URL-hash link (LEARNINGS soft-mode pattern: standup.mjs/weekly-recap.mjs
 // already do this for a missing/wiped delta-log baseline; this is the same discipline applied to a new
 // failure mode). Callers keep building the URL-hash link first (scripts/lib/pmo-templates.mjs's
 // buildDocViewerUrl) — this module only ever *upgrades* that link, never replaces the guaranteed fallback.
 //
-// Slug -> object path convention (matches infra/gcp/provision-report-registry.sh's lifecycle rule and
+// The resolver URL and bucket are the PROJECT's (reporting.config.json → artifacts.registry). Unset, the
+// registry is simply off: buildReportLink returns the fallback with reason `registry-not-configured` and
+// uploads nothing. There is deliberately no default bucket — a default is one project's storage.
+//
+// Slug -> object path convention (matches the project's bucket-provisioning script's lifecycle rule and
 // the fork's /r/<slug> resolver EXACTLY — a change here needs the same-wave change called out in
-// infra/gcp/test/report-registry-invariants.test.js):
+// the project's registry-invariants test):
 //   daily-story-YYYY-MM-DD-<hash6>  -> daily/daily-story-YYYY-MM-DD-<hash6>.md   (90d TTL)
 //   pmo-weekly-YYYY-MM-DD           -> packets/pmo-weekly-YYYY-MM-DD.md          (kept forever)
 //   pmo-monthly-YYYY-MM-DD          -> packets/pmo-monthly-YYYY-MM-DD.md         (kept forever)
@@ -26,8 +30,6 @@ import { createSign } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-export const RESOLVER_BASE_URL = 'https://pmo-smalldocs-121711078446.us-east4.run.app';
-export const DEFAULT_BUCKET = 'miyagi-pmo-reports';
 export const DAILY_PREFIX = 'daily/';
 export const PACKETS_PREFIX = 'packets/';
 // reporthub-as-notion S2.1: a THIRD prefix for artifacts that need to be repeatedly overwritten in
@@ -35,7 +37,7 @@ export const PACKETS_PREFIX = 'packets/';
 // unlike daily/ and packets/ objects, which are one-shot immutable artifacts protected by
 // `if-generation-match: 0` (see uploadViaRest/uploadViaGcloud below), live/ objects are written with
 // `allowOverwrite: true` and are expected to change on every publish run. Not covered by the bucket's
-// 90d lifecycle rule (infra/gcp/provision-report-registry.sh only expires daily/ — a live/ object is a
+// 90d lifecycle rule (the project's bucket-provisioning script only expires daily/ — a live/ object is a
 // single small rolling snapshot, not an accumulating log, so "kept forever" is fine and matches
 // packets/'s default).
 export const LIVE_PREFIX = 'live/';
@@ -127,7 +129,7 @@ export function slugForArtifact({ name, date = new Date(), markdown = '' }) {
 }
 
 // The one place the daily/-vs-packets/ split is decided — matches
-// infra/gcp/provision-report-registry.sh's `DAILY_PREFIX="daily/"` lifecycle rule exactly.
+// the project's bucket-provisioning script's `DAILY_PREFIX="daily/"` lifecycle rule exactly.
 export function objectPathForSlug(slug) {
   return slug.startsWith('daily-') ? `${DAILY_PREFIX}${slug}.md` : `${PACKETS_PREFIX}${slug}.md`;
 }
@@ -139,12 +141,12 @@ export function liveObjectPath(key, ext = 'json') {
   return `${LIVE_PREFIX}${sanitizeSlugPart(key)}.${ext}`;
 }
 
-export function registryUrl({ slug, baseUrl = RESOLVER_BASE_URL }) {
+export function registryUrl({ slug, baseUrl }) {
   return `${baseUrl}/r/${slug}`;
 }
 
-export function resolveBucket(env = process.env) {
-  return env.REPORT_REGISTRY_BUCKET || DEFAULT_BUCKET;
+export function resolveBucket(env = process.env, configured = null) {
+  return env.REPORT_REGISTRY_BUCKET || configured || null;
 }
 
 // Pure — the fallback decision itself, isolated so it's independently testable from the I/O that
@@ -189,7 +191,10 @@ function loadServiceAccountKey(env) {
 // OAuth access token via the standard JWT-bearer grant. Returns null on any failure (malformed key,
 // network error, non-2xx response) — never throws, so a routine with no key configured just falls
 // through to the gcloud path or the URL-hash fallback.
-export async function getAccessTokenFromServiceAccountKey(key, { fetchImpl = fetch, now = () => Date.now() } = {}) {
+export async function getAccessTokenFromServiceAccountKey(
+  key,
+  { fetchImpl = fetch, now = () => Date.now() } = {}
+) {
   if (!key?.client_email || !key?.private_key) return null;
   const iat = Math.floor(now() / 1000);
   const header = { alg: 'RS256', typ: 'JWT' };
@@ -296,10 +301,7 @@ export function uploadViaGcloud({
   // --if-generation-match=0: same overwrite protection as the REST path's x-goog-if-generation-match
   // header — `gcloud storage cp` supports this flag directly (confirmed: `gcloud storage cp --help`).
   // Skipped when allowOverwrite is true (live/ objects — see uploadViaRest's comment).
-  const args = [
-    'storage', 'cp', '-', `gs://${bucket}/${objectPath}`,
-    `--content-type=${contentType}`,
-  ];
+  const args = ['storage', 'cp', '-', `gs://${bucket}/${objectPath}`, `--content-type=${contentType}`];
   if (!allowOverwrite) args.push('--if-generation-match=0');
   const r = spawnSyncImpl('gcloud', args, { input: markdown, encoding: 'utf8' });
   if (r.status === 0) return { ok: true };
@@ -330,7 +332,15 @@ export async function uploadReportPayload({
   if (key) {
     const token = await getAccessTokenFromServiceAccountKey(key, { fetchImpl });
     if (token) {
-      const result = await uploadViaRest({ bucket, objectPath, markdown, token, fetchImpl, contentType, allowOverwrite });
+      const result = await uploadViaRest({
+        bucket,
+        objectPath,
+        markdown,
+        token,
+        fetchImpl,
+        contentType,
+        allowOverwrite,
+      });
       if (result.ok) return result;
       // A key was configured but the upload itself failed (bad IAM binding, wrong bucket, etc.) — still
       // worth trying the gcloud path in case ADC on this machine covers it, before giving up.
@@ -364,8 +374,16 @@ export async function publishLiveArtifact({
   uploader = uploadReportPayload,
 }) {
   const objectPath = liveObjectPath(key, ext);
+  if (!bucket) return { ok: false, objectPath, reason: 'registry-not-configured' };
   try {
-    const result = await uploader({ bucket, objectPath, markdown: content, env, contentType, allowOverwrite: true });
+    const result = await uploader({
+      bucket,
+      objectPath,
+      markdown: content,
+      env,
+      contentType,
+      allowOverwrite: true,
+    });
     if (result?.ok) return { ok: true, objectPath };
     return { ok: false, objectPath, reason: result?.reason || 'unknown' };
   } catch (err) {
@@ -386,7 +404,7 @@ export async function buildReportLink({
   fallbackUrl,
   date = new Date(),
   bucket = resolveBucket(),
-  baseUrl = RESOLVER_BASE_URL,
+  baseUrl = null,
   env = process.env,
   uploader = uploadReportPayload,
   logError = (msg) => console.error(msg),
@@ -397,6 +415,9 @@ export async function buildReportLink({
   dryRun = false,
 } = {}) {
   const slug = slugForArtifact({ name, date, markdown });
+  if (!bucket || !baseUrl) {
+    return { url: fallbackUrl, slug, usedRegistry: false, reason: 'registry-not-configured' };
+  }
   if (dryRun) {
     logInfo(
       `report-registry: dry run — would upload "${name}" as slug ${slug} ` +

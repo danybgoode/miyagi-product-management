@@ -9,11 +9,11 @@
 //   node scripts/doc-hygiene.mjs             # print the report + write Roadmap/00-ideas/DOC-HYGIENE-REPORT-<date>.md
 //   node scripts/doc-hygiene.mjs --check     # print only, write nothing (quick look / CI-safe)
 //
-// Reuse, don't rebuild: epic status comes from `roadmap-to-notion.mjs --extract` (the same SSOT
+// Reuse, don't rebuild: epic status comes from `roadmap-extract.mjs` (the same SSOT
 // build-order.mjs reads) — this script does not re-parse frontmatter itself.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -22,9 +22,30 @@ const REPO = resolve(__dirname, '..');
 const ROADMAP = join(REPO, 'Roadmap');
 const IDEAS = join(ROADMAP, '00-ideas');
 
-// The always-read set — mirrors apps/miyagisanchez/AGENTS.md's "Start here" orientation list.
+// App roots are DISCOVERED, not hardcoded. The origin project listed its two apps by name, which
+// silently degraded to "no app roots" in any project laid out differently — and this script's
+// dead-path check reads a missing root as "path not found", i.e. it would have flagged every
+// app-relative bullet as stale. Discovery keeps absent and unknown distinguishable.
+function discoverAppRoots() {
+  const appsDir = join(REPO, 'apps');
+  if (!existsSync(appsDir)) return [];
+  return readdirSync(appsDir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+    .map((e) => join(appsDir, e.name))
+    .sort();
+}
+const APP_ROOTS = discoverAppRoots();
+
+// The always-read set — the "Start here" orientation list. AGENTS.md is taken from the repo root,
+// falling back to a single app's copy when the repo keeps it there instead.
+function resolveAgentsMd() {
+  const rootDoc = join(REPO, 'AGENTS.md');
+  if (existsSync(rootDoc)) return rootDoc;
+  const fromApp = APP_ROOTS.map((r) => join(r, 'AGENTS.md')).find((p) => existsSync(p));
+  return fromApp || rootDoc; // report the root path as missing rather than inventing one
+}
 const ALWAYS_READ = [
-  { label: 'AGENTS.md', path: join(REPO, 'apps', 'miyagisanchez', 'AGENTS.md') },
+  { label: 'AGENTS.md', path: resolveAgentsMd() },
   { label: 'WAYS-OF-WORKING.md', path: join(ROADMAP, 'WAYS-OF-WORKING.md') },
   { label: 'LEARNINGS.md', path: join(ROADMAP, 'LEARNINGS.md') },
   { label: 'README.md (poster)', path: join(ROADMAP, 'README.md') },
@@ -34,8 +55,10 @@ const ALWAYS_READ = [
 const FLAG_TARGETS = ['LEARNINGS.md', 'README.md (poster)'];
 
 const STOPWORDS = new Set(
-  ('the a an and or but of to in on for with at by from as is are was were be been being this that '
-    + 'it its own not no never every each any one two both same real still only just also once new').split(' ')
+  (
+    'the a an and or but of to in on for with at by from as is are was were be been being this that ' +
+    'it its own not no never every each any one two both same real still only just also once new'
+  ).split(' ')
 );
 
 function measure() {
@@ -49,7 +72,7 @@ function measure() {
 // Epic status via the existing extractor — never a second frontmatter parser.
 function archivedEpicSlugs() {
   try {
-    const json = execFileSync('node', [join(__dirname, 'roadmap-to-notion.mjs'), '--extract'], {
+    const json = execFileSync('node', [join(__dirname, 'roadmap-extract.mjs')], {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
     });
@@ -130,7 +153,7 @@ function findNearDuplicates(bullets, threshold = 0.5) {
 // Bullets reference app-relative paths (`lib/x.ts`) without an `apps/<app>/` prefix, since each app
 // is its own repo. Check candidate paths against every known app root, plus the repo root for
 // scripts/infra paths — a hit in ANY root clears the flag.
-const SEARCH_ROOTS = [REPO, join(REPO, 'apps', 'miyagisanchez'), join(REPO, 'apps', 'backend')];
+const SEARCH_ROOTS = [REPO, ...APP_ROOTS];
 
 // Flag a bullet whose text names a backtick-quoted file path that doesn't exist in THIS checkout,
 // under any known app root. This is a hint only — apps/* are separate, gitignored repos here and can
@@ -199,7 +222,9 @@ function buildReport() {
   );
   lines.push('| Doc | Lines | KB |', '|---|---|---|');
   for (const s of sizes) {
-    lines.push(`| ${s.label} | ${s.missing ? '—' : fmt(s.lines)} | ${s.missing ? 'missing' : (s.bytes / 1024).toFixed(1)} |`);
+    lines.push(
+      `| ${s.label} | ${s.missing ? '—' : fmt(s.lines)} | ${s.missing ? 'missing' : (s.bytes / 1024).toFixed(1)} |`
+    );
   }
   lines.push(`| **Total** | **${fmt(totalLines)}** | **${(totalBytes / 1024).toFixed(1)}** |`, '');
 
@@ -210,18 +235,28 @@ function buildReport() {
       continue;
     }
     if (f.dupes.length) {
-      lines.push(`**Possible near-duplicate bullets** (same section, high word overlap — verify before merging):`, '');
-      for (const d of f.dupes) lines.push(`- \`${f.label}\` section "${d.section}": line ${d.a} vs line ${d.b} (${d.sim}% shared words)`);
+      lines.push(
+        `**Possible near-duplicate bullets** (same section, high word overlap — verify before merging):`,
+        ''
+      );
+      for (const d of f.dupes)
+        lines.push(
+          `- \`${f.label}\` section "${d.section}": line ${d.a} vs line ${d.b} (${d.sim}% shared words)`
+        );
       lines.push('');
     }
     if (f.deadPaths.length) {
-      lines.push(`**Referenced paths not found in this checkout** (verify against the app repo before treating as stale — this checkout can be behind the app's own \`main\`):`, '');
+      lines.push(
+        `**Referenced paths not found in this checkout** (verify against the app repo before treating as stale — this checkout can be behind the app's own \`main\`):`,
+        ''
+      );
       for (const d of f.deadPaths) lines.push(`- \`${f.label}\` line ${d.line}: \`${d.path}\``);
       lines.push('');
     }
     if (f.archivedMentions.length) {
       lines.push(`**Mentions an archived epic** (check whether the lesson is superseded):`, '');
-      for (const d of f.archivedMentions) lines.push(`- \`${f.label}\` line ${d.line}: mentions archived epic \`${d.slug}\``);
+      for (const d of f.archivedMentions)
+        lines.push(`- \`${f.label}\` line ${d.line}: mentions archived epic \`${d.slug}\``);
       lines.push('');
     }
   }
@@ -230,12 +265,14 @@ function buildReport() {
   return { markdown: lines.join('\n'), sizes, totalBytes, totalLines };
 }
 
-const { markdown, sizes, totalBytes, totalLines } = buildReport();
+const { markdown, totalBytes, totalLines } = buildReport();
 console.log(markdown);
 
 if (!process.argv.includes('--check')) {
   const date = new Date().toISOString().slice(0, 10);
   const outPath = join(IDEAS, `DOC-HYGIENE-REPORT-${date}.md`);
   writeFileSync(outPath, markdown);
-  console.error(`\nWrote ${outPath} (always-read set: ${fmt(totalLines)} lines / ${(totalBytes / 1024).toFixed(1)} KB)`);
+  console.error(
+    `\nWrote ${outPath} (always-read set: ${fmt(totalLines)} lines / ${(totalBytes / 1024).toFixed(1)} KB)`
+  );
 }
