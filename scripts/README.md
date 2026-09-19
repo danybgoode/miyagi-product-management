@@ -100,7 +100,8 @@ their tests. This repo's values live in config, not code: `reporting.config.json
 Deliberately divergent, with the reason to re-check before "unifying":
 
 - **Project fill-ins** — `prose/cpo-persona.md`, `prose/{merge,standup}.task.md`, `prose-lessons.md`:
-  this project's voice and lessons. The template ships neutral placeholders.
+  this project's voice and lessons. Also `routines/*.prompt.md` + `routines/README.md` (the template ships
+  them as fill-ins; these are this project's live routines) and `review-config.json` (its review routing). The template ships neutral placeholders.
 - **`roadmap-extract.mjs`, `live-smoke.mjs`** — thin delegates: the extractor is
   `roadmap-to-notion.mjs --extract` (it drives the live Notion board), and live-smoke runs
   `apps/miyagisanchez/scripts/live-smoke.mjs` against that app's own Playwright project.
