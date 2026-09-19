@@ -95,7 +95,10 @@ export function validatePolicy(raw) {
     if (typeof r.why !== 'string' || !r.why.trim())
       return { ok: false, reason: `"testSurface[${i}]" needs a "why"` };
     const value = r[kinds[0]];
-    if (normalizeRepoPath(value) === null && !(kinds[0] === 'prefix' && value.endsWith('/'))) {
+    // A directory prefix's trailing slash is legitimate, but it must not skip the path check: strip it,
+    // then normalize, so `../e2e/` or `a//b/` is refused like any other non-plain path.
+    const bare = kinds[0] === 'prefix' && value.endsWith('/') ? value.slice(0, -1) : value;
+    if (normalizeRepoPath(bare) === null) {
       return { ok: false, reason: `"testSurface[${i}]" is not a plain repo-relative path` };
     }
   }

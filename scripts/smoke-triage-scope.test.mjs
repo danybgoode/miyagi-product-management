@@ -318,6 +318,14 @@ test('a PR that edits the gate script is blocked', () => {
   assert.ok(decision.blockers.some((b) => b.id === 'gate-self-modification'));
 });
 
+test('validatePolicy: a trailing-slash prefix is still path-checked — traversal and empty segments are refused', () => {
+  for (const prefix of ['../e2e/', './e2e/', 'a//b/', '/e2e/']) {
+    const r = validatePolicy({ ...POLICY, testSurface: [{ prefix, why: 'x' }] });
+    assert.equal(r.ok, false, prefix);
+  }
+  assert.equal(validatePolicy({ ...POLICY, testSurface: [{ prefix: 'e2e/', why: 'x' }] }).ok, true);
+});
+
 test('validatePolicy: a rule with a valid exact beside a non-string prefix is malformed, not a throw', () => {
   const r = validatePolicy({ ...POLICY, testSurface: [{ exact: 'a.ts', prefix: 5, why: 'x' }] });
   assert.equal(r.ok, false);

@@ -504,7 +504,7 @@ export async function loadChecks(
   } catch (e) {
     return { ok: false, error: `${path} failed to load (${e.message}) — no assertions ran.` };
   }
-  if (!Array.isArray(mod.CHECKS) || mod.CHECKS.length === 0) {
+  if (!Array.isArray(mod?.CHECKS) || mod.CHECKS.length === 0) {
     return { ok: false, error: `${path} exports no CHECKS (or an empty array) — no assertions to run.` };
   }
   return { ok: true, BASE: mod.BASE, CHECKS: mod.CHECKS };
