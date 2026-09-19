@@ -43,7 +43,9 @@ export function readLogFromBranch({ cwd, branch, path }) {
 // slash" (a one-line, obvious fix) into an unexplained `false`.
 export function writeLogToBranch({ cwd, branch, path, content, message }) {
   if (path.includes('/')) {
-    console.error(`log-branch: writeLogToBranch path "${path}" must be a flat filename (no "/") — git mktree only builds single-level trees.`);
+    console.error(
+      `log-branch: writeLogToBranch path "${path}" must be a flat filename (no "/") — git mktree only builds single-level trees.`
+    );
     return false;
   }
 
@@ -95,7 +97,9 @@ export function appendLineToBranch({ cwd, branch, path, line, message, retries =
     const updated = `${existing}${line}`;
     if (writeLogToBranch({ cwd, branch, path, content: updated, message })) return true;
     if (attempt < retries) {
-      console.error(`log-branch: append attempt ${attempt + 1} failed for ${branch} — retrying with a fresh read.`);
+      console.error(
+        `log-branch: append attempt ${attempt + 1} failed for ${branch} — retrying with a fresh read.`
+      );
     }
   }
   return false;

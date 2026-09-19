@@ -2,15 +2,32 @@ import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
 import test from 'node:test'
 import { gzipSync } from 'node:zlib'
-import { DEFAULT_IMAGE_URL, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, rawRequest, requestTransport, runProbe } from './perf-probe.mjs'
+import { loadProbeConfig, decodeBodyForInspection, extractClientScriptUrls, fixtureUrls, formatReport, measureFixture, parseArgs, probeExitCode, rawRequest, requestTransport, runProbe } from './perf-probe.mjs'
 
-test('fixtureUrls locks a live claimed PDP/shop pair and an explicitly configurable real image fixture', () => {
-  const fixtures = fixtureUrls({ baseUrl: 'https://preview.example', imageUrl: 'https://preview.example/api/img?url=x&w=640&q=75' })
-  assert.deepEqual(fixtures.map((fixture) => fixture.id), ['home', 'pdp', 'shop', 'image'])
-  assert.equal(fixtures[1].url, 'https://preview.example/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM')
-  assert.equal(fixtures[2].url, 'https://preview.example/mx/s/ylai-studio')
-  assert.equal(fixtures[3].url, 'https://preview.example/api/img?url=x&w=640&q=75')
-  assert.doesNotMatch(DEFAULT_IMAGE_URL, /[?&]f=/, 'the default must be safe to run against pre-deploy production')
+const TARGETS = [
+  { id: 'home', label: 'home (signed-out)', path: '/mx' },
+  { id: 'pdp', label: 'product page', path: '/mx/l/prod_1' },
+  { id: 'image', label: 'cold real image variant', path: '/api/img?url=x&w=160&q=75', image: true },
+]
+
+test('fixtureUrls builds from the configured targets; --image-url replaces ONLY the image target', () => {
+  const fixtures = fixtureUrls({ baseUrl: 'https://preview.example/', targets: TARGETS })
+  assert.deepEqual(fixtures.map((f) => f.url), [
+    'https://preview.example/mx', 'https://preview.example/mx/l/prod_1', 'https://preview.example/api/img?url=x&w=160&q=75',
+  ])
+  assert.equal(fixtures[2].image, true)
+  const swapped = fixtureUrls({ baseUrl: 'https://preview.example', imageUrl: 'https://cdn.example/i.jpg', targets: TARGETS })
+  assert.equal(swapped[0].url, 'https://preview.example/mx')
+  assert.equal(swapped[2].url, 'https://cdn.example/i.jpg')
+})
+
+test('loadProbeConfig: no config is an error naming the file — never a default site', () => {
+  assert.throws(() => loadProbeConfig({ path: '/nope/perf-probe.config.json', exists: () => false }), /perf-probe\.config\.json not found/)
+  const read = (o) => () => JSON.stringify(o)
+  assert.throws(() => loadProbeConfig({ exists: () => true, read: read({ baseUrl: 'x', targets: TARGETS }) }), /baseUrl/)
+  assert.throws(() => loadProbeConfig({ exists: () => true, read: read({ baseUrl: 'https://a', targets: [] }) }), /targets/)
+  assert.throws(() => loadProbeConfig({ exists: () => true, read: read({ baseUrl: 'https://a', targets: [{ id: 'x', label: 'y', path: 'no-slash' }] }) }), /targets\[0\]/)
+  assert.equal(loadProbeConfig({ exists: () => true, read: read({ baseUrl: 'https://a', targets: TARGETS }) }).targets.length, 3)
 })
 
 test('parseArgs accepts a deployed revision and rejects incomplete flags', () => {
@@ -24,7 +41,7 @@ test('raw transport supports local HTTP probes without attempting a TLS handshak
   const httpRequest = () => 'http'
   const httpsRequest = () => 'https'
   assert.equal(requestTransport('http://127.0.0.1:3000/mx', { httpRequest, httpsRequest }), httpRequest)
-  assert.equal(requestTransport('https://miyagisanchez.com/mx', { httpRequest, httpsRequest }), httpsRequest)
+  assert.equal(requestTransport('https://shop.example.test/mx', { httpRequest, httpsRequest }), httpsRequest)
   assert.throws(() => requestTransport('ftp://example.test/file', { httpRequest, httpsRequest }), /unsupported URL protocol/)
 })
 
@@ -69,8 +86,8 @@ test('rawRequest forwards protocol-specific injected transports', async () => {
 
 test('extractClientScriptUrls resolves and de-duplicates only Next client chunks', () => {
   const html = '<script src="/_next/static/a.js"></script><script src="/_next/static/a.js"></script><script src="/other.js"></script>'
-  assert.deepEqual(extractClientScriptUrls(html, 'https://miyagisanchez.com/mx'), ['https://miyagisanchez.com/_next/static/a.js'])
-  assert.deepEqual(extractClientScriptUrls("<script src='/_next/static/b.js' id=\"single-quoted\"></script>", 'https://miyagisanchez.com/mx'), ['https://miyagisanchez.com/_next/static/b.js'])
+  assert.deepEqual(extractClientScriptUrls(html, 'https://shop.example.test/mx'), ['https://shop.example.test/_next/static/a.js'])
+  assert.deepEqual(extractClientScriptUrls("<script src='/_next/static/b.js' id=\"single-quoted\"></script>", 'https://shop.example.test/mx'), ['https://shop.example.test/_next/static/b.js'])
 })
 
 test('decodeBodyForInspection parses compressed HTML without changing wire-byte measurement', () => {
@@ -105,12 +122,12 @@ test('measureFixture records an unreachable target as unavailable instead of a c
 })
 
 test('a reachable non-2xx locked fixture is absent and makes the baseline exit nonzero', async () => {
-  const report = await runProbe({ baseUrl: 'https://example.test', imageUrl: 'https://example.test/api/img?url=x&w=160&q=75', revision: 'abc' }, {
+  const report = await runProbe({ targets: TARGETS, baseUrl: 'https://example.test', imageUrl: 'https://example.test/api/img?url=x&w=160&q=75', revision: 'abc' }, {
     request: async (url) => ({ url, statusCode: 404, bytes: 0, body: Buffer.alloc(0), ttfbMs: 5, headers: {} }),
     now: () => new Date('2026-08-22T00:00:00.000Z'),
   })
   assert.equal(report.unavailable, 0)
-  assert.equal(report.absent, 4)
+  assert.equal(report.absent, TARGETS.length)
   assert.equal(probeExitCode(report), 1)
   assert.match(formatReport(report), /non-2xx or invalid measurement/)
 })
@@ -214,8 +231,20 @@ test('failure diagnostics name invalid measurements and an unidentified revision
 
 test('--dry-run is fully read-only: it returns fixtures without invoking the injected network reader', async () => {
   let calls = 0
-  const report = await runProbe({ dryRun: true }, { request: async () => { calls += 1 }, now: () => new Date('2026-08-22T00:00:00.000Z') })
+  const report = await runProbe({ dryRun: true, targets: TARGETS, baseUrl: 'https://example.test' }, { request: async () => { calls += 1 }, now: () => new Date('2026-08-22T00:00:00.000Z') })
   assert.equal(report.dry_run, true)
   assert.equal(calls, 0)
   assert.equal(probeExitCode(report), 0)
+})
+
+test('runProbe with no flags takes baseUrl + targets from the config (the CLI default path)', async () => {
+  const report = await runProbe(parseArgs(['--dry-run']), {
+    loadConfig: () => ({ baseUrl: 'https://cfg.example', targets: TARGETS }),
+    request: async () => { throw new Error('dry run must not fetch') },
+  })
+  assert.equal(report.fixtures[0].url, 'https://cfg.example/mx')
+  const over = await runProbe(parseArgs(['--dry-run', '--base-url', 'https://flag.example']), {
+    loadConfig: () => ({ baseUrl: 'https://cfg.example', targets: TARGETS }),
+  })
+  assert.equal(over.fixtures[0].url, 'https://flag.example/mx')
 })

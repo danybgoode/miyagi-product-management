@@ -36,7 +36,7 @@ export const CONFIG_FILENAME = 'reporting.config.json';
 export const EXAMPLE_FILENAME = 'reporting.config.example.json';
 export const LOCAL_FILENAME = 'reporting.config.local.json';
 
-export const SURFACES = ['standup', 'weekly', 'pmo'];
+export const SURFACES = ['standup', 'weekly', 'pmo', 'merge'];
 const REPO_RE = /^[\w.-]+\/[\w.-]+$/;
 
 export class ReportingConfigError extends Error {
@@ -58,7 +58,8 @@ function fail(path, msg) {
 function repoList(path, value, key) {
   if (!Array.isArray(value)) fail(path, `"${key}" must be an array of "owner/name" strings`);
   for (const r of value) {
-    if (typeof r !== 'string' || !REPO_RE.test(r)) fail(path, `"${key}" has an invalid repo "${r}" — expected "owner/name"`);
+    if (typeof r !== 'string' || !REPO_RE.test(r))
+      fail(path, `"${key}" has an invalid repo "${r}" — expected "owner/name"`);
   }
   return value;
 }
@@ -82,21 +83,27 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
   });
 
   const telegram = raw.telegram ?? {};
-  if (!telegram || typeof telegram !== 'object' || Array.isArray(telegram)) fail(path, '"telegram" must be an object');
+  if (!telegram || typeof telegram !== 'object' || Array.isArray(telegram))
+    fail(path, '"telegram" must be an object');
   for (const k of ['chatId']) {
-    if (telegram[k] != null && typeof telegram[k] !== 'string' && typeof telegram[k] !== 'number') fail(path, `"telegram.${k}" must be a string or number`);
+    if (telegram[k] != null && typeof telegram[k] !== 'string' && typeof telegram[k] !== 'number')
+      fail(path, `"telegram.${k}" must be a string or number`);
   }
   const chatIds = telegram.chatIds ?? {};
   for (const k of Object.keys(chatIds)) {
-    if (!SURFACES.includes(k)) fail(path, `"telegram.chatIds.${k}" is not a surface — use one of ${SURFACES.join(', ')}`);
-    if (typeof chatIds[k] !== 'string' && typeof chatIds[k] !== 'number') fail(path, `"telegram.chatIds.${k}" must be a string or number`);
+    if (!SURFACES.includes(k))
+      fail(path, `"telegram.chatIds.${k}" is not a surface — use one of ${SURFACES.join(', ')}`);
+    if (typeof chatIds[k] !== 'string' && typeof chatIds[k] !== 'number')
+      fail(path, `"telegram.chatIds.${k}" must be a string or number`);
   }
 
   let smoke = null;
   if (raw.smoke != null) {
-    if (typeof raw.smoke !== 'object' || Array.isArray(raw.smoke)) fail(path, '"smoke" must be an object {repo, workflow}');
+    if (typeof raw.smoke !== 'object' || Array.isArray(raw.smoke))
+      fail(path, '"smoke" must be an object {repo, workflow}');
     repoList(path, [raw.smoke.repo], 'smoke.repo');
-    if (typeof raw.smoke.workflow !== 'string' || !raw.smoke.workflow) fail(path, '"smoke.workflow" must name a workflow file');
+    if (typeof raw.smoke.workflow !== 'string' || !raw.smoke.workflow)
+      fail(path, '"smoke.workflow" must name a workflow file');
     smoke = { repo: raw.smoke.repo, workflow: raw.smoke.workflow };
   }
 
@@ -104,45 +111,73 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
   if (raw.liveFlags != null) {
     const cmd = raw.liveFlags.command;
     if (!Array.isArray(cmd) || !cmd.length || cmd.some((c) => typeof c !== 'string')) {
-      fail(path, '"liveFlags.command" must be a non-empty argv array (e.g. ["node", "scripts/flags.mjs", "--list-on"])');
+      fail(
+        path,
+        '"liveFlags.command" must be a non-empty argv array (e.g. ["node", "scripts/flags.mjs", "--list-on"])'
+      );
     }
     liveFlags = { command: cmd, cwd: raw.liveFlags.cwd || '.' };
   }
 
   // Where each repo is checked out locally (session-resume.mjs's git read), relative to the repo root.
   const checkouts = raw.checkouts ?? {};
-  if (typeof checkouts !== 'object' || Array.isArray(checkouts)) fail(path, '"checkouts" must map "owner/name" to a local directory');
+  if (typeof checkouts !== 'object' || Array.isArray(checkouts))
+    fail(path, '"checkouts" must map "owner/name" to a local directory');
   for (const [repo, dir] of Object.entries(checkouts)) {
     if (!repos.includes(repo)) fail(path, `"checkouts.${repo}" is not one of "repos"`);
-    if (typeof dir !== 'string' || !dir || dir.startsWith('/') || dir.includes('\\') || dir.split('/').includes('..')) {
+    if (
+      typeof dir !== 'string' ||
+      !dir ||
+      dir.startsWith('/') ||
+      dir.includes('\\') ||
+      dir.split('/').includes('..')
+    ) {
       fail(path, `"checkouts.${repo}" must be a relative directory inside the repo root`);
     }
   }
 
   // What owed-ledger.mjs counts: who manual checks are owed to, and where the specs live.
   const owed = raw.owed ?? {};
-  if (typeof owed !== 'object' || Array.isArray(owed)) fail(path, '"owed" must be an object {owners, specDirs}');
+  if (typeof owed !== 'object' || Array.isArray(owed))
+    fail(path, '"owed" must be an object {owners, specDirs}');
   for (const k of ['owners', 'specDirs']) {
-    if (owed[k] != null && (!Array.isArray(owed[k]) || owed[k].some((v) => typeof v !== 'string' || !v.trim()))) {
+    if (
+      owed[k] != null &&
+      (!Array.isArray(owed[k]) || owed[k].some((v) => typeof v !== 'string' || !v.trim()))
+    ) {
       fail(path, `"owed.${k}" must be an array of non-empty strings`);
     }
   }
   for (const d of owed.specDirs ?? []) {
-    if (d.startsWith('/') || d.includes('\\') || d.split('/').includes('..')) fail(path, `"owed.specDirs" entry "${d}" must be relative, inside the repo`);
+    if (d.startsWith('/') || d.includes('\\') || d.split('/').includes('..'))
+      fail(path, `"owed.specDirs" entry "${d}" must be relative, inside the repo`);
   }
 
   const stalePreviewAgeDays = raw.stalePreviewAgeDays ?? null;
   if (stalePreviewAgeDays !== null && !(Number.isInteger(stalePreviewAgeDays) && stalePreviewAgeDays > 0)) {
-    fail(path, '"stalePreviewAgeDays" must be a positive integer, or absent to skip the stale-preview signal');
+    fail(
+      path,
+      '"stalePreviewAgeDays" must be a positive integer, or absent to skip the stale-preview signal'
+    );
   }
+  // The prune script has no default project (a defaulted name prunes someone else's project), so the
+  // signal needs one named here. Age without a project is a config error, not a silently-dark signal.
+  const vercelProject = raw.vercelProject ?? null;
+  if (vercelProject !== null && (typeof vercelProject !== 'string' || !/^[\w.-]+$/.test(vercelProject)))
+    fail(path, '"vercelProject" must be a Vercel project name');
+  if (stalePreviewAgeDays !== null && vercelProject === null)
+    fail(path, '"stalePreviewAgeDays" needs "vercelProject" — the Vercel project whose previews it counts');
 
   const artifacts = raw.artifacts ?? {};
   const docViewerUrl = artifacts.docViewerUrl ?? null;
-  if (docViewerUrl !== null && !/^https?:\/\//.test(docViewerUrl)) fail(path, '"artifacts.docViewerUrl" must be an http(s) URL');
+  if (docViewerUrl !== null && !/^https?:\/\//.test(docViewerUrl))
+    fail(path, '"artifacts.docViewerUrl" must be an http(s) URL');
   const registry = artifacts.registry ?? null;
   if (registry !== null) {
-    if (!/^https?:\/\//.test(registry.resolverBaseUrl || '')) fail(path, '"artifacts.registry.resolverBaseUrl" must be an http(s) URL');
-    if (typeof registry.bucket !== 'string' || !registry.bucket) fail(path, '"artifacts.registry.bucket" must name a bucket');
+    if (!/^https?:\/\//.test(registry.resolverBaseUrl || ''))
+      fail(path, '"artifacts.registry.resolverBaseUrl" must be an http(s) URL');
+    if (typeof registry.bucket !== 'string' || !registry.bucket)
+      fail(path, '"artifacts.registry.bucket" must name a bucket');
   }
 
   const prose = raw.prose ?? {};
@@ -168,6 +203,7 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
     smoke,
     liveFlags,
     stalePreviewAgeDays,
+    vercelProject,
     artifacts: { docViewerUrl, registry },
     prose: { extraBannedToolNames },
   };
@@ -177,7 +213,12 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
  * Read + validate the project's reporting config. Throws ReportingConfigError — naming the file and how
  * to create it — when it is absent. Never returns a default.
  */
-export function loadReportingConfig({ root = DEFAULT_ROOT, env = process.env, read = readFileSync, exists = existsSync } = {}) {
+export function loadReportingConfig({
+  root = DEFAULT_ROOT,
+  env = process.env,
+  read = readFileSync,
+  exists = existsSync,
+} = {}) {
   const path = configPath({ root, env });
   if (!exists(path)) {
     throw new ReportingConfigError(

@@ -27,8 +27,8 @@ const HOOK = join(dirname(fileURLToPath(import.meta.url)), '..', '.githooks', 'p
 // ⚠️ SEALED against the repository this file runs in. `.githooks/pre-push` runs this suite, and git
 // exports GIT_DIR (and friends) into hooks — from a LINKED WORKTREE it points at the real repo's
 // gitdir. GIT_DIR overrides `cwd`, so the fixture's `git init` / `git config user.*` below rewrote the
-// REAL repository: on 2026-09-16 a worktree push flipped medusa-bonsai's `core.bare` to `true` (every
-// agent's checkout stopped working) and replaced its user identity with `t <t@t>`. golden-beans hit
+// REAL repository: on 2026-09-16 a worktree push flipped the origin project's `core.bare` to `true` (every
+// agent's checkout stopped working) and replaced its user identity with `t <t@t>`. A sibling project hit
 // the same leak on 2026-09-09 (design-coverage.test.mjs) and sealed it the same way.
 const GIT_ENV_TO_CLEAR = [
   'GIT_DIR', 'GIT_INDEX_FILE', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY',

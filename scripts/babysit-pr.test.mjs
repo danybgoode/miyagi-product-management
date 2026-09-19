@@ -93,13 +93,27 @@ test('actionsRunIdFromDetailsUrl returns null for a non-Actions / missing URL', 
 // need to read differently to a human deciding whether to look closer.
 
 test('buildComment: nothing failed, no retry attempted → the plain "no retry needed" line', () => {
-  const body = buildComment({ conflict: false, retried: [], retryFailures: [], dryRun: false, noAutoRetryNames: [], stillPendingNames: [] });
+  const body = buildComment({
+    conflict: false,
+    retried: [],
+    retryFailures: [],
+    dryRun: false,
+    noAutoRetryNames: [],
+    stillPendingNames: [],
+  });
   assert.match(body, /No failing CI runs needed a retry/);
   assert.doesNotMatch(body, /Retry attempt itself failed/);
 });
 
 test('buildComment: a successful retry is reported, not the "no retry needed" line', () => {
-  const body = buildComment({ conflict: false, retried: [123], retryFailures: [], dryRun: false, noAutoRetryNames: [], stillPendingNames: [] });
+  const body = buildComment({
+    conflict: false,
+    retried: [123],
+    retryFailures: [],
+    dryRun: false,
+    noAutoRetryNames: [],
+    stillPendingNames: [],
+  });
   assert.match(body, /Retried failing Actions run\(s\): #123/);
   assert.doesNotMatch(body, /No failing CI runs needed a retry/);
 });

@@ -28,17 +28,8 @@ import {
 import { buildDocViewerUrl, fillPmoTemplate } from './lib/pmo-templates.mjs';
 import { upgradeArtifactLinks } from './lib/report-registry.mjs';
 import { parseStatusFlipsFromLog, filterFlipsToWindow } from './weekly-recap.mjs';
-import {
-  baselineSummary,
-  formatBaselineSummary,
-  summarizePmoMetrics,
-} from './lib/pmo-metrics.mjs';
-import {
-  computePmoWindow,
-  formatPmoReport,
-  lastPmoLogEntry,
-  pmoLogLine,
-} from './lib/pmo-window-log.mjs';
+import { baselineSummary, formatBaselineSummary, summarizePmoMetrics } from './lib/pmo-metrics.mjs';
+import { computePmoWindow, formatPmoReport, lastPmoLogEntry, pmoLogLine } from './lib/pmo-window-log.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -87,11 +78,11 @@ export function loadLogContent({
   return readRemoteLog();
 }
 
-export function gatherRepoResults(sinceISO, untilISO, {
-  repos,
-  searchMerged = searchMergedPrs,
-  listOpen = listPulls,
-} = {}) {
+export function gatherRepoResults(
+  sinceISO,
+  untilISO,
+  { repos, searchMerged = searchMergedPrs, listOpen = listPulls } = {}
+) {
   return repos.map((repo) => {
     const prs = searchMerged({ repo, sinceDate: sinceISO.slice(0, 10), base: 'main' });
     const openPrs = listOpen({ repo, state: 'open', perPage: 100 });
@@ -108,8 +99,10 @@ export function gatherRepoResults(sinceISO, untilISO, {
 function gatherEpicStatusFlips(sinceISO, untilISO) {
   const result = git([
     'log',
-    '--since', sinceISO,
-    '--until', untilISO,
+    '--since',
+    sinceISO,
+    '--until',
+    untilISO,
     '--date=iso-strict',
     '-p',
     '--reverse',
@@ -128,22 +121,24 @@ function epicSlugFromPath(path) {
 function gatherDocOpsInputs(sinceISO, untilISO, epicStatusFlips) {
   const result = git([
     'log',
-    '--since', sinceISO,
-    '--until', untilISO,
+    '--since',
+    sinceISO,
+    '--until',
+    untilISO,
     '--name-only',
     '--pretty=format:commit:%H',
     '--',
     'Roadmap',
   ]);
-  const paths = result.status === 0
-    ? result.stdout.split('\n').filter((line) => line.startsWith('Roadmap/'))
-    : [];
+  const paths =
+    result.status === 0 ? result.stdout.split('\n').filter((line) => line.startsWith('Roadmap/')) : [];
   const docChanges = paths.flatMap((path) => {
     const epicSlug = epicSlugFromPath(path);
     return epicSlug ? [{ epicSlug, path }] : [];
   });
-  const learningsPromotions = [...new Set(paths.filter((path) => path === 'Roadmap/LEARNINGS.md'))]
-    .map((path) => ({ path }));
+  const learningsPromotions = [...new Set(paths.filter((path) => path === 'Roadmap/LEARNINGS.md'))].map(
+    (path) => ({ path })
+  );
   const shippedEpics = epicStatusFlips
     .filter((flip) => flip.status === 'shipped')
     .map((flip) => ({
@@ -160,14 +155,24 @@ function firstCommitDateForPath(path) {
 }
 
 function gatherEpicLeadInputs(epicStatusFlips) {
-  return epicStatusFlips.filter((flip) => flip.status === 'shipped').flatMap((flip) => {
-    const scaffoldedAt = firstCommitDateForPath(flip.file);
-    if (!scaffoldedAt) return [];
-    return [{ slug: epicSlugFromPath(flip.file), scaffoldedAt, shippedAt: flip.date }];
-  });
+  return epicStatusFlips
+    .filter((flip) => flip.status === 'shipped')
+    .flatMap((flip) => {
+      const scaffoldedAt = firstCommitDateForPath(flip.file);
+      if (!scaffoldedAt) return [];
+      return [{ slug: epicSlugFromPath(flip.file), scaffoldedAt, shippedAt: flip.date }];
+    });
 }
 
-export function buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs, deployRepos = [] }) {
+export function buildReport({
+  window,
+  repoResults,
+  roadmapRows,
+  epicStatusFlips,
+  docOpsInputs,
+  epicLeadInputs,
+  deployRepos = [],
+}) {
   const prs = repoResults.flatMap((result) => result.prs);
   const metrics = summarizePmoMetrics({
     ...window,
@@ -182,7 +187,9 @@ export function buildReport({ window, repoResults, roadmapRows, epicStatusFlips,
     ...docOpsInputs,
   });
   const baselineLine = window.baseline
-    ? formatBaselineSummary(baselineSummary({ repoResults, roadmapRows, docChanges: docOpsInputs.docChanges }))
+    ? formatBaselineSummary(
+        baselineSummary({ repoResults, roadmapRows, docChanges: docOpsInputs.docChanges })
+      )
     : null;
   return { metrics, text: truncateForTelegram(formatPmoReport({ metrics, baselineLine }), 4096) };
 }
@@ -253,7 +260,15 @@ async function main() {
   const epicStatusFlips = gatherEpicStatusFlips(window.sinceISO, window.untilISO);
   const docOpsInputs = gatherDocOpsInputs(window.sinceISO, window.untilISO, epicStatusFlips);
   const epicLeadInputs = gatherEpicLeadInputs(epicStatusFlips);
-  const { metrics, text } = buildReport({ window, repoResults, roadmapRows, epicStatusFlips, docOpsInputs, epicLeadInputs, deployRepos });
+  const { metrics, text } = buildReport({
+    window,
+    repoResults,
+    roadmapRows,
+    epicStatusFlips,
+    docOpsInputs,
+    epicLeadInputs,
+    deployRepos,
+  });
 
   console.log(text);
   const artifacts = buildReportArtifacts(metrics, args, { docViewerUrl: config.artifacts.docViewerUrl });
@@ -276,7 +291,11 @@ async function main() {
     console.log(`\nDeck ${artifact.name}: ${artifact.url}`);
     if (args.open) {
       const opened = openUrl(artifact.url);
-      console.log(opened ? `Opened ${artifact.name} in the browser.` : `Could not auto-open ${artifact.name}; use the URL above.`);
+      console.log(
+        opened
+          ? `Opened ${artifact.name} in the browser.`
+          : `Could not auto-open ${artifact.name}; use the URL above.`
+      );
     }
   }
 
@@ -293,9 +312,10 @@ async function main() {
   }
 
   if (!shouldPersistWindow(args)) {
-    const reason = args.monthly || args.sheet
-      ? 'On-demand artifact run: window log not updated.'
-      : 'Window log not updated; run --weekly to deliver and advance the PMO window.';
+    const reason =
+      args.monthly || args.sheet
+        ? 'On-demand artifact run: window log not updated.'
+        : 'Window log not updated; run --weekly to deliver and advance the PMO window.';
     console.log(args.dryRun ? '\nDry run: window log not updated.' : `\n${reason}`);
     return;
   }

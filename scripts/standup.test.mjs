@@ -43,9 +43,24 @@ test('diffSnapshots: bootstrap message stays short regardless of history size (t
   const cur = {
     ts: '2026-07-03T00:00:00Z',
     repos: {
-      'acme/a': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
-      'acme/b': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
-      'acme/c': { openNumbers: [], mergedNumbers: Array.from({ length: 50 }, (_, i) => i), failingOpenNumbers: [], conflictingOpenNumbers: [] },
+      'acme/a': {
+        openNumbers: [],
+        mergedNumbers: Array.from({ length: 50 }, (_, i) => i),
+        failingOpenNumbers: [],
+        conflictingOpenNumbers: [],
+      },
+      'acme/b': {
+        openNumbers: [],
+        mergedNumbers: Array.from({ length: 50 }, (_, i) => i),
+        failingOpenNumbers: [],
+        conflictingOpenNumbers: [],
+      },
+      'acme/c': {
+        openNumbers: [],
+        mergedNumbers: Array.from({ length: 50 }, (_, i) => i),
+        failingOpenNumbers: [],
+        conflictingOpenNumbers: [],
+      },
     },
     smoke: null,
     buildOrderDrifted: false,
@@ -58,20 +73,33 @@ test('diffSnapshots: bootstrap message stays short regardless of history size (t
   ];
   const lines = diffSnapshots(null, cur, signals);
   const message = lines.join('\n');
-  assert.ok(message.length < 1000, `bootstrap message across 3 repos with 150 total merged PRs must stay tiny, got ${message.length} chars`);
+  assert.ok(
+    message.length < 1000,
+    `bootstrap message across 3 repos with 150 total merged PRs must stay tiny, got ${message.length} chars`
+  );
 });
 
 // ---- normal delta path (regression coverage for existing behavior) ----
 
 test('diffSnapshots: a genuinely new merged PR is reported with its title', () => {
-  const prev = { repos: { [REPO]: { openNumbers: [], mergedNumbers: [1], failingOpenNumbers: [], conflictingOpenNumbers: [] } } };
+  const prev = {
+    repos: {
+      [REPO]: { openNumbers: [], mergedNumbers: [1], failingOpenNumbers: [], conflictingOpenNumbers: [] },
+    },
+  };
   const cur = {
-    repos: { [REPO]: { openNumbers: [], mergedNumbers: [1, 2], failingOpenNumbers: [], conflictingOpenNumbers: [] } },
+    repos: {
+      [REPO]: { openNumbers: [], mergedNumbers: [1, 2], failingOpenNumbers: [], conflictingOpenNumbers: [] },
+    },
     smoke: null,
     buildOrderDrifted: false,
     stalePreviews: null,
   };
-  const lines = diffSnapshots(prev, cur, repoSignal({ byNumber: { 2: { title: 'feat: new thing', url: 'x' } } }));
+  const lines = diffSnapshots(
+    prev,
+    cur,
+    repoSignal({ byNumber: { 2: { title: 'feat: new thing', url: 'x' } } })
+  );
   assert.match(lines.join('\n'), /merged: #2 feat: new thing/);
 });
 
@@ -83,10 +111,23 @@ test('diffSnapshots: nothing changed at all (repo, smoke, build-order, previews)
 });
 
 test('diffSnapshots: a busy night still caps the merged-PR title list via formatPrList', () => {
-  const prev = { repos: { [REPO]: { openNumbers: [], mergedNumbers: [], failingOpenNumbers: [], conflictingOpenNumbers: [] } } };
-  const byNumber = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [i + 1, { title: `pr${i + 1}`, url: 'x' }]));
+  const prev = {
+    repos: {
+      [REPO]: { openNumbers: [], mergedNumbers: [], failingOpenNumbers: [], conflictingOpenNumbers: [] },
+    },
+  };
+  const byNumber = Object.fromEntries(
+    Array.from({ length: 20 }, (_, i) => [i + 1, { title: `pr${i + 1}`, url: 'x' }])
+  );
   const cur = {
-    repos: { [REPO]: { openNumbers: [], mergedNumbers: Array.from({ length: 20 }, (_, i) => i + 1), failingOpenNumbers: [], conflictingOpenNumbers: [] } },
+    repos: {
+      [REPO]: {
+        openNumbers: [],
+        mergedNumbers: Array.from({ length: 20 }, (_, i) => i + 1),
+        failingOpenNumbers: [],
+        conflictingOpenNumbers: [],
+      },
+    },
     smoke: null,
     buildOrderDrifted: false,
     stalePreviews: null,
@@ -96,9 +137,15 @@ test('diffSnapshots: a busy night still caps the merged-PR title list via format
 });
 
 test('diffSnapshots: a new merge-conflict on an open PR is reported', () => {
-  const prev = { repos: { [REPO]: { openNumbers: [5], mergedNumbers: [], failingOpenNumbers: [], conflictingOpenNumbers: [] } } };
+  const prev = {
+    repos: {
+      [REPO]: { openNumbers: [5], mergedNumbers: [], failingOpenNumbers: [], conflictingOpenNumbers: [] },
+    },
+  };
   const cur = {
-    repos: { [REPO]: { openNumbers: [5], mergedNumbers: [], failingOpenNumbers: [], conflictingOpenNumbers: [5] } },
+    repos: {
+      [REPO]: { openNumbers: [5], mergedNumbers: [], failingOpenNumbers: [], conflictingOpenNumbers: [5] },
+    },
     smoke: null,
     buildOrderDrifted: false,
     stalePreviews: null,

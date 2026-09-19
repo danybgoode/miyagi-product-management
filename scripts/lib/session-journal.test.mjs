@@ -54,7 +54,7 @@ test('parseRefs: undefined/empty → []', () => {
 test('buildJournalEntry: a valid decision entry gets ts/session defaulted and refs parsed', () => {
   const entry = buildJournalEntry({
     kind: 'decision',
-    text: '  D6: resume checks apps/miyagisanchez only for migrations  ',
+    text: '  D6: resume checks apps/web only for migrations  ',
     refs: 'PR#312,D5',
     now: new Date('2026-07-26T12:00:00Z'),
   });
@@ -62,7 +62,7 @@ test('buildJournalEntry: a valid decision entry gets ts/session defaulted and re
     ts: '2026-07-26T12:00:00.000Z',
     session: '2026-07-26',
     kind: 'decision',
-    text: 'D6: resume checks apps/miyagisanchez only for migrations',
+    text: 'D6: resume checks apps/web only for migrations',
     refs: ['PR#312', 'D5'],
   });
 });
@@ -89,7 +89,7 @@ test('buildJournalEntry: empty/whitespace-only text throws', () => {
 // ---- serializeEntry / parseJournal round-trip ----
 
 test('serializeEntry + parseJournal round-trips a single entry', () => {
-  const entry = buildJournalEntry({ kind: 'blocked', text: 'waiting on Daniel', now: new Date('2026-07-26T00:00:00Z') });
+  const entry = buildJournalEntry({ kind: 'blocked', text: 'waiting on the product owner', now: new Date('2026-07-26T00:00:00Z') });
   const content = serializeEntry(entry);
   assert.equal(content.endsWith('\n'), true);
   assert.deepEqual(parseJournal(content), [entry]);

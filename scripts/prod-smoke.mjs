@@ -1,35 +1,43 @@
 #!/usr/bin/env node
 // prod-smoke.mjs — the daily production watchdog's checks, as a reviewable file.
 //
-// WHY THIS EXISTS AS A FILE. The "Miyagi prod smoke (daily)" routine predates the six committed
-// routines in scripts/routines/ and carried its assertions ONLY in the cloud routine prompt in
-// Daniel's account — no git source, so no epic could ever update it. That cost us twice:
+// WHY THIS EXISTS AS A FILE. In the project this was ported from, the "prod smoke (daily)" routine
+// predated the committed routines in scripts/routines/ and carried its assertions ONLY in the cloud
+// routine prompt in the product owner's account — no git source, so no epic could ever update it. That
+// cost twice:
 //
 //   1. market-architecture-foundation (shipped 2026-07-31) moved `/l` → `/mx/l` behind a one-hop
 //      308. It updated lib/markets.ts in both repos with golden drift specs and updated the e2e
 //      specs — and could not touch this smoke, which had no file to edit. The watchdog went red on
 //      2026-08-05 against a route that had been correct for five days.
-//   2. The same cutover turned `/` from the marketplace into the master-brand market SELECTOR.
-//      The homepage check kept returning 200 and stayed green while silently testing a different
-//      page, and the MX marketplace lost smoke coverage entirely with no signal at all.
+//   2. The same cutover turned `/` from the marketplace into a market SELECTOR. The homepage check
+//      kept returning 200 and stayed green while silently testing a different page, and the real
+//      marketplace lost smoke coverage entirely with no signal at all.
 //
-// (2) is the reason the checks below assert IDENTITY, not just a status code. A 200 tells you
+// (2) is the reason the checks in prod-smoke.checks.mjs assert IDENTITY, not just a status code. A 200 tells you
 // something answered; it does not tell you the right thing answered. Every check that guards a
 // rendered page therefore carries a structural body marker.
 //
-// This watchdog earns its keep — it is the layer that caught the empty-`shop.slug` defect that CI
-// reported green on (see Roadmap/03-selling-and-shops/catalog-orphan-listing-sweep/README.md).
-// That is exactly why its assertions belong under review rather than in a text box.
+// This watchdog earned its keep there — it caught a data defect CI reported green on. That is exactly
+// why its assertions belong under review rather than in a text box.
 //
-// THE RULE THAT CONSTRAINS EVERY EDIT HERE: never make a red smoke pass by weakening it
+// THE RULE THAT CONSTRAINS EVERY EDIT TO THE CHECKS: never make a red smoke pass by weakening it
 // (scripts/routines/smoke-triage.prompt.md). When a route moves, re-point the check at the new
 // contract and, where the move itself is a contract worth keeping, assert the move too. Do not
-// relax an assertion to silence a red run. catalog-orphan-listing-sweep Story 1.3 part 3 is the
-// precedent: a strict smoke assertion was deliberately CONFIRMED rather than loosened.
+// relax an assertion to silence a red run — the origin's precedent was a strict assertion deliberately
+// CONFIRMED rather than loosened.
+//
+// ── THE CHECKS ARE THE PROJECT'S (plugin-audit-and-extraction S3.1) ──────────────────────────────
+// This file is the ENGINE: fetch, evaluate, three-valued exit. The assertions live in the project's
+// committed scripts/prod-smoke.checks.mjs, which exports `BASE` (the production origin) and `CHECKS`
+// (declarative checks — status, media type, identity markers, redirect targets, JSON shape, and
+// `dependsOn`/`pathFrom` for a check whose path is derived from another's response). It is a module,
+// not JSON, precisely so a derived check can hold code; it is still one reviewed file. Copy
+// prod-smoke.checks.example.mjs to start. No checks file → exit 2 ("could not check"), never 0.
 //
 //   node scripts/prod-smoke.mjs             # run every check, human-readable report
 //   node scripts/prod-smoke.mjs --json      # same, machine-readable
-//   node scripts/prod-smoke.mjs --base=...  # point at another origin (default prod)
+//   node scripts/prod-smoke.mjs --base=...  # point at another origin (default: the checks file's BASE)
 //
 // Exit codes are three-valued on purpose (AGENTS.md — "three states, never two"):
 //   0  every check passed
@@ -38,10 +46,12 @@
 // A run that could not check something must never exit 0. "I could not look" is not "it is fine".
 
 import { parseArgs } from 'node:util';
-import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { dirname, join } from 'node:path';
+import { existsSync, realpathSync } from 'node:fs';
 
-export const DEFAULT_BASE = 'https://miyagisanchez.com';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+export const CHECKS_PATH = join(__dirname, 'prod-smoke.checks.mjs');
 
 // JSON media types. `application/*+json` is legal and common, so it is matched by suffix rather
 // than enumerated — but `application/jsonp` and `text/notjson` are NOT JSON and must not pass, which
@@ -68,169 +78,11 @@ export const JS_MEDIA_TYPES = [
   'application/ecmascript',
 ];
 
-// The checks, in the order the daily routine reports them. `expect` is declarative so the pure
-// evaluator below can be unit-tested without a network: `status` is required; `location` asserts a
-// redirect target; `bodyIncludes`/`bodyExcludes` assert page identity.
-export const CHECKS = [
-  {
-    id: 'embed-js',
-    name: 'embed.js',
-    path: '/embed.js',
-    // A 200 alone would pass an HTML error page served where a script belongs — the browser would
-    // fail to parse it and every embedded shop would go dark while this check stayed green. Same
-    // reasoning as the selector/marketplace markers below: a status proves something answered.
-    // An ARRAY of acceptable substrings, because the JS media types are a set, not one string:
-    // `text/ecmascript` and `application/ecmascript` are valid and functional, and demanding the
-    // literal "javascript" would redden a working loader over a server-side MIME preference.
-    //
-    // The body markers are the loader's actual API SURFACE — the custom elements a seller's page
-    // depends on. Without them a 200 with an empty or truncated body passed as healthy while
-    // embedded shops received no usable loader. Custom-element names survive minification because
-    // the DOM registers them by string, which is what makes them a durable marker rather than a
-    // fragile one.
-    expect: {
-      status: 200,
-      mediaTypeIn: JS_MEDIA_TYPES,
-      bodyIncludes: ['customElements', 'miyagi-buy-button'],
-    },
-    why: 'The embed loader every seller-site iframe pulls. Dead loader = every embedded shop dark.',
-  },
-  {
-    id: 'ucp-catalog',
-    name: 'UCP catalog',
-    path: '/api/ucp/catalog?limit=1',
-    // `bodyIsJson` because a 200 that ANNOUNCES application/json and then serves something
-    // unparseable is an observed broken response, and the catalog check is where that belongs. Left
-    // to the dependent embed check it surfaced as "unavailable" — a broken catalog reported as an
-    // inability to look at one.
-    expect: { status: 200, mediaTypeIsJson: true, bodyIsJson: true },
-    why: 'The agent-readable catalog endpoint. Also the source of the embed check\'s shop slug.',
-  },
-  {
-    id: 'ucp-manifest',
-    name: 'UCP manifest',
-    path: '/api/ucp/manifest',
-    // STRUCTURAL, not substring: `{"error":"miyagisanchez-ucp unavailable"}` contains the
-    // identifier while being the opposite of a healthy manifest. Assert the field's VALUE.
-    expect: {
-      status: 200,
-      mediaTypeIsJson: true,
-      bodyIsJson: true,
-      bodyJsonMatches: { name: 'miyagisanchez-ucp' },
-      // The name alone would pass a manifest stripped of everything an agent actually needs. These
-      // ARE the discovery contract this check claims to protect: the capability an agent looks for
-      // and the endpoint map it navigates by.
-      bodyJsonIncludes: { capabilities: ['catalog_search'] },
-      // The declared TYPE matters: `endpoints: "garbage"` is non-empty but carries no endpoint map,
-      // and a bare presence check would have passed it.
-      bodyJsonRequires: { endpoints: 'object' },
-      // A non-empty endpoints object is not the same as a USABLE one: `{garbage:true}` satisfied
-      // "non-empty" while carrying no way to reach the catalog. The catalog endpoint and its URL
-      // ARE what an agent navigates by, so they are what the check asserts.
-      bodyJsonPaths: { 'endpoints.catalog.url': 'string' },
-    },
-    why: 'The UCP discovery document — how an agent learns the catalog exists.',
-  },
-  {
-    id: 'embed-iframe',
-    name: 'embed iframe',
-    // Derived, not hardcoded: the slug comes from the catalog's first item, so this check also
-    // re-exercises the shop-attribution join. That derivation is load-bearing history — an empty
-    // `shop.slug` made this resolve to `/embed/s/` and 308, which is how the orphan defect was
-    // caught (catalog-orphan-listing-sweep). A hardcoded slug would not have caught it.
-    dependsOn: 'ucp-catalog',
-    pathFrom: (catalogBody) => {
-      const items = parseCatalogItems(catalogBody);
-      // Unparseable JSON can no longer reach here — the catalog check now fails on it, so this
-      // branch means parseable JSON with no `items` array at all: an observed schema defect.
-      if (items === null) return { failed: 'catalog response has no items array — schema defect' };
-      if (items.length === 0) return { unavailable: 'catalog returned no items to embed' };
-
-      const slug = firstShopSlug(catalogBody);
-      // A blank slug is an OBSERVED DEFECT, not an inability to observe. We looked and saw the
-      // catalog emitting shopless items — the exact orphan-attribution signature that made
-      // `/embed/s/` + '' resolve to a slugless path and 308. Reporting it as "unavailable" would
-      // be a detection REGRESSION against the watchdog this replaces, which went red on it.
-      if (!slug) {
-        return { failed: 'every catalog item has a blank shop.slug — the orphan-attribution defect signature' };
-      }
-      // The slug is also the page-identity marker: it proves THE REQUESTED shop rendered, not a
-      // generic 200 page that happens to carry a permissive CSP.
-      // `prod_` proves the embed actually RENDERED the shop's listings; the slug alone would pass
-      // any generic page that merely echoed it back. The slug came from a catalog item belonging to
-      // this shop, so the shop is known to have at least one product to render.
-      return { path: `/embed/s/${slug}`, expect: { bodyIncludes: [slug, 'prod_'] } };
-    },
-    // Framing is the half of this check that makes the iframe actually embeddable — the orphan
-    // sweep named its absence alongside the 308 as what a seller would experience.
-    //
-    // `framesFromAnywhere` parses the directive rather than substring-matching it, because
-    // `frame-ancestors 'none'` and `frame-ancestors *.example.com` both CONTAIN the text
-    // "frame-ancestors" (and the latter even contains "frame-ancestors *") while forbidding
-    // exactly the third-party framing this check exists to prove. A check whose text and whose
-    // effect name different things is decoration.
-    expect: {
-      status: 200,
-      mediaTypeIn: ['text/html'],
-      framesFromAnywhere: true,
-    },
-    why: 'A seller embedding their storefront on their own site. 308 here = broken iframe.',
-  },
-  {
-    id: 'market-selector',
-    name: 'market selector (/)',
-    path: '/',
-    // `href="/us"` is the selector's identity: it is the only page that offers the US door. Chosen
-    // over a <title> match because copy gets edited and a guard that reddens on a copy tweak trains
-    // people to bypass it (AGENTS.md). This marker tracks the market registry instead.
-    expect: { status: 200, bodyIncludes: ['href="/us"'] },
-    why: 'Post-cutover `/` is the master-brand selector, NOT the marketplace. Status alone cannot tell them apart.',
-  },
-  {
-    id: 'mx-marketplace',
-    name: 'MX marketplace (/mx)',
-    path: '/mx',
-    // `home-hero` is PAGE-SPECIFIC; `href="/mx/l"` was not. Navigation appears on every page, so a
-    // wrong-page error shell carrying only a nav bar passed this check — silently green-lighting
-    // the exact regression class this watchdog exists to catch. The testid is structural, stable
-    // (the Playwright specs depend on it) and independent of both the catalog and the flags.
-    //
-    // The negative marker still pins it apart from the selector. If a market switcher ever
-    // legitimately lands on /mx, THAT is a deliberate review moment, not a silent green.
-    expect: {
-      status: 200,
-      bodyIncludes: ['data-testid="home-hero"'],
-      bodyExcludes: ['href="/us"'],
-    },
-    why: 'The live Mexico marketplace. Lost all smoke coverage at the 07-31 cutover — this restores it.',
-  },
-  {
-    id: 'browse-redirect',
-    name: 'browse redirect (/l → /mx/l)',
-    path: '/l',
-    // The redirect is itself a shipped live contract (market-architecture-foundation D8, the
-    // highest-risk edit in that epic) and had no guard anywhere. Asserting it is strictly MORE
-    // coverage than the old bare `/l` → 200 check, not less.
-    expect: { status: 308, location: '/mx/l' },
-    why: 'Old bookmarks, inbound links and the pre-cutover sitemap all still point at /l.',
-  },
-  {
-    id: 'mx-browse',
-    name: 'MX browse (/mx/l)',
-    path: '/mx/l',
-    // A PRODUCT link, not a nav link. `href="/mx/l` appears in the nav of every page, so the old
-    // marker would have passed an error shell that merely carried navigation. A browse page whose
-    // grid is empty is itself worth alerting on — that is the page's entire purpose.
-    expect: { status: 200, bodyIncludes: ['href="/mx/l/prod_'] },
-    why: 'The browse page itself — what /l used to serve, and what buyers actually land on.',
-  },
-];
-
 /**
  * Pure: does this Content-Security-Policy permit an arbitrary third-party site to frame the page?
  *
  * Parsed, not substring-matched, and the distinction is the whole point: `frame-ancestors 'none'`
- * contains the text "frame-ancestors", and `frame-ancestors *.miyagi.example` even contains
+ * contains the text "frame-ancestors", and `frame-ancestors *.acme.example` even contains
  * "frame-ancestors *", yet both forbid the third-party framing a seller's embed depends on. Only a
  * bare `*` in the source list actually permits it.
  */
@@ -247,49 +99,13 @@ export function framesAllowedFromAnywhere(csp) {
       policy
         .split(';')
         .map((d) => d.trim())
-        .find((d) => /^frame-ancestors\b/i.test(d)),
+        .find((d) => /^frame-ancestors\b/i.test(d))
     )
     .filter(Boolean);
 
   // No directive anywhere = framing is not PROVEN. This check exists to prove it, not to assume it.
   if (directives.length === 0) return false;
   return directives.every((d) => d.split(/\s+/).slice(1).includes('*'));
-}
-
-/**
- * Pure: the `items` array from a UCP catalog body, or null when the body is not parseable as one.
- * Separate from firstShopSlug so callers can tell "no items at all" (we cannot pick a shop to
- * check) apart from "items exist but none has a shop" (we observed the defect).
- */
-export function parseCatalogItems(body) {
-  let parsed;
-  try {
-    parsed = typeof body === 'string' ? JSON.parse(body) : body;
-  } catch {
-    return null;
-  }
-  return Array.isArray(parsed?.items) ? parsed.items : null;
-}
-
-/**
- * Pure: pull the first non-empty `shop.slug` out of a UCP catalog response body.
- * Returns null for anything unparseable or empty — the caller decides whether that is a failure
- * or an unavailability, because those are different facts.
- */
-export function firstShopSlug(body) {
-  let parsed;
-  try {
-    parsed = typeof body === 'string' ? JSON.parse(body) : body;
-  } catch {
-    return null;
-  }
-  const items = parsed?.items;
-  if (!Array.isArray(items)) return null;
-  for (const item of items) {
-    const slug = item?.shop?.slug;
-    if (typeof slug === 'string' && slug.length > 0) return slug;
-  }
-  return null;
 }
 
 /**
@@ -320,21 +136,21 @@ export function resolvePath(check, priorResults) {
  * Pure: reduce a Location header to the path+query the check asserts against.
  *
  * HTTP permits either form, and a framework or CDN can switch between them without changing
- * behaviour at all — `Location: https://miyagisanchez.com/mx/l` is the same one-hop redirect as
+ * behaviour at all — `Location: https://<prod>/mx/l` is the same one-hop redirect as
  * `Location: /mx/l`. Comparing the raw string would redden on correct output, which is the guard
  * failure mode AGENTS.md singles out as worse than missing a fault. A CROSS-ORIGIN absolute target
  * is deliberately left un-normalized: sending buyers to another origin is a real difference, and it
  * must not quietly compare equal to a local path.
  *
  * "Same origin" means same origin as the BASE BEING CHECKED, not as production. Hardcoding
- * DEFAULT_BASE here made `--base=https://staging.miyagisanchez.com` report every absolute redirect
+ * a default base here made `--base=https://staging.<prod>` report every absolute redirect
  * as cross-origin and fail a correct run — a false red on the one flag that exists to point this
  * script somewhere other than prod.
  */
-export function normalizeLocation(location, base = DEFAULT_BASE) {
+export function normalizeLocation(location, base) {
   // The empty guard IS load-bearing: `new URL(null, base)` resolves happily to a "/null" path, so
   // without it a MISSING Location header would silently become a plausible-looking one.
-  if (!location) return location;
+  if (!location || !base) return location;
   try {
     // Resolved as a URI REFERENCE against the checked URL, which handles all three legal forms
     // uniformly: absolute, root-relative, and protocol-relative (`//host/path` — legal, resolved by
@@ -385,12 +201,12 @@ export function parseMediaType(contentType) {
 export function wantsBody(want) {
   return Boolean(
     want.bodyIsJson ||
-      want.bodyIncludes?.length ||
-      want.bodyExcludes?.length ||
-      want.bodyJsonMatches ||
-      want.bodyJsonIncludes ||
-      want.bodyJsonRequires ||
-      want.bodyJsonPaths,
+    want.bodyIncludes?.length ||
+    want.bodyExcludes?.length ||
+    want.bodyJsonMatches ||
+    want.bodyJsonIncludes ||
+    want.bodyJsonRequires ||
+    want.bodyJsonPaths
   );
 }
 
@@ -402,7 +218,7 @@ export function wantsBody(want) {
  * assertion to be false; we failed to observe it at all. Collapsing the two would report an
  * outage in our own sandbox as an outage in production.
  */
-export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
+export function evaluateCheck(check, observation, base) {
   const result = { id: check.id, name: check.name };
 
   if (observation?.error) {
@@ -419,7 +235,9 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
   if (want.location !== undefined) {
     const got = normalizeLocation(location, base);
     if (got !== want.location) {
-      problems.push(`expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`);
+      problems.push(
+        `expected redirect to "${want.location}", got ${location ? `"${location}"` : 'no Location header'}`
+      );
     }
   }
   // Body-dependent assertions are evaluated ONLY when the body was actually read. An unread body
@@ -449,7 +267,7 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
       for (const [field, expected] of Object.entries(want.bodyJsonMatches ?? {})) {
         if (doc?.[field] !== expected) {
           problems.push(
-            `JSON field "${field}" is ${JSON.stringify(doc?.[field])}, expected ${JSON.stringify(expected)}`,
+            `JSON field "${field}" is ${JSON.stringify(doc?.[field])}, expected ${JSON.stringify(expected)}`
           );
         }
       }
@@ -481,7 +299,7 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     problems.push(
       actual
         ? `media type is ${JSON.stringify(actual)}, which is not a JSON media type`
-        : 'no content-type header, so the media type could not be checked',
+        : 'no content-type header, so the media type could not be checked'
     );
   }
   if (want.mediaTypeIn) {
@@ -489,7 +307,9 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     if (!actual) {
       problems.push('no content-type header, so the media type could not be checked');
     } else if (!want.mediaTypeIn.includes(actual)) {
-      problems.push(`media type is ${JSON.stringify(actual)}, expected one of ${JSON.stringify(want.mediaTypeIn)}`);
+      problems.push(
+        `media type is ${JSON.stringify(actual)}, expected one of ${JSON.stringify(want.mediaTypeIn)}`
+      );
     }
   }
   if (want.framesFromAnywhere && !framesAllowedFromAnywhere(headers?.['content-security-policy'])) {
@@ -497,7 +317,7 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     problems.push(
       csp
         ? `content-security-policy is ${JSON.stringify(csp)}, which does not permit third-party framing`
-        : 'no content-security-policy header, so third-party framing is not proven',
+        : 'no content-security-policy header, so third-party framing is not proven'
     );
   }
   for (const [name, needle] of Object.entries(want.headerIncludes ?? {})) {
@@ -511,15 +331,17 @@ export function evaluateCheck(check, observation, base = DEFAULT_BASE) {
     if (value === undefined || value === null) {
       problems.push(`missing the ${name} header (expected it to contain ${JSON.stringify(needle)})`);
     } else if (!accepted.some((n) => String(value).toLowerCase().includes(String(n).toLowerCase()))) {
-      problems.push(`${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`);
+      problems.push(
+        `${name} is ${JSON.stringify(String(value))}, expected it to contain ${JSON.stringify(needle)}`
+      );
     }
   }
-  for (const needle of bodyWasRead ? want.bodyIncludes ?? [] : []) {
+  for (const needle of bodyWasRead ? (want.bodyIncludes ?? []) : []) {
     if (!(body ?? '').includes(needle)) {
       problems.push(`body is missing the marker ${JSON.stringify(needle)}`);
     }
   }
-  for (const needle of bodyWasRead ? want.bodyExcludes ?? [] : []) {
+  for (const needle of bodyWasRead ? (want.bodyExcludes ?? []) : []) {
     if ((body ?? '').includes(needle)) {
       problems.push(`body unexpectedly contains ${JSON.stringify(needle)}`);
     }
@@ -562,7 +384,7 @@ export function summarize(results) {
 /** Pure: render the report a human (or the routine) reads. */
 export function formatReport(results, summary, base) {
   const icon = { pass: '✅', fail: '❌', unavailable: '⚠️ ' };
-  const lines = [`Miyagi prod smoke — ${base}`, ''];
+  const lines = [`prod smoke — ${base}`, ''];
 
   for (const r of results) {
     lines.push(`${icon[r.status]} ${r.name} — ${r.detail}`);
@@ -582,7 +404,7 @@ export function formatReport(results, summary, base) {
     verdict = `UNAVAILABLE — ${tally}. Nothing was observed broken; nothing was observed working either.`;
   } else {
     // The mixed case needs its own sentence. Saying "nothing was observed working" after reporting
-    // seven passes is simply false, and the routine copies this line into Daniel's alert — so the
+    // seven passes is simply false, and the routine copies this line into the product owner's alert — so the
     // wrong words here become the wrong words on his phone at 4am.
     verdict = `UNAVAILABLE — ${tally}. What was checked looked healthy; ${summary.unavailable} check(s) could not be observed at all.`;
   }
@@ -590,7 +412,9 @@ export function formatReport(results, summary, base) {
 
   if (summary.unavailable > 0) {
     lines.push('');
-    lines.push('An UNAVAILABLE check was not observed at all — it is not evidence that the thing is healthy.');
+    lines.push(
+      'An UNAVAILABLE check was not observed at all — it is not evidence that the thing is healthy.'
+    );
   }
   return lines.join('\n');
 }
@@ -618,7 +442,9 @@ async function observe(url, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
       return { ...observed, body: null, bodyError: String(bodyErr?.message ?? bodyErr) };
     }
   } catch (err) {
-    return { error: err?.name === 'AbortError' ? `timed out after ${timeoutMs}ms` : String(err?.message ?? err) };
+    return {
+      error: err?.name === 'AbortError' ? `timed out after ${timeoutMs}ms` : String(err?.message ?? err),
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -629,11 +455,13 @@ async function observe(url, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
  * and the run carries on, so a single dead endpoint never hides the state of the other seven.
  */
 export async function runChecks(base, deps = {}) {
+  const { checks } = deps;
+  if (!Array.isArray(checks) || checks.length === 0) throw new Error('runChecks: no checks given');
   // Normalized here too, not only in main(): a programmatic caller passing a trailing slash would
   // otherwise build `https://host//embed.js`, and a doubled path segment is its own bug hunt.
   const origin = String(base).replace(/\/$/, '');
   const results = [];
-  for (const check of CHECKS) {
+  for (const check of checks) {
     const resolved = resolvePath(check, results);
     if (resolved.unavailable) {
       results.push({ id: check.id, name: check.name, status: 'unavailable', detail: resolved.unavailable });
@@ -645,12 +473,41 @@ export async function runChecks(base, deps = {}) {
     }
     const observation = await observe(`${origin}${resolved.path}`, deps);
     // Derived expectations (the embed check's per-shop identity marker) merge over the static ones.
-    const effective = resolved.expect
-      ? { ...check, expect: { ...check.expect, ...resolved.expect } }
-      : check;
+    const effective = resolved.expect ? { ...check, expect: { ...check.expect, ...resolved.expect } } : check;
     results.push(evaluateCheck(effective, observation, origin));
   }
   return results;
+}
+
+/**
+ * Load the project's checks module. Every way it can fail — absent, a syntax error, no `CHECKS`, an
+ * empty `CHECKS` — is "could not look" (state 2), NEVER state 1: exit 1 means an assertion was
+ * OBSERVED false, and the triage routine treats it as a production regression. A typo in the checks
+ * file must not page anyone about production.
+ * Returns `{ ok: true, BASE, CHECKS }` or `{ ok: false, error }`. `importer` is injectable for tests.
+ */
+export async function loadChecks(
+  path = CHECKS_PATH,
+  { exists = existsSync, importer = (p) => import(pathToFileURL(p).href) } = {}
+) {
+  if (!exists(path)) {
+    return {
+      ok: false,
+      error:
+        `${path} not found — no assertions to run.\n` +
+        '  Copy scripts/prod-smoke.checks.example.mjs to scripts/prod-smoke.checks.mjs and fill in your checks.',
+    };
+  }
+  let mod;
+  try {
+    mod = await importer(path);
+  } catch (e) {
+    return { ok: false, error: `${path} failed to load (${e.message}) — no assertions ran.` };
+  }
+  if (!Array.isArray(mod?.CHECKS) || mod.CHECKS.length === 0) {
+    return { ok: false, error: `${path} exports no CHECKS (or an empty array) — no assertions to run.` };
+  }
+  return { ok: true, BASE: mod.BASE, CHECKS: mod.CHECKS };
 }
 
 async function main() {
@@ -658,9 +515,22 @@ async function main() {
     options: { json: { type: 'boolean' }, base: { type: 'string' } },
     allowPositionals: false,
   });
-  const base = (values.base ?? DEFAULT_BASE).replace(/\/$/, '');
+  // No usable checks is "could not look", which is state 2 — never a green run over nothing.
+  const loaded = await loadChecks();
+  if (!loaded.ok) {
+    console.error(`prod-smoke: ${loaded.error}`);
+    process.exitCode = 2;
+    return;
+  }
+  const { BASE, CHECKS } = loaded;
+  if (!values.base && !BASE) {
+    console.error('prod-smoke: prod-smoke.checks.mjs exports no BASE and no --base was given.');
+    process.exitCode = 2;
+    return;
+  }
+  const base = (values.base ?? BASE).replace(/\/$/, '');
 
-  const results = await runChecks(base);
+  const results = await runChecks(base, { checks: CHECKS });
   const summary = summarize(results);
 
   if (values.json) {
@@ -679,7 +549,20 @@ async function main() {
 
 // Same main-detection shape as session-note.mjs / owed-ledger.mjs — string-comparing a `file://`
 // URL against argv[1] assumes they are spelled identically, which is not guaranteed.
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+let isMain = false;
+try {
+  isMain = !!process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+} catch {
+  isMain = false;
+}
+// NOT a top-level await: main() imports the project's prod-smoke.checks.mjs, which imports helpers
+// (JS_MEDIA_TYPES) from THIS module. Awaiting here would leave this module mid-evaluation while that
+// import waits on it — a deadlock that exits 13 with an "unsettled top-level await" warning.
+// Anything main() throws past that is also "could not look": an unhandled rejection would exit 1,
+// which the triage routine would read as a production regression.
 if (isMain) {
-  await main();
+  main().catch((e) => {
+    console.error(`prod-smoke: could not run the checks — ${e.stack || e.message}`);
+    process.exitCode = 2;
+  });
 }

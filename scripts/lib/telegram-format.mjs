@@ -5,7 +5,10 @@
 // ever posting or persisting its own log).
 
 function esc(s) {
-  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 function escAttr(s) {
@@ -26,9 +29,11 @@ export function formatTelegramHtmlLink(label, url) {
 }
 
 export function telegramHtmlVisibleText(text) {
-  return decodeHtmlEntities(String(text ?? '')
-    .replace(/<a\s+href="[^"]*">([\s\S]*?)<\/a>/g, '$1')
-    .replace(/<[^>]*>/g, ''));
+  return decodeHtmlEntities(
+    String(text ?? '')
+      .replace(/<a\s+href="[^"]*">([\s\S]*?)<\/a>/g, '$1')
+      .replace(/<[^>]*>/g, '')
+  );
 }
 
 export function telegramHtmlVisibleLength(text) {
@@ -36,16 +41,21 @@ export function telegramHtmlVisibleLength(text) {
 }
 
 export function telegramHtmlToConsoleText(text) {
-  return decodeHtmlEntities(String(text ?? '')
-    .replace(/<a\s+href="([^"]*)">([\s\S]*?)<\/a>/g, '$2 ($1)')
-    .replace(/<[^>]*>/g, ''));
+  return decodeHtmlEntities(
+    String(text ?? '')
+      .replace(/<a\s+href="([^"]*)">([\s\S]*?)<\/a>/g, '$2 ($1)')
+      .replace(/<[^>]*>/g, '')
+  );
 }
 
 // Pure — caps a list of {number, title} PRs to maxItems titles before it can dominate a message on a
 // busy day/week, folding the rest into a "…and N more" tail. The caller's own section-header count is
 // never capped, only the listed titles are.
 export function formatPrList(prs, maxItems) {
-  const shown = prs.slice(0, maxItems).map((p) => `#${p.number} ${esc(p.title)}`).join('; ');
+  const shown = prs
+    .slice(0, maxItems)
+    .map((p) => `#${p.number} ${esc(p.title)}`)
+    .join('; ');
   const rest = prs.length - maxItems;
   return rest > 0 ? `${shown}; …and ${rest} more` : shown;
 }
@@ -74,5 +84,8 @@ export function truncateForTelegram(text, limit) {
     if (final.length <= limit) return final;
     cut -= Math.max(closingTags.length, 1);
   }
-  return `${text.replace(/<[^>]*>/g, '').slice(0, limit - 1).trim()}…`;
+  return `${text
+    .replace(/<[^>]*>/g, '')
+    .slice(0, limit - 1)
+    .trim()}…`;
 }

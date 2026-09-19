@@ -1,0 +1,27 @@
+{
+  "$comment": "scripts/perf-probe.mjs targets (the template's copy). Moved verbatim from the script's constants: a live, claimed PDP + its shop, and one real image variant on the legacy (pre-f) key.",
+  "baseUrl": "https://miyagisanchez.com",
+  "targets": [
+    {
+      "id": "home",
+      "label": "marketplace home (signed-out)",
+      "path": "/mx"
+    },
+    {
+      "id": "pdp",
+      "label": "marketplace PDP",
+      "path": "/mx/l/prod_01KZJJPXY8XFV90WDFN43RTBBM"
+    },
+    {
+      "id": "shop",
+      "label": "marketplace shop",
+      "path": "/mx/s/ylai-studio"
+    },
+    {
+      "id": "image",
+      "label": "cold real image variant",
+      "path": "/api/img?url=https%3A%2F%2Fpub-f9f92a072d404a8ca99c2cb4f4562b04.r2.dev%2Flisting-images%2Fsupply%2F1787334884608-ettepn.jpg&w=160&q=75",
+      "image": true
+    }
+  ]
+}

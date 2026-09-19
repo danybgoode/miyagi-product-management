@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { formatTelegramHtmlLink, telegramHtmlVisibleLength, truncateForTelegram } from './telegram-format.mjs';
+import {
+  formatTelegramHtmlLink,
+  telegramHtmlVisibleLength,
+  truncateForTelegram,
+} from './telegram-format.mjs';
 import { buildDocViewerUrl } from './pmo-templates.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -23,9 +27,11 @@ function decodeTelegramEntities(text) {
 }
 
 export function telegramHtmlToMarkdown(text) {
-  return decodeTelegramEntities(String(text ?? '')
-    .replace(/<b>(.*?)<\/b>/g, '**$1**')
-    .replace(/<[^>]*>/g, ''));
+  return decodeTelegramEntities(
+    String(text ?? '')
+      .replace(/<b>(.*?)<\/b>/g, '**$1**')
+      .replace(/<[^>]*>/g, '')
+  );
 }
 
 function bulletList(lines, fallback) {
@@ -67,7 +73,10 @@ export function buildStandupDeckData({ snapshot, deltaLines = [], generatedAt = 
       generatedDate: generatedAt.toISOString().slice(0, 10),
     },
     summary: {
-      bullets: bulletList(deltaLines.map(telegramHtmlToMarkdown), 'Quiet night - nothing new since the last standup.'),
+      bullets: bulletList(
+        deltaLines.map(telegramHtmlToMarkdown),
+        'Quiet night - nothing new since the last standup.'
+      ),
     },
     repos: {
       bullets: bulletList(repos, 'Repository signals unavailable.'),
@@ -93,11 +102,13 @@ export function buildStandupDeckMarkdown(options) {
 export function buildStandupArtifacts({ docViewerUrl, ...options } = {}) {
   if (!docViewerUrl) return [];
   const markdown = buildStandupDeckMarkdown(options);
-  return [{
-    name: 'standup',
-    markdown,
-    url: buildDocViewerUrl(markdown, { baseUrl: docViewerUrl, present: true }),
-  }];
+  return [
+    {
+      name: 'standup',
+      markdown,
+      url: buildDocViewerUrl(markdown, { baseUrl: docViewerUrl, present: true }),
+    },
+  ];
 }
 
 export function appendStandupArtifactsToMessage(message, artifacts, maxChars = TELEGRAM_MAX_CHARS) {

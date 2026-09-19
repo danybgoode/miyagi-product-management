@@ -70,16 +70,45 @@ byte-identical (87 owed), `doc-format --check` the same 165 enforced paths clean
 203: the template relaxed two retro rules after a second project's triage), `session-resume` the same repos,
 anomalies and gaps.
 
+**And since its Sprint 3** — `prod-smoke.mjs` (engine; this project's checks + UCP helpers now live in
+`prod-smoke.checks.mjs`), `smoke-triage-scope.mjs` (its policy in `smoke-triage.config.json` — required, the
+gate fails closed without it), `merge-report.mjs` (chat via `reporting.config.json` → `telegram`, the `merge`
+surface), `perf-probe.mjs` (targets in `perf-probe.config.json`) and `vercel-env.mjs`. Verified equivalent
+on adoption: prod-smoke 8/8 pass against production either way; the merge gate gives the same BLOCK (2
+blockers) on a real app-repo PR; perf-probe's fixture URLs identical.
+
 **Deliberate divergences, with reasons:**
-- **`lib/report-registry.mjs` stays this repo's own.** The template's copy has no default bucket or
-  resolver (a default is one project's storage). The reporthub here — `publish-live-views.mjs`,
-  `lib/pmo-report-hub-data.mjs` and `infra/gcp/test/report-registry-invariants.test.js` — relies on those
-  defaults, and the template's callers pass `baseUrl`/`bucket` explicitly, so this copy serves both.
+- ~~`lib/report-registry.mjs` stays this repo's own~~ — **no longer**: it is now the template's copy
+  (no default bucket or resolver). `publish-live-views.mjs` reads both from `reporting.config.json` →
+  `artifacts.registry`, and exits 1 naming the file when that is absent.
 - **`prose/*.md` and `prose-lessons.md` stay this repo's own** — they are the project's persona and
   lessons (data, not code), which the template ships only as a fill-in.
 - **`roadmap-extract.mjs` delegates to `roadmap-to-notion.mjs --extract`** rather than being the template's
   extractor: this repo's extractor carries checks the template's does not (dangling seed pointers,
   external-sprint epics).
+
+## Shared with dobby-foundation's template — and what deliberately is not
+
+Beyond the reporting family above, these are **byte-identical to `dobby-foundation/template/scripts/`**
+(change them there, copy back): `build-order.mjs` + `lib/roadmap-status-buckets.mjs`, `prose-draft.mjs`,
+`doc-format.mjs`, `doc-hygiene.mjs`, `owed-ledger.mjs`, `session-{note,resume}.mjs`, `prod-smoke.mjs`,
+`smoke-triage-scope.mjs`, `merge-report.mjs`, `perf-probe.mjs`, `vercel-env.mjs`,
+`vercel-prune-previews.mjs`, `babysit-pr.mjs`, `build-order-sync.mjs`, `lib/report-registry.mjs`, and
+their tests. This repo's values live in config, not code: `reporting.config.json`,
+`prod-smoke.checks.mjs`, `smoke-triage.config.json`, `perf-probe.config.json`, `doc-format.enforced.json`.
+
+Deliberately divergent, with the reason to re-check before "unifying":
+
+- **Project fill-ins** — `prose/cpo-persona.md`, `prose/{merge,standup}.task.md`, `prose-lessons.md`:
+  this project's voice and lessons. Also `routines/*.prompt.md` + `routines/README.md` (the template ships
+  them as fill-ins; these are this project's live routines) and `review-config.json` (its review routing). The template ships neutral placeholders.
+- **`roadmap-extract.mjs`, `live-smoke.mjs`** — thin delegates: the extractor is
+  `roadmap-to-notion.mjs --extract` (it drives the live Notion board), and live-smoke runs
+  `apps/miyagisanchez/scripts/live-smoke.mjs` against that app's own Playwright project.
+- **The review rail** — `cross-review.mjs`, `cross-panel.mjs`, `lib/cross-agent-cli.mjs` and their
+  prompts: this copy and the template's evolved separately (their agy version pins differ, among
+  others), and unifying them is the review-stack work's job, not the plugin-audit epic's. `publish-live-views.mjs` is this project's own
+  (the report hub); it reads the registry from `reporting.config.json` → `artifacts.registry`.
 
 ## build-order.mjs — generate the in-repo status board
 
@@ -129,12 +158,15 @@ never touched** (they're your rollback history). Pair it with branch cleanup: de
 prune their previews. Dry-run by default.
 
 ```bash
-node scripts/vercel-prune-previews.mjs                          # DRY-RUN: list previews that would go
-node scripts/vercel-prune-previews.mjs --apply                 # delete them
-node scripts/vercel-prune-previews.mjs --age 7 --apply         # only previews older than 7 days
-node scripts/vercel-prune-previews.mjs --keep-branch feat/x --apply   # protect an OPEN-PR branch's preview
+node scripts/vercel-prune-previews.mjs --project miyagisanchez                  # DRY-RUN: list previews that would go
+node scripts/vercel-prune-previews.mjs --project miyagisanchez --apply          # delete them
+node scripts/vercel-prune-previews.mjs --project miyagisanchez --age 7 --apply  # only previews older than 7 days
+node scripts/vercel-prune-previews.mjs --project miyagisanchez --keep-branch feat/x --apply  # protect an OPEN-PR branch's preview
 node scripts/vercel-prune-previews.mjs --project despachobonsai-vercel --apply
 ```
+
+`--project` is required — the shared script (dobby-foundation's template) has no default, so a fresh
+checkout can never prune someone else's project by accident.
 
 **Always `--keep-branch` any branch with an open PR** (its preview is the live review target), or run
 after that PR merges. **Token:** `VERCEL_API_TOKEN`/`VERCEL_TOKEN` env, else the local `vercel login`
@@ -180,10 +212,10 @@ node scripts/prose-draft.mjs --kind poster      --epic Roadmap/<area>/<epic-dir>
 node scripts/prose-draft.mjs --kind sprint-wrap --sprint Roadmap/<area>/<epic>/sprint-N.md
 ```
 
-Rides `agy` with a cheap-fast pair — `PROSE_MODEL` (default `Gemini 3.5 Flash (High)`) →
-`PROSE_FALLBACK_MODEL` (default `GPT-OSS 120B (Medium)`, separate quota pool) — via the same
-version-pinned, empty-output-is-failure plumbing as cross-review (`runAntigravity`, now with a
-caller-supplied model pair). House voice lives in [`prose-draft.prompt.md`](./prose-draft.prompt.md).
+Rides the shared prose writer (`lib/prose-writer.mjs`: devin → agy → codex on one pinned model) with the
+shared persona + `prose/internal.task.md`, the lessons file, and the prose guard with a revision pass —
+the banner names the writer and model that ran and whether the guard passed clean. Byte-identical to
+dobby-foundation's template (this repo's version was promoted there).
 **Known limit (by design):** drafts hallucinate plausible-sounding gaps/learnings when sources
 are thin — the first live dogfood invented two "owed" items. Treat output as a scaffold; the
 editor's factual pass is not optional.

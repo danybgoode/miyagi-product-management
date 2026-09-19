@@ -35,6 +35,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { die, loadPromptBody, hasCmd } from './lib/cross-agent-cli.mjs';
 import { writeProse, buildWriterPrompt, loadLessons } from './lib/prose-writer.mjs';
+import { loadReportingConfig, chatIdFor, ReportingConfigError } from './lib/reporting-config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -185,18 +186,16 @@ function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function loadChatId() {
-  // Config + prose assets live with the SCRIPT (the root repo), not with the repo being reported.
-  const cfg = join(__dirname, '..', '.claude/config/standup-post.json');
-  if (existsSync(cfg)) {
-    try {
-      const parsed = JSON.parse(readFileSync(cfg, 'utf8'));
-      if (parsed.chat_id) return parsed.chat_id;
-    } catch {
-      /* fall through */
-    }
+// The chat: reporting.config.json's `telegram.chatIds.merge`, then `telegram.chatId`, then
+// TELEGRAM_CHAT_ID (the same seam the standup/recap/PMO report use). Config + prose assets live with the
+// SCRIPT's repo, not with the repo being reported. No config and no env var → print instead of posting.
+export function loadChatId({ load = loadReportingConfig, env = process.env } = {}) {
+  try {
+    return chatIdFor(load({ root: join(__dirname, '..') }), 'merge', env);
+  } catch (e) {
+    if (!(e instanceof ReportingConfigError)) throw e;
+    return env.TELEGRAM_CHAT_ID || null;
   }
-  return process.env.TELEGRAM_CHAT_ID || null;
 }
 
 /**
@@ -292,6 +291,15 @@ async function main() {
   ].join('\n\n');
   const lessons = loadLessons();
   const chatId = loadChatId();
+  // No chat configured: stop BEFORE drafting. The template ships unconfigured, and post-merge AND
+  // post-checkout fire this — without this line every pull and every branch switch in a fresh project
+  // would spend a prose-writer call re-drafting the same report into a log nobody reads. `--dry-run`
+  // still drafts (that is its job). Configure telegram.chatIds.merge / telegram.chatId or
+  // TELEGRAM_CHAT_ID to turn the rail on.
+  if (!chatId && !dryRun) {
+    writeSync(1, 'merge-report: no chat configured (reporting.config.json telegram / TELEGRAM_CHAT_ID) — rail off, nothing drafted.\n');
+    return;
+  }
 
   for (const sha of todo) {
     const commit = gatherCommit(sha);

@@ -42,7 +42,7 @@ for (const name of PROMPTS) {
 }
 
 // Every prompt must DECLARE its authority in one of exactly two ways. Until 2026-08-17 there was
-// only one — "advisory only" — and that was the whole policy. Daniel then granted Routine B bounded
+// only one — "advisory only" — and that was the whole policy. The product owner then granted Routine B bounded
 // merge authority, which this guard correctly caught as a missing banner rather than letting the
 // policy change slip in unannounced.
 //
@@ -77,7 +77,7 @@ test('every prompt declares its authority, and only the bounded one omits adviso
 test('the routine that merges also carries the rules that make merging safe', () => {
   // A merge authority stated without its constraints is a merge authority without constraints. Each
   // of these is load-bearing: the never-weaken rule (the cheapest way to fake a green nightly), the
-  // app-code boundary (Daniel's actual limit), and the verify-on-main step (a branch run tests
+  // app-code boundary (the product owner's actual limit), and the verify-on-main step (a branch run tests
   // production's OLD code — three green branch runs once missed a live regression).
   // Whitespace-normalized: these phrases are prose and wrap across lines at the 100-col margin, so
   // matching the raw text would fail on a reflow that changed nothing.

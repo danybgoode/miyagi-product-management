@@ -115,8 +115,17 @@ export function normalizeSearchPrItem(it) {
 // status are NOT included by the list endpoint — see getPullMergeability/getStatusRollup for those).
 export function listPulls({ repo, state = 'all', perPage = 50 }) {
   const data = ghApi([
-    `repos/${repo}/pulls`, '--method', 'GET',
-    '-f', `state=${state}`, '-f', `per_page=${perPage}`, '-f', 'sort=updated', '-f', 'direction=desc',
+    `repos/${repo}/pulls`,
+    '--method',
+    'GET',
+    '-f',
+    `state=${state}`,
+    '-f',
+    `per_page=${perPage}`,
+    '-f',
+    'sort=updated',
+    '-f',
+    'direction=desc',
   ]);
   return data === null ? null : data.map(normalizePullListItem);
 }
@@ -128,7 +137,17 @@ export function searchMergedPrs({ repo, sinceDate, base, maxItems = 500 }) {
   const perPage = 100;
   for (let page = 1; items.length < maxItems; page += 1) {
     const q = `repo:${repo} is:pr is:merged merged:>=${sinceDate}${base ? ` base:${base}` : ''}`;
-    const data = ghApi(['search/issues', '--method', 'GET', '-f', `q=${q}`, '-f', `per_page=${perPage}`, '-f', `page=${page}`]);
+    const data = ghApi([
+      'search/issues',
+      '--method',
+      'GET',
+      '-f',
+      `q=${q}`,
+      '-f',
+      `per_page=${perPage}`,
+      '-f',
+      `page=${page}`,
+    ]);
     if (data === null) return null;
     const pageItems = data.items || [];
     items.push(...pageItems);
@@ -178,7 +197,13 @@ export function getPull({ repo, number, retries = 1, delayMs = 2000 }) {
 // failures past page 1 on a commit with many parallel jobs.
 export function getStatusRollup({ repo, sha }) {
   const combinedStatus = ghApi([`repos/${repo}/commits/${sha}/status`, '--method', 'GET']);
-  const checkRuns = ghApi([`repos/${repo}/commits/${sha}/check-runs`, '--method', 'GET', '-f', 'per_page=100']);
+  const checkRuns = ghApi([
+    `repos/${repo}/commits/${sha}/check-runs`,
+    '--method',
+    'GET',
+    '-f',
+    'per_page=100',
+  ]);
   // Fail closed on EITHER source failing, not just both — a PARTIAL rollup (one source real, the other
   // silently empty) is worse than no rollup at all, since it can misreport a genuine failure as "clean."
   // Callers treat a null rollup as "unavailable" (degrading to no-signal), never as "confirmed clean."

@@ -15,7 +15,10 @@ import {
 // ---- formatPrList ----
 
 test('formatPrList: under the cap → lists every PR, no "more" tail', () => {
-  const prs = [{ number: 1, title: 'a' }, { number: 2, title: 'b' }];
+  const prs = [
+    { number: 1, title: 'a' },
+    { number: 2, title: 'b' },
+  ];
   assert.equal(formatPrList(prs, 12), '#1 a; #2 b');
 });
 

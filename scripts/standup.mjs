@@ -9,7 +9,7 @@
 // Signals: opened/merged PRs + CI status + merge-conflict state (gh, every configured repo), the latest
 // run of the configured browser-smoke workflow (`smoke`), BUILD-ORDER.md drift
 // (`node scripts/build-order.mjs --check`), open-PR state, and the stale-preview count
-// (`node scripts/vercel-prune-previews.mjs --age <stalePreviewAgeDays>`, dry-run — never `--apply`). The CI-red and
+// (`node scripts/vercel-prune-previews.mjs --project <vercelProject> --age <stalePreviewAgeDays>`, dry-run — never `--apply`). The CI-red and
 // conflict signals are this standup's OWN independent read — taken after babysit-pr has had a chance
 // to act (it runs earlier in the same ops-nightly routine), so a "still red" line reflects state
 // post-retry, not pre-retry.
@@ -35,7 +35,7 @@
 // this script has no access to the app's node_modules/TS build). Zero npm deps — Node >=20 (global fetch, spawnSync).
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, existsSync, writeSync } from 'node:fs';
+import { readFileSync, writeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ensureGh, die } from './lib/cross-agent-cli.mjs';
@@ -93,7 +93,10 @@ const MAX_PRS_SHOWN_PER_REPO = 12; // caps a busy-night delta listing before it 
 const TELEGRAM_MAX_CHARS = 4096; // Telegram sendMessage's hard text limit — a safety net, not the primary control
 
 function esc(s) {
-  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 // ---- gather: gh-backed signals (each degrades to `available: false` on any gh error — one repo being
@@ -127,7 +130,9 @@ function gatherRepoPrs(repo) {
     if (mergeable === 'CONFLICTING') conflictingOpenNumbers.push(p.number);
     if (p.headSha) {
       const rollup = getStatusRollup({ repo, sha: p.headSha }) || [];
-      const failing = rollup.some((c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.state === 'FAILURE');
+      const failing = rollup.some(
+        (c) => c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.state === 'FAILURE'
+      );
       if (failing) failingOpenNumbers.push(p.number);
     }
   }
@@ -149,8 +154,16 @@ function gatherRepoPrs(repo) {
 function gatherSmoke(smokeConfig) {
   if (!smokeConfig) return { available: false };
   const runs = ghJson([
-    'run', 'list', '--repo', smokeConfig.repo, '--workflow', smokeConfig.workflow, '-L', '1',
-    '--json', 'conclusion,status,createdAt,url',
+    'run',
+    'list',
+    '--repo',
+    smokeConfig.repo,
+    '--workflow',
+    smokeConfig.workflow,
+    '-L',
+    '1',
+    '--json',
+    'conclusion,status,createdAt,url',
   ]);
   if (runs === null || !runs.length) return { available: false };
   const r = runs[0];
@@ -164,12 +177,16 @@ function gatherBuildOrderDrift() {
   return { drifted: r.status !== 0 };
 }
 
-function gatherStalePreviews(ageDays) {
-  if (!ageDays) return { available: false };
-  const r = spawnSync('node', ['scripts/vercel-prune-previews.mjs', '--age', String(ageDays)], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  });
+function gatherStalePreviews(ageDays, project) {
+  if (!ageDays || !project) return { available: false };
+  const r = spawnSync(
+    'node',
+    ['scripts/vercel-prune-previews.mjs', '--project', project, '--age', String(ageDays)],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+    }
+  );
   if (r.status !== 0 && !r.stdout) return { available: false };
   const m = (r.stdout || '').match(/Preview deployments to remove[^:]*:\s*(\d+)/);
   return { available: m != null, count: m ? Number(m[1]) : null };
@@ -181,9 +198,18 @@ function gatherStalePreviews(ageDays) {
 // weekly-recap.mjs's `parseStatusFlipsFromLog` rather than writing a second parser for the same
 // format (the epic-status SSOT is that frontmatter key — see scripts/build-order.mjs).
 export function gatherRoadmapDeltas(sinceExpr = '1 day ago', deps = {}) {
-  const { run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }) } = deps;
+  const {
+    run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }),
+  } = deps;
 
-  const epicLog = run(['log', `--since=${sinceExpr}`, '--date=iso-strict', '-p', '--', 'Roadmap/*/*/README.md']);
+  const epicLog = run([
+    'log',
+    `--since=${sinceExpr}`,
+    '--date=iso-strict',
+    '-p',
+    '--',
+    'Roadmap/*/*/README.md',
+  ]);
   const flips = epicLog.status === 0 ? parseStatusFlipsFromLog(epicLog.stdout || '') : [];
 
   const deltas = flips.map((f) => {
@@ -192,9 +218,23 @@ export function gatherRoadmapDeltas(sinceExpr = '1 day ago', deps = {}) {
   });
 
   // Sprint docs that changed at all in the window — named in product terms, not as file paths.
-  const sprintLog = run(['log', `--since=${sinceExpr}`, '--name-only', '--format=', '--', 'Roadmap/*/*/sprint-*.md']);
+  const sprintLog = run([
+    'log',
+    `--since=${sinceExpr}`,
+    '--name-only',
+    '--format=',
+    '--',
+    'Roadmap/*/*/sprint-*.md',
+  ]);
   if (sprintLog.status === 0) {
-    const touched = [...new Set((sprintLog.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean))];
+    const touched = [
+      ...new Set(
+        (sprintLog.stdout || '')
+          .split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean)
+      ),
+    ];
     for (const f of touched.slice(0, 8)) {
       const parts = f.split('/');
       const slug = parts[parts.length - 2];
@@ -243,18 +283,36 @@ export function gatherLiveFlags(liveFlagsConfig, deps = {}) {
 // whether a fix claim or a customer mention is legitimate. Degrades to empty (the closed, safe
 // default) rather than failing the post.
 export function gatherWindowFacts(sinceExpr = '1 day ago', deps = {}) {
-  const { run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }) } = deps;
+  const {
+    run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }),
+  } = deps;
   const log = run(['log', '--no-merges', `--since=${sinceExpr}`, '--format=%s']);
-  const subjects = log.status === 0 ? (log.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean) : [];
+  const subjects =
+    log.status === 0
+      ? (log.stdout || '')
+          .split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean)
+      : [];
   const names = run(['log', '--no-merges', `--since=${sinceExpr}`, '--name-only', '--format=']);
-  const paths = names.status === 0 ? (names.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean) : [];
-  const areas = [...new Set(paths.map((p) => {
-    if (p.startsWith('Roadmap/')) return 'roadmap docs';
-    if (p.startsWith('scripts/')) return 'internal tooling';
-    if (p.includes('/app/')) return 'customer-facing pages';
-    if (p.includes('/e2e/')) return 'test suite';
-    return p.split('/')[0] || 'other';
-  }))];
+  const paths =
+    names.status === 0
+      ? (names.stdout || '')
+          .split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean)
+      : [];
+  const areas = [
+    ...new Set(
+      paths.map((p) => {
+        if (p.startsWith('Roadmap/')) return 'roadmap docs';
+        if (p.startsWith('scripts/')) return 'internal tooling';
+        if (p.includes('/app/')) return 'customer-facing pages';
+        if (p.includes('/e2e/')) return 'test suite';
+        return p.split('/')[0] || 'other';
+      })
+    ),
+  ];
   return { subjects, areas };
 }
 
@@ -288,7 +346,9 @@ function buildSnapshot({ repoSignals, smoke, buildOrder, previews }) {
           : null,
       ])
     ),
-    smoke: smoke.available ? { conclusion: smoke.conclusion, status: smoke.status, createdAt: smoke.createdAt } : null,
+    smoke: smoke.available
+      ? { conclusion: smoke.conclusion, status: smoke.status, createdAt: smoke.createdAt }
+      : null,
     buildOrderDrifted: buildOrder.drifted,
     stalePreviews: previews.available ? previews.count : null,
   };
@@ -335,11 +395,15 @@ export function diffSnapshots(prev, cur, repoSignals, { stalePreviewAgeDays = nu
 
     const prevFailing = new Set(prevRepo.failingOpenNumbers || []);
     const newFailing = curRepo.failingOpenNumbers.filter((n) => !prevFailing.has(n));
-    if (newFailing.length) lines.push(`🔴 <b>${label}</b> CI red on open PR: ${newFailing.map((n) => `#${n}`).join(', ')}`);
+    if (newFailing.length)
+      lines.push(`🔴 <b>${label}</b> CI red on open PR: ${newFailing.map((n) => `#${n}`).join(', ')}`);
 
     const prevConflicting = new Set(prevRepo.conflictingOpenNumbers || []);
     const newConflicting = (curRepo.conflictingOpenNumbers || []).filter((n) => !prevConflicting.has(n));
-    if (newConflicting.length) lines.push(`⚠️ <b>${label}</b> merge conflict on open PR: ${newConflicting.map((n) => `#${n}`).join(', ')}`);
+    if (newConflicting.length)
+      lines.push(
+        `⚠️ <b>${label}</b> merge conflict on open PR: ${newConflicting.map((n) => `#${n}`).join(', ')}`
+      );
 
     if (prevRepo.openNumbers?.length !== curRepo.openNumbers.length) {
       lines.push(`📋 <b>${label}</b> open PRs: ${curRepo.openNumbers.length}`);
@@ -349,7 +413,11 @@ export function diffSnapshots(prev, cur, repoSignals, { stalePreviewAgeDays = nu
   const prevSmokeKey = prev?.smoke ? `${prev.smoke.conclusion}|${prev.smoke.createdAt}` : null;
   const curSmokeKey = cur.smoke ? `${cur.smoke.conclusion}|${cur.smoke.createdAt}` : null;
   if (prevSmokeKey !== curSmokeKey) {
-    lines.push(cur.smoke ? `🧪 Browser smoke: ${cur.smoke.conclusion || cur.smoke.status || 'unknown'}` : '🧪 Browser smoke: unavailable');
+    lines.push(
+      cur.smoke
+        ? `🧪 Browser smoke: ${cur.smoke.conclusion || cur.smoke.status || 'unknown'}`
+        : '🧪 Browser smoke: unavailable'
+    );
   }
 
   if (!prev || prev.buildOrderDrifted !== cur.buildOrderDrifted) {
@@ -426,11 +494,13 @@ async function main() {
   const repoSignals = config.repos.map(gatherRepoPrs);
   const smoke = gatherSmoke(config.smoke);
   const buildOrder = gatherBuildOrderDrift();
-  const previews = gatherStalePreviews(config.stalePreviewAgeDays);
+  const previews = gatherStalePreviews(config.stalePreviewAgeDays, config.vercelProject);
 
   const cur = buildSnapshot({ repoSignals, smoke, buildOrder, previews });
   const prev = loadLastRun();
-  const deltaLines = diffSnapshots(prev, cur, repoSignals, { stalePreviewAgeDays: config.stalePreviewAgeDays });
+  const deltaLines = diffSnapshots(prev, cur, repoSignals, {
+    stalePreviewAgeDays: config.stalePreviewAgeDays,
+  });
 
   const header = `<b>Standup · ${cur.ts.slice(0, 10)}</b>`;
 
@@ -482,20 +552,33 @@ async function main() {
       liveFlags: gatherLiveFlags(config.liveFlags).flags,
       maxWords: STANDUP_MAX_WORDS,
     });
-    const verdict = checkProse(draft, { ...evidence, extraBannedToolNames: config.prose.extraBannedToolNames });
+    const verdict = checkProse(draft, {
+      ...evidence,
+      extraBannedToolNames: config.prose.extraBannedToolNames,
+    });
     if (!verdict.ok && !FORCE_POST) {
       // Non-zero exit + the numbered revision note. The routine revises once and re-runs with
       // --force-post (D3: a labelled imperfect report beats a missing one).
       process.stderr.write(`${findingsToRevisionNote(verdict.findings)}\n`);
       process.exit(2);
     }
-    prose = verdict.ok ? draft : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
+    prose = verdict.ok
+      ? draft
+      : `${draft}\n\n<i>⚠ flagged draft — ${verdict.findings.map((f) => f.code).join(', ')}</i>`;
   }
 
   // D8: prose leads, compact signals below. The guard forbids naming specifics, so a red CI cannot
   // survive the paragraph — the signal block is where the actionable pointers live, not decoration.
   const rawMessage = prose
-    ? [header, '', esc(prose).replace(/&lt;i&gt;/g, '<i>').replace(/&lt;\/i&gt;/g, '</i>'), '', ...deltaLines].join('\n')
+    ? [
+        header,
+        '',
+        esc(prose)
+          .replace(/&lt;i&gt;/g, '<i>')
+          .replace(/&lt;\/i&gt;/g, '</i>'),
+        '',
+        ...deltaLines,
+      ].join('\n')
     : deltaLines.length
       ? [header, ...deltaLines].join('\n')
       : `${header}\n🌙 Quiet night — nothing new since the last standup.`;

@@ -1,11 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  buildDocViewerUrl,
-  buildTemplateData,
-  fillPmoTemplate,
-  fillTemplate,
-} from './pmo-templates.mjs';
+import { buildDocViewerUrl, buildTemplateData, fillPmoTemplate, fillTemplate } from './pmo-templates.mjs';
 
 const METRICS = {
   window: { sinceISO: '2026-07-01T00:00:00Z', untilISO: '2026-07-08T00:00:00Z' },
@@ -27,40 +22,45 @@ const BENCHMARKS = {
   epicLeadMedianDays: 7,
   changeFailureRatePercent: 15,
   restoreTimeHours: 24,
-  sources: [{
-    publisher: 'DORA / Four Keys',
-    publishedDate: '2024-01-23',
-    accessedDate: '2026-07-13',
-  }],
+  sources: [
+    {
+      publisher: 'DORA / Four Keys',
+      publishedDate: '2024-01-23',
+      accessedDate: '2026-07-13',
+    },
+  ],
 };
 
 test('buildTemplateData maps PMO metrics into stable template fields', () => {
-  assert.deepEqual(buildTemplateData(METRICS, {
-    generatedAt: new Date('2026-07-09T12:00:00Z'),
-    benchmarks: BENCHMARKS,
-  }), {
-    window: {
-      sinceISO: '2026-07-01T00:00:00Z',
-      untilISO: '2026-07-08T00:00:00Z',
-      label: '2026-07-01 to 2026-07-08',
-      generatedDate: '2026-07-09',
-    },
-    throughput: { shippedStories: 8, shippedEpics: 2, closedEpics: 2 },
-    cycle: { medianHours: 9.5, averageHours: 12.2, p90Hours: 24 },
-    epics: { medianDays: 4, averageDays: 5 },
-    deploys: { total: 6, perWeek: 6 },
-    quality: { changeFailProxy: 1, changeFailureRatePercent: 16.7 },
-    docOps: { learningsPromotions: 3, retroCovered: 2, retroTotal: 2, retroPercent: 100 },
-    benchmarks: {
-      deploysPerWeek: 3,
-      prCycleMedianHours: 24,
-      epicLeadMedianDays: 7,
-      changeFailureRatePercent: 15,
-      restoreTimeHours: 24,
-      framing: 'Differential, not a controlled experiment.',
-      sourceLine: 'DORA / Four Keys (2024-01-23; accessed 2026-07-13)',
-    },
-  });
+  assert.deepEqual(
+    buildTemplateData(METRICS, {
+      generatedAt: new Date('2026-07-09T12:00:00Z'),
+      benchmarks: BENCHMARKS,
+    }),
+    {
+      window: {
+        sinceISO: '2026-07-01T00:00:00Z',
+        untilISO: '2026-07-08T00:00:00Z',
+        label: '2026-07-01 to 2026-07-08',
+        generatedDate: '2026-07-09',
+      },
+      throughput: { shippedStories: 8, shippedEpics: 2, closedEpics: 2 },
+      cycle: { medianHours: 9.5, averageHours: 12.2, p90Hours: 24 },
+      epics: { medianDays: 4, averageDays: 5 },
+      deploys: { total: 6, perWeek: 6 },
+      quality: { changeFailProxy: 1, changeFailureRatePercent: 16.7 },
+      docOps: { learningsPromotions: 3, retroCovered: 2, retroTotal: 2, retroPercent: 100 },
+      benchmarks: {
+        deploysPerWeek: 3,
+        prCycleMedianHours: 24,
+        epicLeadMedianDays: 7,
+        changeFailureRatePercent: 15,
+        restoreTimeHours: 24,
+        framing: 'Differential, not a controlled experiment.',
+        sourceLine: 'DORA / Four Keys (2024-01-23; accessed 2026-07-13)',
+      },
+    }
+  );
 });
 
 test('fillTemplate replaces dotted placeholders and leaves unknown placeholders visible', () => {
@@ -103,7 +103,9 @@ test('metrics sheet fixture exports live formula cells', () => {
     generatedAt: new Date('2026-07-09T12:00:00Z'),
     benchmarks: BENCHMARKS,
   });
-  assert.equal(output, `---
+  assert.equal(
+    output,
+    `---
 title: "PMO metrics sheet - 2026-07-01 to 2026-07-08"
 styles:
   fontFamily: "Inter"
@@ -130,7 +132,8 @@ Notes:
 - The formulas export to a spreadsheet as live formulas.
 - Benchmark source: DORA / Four Keys (2024-01-23; accessed 2026-07-13).
 - Differential, not a controlled experiment.
-`);
+`
+  );
 });
 
 test('buildDocViewerUrl emits a doc-viewer hash URL with md payload and optional present mode', () => {

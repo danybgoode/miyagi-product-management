@@ -18,8 +18,10 @@
 //                               because reports.js fetches a raw JSON blob for its SPA state, not a
 //                               markdown doc through the /docs viewer — see the fork PR for that route.)
 //
-// Env-var config only (REPORT_REGISTRY_BUCKET, GOOGLE_APPLICATION_CREDENTIALS_JSON /
-// GOOGLE_APPLICATION_CREDENTIALS — the same two report-registry.mjs already reads); degrades gracefully
+// The registry's resolver URL and bucket come from reporting.config.json → artifacts.registry (the shared
+// report-registry.mjs carries no project defaults); REPORT_REGISTRY_BUCKET still overrides the bucket, and
+// credentials stay env-only (GOOGLE_APPLICATION_CREDENTIALS_JSON / GOOGLE_APPLICATION_CREDENTIALS). A
+// missing registry config is a usage error (exit 1, named) — never a silent skip. Past that it degrades gracefully
 // on ANY failure (no credentials, unreachable bucket, roadmap extraction error) — logs to stderr and
 // exits 0, never blocking whatever routine calls this. The hub's client-side fetch
 // (public/reports.js in the fork) falls back to its last bundled snapshot on a failed/missing live
@@ -38,7 +40,8 @@ import { readLogFromBranch } from './lib/log-branch.mjs';
 import { parsePmoLog } from './lib/pmo-window-log.mjs';
 import { buildPmoMetricsMarkdown } from './lib/pmo-trend-view.mjs';
 import { buildReportHubData } from './lib/pmo-report-hub-data.mjs';
-import { RESOLVER_BASE_URL, publishLiveArtifact, resolveBucket, uploadReportPayload } from './lib/report-registry.mjs';
+import { publishLiveArtifact, resolveBucket, uploadReportPayload } from './lib/report-registry.mjs';
+import { loadReportingConfig } from './lib/reporting-config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -54,6 +57,12 @@ const PMO_METRICS_VIEW = {
 
 export function parseArgs(argv = process.argv.slice(2)) {
   return { dryRun: argv.includes('--dry-run') };
+}
+
+// {resolverBaseUrl, bucket} from reporting.config.json, or null when the project configured no registry.
+export function loadRegistry({ load = loadReportingConfig, env = process.env } = {}) {
+  const registry = load({ root: ROOT }).artifacts.registry;
+  return registry && { baseUrl: registry.resolverBaseUrl, bucket: resolveBucket(env, registry.bucket) };
 }
 
 function runNode(args) {
@@ -76,7 +85,8 @@ export function loadRoadmapRows({ run = runNode } = {}) {
 // reusable for its original local-build caller (scripts/pmo-report-hub-data.mjs, which writes a
 // developer-machine snapshot for the fork's build-time bake) — this augmentation is specific to the
 // live/registry publish path.
-export function withPmoMetricsView(data, { slug = PMO_METRICS_SLUG, baseUrl = RESOLVER_BASE_URL } = {}) {
+export function withPmoMetricsView(data, { slug = PMO_METRICS_SLUG, baseUrl } = {}) {
+  if (!baseUrl) throw new Error('withPmoMetricsView: baseUrl is required (reporting.config.json → artifacts.registry)');
   return {
     ...data,
     views: [...data.views, { ...PMO_METRICS_VIEW, href: `${baseUrl}/r/${slug}` }],
@@ -91,13 +101,14 @@ export async function publishRoadmapStatus({
   readDoc = (docLink) => readFileSync(join(ROOT, docLink), 'utf8'),
   generatedAt = new Date(),
   publisher = publishLiveArtifact,
+  registry,
 } = {}) {
   const rows = loadRows();
   if (!rows.length) {
     logError('publish-live-views: roadmap-to-notion.mjs --extract returned no rows — skipping roadmap-status publish.');
     return { ok: false, reason: 'no-rows' };
   }
-  const data = withPmoMetricsView(buildReportHubData(rows, { generatedAt, readDoc }));
+  const data = withPmoMetricsView(buildReportHubData(rows, { generatedAt, readDoc }), { baseUrl: registry.baseUrl });
   const json = JSON.stringify(data);
   if (dryRun) {
     logInfo(
@@ -106,7 +117,7 @@ export async function publishRoadmapStatus({
     );
     return { ok: true, dryRun: true };
   }
-  const result = await publisher({ key: 'roadmap-status', content: json, ext: 'json' });
+  const result = await publisher({ bucket: registry.bucket, key: 'roadmap-status', content: json, ext: 'json' });
   if (!result.ok) logError(`publish-live-views: roadmap-status publish failed (${result.reason}).`);
   else logInfo(`publish-live-views: published live/roadmap-status.json (${data.items.length} items, ${data.views.length} views).`);
   return result;
@@ -119,6 +130,7 @@ export async function publishPmoMetrics({
   loadLog = () => readLogFromBranch({ cwd: ROOT, branch: LOG_BRANCH, path: LOG_BRANCH_PATH }),
   generatedAt = new Date(),
   uploader = uploadReportPayload,
+  registry,
 } = {}) {
   const logEntries = parsePmoLog(loadLog());
   const markdown = buildPmoMetricsMarkdown({ logEntries, generatedAt });
@@ -133,25 +145,36 @@ export async function publishPmoMetrics({
   // comment for why: it makes /r/pmo-live-metrics resolve through Sprint 1's EXISTING, already-deployed
   // resolver with no fork-side change required for this half of the story.
   const result = await uploader({
-    bucket: resolveBucket(),
+    bucket: registry.bucket,
     slug: PMO_METRICS_SLUG,
     markdown,
     contentType: 'text/markdown; charset=utf-8',
     allowOverwrite: true,
   });
   if (!result.ok) logError(`publish-live-views: pmo-metrics publish failed (${result.reason}).`);
-  else logInfo(`publish-live-views: published packets/${PMO_METRICS_SLUG}.md (${logEntries.length} window(s)) — ${RESOLVER_BASE_URL}/r/${PMO_METRICS_SLUG}`);
+  else logInfo(`publish-live-views: published packets/${PMO_METRICS_SLUG}.md (${logEntries.length} window(s)) — ${registry.baseUrl}/r/${PMO_METRICS_SLUG}`);
   return result;
 }
 
 async function main() {
   const args = parseArgs();
-  const roadmapResult = await publishRoadmapStatus({ dryRun: args.dryRun });
-  const metricsResult = await publishPmoMetrics({ dryRun: args.dryRun });
+  let registry;
+  try {
+    registry = loadRegistry();
+  } catch (e) {
+    console.error(`publish-live-views: ${e.message}`);
+    process.exit(1);
+  }
+  if (!registry) {
+    console.error('publish-live-views: reporting.config.json has no artifacts.registry — nowhere to publish.');
+    process.exit(1);
+  }
+  const roadmapResult = await publishRoadmapStatus({ dryRun: args.dryRun, registry });
+  const metricsResult = await publishPmoMetrics({ dryRun: args.dryRun, registry });
 
   // Never fail the routine on a publish failure — the hub's client-side fetch falls back to its last
   // bundled snapshot (public/reports.js in the fork). A non-zero exit here is reserved for genuine
-  // usage errors (there are none today — parseArgs never throws), matching every other report script's
+  // usage errors (a missing or invalid registry config, above), matching every other report script's
   // soft-mode discipline.
   if (!roadmapResult.ok && !args.dryRun) console.error('publish-live-views: roadmap-status stayed stale this run.');
   if (!metricsResult.ok && !args.dryRun) console.error('publish-live-views: pmo-metrics stayed stale this run.');

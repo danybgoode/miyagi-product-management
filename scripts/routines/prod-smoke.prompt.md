@@ -13,13 +13,15 @@
     - The same cutover turned `/` from the marketplace into the market SELECTOR. That check kept
       returning 200 and stayed green while testing a different page; `/mx` lost coverage silently.
 
-  The fix is this prompt plus `scripts/prod-smoke.mjs`: the assertions now live in a reviewed file
+  The fix is this prompt plus `scripts/prod-smoke.checks.mjs`: the assertions now live in a reviewed file
   with a node:test suite, so a route change is a diff and the epic that moves a route updates the
   smoke in the same PR. This prompt deliberately does NOT restate the checks — a paraphrased
   contract drifts permissive (LEARNINGS). The script is the contract; the routine runs it.
 
   Reuse, don't rebuild:
-    - scripts/prod-smoke.mjs — the checks, the three-valued exit code, the report.
+    - scripts/prod-smoke.checks.mjs — THIS project's checks (BASE + CHECKS). The one file a realign edits.
+    - scripts/prod-smoke.mjs — the shared engine: fetch, the three-valued exit code, the report. It is
+      byte-identical to the dobby-foundation template; never edit it here.
     - scripts/routines/smoke-triage.prompt.md — Routine B, the same never-weaken-it discipline for
       the frontend browser smoke. This routine is its production-endpoint sibling, not a duplicate:
       B triages a Playwright workflow in the frontend repo, this one probes live prod endpoints.
@@ -48,10 +50,10 @@ The exit code is three-valued and each value means something different:
 |---|---|---|
 | `0` | every check passed | **STOP. Post nothing.** A green smoke is a correct silent no-op. |
 | `1` | at least one check **FAILED** — an assertion was observed false | Go to step 2. |
-| `2` | no failures, but a check was **UNAVAILABLE** — it could not be observed at all | Go to step 3. |
+| `2` | no failures, but a check was **UNAVAILABLE** — it could not be observed at all — or the checks file itself could not be loaded (the report names it) | Go to step 3. |
 
 Do not re-run a red smoke hoping for green, and do not paraphrase the script's own output — quote the
-failing lines verbatim. **Never edit `scripts/prod-smoke.mjs` to make a red run pass.**
+failing lines verbatim. **Never edit `scripts/prod-smoke.checks.mjs` (or the engine) to make a red run pass.**
 
 ## 2. On a FAILURE — diagnose, then alert
 
@@ -73,8 +75,8 @@ written source for the change, treat it as a regression and alert — an undocum
 itself worth waking someone for.
 
 For a confirmed-deliberate change, open a `claude/` **draft** PR on the root repo:
-- Branch `claude/prod-smoke-realign-<date>`; edit `scripts/prod-smoke.mjs`'s check table and its
-  `node:test` coverage together. Run `node --test "scripts/**/*.test.mjs"` before you push.
+- Branch `claude/prod-smoke-realign-<date>`; edit the check in `scripts/prod-smoke.checks.mjs` —
+  never the engine, `scripts/prod-smoke.mjs`. Run `node --test "scripts/**/*.test.mjs"` before you push.
 - **Draft, never ready-for-review; never auto-merge.** Advisory, like every other routine here.
 - PR body leads with:
   > 🤖 **Routine prod-smoke — daily production watchdog (Claude, cloud).** Draft proposal — review before merge; the smoke remains the detector.

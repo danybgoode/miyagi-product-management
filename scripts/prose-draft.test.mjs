@@ -73,7 +73,12 @@ test('buildPrompt: style → lessons → task → sources, in that order', () =>
 // report surfaces, so a regression that dropped it HERE would leave the other backend still passing —
 // which is precisely the silent half-wiring this test exists to prevent.
 test('buildPrompt: the lessons block actually reaches the composed prompt', () => {
-  const out = buildPrompt({ style: 'S', kind: 'retro', sources: 'SRC', lessons: 'NEVER-INVENT-A-BENEFICIARY' });
+  const out = buildPrompt({
+    style: 'S',
+    kind: 'retro',
+    sources: 'SRC',
+    lessons: 'NEVER-INVENT-A-BENEFICIARY',
+  });
   assert.ok(out.includes('NEVER-INVENT-A-BENEFICIARY'));
 });
 
