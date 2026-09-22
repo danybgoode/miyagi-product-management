@@ -3,7 +3,7 @@ epic: flag-provider-mandate
 sprint: 1
 title: Measure, repair the write path, activate
 risk: high
-phase: Shaping
+phase: Locking architecture
 stories_total: 4
 stories:
   - id: S1.1
@@ -12,7 +12,7 @@ stories:
     i_want: the actual serving configuration written down
     so_that: "\"where are flags managed\" has a measured answer instead of an inferred one"
     risk: low
-    status: planned
+    status: in-progress
   - id: S1.2
     title: Prove (or repair) the Golden admin write credential
     as_a: an operator
@@ -49,6 +49,45 @@ existed. Everything here is reversible by deactivating.
 Golden — yet **39 of 42 flags in production have no activation row**, so the provider finds nothing to
 serve and the evaluator falls through to the durable mirror, then `platform_flags`, then the
 compile-time default. The console you manage in is not currently the thing deciding.
+
+## S1.1 record — measured 2026-09-22 (the premise is partly wrong; sprint paused to reshape)
+
+**Commands:** `gcloud run services describe {miyagi-web,medusa-web} --project miyagisanchez-prod
+--region us-east4` (env), `curl` against `https://golden-beans-gamma.vercel.app/api/v1/flags/{admin,snapshot}`
+with the two production secrets, and `gcloud logging read` over the `[golden-beans:flag-authority]`
+control-plane records since 2026-09-15.
+
+| Fact | miyagi-web (frontend) | medusa-web (backend) |
+|---|---|---|
+| `GOLDEN_BEANS_FLAG_CUTOVER` | `*=golden` | `*=golden` |
+| `GOLDEN_BEANS_FLAG_PROVIDER_MODE` | unset | unset |
+| `GOLDEN_BEANS_FLAG_ENVIRONMENT` | `production` | `production` |
+| Decision `source` in live logs | `durable` ×94 (snapshot v47), `durable` ×1 (scoped lane, v5) | `golden_durable` ×242 (v47), `local` ×12 |
+| Last `source: golden` record | 2026-08-27T21:20Z | — |
+
+Vercel no longer serves either app (both are Cloud Run, per the deploy topology), so there is no
+Vercel half to read.
+
+**Findings — each one changes the plan:**
+
+1. **The production read key is rejected.** `GET /api/v1/flags/snapshot` with
+   `GOLDEN_BEANS_FLAG_READ_KEY` → **401 "Invalid flag read credential"**. Both services have therefore
+   served **every** flag from the durable mirror since ~2026-08-27, not from live Golden. That is the
+   real "Golden is not deciding" defect. A change made in Golden's console today would **never reach
+   production**, because no instance can fetch a newer snapshot than v47.
+2. **The mirror is current, by luck.** Golden's production admin snapshot is also **v47**, so the values
+   served today match Golden's. The next Golden change is the one that silently fails to apply.
+3. **"39 never-activated" does not describe the project production reads.** The admin credential's
+   project (`GET /api/v1/flags/admin` → 200) holds **41 flags, all with a production value** (40 on,
+   `shipping.envia_enabled` off). `golden-flag-read-key-routing.ts` records a *second*, owner-visible
+   Golden project (a new catalog that started its own snapshot). The console showing 39 "never" is most
+   likely **that** project. So the two windows really are two projects, which the epic's premise ruled out.
+4. Backend `local ×12` records (`ml.sync_enabled`) — not yet explained; to trace in S1.4.
+
+**Blocked for this session (needs the product owner):** the auto-mode classifier refused (a) the
+production-database reads needed to derive per-flag effective values from `platform_flags` and the
+Golden tables (D4), and (b) inspecting the secret itself. Reissuing the read key is a credential
+mutation, and the lean-pass memory puts that outside a blanket "carry on".
 
 ## Stories
 
