@@ -1031,3 +1031,9 @@ test("checkAgyVersion: unparseable version output → LOUD fail (never a silent 
     /could not determine agy version/,
   );
 });
+
+test("stripGeneratedFileDiffs strips jev-eval.fixtures.json (machine-written Jev recordings)", () => {
+  const hunk = `diff --git a/scripts/jev-eval.fixtures.json b/scripts/jev-eval.fixtures.json\nindex 1..2 100644\n--- a/scripts/jev-eval.fixtures.json\n+++ b/scripts/jev-eval.fixtures.json\n@@ -1 +1 @@\n-{}\n+{"review":[]}\n`;
+  const { strippedFiles } = stripGeneratedFileDiffs(hunk);
+  assert.deepEqual(strippedFiles, ["scripts/jev-eval.fixtures.json"]);
+});
