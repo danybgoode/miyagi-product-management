@@ -120,3 +120,23 @@ test('appendLabels skips a row with no valid rail instead of throwing', () => {
   const { added } = appendLabels({ review: [], prose: [] }, [{ id: 'z', label: true, rail: 'reviews' }]);
   assert.equal(added, 0);
 });
+
+test('monitoring after the flip (codex, #192): could-not-look markers count, off markers do not, newest wins by ts', () => {
+  const cnl = `x\n<!-- jev:{"mode":"jev","decider":"regex","regexOk":true,"noul":null,"severity":null,"model":null} -->`;
+  const off = `x\n<!-- jev:{"mode":"off","decider":"regex","regexOk":true,"noul":null,"severity":null,"model":null} -->`;
+  const rows = markerRows([
+    { url: 'a', body: cnl },
+    { url: 'b', body: off },
+  ]);
+  assert.equal(rows.length, 1);
+  assert.equal(classify(rows[0], T), 'could-not-look');
+  const kept = dedupe([
+    { rail: 'review', source: 'marker:u', ts: '2026-09-23T02:00:00Z', confidence: 0.9 },
+    { rail: 'review', source: 'backtest:u', ts: '2026-09-22T02:00:00Z', confidence: 0.1 },
+  ]);
+  assert.equal(kept[0].confidence, 0.9, 'the newer decision wins regardless of input order');
+});
+
+test('a marker with no known mode is not evidence (codex, #40)', () => {
+  assert.equal(markerRows([{ url: 'a', body: 'x\n<!-- jev:{"noul":null} -->' }]).length, 0);
+});

@@ -47,7 +47,9 @@ export function dedupe(rows) {
   // (`marker:<url>`), else the text hash. Keying on the raw source counted one comment twice (PR #39).
   const key = (r) =>
     `${r.rail}:${r.source ? String(r.source).replace(/^(?:backtest|marker):/, '') : r.textHash}`;
-  for (const r of rows) by.set(key(r), r);
+  // Newest by timestamp, not by input order: several --log files and markers arrive in any order (codex, #192).
+  const byTime = [...rows].sort((a, b) => String(a.ts ?? '').localeCompare(String(b.ts ?? '')));
+  for (const r of byTime) by.set(key(r), r);
   return [...by.values()];
 }
 
@@ -75,21 +77,27 @@ export function classify(row, thresholds) {
  * marker without it cannot say what the regex thought, so it is skipped rather than guessed (PR #39).
  */
 export function markerRows(comments) {
-  return comments
-    .map((c) => ({ c, m: parseJevMarker(c.body) }))
-    .filter(({ m }) => m && typeof m.noul === 'number')
-    .filter(({ m }) => typeof m.regexOk === 'boolean' || m.mode !== 'jev')
-    .map(({ c, m }) => ({
-      rail: 'review',
-      mode: m.mode,
-      decider: m.decider,
-      regex: typeof m.regexOk === 'boolean' ? m.regexOk : true,
-      jev: m.noul >= 0.5,
-      confidence: m.noul,
-      textHash: c.url,
-      text: c.reply ?? '',
-      source: `marker:${c.url}`,
-    }));
+  return (
+    comments
+      .map((c) => ({ c, m: parseJevMarker(c.body) }))
+      // A marker from a run where Jev WAS configured but could not look (noul null, mode shadow|jev) is a
+      // could-not-look decision, not a missing one (codex, #192). `off` markers are no decision at all.
+      .filter(({ m }) => m && (m.mode === 'shadow' || m.mode === 'jev'))
+      .filter(({ m }) => typeof m.regexOk === 'boolean' || m.mode !== 'jev')
+      .map(({ c, m }) => ({
+        rail: 'review',
+        mode: m.mode,
+        decider: m.decider,
+        regex: typeof m.regexOk === 'boolean' ? m.regexOk : true,
+        jev: m.noul >= 0.5,
+        confidence: typeof m.noul === 'number' ? m.noul : null,
+        error: typeof m.noul === 'number' ? null : 'jev could not look',
+        ts: c.created ?? null,
+        textHash: c.url,
+        text: c.reply ?? '',
+        source: `marker:${c.url}`,
+      }))
+  );
 }
 
 /** Summaries + disagreement candidates. Pure. */
@@ -210,7 +218,8 @@ async function main() {
     bad += parsed.bad;
   }
   for (const repo of all('--repo')) rows.push(...markerRows(harvest(repo)));
-  rows = dedupe(rows);
+  // Only rows that are decisions of a known rail count; `{}` or a foreign line is not evidence (codex, #192).
+  rows = dedupe(rows.filter((r) => r && (r.rail === 'review' || r.rail === 'prose')));
   // No decisions is not a report: a missing log must never read as a completed, all-clear one (codex, PR #39).
   if (!rows.length) {
     process.stderr.write('jev-report: no decisions found in any --log or --repo — nothing to report.\n');
