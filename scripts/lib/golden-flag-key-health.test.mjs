@@ -29,7 +29,7 @@ test('the 2026-09-22 shape: the only key EXPIRED yet listed "active" → anomaly
 
 test('expiring inside the warning window → anomaly with the day count', () => {
   const a = decideFlagReadKeyAnomaly({ keys: [key({ expiresAt: '2026-09-25T00:00:00Z' })] }, { nowISO: NOW })
-  assert.match(a.detail, /expires 2026-09-25 \(2 day\(s\)\)/)
+  assert.match(a.detail, /expires 2026-09-25 \(3 day\(s\)\)/)
 })
 
 test('a fresh key beside an EXPIRING one still warns — we cannot see which key production mounts', () => {
@@ -60,6 +60,13 @@ test('revoked, other-environment and other-type keys never count as production r
     key({ type: 'flag_sync', scope: 'frontend' }),
   ]
   assert.match(decideFlagReadKeyAnomaly({ keys }, { nowISO: NOW }).detail, /NO unexpired/)
+})
+
+test('the warning starts exactly 7 days out, not a day late (codex should-fix)', () => {
+  // Key expires 2026-10-22 23:17; on 2026-10-15 23:17 it is exactly 7 days away.
+  const expiring = { keys: [key({ expiresAt: '2026-10-22T23:17:42.802Z' })] }
+  assert.ok(decideFlagReadKeyAnomaly(expiring, { nowISO: '2026-10-15T23:17:42.802Z' }))
+  assert.equal(decideFlagReadKeyAnomaly(expiring, { nowISO: '2026-10-15T23:17:00.000Z' }), null)
 })
 
 test('a non-expiring key is healthy', () => {

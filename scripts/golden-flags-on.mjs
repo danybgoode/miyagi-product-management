@@ -39,6 +39,9 @@ export function flagsServingTrue(body, environment = 'production') {
     // A cell without `serving` means the CLI's shape changed — unknown, never "off". (`null` is legal:
     // a flag never activated in this environment.)
     if (cell && !('serving' in cell)) throw new Error(`flag ${flag.key} has no "serving" field`)
+    if (cell && cell.serving !== null && typeof cell.serving !== 'boolean') {
+      throw new Error(`flag ${flag.key} serves a non-boolean (${JSON.stringify(cell.serving)})`)
+    }
     if (cell && cell.serving === true) on.push(flag.key)
   }
   // An environment no flag reports (a typo'd --env, or a shape change) is UNKNOWN, not "nothing on".

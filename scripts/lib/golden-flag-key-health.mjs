@@ -64,8 +64,11 @@ export function decideFlagReadKeyAnomaly(body, { nowISO, environment = 'producti
     .filter((ms) => !Number.isNaN(ms))
   const earliest = Math.min(...expiries)
   if (earliest === Infinity) return null
-  const daysLeft = Math.floor((earliest - now) / 86_400_000)
-  if (daysLeft >= warnDays) return null
+  // Compare in milliseconds: flooring to whole days first would start a "7 days out" warning up to a
+  // day late. The day count shown is rounded UP, so it never understates the time left.
+  const msLeft = earliest - now
+  if (msLeft > warnDays * 86_400_000) return null
+  const daysLeft = Math.ceil(msLeft / 86_400_000)
   return {
     type: 'golden-flag-key',
     detail:

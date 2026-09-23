@@ -38,6 +38,11 @@ test('an empty catalog or a cell without `serving` throws — never an empty suc
     /no "serving" field/,
   )
   assert.equal(main([], { run: () => ({ status: 0, stdout: '{"flags":[]}' }), env: {} }).code, 1)
+  // A non-boolean `serving` (e.g. the string "true") is malformed, not "off" (codex should-fix).
+  assert.throws(
+    () => flagsServingTrue({ flags: [{ key: 'a', environments: [{ environment: 'production', serving: 'true' }] }] }),
+    /non-boolean/,
+  )
 })
 
 test('an environment no flag reports (a typo) throws — unknown is not "nothing on"', () => {
