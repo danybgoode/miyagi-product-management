@@ -29,6 +29,7 @@ on:
       - '.claude/**'
       - 'infra/**'
       - '.github/workflows/**'
+      - 'jev.config.json'
   push:
     branches: [main]
     paths:
@@ -37,6 +38,7 @@ on:
       - '.claude/**'
       - 'infra/**'
       - '.github/workflows/**'
+      - 'jev.config.json'
 
 concurrency:
   # PRs key on the PR number; direct pushes to main key on the ref. Without the fallback every
@@ -128,6 +130,12 @@ jobs:
       - name: scripts/ — CLI/tooling node:test (pure, ~0.6s for 37 files)
         if: steps.areas.outputs.scripts == 'true'
         run: node --test 'scripts/lib/*.test.mjs' 'scripts/*.test.mjs'
+
+      # Jev semantic guards (dobby-foundation jev-semantic-guards D8): replay the labelled fixtures' RECORDED
+      # Jev answers through the real judges (offline — never calls the API, needs no secret), and fail when a
+      # rail has sat in `shadow` past its `shadowExpires`. Unconditional: expiry is a date, not a diff.
+      - name: jev — eval replay + shadow expiry
+        run: node scripts/jev-eval.mjs
 
       # The committed permission rules (ways-of-work-lean-pass S1): every deny/ask rule cited in
       # .claude/permissions-ledger.json, verb-class allow list, no project-level auto mode.

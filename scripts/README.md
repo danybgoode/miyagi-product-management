@@ -101,7 +101,10 @@ Beyond the reporting family above, these are **byte-identical to `dobby-foundati
 `doc-format.mjs`, `doc-hygiene.mjs`, `owed-ledger.mjs`, `session-{note,resume}.mjs`, `prod-smoke.mjs`,
 `smoke-triage-scope.mjs`, `merge-report.mjs`, `perf-probe.mjs`, `vercel-env.mjs`,
 `vercel-prune-previews.mjs`, `babysit-pr.mjs`, `build-order-sync.mjs`, `lib/report-registry.mjs`,
-`preflight.mjs` + `lib/golden-onboarding.mjs`, and their tests. This repo's values live in config, not code: `reporting.config.json`,
+`preflight.mjs` + `lib/golden-onboarding.mjs`, `build-state.mjs`, and — since jev-semantic-guards
+(2026-09-23) — `lib/jev.mjs`, `jev-eval.mjs` + `jev-eval.fixtures.json`, `jev-backtest.mjs`, and their
+tests (plus `git-fixtures-sealed.test.mjs`, which fails any spec that builds a git fixture without sealing
+GIT_DIR). This repo's switch is the committed **`jev.config.json`** at the root. This repo's values live in config, not code: `reporting.config.json`,
 `prod-smoke.checks.mjs`, `smoke-triage.config.json`, `perf-probe.config.json`, `doc-format.enforced.json`.
 
 Deliberately divergent, with the reason to re-check before "unifying":
@@ -114,7 +117,12 @@ Deliberately divergent, with the reason to re-check before "unifying":
   `apps/miyagisanchez/scripts/live-smoke.mjs` against that app's own Playwright project.
 - **The review rail** — `cross-review.mjs`, `cross-panel.mjs`, `lib/cross-agent-cli.mjs` and their
   prompts: this copy and the template's evolved separately (their agy version pins differ, among
-  others), and unifying them is the review-stack work's job, not the plugin-audit epic's. `publish-live-views.mjs` is this project's own
+  others), and unifying them is the review-stack work's job, not the plugin-audit epic's.
+  **Hand-patched for jev-semantic-guards (2026-09-23)**, the same patch the template's copy carries:
+  `main()` is `async`; `jevContext('review')` is resolved before the pending status (a bad
+  `jev.config.json` fails before a review is paid for); the guard line is
+  `await judgeReviewOutput(findings, { sha })` (was `assertReviewOutput`), printing `review guard: <reason>`;
+  and the posted comment appends `jevMarker(verdict)` after `reviewMarker`. Nothing else in the fork moved. `publish-live-views.mjs` is this project's own
   (the report hub); it reads the registry from `reporting.config.json` → `artifacts.registry`.
 
 ## preflight.mjs — is this project wired to Golden Frijoles?

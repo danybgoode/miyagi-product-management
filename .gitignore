@@ -103,3 +103,7 @@ __pycache__/
 # nested-repo files, so it stays untracked like design_handoff. To adopt the SOURCE into
 # this repo: mv its .git to .git.local, then git add (junk dirs would need re-ignoring).
 references/despachobonsai/
+
+# Jev decision log (jev-semantic-guards) — local evidence, may quote private text
+.jev/
+**/.env*.local
