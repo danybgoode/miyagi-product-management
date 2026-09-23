@@ -397,6 +397,29 @@ asserts a structural body marker — status alone could not tell the selector an
 
 ---
 
+## Jev semantic guards — which routines need `TYPESAFE_API_KEY`  *(jev-semantic-guards S4.3)*
+
+The review and prose guards ask Jev (`api.typesafe.ai`) per `jev.config.json`. A routine gets Jev only if
+its **environment** has both:
+
+1. **`TYPESAFE_API_KEY`** as an env var (Edit routine → environment icon → settings gear); and
+2. **`api.typesafe.ai`** on **Network access → Custom → Allowed-domains** (the Default "Trusted" list does
+   not include it).
+
+| Routine | Guard it runs | Needs the key? |
+|---|---|---|
+| ops-nightly — the standup (`standup.mjs --post --prose-file`) | prose guard | **yes** |
+| weekly-recap (`weekly-recap.mjs --post --prose-file`) | prose guard | **yes** |
+| any routine that runs `cross-review.mjs` or `merge-report.mjs` | review / prose guard | **yes** |
+| prod-smoke, smoke-triage, roadmap-hygiene | none | no |
+
+All of them share environment `env_01PeaBUebiXBSnn8L169k7aM`, so provisioning it **once** covers every row.
+**Without the key or the allow-list nothing breaks:** the guard logs `jev could not look (no key)` /
+`(network: …)` and decides exactly as it did before this epic (the regex). That is proven by the specs, not
+asserted. Provisioning the secret is an account step (the key is the product owner's). As of 2026-09-23
+every routine here is **disabled** (all four were switched off together on 2026-09-18), so no cloud run is
+currently guarded either way.
+
 ## Daily-cap budget (Pro)
 
 The **daily routine-run cap (Pro = 5/day) bites the SCHEDULED runs** — GitHub-event and API triggers

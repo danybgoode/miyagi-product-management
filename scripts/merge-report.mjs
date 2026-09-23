@@ -312,7 +312,8 @@ async function main() {
       continue;
     }
 
-    const result = writeProse({ prompt, evidence: deriveEvidence(commit, areas) });
+    const result = await writeProse({ prompt, evidence: deriveEvidence(commit, areas) });
+    if (result.guard?.decider) process.stderr.write(`prose guard: decided by ${result.guard.decider}\n`);
     if (!result.text) {
       writeSync(1, `merge-report: no draft for ${commit.short} (${result.error}); will retry next run.\n`);
       return; // stop and leave state unadvanced — order matters, and a gap would be worse than a delay
