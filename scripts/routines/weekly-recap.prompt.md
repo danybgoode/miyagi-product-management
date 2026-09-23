@@ -9,8 +9,8 @@
   failure-ping) but on a weekly cadence, and mirrors Routine C's precedent (a dedicated weekly routine,
   not a day-of-week-gated step folded into a nightly one).
 
-  Reuse, don't rebuild (the `weekly-recap` skill comes from the `ways-of-work` plugin, dobby-foundation
-  marketplace, as of dobby-foundation Sprint 1 Story 1.2 — invoke by name, not a repo-local
+  Reuse, don't rebuild (the `weekly-recap` skill comes from the `golden-frijoles` plugin, golden-frijoles
+  marketplace — invoke by name, not a repo-local
   `skills/<name>/SKILL.md` path, which no longer exists in this repo):
     - `weekly-recap` skill → scripts/weekly-recap.mjs (the gathering, message-building, and the
       actual Telegram send + weekly-recaps.log commit — this routine just invokes it and reports back)
