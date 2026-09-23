@@ -36,14 +36,21 @@ export function flagsServingTrue(body, environment = 'production') {
     const cell = flag.environments.find((row) => row && row.environment === environment)
     if (cell && cell.serving === true) on.push(flag.key)
   }
+  // An environment no flag reports (a typo'd --env, or a shape change) is UNKNOWN, not "nothing on".
+  const known = body.flags.some((flag) => flag.environments.some((row) => row && row.environment === environment))
+  if (body.flags.length > 0 && !known) throw new Error(`no flag reports environment "${environment}"`)
   return on.sort()
 }
 
 export function parseArgs(argv) {
   const out = { environment: 'production', project: DEFAULT_PROJECT }
   for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i] === '--env') out.environment = argv[++i]
-    else if (argv[i] === '--project') out.project = argv[++i]
+    const flag = argv[i]
+    if (flag !== '--env' && flag !== '--project') throw new Error(`unknown argument: ${flag}`)
+    const value = argv[++i]
+    if (!value || value.startsWith('--')) throw new Error(`${flag} needs a value`)
+    if (flag === '--env') out.environment = value
+    else out.project = value
   }
   return out
 }
@@ -55,7 +62,13 @@ export function gfCommand(env = process.env) {
 
 /** Thin I/O shell. Returns { code, stdout, stderr } so the whole run is testable with a fake `run`. */
 export function main(argv = process.argv.slice(2), deps = {}) {
-  const { environment, project } = parseArgs(argv)
+  let parsed
+  try {
+    parsed = parseArgs(argv)
+  } catch (error) {
+    return { code: 1, stdout: '', stderr: `golden-flags-on: ${error.message}\n` }
+  }
+  const { environment, project } = parsed
   const [bin, ...prefix] = gfCommand(deps.env)
   const run = deps.run ?? ((command, args) => spawnSync(command, args, { encoding: 'utf8', timeout: 60_000 }))
   const result = run(bin, [...prefix, '--project', project, '--json', 'flags', 'ls'])

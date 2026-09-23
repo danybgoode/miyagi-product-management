@@ -32,9 +32,25 @@ test('expiring inside the warning window → anomaly with the day count', () => 
   assert.match(a.detail, /expires 2026-09-25 \(2 day\(s\)\)/)
 })
 
-test('a fresh key beside an expiring one is healthy — the newest key is the one in use', () => {
+test('a fresh key beside an EXPIRING one still warns — we cannot see which key production mounts', () => {
+  // codex blocking finding on #189: judging by the newest key hides a minted-but-never-deployed rotation.
   const keys = [key({ id: 'old', expiresAt: '2026-09-24T00:00:00Z' }), key({ id: 'new' })]
+  assert.match(decideFlagReadKeyAnomaly({ keys }, { nowISO: NOW }).detail, /expires 2026-09-24/)
+})
+
+test('an expired-but-unrevoked key beside a valid one is an anomaly (revoke it after rolling)', () => {
+  const keys = [key({ id: 'deadbeef-1', expiresAt: '2026-09-09T00:00:00Z' }), key({ id: 'new' })]
+  const a = decideFlagReadKeyAnomaly({ keys }, { nowISO: NOW })
+  assert.match(a.detail, /EXPIRED but not revoked \(deadbeef\)/)
+})
+
+test('after a clean rotation (old key revoked) exactly one healthy key is healthy', () => {
+  const keys = [key({ id: 'old', expiresAt: '2026-09-09T00:00:00Z', revokedAt: '2026-09-22T00:00:00Z' }), key({ id: 'new' })]
   assert.equal(decideFlagReadKeyAnomaly({ keys }, { nowISO: NOW }), null)
+})
+
+test('an unreadable expiry is an anomaly, never healthy', () => {
+  assert.match(decideFlagReadKeyAnomaly({ keys: [key({ expiresAt: 'not-a-date' })] }, { nowISO: NOW }).detail, /unreadable/)
 })
 
 test('revoked, other-environment and other-type keys never count as production read keys', () => {

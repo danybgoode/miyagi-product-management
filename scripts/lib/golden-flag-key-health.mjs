@@ -23,7 +23,12 @@ export function decideFlagReadKeyAnomaly(body, { nowISO, environment = 'producti
   const live = keys.filter(
     (key) => key && key.type === 'flag_read' && key.scope === environment && !key.revokedAt,
   )
+  // A malformed expiry (NaN) is NOT treated as valid — unknown must never read as healthy.
   const notExpired = live.filter((key) => key.expiresAt == null || Date.parse(key.expiresAt) > now)
+  const stale0 = live.filter((key) => key.expiresAt != null && Number.isNaN(Date.parse(key.expiresAt)))
+  if (stale0.length > 0) {
+    return { type: 'golden-flag-key', detail: `Golden ${environment} flag_read key expiry is unreadable (${stale0.map((key) => String(key.expiresAt)).join(', ')}) — check \`gf keys ls\`.` }
+  }
   if (notExpired.length === 0) {
     const lastExpiry = live
       .map((key) => key.expiresAt)
@@ -39,18 +44,35 @@ export function decideFlagReadKeyAnomaly(body, { nowISO, environment = 'producti
         `--env ${environment}\`), store it as GOLDEN_BEANS_FLAG_READ_KEY, roll miyagi-web + medusa-web.`,
     }
   }
-  // The key production uses is the newest one; judge by the LATEST expiry among the usable keys.
-  const expiries = notExpired.map((key) => (key.expiresAt == null ? Infinity : Date.parse(key.expiresAt)))
-  const latest = Math.max(...expiries)
-  if (latest === Infinity) return null
-  const daysLeft = Math.floor((latest - now) / 86_400_000)
+  // We CANNOT see which key Cloud Run mounts — Golden stores only hashes. So never judge by the newest
+  // key (a minted-but-never-deployed key would hide the mounted one expiring): judge CONSERVATIVELY.
+  // An expired-but-unrevoked key beside a valid one is ambiguous (is production still on it?), and the
+  // EARLIEST expiry among live keys is the one that may take production down. The rotation runbook —
+  // mint, new secret version, roll both services, REVOKE the old key — leaves exactly one key and clears it.
+  const stale = live.filter((key) => key.expiresAt != null && Date.parse(key.expiresAt) <= now)
+  if (stale.length > 0) {
+    return {
+      type: 'golden-flag-key',
+      detail:
+        `Golden ${environment} flag_read key(s) for ${GOLDEN_FLAG_PROJECT} EXPIRED but not revoked ` +
+        `(${stale.map((key) => String(key.id).slice(0, 8)).join(', ')}) beside a valid one — cannot tell which ` +
+        'one production mounts. Confirm both services run the new key, then `gf keys revoke <id> --type flag_read`.',
+    }
+  }
+  const expiries = notExpired
+    .map((key) => (key.expiresAt == null ? Infinity : Date.parse(key.expiresAt)))
+    .filter((ms) => !Number.isNaN(ms))
+  const earliest = Math.min(...expiries)
+  if (earliest === Infinity) return null
+  const daysLeft = Math.floor((earliest - now) / 86_400_000)
   if (daysLeft >= warnDays) return null
   return {
     type: 'golden-flag-key',
     detail:
-      `Golden ${environment} flag_read key for ${GOLDEN_FLAG_PROJECT} expires ${new Date(latest).toISOString().slice(0, 10)} ` +
-      `(${daysLeft} day(s)) — rotate before then or production silently falls back to the durable mirror. ` +
-      '`gf keys create --type flag_read --env production`, new GOLDEN_BEANS_FLAG_READ_KEY version, roll both services.',
+      `Golden ${environment} flag_read key for ${GOLDEN_FLAG_PROJECT} expires ${new Date(earliest).toISOString().slice(0, 10)} ` +
+      `(${daysLeft} day(s)) — rotate before then or production silently falls back to the durable mirror: ` +
+      '`gf keys create --type flag_read --env production`, new GOLDEN_BEANS_FLAG_READ_KEY version, roll both ' +
+      'services, then revoke the old key.',
   }
 }
 

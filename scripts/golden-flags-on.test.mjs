@@ -31,6 +31,17 @@ test('a malformed body throws instead of reading as "nothing is on"', () => {
   assert.throws(() => flagsServingTrue({ flags: [{ key: 1 }] }), /malformed/)
 })
 
+test('an environment no flag reports (a typo) throws — unknown is not "nothing on"', () => {
+  assert.throws(() => flagsServingTrue(BODY, 'prodution'), /no flag reports environment "prodution"/)
+})
+
+test('parseArgs rejects a missing value or an unknown argument, and main exits non-zero', () => {
+  assert.throws(() => parseArgs(['--env']), /needs a value/)
+  assert.throws(() => parseArgs(['--env', '--project', 'x']), /needs a value/)
+  assert.throws(() => parseArgs(['--bogus']), /unknown argument/)
+  assert.equal(main(['--env'], { run: () => { throw new Error('must not run gf') }, env: {} }).code, 1)
+})
+
 test('parseArgs defaults to production / miyagisanchez', () => {
   assert.deepEqual(parseArgs([]), { environment: 'production', project: 'miyagisanchez' })
   assert.deepEqual(parseArgs(['--env', 'preview', '--project', 'x']), { environment: 'preview', project: 'x' })
