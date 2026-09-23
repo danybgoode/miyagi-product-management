@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-09-18 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-09-23 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -16,13 +16,12 @@
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
-## 📋 Ready to build (scaffolded, not started) (3)
+## 📋 Ready to build (scaffolded, not started) (2)
 
-- [Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror](../../09-platform-infra/flag-provider-mandate/README.md) — 09 Platform-infra · 0/7 stories · risk: High · wave-2026-09-16
 - [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 - [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 
-## ✅ Shipped (148)
+## ✅ Shipped (149)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -141,6 +140,7 @@
 - [GCP account migration — `leroytramafat` → `lolis8755` (new project, rebuild + cutover)](../../09-platform-infra/gcp-account-migration/README.md) — 09 Platform-infra · 10/10 stories · risk: High
 - [GitHub Actions minutes — local-first checks, GH Actions as fallback](../../09-platform-infra/github-actions-local-first/README.md) — 09 Platform-infra · 1/1 stories
 - [Golden Frijoles integration — finish the rebrand, turn the platform all the way on](../../09-platform-infra/golden-frijoles-integration/README.md) — 09 Platform-infra · 10/10 stories
+- [Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror](../../09-platform-infra/flag-provider-mandate/README.md) — 09 Platform-infra · 11/11 stories · risk: High · wave-2026-09-16
 - [Groom archetype-lens wiring — optional Stage-2 archetype tag](../../09-platform-infra/groom-archetype-lens/README.md) — 09 Platform-infra · 2/2 stories
 - [Hyper-performant runtime](../../09-platform-infra/hyper-performant-runtime/README.md) — 09 Platform-infra · 10/10 stories · risk: High
 - [Hyper-performant website](../../09-platform-infra/hyper-performant-website/README.md) — 09 Platform-infra · 6/6 stories · risk: Low · #4
@@ -173,12 +173,13 @@
 - [Events & Ticketing](../../10-events-and-ticketing/events-and-ticketing/README.md) — 10 Events & Ticketing · 7/7 stories · risk: High · Wave 4
 - [Events: quantity selector (buy N admissions in one order)](../../10-events-and-ticketing/events-quantity-selector/README.md) — 10 Events & Ticketing · 3/3 stories · risk: High · backlog
 
-## ⬜ Funnel — seeds not yet scaffolded (7)
+## ⬜ Funnel — seeds not yet scaffolded (8)
 
 - [Affinity marketplace infrastructure — partner-operated markets](seeds/affinity-marketplace-infrastructure.md) — Raw · Epic
 - [AI-adoption guardrails — close the step-1/2 gaps the ladder names (browser smoke · security review · proactive monitor · OTel)](seeds/ai-adoption-maturity-benchmark.md) — Ready · Chore
 - [Custom static pages for seller shops](seeds/custom-static-pages.md) — Raw · Feature
 - [Designer collaboration portal (deferred from #4)](seeds/designer-collaboration-portal.md) — Raw · Feature
+- [Flag lane cleanup — drop the parked platform_flags + legacy mirror, retire dead env vars](seeds/flag-lane-cleanup.md) — Raw · Chore
 - [Ink + highlight — a visual language that doesn't read as AI-default, and the copy that goes with it](seeds/ink-highlight-ui-upgrade.md) — Ready · Feature
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [Spike — should Supabase (non-commerce) co-locate onto GCP, like commerce did?](seeds/spike-supabase-colocation.md) — Ready · Spike
@@ -195,4 +196,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Miyagi Partners proposition and recruiting portal v3 | In progress | Shipped |
 
 ---
-_Epics: 157 · seeds in funnel: 7 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 157 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._

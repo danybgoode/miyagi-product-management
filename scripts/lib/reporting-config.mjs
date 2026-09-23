@@ -113,7 +113,7 @@ export function validateReportingConfig(raw, path = CONFIG_FILENAME) {
     if (!Array.isArray(cmd) || !cmd.length || cmd.some((c) => typeof c !== 'string')) {
       fail(
         path,
-        '"liveFlags.command" must be a non-empty argv array (e.g. ["node", "scripts/flags.mjs", "--list-on"])'
+        '"liveFlags.command" must be a non-empty argv array (e.g. ["node", "scripts/golden-flags-on.mjs"])'
       );
     }
     liveFlags = { command: cmd, cwd: raw.liveFlags.cwd || '.' };

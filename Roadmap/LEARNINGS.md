@@ -499,7 +499,32 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   every cold instance resolve the compile default before its background fetch: one live `/us/operators`
   request 404ed, then the next 36 succeeded. Key last-known-good storage by provider scope + environment;
   never compare snapshot numbers across catalogs, and never leave a scoped authority without an outage
-  fallback. *(2026-08-17, miyagi-partners-recruiting-v3 cold-start repair.)*
+  fallback. *(2026-08-17, miyagi-partners-recruiting-v3 cold-start repair.)* **⚠️ Superseded 2026-09-22
+  (flag-provider-mandate):** (b) is stale — `apps/miyagisanchez/scripts/sync-flag-catalog.ts` and
+  `apps/backend/src/lib/flag-definition-sync.ts` now push definitions — and (a)/(c) no longer apply:
+  `/admin/flags` is a read-only mirror, and the cutover env var, `local`/`shadow` and `platform_flags`
+  are deleted. Every flag lives in ONE Golden project, `miyagisanchez`; change flags in its console or
+  with `gf` (`npx @golden-frijoles/cli`).
+- **A fallback that SILENTLY carries the load is an outage nobody sees — make "who decided" a logged
+  fact, and watch the credential's EXPIRY DATE.** Golden mints flag read keys with a fixed 30-day expiry.
+  Production's expired around 2026-08-27. The SDK got 401s, both services quietly served the durable
+  mirror (last-known-good v47), every page stayed 200, and the console looked healthy for ~4 weeks. A
+  console change in that window would never have reached production. Worse, production was reading a
+  LEGACY catalog while the product owner managed a DIFFERENT project with 39 flags never activated: two
+  windows, neither deciding what the other showed. Only the per-decision `source` log line
+  (`golden`/`durable`/`default`) exposed it. The fixes: one project, the `source` record kept as the
+  alarm (`[golden-beans:flag-decision]`), and `session-resume` raises `golden-flag-key` 7 days before
+  expiry. The generalisation: **a resilient fallback converts an outage into silence, so a fallback
+  needs a signal that it is carrying traffic, and a credential with a known expiry needs a reminder
+  before that date, not a postmortem after it.** *(2026-09-22, flag-provider-mandate.)*
+- **Moving a monotonic last-known-good store to a new source means a NEW lane — the old one refuses
+  you forever.** The durable mirror only accepts a higher snapshot version. The legacy catalog sat at v47
+  and the new project started at v44, so every write from the new project would have been a silent
+  no-op, and outages would have served the retired catalog's values. Key the lane by the SOURCE (here,
+  `provider_scope = 'miyagisanchez'`). Then close the empty-lane window: a cold instance must wait once
+  for the provider's bounded initial fetch before it may fall to a compile default. Without that wait,
+  enablement flags that default OFF (`ml.orders_enabled`) would have flipped for a cold instance's
+  first requests. *(2026-09-22, flag-provider-mandate — both fresh reviewers found the window.)*
 - **A `medusa exec` script CANNOT reach this production database, and never could.** `medusa-pg` has
   `ipv4Enabled: false` with a private ip (`10.7.0.3`); a real attempt with correct prod credentials died
   after four 60s retries on `Knex: Timeout acquiring a connection` from outside the VPC. This invalidates

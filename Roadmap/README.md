@@ -43,11 +43,13 @@ We organize by **what people do**, not by how it's built. These product domains 
 
 Status legend: ✅ Live (enforced in code) · 🚧 In progress / partial · 📋 Planned
 
-> **Flag reality (snapshot 2026-07-11, per Daniel):** the production flag-state SSOT is `/admin/flags`
-> (`platform_flags`) — **not** this poster and not `lib/flags.ts` defaults (those are fail-safe fallbacks).
-> As of this snapshot **every platform flag is ON in production except `shipping.envia_enabled`** (OFF —
-> Envía account unfunded; checkout falls back to arranged delivery / Correos / comp-granted shops).
-> If a bullet below contradicts this, trust the snapshot and verify in `/admin/flags`.
+> **Flag reality (2026-09-22, flag-provider-mandate):** the ONE place flags live and change is Golden
+> Frijoles, project **`miyagisanchez`** (<https://goldenfrijoles.com/app/flags/miyagisanchez>, or
+> `gf --project miyagisanchez flags ls`). `/admin/flags` is a **read-only mirror** of what the runtime
+> reads; `platform_flags` is parked and unread; `lib/flags.ts` defaults are only the last-resort
+> fail-safe. **Every platform flag is ON in production except `shipping.envia_enabled`** (OFF, because
+> the Envía account is unfunded, so checkout falls back to arranged delivery, Correos or comp-granted
+> shops). If a bullet below contradicts this, trust Golden's console.
 
 ---
 
@@ -213,6 +215,20 @@ The ad-funded local print magazine (México-86 retro aesthetic) — Miyagi's fir
 ---
 
 ## Recent highlights
+
+- **2026-09-23 — Golden Frijoles is the only flag surface (flag-provider-mandate, 2 sprints, HIGH).**
+  The "two flag lists" were worse than two windows onto one store. Production read a **legacy Golden
+  catalog through an expired read key** (Golden mints 30-day keys). So from ~2026-08-27 every flag
+  decision came from the durable mirror, while the console the product owner used held 39 flags that
+  had never been activated. Now every flag lives in the **`miyagisanchez`** project, activated in all
+  three environments at its live value (all ON except `shipping.envia_enabled`). Both apps have ONE
+  lane: live snapshot → durable mirror → bounded initial fetch → compile default. `local`/`shadow`,
+  the cutover env var and the `platform_flags` read are deleted. `/admin/flags` is a labelled
+  read-only mirror whose write route returns 405. Every decision logs its `source`, and
+  `session-resume` warns 7 days before a read key expires. **Found on the way:** the backend had not
+  deployed since 09-04, because every deploy hung on an interactive `db:migrate` link prompt. Fixed,
+  which also shipped the queued Medusa 2.21 upgrade. See [09 · Platform & Infra ›
+  flag-provider-mandate](09-platform-infra/flag-provider-mandate/).
 
 - **2026-09-17 — Ways-of-work lean pass SHIPPED (3 sprints, 3 repos, HIGH — it edits the agent
   authorization boundary).** The process stopped being prose an agent has to remember and became things a

@@ -41,6 +41,7 @@
 // only on purpose (GraphQL is blocked in at least one routine sandbox); scripts/lib/log-branch.mjs
 // (readLogFromBranch) unchanged. Zero new npm deps — Node >=18 (spawnSync).
 
+import { decideFlagReadKeyAnomaly, gatherFlagKeyHealth } from './lib/golden-flag-key-health.mjs';
 import { spawnSync } from 'node:child_process';
 
 // The session read limit for MEMORY.md, and the working budget that keeps a session's
@@ -448,7 +449,7 @@ export function readMemoryIndex(cwd = process.cwd(), deps = {}) {
   }
 }
 
-export function buildAnomalies({ repoStates, migrationResults, expandOrphans = false, memoryIndex }) {
+export function buildAnomalies({ repoStates, migrationResults, expandOrphans = false, memoryIndex, flagKeyHealth, nowISO }) {
   const anomalies = [];
   // First, because it is the one anomaly that changes what the rest of this report is
   // worth: if the index is truncating, the session is missing facts it does not know it
@@ -478,13 +479,19 @@ export function buildAnomalies({ repoStates, migrationResults, expandOrphans = f
       for (const a of decideMigrationAnomalies({ ...m, expandOrphans })) anomalies.push(a);
     }
   }
+  // Golden mints flag read keys with a fixed 30-day expiry; production's expired silently once
+  // (flag-provider-mandate). Absent `flagKeyHealth` means the caller did not look.
+  if (flagKeyHealth?.available) {
+    const key = decideFlagReadKeyAnomaly(flagKeyHealth.body, { nowISO: nowISO || new Date().toISOString() });
+    if (key) anomalies.push(key);
+  }
   return assertRenderableAnomalies(anomalies);
 }
 
 // D4: names every degraded source instead of silently dropping it. A missing repo path, an
 // unauthenticated/unreachable gh, an unavailable migration check, and an empty/unfetchable journal all
 // land here — distinct from `buildAnomalies`, which only reports CONFIRMED surprising states.
-export function buildGaps({ repoStates, migrationResults, journalAvailable, journalReason }) {
+export function buildGaps({ repoStates, migrationResults, journalAvailable, journalReason, flagKeyHealth }) {
   const gaps = [];
   for (const rs of repoStates || []) {
     if (!rs.git?.available) gaps.push(`${rs.repo}: git state unavailable — ${rs.git?.reason || 'unknown reason'}.`);
@@ -501,6 +508,9 @@ export function buildGaps({ repoStates, migrationResults, journalAvailable, jour
   }
   for (const m of migrationResults || []) {
     if (!m.available) gaps.push(`${m.repo}: migration drift check unavailable — ${m.reason || 'unknown reason'}.`);
+  }
+  if (flagKeyHealth && !flagKeyHealth.available) {
+    gaps.push(`Golden flag read-key expiry check unavailable — ${flagKeyHealth.reason}. Expiry is UNKNOWN, not fine.`);
   }
   if (!journalAvailable) {
     gaps.push(`journal unavailable — ${journalReason || 'claude/session-journal has no entries yet, or could not be fetched'}.`);
@@ -519,12 +529,14 @@ export function buildReport({
   journalLimit = JOURNAL_LIMIT_DEFAULT,
   expandOrphans = false,
   memoryIndex,
+  flagKeyHealth,
   generatedAt,
 }) {
+  const at = generatedAt || new Date().toISOString();
   return {
-    generatedAt: generatedAt || new Date().toISOString(),
-    anomalies: buildAnomalies({ repoStates, migrationResults, expandOrphans, memoryIndex }),
-    gaps: buildGaps({ repoStates, migrationResults, journalAvailable, journalReason }),
+    generatedAt: at,
+    anomalies: buildAnomalies({ repoStates, migrationResults, expandOrphans, memoryIndex, flagKeyHealth, nowISO: at }),
+    gaps: buildGaps({ repoStates, migrationResults, journalAvailable, journalReason, flagKeyHealth }),
     journal: {
       available: journalAvailable,
       reason: journalAvailable ? null : journalReason || null,
@@ -788,7 +800,13 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     homeDir = process.env.HOME,
     now,
     resolveReposFn = resolveRepos,
+    flagKeyHealthFn,
   } = deps;
+  // The gf probe runs through the SAME injected `spawn` as every other probe here, so a main() test
+  // with a fake spawn can never reach the network (npx) by construction.
+  const probeFlagKeyHealth =
+    flagKeyHealthFn ||
+    (() => gatherFlagKeyHealth({ env: deps.env ?? process.env, run: (command, cmdArgs) => spawn(command, cmdArgs, { encoding: 'utf8', timeout: 30000 }) }));
 
   let args;
   try {
@@ -826,6 +844,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalLimit: args.journalLimit,
       expandOrphans: args.expandOrphans,
       memoryIndex: readMemoryIndex(args.root, { stat: statFn, home: homeDir }),
+      flagKeyHealth: probeFlagKeyHealth(),
       generatedAt: (now || new Date()).toISOString(),
     });
 
@@ -844,6 +863,8 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalEntries: [],
       journalAvailable: false,
       journalReason: `session-resume crashed before the journal could be read: ${e.message}`,
+      // Named, not dropped: the key-expiry check did not run on this path.
+      flagKeyHealth: { available: false, reason: 'session-resume crashed before the gf probe ran' },
       // Reported on the CRASH path too. A truncating memory index is exactly the fact
       // you still want on the worst day — it is cheap (one stat), it is independent of
       // everything that just failed, and an empty brief that also silently drops it

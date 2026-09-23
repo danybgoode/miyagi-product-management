@@ -1,5 +1,5 @@
 {
-  "$comment": "Read by scripts/{standup,weekly-recap,pmo-report}.mjs via scripts/lib/reporting-config.mjs (the dobby-foundation template's reporting seam). The chat id is NOT here — this repo is public: routines use TELEGRAM_CHAT_ID, local runs use the gitignored reporting.config.local.json.",
+  "$comment": "Read by scripts/{standup,weekly-recap,pmo-report}.mjs via scripts/lib/reporting-config.mjs (the dobby-foundation template's reporting seam). The chat id is NOT here \u2014 this repo is public: routines use TELEGRAM_CHAT_ID, local runs use the gitignored reporting.config.local.json.",
   "repos": [
     "danybgoode/miyagi-product-management",
     "danybgoode/miyagisanchezcommerce",
@@ -23,14 +23,10 @@
   "vercelProject": "miyagisanchez",
   "liveFlags": {
     "command": [
-      "supabase",
-      "db",
-      "query",
-      "--linked",
-      "--csv",
-      "SELECT key FROM platform_flags WHERE enabled IS TRUE ORDER BY key"
+      "node",
+      "scripts/golden-flags-on.mjs"
     ],
-    "cwd": "apps/miyagisanchez"
+    "cwd": "."
   },
   "artifacts": {
     "docViewerUrl": "https://pmo-smalldocs-121711078446.us-east4.run.app",
