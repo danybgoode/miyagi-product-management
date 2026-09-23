@@ -100,7 +100,7 @@ Plan → branch + scaffold docs → build story → verify → QA/smoke → PR �
 ```
 
 1. **Plan.** Non-trivial work goes through plan mode as user stories, approved before code, naming its
-   QA/smoke stage. Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list (`groom/templates/scope-seed.md` in the `ways-of-work` plugin, dobby-foundation marketplace).
+   QA/smoke stage. Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list (`groom/templates/scope-seed.md` in the `golden-frijoles` plugin, golden-frijoles marketplace).
 2. **Branch + scaffold.** One branch per epic (`feat/<slug>`, or `fix/…`, `chore/…`) off the latest
    `main`, in each repo you touch. Scaffold the epic `README.md` + `sprint-N.md` *before* any code, so
    the product owner sees scope as it grows, and keep them current (✅ ticks, commit refs).
@@ -172,7 +172,7 @@ Four rules: **an exhausted bet returns to shaping**, never extends in flight; **
 boundaries** into `Roadmap/bets/<wave>.md`, three lines each, recording what they displaced; and **uphill
 work stays on the strongest model**. Not every ask earns the betting table — `groom` sorts shaped bets
 from fixed scope (appetite S, straight to a builder) and reactive/ops work. Why it works this way:
-[`references/shapeup/`](https://github.com/danybgoode/dobby-foundation/blob/main/template/references/shapeup/README.md).
+[`references/shapeup/`](https://github.com/golden-frijoles/skills/blob/main/template/references/shapeup/README.md).
 
 ## Review & merge
 
@@ -208,7 +208,7 @@ full reply, exits non-zero and fails the PR's `cross-review/<lens>` status. Both
 (`scripts/cross-review.prompt.md`): one pass, a `file:line` citation or the finding is not posted, at most
 3 nits, skip what CI enforces, Blocking/Should-fix only on a re-review. `/security-review` is available
 locally as a pre-push self-check, never a gate. Why this shape:
-[`references/review-stack.md`](https://github.com/danybgoode/dobby-foundation/blob/main/template/references/review-stack.md).
+[`references/review-stack.md`](https://github.com/golden-frijoles/skills/blob/main/template/references/review-stack.md).
 
 **Every finding is fixed or answered on the PR; neither pass authorizes anything.** **HIGH** = money
 (payments, checkout, fulfillment), auth and authorization boundaries, tenancy, DB migrations, shared infra;
@@ -463,7 +463,7 @@ every future change: deterministic, fast, cheap. Details: `apps/miyagisanchez/e2
   `MS_TEST_*` secrets and **skip gracefully** when unset. **`live-smoke` (skill, `scripts/live-smoke.mjs`)
   wraps this project as the default interactive verification tool** — `--path` for an ad-hoc "does this
   render right" check during a build (nothing permanent left behind), `--spec` to run an existing committed
-  spec by name. See the `live-smoke` skill (`ways-of-work` plugin, dobby-foundation marketplace) for the
+  spec by name. See the `live-smoke` skill (`golden-frijoles` plugin, golden-frijoles marketplace) for the
   full env × auth matrix and the Claude-in-Chrome fallback boundary.
   - *Owed (Daniel, one-time):* the `MS_TEST_*` repo secrets — buyer/seller password-auth accounts +
     `MS_TEST_PERSONALIZED_LISTING_ID` — so the credentialed/epic browser smokes light up (they skip until then).
@@ -498,8 +498,8 @@ product source of truth — it must never lag a shipped epic.
 - **Doc conventions (Roadmap tree).** Epic docs have a canonical shape — checked by
   `scripts/doc-format.mjs` (`node scripts/doc-format.mjs` for a full-tree report,
   `--check` for the CI-gate mode `doc-format-guard.yml` runs). **SSOT = the `groom` plugin's
-  scaffolding templates** (`skills/groom/templates/` in the `ways-of-work` plugin,
-  `dobby-foundation` marketplace) — proven canonical by the zero-drift `00-ideas/seeds/*.md`
+  scaffolding templates** (`skills/groom/templates/` in the `golden-frijoles` plugin,
+  `golden-frijoles` marketplace) — proven canonical by the zero-drift `00-ideas/seeds/*.md`
   control group (one authoring path, 81 files, identical shape; epic READMEs drift because
   they get hand-edited after scaffolding, away from the template). If a template changes,
   update `doc-format.mjs`'s rules to match — the checker tracks the template, not the other
