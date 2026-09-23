@@ -830,3 +830,43 @@ test('every memory-budget verdict is renderable — the population, not one samp
   // And the healthy case still yields nothing at all.
   assert.equal(decideMemoryBudgetAnomaly({ available: true, bytes: 1024 }), null);
 });
+
+// flag-provider-mandate: production's Golden read key expired silently for ~4 weeks. The brief now
+// says so — and "could not check" is a GAP, never a quiet all-clear.
+test('main: an expired Golden production read key is an ANOMALY', async () => {
+  let out = '';
+  await main(['--json'], baseDeps({
+    log: (m) => (out += m),
+    now: new Date('2026-09-22T00:00:00Z'),
+    flagKeyHealthFn: () => ({
+      available: true,
+      body: { keys: [{ type: 'flag_read', scope: 'production', expiresAt: '2026-09-09T00:00:00Z', revokedAt: null }] },
+    }),
+  }));
+  const report = JSON.parse(out);
+  const key = report.anomalies.find((a) => a.type === 'golden-flag-key');
+  assert.ok(key, 'expected a golden-flag-key anomaly');
+  assert.match(key.detail, /2026-09-09/);
+});
+
+test('main: an unavailable gf is a named GAP, not an anomaly and not silence', async () => {
+  let out = '';
+  await main(['--json'], baseDeps({
+    log: (m) => (out += m),
+    flagKeyHealthFn: () => ({ available: false, reason: 'gf unavailable — Not signed in.' }),
+  }));
+  const report = JSON.parse(out);
+  assert.ok(!report.anomalies.some((a) => a.type === 'golden-flag-key'));
+  assert.ok(report.gaps.some((g) => /read-key expiry check unavailable — gf unavailable/.test(g)));
+});
+
+test('main: the default gf probe goes through the injected spawn (never the network)', async () => {
+  const commands = [];
+  await main(['--json'], baseDeps({
+    spawn: (command, args) => {
+      commands.push([command, ...(args || [])].join(' '));
+      return { status: 0, stdout: 'main\n', stderr: '' };
+    },
+  }));
+  assert.ok(commands.some((c) => c.includes('@golden-frijoles/cli') && c.includes('keys ls')));
+});

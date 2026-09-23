@@ -199,30 +199,20 @@ checkout can never prune someone else's project by accident.
 after that PR merges. **Token:** `VERCEL_API_TOKEN`/`VERCEL_TOKEN` env, else the local `vercel login`
 (reads the CLI `auth.json`); team auto-detected (`VERCEL_TEAM_ID` to override). Zero npm deps — Node 18+.
 
-## flags.mjs — manage Flagsmith flags via the Admin API
+## golden-flags-on.mjs — the flags Golden is serving ON
 
-Convenience tool over the Flagsmith Admin API (SaaS project `miyagisanchezmarketplace`, id 39767) —
-it does **not** auto-flag epics or gate anything. It exists because a flag defined only in code
-(`lib/flags.ts DEFAULT_FLAGS`) is **invisible in the dashboard until created via the API**
-(LEARNINGS, custom-domain-paywall). `create` makes the flag at **project level**, so it appears in
-**every environment** immediately and is toggleable in the dashboard from minute one.
+Prints, one key per line, every flag the `miyagisanchez` Golden Frijoles project serves `true` in
+production (`--env` / `--project` to override). It is the standup's `liveFlags` source
+(`reporting.config.json`). It reads `serving`, not `state`, because an activated flag can serve false.
+If `gf` is not signed in or not installed it **exits non-zero**, so the standup reports the flag state
+as *unavailable*, never "nothing is on". Flags are created and changed in Golden's console or with
+`gf` (`npx @golden-frijoles/cli`). The old Flagsmith wrapper `flags.mjs` was deleted in
+flag-provider-mandate S2.3.
 
 ```bash
-node scripts/flags.mjs list                                  # features × environments grid
-node scripts/flags.mjs create my.kill_switch --on            # kill-switch ⇒ default ON (fail-open)
-node scripts/flags.mjs create my.new_gate --off              # enablement ⇒ default OFF (never traps users)
-node scripts/flags.mjs flip my.new_gate --on --env Production  # --env omitted ⇒ flips ALL envs
-node scripts/flags.mjs delete my.new_gate
+node scripts/golden-flags-on.mjs                 # production
+node scripts/golden-flags-on.mjs --env preview
 ```
-
-**Polarity rule (baked into `--help` + the create output):** a **kill-switch** defaults **ON**
-(disabling is the deliberate act); an **enablement** flag defaults **OFF** (a flag outage can never
-trap users behind a new gate). Mirror the default in `lib/flags.ts DEFAULT_FLAGS` with a polarity
-comment. Both project environments use **v2 feature versioning**, so `flip` writes via the
-create-version → patch → publish flow (handled automatically; legacy envs get a direct PATCH).
-
-**Env:** `FLAGSMITH_ADMIN_API_TOKEN` required (staged in `apps/miyagisanchez/.env.local`);
-`FLAGSMITH_PROJECT_ID` optional (default `39767`). Zero npm deps — Node 18+ (global `fetch`).
 
 ## prose-draft.mjs — delegate file-derived internal prose to a cheaper model
 

@@ -3,7 +3,7 @@ epic: flag-provider-mandate
 sprint: 1
 title: Measure, repair the write path, activate
 risk: high
-phase: Locking architecture
+phase: Shipped
 stories_total: 4
 stories:
   - id: S1.1
@@ -12,32 +12,32 @@ stories:
     i_want: the actual serving configuration written down
     so_that: "\"where are flags managed\" has a measured answer instead of an inferred one"
     risk: low
-    status: in-progress
+    status: done
   - id: S1.2
     title: Prove (or repair) the Golden admin write credential
     as_a: an operator
     i_want: "the toggle in `/admin/flags` to actually work"
     so_that: "a control surface isn't decorative"
     risk: high
-    status: planned
+    status: done
   - id: S1.3
     title: Activate every flag in Golden, in every environment
     as_a: the product owner
     i_want: every flag to have a real activation in Golden
     so_that: "\"Never turned on here\" stops being the answer for 39 of 42 flags and the console tells the truth"
     risk: high
-    status: planned
+    status: done
   - id: S1.4
     title: Prove the runtime reads the Golden activation, not the fallback
     as_a: the product owner
     i_want: evidence that Golden is deciding
     so_that: Sprint 2 can delete the fallback without changing behaviour
     risk: high
-    status: planned
+    status: done
 ---
 # Golden Frijoles is the only flag surface — Sprint 1: Measure, repair the write path, activate
 
-**Status:** ⬜ not started
+**Status:** ✅ Done — activations + key switch in Golden (no code); S1.4 evidence below
 
 **Epic:** [Golden Frijoles is the only flag surface](README.md) · **Risk: HIGH — the product owner merges** (these flags gate checkout)
 
@@ -82,12 +82,51 @@ Vercel half to read.
    `shipping.envia_enabled` off). `golden-flag-read-key-routing.ts` records a *second*, owner-visible
    Golden project (a new catalog that started its own snapshot). The console showing 39 "never" is most
    likely **that** project. So the two windows really are two projects, which the epic's premise ruled out.
-4. Backend `local ×12` records (`ml.sync_enabled`) — not yet explained; to trace in S1.4.
+4. Backend `local ×12` records (`ml.sync_enabled`) — **explained:** cold-start fallbacks. The old
+   code fell to `platform_flags`, whose read had failed on those instances, so it resolved to the
+   compile default. The table row is `true`, and so was Golden v47. Production always had the flag ON.
 
-**Blocked for this session (needs the product owner):** the auto-mode classifier refused (a) the
-production-database reads needed to derive per-flag effective values from `platform_flags` and the
-Golden tables (D4), and (b) inspecting the secret itself. Reissuing the read key is a credential
-mutation, and the lean-pass memory puts that outside a blanket "carry on".
+**Reshape (product owner, 2026-09-22):** the project the product owner manages in, **`miyagisanchez`**,
+becomes the one project that decides. The legacy catalog is retired. The measurement, D4's effective
+values and the key switch were done with the product owner's grant. The two mutations the auto-mode
+classifier would not let an agent run (Golden flag writes, Secret Manager) ran from the product
+owner's own shell through `gf`, the Golden Frijoles CLI.
+
+## S1.2 record — the admin write credential (superseded by D5)
+
+`GOLDEN_BEANS_FLAG_ADMIN_KEY` belongs to the **retired legacy catalog**. A toggle on `/admin/flags`
+therefore wrote to a project production no longer reads, so it was decorative in a worse way than
+D2 assumed. It was **not repaired**. S2.1 deleted the write path instead (D5: one writer). The key
+survives only as the shared secret for `/api/internal/resilience/*`. Writes happen in Golden's
+console or through `gf`.
+
+## S1.3 record — every flag activated, every environment (2026-09-22)
+
+**D4 effective values, derived before activating.** Production served **legacy snapshot v47** from
+the durable mirror, and `partners.recruiting_v3_enabled` from its scoped lane (v5). `platform_flags`
+agreed on every row it holds. **41 of 42 flags served ON; `shipping.envia_enabled` served OFF.**
+`catalog.owned_shop_only_enabled` and `partners.recruiting_v3_enabled` were already active in
+`miyagisanchez`, and `notifications.buyer_moneypath_enabled` was active in production only.
+
+**Applied:** `gf flags set <key> --value <v> --all-envs` for each of the other 41 keys, run from the
+product owner's shell. **After:** `gf flags ls` shows **every flag serving in development, preview
+AND production**, 41 `true` plus `shipping.envia_enabled` `false`. There are **0** "never" cells,
+down from 39. `node scripts/golden-flags-on.mjs` independently lists the same 41.
+
+**Read key.** A new production `flag_read` key for `miyagisanchez` (id `0338bd62…`) became Secret
+Manager `GOLDEN_BEANS_FLAG_READ_KEY` **v5**. It **expires 2026-10-22**, because Golden mints 30-day
+keys by design (`FLAG_KEY_EXPIRY_DAYS`). That expiry is the root cause of this whole outage, so
+`session-resume` now raises an anomaly 7 days before any production read key expires.
+
+## S1.4 record — Golden is deciding (2026-09-22/23)
+
+- `miyagi-web-00142-479` (the old code, new key) logged `source: "golden"` at **snapshot v44**. v44 is
+  a `miyagisanchez` snapshot version (the legacy catalog is at v47), so the runtime is reading the
+  activations S1.3 created, not the fallback. The first `golden` record since 2026-08-27.
+- The `medusa-web` roll to the new key failed its startup probe (Cloud Run kept the previous revision
+  serving). It picked up the key with the S2 deploy instead. The post-deploy evidence is in sprint-2.md.
+- **Flip-in-Golden → live change:** the agent could not run it, because the classifier blocks Golden
+  flag writes. It is step 4 of the smoke below and is owed to the product owner.
 
 ## Stories
 
