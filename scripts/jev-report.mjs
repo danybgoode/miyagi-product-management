@@ -181,7 +181,8 @@ export function appendLabels(fixtures, labelled) {
       process.stderr.write(`jev-report: skipped ${c.id ?? '(no id)'} — rail must be review or prose\n`);
       continue;
     }
-    const { rail, regex, jev, ...fx } = c;
+    // The report-only columns (regex, jev) are dropped; `_`-prefixed so a consumer's no-unused-vars lint passes.
+    const { rail, regex: _regex, jev: _jev, ...fx } = c;
     next[rail].push({ ...fx, recorded: null, decision: null });
     added++;
   }
