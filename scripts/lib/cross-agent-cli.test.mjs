@@ -749,8 +749,8 @@ test('resolveCurrentPr: a repo/remote misconfig is NOT masked as "no open PR" (t
 // warning into that same "FAILED" line, and this suite is `scripts/lib/*.test.mjs` — running only
 // `node --test scripts/*.test.mjs` reports a clean 159/0 and hides the real failure. Run both
 // globs, exactly as .githooks/pre-commit does.
-test("AGY_PINNED bumped to the verified 1.2.7 (guards the deliberate bump)", () => {
-  // 1.2.5 → 1.2.7 (2026-09-19), verified by `cross-agent-doctor.mjs agy --fix`: help contract intact, the
+test("AGY_PINNED bumped to the verified 1.2.8 (guards the deliberate bump)", () => {
+  // 1.2.5 → 1.2.7 (2026-09-19), 1.2.7 → 1.2.8 (2026-09-22), each verified by `cross-agent-doctor.mjs agy --fix`: help contract intact, the
   // primary model answered a live probe. The refusal that triggered it was the security lens on #186
   // declining to run against the stale pin — the guard working.
   //
@@ -775,7 +775,7 @@ test("AGY_PINNED bumped to the verified 1.2.7 (guards the deliberate bump)", () 
   // 1.1.13 → 1.1.15 (2026-08-19) before it: the fallback reported provider
   // capacity trouble, now a distinct verdict from an interface break — see
   // UPSTREAM_UNAVAILABLE.
-  assert.equal(AGY_PINNED, "1.2.7");
+  assert.equal(AGY_PINNED, "1.2.8");
   assert.equal(typeof AGY_MODEL, "string");
   assert.ok(
     AGY_MODEL.length > 0,
