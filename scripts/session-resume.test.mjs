@@ -863,6 +863,7 @@ test('main: an unavailable gf is a named GAP, not an anomaly and not silence', a
 test('main: the default gf probe goes through the injected spawn (never the network)', async () => {
   const commands = [];
   await main(['--json'], baseDeps({
+    env: {}, // independent of the machine's GF_BIN
     spawn: (command, args) => {
       commands.push([command, ...(args || [])].join(' '));
       return { status: 0, stdout: 'main\n', stderr: '' };

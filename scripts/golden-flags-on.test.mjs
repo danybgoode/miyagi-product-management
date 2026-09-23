@@ -31,6 +31,15 @@ test('a malformed body throws instead of reading as "nothing is on"', () => {
   assert.throws(() => flagsServingTrue({ flags: [{ key: 1 }] }), /malformed/)
 })
 
+test('an empty catalog or a cell without `serving` throws — never an empty success', () => {
+  assert.throws(() => flagsServingTrue({ flags: [] }), /zero flags/)
+  assert.throws(
+    () => flagsServingTrue({ flags: [{ key: 'a', environments: [{ environment: 'production', servedValue: true }] }] }),
+    /no "serving" field/,
+  )
+  assert.equal(main([], { run: () => ({ status: 0, stdout: '{"flags":[]}' }), env: {} }).code, 1)
+})
+
 test('an environment no flag reports (a typo) throws — unknown is not "nothing on"', () => {
   assert.throws(() => flagsServingTrue(BODY, 'prodution'), /no flag reports environment "prodution"/)
 })

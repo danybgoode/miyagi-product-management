@@ -31,7 +31,10 @@ rollback. After one wave with no rollback needed:
   operator step (`medusa db:sync-links --execute-all` from inside the VPC, or a pre-deploy job).
 - **Automate read-key rotation, or get a longer-lived key.** Golden mints 30-day `flag_read` keys.
   `session-resume` warns 7 days out, but a rotation still needs a human. Evaluate a scheduled rotation
-  (mint → Secret Manager version → roll both services), or ask Golden for a service-credential class.
+  (mint → Secret Manager version → roll both services → revoke the old key), or ask Golden for a
+  service-credential class. The `flag_sync` keys that `flags:sync` uses expire the same way: the only
+  unrevoked one ("miyagi-frontend-recruiting-v3") died 2026-09-08. The expiry check should watch
+  `flag_sync` too, or the sync keys should be minted per use.
 
 ## Not in scope
 

@@ -28,17 +28,22 @@ export function flagsServingTrue(body, environment = 'production') {
   if (!body || typeof body !== 'object' || !Array.isArray(body.flags)) {
     throw new Error('gf flags ls returned no flags array')
   }
+  // An EMPTY catalog is a wrong/empty project, not a known "nothing is on".
+  if (body.flags.length === 0) throw new Error('gf flags ls returned zero flags (wrong or empty --project?)')
   const on = []
   for (const flag of body.flags) {
     if (!flag || typeof flag.key !== 'string' || !Array.isArray(flag.environments)) {
       throw new Error('gf flags ls returned a malformed flag entry')
     }
     const cell = flag.environments.find((row) => row && row.environment === environment)
+    // A cell without `serving` means the CLI's shape changed — unknown, never "off". (`null` is legal:
+    // a flag never activated in this environment.)
+    if (cell && !('serving' in cell)) throw new Error(`flag ${flag.key} has no "serving" field`)
     if (cell && cell.serving === true) on.push(flag.key)
   }
   // An environment no flag reports (a typo'd --env, or a shape change) is UNKNOWN, not "nothing on".
   const known = body.flags.some((flag) => flag.environments.some((row) => row && row.environment === environment))
-  if (body.flags.length > 0 && !known) throw new Error(`no flag reports environment "${environment}"`)
+  if (!known) throw new Error(`no flag reports environment "${environment}"`)
   return on.sort()
 }
 

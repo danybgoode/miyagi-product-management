@@ -806,7 +806,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
   // with a fake spawn can never reach the network (npx) by construction.
   const probeFlagKeyHealth =
     flagKeyHealthFn ||
-    (() => gatherFlagKeyHealth({ run: (command, cmdArgs) => spawn(command, cmdArgs, { encoding: 'utf8', timeout: 30000 }) }));
+    (() => gatherFlagKeyHealth({ env: deps.env ?? process.env, run: (command, cmdArgs) => spawn(command, cmdArgs, { encoding: 'utf8', timeout: 30000 }) }));
 
   let args;
   try {
@@ -863,6 +863,8 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       journalEntries: [],
       journalAvailable: false,
       journalReason: `session-resume crashed before the journal could be read: ${e.message}`,
+      // Named, not dropped: the key-expiry check did not run on this path.
+      flagKeyHealth: { available: false, reason: 'session-resume crashed before the gf probe ran' },
       // Reported on the CRASH path too. A truncating memory index is exactly the fact
       // you still want on the worst day — it is cheap (one stat), it is independent of
       // everything that just failed, and an empty brief that also silently drops it
