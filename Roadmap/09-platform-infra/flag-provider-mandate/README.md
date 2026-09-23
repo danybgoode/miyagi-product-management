@@ -1,12 +1,12 @@
 ---
-status: in-progress   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
+status: shipped   # AUTHORITATIVE epic status (SSOT) — scaffolded | in-progress | shipped | archived. Set shipped at epic close.
 slug: flag-provider-mandate
 build_order: 5
 title: "Golden Frijoles is the only flag surface — activate, retire the second lane, label the mirror"
 area: 09-platform-infra
 risk: high
 type: chore
-phase: Locking architecture
+phase: Shipped
 sprints_total: 2
 stories_total: 7
 ---
@@ -114,17 +114,37 @@ half that is no longer wanted.** The largest risk is ordering, not construction.
 
 Branches stack: `feat/flag-provider-mandate` → `-s2`.
 
-## Definition of Done (epic)
-- [ ] All sprints merged to `main` + smoke-tested (gaps stated)
-- [ ] Each `sprint-N.md` has its smoke walkthrough (real URLs)
-- [ ] This README marked ✅; every sprint status ticked with commit refs
-- [ ] `RETROSPECTIVE.md` written
-- [ ] Poster (`Roadmap/README.md`) updated · team memory + `MEMORY.md` index updated
-- [ ] Durable learnings promoted to `Roadmap/LEARNINGS.md` — **including a correction**: the
-      2026-07-31 line says no sync script exists in either repo; `sync-flag-catalog.ts` now does.
-- [ ] **Kill-switch: carve-out.** There is no runtime seam to gate that isn't itself the flag system.
-      The safety property is the **ordering** above, and 2.3 parking rather than dropping the table.
-- [ ] **"Never turned on here" is ~0 in every environment** on Golden's console for this project.
-- [ ] **One place to manage**: `/admin/flags` cannot write; Golden's console is the only writer.
-- [ ] **No env var can silently change the answer** — `local` and `shadow` no longer exist.
-- [ ] Feature branches deleted; frontmatter `status: shipped` (run `node scripts/build-order.mjs`)
+## Outcome — shipped 2026-09-23
+
+**The premise was half right.** Activations *were* missing, but in the project the product owner
+manages (`miyagisanchez`). Production was reading a different, legacy catalog, and its read key had
+**expired** (Golden mints 30-day keys). So from ~2026-08-27 every decision came from the durable
+mirror, while both consoles looked healthy. The product owner chose `miyagisanchez` as the one
+project. All 42 flags were activated there at their live values, the key was switched, and the
+second lane was deleted in both apps. `/admin/flags` is now a read-only mirror. Records:
+[sprint-1.md](sprint-1.md) · [sprint-2.md](sprint-2.md) · [RETROSPECTIVE.md](RETROSPECTIVE.md).
+
+**Found and fixed on the way:** the backend had not deployed since 2026-09-04 (an interactive
+`db:migrate` link prompt with no TTY). Fixed in [#195](https://github.com/danybgoode/medusa-bonsai-backend/pull/195).
+
+## Definition of Done (epic) — ✅ closed 2026-09-23
+- [x] All sprints merged to `main` + smoke-tested (gaps stated). Frontend #423 `c2754c6`
+      (`miyagi-web-00143-rr7`), backend #194 `cf6cb3b` (`medusa-web-00086-9wd`), root `66ebed8`.
+      Agent-run live checks are in sprint-2.md. The product-owner-only smokes are listed under Gaps in
+      the retro.
+- [x] Each `sprint-N.md` has its smoke walkthrough (real URLs)
+- [x] This README marked ✅; every sprint status ticked with commit refs
+- [x] `RETROSPECTIVE.md` written
+- [x] Poster (`Roadmap/README.md`) updated · team memory + `MEMORY.md` index updated
+- [x] Durable learnings promoted to `Roadmap/LEARNINGS.md`, including the correction to the
+      2026-07-31 "no sync script" line.
+- [x] **Kill-switch: carve-out.** The safety property was the ordering (activate in Golden →
+      verify `source: golden` → seed the new mirror lane → only then delete the fallback), plus
+      parking `platform_flags` rather than dropping it.
+- [x] **"Never turned on here" is ~0 in every environment:** `gf flags ls` shows 0 "never" cells in
+      development, preview and production (was 39).
+- [x] **One place to manage:** `/admin/flags` cannot write (POST/PUT/DELETE → 405, live); Golden's
+      console (and `gf`) is the only writer.
+- [x] **No env var can silently change the answer:** `local`/`shadow` are gone, and the source sweeps
+      in both apps fail if `GOLDEN_BEANS_FLAG_CUTOVER`/`…PROVIDER_MODE` is read again.
+- [x] Feature branches deleted; frontmatter `status: shipped` (run `node scripts/build-order.mjs`)

@@ -3,7 +3,7 @@ epic: flag-provider-mandate
 sprint: 2
 title: Retire the second lane
 risk: high
-phase: Shaping
+phase: Shipped
 stories_total: 3
 stories:
   - id: S2.1
@@ -12,31 +12,71 @@ stories:
     i_want: exactly one place that can change a flag
     so_that: I am never again unsure where to manage anything
     risk: low
-    status: planned
+    status: done
   - id: S2.2
     title: Delete local, shadow, and the machinery that chose between them
     as_a: the maintainer
     i_want: one code path
     so_that: no env var can silently move the commerce path back to a second store
     risk: high
-    status: planned
+    status: done
   - id: S2.3
     title: Park platform_flags, delete the Flagsmith wrapper
     as_a: the maintainer
     i_want: the dead store and the dead tooling gone
     so_that: nobody rediscovers a second flag surface in six months
     risk: high
-    status: planned
+    status: done
 ---
 # Golden Frijoles is the only flag surface — Sprint 2: Retire the second lane
 
-**Status:** ⬜ not started
+**Status:** ✅ Shipped — frontend [#423](https://github.com/danybgoode/miyagisanchezcommerce/pull/423) `c2754c6` · backend [#194](https://github.com/danybgoode/medusa-bonsai-backend/pull/194) `cf6cb3b` (+ deploy unblock [#195](https://github.com/danybgoode/medusa-bonsai-backend/pull/195) `8ff200f`) · root `66ebed8`
 
 **Epic:** [Golden Frijoles is the only flag surface](README.md) · **Risk: HIGH — the product owner merges** (deleting the fallback on a commerce path)
 
 ⛔ **Does not start until Sprint 1's Story 1.4 is green.** Deleting the fallback while any flag lacks a
 Golden activation changes live behaviour silently — a `killswitch` would resolve to its compile
 default ON, an `enablement` to OFF.
+
+## Sprint 2 record — shipped 2026-09-23
+
+- **S2.1 `/admin/flags` is a read-only mirror.**
+  - What changed: it renders the runtime's own Golden snapshot (`readGoldenFlagSnapshot`, the same
+    credential and provider as `isEnabled()`). It carries a "Espejo de sólo lectura de Golden
+    Frijoles" banner linking to `goldenfrijoles.com/app/flags/miyagisanchez`, and it names catalog
+    flags that Golden does not define.
+  - The toggle is gone: `FlagsAdminClient.tsx` and `setGoldenAdminFlag` are deleted.
+  - **Live:** `POST`/`PUT`/`DELETE /api/admin/flags` → **405**; anonymous `GET` → **401**; the page
+    redirects a signed-out visitor (307).
+- **S2.2 One lane.**
+  - The chain in both apps is now: live snapshot → durable mirror → one bounded initial fetch →
+    compile default. The last two rungs were added on the backend after both fresh reviewers found
+    the cold-start window.
+  - Deleted: `flag-cutover.ts`, `flag-provider-mode.ts`, `flag-shadow-observation.ts`,
+    `golden-flag-read-key-routing.ts`, `golden-flag-mirror-scope.ts`, `flags-cache.ts`,
+    `flags-admin.ts`, and the backend `getFlagAuthorityReport`.
+  - **Deviation, stated:** `flag-authority-observation.ts` was replaced by
+    `flag-decision-observation.ts`, not deleted. Its `[golden-beans:flag-decision]` record
+    (`golden`/`durable`/`default`) is the only signal that exposed the expired read key.
+  - **The mirror moved** to the `miyagisanchez` lane of `golden_flag_scoped_snapshot_mirror`. The
+    legacy lane sits at v47 and the monotonic RPC would refuse v44 forever. **Live:** that lane row
+    was written at 2026-09-23 00:24:40Z (v44, 42 flags), *before* the backend shipped.
+- **S2.3 Parked, not dropped.**
+  - Nothing reads `platform_flags`. The source sweeps in both apps enforce it: `flag-single-lane.spec.ts`,
+    `flags-single-authority.unit.spec.ts`.
+  - `scripts/flags.mjs` (Flagsmith) is deleted. The standup's `liveFlags` now reads Golden through
+    `scripts/golden-flags-on.mjs`.
+  - The table, the legacy mirror table, and the now-unread `GOLDEN_BEANS_FLAG_CUTOVER`/
+    `GOLDEN_BEANS_PARTNERS_RECRUITING_V3_FLAG_READ_KEY` env vars stay one wave as the rollback. The
+    follow-up is seeded in `00-ideas/seeds/flag-lane-cleanup.md`.
+- **Found while shipping: the backend had not deployed since 2026-09-04.**
+  - Every `backend-main-deploy` since 09-11 hung on an interactive `db:migrate` link prompt. The
+    Medusa 2.21 bump changed a link column from integer to numeric, and the container has no TTY.
+  - [#195](https://github.com/danybgoode/medusa-bonsai-backend/pull/195) added
+    `--execute-safe-links`, and `medusa-web-00085-z4p` became the first healthy deploy in 19 days.
+    It carried #190–#193, including Medusa 2.21, to production.
+  - **Live:** `/health` 200; `/store/regions` returns MXN and USD; a real cart lands on the
+    publishable key's sales channel.
 
 ## Stories
 
