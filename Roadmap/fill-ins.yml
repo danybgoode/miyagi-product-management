@@ -83,7 +83,7 @@ operating_posture: |
   **only when the epic scoped one**.
 
 design_is_scope: |
-  Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list (`groom/templates/scope-seed.md` in the `ways-of-work` plugin, dobby-foundation marketplace).
+  Reference end-states (spec docs) are inspiration, never signed-off scope. Every scope seed also names which UX rails (CI guards, the audits lens, design-language debt) cover its surface — the `groom` skill's Stage 4 reuse list (`groom/templates/scope-seed.md` in the `golden-frijoles` plugin, golden-frijoles marketplace).
 
 deploy_rail: |
   **Deploy rail.** Frontend: pushing a branch builds a **Vercel preview** (SSO-protected; the Playwright
@@ -263,7 +263,7 @@ project_sections: |
     `MS_TEST_*` secrets and **skip gracefully** when unset. **`live-smoke` (skill, `scripts/live-smoke.mjs`)
     wraps this project as the default interactive verification tool** — `--path` for an ad-hoc "does this
     render right" check during a build (nothing permanent left behind), `--spec` to run an existing committed
-    spec by name. See the `live-smoke` skill (`ways-of-work` plugin, dobby-foundation marketplace) for the
+    spec by name. See the `live-smoke` skill (`golden-frijoles` plugin, golden-frijoles marketplace) for the
     full env × auth matrix and the Claude-in-Chrome fallback boundary.
     - *Owed (Daniel, one-time):* the `MS_TEST_*` repo secrets — buyer/seller password-auth accounts +
       `MS_TEST_PERSONALIZED_LISTING_ID` — so the credentialed/epic browser smokes light up (they skip until then).
@@ -299,8 +299,8 @@ project_sections: |
   - **Doc conventions (Roadmap tree).** Epic docs have a canonical shape — checked by
     `scripts/doc-format.mjs` (`node scripts/doc-format.mjs` for a full-tree report,
     `--check` for the CI-gate mode `doc-format-guard.yml` runs). **SSOT = the `groom` plugin's
-    scaffolding templates** (`skills/groom/templates/` in the `ways-of-work` plugin,
-    `dobby-foundation` marketplace) — proven canonical by the zero-drift `00-ideas/seeds/*.md`
+    scaffolding templates** (`skills/groom/templates/` in the `golden-frijoles` plugin,
+    `golden-frijoles` marketplace) — proven canonical by the zero-drift `00-ideas/seeds/*.md`
     control group (one authoring path, 81 files, identical shape; epic READMEs drift because
     they get hand-edited after scaffolding, away from the template). If a template changes,
     update `doc-format.mjs`'s rules to match — the checker tracks the template, not the other

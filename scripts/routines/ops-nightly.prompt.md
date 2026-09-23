@@ -15,8 +15,8 @@
   human-confirmed action per the `vercel-prune` skill — this routine only ever runs its dry-run
   report step).
 
-  Skills below come from the `ways-of-work` plugin (dobby-foundation marketplace,
-  danybgoode/dobby-foundation) as of dobby-foundation Sprint 1 Story 1.2 — invoke each by name, not
+  Skills below come from the `golden-frijoles` plugin (golden-frijoles marketplace,
+  golden-frijoles/skills) — invoke each by name, not
   by a repo-local `skills/<name>/SKILL.md` path (that path no longer exists in this repo).
 
   Reuse, don't rebuild:

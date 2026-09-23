@@ -17,7 +17,7 @@ not build or deploy anything itself.
 
 | Repo | Owns | Deploys |
 |---|---|---|
-| **`miyagi-product-management`** (this repo) | Product roadmap (`Roadmap/`), engineering delivery log (`tasks/`), vendored Stripe skills + planning/ops skills consumed from the `ways-of-work` plugin (`skills/`), infra scripts (`infra/`) | No deploy — docs display on GitHub on merge |
+| **`miyagi-product-management`** (this repo) | Product roadmap (`Roadmap/`), engineering delivery log (`tasks/`), vendored Stripe skills + planning/ops skills consumed from the `golden-frijoles` plugin (`skills/`), infra scripts (`infra/`) | No deploy — docs display on GitHub on merge |
 | [`medusa-bonsai-backend`](https://github.com/danybgoode/medusa-bonsai-backend) (`apps/backend`) | Medusa v2 — the commerce engine: products, orders, payments, fulfillment, sellers, subscriptions | Cloud Build (us-east4) → Cloud Run `medusa-web` on merge to `main`, ~12 min, no per-branch preview |
 | [`miyagisanchezcommerce`](https://github.com/danybgoode/miyagisanchezcommerce) (`apps/miyagisanchez`) | Next.js 16 — the UI layer, UCP/MCP agent-commerce endpoints, non-commerce APIs | Cloud Build (us-east4) → Cloud Run `miyagi-web` behind Cloudflare on merge to `main`; each PR still gets a Vercel preview for review |
 | `miyagi-trifold-studio` (`apps/zine`) | The print/zine design studio for the ad-funded local magazine | **Local-only** — no remote, no CI, no deploy |
@@ -35,7 +35,7 @@ this one — see `.gitignore`); this repo versions only the product/orchestratio
   or shared infra is always a human merge — see *Review & merge* in
   [`WAYS-OF-WORKING.md`](Roadmap/WAYS-OF-WORKING.md#review--merge--cross-agent).
   Green CI is the deterministic gate; the review layers above it are sized to the tier.
-- **The `groom` skill** (`ways-of-work` plugin, [`dobby-foundation`](https://github.com/danybgoode/dobby-foundation) marketplace) is the front door for any new idea — it turns a raw
+- **The `groom` skill** (`golden-frijoles` plugin, [`golden-frijoles`](https://github.com/golden-frijoles/skills) marketplace) is the front door for any new idea — it turns a raw
   ask into sliced, Definition-of-Ready user stories before a line of code is written, reframing
   toward existing Medusa/platform primitives before inventing new ones.
 - **Cross-agent review on every PR — required.** [`scripts/cross-review.mjs`](scripts/cross-review.mjs)
