@@ -15,10 +15,11 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
+import { projectRoot } from './lib/project-root.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO = resolve(__dirname, '..');
+const REPO = projectRoot(); // D2
 const ROADMAP = join(REPO, 'Roadmap');
 const IDEAS = join(ROADMAP, '00-ideas');
 
