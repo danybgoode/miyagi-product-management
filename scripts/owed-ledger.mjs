@@ -41,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 import { loadReportingConfig, ReportingConfigError, configPath } from './lib/reporting-config.mjs';
+import { readSection } from './lib/config.mjs';
 const OUT_MD = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.md');
 const OUT_JSON = join(ROOT, 'Roadmap/00-ideas/OWED-LEDGER.json');
 
@@ -52,6 +53,14 @@ export function markerFor(owners) {
 }
 export const DEFAULT_OWNERS = ['the product owner'];
 
+const sectionPresent = (root) => {
+  try {
+    return readSection('reporting', { root }).present;
+  } catch {
+    return true; // a malformed config file is present, and the error above is the one to surface
+  }
+};
+
 /** The project's owners + spec dirs: reporting.config.json's `owed`, else the defaults (derived dirs). */
 export function resolveOwedConfig({ root = ROOT, load = loadReportingConfig, exists = existsSync, readdir = readdirSync } = {}) {
   let owed = {};
@@ -61,7 +70,8 @@ export function resolveOwedConfig({ root = ROOT, load = loadReportingConfig, exi
     // ABSENT config → the defaults. A PRESENT but invalid one is an error: silently dropping a configured
     // owner would change the count with no signal — the "quietly loses items" failure this file exists
     // to prevent. (Fresh-reviewer finding on PR #21.)
-    if (!(e instanceof ReportingConfigError) || exists(configPath({ root, env: {} }))) throw e;
+    // "Present" means the reporting section exists in EITHER file (golden-frijoles-plugin D9, review of #49).
+    if (!(e instanceof ReportingConfigError) || exists(configPath({ root, env: {} })) || sectionPresent(root)) throw e;
   }
   const owners = owed.owners?.length ? owed.owners : DEFAULT_OWNERS;
   let specDirs = owed.specDirs;
