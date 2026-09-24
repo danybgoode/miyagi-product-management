@@ -157,6 +157,31 @@ export function compareVersions(a, b) {
 }
 
 /**
+ * The ONE install prompt a stranger pastes into their agent (golden-frijoles-plugin S3.3/S3.4, D6/D8/X10).
+ *
+ * This is a CONSTANT, not this repo's business to author: golden-beans `apps/web/lib/install-prompt.ts`
+ * is the SOURCE (`export const INSTALL_PROMPT`), and it names only `github.com` /
+ * `raw.githubusercontent.com` URLs and no site URL — so unlike `getSiteUrl()`-backed strings there, it
+ * needs no per-environment origin and is safe to transcribe byte-for-byte. This is that transcription,
+ * exactly as golden-beans' `CopyPromptCard` renders it on the closing CTA, `/install` and onboarding.
+ * `scripts/check-onboarding-parity.mjs` asserts this string appears VERBATIM in the repo README.md and
+ * the `golden-frijoles` umbrella SKILL.md — a one-word drift fails it. Never hand-edit this without the
+ * source (golden-beans `apps/web/lib/install-prompt.ts`) changing first.
+ *
+ * Text: the audit's §3.1 prompt (`Roadmap/00-ideas/audits/golden-frijoles-unification-2026-09-23.md`,
+ * golden-beans checkout), verbatim, its soft-wrapped blockquote lines joined into the one paragraph it
+ * renders as.
+ */
+export const INSTALL_PROMPT =
+  "Install the golden-frijoles plugin. If you're in Claude Code, run `claude plugin marketplace add " +
+  'golden-frijoles/skills`, then `claude plugin install golden-frijoles@golden-frijoles`. If you\'re in ' +
+  'another agent, run `npx skills add golden-frijoles/skills --skill \'*\'` and select your ' +
+  'agent. Use one installation method. You can read the skill directly at ' +
+  'https://github.com/golden-frijoles/skills/blob/main/plugins/golden-frijoles/skills/golden-frijoles/SKILL.md ' +
+  '(raw: https://raw.githubusercontent.com/golden-frijoles/skills/main/plugins/golden-frijoles/skills/golden-frijoles/SKILL.md). ' +
+  'Then use the golden-frijoles skill when working on this project, and start with its setup.';
+
+/**
  * The value of `name` in a dotenv file, or null.
  *
  * ⚠️ **The LAST assignment wins.** `dotenv` assigns in file order, so a later line overrides an

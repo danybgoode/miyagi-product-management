@@ -59,7 +59,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   CLI_BIN,
@@ -75,9 +75,9 @@ import {
   onboardingLines,
   readEnvValue,
 } from './lib/golden-onboarding.mjs';
+import { projectRoot } from './lib/project-root.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO = resolve(__dirname, '..');
+const REPO = projectRoot(); // D2
 
 const PROBE_TIMEOUT_MS = 5_000;
 
