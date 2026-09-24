@@ -55,6 +55,7 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, existsSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { readSection } from './lib/config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const POLICY_PATH = join(__dirname, '..', 'smoke-triage.config.json');
@@ -117,17 +118,27 @@ export function validatePolicy(raw) {
 
 /** Read the committed policy. Missing or malformed → `{ ok: false, reason }` naming the file. */
 export function loadPolicy({ path = POLICY_PATH, exists = existsSync, read = readFileSync } = {}) {
-  if (!exists(path))
+  // `smoke.triage` in golden-frijoles.config.json over the legacy policy file (D9). This rail answers, never
+  // throws, so a malformed legacy file is still an { ok: false } verdict, and validation stays here.
+  let raw;
+  let present;
+  try {
+    ({ raw, present } = readSection('smoke.triage', {
+      legacyExists: exists,
+      legacyRead: read,
+      legacyPath: path,
+      onLegacyError: (_p, e) => {
+        throw Object.assign(new Error(e.message), { legacyInvalid: true });
+      },
+    }));
+  } catch (e) {
+    return { ok: false, reason: e.legacyInvalid ? `${path} is not valid JSON (${e.message})` : e.message };
+  }
+  if (!present)
     return {
       ok: false,
       reason: `${path} not found — the merge gate has no policy, so it cannot allow anything`,
     };
-  let raw;
-  try {
-    raw = JSON.parse(read(path, 'utf8'));
-  } catch (e) {
-    return { ok: false, reason: `${path} is not valid JSON (${e.message})` };
-  }
   const v = validatePolicy(raw);
   return v.ok ? v : { ok: false, reason: `${path}: ${v.reason}` };
 }

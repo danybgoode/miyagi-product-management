@@ -22,13 +22,15 @@ import { dirname, join } from 'node:path'
 
 export const CONFIG_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'perf-probe.config.json')
 import { brotliDecompressSync, gunzipSync, inflateSync } from 'node:zlib'
+import { readSection } from './lib/config.mjs'
 
 const MODERN_IMAGE_ACCEPT = 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
 
 /** Read + validate perf-probe.config.json. Throws naming the file — there is no default target. */
 export function loadProbeConfig({ path = CONFIG_PATH, exists = existsSync, read = readFileSync } = {}) {
-  if (!exists(path)) throw new Error(`${path} not found — copy perf-probe.config.example.json and list your real pages`)
-  const raw = JSON.parse(read(path, 'utf8'))
+  // `smoke.perf` in golden-frijoles.config.json over the legacy file (D9); validation stays here.
+  const { raw, present } = readSection('smoke.perf', { legacyExists: exists, legacyRead: read, legacyPath: path, onLegacyError: (_p, e) => { throw e } })
+  if (!present) throw new Error(`${path} not found — copy perf-probe.config.example.json and list your real pages`)
   if (!/^https?:\/\//.test(raw.baseUrl || '')) throw new Error(`${path}: "baseUrl" must be an http(s) URL`)
   if (!Array.isArray(raw.targets) || raw.targets.length === 0) throw new Error(`${path}: "targets" must list at least one page`)
   for (const [i, t] of raw.targets.entries()) {
