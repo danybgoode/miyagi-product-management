@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 // cross-agent-doctor.mjs — ONE doctor for the reviewer CLIs (ways-of-work-lean-pass S2.5).
 //
-// Merged 2026-09-16 from `cross-agent-doctor.mjs codex` + `cross-agent-doctor.mjs agy`: same diagnosis shape, two copies, and
+// ONE file across every consumer since distribute-what-we-use S1 (2026-09-29): a consuming project's doctor (codex +
+// agy, the `unavailable` probe class, the strict slug parser) merged with Golden Frijoles' `agy-doctor.mjs`
+// (every configured agy model audited via AGY_MODELS_IN_USE, a drift note that names the model). That
+// `agy-doctor.mjs` survives only as an alias for `cross-agent-doctor.mjs agy`.
+//
+// Merged 2026-09-16 from two former files (a codex doctor and an agy doctor): same diagnosis shape, two copies, and
 // the review policy now runs ONE external pass — so when the family that was going to review a PR
 // cannot run, you want a single command that says which one is broken and what fixes it.
 //
@@ -14,16 +19,27 @@
 // this is a merge, not a rewrite. vibe and claude have no pinned print contract to drift, so they are
 // presence-checked by cross-review.mjs itself rather than here.
 //
-// Zero npm deps — Node 18+. isMain-guarded so importing the pure cores does not run the CLI.
+// Zero npm deps — Node 18+ to diagnose; `agy --fix` needs Node 21+ and refuses below it (see agyMain).
+// isMain-guarded so importing the pure cores does not run the CLI.
 
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname, join } from 'node:path';
-import { isCodexAuthError, isCodexOutdated, CODEX_MODEL, AGY_PINNED, AGY_MODEL, AGY_FALLBACK_MODEL } from './lib/cross-agent-cli.mjs';
+import {
+  isCodexAuthError,
+  isCodexOutdated,
+  CODEX_MODEL,
+  AGY_PINNED,
+  AGY_MODEL,
+  AGY_FALLBACK_MODEL,
+  AGY_MODELS_IN_USE,
+  codexExecArgs,
+  isCodexCapped,
+} from './lib/cross-agent-cli.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 // ═══ CODEX ════════════════════════════════════════════════════════════════════════════════════
-// codex-doctor.mjs — diagnose why the Codex CLI can't run, and name the exact fix.
+// The codex half — diagnose why the Codex CLI can't run, and name the exact fix.
 //
 // WHY: `codex` is the DEFAULT cross-agent reviewer (scripts/cross-review.mjs), but it fails in three
 // operator-fixable ways that otherwise surface as an opaque `codex exec failed …` and force a manual
@@ -67,6 +83,11 @@ export function decideCodexDoctorAction({ present, probe }) {
       return { action: 'auth-lapsed', note: 'codex is installed but its token has lapsed/was revoked.' };
     case 'outdated':
       return { action: 'cli-outdated', note: 'the installed codex is too old for the model it runs.' };
+    case 'capped':
+      return {
+        action: 'capped',
+        note: 'codex is installed and signed in, but the account hit its usage cap.',
+      };
     default:
       return { action: 'broken', note: 'a live `codex exec` probe failed for a non-auth, non-stale reason.' };
   }
@@ -75,7 +96,9 @@ export function decideCodexDoctorAction({ present, probe }) {
 // Human-readable remediation per action — kept beside the decision so the message and the classification
 // can't drift. `ctx` carries the observed version + the CODEX_MODEL escape-hatch state.
 export function remediation(action, ctx = {}) {
-  const model = ctx.codexModel ? `CODEX_MODEL="${ctx.codexModel}"` : 'CODEX_MODEL (unset — codex uses its own default model)';
+  const model = ctx.codexModel
+    ? `CODEX_MODEL="${ctx.codexModel}"`
+    : 'CODEX_MODEL (unset — codex uses its own default model)';
   switch (action) {
     case 'ok':
       return null;
@@ -83,6 +106,11 @@ export function remediation(action, ctx = {}) {
       return 'Install the Codex CLI (e.g. `npm install -g @openai/codex`), then `codex login`.';
     case 'auth-lapsed':
       return 'Restore the token: `codex login`. (The cross-review runtime already auto-falls-back to Antigravity meanwhile.)';
+    case 'capped':
+      return (
+        'Wait for the cap to reset, or route past codex: `node scripts/review-route.mjs --builder <who> --exclude codex <PR#>`. ' +
+        '(cross-review already heals a capped codex onto Antigravity.)'
+      );
     case 'cli-outdated':
       return [
         'The installed codex is behind its model requirement. Either:',
@@ -107,12 +135,12 @@ function observeCodex() {
   const version = (((ver.stdout || '') + (ver.stderr || '')).match(/\d+\.\d+\.\d+/) || [null])[0];
   // One real, minimal `codex exec` — the same call cross-review makes (respecting CODEX_MODEL), so the
   // probe sees exactly what the reviewer would. A tiny prompt keeps the token/CLI-version check cheap.
-  const args = CODEX_MODEL ? ['exec', '-m', CODEX_MODEL, 'Reply with exactly: OK'] : ['exec', 'Reply with exactly: OK'];
-  const r = codex(args, '');
+  const r = codex(codexExecArgs('Reply with exactly: OK'), '');
   const out = `${r.stdout || ''}\n${r.stderr || ''}`;
   let probe;
   if (r.status === 0 && (r.stdout || '').trim()) probe = 'ok';
   else if (isCodexOutdated(out)) probe = 'outdated';
+  else if (isCodexCapped(out)) probe = 'capped';
   else if (isCodexAuthError(out)) probe = 'auth';
   else probe = 'error';
   return { present: true, version, probe, probeStderr: (r.stderr || '').trim() };
@@ -123,7 +151,9 @@ async function codexMain() {
   const { action, note } = decideCodexDoctorAction(obs);
   const line = (s) => process.stdout.write(`${s}\n`);
 
-  line(`codex-doctor — ${obs.present ? `installed ${obs.version || '(unparsed version)'}` : 'NOT INSTALLED'} · CODEX_MODEL ${CODEX_MODEL ? `="${CODEX_MODEL}"` : 'unset'}`);
+  line(
+    `codex — ${obs.present ? `installed ${obs.version || '(unparsed version)'}` : 'NOT INSTALLED'} · CODEX_MODEL ${CODEX_MODEL ? `="${CODEX_MODEL}"` : '=default (codex built-in; user config ignored)'}`
+  );
   if (obs.present) line(`live probe: ${obs.probe}`);
   line(`  → ${note}`);
 
@@ -137,7 +167,12 @@ async function codexMain() {
     line('    ' + obs.probeStderr.split('\n').slice(-3).join('\n    '));
   }
   line('✗ ' + action + ':');
-  line(fix.split('\n').map((l) => '  ' + l).join('\n'));
+  line(
+    fix
+      .split('\n')
+      .map((l) => '  ' + l)
+      .join('\n')
+  );
   process.exitCode = 1;
 }
 
@@ -229,26 +264,104 @@ export function isUpstreamUnavailable(output) {
   return UPSTREAM_UNAVAILABLE.some((re) => re.test(text));
 }
 
-export function decideDoctorAction({ installed, pinned, helpOk, primaryListed, fallbackListed, probes }) {
+/**
+ * agy's "you are signed out" answer. Observed live 2026-09-29 (agy 1.2.13, right after an auto-update):
+ * `agy models` prints "Error: Please sign in to view available models. Launch the CLI without arguments
+ * to sign in.", and every `-p` probe waits 60 s for an OAuth code, then "authentication timed out".
+ * Read as a contract, that is every model "NOT LISTED" plus two probe errors — a CONTRACT-BROKEN verdict
+ * for what is really an operator action. Could-not-look is its own state (LEARNINGS), so it is checked
+ * first, and the probes are skipped (each one would otherwise burn a minute waiting for a login).
+ */
+export function isAgySignedOut(output) {
+  return /please sign in|sign in to view|waiting for authentication|authentication (?:timed out|failed)/i.test(
+    String(output || '')
+  );
+}
+
+export function decideDoctorAction({
+  installed,
+  pinned,
+  helpOk,
+  primaryListed,
+  fallbackListed,
+  probes,
+  unlistedModels = [],
+  signedOut = false,
+}) {
   const notes = [];
-  if (!installed) return { action: 'contract-broken', notes: ['`agy --version` output didn\'t contain a parseable X.Y.Z — a version this blind cannot be bumped (would write the literal string "null" as the pin).'] };
-  if (!helpOk) return { action: 'contract-broken', notes: ['`agy --help` no longer shows the -p/--model print contract.'] };
+  if (!installed)
+    return {
+      action: 'contract-broken',
+      notes: [
+        '`agy --version` output didn\'t contain a parseable X.Y.Z — a version this blind cannot be bumped (would write the literal string "null" as the pin).',
+      ],
+    };
+  if (!helpOk)
+    return {
+      action: 'contract-broken',
+      notes: ['`agy --help` no longer shows the -p/--model print contract.'],
+    };
+  // Signed out AFTER the checks that need no login (pr-reviewer S2): a help-contract break is visible
+  // signed in or not, and must never be reported as merely "could not look".
+  if (signedOut)
+    return {
+      action: 'signed-out',
+      notes: [
+        'agy is signed out, so models and the print contract could not be checked (not a contract break).',
+      ],
+    };
   if (probes.primary === 'error' || probes.fallback === 'error')
-    return { action: 'contract-broken', notes: ['a live `agy -p … --model …` probe exited non-zero (not the quota signature — a real interface error).'] };
+    return {
+      action: 'contract-broken',
+      notes: [
+        'a live `agy -p … --model …` probe exited non-zero (not the quota signature — a real interface error).',
+      ],
+    };
   // 'unavailable' is the provider being busy, NOT the interface changing — so it
   // must never break the contract on its own. But a version whose ONLY evidence
   // is two unreachable models has not been demonstrated to work, so that pairing
   // is still not blessable.
   const blind = (p) => p === 'empty' || p === 'unavailable';
   if (blind(probes.primary) && blind(probes.fallback))
-    return { action: 'contract-broken', notes: ['NEITHER model produced output on the live probe (quota exhaustion and/or provider capacity) — a version this blind cannot be blessed; re-run later or re-verify by hand.'] };
-  if (!primaryListed || !fallbackListed) {
-    const missing = [!primaryListed && 'AGY_MODEL', !fallbackListed && 'AGY_FALLBACK_MODEL'].filter(Boolean);
-    return { action: 'model-drift', notes: [`${missing.join(' and ')} no longer listed by \`agy models\` — pick a replacement (env override or edit the constant); not auto-swapped.`] };
+    return {
+      action: 'contract-broken',
+      notes: [
+        'NEITHER model produced output on the live probe (quota exhaustion and/or provider capacity) — a version this blind cannot be blessed; re-run later or re-verify by hand.',
+      ],
+    };
+  // Report each drifted constant ONCE, preferring the entry that names the offending model. Building the
+  // descriptive entries (every agy model this repo configures — AGY_MODELS_IN_USE, not just the review
+  // pair) FIRST and only then filling gaps from the bare flags makes the precedence explicit rather than an
+  // accident of array order (Golden Frijoles' agy-doctor; cross-review caught the wrong duplicate kept).
+  const described = new Map(unlistedModels.map((m) => [m.constant, `${m.constant} ("${m.value}")`]));
+  for (const [flag, isListed] of [
+    ['AGY_MODEL', primaryListed],
+    ['AGY_FALLBACK_MODEL', fallbackListed],
+  ]) {
+    if (!isListed && !described.has(flag)) described.set(flag, flag);
   }
-  if (probes.primary === 'empty') notes.push('the primary model returned empty on the live probe (quota/transient) — the fallback carried it.');
-  if (probes.primary === 'unavailable') notes.push('the primary model reported provider capacity trouble — the fallback carried it. Not an interface problem.');
-  if (probes.fallback === 'unavailable') notes.push('the FALLBACK model reported provider capacity trouble. The primary answered, so the contract is intact — but the second quota pool is unavailable right now, which is the whole point of having one. Re-check before relying on it.');
+  const missing = [...described.values()];
+  if (missing.length) {
+    return {
+      action: 'model-drift',
+      notes: [
+        `${missing.join(' and ')} no longer listed by \`agy models\` — pick a replacement (env override or edit the constant); not auto-swapped. ` +
+          `NOTE: agy does NOT fail on an unknown --model; it silently substitutes its default, so an unlisted name here means that tool has been quietly running on the wrong model.`,
+      ],
+    };
+  }
+  if (probes.primary === 'empty')
+    notes.push(
+      'the primary model returned empty on the live probe (quota/transient) — the fallback carried it.'
+    );
+  if (probes.primary === 'unavailable')
+    notes.push(
+      'the primary model reported provider capacity trouble — the fallback carried it. Not an interface problem.'
+    );
+  if (probes.fallback === 'unavailable')
+    notes.push(
+      'the FALLBACK model reported provider capacity trouble. The primary answered, so the contract is intact — but the second quota pool is unavailable right now, which is the whole point of having one. Re-check before relying on it.'
+    );
   if (installed !== pinned) return { action: 'bump', notes };
   if (notes.length) return { action: 'quota-warn', notes };
   return { action: 'ok', notes };
@@ -259,8 +372,10 @@ export function decideDoctorAction({ installed, pinned, helpOk, primaryListed, f
 export function bumpPinnedSource(source, newVersion, date) {
   const pinRe = /^export const AGY_PINNED = '[^']+';$/m;
   const markerRe = /^\/\/ agy-doctor: last verified [0-9-]+ against \S+\.$/m;
-  if (!pinRe.test(source)) throw new Error('AGY_PINNED constant line not found — lib shape changed, bump by hand.');
-  if (!markerRe.test(source)) throw new Error('agy-doctor marker line not found — lib shape changed, bump by hand.');
+  if (!pinRe.test(source))
+    throw new Error('AGY_PINNED constant line not found — lib shape changed, bump by hand.');
+  if (!markerRe.test(source))
+    throw new Error('agy-doctor marker line not found — lib shape changed, bump by hand.');
   return source
     .replace(pinRe, `export const AGY_PINNED = '${newVersion}';`)
     .replace(markerRe, `// agy-doctor: last verified ${date} against ${newVersion}.`);
@@ -270,24 +385,27 @@ export function bumpPinnedSource(source, newVersion, date) {
 // "slug<TAB>display name" rows. Compare the first field only; comparing the whole
 // display row produces a false model-drift result even while both live probes pass.
 export function parseAgyModelSlugs(output) {
-  return String(output ?? '')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line && !/^fetching available models/i.test(line))
-    // 1.1.11 rows are tab-separated. Legacy output is one complete slug per
-    // line. Never take the first whitespace word from prose: a status line
-    // such as "gemini-… is unavailable" must not prove that model is listed.
-    .flatMap((line) => {
-      const tab = line.indexOf('\t');
-      const candidate = tab === -1 ? line : line.slice(0, tab).trim();
-      // A tab is the 1.1.11 row boundary, so its first field may be a simple
-      // alphabetic slug. A legacy bare line has no structural marker: require
-      // model-ID punctuation/digits so arbitrary prose cannot prove a listing.
-      const valid = tab === -1
-        ? /^(?=.*[0-9._:/-])[a-z0-9][a-z0-9._:/-]*$/.test(candidate)
-        : /^[a-z0-9][a-z0-9._:/-]*$/.test(candidate);
-      return valid ? [candidate] : [];
-    });
+  return (
+    String(output ?? '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !/^fetching available models/i.test(line))
+      // 1.1.11 rows are tab-separated. Legacy output is one complete slug per
+      // line. Never take the first whitespace word from prose: a status line
+      // such as "gemini-… is unavailable" must not prove that model is listed.
+      .flatMap((line) => {
+        const tab = line.indexOf('\t');
+        const candidate = tab === -1 ? line : line.slice(0, tab).trim();
+        // A tab is the 1.1.11 row boundary, so its first field may be a simple
+        // alphabetic slug. A legacy bare line has no structural marker: require
+        // model-ID punctuation/digits so arbitrary prose cannot prove a listing.
+        const valid =
+          tab === -1
+            ? /^(?=.*[0-9._:/-])[a-z0-9][a-z0-9._:/-]*$/.test(candidate)
+            : /^[a-z0-9][a-z0-9._:/-]*$/.test(candidate);
+        return valid ? [candidate] : [];
+      })
+  );
 }
 
 // ── I/O helpers (thin, injectable-free — the decision core above is what tests exercise) ─────────────
@@ -297,10 +415,9 @@ function agy(args, input) {
 
 function observeAgy() {
   const ver = agy(['--version']);
-  if (ver.error) {
-    process.stderr.write('✗ agy not found on PATH — install the Antigravity CLI first.\n');
-    process.exit(1);
-  }
+  // Missing is a reported state, never a process.exit: `cross-agent-doctor.mjs` with no family argument
+  // still owes the codex line.
+  if (ver.error) return null;
   const installed = (((ver.stdout || '') + (ver.stderr || '')).match(/\d+\.\d+\.\d+/) || [null])[0];
   // agy prints --help to STDERR (confirmed live 1.0.16) — read both streams for robustness.
   const helpR = agy(['--help']);
@@ -308,7 +425,10 @@ function observeAgy() {
   const helpOk = /^\s*-p\b/m.test(help) && /--model\b/.test(help);
   const modelsR = agy(['models']);
   const modelsOutput = (modelsR.stdout || '') + (modelsR.stderr || '');
-  const models = modelsOutput.split('\n').map((l) => l.trim()).filter(Boolean);
+  const models = modelsOutput
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   const modelSlugs = parseAgyModelSlugs(modelsOutput);
   const probe = (model) => {
     const r = agy(['-p', 'Reply with exactly: OK', '--model', model]);
@@ -320,6 +440,19 @@ function observeAgy() {
     }
     return (r.stdout || '').trim() ? 'ok' : 'empty';
   };
+  if (isAgySignedOut(modelsOutput)) {
+    return {
+      installed,
+      pinned: AGY_PINNED,
+      helpOk,
+      signedOut: true,
+      primaryListed: false,
+      fallbackListed: false,
+      unlistedModels: [],
+      models: [],
+      probes: { primary: 'skipped', fallback: 'skipped' },
+    };
+  }
   const probes = { primary: probe(AGY_MODEL), fallback: 'skipped' };
   // Probe the fallback only when needed for the decision (primary empty/error, or a version bump needs
   // the fuller picture) — each probe is a real model call.
@@ -330,6 +463,9 @@ function observeAgy() {
     helpOk,
     primaryListed: modelSlugs.includes(AGY_MODEL),
     fallbackListed: modelSlugs.includes(AGY_FALLBACK_MODEL),
+    // Checked cheaply against the already-fetched list — no extra model calls, so auditing every
+    // configured agy model (not just the review pair) costs nothing.
+    unlistedModels: AGY_MODELS_IN_USE.filter((m) => !modelSlugs.includes(m.value)),
     models,
     probes,
   };
@@ -338,57 +474,111 @@ function observeAgy() {
 async function agyMain() {
   const fix = process.argv.includes('--fix');
   const obs = observeAgy();
+  if (!obs) {
+    process.stdout.write(
+      'agy — ✗ not installed (not on PATH). Install the Antigravity CLI, sign in, then re-run.\n'
+    );
+    process.exitCode = 1;
+    return;
+  }
   // 'skipped' → 'ok' is safe BY CONSTRUCTION, not convention: observe() skips the fallback probe only
   // when the primary probed 'ok' AND installed === pinned — and with installed === pinned the decision
   // can never reach 'bump', so a bump is never blessed on an unprobed fallback. (If observe()'s skip
   // condition ever changes, revisit this substitution.)
   const decision = decideDoctorAction({
     ...obs,
-    probes: { primary: obs.probes.primary, fallback: obs.probes.fallback === 'skipped' ? 'ok' : obs.probes.fallback },
+    probes: {
+      primary: obs.probes.primary,
+      fallback: obs.probes.fallback === 'skipped' ? 'ok' : obs.probes.fallback,
+    },
   });
 
   const line = (s) => process.stdout.write(`${s}\n`);
-  line(`agy-doctor — installed ${obs.installed} · pinned ${obs.pinned} · help contract ${obs.helpOk ? 'ok' : 'BROKEN'}`);
-  line(`models: primary ${obs.primaryListed ? 'listed' : 'MISSING'} ("${AGY_MODEL}") · fallback ${obs.fallbackListed ? 'listed' : 'MISSING'} ("${AGY_FALLBACK_MODEL}")`);
-  line(`live probe: primary ${obs.probes.primary} · fallback ${obs.probes.fallback}`);
+  line(
+    `agy-doctor — installed ${obs.installed} · pinned ${obs.pinned} · help contract ${obs.helpOk ? 'ok' : 'BROKEN'}`
+  );
+  // Every configured name, not just the review pair — a silently-substituted model is visible at a glance.
+  // Signed out, nothing was listed or probed, so printing the names as "listed" would be a false pass.
+  if (!obs.signedOut) {
+    for (const m of AGY_MODELS_IN_USE) {
+      const listed = !obs.unlistedModels.some((u) => u.constant === m.constant);
+      line(`  ${listed ? '·' : '✗'} ${m.constant} = "${m.value}"${listed ? '' : '  ← NOT LISTED'}`);
+    }
+    line(`live probe: primary ${obs.probes.primary} · fallback ${obs.probes.fallback}`);
+  }
   for (const n of decision.notes) line(`  note: ${n}`);
 
   switch (decision.action) {
+    case 'signed-out':
+      line(
+        '✗ could not look: agy is signed out. Run `agy` once with no arguments to sign in, then re-run this doctor.'
+      );
+      process.exitCode = 1;
+      return;
     case 'ok':
       line('✓ no drift — pin, models, and print contract all verified live.');
       return;
     case 'quota-warn':
-      line('✓ no drift (transient primary-model quota noted above — runAntigravity degrades to the fallback on its own).');
+      line(
+        '✓ no drift (transient primary-model quota noted above — runAntigravity degrades to the fallback on its own).'
+      );
       return;
     case 'model-drift':
       line(`✗ model drift. Current \`agy models\`:\n  ${obs.models.join('\n  ')}`);
-      line('Pick a replacement: set AGY_MODEL / AGY_FALLBACK_MODEL env, or edit the constants in scripts/lib/cross-agent-cli.mjs. Not auto-fixed (judgment call).');
+      line(
+        'Pick a replacement: set AGY_MODEL / AGY_FALLBACK_MODEL env, or edit the constants in scripts/lib/cross-agent-cli.mjs. Not auto-fixed (judgment call).'
+      );
       process.exitCode = 1;
       return;
     case 'contract-broken':
-      line('✗ contract broken — do NOT bump the pin. Re-verify `agy -p "<prompt>" --model "<model>"` by hand against `agy --help`.');
+      line(
+        '✗ contract broken — do NOT bump the pin. Re-verify `agy -p "<prompt>" --model "<model>"` by hand against `agy --help`.'
+      );
       process.exitCode = 1;
       return;
     case 'bump': {
+      // --fix runs `node --test '<glob>'`, whose glob expansion Node added in 21; below that the pattern matches
+      // nothing and a pin would be bumped with no tests run. Refuse rather than bless blind (cross-review, #188).
+      if (fix && Number(process.versions.node.split('.')[0]) < 21) {
+        line(
+          `✗ --fix needs Node 21+ (this is ${process.versions.node}): it runs the test suite after bumping. Not bumped.`
+        );
+        process.exitCode = 1;
+        return;
+      }
       if (!fix) {
-        line(`→ version drift with a GREEN contract probe: safe to bump. Run \`node scripts/cross-agent-doctor.mjs agy --fix\` to update AGY_PINNED ${obs.pinned} → ${obs.installed}.`);
+        line(
+          `→ version drift with a GREEN contract probe: safe to bump. Run \`node scripts/cross-agent-doctor.mjs agy --fix\` to update AGY_PINNED ${obs.pinned} → ${obs.installed}.`
+        );
         return;
       }
       const src = readFileSync(LIB_PATH, 'utf8');
       const today = new Date().toISOString().slice(0, 10);
       writeFileSync(LIB_PATH, bumpPinnedSource(src, obs.installed, today));
       line(`✓ AGY_PINNED bumped ${obs.pinned} → ${obs.installed} (probe green; marker dated ${today}).`);
-      const t = spawnSync('node', ['--test', 'scripts/lib/*.test.mjs', 'scripts/*.test.mjs'], {
-        encoding: 'utf8', cwd: resolve(__dirname, '..'), shell: false,
+      const t = spawnSync(process.execPath, ['--test', 'scripts/lib/*.test.mjs', 'scripts/*.test.mjs'], {
+        encoding: 'utf8',
+        cwd: resolve(__dirname, '..'),
+        shell: false,
       });
       if (t.status !== 0) {
         line('✗ test suite FAILED after the bump — review before committing:');
-        process.stdout.write((t.stdout || '').split('\n').filter((l) => /not ok|fail/i.test(l)).slice(0, 10).join('\n') + '\n');
+        process.stdout.write(
+          (t.stdout || '')
+            .split('\n')
+            .filter((l) => /not ok|fail/i.test(l))
+            .slice(0, 10)
+            .join('\n') + '\n'
+        );
         process.exitCode = 1;
         return;
       }
       line('✓ scripts test suite green. Next: commit the one-line bump (LOW tier) via the normal flow —');
-      line('  branch `chore/agy-pin-bump-' + obs.installed + '`, path-limited commit of scripts/lib/cross-agent-cli.mjs, PR.');
+      line(
+        '  branch `chore/agy-pin-bump-' +
+          obs.installed +
+          '`, path-limited commit of scripts/lib/cross-agent-cli.mjs, PR.'
+      );
       return;
     }
   }

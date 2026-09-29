@@ -29,31 +29,47 @@ test('LENSES is the single source of valid values', () => {
 
 // ---- model attribution ----
 //
-// CODEX_MODEL defaults to null, so the reviewer model is machine-local config no artifact recorded.
-// If that config drifts, review strength changes family and nothing notices.
+// The reviewer model is machine-local state no artifact recorded; if it drifts, review strength changes
+// family and nothing notices. Adopted from a consuming project, where an unset CODEX_MODEL meant "read
+// ~/.codex/config.toml". In the superset (distribute-what-we-use D1) unset means the PIN, because that is
+// what execCodex actually passes; `CODEX_MODEL=default` means codex's built-in default, because reviews ignore
+// the user config — so the config file is never read for attribution.
 
-test('CODEX_MODEL wins when set', () => {
-  assert.equal(resolveReviewModel('codex', false, { env: { CODEX_MODEL: 'gpt-5.6-sol' } }), 'gpt-5.6-sol');
+test('CODEX_MODEL wins when set, with the effort execCodex passes alongside it', () => {
+  assert.equal(
+    resolveReviewModel('codex', false, { env: { CODEX_MODEL: 'gpt-5.6-sol' } }),
+    'gpt-5.6-sol (effort: high)'
+  );
 });
 
-test('otherwise the codex config default is read, with its reasoning effort', () => {
-  const cfg = 'model = "gpt-5.6-terra"\nmodel_reasoning_effort = "high"\n';
-  assert.equal(resolveReviewModel('codex', false, { env: {}, readCfg: () => cfg }), 'gpt-5.6-terra (effort: high)');
+test('unset CODEX_MODEL is attributed to the pin, not to whatever the local config says', () => {
+  const cfg = 'model = "something-else"\n';
+  assert.match(resolveReviewModel('codex', false, { env: {}, readCfg: () => cfg }), /^gpt-5\.6-terra /);
 });
 
-test('an unreadable config yields null — the caller prints "unrecorded", never a guess', () => {
-  // A wrong attribution is worse than a missing one: it makes an unauditable review look audited.
-  assert.equal(resolveReviewModel('codex', false, { env: {}, readCfg: () => null }), null);
+test("CODEX_MODEL=default is attributed to codex's BUILT-IN default — the review ignores the user config", () => {
+  // Reviews run --ignore-user-config, so ~/.codex/config.toml's model is not what ran; naming it would be
+  // the false attribution this file exists to prevent (pr-reviewer round 3 on #188).
+  const cfg = 'model = "gpt-5.6-luna"\nmodel_reasoning_effort = "xhigh"\n';
+  const got = resolveReviewModel('codex', false, { env: { CODEX_MODEL: 'default' }, readCfg: () => cfg });
+  assert.match(got, /built-in default/);
+  assert.doesNotMatch(got, /luna|xhigh/);
 });
 
-test('a fallback run is attributed to agy, not to codex', () => {
+test('a fallback run is attributed to agy, naming the model that actually answered', () => {
   // The whole point of recording this: nobody should read an Antigravity review as a Codex one.
-  assert.match(resolveReviewModel('codex', true, { env: {} }), /agy|pair/);
+  assert.match(resolveReviewModel('codex', true, { env: {} }), /^agy /);
+  assert.equal(
+    resolveReviewModel('codex', true, { env: {}, usedAgyModel: 'gpt-oss-120b-medium' }),
+    'agy gpt-oss-120b-medium'
+  );
 });
 
 test('a Vibe run is never attributed to the Codex model', () => {
   assert.equal(
-    resolveReviewModel('vibe', false, { env: { CODEX_MODEL: 'gpt-5.6-sol', VIBE_ACTIVE_MODEL: 'devstral-medium' } }),
+    resolveReviewModel('vibe', false, {
+      env: { CODEX_MODEL: 'gpt-5.6-sol', VIBE_ACTIVE_MODEL: 'devstral-medium' },
+    }),
     'devstral-medium'
   );
   assert.equal(
@@ -72,7 +88,10 @@ test('a security-lens comment is labelled as one and states its limits inline', 
 });
 
 test('the comment names the model that actually ran', () => {
-  assert.match(buildComment('Codex', 'x', false, { model: 'gpt-5.6-terra (effort: high)' }), /gpt-5\.6-terra \(effort: high\)/);
+  assert.match(
+    buildComment('Codex', 'x', false, { model: 'gpt-5.6-terra (effort: high)' }),
+    /gpt-5\.6-terra \(effort: high\)/
+  );
 });
 
 test('an unresolved model says so rather than printing a plausible default', () => {
