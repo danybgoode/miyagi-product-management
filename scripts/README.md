@@ -300,13 +300,13 @@ quota is exhausted — the substitution is announced on stderr. Override either 
 
 ### When Codex can't run (auto-fallback to Antigravity)
 
-Codex fails to run in two operator-fixable ways, and **you don't have to stop for either** — when
+Codex fails to run in three operator-fixable ways, and **you don't have to stop for any of them** — when
 `--agent codex` hits one, `cross-review.mjs` automatically falls back to Antigravity for that run (comment
 headed `🔎 Cross-agent review (Antigravity — Codex unavailable)`; the stderr banner names the cause). The
 fallback needs `agy` present; if both are down it exits with a one-line message naming both fixes. A
 genuine non-auth, non-stale error (empty diff, internal break) still fails clearly — no masking.
 
-The two recoverable causes:
+The recoverable causes (a third, a **usage cap**, heals the same way and the doctor reports it as `capped`):
 
 1. **Lapsed token** — `⚠ Codex token revoked → falling back to Antigravity. Restore: codex login.`
    Restore interactively: `codex login`.
@@ -339,6 +339,6 @@ default. A usage cap (`capped`) heals onto agy like a lapsed token.
 **Other flags and guards the superset added.**
 - `--builder <family>` refuses a same-family review; `review-route.mjs` prints it in every command.
 - `--allow-untrusted-author` is needed to review a PR whose author lacks write access to the repo.
-- A reply carrying a verbatim secret (a `.env*` value, a home credential store value, or a known token
+- A reply carrying a verbatim secret (a `.env*` value, a secret-named env var, a home credential store value, or a known token
   shape) is **withheld**: no comment, a failing status, the reply printed locally with the secret redacted.
 - `--agent devin` is refused: `devin -p` auto-approves host reads with no flag to disable them.
