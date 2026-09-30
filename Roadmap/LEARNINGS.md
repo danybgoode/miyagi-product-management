@@ -329,7 +329,10 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   codex hit its weekly cap AND agy needed a pin+model escalation, so `cross-review.mjs` had no working
   cross-family reviewer at all for the final PRs. Fix: `--agent codex` (GPT) → `--agent antigravity`
   (Gemini, with its own gemini→gpt-oss cross-pool fallback) → `--agent devin` (a third pool,
-  `-p --prompt-file`, no argv cap). Roster + when-to-switch table now in WAYS-OF-WORKING. Two durable
+  `-p --prompt-file`, no argv cap). Roster + when-to-switch table now in WAYS-OF-WORKING.
+  **SUPERSEDED 2026-09-29:** `--agent devin` is now refused (`devin -p` auto-approves host reads with no
+  flag to disable them, so an injected diff could post a secret). The extra pools are `--agent vibe` and
+  `--agent claude` (when a non-Claude family built the diff). Two durable
   sub-lessons: (a) **the fresh `pr-reviewer` subagent (same family, different agent) is a SEPARATE axis**
   and it's what actually caught the real bugs all epic — never let a different-family tool substitute for
   it; (b) **a young reviewer CLI silently drifts** — agy 1.1.6 started substituting a DEFAULT model for an

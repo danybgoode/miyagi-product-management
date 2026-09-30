@@ -330,6 +330,15 @@ and upgrading a global binary is an environment-specific system change the scrip
 It diagnoses and names the fix. After fixing, re-run cross-review with `--agent codex` and the header reads
 `(Codex)` again — the fallback is per-invocation, not a persisted mode.
 
-**`CODEX_MODEL` stopgap.** By default cross-review lets codex pick its own configured model; set
-`CODEX_MODEL="<a model the installed CLI supports>"` to force `codex exec -m <model>` when you can't
-upgrade the CLI right away.
+**`CODEX_MODEL`.** Since the golden-frijoles superset (2026-09-29) codex reviews on a **pinned** model
+(`gpt-5.6-terra`, effort `high`) and runs locked down: `--sandbox read-only --ignore-user-config
+--ignore-rules --ephemeral`, so `~/.codex/config.toml` (its model, MCP servers, providers) is never read.
+Set `CODEX_MODEL="<model>"` to pin a different one, or `CODEX_MODEL=default` for codex's **built-in**
+default. A usage cap (`capped`) heals onto agy like a lapsed token.
+
+**Other flags and guards the superset added.**
+- `--builder <family>` refuses a same-family review; `review-route.mjs` prints it in every command.
+- `--allow-untrusted-author` is needed to review a PR whose author lacks write access to the repo.
+- A reply carrying a verbatim secret (a `.env*` value, a home credential store value, or a known token
+  shape) is **withheld**: no comment, a failing status, the reply printed locally with the secret redacted.
+- `--agent devin` is refused: `devin -p` auto-approves host reads with no flag to disable them.
