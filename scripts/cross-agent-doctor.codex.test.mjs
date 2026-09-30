@@ -1,4 +1,4 @@
-// codex-doctor.test.mjs — pure node:test for the decision core + remediation (no real codex, no network).
+// cross-agent-doctor.codex.test.mjs — pure node:test for the decision core + remediation (no real codex, no network).
 // The I/O half (observe/main) is a thin spawnSync wrapper, exercised live by running the script; the
 // classification + remediation logic is what carries the correctness, so that's what's tested here.
 // isMain-guarded per LEARNINGS, so importing the module doesn't execute the CLI.
@@ -34,4 +34,10 @@ test('remediation: cli-outdated offers BOTH the upgrade and the CODEX_MODEL stop
   assert.match(withModel, /CODEX_MODEL="gpt-5-codex"/); // reflects the set value
   const unset = remediation('cli-outdated', {});
   assert.match(unset, /CODEX_MODEL \(unset/); // names the escape hatch even when off
+});
+
+test('a usage cap is its own diagnosis, with the route-past remediation (cross-review on #188)', () => {
+  const d = decideCodexDoctorAction({ present: true, probe: 'capped' });
+  assert.equal(d.action, 'capped');
+  assert.match(remediation('capped'), /--exclude codex/);
 });
