@@ -1,0 +1,164 @@
+{
+  "$comment": "intent-match D19 backfill: shipped epics scored on the seed AS APPROVED (the seed in the commit that first added the epic README), with a PROXY ask (D8, C6 as corrected) and claims split by the builder. Answers live in each retro's _Intent:_ line, never here. Regenerate nothing by hand.",
+  "model": "jev-1.13.0",
+  "scoredAt": "2026-09-30",
+  "epics": [
+    {
+      "slug": "pdp-image-gallery",
+      "score": 91,
+      "ask": "proxy",
+      "proxySource": "Mirror-back paragraph",
+      "pitchSha": "ea701a802",
+      "sprints": 1,
+      "signals": {
+        "coverage_in": 0.905,
+        "coverage_out": null,
+        "clarity": null,
+        "teach_back": null
+      },
+      "present": [
+        "coverage_in"
+      ],
+      "gaps": 0,
+      "untraced": 0,
+      "claims": [
+        "A buyer can click through a listing's multiple photos.",
+        "Tapping the main image opens it in a full view.",
+        "The gallery stays light and fast.",
+        "It follows the UX heuristics."
+      ]
+    },
+    {
+      "slug": "seller-unclaimed-bug-sweep",
+      "score": 98,
+      "ask": "proxy",
+      "proxySource": "Mirror-back paragraph",
+      "pitchSha": "5e52eda71",
+      "sprints": 3,
+      "signals": {
+        "coverage_in": 0.977,
+        "coverage_out": null,
+        "clarity": null,
+        "teach_back": null
+      },
+      "present": [
+        "coverage_in"
+      ],
+      "gaps": 0,
+      "untraced": 0,
+      "claims": [
+        "Unclaimed shops are contact-only: no offers, no cart, no bundles.",
+        "No offer email fails silently for an unclaimed shop.",
+        "Deleting a listing actually deletes it instead of silently drafting it.",
+        "Editing after a delete no longer ends in a 404.",
+        "The /sell button's text is visible.",
+        "The shop-management sub-navigation adapts on mobile."
+      ]
+    },
+    {
+      "slug": "shop-settings-refactor",
+      "score": 94,
+      "ask": "proxy",
+      "proxySource": "The problem (evaluated, not taken on faith)",
+      "pitchSha": "7d8be8fb4",
+      "sprints": 4,
+      "signals": {
+        "coverage_in": 0.938,
+        "coverage_out": null,
+        "clarity": null,
+        "teach_back": null
+      },
+      "present": [
+        "coverage_in"
+      ],
+      "gaps": 0,
+      "untraced": 0,
+      "claims": [
+        "Agents can add a settings feature without reasoning over the whole 4,200-line file.",
+        "Each settings section's state is isolated from its siblings.",
+        "The settings sections are split out of the single giant component.",
+        "An edit to one section cannot break another."
+      ]
+    },
+    {
+      "slug": "ucp-buyer-shipping-exposure",
+      "score": 84,
+      "ask": "proxy",
+      "proxySource": "Problem",
+      "pitchSha": "f8ecfb219",
+      "sprints": 2,
+      "signals": {
+        "coverage_in": 0.966,
+        "coverage_out": 0.791,
+        "clarity": 0.771,
+        "teach_back": null
+      },
+      "present": [
+        "coverage_in",
+        "coverage_out",
+        "clarity"
+      ],
+      "gaps": 0,
+      "untraced": 0,
+      "claims": [
+        "A buyer's agent can complete the physical-delivery half of a purchase.",
+        "Checkout returns a delivery catalog for an ordinary shippable listing.",
+        "It accepts a shipping address and requests carrier rates.",
+        "The chosen delivery option is recorded.",
+        "The MCP checkout path gets the same delivery support."
+      ]
+    },
+    {
+      "slug": "flag-provider-mandate",
+      "score": 83,
+      "ask": "proxy",
+      "proxySource": "Problem",
+      "pitchSha": "75900d012",
+      "sprints": 2,
+      "signals": {
+        "coverage_in": 0.903,
+        "coverage_out": 0.794,
+        "clarity": 0.799,
+        "teach_back": null
+      },
+      "present": [
+        "coverage_in",
+        "coverage_out",
+        "clarity"
+      ],
+      "gaps": 0,
+      "untraced": 0,
+      "claims": [
+        "Every project uses one flag provider instead of three.",
+        "The planning template stops prescribing one consumer's in-house flag architecture.",
+        "The kill-switch answer for a risk-high epic names the same mechanism in every project.",
+        "The hand-rolled Flagsmith wrapper and the in-house flag table are retired."
+      ]
+    },
+    {
+      "slug": "hyper-performant-runtime",
+      "score": 93,
+      "ask": "proxy",
+      "proxySource": "Problem",
+      "pitchSha": "e9c48ef26",
+      "sprints": 3,
+      "signals": {
+        "coverage_in": 0.928,
+        "coverage_out": null,
+        "clarity": null,
+        "teach_back": null
+      },
+      "present": [
+        "coverage_in"
+      ],
+      "gaps": 0,
+      "untraced": 0,
+      "claims": [
+        "Navigation is fast everywhere, not only on the first signed-out load PageSpeed measures.",
+        "The signed-in homepage is fast.",
+        "Opening a merchant's shop from a listing page is fast.",
+        "Navigations stop being uncacheable round trips to a cold container."
+      ]
+    }
+  ]
+}
