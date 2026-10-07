@@ -41,7 +41,7 @@ of that form and of the product owner's personally addressed outreach.
    email.
 2. A visitor may instead enter any email on the shop claim page and receive
    a shop-specific claim URL. The server derives shop identity from a fresh
-   Medusa read and refuses mismatched client details.
+   Medusa read, checks active status, and refuses mismatched client details.
 3. Clicking either link opens `/claim` and shows the shop name, a preview link,
    and the account action. Old `/onboarding/claim` emails reach the same page
    while their tokens remain valid.
@@ -58,5 +58,6 @@ of that form and of the product owner's personally addressed outreach.
   then pass; run typecheck, lint, build and the relevant API suite.
 - Backend claim serialization deploys before the storefront claim UI.
 - Verify a preview with headless HTTP and a disposable authenticated claim.
-- After frontend production deploy, confirm Cloud Build and remove the live
+- Confirm public, promoter WhatsApp, and merchant close-receipt senders all
+  produce on-site claim links. After frontend production deploy, remove the live
   `DESPACHOBONSAI_URL` Cloud Run setting. Verify both routes and the setting.

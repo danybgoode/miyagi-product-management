@@ -33,8 +33,9 @@ submitted shop name and identifier when signing the link.
 - **D4 · Manual outreach:** the admin prepares preview and claim links but the
   product owner writes and sends the outreach email personally. The public
   claim page continues to accept any email and sends its own 24-hour link.
-- **D5 · Remove the legacy destination:** remove `DESPACHOBONSAI_URL` from the
-  deploy script and from the live Cloud Run service after the new sender deploys.
+- **D5 · Remove the legacy destination:** move public email, promoter WhatsApp,
+  and merchant close-receipt links to `/claim`; then remove
+  `DESPACHOBONSAI_URL` from the deploy script and live Cloud Run service.
 
 ## Scope
 
@@ -43,8 +44,8 @@ order. No new feature flag or schema is needed.
 
 ## Definition of Done (epic)
 
-- The backend, storefront and root-repo changes pass their deterministic gates
-  and reach production in that order.
+- The backend and storefront pass their deterministic gates and deploy in that
+  order; the root-repo change passes its gate and merges.
 - A shop-specific email link shows the right shop before sign-up; an account
   with a different email can claim it and open `/shop/manage`.
 - The legacy email route resolves, incorrect shop data cannot mint a link,
