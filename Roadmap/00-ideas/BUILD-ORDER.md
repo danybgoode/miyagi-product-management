@@ -10,9 +10,8 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (4)
+## 🏗️ Building now (3)
 
-- [On-site shop claim](../../03-selling-and-shops/on-site-shop-claim/README.md) — 03 Selling & Shops · 1 sprints
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
@@ -22,7 +21,7 @@
 - [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 - [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 
-## ✅ Shipped (149)
+## ✅ Shipped (150)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -52,6 +51,7 @@
 - [Mercado Libre sync — connect, import, publish & two-way stock sync (Medusa-native)](../../03-selling-and-shops/mercadolibre-sync/README.md) — 03 Selling & Shops · 15/15 stories
 - [ML orders, native — Mercado Libre sales land as real Medusa orders](../../03-selling-and-shops/ml-orders-native/README.md) — 03 Selling & Shops · 10/10 stories
 - [Money-Path & Pricing Integrity Remediation](../../03-selling-and-shops/pricing-money-path-remediation/README.md) — 03 Selling & Shops · 10/10 stories
+- [On-site shop claim](../../03-selling-and-shops/on-site-shop-claim/README.md) — 03 Selling & Shops · 1 sprints
 - [Onboarding three-doors](../../03-selling-and-shops/seller-portal-onboarding-three-doors/README.md) — 03 Selling & Shops · 10/10 stories · risk: Low · Wave 1
 - [Platform migrations — Shopify connector, parity score, consultant white-glove SKU](../../03-selling-and-shops/platform-migrations/README.md) — 03 Selling & Shops · 8/8 stories · risk: High · Wave 2
 - [Profit Analyzer — true SKU margins after fees, COGS & shipping, plus suggested prices](../../03-selling-and-shops/profit-analyzer/README.md) — 03 Selling & Shops · 6/6 stories
