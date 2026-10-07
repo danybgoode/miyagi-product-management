@@ -3,7 +3,7 @@ epic: on-site-shop-claim
 sprint: 1
 title: Claim an imported shop on Miyagi
 risk: high
-phase: Building
+phase: Shipped
 stories_total: 2
 stories:
   - id: S1.1
@@ -12,19 +12,19 @@ stories:
     i_want: to see my shop before creating an account
     so_that: I know what the link will claim
     risk: high
-    status: in-progress
+    status: done
   - id: S1.2
     title: Account creation and automatic ownership transfer
     as_a: prospective shop owner
     i_want: to use my preferred account and reach my shop manager
     so_that: I can run the shop I claimed
     risk: high
-    status: in-progress
+    status: done
 ---
 
 # Sprint 1 · Claim an imported shop on Miyagi
 
-**Status:** Building
+**Status:** ✅ Shipped 2026-10-07 — backend [#201](https://github.com/danybgoode/medusa-bonsai-backend/pull/201), storefront [#424](https://github.com/danybgoode/miyagisanchezcommerce/pull/424), root [#199](https://github.com/danybgoode/miyagi-product-management/pull/199)
 
 **Risk:** HIGH · **Repos:** backend, storefront, root toolchain
 
@@ -61,3 +61,24 @@ of that form and of the product owner's personally addressed outreach.
 - Confirm public, promoter WhatsApp, and merchant close-receipt senders all
   produce on-site claim links. After frontend production deploy, remove the live
   `DESPACHOBONSAI_URL` Cloud Run setting. Verify both routes and the setting.
+
+## Result and smoke walkthrough
+
+- Backend: 1,223 unit tests, build, money-path integration, lint and CodeQL
+  passed. The ID-fallback status regression failed under a deliberate guard
+  removal (expected 404, got 200) and passed after restoration.
+- Storefront: build, lint, CodeQL, all four preview API shards and preview
+  browser smoke passed. The generated flag inventory and promoter receipt
+  fixtures passed 8/8 after the on-site URL change.
+- Root: 1,272 script tests, build-order, doc-format and shell syntax passed.
+- Production: open `https://miyagisanchez.com/mx/s/dharana-movement` to see the
+  unclaimed shop; open `/mx/s/dharana-movement/claim` for its public email form.
+  A fresh admin-generated claim URL from `/admin/claim-links` opens `/claim`,
+  shows that shop and its preview link, then returns from account creation to
+  transfer ownership and open `/shop/manage`. The first authenticated production
+  pass through these last steps is **owed to Daniel**, using a real intended
+  claim; the scripted production smoke supports unauthed pages only.
+- An invalid `/onboarding/claim?token=invalid` now redirects to `/claim`, whose
+  recovery page rendered without console errors. A mismatched shop ID sent to
+  `/api/claim/send` returned 409 without sending mail. Cloud Run revision
+  `miyagi-web-00145-ksd` is ready and has no `DESPACHOBONSAI_URL`.

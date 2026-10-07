@@ -2777,7 +2777,9 @@ rule here is now wrong, fix or delete it. Keep it short — a long digest is an 
   second time with no options. A third copy is now caught at birth. The generalisation: **when you find
   a bug in a helper, search the tree for a same-named sibling before you fix it** — duplicated helpers
   duplicate their bugs, and the second copy is invisible precisely because it works the same wrong way.
-  (us-marketplace, 2026-08-12.)
+  The same search applies to URL issuers: `DESPACHOBONSAI_URL` fed public email, promoter WhatsApp and
+  merchant close receipts, so retiring it required moving all three and checking the live Cloud Run
+  environment after deploy. *(us-marketplace, 2026-08-12; on-site-shop-claim, 2026-10-07.)*
 - **Two representations of one fact, and only one of them being read, fails silently and permanently.**
   MX sellers persist the Stripe **v1** shape (`connected` + `charges_enabled`); US sellers persist
   **Accounts v2** (`api_generation`, `merchant_configuration`, `card_payments_status`) and have *neither*

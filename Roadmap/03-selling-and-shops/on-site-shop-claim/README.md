@@ -1,11 +1,11 @@
 ---
-status: in-progress
+status: shipped
 slug: on-site-shop-claim
 title: On-site claim from a shop-specific email link
 area: 03-selling-and-shops
 risk: high
 type: bug
-phase: Building
+phase: Shipped
 sprints_total: 1
 stories_total: 2
 ---
@@ -13,6 +13,7 @@ stories_total: 2
 # On-site shop claim
 
 > **Area:** 03-selling-and-shops · **Risk:** HIGH (shop ownership and auth) · **Class:** Bug
+> **Shipped:** 2026-10-07 · Backend [#201](https://github.com/danybgoode/medusa-bonsai-backend/pull/201) · Storefront [#424](https://github.com/danybgoode/miyagisanchezcommerce/pull/424) · Root [#199](https://github.com/danybgoode/miyagi-product-management/pull/199)
 
 The production claim email linked to `/onboarding/claim` on miyagisanchez.com,
 which returned 404. The old sender built the URL from `DESPACHOBONSAI_URL`,
@@ -51,3 +52,18 @@ order. No new feature flag or schema is needed.
 - The legacy email route resolves, incorrect shop data cannot mint a link,
   and a second account cannot take an already claimed shop.
 - The live Cloud Run service no longer has `DESPACHOBONSAI_URL`.
+
+## Production verification
+
+- Backend Cloud Build succeeded; `medusa-web-00090-g2l` is ready and `/health` returned 200.
+- Storefront Cloud Build succeeded; `miyagi-web-00144-gdl` served the new claim routes.
+  Removing the legacy setting deployed `miyagi-web-00145-ksd`, ready on 100% of traffic.
+- `/onboarding/claim?token=invalid` changed from 404 to a 307 redirect to `/claim`;
+  `/claim?token=invalid` rendered its recovery state without browser console errors.
+  The Dharana Movement preview rendered at `/mx/s/dharana-movement` with its
+  unclaimed badge. A forged shop ID on `/api/claim/send` returned 409.
+- The live service's environment no longer contains `DESPACHOBONSAI_URL`.
+- **Owed to Daniel:** the first real production claim with a fresh link and a
+  separately chosen account, including the authenticated `/shop/manage` arrival.
+  The headless production harness cannot sign in through production Clerk, and
+  the reported 24-hour token had expired before this deployment.
