@@ -1,21 +1,21 @@
 # Shop-created welcome by market — Retrospective
 
-_Closed: <date>_
-_Intent: yes | mostly | no_
-<!-- Did we build what the product owner meant? One word, THEIR answer: yes, mostly or no. Required by `epic-dod` only
-     when the epic's seed or README carries a numeric `intent_match:` (intent-match D17); the calibration learns from
-     it. Keep the line and leave exactly one of the three words between `_Intent: ` and the closing underscore. -->
-_Quote vs actual: <quote $lo–hi (basis), or "not quoted"> → <actual ≈$n> (<Δ% vs the quote's top, or "—">)_
-<!-- The actual is STAMPED, never typed: `node scripts/epic-actuals.mjs --epic <slug> --write` writes actual_* into
-     the README (finops S2.5); copy its numbers here. -->
+_Closed: 2026-10-08_
+_Intent: yes_
+_Quote vs actual: $5–40 (S, n=0, wide) → unavailable; the `epic-actuals.mjs` cited by the scaffold is absent from this repo, so no cost number was invented._
 
 ## What shipped
-<!-- The capability now live, by sprint, with commit/PR refs. -->
+
+Frontend PR [#428](https://github.com/danybgoode/miyagisanchezcommerce/pull/428) (`a05b806`) sends a shop-created welcome in the seller's persisted MX or US market after a newly owned shop is created. CI and the production Cloud Build succeeded. The two welcome delivery tables exist in production. Daniel confirmed the intended result.
 
 ## What went well
 
+The existing seller creation seams and email transport carried the change without a new flag. The delivery reservation tables make retries distinct from duplicate sends.
+
 ## What we learned
-<!-- Promote the durable, generalizable items to Roadmap/LEARNINGS.md (one-liner + why + date). Dedupe. -->
+
+The source of the shop language must be the persisted seller market, not the visitor's locale. The implementation and its test already hold that rule; no new cross-epic lesson was needed in `LEARNINGS.md`.
 
 ## Gaps / follow-ups
-<!-- Smoke gaps owed to the product owner, deferred slices, known limitations. -->
+
+Daniel still owns controlled MX and US shop creation and checking that each expected email arrives exactly once. The unpublished Resend drafts remain review copies; the app code is the send source.

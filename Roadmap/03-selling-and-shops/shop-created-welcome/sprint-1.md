@@ -3,7 +3,7 @@ epic: shop-created-welcome
 sprint: 1
 title: "S1 Market-aware shop welcome"
 risk: low
-phase: Verifying
+phase: Shipped
 stories_total: 1
 stories:
   - id: S1.1
@@ -12,33 +12,20 @@ stories:
     i_want: "a practical welcome in my shop market's language"
     so_that: "I can set up and share my shop"
     risk: low
-    status: in-progress
+    status: done
 ---
 # Shop-created welcome by market — Sprint 1: S1 Market-aware shop welcome
 
-**Status:** 🟡 verifying
+**Status:** ✅ shipped in frontend [PR #428](https://github.com/danybgoode/miyagisanchezcommerce/pull/428); owner receipt smoke remains.
 
 ## Stories
-<!-- One block per story. Thinnest shippable slice first.
-     Each story ALSO has an entry in the frontmatter `stories:` list above — that entry is what tools
-     read (the build view, build-state.mjs); the prose below is what people read. Add both, and keep
-     `stories_total` (here and in the epic README) equal to the number of entries.
-     Story `status:` is planned | in-progress | done. The sprint's `phase:` is the executive ladder
-     (Shaping | Locking architecture | Building | Verifying | In review | Shipped), WRITTEN at each
-     cadence event. Name the story in each commit subject (`S1.1 …`): that is how the build view
-     knows which story is in flight.
-     Keep the heading shape `### Story 1.M — <title>` (this is what the status board counts).
-     When a story ships, append ✅ + its commit ref to the heading, e.g.
-       ### Story 1.1 — <title> ✅ `abc1234`
-     Note: the epic README frontmatter `status:` is the AUTHORITATIVE epic status; this ✅ marker only
-     feeds the cosmetic per-sprint progress count, so a format slip can't mis-state shipped/not-shipped. -->
-
-### Story 1.1 — Welcome a new owner in the shop market's language
+### Story 1.1 — Welcome a new owner in the shop market's language ✅ [PR #428](https://github.com/danybgoode/miyagisanchezcommerce/pull/428)
 **As a** new shop owner, **I want** a practical welcome in my shop market's language, **so that** I can set up and share my shop.
 **Acceptance:** A newly created MX shop sends Spanish and a US shop sends English, naming the shop and linking the public page and dashboard. Neither an existing shop nor a promoter-created unclaimed listing sends this message. Both variants are visible as unpublished Resend drafts.
 **Risk:** low
 
 ## Sprint QA
+- **Shipped evidence (2026-10-08):** PR #428 CI passed, production Cloud Build succeeded, and read-only production checks found both welcome delivery tables.
 - **api spec(s):** `e2e/shop-created-welcome.spec.ts` checks the persisted-market decision and unavailable states; it was observed red under a deliberate US-market break and green after restoring the implementation.
 - **browser smoke owed:** A controlled production send after deployment for MX and US account owners; no money path.
 - **deterministic gate:** `tsc --noEmit`, targeted ESLint, `npm run build`, and focused Playwright API specs before merge.

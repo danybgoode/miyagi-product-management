@@ -10,11 +10,9 @@
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
 
-## 🏗️ Building now (5)
+## 🏗️ Building now (3)
 
-- [Navigation, recovery, and welcome finishing](../../01-discovery-and-shopping/navigation-recovery-welcome-finishing/README.md) — 01 Discovery · 0/3 stories · risk: Low
 - [Panfleto — the first premium shop](../../03-selling-and-shops/panfleto-premium-shop/README.md) — 03 Selling & Shops · 5/8 stories · risk: High · Wave 1
-- [Shop-created welcome by market](../../03-selling-and-shops/shop-created-welcome/README.md) — 03 Selling & Shops · 0/1 stories · risk: Low
 - [Miyagi Partners proposition and recruiting portal v3](../../08-growth-and-promotions/miyagi-partners-recruiting-v3/README.md) — 08 Growth · 8/8 stories · risk: High · Wave 1
 - [ReportHub as the Notion replacement](../../09-platform-infra/reporthub-as-notion/README.md) — 09 Platform-infra · 5/7 stories · risk: High · #5
 
@@ -23,7 +21,7 @@
 - [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 - [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 
-## ✅ Shipped (150)
+## ✅ Shipped (152)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -32,6 +30,7 @@
 - [Homepage Polish — Dirección B «Catálogo limpio»](../../01-discovery-and-shopping/homepage-polish-b/README.md) — 01 Discovery · 11/11 stories · risk: Low
 - [Homepage Selección: bug sweep + admin curation + dynamic rotation](../../01-discovery-and-shopping/homepage-seleccion-curation/README.md) — 01 Discovery · 8/8 stories
 - [Imported-shop homepage integrity](../../01-discovery-and-shopping/imported-shop-homepage-integrity/README.md) — 01 Discovery · 3/3 stories · risk: Low
+- [Navigation, recovery, and welcome finishing](../../01-discovery-and-shopping/navigation-recovery-welcome-finishing/README.md) — 01 Discovery · 3/3 stories · risk: Low
 - [Neighborhood Pulse — online community feed](../../01-discovery-and-shopping/neighborhood-pulse/README.md) — 01 Discovery · 7/7 stories · risk: Low
 - [PDP follow-ups cleanup](../../01-discovery-and-shopping/pdp-followups-cleanup/README.md) — 01 Discovery · 2/2 stories
 - [PDP interactive image gallery ✅ COMPLETE](../../01-discovery-and-shopping/pdp-image-gallery/README.md) — 01 Discovery · 2/2 stories · risk: Low
@@ -65,6 +64,7 @@
 - [Seller-portal depth pass](../../03-selling-and-shops/seller-portal-depth-pass/README.md) — 03 Selling & Shops · 6/6 stories · risk: High · Wave 1
 - [Setup guide on dashboard](../../03-selling-and-shops/seller-portal-setup-guide/README.md) — 03 Selling & Shops · 4/4 stories · risk: Low · Wave 1
 - [Shop Settings refactor](../../03-selling-and-shops/shop-settings-refactor/README.md) — 03 Selling & Shops · 21/21 stories · risk: Low
+- [Shop-created welcome by market](../../03-selling-and-shops/shop-created-welcome/README.md) — 03 Selling & Shops · 1/1 stories · risk: Low
 - [Arranged-only delivery](../../04-shipping-and-delivery/arranged-only-delivery/README.md) — 04 Shipping · 5/5 stories
 - [Envía — platform Flagsmith kill-switch](../../04-shipping-and-delivery/envia-killswitch/README.md) — 04 Shipping · 4/4 stories
 - [Shipping provider expansion — Envía comp-grant, BYO decision, Correos de México](../../04-shipping-and-delivery/shipping-provider-expansion/README.md) — 04 Shipping · 10/10 stories · risk: High · tbd
@@ -187,7 +187,7 @@
 - [Spike — Compra protegida (buyer protection)](seeds/spike-compra-protegida.md) — Ready · Spike
 - [Spike — should Supabase (non-commerce) co-locate onto GCP, like commerce did?](seeds/spike-supabase-colocation.md) — Ready · Spike
 
-## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (4)
+## ⚠️ Status drift — README frontmatter vs sprint/retro-derived (2)
 
 These epics’ authoritative README-frontmatter `status:` disagrees with what the sprint/retro
 derivation infers. The board trusts the **frontmatter**; a mismatch usually means a close-out
@@ -195,10 +195,8 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 
 | Epic | frontmatter (used) | sprint/retro-derived |
 |---|---|---|
-| Navigation, recovery, and welcome finishing | In progress | Scaffolded |
-| Shop-created welcome by market | In progress | Scaffolded |
 | Merchant lifecycle projection — the Miyagi half of Golden Beans' event router | Shipped | Scaffolded |
 | Miyagi Partners proposition and recruiting portal v3 | In progress | Shipped |
 
 ---
-_Epics: 160 · seeds in funnel: 8 · status drift: 4. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 160 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
