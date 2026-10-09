@@ -14,6 +14,7 @@ The bar is "open a shop in minutes." Sellers get a real storefront, simple listi
 - ✅ **Profile & account** navigation across web and mobile
 
 ## Epics
+- ✅ **[Bulk claim links and outreach CSV](claim-links-bulk-outreach/)** — platform admins can prepare links for every ready unclaimed shop across pages and export Name, Email, public shop link, and claim link for personal outreach. Signed-in production export smoke remains owed.
 - ✅ **[Seller Coupon Codes](promotions/)** — create & manage discount codes for your shop (powers
   the World Cup "Sube tus promos" campaign). Sprint 1 shipped: create/manage + checkout redemption
   + usage stats.
