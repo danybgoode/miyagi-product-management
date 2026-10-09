@@ -5,7 +5,7 @@
 
 # Build order — generated status board
 
-> **Generated 2026-10-08 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
+> **Generated 2026-10-09 — do not hand-edit.** Epic status SSOT = the epic `README.md` frontmatter
 > `status:` field (set at epic close). To change what this shows, edit that field (or a seed for the
 > funnel), then run `node scripts/build-order.mjs`. This board and the Notion "Marketplace Roadmap"
 > DB are both *derived views* — never hand-edit the board.
@@ -21,7 +21,7 @@
 - [Plugin audit + medusa extraction — pay the dark-skill debt, port what's stranded](../../09-platform-infra/plugin-audit-and-extraction/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 - [The build view — a machine-readable frontmatter contract, rendered in the CLI as a Claude Mod](../../09-platform-infra/build-visualization-claude-mods/README.md) — 09 Platform-infra · 0 sprints · risk: Low · wave-2026-09-16
 
-## ✅ Shipped (152)
+## ✅ Shipped (153)
 
 - [Cars vertical — tratocar-grade browse & trust](../../01-discovery-and-shopping/cars-vertical-tratocar-parity/README.md) — 01 Discovery · 8/8 stories
 - [Discovery Polish](../../01-discovery-and-shopping/discovery-polish/README.md) — 01 Discovery · 7/7 stories
@@ -41,6 +41,7 @@
 - [Rental line-item pricing — charge nights × rate + deposit online](../../02-checkout-and-payments/rental-backend-line-item-pricing/README.md) — 02 Checkout & Payments · 7/7 stories · risk: High · backlog
 - [Agent-native setup (Onboarding 0) — ✅ COMPLETE (2026-06-09)](../../03-selling-and-shops/agent-native-setup/README.md) — 03 Selling & Shops · 7/7 stories · risk: High
 - [Bookshop launchpad — writer submissions, community votes, and the 50%-print unlock](../../03-selling-and-shops/bookshop-launchpad/README.md) — 03 Selling & Shops · 8/8 stories
+- [Bulk claim links and outreach CSV](../../03-selling-and-shops/claim-links-bulk-outreach/README.md) — 03 Selling & Shops · 1/1 stories
 - [Bulk Import & Express Migration](../../03-selling-and-shops/bulk-import-migration/README.md) — 03 Selling & Shops · 17/17 stories · risk: High
 - [Catalog management — one Catálogo home for every product, channel, price & quantity ✅](../../03-selling-and-shops/catalog-management/README.md) — 03 Selling & Shops · 16/16 stories · risk: High · Wave 1
 - [Catalog shop-slug invariant — the “orphan” was a null-slot read failure](../../03-selling-and-shops/catalog-orphan-listing-sweep/README.md) — 03 Selling & Shops · 3/3 stories · risk: High
@@ -199,4 +200,4 @@ forgot to set `status:` (or the README is stale). Reconcile the README, then thi
 | Miyagi Partners proposition and recruiting portal v3 | In progress | Shipped |
 
 ---
-_Epics: 160 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
+_Epics: 161 · seeds in funnel: 8 · status drift: 2. Regenerate with `node scripts/build-order.mjs`._
